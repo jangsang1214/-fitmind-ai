@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitMind AI">
+<title>FitMind AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+<header><div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div><button id="installBtn" hidden>설치</button></header>
+
+<main>
+<section id="dashboard" class="page active">
+  <h1>오늘의 코칭</h1>
+  <div class="hero"><div><span>AI 상태</span><strong id="aiStatus">로컬 코치</strong></div><button onclick="openPage('chat')">AI에게 질문</button></div>
+  <div class="grid">
+    <div class="card"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div>
+    <div class="card"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div>
+    <div class="card"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div>
+    <div class="card"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div>
+  </div>
+  <div class="card"><h3>오늘의 AI 제안</h3><p id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</p></div>
+</section>
+
+<section id="workout" class="page">
+<h2>운동 기록</h2>
+<form id="workoutForm" class="card">
+<input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
+<div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
+<textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea><button>운동 저장</button>
+</form>
+<div id="workoutList"></div>
+</section>
+
+<section id="diet" class="page">
+<h2>식단</h2>
+<form id="mealForm" class="card">
+<input id="meal" placeholder="음식/식사명" required>
+<div class="row"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"></div>
+<textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea><button>식단 저장</button>
+</form><div id="mealList"></div>
+</section>
+
+<section id="body" class="page">
+<h2>바디체크</h2>
+<form id="bodyForm" class="card">
+<div class="row"><input id="bodyWeight" type="number" step=".1" placeholder="체중 kg"><input id="bodyWaist" type="number" step=".1" placeholder="허리 cm"></div>
+<input id="bodyPhoto" type="file" accept="image/*"><textarea id="bodyNote" placeholder="사진/몸 상태 메모"></textarea>
+<button>바디체크 저장</button>
+</form><div id="bodyList"></div>
+</section>
+
+<section id="report" class="page">
+<h2>리포트</h2>
+<div id="reportContent" class="card"></div>
+<button onclick="exportBackup()">백업 파일 만들기</button>
+<label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
+</section>
+
+<section id="chat" class="page">
+<h2>AI 채팅</h2>
+<div id="chatLog" class="chatlog"></div>
+<form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
+<div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
+</section>
+</main>
+
+<nav>
+<button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button>
+</nav>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
