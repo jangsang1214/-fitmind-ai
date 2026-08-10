@@ -1,3 +1,4 @@
+const APP_VERSION="4.9.4";
 const EMPTY_DB={profile:{},workouts:[],meals:[],body:[],chat:[],api:{}};
 const KEY="fitmind_v2";
 let foodDB=[];
@@ -260,17 +261,29 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function enforceDietOnlyTodayIntake(){
+  const diet=document.getElementById("diet");
+  document.querySelectorAll(".todayNutrition,#todayNutrition").forEach(node=>{
+    const card=node.classList?.contains("todayNutrition") ? node : node.closest(".todayNutrition");
+    const target=card||node;
+    if(!diet || !diet.contains(target)) target.remove();
+  });
+}
+const fitmindDietObserver=new MutationObserver(()=>enforceDietOnlyTodayIntake());
+fitmindDietObserver.observe(document.body,{subtree:true,childList:true});
+
 function syncDietTodayNutrition(activeId){
  const diet=document.getElementById("diet");
- const mount=document.getElementById("dietTodayNutritionMount");
+ const mount=document.getElementById("fitmindDietOnlyTodayIntake");
  if(!diet||!mount)return;
  const active=activeId || document.querySelector(".page.active")?.id;
- let card=document.getElementById("todayNutrition")?.closest(".todayNutrition");
+ let card=document.getElementById("fitmindDietOnlyTodayCard");
  if(active==="diet"){
    if(!card){
      card=document.createElement("div");
-     card.className="card todayNutrition";
-     card.innerHTML='<h3>오늘의 섭취량</h3><div class="nutritionPreview" id="todayNutrition"></div>';
+     card.id="fitmindDietOnlyTodayCard"; card.className="card todayNutrition";
+     card.innerHTML='<h3>오늘의 섭취량</h3><div class="nutritionPreview" id="fitmindDietOnlyTodayNutrition"></div>';
    }
    if(card.parentElement!==mount)mount.appendChild(card);
  }else if(card){
@@ -316,7 +329,7 @@ function render(){
  mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${x.servings?`${x.servings}${x.unit||"회"} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
  renderTodayNutrition();
  bodyList.innerHTML=db.body.slice().reverse().map(x=>`<div class="item"><strong>${x.weight||"-"}kg ${x.waist?`· 허리 ${x.waist}cm`:""}</strong><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 바디체크 기록이 없습니다.</div>";
- renderFoodList();report();chatRender();updateWorkoutCalorieUI();
+ renderFoodList();report();chatRender();updateWorkoutCalorieUI();enforceDietOnlyTodayIntake();
 }
 function localCoach(){
  const nm=db.profile?.name?`${db.profile.name}님, `:"",goal=db.profile?.goal?` (목표: ${db.profile.goal})`:"";
@@ -466,7 +479,7 @@ function updateNutritionPreview(n){
  previewCarbsEl.textContent=n?fmtN(n.carbs):"-";previewFatEl.textContent=n?fmtN(n.fat):"-";
 }
 function renderTodayNutrition(){
- const el=document.getElementById("todayNutrition");
+ const el=document.getElementById("fitmindDietOnlyTodayNutrition");
  if(!el || !document.getElementById("diet")?.contains(el)) return;
  const k=isoToday(), rows=db.meals.filter(x=>x.date===k);
  const totals=rows.reduce((a,x)=>({kcal:a.kcal+(+x.calories||0),protein:a.protein+(+x.protein||0),carbs:a.carbs+(+x.carbs||0),fat:a.fat+(+x.fat||0)}),{kcal:0,protein:0,carbs:0,fat:0});
