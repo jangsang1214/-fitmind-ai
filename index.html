@@ -10,7 +10,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitMind AI">
 <title>FitMind AI</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style-v4.9.5.css">
+<style id="fitmindPageIsolation">
+.page{display:none!important}.page.active{display:block!important}
+#dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
+</style>
 </head>
 <body>
 <div id="app">
@@ -270,6 +274,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="app.js"></script>
+<script src="app-v4.9.5.js"></script>
 </body>
 </html>
