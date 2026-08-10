@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
 <head>
+<!-- FitMind AI v4.4.3 merged: v4.4.1 calorie calculation + v4.4.2 home/body separation -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -11,6 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="FitMind AI">
 <title>FitMind AI</title>
 <link rel="stylesheet" href="style.css">
+
+<style id="fitmindBodyOnlyCSS">
+#fitmindBodyCheckUpgrade,#fitmindCalorieTarget{display:none !important;}
+</style>
 </head>
 <body>
 <div id="app">
@@ -146,7 +151,78 @@
   <textarea id="bodyNote" placeholder="사진/몸 상태 메모"></textarea>
   <button>바디체크 저장</button>
 </form>
-<div id="bodyList"></div>
+<div id="bodyList"><section id="fitmindBodyCheckScreen" class="card" style="display:none;margin-top:16px;" style="margin-top:16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <div>
+      <h2 style="margin:0;">🧍 바디체크</h2>
+      <div class="muted">오늘의 사진과 신체 데이터를 한 곳에서 기록하세요.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 8px;">📸 바디체크 사진</h3>
+    <input id="bodyPhotoInput" type="file" accept="image/*" multiple>
+    <div class="muted" style="margin-top:6px;">사진은 이 기기에 저장되어 다시 열어볼 수 있습니다.</div>
+    <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3 style="margin:0 0 10px;">📏 신체 데이터 입력</h3>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+      <label>측정일<input id="bodyDate" type="date"></label>
+      <label>체중 (kg)<input id="bodyWeight" type="number" step="0.1" placeholder="67.0"></label>
+      <label>체지방률 (%)<input id="bodyFatPercent" type="number" step="0.1" placeholder="12.0"></label>
+      <label>골격근량 (kg)<input id="bodySkeletalMuscle" type="number" step="0.1" placeholder="35.3"></label>
+      <label>체지방량 (kg)<input id="bodyFatMass" type="number" step="0.1" placeholder="8.0"></label>
+      <label>허리둘레 (cm)<input id="bodyWaist" type="number" step="0.1" placeholder="75.0"></label>
+    </div>
+    <button id="saveBodyDataBtn" type="button" style="width:100%;margin-top:12px;">💾 신체 데이터 저장</button>
+    <div id="bodySaveStatus" class="muted" style="margin-top:7px;"></div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3 style="margin:0 0 10px;">🔥 대사량 & 권장 섭취 칼로리</h3>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+      <div class="card"><small>기초대사량 (BMR)</small><div id="fitmindBMRResult" style="font-size:28px;font-weight:900;">—</div></div>
+      <div class="card"><small>권장 섭취 칼로리</small><div id="fitmindTDEEResult" style="font-size:28px;font-weight:900;">—</div></div>
+    </div>
+    <div id="fitmindCalorieNote" class="muted" style="margin-top:8px;"></div>
+    <div style="margin-top:10px;">
+      <label>활동량
+        <select id="bodyActivity">
+          <option value="1.2">거의 활동 없음</option>
+          <option value="1.375">가벼운 활동</option>
+          <option value="1.55" selected>보통 활동</option>
+          <option value="1.725">높은 활동</option>
+          <option value="1.9">매우 높은 활동</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;text-align:center;">
+    <div class="muted">FITMIND BODY SCORE</div>
+    <div id="bodyScoreNumber" style="font-size:52px;font-weight:900;line-height:1.1;">—</div>
+    <div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
+    <div id="bodyScoreSummary" class="muted" style="margin-top:8px;"></div>
+  </div>
+
+  <div id="bodyScoreBreakdown" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;"></div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3 style="margin:0 0 8px;">📈 신체 변화</h3>
+    <div style="display:flex;gap:7px;overflow:auto;margin-bottom:10px;">
+      <button class="body-range" data-days="7" type="button">7일</button>
+      <button class="body-range" data-days="30" type="button">1개월</button>
+      <button class="body-range" data-days="90" type="button">3개월</button>
+      <button class="body-range" data-days="180" type="button">6개월</button>
+      <button class="body-range" data-days="0" type="button">전체</button>
+    </div>
+    <div id="fitmindBodyGraphs" style="display:grid;gap:10px;"></div>
+  </div>
+
+  <div id="fitmindBodyHistory" style="margin-top:12px;"></div>
+</section></div>
 </section>
 
 <section id="report" class="page">
@@ -177,53 +253,9 @@
 <div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
 
-<section id="fitmindBodySection" class="card" style="margin-top:16px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-    <div>
-      <h3 style="margin:0;">🧍 신체 데이터</h3>
-      <div class="muted">측정값을 저장하면 변화 그래프와 종합점수가 자동으로 업데이트됩니다.</div>
-    </div>
-  </div>
 
-  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
-    <label>측정일<input id="bodyDate" type="date"></label>
-    <label>체중 (kg)<input id="bodyWeight" type="number" step="0.1" placeholder="예: 67.0"></label>
-    <label>골격근량 (kg)<input id="bodySkeletalMuscle" type="number" step="0.1" placeholder="예: 35.3"></label>
-    <label>체지방률 (%)<input id="bodyFatPercent" type="number" step="0.1" placeholder="예: 12.0"></label>
-    <label>체지방량 (kg)<input id="bodyFatMass" type="number" step="0.1" placeholder="선택"></label>
-    <label>BMI<input id="bodyBMI" type="number" step="0.1" placeholder="선택"></label>
-    <label>기초대사량 (kcal)<input id="bodyBMR" type="number" step="1" placeholder="선택"></label>
-  </div>
 
-  <button id="saveBodyDataBtn" type="button" style="margin-top:12px;width:100%;">저장하기</button>
 
-  <div id="fitmindBodyScore" class="card" style="margin-top:14px;text-align:center;">
-    <div class="muted">BODY SCORE</div>
-    <div id="bodyScoreNumber" style="font-size:48px;font-weight:900;line-height:1.1;">—</div>
-    <div id="bodyScoreGrade" style="font-weight:800;">측정 데이터를 입력해주세요</div>
-    <div id="bodyScoreSummary" class="muted" style="margin-top:8px;"></div>
-  </div>
-
-  <div id="bodyScoreBreakdown" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;"></div>
-
-  <div style="display:flex;gap:8px;overflow:auto;margin-top:14px;">
-    <button type="button" class="body-range" data-days="7">7일</button>
-    <button type="button" class="body-range" data-days="30">1개월</button>
-    <button type="button" class="body-range" data-days="90">3개월</button>
-    <button type="button" class="body-range" data-days="180">6개월</button>
-    <button type="button" class="body-range" data-days="0">전체</button>
-  </div>
-
-  <div id="fitmindBodyGraphs" style="display:grid;gap:12px;margin-top:12px;"></div>
-  <div id="fitmindBodyHistory" style="margin-top:12px;"></div>
-</section>
-
-<section id="fitmindBodyCheckUpgrade" class="card" style="margin-top:16px;">
-  <h3 style="margin:0;">📸 바디체크 사진</h3>
-  <div class="muted">사진을 선택하면 이 기기의 앱 저장공간에 보관되어 언제든 다시 볼 수 있습니다.</div>
-  <input id="bodyPhotoInput" type="file" accept="image/*" multiple style="margin-top:10px;">
-  <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
-</section>
 
 <section id="fitmindCalorieTarget" class="card" style="margin-top:16px;">
   <h3 style="margin:0;">🔥 대사량 & 권장 칼로리</h3>
@@ -250,6 +282,9 @@
   </div>
   <div id="fitmindCalorieNote" class="muted" style="margin-top:8px;"></div>
 </section>
+
+
+
 </main>
 
 <nav id="mainNav" class="hidden">
