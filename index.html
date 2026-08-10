@@ -14,40 +14,69 @@
 </head>
 <body>
 <div id="app">
-<header><div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div><div class="headerBtns"><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div></header>
+<header>
+  <div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div>
+  <div class="headerBtns">
+    <button id="installBtn" hidden>설치</button>
+    <button id="accountBtn" hidden onclick="openPage('profile')">내정보</button>
+  </div>
+</header>
 
 <main>
 <section id="auth" class="page active">
 <h1>시작하기</h1>
 <div class="card">
-<div id="authTabs" class="tabs">
-<button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button>
-<button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button>
-</div>
-<form id="loginForm" class="authForm">
-<input id="loginEmail" type="email" placeholder="이메일" required>
-<input id="loginPw" type="password" placeholder="비밀번호" required>
-<button>로그인</button>
-</form>
-<form id="signupForm" class="authForm" hidden>
-<input id="signupEmail" type="email" placeholder="이메일" required>
-<input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" required>
-<button>회원가입</button>
-</form>
-<button id="googleBtn" class="google" type="button">Google로 계속하기</button>
-<p id="authError" class="muted"></p>
+  <div id="authTabs" class="tabs">
+    <button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button>
+    <button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button>
+  </div>
+
+  <form id="loginForm" class="authForm">
+    <input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required>
+    <input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required>
+    <button>로그인</button>
+    <button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button>
+  </form>
+
+  <form id="signupForm" class="authForm" hidden>
+    <input id="signupName" placeholder="닉네임" autocomplete="nickname" required>
+    <input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required>
+    <input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required>
+    <input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required>
+    <label class="check"><input id="terms" type="checkbox" required> 서비스 이용에 동의합니다.</label>
+    <button>회원가입</button>
+  </form>
+
+  <button id="googleBtn" class="google" type="button">Google로 계속하기</button>
+  <p id="authError" class="error"></p>
+  <p class="muted">가입 후 운동·식단·체중 기록은 계정별로 저장됩니다.</p>
 </div>
 </section>
 
 <section id="profile" class="page">
 <h2>내 정보</h2>
 <form id="profileForm" class="card">
-<input id="profName" placeholder="이름" required>
-<div class="row"><select id="profGender"><option value="">성별</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select><input id="profAge" type="number" min="1" placeholder="나이"><input id="profHeight" type="number" step=".1" placeholder="키 cm"></div>
-<input id="profGoal" placeholder="목표 (예: 체지방 감량, 근력 증가)">
-<button>정보 저장</button>
+  <input id="profName" placeholder="닉네임" required>
+  <div class="row">
+    <select id="profGender"><option value="">성별</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select>
+    <input id="profAge" type="number" min="1" max="120" placeholder="나이">
+    <input id="profHeight" type="number" step=".1" placeholder="키 cm">
+  </div>
+  <div class="row">
+    <input id="profWeight" type="number" step=".1" placeholder="현재 체중 kg">
+    <input id="profTargetWeight" type="number" step=".1" placeholder="목표 체중 kg">
+    <select id="profActivity"><option value="">활동 수준</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select>
+  </div>
+  <input id="profGoal" placeholder="운동 목표 (예: 체지방 감량, 근력 증가)">
+  <select id="profExperience"><option value="">운동 경험</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select>
+  <button>정보 저장</button>
 </form>
-<button class="button" type="button" onclick="logout()">로그아웃</button>
+<div class="card">
+  <h3>계정</h3>
+  <p id="accountEmail" class="muted"></p>
+  <button class="danger" type="button" onclick="logout()">로그아웃</button>
+  <button class="danger outline" type="button" onclick="deleteAccount()">계정 삭제</button>
+</div>
 </section>
 
 <section id="dashboard" class="page">
@@ -65,9 +94,10 @@
 <section id="workout" class="page">
 <h2>운동 기록</h2>
 <form id="workoutForm" class="card">
-<input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
-<div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
-<textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea><button>운동 저장</button>
+  <input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
+  <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
+  <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
+  <button>운동 저장</button>
 </form>
 <div id="workoutList"></div>
 </section>
@@ -75,32 +105,47 @@
 <section id="diet" class="page">
 <h2>식단</h2>
 <form id="mealForm" class="card">
-<input id="meal" placeholder="음식/식사명" required>
-<div class="row"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"></div>
-<textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea><button>식단 저장</button>
-</form><div id="mealList"></div>
+  <input id="meal" list="foodList" placeholder="음식/식사명 (예: 흰밥)" required>
+  <datalist id="foodList"></datalist>
+  <div class="row"><input id="servings" type="number" min=".1" step=".1" value="1" placeholder="제공량"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"></div>
+  <div class="row"><input id="carbs" type="number" min="0" placeholder="탄수화물 g"><input id="fat" type="number" min="0" placeholder="지방 g"><input id="mealType" placeholder="식사 (아침/점심/저녁/간식)"></div>
+  <textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
+  <p id="foodHint" class="muted"></p>
+  <button>식단 저장</button>
+</form>
+<div id="mealList"></div>
 </section>
 
 <section id="body" class="page">
 <h2>바디체크</h2>
 <form id="bodyForm" class="card">
-<div class="row"><input id="bodyWeight" type="number" step=".1" placeholder="체중 kg"><input id="bodyWaist" type="number" step=".1" placeholder="허리 cm"></div>
-<input id="bodyPhoto" type="file" accept="image/*"><textarea id="bodyNote" placeholder="사진/몸 상태 메모"></textarea>
-<button>바디체크 저장</button>
-</form><div id="bodyList"></div>
+  <div class="row"><input id="bodyWeight" type="number" step=".1" placeholder="체중 kg"><input id="bodyWaist" type="number" step=".1" placeholder="허리 cm"><input id="bodyDate" type="date"></div>
+  <input id="bodyPhoto" type="file" accept="image/*">
+  <textarea id="bodyNote" placeholder="사진/몸 상태 메모"></textarea>
+  <button>바디체크 저장</button>
+</form>
+<div id="bodyList"></div>
 </section>
 
 <section id="report" class="page">
 <h2>리포트</h2>
 <div class="tabs" id="reportTabs">
-<button data-period="week" onclick="setReportPeriod('week')">주간</button>
-<button data-period="month" onclick="setReportPeriod('month')">월간</button>
-<button data-period="year" onclick="setReportPeriod('year')">연간</button>
-<button data-period="all" onclick="setReportPeriod('all')">전체</button>
+  <button data-period="week" onclick="setReportPeriod('week')">주간</button>
+  <button data-period="month" onclick="setReportPeriod('month')">월간</button>
+  <button data-period="year" onclick="setReportPeriod('year')">연간</button>
 </div>
+<div class="reportNav card">
+  <button onclick="moveReport(-1)">‹</button>
+  <strong id="reportTitle"></strong>
+  <button onclick="moveReport(1)">›</button>
+</div>
+<div id="calendarBox"></div>
 <div id="reportContent"></div>
-<button onclick="exportBackup()">백업 파일 만들기</button>
-<label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
+<div class="card">
+  <h3>데이터 관리</h3>
+  <button onclick="exportBackup()">백업 파일 만들기</button>
+  <label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
+</div>
 </section>
 
 <section id="chat" class="page">
@@ -115,6 +160,7 @@
 <button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button>
 </nav>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
