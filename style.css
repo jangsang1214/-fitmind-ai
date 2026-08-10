@@ -36,3 +36,24 @@ nav.hidden{display:none}.authForm{display:flex;flex-direction:column}.google{wid
 .selectedDay{margin:10px 0 0;background:#f9fafb;box-shadow:none}.selectedDay b{font-size:15px}.selectedDay p{margin-bottom:0}
 .monthGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.monthCell{background:white;color:#111827;border:1px solid #e5e7eb;min-height:75px;display:flex;flex-direction:column;justify-content:center}.monthCell b{font-size:15px}.monthCell small{color:#6b7280;font-size:10px;margin-top:5px}
 @media(min-width:700px){nav{max-width:720px;margin:auto;border-radius:18px 18px 0 0}.grid{grid-template-columns:repeat(4,1fr)}}
+
+.fieldLabel{display:block;font-size:13px;font-weight:800;color:#374151;margin-bottom:2px}
+.foodSearchWrap{position:relative}
+.foodResults{position:absolute;left:0;right:0;top:100%;z-index:10;background:white;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 30px #00000018;overflow:hidden}
+.foodResult{display:block;width:100%;background:white;color:#111827;text-align:left;border-radius:0;border-bottom:1px solid #f1f5f9;padding:12px 14px}
+.foodResult:hover{background:#f9fafb}
+.foodResult strong,.foodResult small{display:block}
+.foodResult small{color:#6b7280;font-weight:500;margin-top:3px}
+.foodEmpty{padding:14px;color:#6b7280;font-size:13px}
+.selectedFood{background:#f8fafc;border:1px solid #e5e7eb;border-radius:15px;padding:12px;margin:8px 0}
+.selectedFood>div:first-child{display:flex;justify-content:space-between;gap:10px}
+.selectedFood span{font-size:11px;color:#6b7280}
+.foodMacros{font-size:12px;color:#4b5563;margin-top:5px}
+.nutritionPreview{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
+.nutritionPreview>div{background:#f8fafc;border-radius:13px;padding:10px 6px;text-align:center}
+.nutritionPreview span,.nutritionPreview small{display:block;color:#6b7280;font-size:10px}
+.nutritionPreview b{display:inline-block;font-size:17px;margin:2px 2px 0 0}
+.manualNutrition{margin:7px 0;color:#4b5563;font-size:12px}
+.manualNutrition summary{cursor:pointer;font-weight:700;padding:8px 0}
+.todayNutrition{margin-top:10px}
+@media(max-width:420px){.nutritionPreview b{font-size:15px}.nutritionPreview{gap:4px}.row{grid-template-columns:repeat(2,1fr)}}

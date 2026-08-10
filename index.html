@@ -105,14 +105,36 @@
 <section id="diet" class="page">
 <h2>식단</h2>
 <form id="mealForm" class="card">
-  <input id="meal" list="foodList" placeholder="음식/식사명 (예: 흰밥)" required>
-  <datalist id="foodList"></datalist>
-  <div class="row"><input id="servings" type="number" min=".1" step=".1" value="1" placeholder="제공량"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"></div>
-  <div class="row"><input id="carbs" type="number" min="0" placeholder="탄수화물 g"><input id="fat" type="number" min="0" placeholder="지방 g"><input id="mealType" placeholder="식사 (아침/점심/저녁/간식)"></div>
+  <label class="fieldLabel">음식 검색</label>
+  <div class="foodSearchWrap">
+    <input id="meal" autocomplete="off" placeholder="음식 이름을 입력하세요 (예: 닭가슴살, 닭찌, 현미밥)" required>
+    <div id="foodSearchResults" class="foodResults"></div>
+  </div>
+  <div id="selectedFoodCard" class="selectedFood" hidden></div>
+  <div class="row">
+    <input id="servings" type="number" min=".1" step=".1" value="1" placeholder="섭취량">
+    <select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option></select>
+    <select id="mealType"><option value="">식사 선택</option><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
+  </div>
+  <div class="nutritionPreview">
+    <div><span>칼로리</span><b id="previewKcal">-</b><small>kcal</small></div>
+    <div><span>단백질</span><b id="previewProtein">-</b><small>g</small></div>
+    <div><span>탄수</span><b id="previewCarbs">-</b><small>g</small></div>
+    <div><span>지방</span><b id="previewFat">-</b><small>g</small></div>
+  </div>
+  <details class="manualNutrition">
+    <summary>영양정보 직접 수정</summary>
+    <div class="row"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"><input id="carbs" type="number" min="0" placeholder="탄수 g"></div>
+    <input id="fat" type="number" min="0" placeholder="지방 g">
+  </details>
   <textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
-  <p id="foodHint" class="muted"></p>
+  <p id="foodHint" class="muted">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
   <button>식단 저장</button>
 </form>
+<div class="card todayNutrition">
+  <h3>오늘의 섭취량</h3>
+  <div class="nutritionPreview" id="todayNutrition"></div>
+</div>
 <div id="mealList"></div>
 </section>
 

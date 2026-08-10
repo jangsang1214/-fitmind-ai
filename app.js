@@ -1,6 +1,7 @@
 const EMPTY_DB={profile:{},workouts:[],meals:[],body:[],chat:[],api:{}};
 const KEY="fitmind_v2";
-const foodDB=[
+let foodDB=[];
+const baseFoodDB=[
   {name:"흰밥",serving:"1공기(200g)",kcal:300,protein:5.4,carbs:66,fat:.6},
   {name:"현미밥",serving:"1공기(200g)",kcal:300,protein:6,carbs:64,fat:2.2},
   {name:"김치찌개",serving:"1인분",kcal:300,protein:17,carbs:12,fat:18},
@@ -180,7 +181,8 @@ function render(){
  dashWeight.textContent=lastBody?.weight??"-";dashWorkout.textContent=db.workouts.length;dashMeals.textContent=db.meals.length;dashStreak.textContent=calcStreak();
  coachTip.textContent=localCoach();
  workoutList.innerHTML=db.workouts.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.exercise)}</strong>${x.sets}세트 × ${x.reps}회 ${x.weight?`× ${x.weight}kg`:""}<br><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 운동 기록이 없습니다.</div>";
- mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
+ mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${x.servings?`${x.servings}${x.unit||"회"} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
+ renderTodayNutrition();
  bodyList.innerHTML=db.body.slice().reverse().map(x=>`<div class="item"><strong>${x.weight||"-"}kg ${x.waist?`· 허리 ${x.waist}cm`:""}</strong><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 바디체크 기록이 없습니다.</div>";
  renderFoodList();report();chatRender();
 }
@@ -204,18 +206,95 @@ workoutForm.onsubmit=e=>{
  save();e.target.reset();render()
 };
 
-function findFood(name){return foodDB.find(f=>f.name===name.trim())||foodDB.find(f=>name.trim()&&f.name.includes(name.trim()))}
-function applyFoodDefaults(){
- const f=findFood(meal.value),q=Math.max(.1,+servings.value||1);
- if(!f){foodHint.textContent="기본 음식 목록에 없으면 칼로리와 영양정보를 직접 입력할 수 있어요.";return}
- calories.value=Math.round(f.kcal*q);protein.value=(f.protein*q).toFixed(1);carbs.value=(f.carbs*q).toFixed(1);fat.value=(f.fat*q).toFixed(1);
- foodHint.textContent=`기본값: ${f.serving} 기준 ${f.kcal} kcal. 조리법/제품/양에 따라 실제 값은 달라질 수 있어요.`;
+function foodTokens(f){
+ const vals=[f.name,...(f.aliases||[])].map(x=>String(x||"").toLowerCase().trim());
+ return vals.filter(Boolean);
 }
-meal.addEventListener("input",applyFoodDefaults);servings.addEventListener("input",applyFoodDefaults);
+function findFood(name){
+ const q=String(name||"").toLowerCase().trim();
+ if(!q)return null;
+ return foodDB.find(f=>foodTokens(f).includes(q)) ||
+        foodDB.find(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x)));
+}
+function searchFoods(name){
+ const q=String(name||"").toLowerCase().trim();
+ if(!q)return [];
+ return foodDB.filter(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x))).slice(0,8);
+}
+function fmtN(v){
+ return v==null||Number.isNaN(Number(v))?"-":Number(v).toFixed(Number(v)%1?1:0);
+}
+function renderFoodSearch(){
+ const box=document.getElementById("foodSearchResults");
+ if(!box)return;
+ const q=meal.value.trim();
+ const results=searchFoods(q);
+ if(!q){box.innerHTML="";box.hidden=true;return}
+ box.hidden=false;
+ box.innerHTML=results.length?results.map(f=>`
+   <button type="button" class="foodResult" onclick="selectFood('${String(f.food_id).replace(/'/g,"\\'")}')">
+     <strong>${esc(f.name)}</strong>
+     <small>${esc(f.category||"")} · ${f.kcal!=null?fmtN(f.kcal)+" kcal / 100g":"영양정보 매핑 필요"}</small>
+   </button>`).join(""):`<div class="foodEmpty">검색 결과가 없습니다. 음식명을 직접 입력할 수 있어요.</div>`;
+}
+function selectFood(id){
+ const f=foodDB.find(x=>x.food_id===id);if(!f)return;
+ meal.value=f.name;window.selectedFoodId=f.food_id;
+ const card=document.getElementById("selectedFoodCard");
+ card.hidden=false;
+ card.innerHTML=`<div><strong>${esc(f.name)}</strong><span>${esc(f.category||"")}</span></div>
+   <div class="foodMacros">${f.kcal!=null?`${fmtN(f.kcal)} kcal`:"영양정보 준비중"} · 단백질 ${f.protein!=null?fmtN(f.protein)+"g":"-"} · 탄수 ${f.carbs!=null?fmtN(f.carbs)+"g":"-"} · 지방 ${f.fat!=null?fmtN(f.fat)+"g":"-"}</div>`;
+ document.getElementById("foodSearchResults").hidden=true;
+ applyFoodDefaults();
+}
+function applyFoodDefaults(){
+ const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(meal.value);
+ const q=Math.max(.1,+servings.value||1);
+ if(!f){
+   foodHint.textContent="음식을 선택하면 DB 데이터를 자동으로 불러옵니다.";
+   updateNutritionPreview(null);return;
+ }
+ window.selectedFoodId=f.food_id;
+ const hasNutrition=f.kcal!=null&&f.protein!=null&&f.carbs!=null&&f.fat!=null;
+ if(hasNutrition){
+   calories.value=Math.round(f.kcal*q);
+   protein.value=(f.protein*q).toFixed(1);
+   carbs.value=(f.carbs*q).toFixed(1);
+   fat.value=(f.fat*q).toFixed(1);
+   foodHint.textContent=`${f.name} · 100g 기준 영양정보 · 섭취량 ${q}${servingUnit.value}`;
+   updateNutritionPreview({kcal:+calories.value,protein:+protein.value,carbs:+carbs.value,fat:+fat.value});
+ }else{
+   calories.value="";protein.value="";carbs.value="";fat.value="";
+   foodHint.textContent=`${f.name}은(는) 음식 DB에 등록되어 있지만 공식 영양성분 매핑이 아직 필요합니다. 직접 입력할 수 있습니다.`;
+   updateNutritionPreview(null);
+ }
+}
+function updateNutritionPreview(n){
+ previewKcal.textContent=n?fmtN(n.kcal):"-";previewProtein.textContent=n?fmtN(n.protein):"-";
+ previewCarbs.textContent=n?fmtN(n.carbs):"-";previewFat.textContent=n?fmtN(n.fat):"-";
+}
+function renderTodayNutrition(){
+ const k=isoToday(), rows=db.meals.filter(x=>x.date===k);
+ const totals=rows.reduce((a,x)=>({kcal:a.kcal+(+x.calories||0),protein:a.protein+(+x.protein||0),carbs:a.carbs+(+x.carbs||0),fat:a.fat+(+x.fat||0)}),{kcal:0,protein:0,carbs:0,fat:0});
+ todayNutrition.innerHTML=`
+ <div><span>칼로리</span><b>${Math.round(totals.kcal)}</b><small>kcal</small></div>
+ <div><span>단백질</span><b>${totals.protein.toFixed(1)}</b><small>g</small></div>
+ <div><span>탄수</span><b>${totals.carbs.toFixed(1)}</b><small>g</small></div>
+ <div><span>지방</span><b>${totals.fat.toFixed(1)}</b><small>g</small></div>`;
+}
+meal.addEventListener("input",()=>{window.selectedFoodId=null;renderFoodSearch();applyFoodDefaults()});
+servings.addEventListener("input",applyFoodDefaults);servingUnit.addEventListener("change",applyFoodDefaults);
+document.addEventListener("click",e=>{
+ const wrap=document.querySelector(".foodSearchWrap");
+ if(wrap&&!wrap.contains(e.target))document.getElementById("foodSearchResults").hidden=true;
+});
 mealForm.onsubmit=e=>{
  e.preventDefault();
- db.meals.push({meal:meal.value.trim(),servings:+servings.value||1,calories:+calories.value||0,protein:+protein.value||0,carbs:+carbs.value||0,fat:+fat.value||0,mealType:mealType.value.trim(),note:mealNote.value.trim(),date:isoToday()});
- save();e.target.reset();servings.value=1;foodHint.textContent="";render()
+ const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(meal.value);
+ db.meals.push({foodId:f?.food_id||null,meal:meal.value.trim(),servings:+servings.value||1,unit:servingUnit.value,calories:+calories.value||0,protein:+protein.value||0,carbs:+carbs.value||0,fat:+fat.value||0,mealType:mealType.value.trim(),note:mealNote.value.trim(),date:isoToday()});
+ save();e.target.reset();servings.value=1;window.selectedFoodId=null;
+ document.getElementById("selectedFoodCard").hidden=true;document.getElementById("foodSearchResults").hidden=true;
+ foodHint.textContent="음식을 검색하면 DB에서 영양정보를 불러옵니다.";updateNutritionPreview(null);render()
 };
 
 bodyDate.value=isoToday();
@@ -333,7 +412,27 @@ chatForm.onsubmit=async e=>{
  let a=await askAI(t);db.chat.push({role:"ai",text:a,date:isoToday()});save();render()
 };
 function chatRender(){chatLog.innerHTML=db.chat.slice(-30).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${esc(x.text)}</div>`).join("")||"<div class='card'>안녕하세요. 기록을 바탕으로 운동과 식단을 함께 관리해 드릴게요.</div>"}
-function renderFoodList(){foodList.innerHTML=foodDB.map(f=>`<option value="${esc(f.name)}">${f.serving} · ${f.kcal} kcal</option>`).join("")}
+async function loadFoodDB(){
+ try{
+   const res=await fetch("./food-db.json");
+   const remote=await res.json();
+   const known=new Map(baseFoodDB.map(f=>[f.name,f]));
+   foodDB=remote.map(f=>Object.assign({},f,known.get(f.name)||{}));
+   // 별칭을 검색에 연결
+   const aliasMap={"닭찌":"닭가슴살","닭찌찌":"닭가슴살","닭가슴살팩":"닭가슴살","프로틴":"프로틴 쉐이크","단백질쉐이크":"프로틴 쉐이크","달걀":"계란","그릭":"그릭요거트"};
+   Object.entries(aliasMap).forEach(([alias,target])=>{const f=foodDB.find(x=>x.name===target);if(f){f.aliases=[...(f.aliases||[]),alias]}})
+   renderFoodList();
+ }catch(e){
+   foodDB=baseFoodDB;
+   renderFoodList();
+   console.warn("음식 DB 로드 실패",e);
+ }
+}
+function renderFoodList(){
+ const list=document.getElementById("foodList");
+ if(!list)return;
+ list.innerHTML=foodDB.map(f=>`<option value="${esc(f.name)}">${esc(f.category||"")} · ${f.kcal!=null?fmtN(f.kcal)+" kcal / 100g":"영양정보 준비중"}</option>`).join("");
+}
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
-render();
+loadFoodDB().then(()=>render());
