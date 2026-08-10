@@ -40,29 +40,84 @@ let currentUser=null,syncTimer=null;
 const cloneEmpty=()=>JSON.parse(JSON.stringify(EMPTY_DB));
 const localKey=uid=>`fitmind_v2_${uid}`;
 
+
+
+function fitmindBodyHistory(){
+  const arr = db.bodyHistory || db.bodyChecks || db.inbody || [];
+  return Array.isArray(arr) ? arr : [];
+}
+function fitmindRenderBodyGraphs(){
+  const host=document.getElementById("fitmindBodyGraphs");
+  if(!host) return;
+  const rows=fitmindBodyHistory().slice().sort((a,b)=>String(a.date||"").localeCompare(String(b.date||"")));
+  const series=[
+    ["체중","weight","kg"],["골격근량","skeletalMuscle","kg"],["체지방률","bodyFatPercent","%"]
+  ];
+  host.innerHTML=series.map(([label,key,unit])=>{
+    const vals=rows.map(r=>Number(r[key] ?? r.bodyFat ?? r.body_fat)).filter(Number.isFinite);
+    if(!vals.length) return `<div class="card"><b>${label}</b><div class="muted">측정 데이터를 입력하면 그래프가 표시됩니다.</div></div>`;
+    const min=Math.min(...vals), max=Math.max(...vals), range=max-min||1;
+    const points=vals.map((v,i)=>{
+      const x=6+(i*88/Math.max(vals.length-1,1));
+      const y=90-(v-min)/range*70;
+      return `${x},${y}`;
+    }).join(" ");
+    return `<div class="card"><b>${label}</b><div class="muted">${min.toFixed(1)}–${max.toFixed(1)} ${unit}</div>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:130px;margin-top:8px">
+        <polyline points="${points}" fill="none" stroke="currentColor" stroke-width="2"/>
+      </svg></div>`;
+  }).join("");
+}
+
+function fitmindGetUserWeight(){
+  const candidates = [
+    db.profile?.weight, db.user?.weight, db.settings?.weight,
+    db.body?.weight, window.userWeight
+  ];
+  for(const x of candidates){
+    const n=Number(x);
+    if(Number.isFinite(n)&&n>0) return n;
+  }
+  return 70;
+}
+function fitmindMET(workout){
+  const n=Number(workout?.met ?? workout?.met_default ?? workout?.MET);
+  return Number.isFinite(n)&&n>0 ? n : 5.0;
+}
+function fitmindCalcExerciseCalories(workout){
+  const weight=fitmindGetUserWeight();
+  const minutes=Number(workout?.durationMin ?? workout?.duration ?? workout?.minutes ?? 0);
+  if(minutes<=0) return 0;
+  let met=fitmindMET(workout);
+  const rpe=Number(workout?.rpe);
+  if(Number.isFinite(rpe)&&rpe>=1){
+    met *= Math.max(0.85, Math.min(1.20, 0.85 + (rpe-1)*0.035));
+  }
+  return met*3.5*weight/200*minutes;
+}
+
 function updateWorkoutCalorieUI(){
   try{
-    const today = typeof isoToday === "function" ? isoToday() : new Date().toISOString().slice(0,10);
-    const workouts = (db.workouts || []).filter(w => w.date === today);
-    let calories = 0, minutes = 0;
-    workouts.forEach(w => {
-      const c = Number(w.calories || (typeof estimateWorkoutCalories === "function" ? estimateWorkoutCalories(w) : 0));
-      if(Number.isFinite(c)) calories += c;
-      minutes += Number(w.durationMin || 0);
+    const today=typeof isoToday==="function"?isoToday():new Date().toISOString().slice(0,10);
+    const workouts=(db.workouts||[]).filter(w=>w.date===today);
+    let calories=0, minutes=0;
+    workouts.forEach(w=>{
+      const c=Number(w.calories);
+      const calc=Number.isFinite(c)&&c>0?c:fitmindCalcExerciseCalories(w);
+      calories += calc; minutes += Number(w.durationMin||w.duration||0);
     });
-    const kcal = Math.round(calories);
-    const a = document.getElementById("todayWorkoutCalories");
-    const b = document.getElementById("todayWorkoutCalorieMeta");
-    if(a) a.textContent = kcal.toLocaleString() + " kcal";
-    if(b) b.textContent = "운동시간 " + minutes + "분 · 체중/MET/RPE 기반 추정치";
-    const intake = (db.meals || []).filter(m => m.date === today).reduce((s,m)=>s+(Number(m.calories)||0),0);
-    const i = document.getElementById("dailyIntakeKcal");
-    const w = document.getElementById("dailyWorkoutKcal");
-    const n = document.getElementById("dailyNetKcal");
-    if(i) i.textContent = Math.round(intake).toLocaleString() + " kcal";
-    if(w) w.textContent = kcal.toLocaleString() + " kcal";
-    if(n) n.textContent = Math.round(intake-calories).toLocaleString() + " kcal";
-  }catch(e){ console.warn("FitMind calorie UI:",e); }
+    const kcal=Math.round(calories);
+    const a=document.getElementById("todayWorkoutCalories");
+    const b=document.getElementById("todayWorkoutCalorieMeta");
+    if(a)a.textContent=kcal.toLocaleString()+" kcal";
+    if(b)b.textContent="운동시간 "+minutes+"분 · 체중/MET/RPE 기반 추정치";
+    const intake=(db.meals||[]).filter(m=>m.date===today).reduce((s,m)=>s+(Number(m.calories)||0),0);
+    const i=document.getElementById("dailyIntakeKcal"), w=document.getElementById("dailyWorkoutKcal"), n=document.getElementById("dailyNetKcal");
+    if(i)i.textContent=Math.round(intake).toLocaleString()+" kcal";
+    if(w)w.textContent=kcal.toLocaleString()+" kcal";
+    if(n)n.textContent=Math.round(intake-calories).toLocaleString()+" kcal";
+    fitmindRenderBodyGraphs();
+  }catch(e){console.warn("FitMind calorie/body UI:",e);}
 }
 
 function normalizeDB(x){return Object.assign(cloneEmpty(),x||{});}
