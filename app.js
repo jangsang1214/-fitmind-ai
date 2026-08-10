@@ -260,13 +260,31 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function syncDietTodayNutrition(activeId){
+ const diet=document.getElementById("diet");
+ const mount=document.getElementById("dietTodayNutritionMount");
+ if(!diet||!mount)return;
+ const active=activeId || document.querySelector(".page.active")?.id;
+ let card=document.getElementById("todayNutrition")?.closest(".todayNutrition");
+ if(active==="diet"){
+   if(!card){
+     card=document.createElement("div");
+     card.className="card todayNutrition";
+     card.innerHTML='<h3>오늘의 섭취량</h3><div class="nutritionPreview" id="todayNutrition"></div>';
+   }
+   if(card.parentElement!==mount)mount.appendChild(card);
+ }else if(card){
+   card.remove();
+ }
+}
 function openPage(id){
  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
  const page=document.getElementById(id); if(page)page.classList.add("active");
- const todayDiet=document.getElementById("todayNutrition")?.closest(".todayNutrition");
- if(todayDiet) todayDiet.style.display=(id==="diet")?"block":"none";
+ syncDietTodayNutrition(id);
  if(id==="body")fitmindInitBodyCheck();
  render();
+ syncDietTodayNutrition(id);
+ if(id==="diet")renderTodayNutrition();
  if(id==="body"){fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();}
  scrollTo(0,0);
 }
@@ -287,6 +305,7 @@ migrateDates();
 db.workouts=(db.workouts||[]).map(w=>{if(w.calories==null)w.calories=estimateWorkoutCalories(w);if(w.volume==null)w.volume=workoutVolume(w);return w;});
 
 function render(){
+ syncDietTodayNutrition();
  const todayDiet=document.getElementById("todayNutrition")?.closest(".todayNutrition");
  const activePage=document.querySelector(".page.active")?.id;
  if(todayDiet) todayDiet.style.display=(activePage==="diet")?"block":"none";
