@@ -103,6 +103,11 @@
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>
 </form>
+<div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
+<div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
+<div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
+<div id="todayWorkoutCalorieMeta" class="muted">운동시간 0분 · 추정치</div>
+</div>
 <div id="workoutList"></div>
 </section>
 
@@ -167,6 +172,15 @@
 </div>
 <div id="calendarBox"></div>
 <div id="reportContent"></div>
+<div id="dailyEnergyCard" class="card" style="margin:12px 0;">
+<div style="font-weight:700;">⚡ 오늘 에너지</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
+<div><small>섭취</small><strong id="dailyIntakeKcal">0 kcal</strong></div>
+<div><small>운동 소비</small><strong id="dailyWorkoutKcal">0 kcal</strong></div>
+<div><small>순섭취</small><strong id="dailyNetKcal">0 kcal</strong></div>
+</div>
+<div class="muted" style="margin-top:8px;">운동 소비량은 체중·운동시간·강도 기반 추정치</div>
+</div>
 <div id="energyReport"></div>
 <div class="card">
   <h3>데이터 관리</h3>

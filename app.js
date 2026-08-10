@@ -39,6 +39,32 @@ let currentUser=null,syncTimer=null;
 
 const cloneEmpty=()=>JSON.parse(JSON.stringify(EMPTY_DB));
 const localKey=uid=>`fitmind_v2_${uid}`;
+
+function updateWorkoutCalorieUI(){
+  try{
+    const today = typeof isoToday === "function" ? isoToday() : new Date().toISOString().slice(0,10);
+    const workouts = (db.workouts || []).filter(w => w.date === today);
+    let calories = 0, minutes = 0;
+    workouts.forEach(w => {
+      const c = Number(w.calories || (typeof estimateWorkoutCalories === "function" ? estimateWorkoutCalories(w) : 0));
+      if(Number.isFinite(c)) calories += c;
+      minutes += Number(w.durationMin || 0);
+    });
+    const kcal = Math.round(calories);
+    const a = document.getElementById("todayWorkoutCalories");
+    const b = document.getElementById("todayWorkoutCalorieMeta");
+    if(a) a.textContent = kcal.toLocaleString() + " kcal";
+    if(b) b.textContent = "운동시간 " + minutes + "분 · 체중/MET/RPE 기반 추정치";
+    const intake = (db.meals || []).filter(m => m.date === today).reduce((s,m)=>s+(Number(m.calories)||0),0);
+    const i = document.getElementById("dailyIntakeKcal");
+    const w = document.getElementById("dailyWorkoutKcal");
+    const n = document.getElementById("dailyNetKcal");
+    if(i) i.textContent = Math.round(intake).toLocaleString() + " kcal";
+    if(w) w.textContent = kcal.toLocaleString() + " kcal";
+    if(n) n.textContent = Math.round(intake-calories).toLocaleString() + " kcal";
+  }catch(e){ console.warn("FitMind calorie UI:",e); }
+}
+
 function normalizeDB(x){return Object.assign(cloneEmpty(),x||{});}
 function saveLocal(){if(currentUser)localStorage.setItem(localKey(currentUser.uid),JSON.stringify(db));}
 function save(){saveLocal();queueSync();}
@@ -250,6 +276,7 @@ workoutForm.onsubmit=e=>{
  e.preventDefault();
  const ex=exerciseDB.find(x=>x.exercise_name===exercise.value.trim());
  const w={exercise:exercise.value.trim(),exerciseId:ex?.exercise_id||null,primaryMuscle:ex?.primary_muscle||"",sets:+sets.value,reps:+reps.value,weight:+weight.value||0,durationMin:+duration.value||0,rpe:+rpe.value||0,bodyWeight:currentBodyWeight(),note:workoutNote.value.trim(),date:isoToday()};w.volume=workoutVolume(w);w.calories=estimateWorkoutCalories(w);db.workouts.push(w);
+updateWorkoutCalorieUI();
  save();e.target.reset();render()
 };
 
@@ -499,3 +526,5 @@ function renderFoodList(){
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
 Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>render());
+
+window.addEventListener('DOMContentLoaded', updateWorkoutCalorieUI);
