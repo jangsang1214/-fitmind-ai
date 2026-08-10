@@ -1,5 +1,6 @@
 const KEY="fitmind_v1";
 let db=JSON.parse(localStorage.getItem(KEY)||'{"profile":{},"workouts":[],"meals":[],"body":[],"chat":[],"api":{}}');
+let reportPeriod="week";
 const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function openPage(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");render();scrollTo(0,0)}
@@ -32,10 +33,67 @@ workoutForm.onsubmit=e=>{e.preventDefault();db.workouts.push({exercise:exercise.
 mealForm.onsubmit=e=>{e.preventDefault();db.meals.push({meal:meal.value,calories:+calories.value||0,protein:+protein.value||0,note:mealNote.value,date:today()});save();e.target.reset();render()};
 bodyForm.onsubmit=async e=>{e.preventDefault();let photo="";if(bodyPhoto.files[0])photo=await fileToData(bodyPhoto.files[0]);db.body.push({weight:+bodyWeight.value||0,waist:+bodyWaist.value||0,note:bodyNote.value,date:today(),photo});save();e.target.reset();render()};
 function fileToData(f){return new Promise(r=>{let a=new FileReader();a.onload=()=>r(a.result);a.readAsDataURL(f)})}
-function report(){
- let kcal=db.meals.reduce((a,x)=>a+(x.calories||0),0), protein=db.meals.reduce((a,x)=>a+(x.protein||0),0);
- document.getElementById("reportContent").innerHTML=`<h3>누적 리포트</h3><p>운동 <b>${db.workouts.length}</b>회 · 식단 <b>${db.meals.length}</b>건 · 바디체크 <b>${db.body.length}</b>회</p><p>기록한 식단 칼로리 합계: <b>${kcal}</b> kcal<br>단백질 합계: <b>${protein}</b> g</p><p>${db.body.length>1?`첫 체중 ${db.body[0].weight}kg → 최근 ${db.body.at(-1).weight}kg`:"체중 변화를 보려면 바디체크를 2회 이상 기록하세요."}</p>`;
+function parseKoDate(s){
+ if(!s)return null;
+ const m=s.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+ if(!m)return null;
+ return new Date(+m[1],+m[2]-1,+m[3]);
 }
+function periodDays(p){return {week:7,month:30,year:365,all:Infinity}[p]}
+function periodLabel(p){return {week:"주간 (최근 7일)",month:"월간 (최근 30일)",year:"연간 (최근 365일)",all:"전체 기간"}[p]}
+function rangeText(days){
+ if(days===Infinity)return "누적 전체 기록";
+ const end=new Date(),start=new Date();start.setDate(start.getDate()-days+1);
+ const f=d=>`${d.getMonth()+1}/${d.getDate()}`;
+ return `${f(start)} ~ ${f(end)}`;
+}
+function periodStats(days){
+ if(days===Infinity)return{workouts:db.workouts,meals:db.meals,body:db.body,prevWorkouts:[],prevMeals:[]};
+ const now=new Date();now.setHours(0,0,0,0);
+ const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-days+1);
+ const prevCutoff=new Date(cutoff);prevCutoff.setDate(prevCutoff.getDate()-days);
+ const inCur=d=>{const dt=parseKoDate(d);return dt&&dt>=cutoff&&dt<=now};
+ const inPrev=d=>{const dt=parseKoDate(d);return dt&&dt>=prevCutoff&&dt<cutoff};
+ return{
+  workouts:db.workouts.filter(x=>inCur(x.date)),
+  meals:db.meals.filter(x=>inCur(x.date)),
+  body:db.body.filter(x=>inCur(x.date)),
+  prevWorkouts:db.workouts.filter(x=>inPrev(x.date)),
+  prevMeals:db.meals.filter(x=>inPrev(x.date))
+ };
+}
+function diffText(cur,prev){
+ if(!prev)return cur>0?`(이전 기간 0건 → +${cur})`:"(이전 기간과 동일)";
+ const diff=cur-prev,pct=Math.round(diff/prev*100);
+ if(diff===0)return "(이전 기간과 동일)";
+ return `(${diff>0?"+":""}${diff}건, 이전 대비 ${diff>0?"+":""}${pct}%)`;
+}
+function report(){
+ document.querySelectorAll("#reportTabs button").forEach(b=>b.classList.toggle("active",b.dataset.period===reportPeriod));
+ const days=periodDays(reportPeriod), s=periodStats(days);
+ const kcal=s.meals.reduce((a,x)=>a+(x.calories||0),0), protein=s.meals.reduce((a,x)=>a+(x.protein||0),0);
+ const wOrder=s.body;
+ const weightChange=wOrder.length>1?(wOrder.at(-1).weight-wOrder[0].weight):null;
+ let cmp="";
+ if(days!==Infinity){
+  cmp=`<p class="muted">운동 ${diffText(s.workouts.length,s.prevWorkouts.length)}<br>식단 기록 ${diffText(s.meals.length,s.prevMeals.length)}</p>`;
+ }
+ document.getElementById("reportContent").innerHTML=`
+  <div class="card"><h3>${periodLabel(reportPeriod)} 리포트</h3><p class="muted">${rangeText(days)}</p></div>
+  <div class="grid">
+   <div class="card"><span>운동</span><b>${s.workouts.length}</b><small>회</small></div>
+   <div class="card"><span>식단</span><b>${s.meals.length}</b><small>기록</small></div>
+   <div class="card"><span>바디체크</span><b>${s.body.length}</b><small>회</small></div>
+   <div class="card"><span>연속 기록</span><b>${calcStreak()}</b><small>일</small></div>
+  </div>
+  <div class="card">
+   <p>섭취 칼로리 합계: <b>${kcal}</b> kcal · 단백질 합계: <b>${protein}</b> g</p>
+   <p>${weightChange!==null?`체중 변화: ${wOrder[0].weight}kg → ${wOrder.at(-1).weight}kg <span class="trend ${weightChange>0?"up":weightChange<0?"down":""}">(${weightChange>0?"+":""}${weightChange.toFixed(1)}kg)</span>`:"체중 변화를 보려면 이 기간에 바디체크를 2회 이상 기록하세요."}</p>
+   ${cmp}
+  </div>
+ `;
+}
+function setReportPeriod(p){reportPeriod=p;report()}
 function exportBackup(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`fitmind-backup-${Date.now()}.json`;a.click()}
 restoreFile.onchange=e=>{let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();render();alert("복원 완료");}catch{alert("올바른 백업 파일이 아닙니다.")}};r.readAsText(e.target.files[0])};
 function saveApi(){db.api={url:apiUrl.value.trim(),key:apiKey.value};save();alert("AI 서버 설정을 저장했습니다.")}

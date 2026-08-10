@@ -59,7 +59,13 @@
 
 <section id="report" class="page">
 <h2>리포트</h2>
-<div id="reportContent" class="card"></div>
+<div class="tabs" id="reportTabs">
+<button data-period="week" onclick="setReportPeriod('week')">주간</button>
+<button data-period="month" onclick="setReportPeriod('month')">월간</button>
+<button data-period="year" onclick="setReportPeriod('year')">연간</button>
+<button data-period="all" onclick="setReportPeriod('all')">전체</button>
+</div>
+<div id="reportContent"></div>
 <button onclick="exportBackup()">백업 파일 만들기</button>
 <label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
 </section>
