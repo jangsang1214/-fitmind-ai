@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
 <head>
+<!-- FitMind AI v4.6 Stable: regression-safe integrated build -->
 <!-- FitMind AI v4.5 FINAL — unified Body Check + live calorie calculation + cache-safe app -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -115,7 +116,7 @@
 <form id="mealForm" class="card">
   <label class="fieldLabel">음식 검색</label>
   <div class="foodSearchWrap">
-    <input id="meal" autocomplete="off" placeholder="음식 이름을 입력하세요 (예: 닭가슴살, 닭찌, 현미밥)" required>
+    <input id="meal" autocomplete="off" placeholder="음식 이름을 입력하세요 (예: 닭가슴살, 닭찌, 현미밥)" required data-food-search="1">
     <div id="foodSearchResults" class="foodResults"></div>
   </div>
   <div id="selectedFoodCard" class="selectedFood" hidden></div>

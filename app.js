@@ -1,6 +1,5 @@
 const EMPTY_DB={profile:{},workouts:[],meals:[],body:[],chat:[],api:{}};
 const KEY="fitmind_v2";
-let foodDB=[];
 const baseFoodDB=[
   {name:"흰밥",serving:"1공기(200g)",kcal:300,protein:5.4,carbs:66,fat:.6},
   {name:"현미밥",serving:"1공기(200g)",kcal:300,protein:6,carbs:64,fat:2.2},
@@ -22,6 +21,7 @@ const baseFoodDB=[
   {name:"오트밀",serving:"40g",kcal:150,protein:5,carbs:27,fat:3},
   {name:"프로틴 쉐이크",serving:"1회",kcal:120,protein:24,carbs:4,fat:2}
 ];
+let foodDB=baseFoodDB.slice();
 
 let db=JSON.parse(localStorage.getItem(KEY)||JSON.stringify(EMPTY_DB));
 let reportPeriod="week";
@@ -312,13 +312,15 @@ function foodTokens(f){
 function findFood(name){
  const q=String(name||"").toLowerCase().trim();
  if(!q)return null;
- return foodDB.find(f=>foodTokens(f).includes(q)) ||
-        foodDB.find(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x)));
+ const source=Array.isArray(foodDB)&&foodDB.length?foodDB:baseFoodDB;
+ return source.find(f=>foodTokens(f).includes(q)) ||
+        source.find(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x)));
 }
 function searchFoods(name){
  const q=String(name||"").toLowerCase().trim();
  if(!q)return [];
- return foodDB.filter(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x))).slice(0,8);
+ const source=Array.isArray(foodDB)&&foodDB.length?foodDB:baseFoodDB;
+ return source.filter(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x))).slice(0,12);
 }
 function fmtN(v){
  return v==null||Number.isNaN(Number(v))?"-":Number(v).toFixed(Number(v)%1?1:0);
@@ -513,18 +515,23 @@ chatForm.onsubmit=async e=>{
 function chatRender(){chatLog.innerHTML=db.chat.slice(-30).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${esc(x.text)}</div>`).join("")||"<div class='card'>안녕하세요. 기록을 바탕으로 운동과 식단을 함께 관리해 드릴게요.</div>"}
 async function loadFoodDB(){
  try{
-   const res=await fetch("./food-db.json");
-   const remote=await res.json();
+   const res=await fetch("./food-db.json?fitmind="+Date.now(),{cache:"no-store"});
+   if(!res.ok) throw new Error("food-db HTTP "+res.status);
+   const json=await res.json();
+   const remote=Array.isArray(json)?json:(json.foods||json.items||json.data||[]);
+   if(!Array.isArray(remote)||!remote.length) throw new Error("food-db 배열이 비어 있음");
    const known=new Map(baseFoodDB.map(f=>[f.name,f]));
    foodDB=remote.map(f=>Object.assign({},f,known.get(f.name)||{}));
-   // 별칭을 검색에 연결
    const aliasMap={"닭찌":"닭가슴살","닭찌찌":"닭가슴살","닭가슴살팩":"닭가슴살","프로틴":"프로틴 쉐이크","단백질쉐이크":"프로틴 쉐이크","달걀":"계란","그릭":"그릭요거트"};
-   Object.entries(aliasMap).forEach(([alias,target])=>{const f=foodDB.find(x=>x.name===target);if(f){f.aliases=[...(f.aliases||[]),alias]}})
+   Object.entries(aliasMap).forEach(([alias,target])=>{
+     const f=foodDB.find(x=>x.name===target);
+     if(f)f.aliases=[...(f.aliases||[]),alias];
+   });
    renderFoodList();
  }catch(e){
-   foodDB=baseFoodDB;
+   foodDB=baseFoodDB.slice();
    renderFoodList();
-   console.warn("음식 DB 로드 실패",e);
+   console.warn("음식 DB 로드 실패 — 기본 음식 DB로 계속합니다.",e);
  }
 }
 function renderFoodList(){
@@ -535,6 +542,9 @@ function renderFoodList(){
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
 loadFoodDB().then(()=>{render(); if(document.getElementById("body")?.classList.contains("active")) fitmindInitBodyCheck();});
+
+
+
 
 
 
