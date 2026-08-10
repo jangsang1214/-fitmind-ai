@@ -94,7 +94,10 @@
 <section id="workout" class="page">
 <h2>운동 기록</h2>
 <form id="workoutForm" class="card">
-  <input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
+  <div class="exerciseSearchWrap">
+    <input id="exercise" autocomplete="off" placeholder="운동명 (예: 스쿼트, 벤치프레스, 사레레)" required>
+    <div id="exerciseSearchResults" class="foodResults"></div>
+  </div>
   <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>

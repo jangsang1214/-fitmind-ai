@@ -1,6 +1,8 @@
 const EMPTY_DB={profile:{},workouts:[],meals:[],body:[],chat:[],api:{}};
 const KEY="fitmind_v2";
 let foodDB=[];
+let exerciseDB=[];
+let aiKnowledge={rules:[],sft:[]};
 const baseFoodDB=[
   {name:"흰밥",serving:"1공기(200g)",kcal:300,protein:5.4,carbs:66,fat:.6},
   {name:"현미밥",serving:"1공기(200g)",kcal:300,protein:6,carbs:64,fat:2.2},
@@ -200,9 +202,32 @@ function calcStreak(){
  return n;
 }
 
+function exerciseTokens(x){return [x.exercise_name,...(x.aliases||[])].map(v=>String(v||"").toLowerCase().trim()).filter(Boolean)}
+function searchExercises(q){
+ q=String(q||"").toLowerCase().trim();
+ if(!q)return [];
+ return exerciseDB.filter(x=>exerciseTokens(x).some(v=>v.includes(q)||q.includes(v))).slice(0,8);
+}
+function renderExerciseSearch(){
+ const box=document.getElementById("exerciseSearchResults"); if(!box)return;
+ const q=exercise.value.trim(); if(!q){box.innerHTML="";box.hidden=true;return;}
+ const rs=searchExercises(q); box.hidden=false;
+ box.innerHTML=rs.length?rs.map(x=>`<button type="button" class="foodResult" onclick="selectExercise('${String(x.exercise_id).replace(/'/g,"\\'")}')"><strong>${esc(x.exercise_name)}</strong><small>${esc(x.primary_muscle||"")} · ${esc(x.equipment||"")}</small></button>`).join(""):`<div class="foodEmpty">검색 결과가 없습니다. 직접 입력할 수 있어요.</div>`;
+}
+function selectExercise(id){
+ const x=exerciseDB.find(v=>v.exercise_id===id); if(!x)return;
+ exercise.value=x.exercise_name;
+ if(x.default_sets)sets.value=x.default_sets;
+ if(x.default_reps)reps.value=x.default_reps;
+ document.getElementById("exerciseSearchResults").hidden=true;
+}
+exercise.addEventListener("input",renderExerciseSearch);
+document.addEventListener("click",e=>{const w=document.querySelector(".exerciseSearchWrap");if(w&&!w.contains(e.target)){const b=document.getElementById("exerciseSearchResults");if(b)b.hidden=true;}});
+
 workoutForm.onsubmit=e=>{
  e.preventDefault();
- db.workouts.push({exercise:exercise.value.trim(),sets:+sets.value,reps:+reps.value,weight:+weight.value||0,note:workoutNote.value.trim(),date:isoToday()});
+ const ex=exerciseDB.find(x=>x.exercise_name===exercise.value.trim());
+ db.workouts.push({exercise:exercise.value.trim(),exerciseId:ex?.exercise_id||null,primaryMuscle:ex?.primary_muscle||"",sets:+sets.value,reps:+reps.value,weight:+weight.value||0,note:workoutNote.value.trim(),date:isoToday()});
  save();e.target.reset();render()
 };
 
@@ -390,7 +415,9 @@ restoreFile.onchange=e=>{
 };
 function saveApi(){db.api={url:apiUrl.value.trim(),key:apiKey.value};save();alert("AI 서버 설정을 저장했습니다.")}
 async function askAI(text){
- const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10)};
+ const q=String(text||"").toLowerCase();
+ const relevantExercises=exerciseDB.filter(x=>exerciseTokens(x).some(v=>v&&q.includes(v))).slice(0,10);
+ const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10),relevantExercises,fitmindRules:aiKnowledge.rules.slice(0,20)};
  if(db.api.url){
   try{let h={"Content-Type":"application/json"};if(db.api.key)h.Authorization="Bearer "+db.api.key;
    let r=await fetch(db.api.url,{method:"POST",headers:h,body:JSON.stringify({message:text,context})});
@@ -412,6 +439,21 @@ chatForm.onsubmit=async e=>{
  let a=await askAI(t);db.chat.push({role:"ai",text:a,date:isoToday()});save();render()
 };
 function chatRender(){chatLog.innerHTML=db.chat.slice(-30).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${esc(x.text)}</div>`).join("")||"<div class='card'>안녕하세요. 기록을 바탕으로 운동과 식단을 함께 관리해 드릴게요.</div>"}
+async function loadExerciseDB(){
+ try{
+  const r=await fetch("./exercise-db.json"); exerciseDB=await r.json();
+  const aliases={"사레레":["덤벨 레터럴레이즈","케이블 레터럴레이즈"],"오버헤드프레스":["바벨 오버헤드프레스","밀리터리 프레스"],"덤벨숄프":["덤벨 숄더프레스"],"숄더프레스":["덤벨 숄더프레스","머신 숄더프레스"],"벤치":["바벨 벤치프레스","덤벨 벤치프레스"],"랫풀":["랫풀다운"],"턱걸이":["풀업"],"딥스":["딥스","중량 딥스"],"케이블푸쉬다운":["케이블 푸쉬다운"],"스컬크러셔":["EZ바 스컬크러셔"]};
+  Object.entries(aliases).forEach(([a,names])=>names.forEach(n=>{const x=exerciseDB.find(v=>v.exercise_name===n);if(x)x.aliases=[...(x.aliases||[]),a]}));
+ }catch(e){exerciseDB=[];console.warn("운동 DB 로드 실패",e)}
+}
+async function loadAIKnowledge(){
+ try{
+  const [r1,r2]=await Promise.all([fetch("./ai-data/fitmind_rules.jsonl"),fetch("./ai-data/fitmind_sft.jsonl")]);
+  const parse=async r=>(await r.text()).split(/\r?\n/).filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);
+  aiKnowledge.rules=await parse(r1); aiKnowledge.sft=await parse(r2);
+ }catch(e){console.warn("AI 지식 데이터 로드 실패",e)}
+}
+
 async function loadFoodDB(){
  try{
    const res=await fetch("./food-db.json");
@@ -435,4 +477,4 @@ function renderFoodList(){
 }
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
-loadFoodDB().then(()=>render());
+Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>render());
