@@ -377,52 +377,80 @@ function selectFood(id){
 }
 function applyFoodDefaults(){
  const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(meal.value);
- const q=Math.max(.1,+servings.value||1);
+ const q=Math.max(.1,+servingsEl?.value||1);
  if(!f){
-   foodHint.textContent="음식을 선택하면 DB 데이터를 자동으로 불러옵니다.";
+   foodHintEl.textContent="음식을 선택하면 DB 데이터를 자동으로 불러옵니다.";
    updateNutritionPreview(null);return;
  }
  window.selectedFoodId=f.food_id;
  const hasNutrition=f.kcal!=null&&f.protein!=null&&f.carbs!=null&&f.fat!=null;
  if(hasNutrition){
-   calories.value=Math.round(f.kcal*q);
-   protein.value=(f.protein*q).toFixed(1);
-   carbs.value=(f.carbs*q).toFixed(1);
-   fat.value=(f.fat*q).toFixed(1);
-   foodHint.textContent=`${f.name} · 100g 기준 영양정보 · 섭취량 ${q}${servingUnit.value}`;
-   updateNutritionPreview({kcal:+calories.value,protein:+protein.value,carbs:+carbs.value,fat:+fat.value});
+   caloriesEl.value=Math.round(f.kcal*q);
+   proteinEl.value=(f.protein*q).toFixed(1);
+   carbsEl.value=(f.carbs*q).toFixed(1);
+   fatEl.value=(f.fat*q).toFixed(1);
+   foodHintEl.textContent=`${f.name} · 100g 기준 영양정보 · 섭취량 ${q}${servingUnitEl?.value}`;
+   updateNutritionPreview({kcal:+caloriesEl.value,protein:+proteinEl.value,carbs:+carbsEl.value,fat:+fatEl.value});
  }else{
-   calories.value="";protein.value="";carbs.value="";fat.value="";
-   foodHint.textContent=`${f.name}은(는) 음식 DB에 등록되어 있지만 공식 영양성분 매핑이 아직 필요합니다. 직접 입력할 수 있습니다.`;
+   caloriesEl.value="";proteinEl.value="";carbsEl.value="";fatEl.value="";
+   foodHintEl.textContent=`${f.name}은(는) 음식 DB에 등록되어 있지만 공식 영양성분 매핑이 아직 필요합니다. 직접 입력할 수 있습니다.`;
    updateNutritionPreview(null);
  }
 }
 function updateNutritionPreview(n){
- previewKcal.textContent=n?fmtN(n.kcal):"-";previewProtein.textContent=n?fmtN(n.protein):"-";
- previewCarbs.textContent=n?fmtN(n.carbs):"-";previewFat.textContent=n?fmtN(n.fat):"-";
+ previewKcalEl.textContent=n?fmtN(n.kcal):"-";previewProteinEl.textContent=n?fmtN(n.protein):"-";
+ previewCarbsEl.textContent=n?fmtN(n.carbs):"-";previewFatEl.textContent=n?fmtN(n.fat):"-";
 }
 function renderTodayNutrition(){
  const k=isoToday(), rows=db.meals.filter(x=>x.date===k);
  const totals=rows.reduce((a,x)=>({kcal:a.kcal+(+x.calories||0),protein:a.protein+(+x.protein||0),carbs:a.carbs+(+x.carbs||0),fat:a.fat+(+x.fat||0)}),{kcal:0,protein:0,carbs:0,fat:0});
- todayNutrition.innerHTML=`
+ todayNutritionEl.innerHTML=`
  <div><span>칼로리</span><b>${Math.round(totals.kcal)}</b><small>kcal</small></div>
  <div><span>단백질</span><b>${totals.protein.toFixed(1)}</b><small>g</small></div>
  <div><span>탄수</span><b>${totals.carbs.toFixed(1)}</b><small>g</small></div>
  <div><span>지방</span><b>${totals.fat.toFixed(1)}</b><small>g</small></div>`;
 }
-meal.addEventListener("input",()=>{window.selectedFoodId=null;renderFoodSearch();applyFoodDefaults()});
-servings.addEventListener("input",applyFoodDefaults);servingUnit.addEventListener("change",applyFoodDefaults);
+const mealFormEl=document.getElementById("mealForm");
+const mealEl=document.getElementById("meal");
+const servingsEl=document.getElementById("servings");
+const servingUnitEl=document.getElementById("servingUnit");
+const mealTypeEl=document.getElementById("mealType");
+const caloriesEl=document.getElementById("calories");
+const proteinEl=document.getElementById("protein");
+const carbsEl=document.getElementById("carbs");
+const fatEl=document.getElementById("fat");
+const mealNoteEl=document.getElementById("mealNote");
+const foodHintEl=document.getElementById("foodHint");
+const selectedFoodCardEl=document.getElementById("selectedFoodCard");
+const foodSearchResultsEl=document.getElementById("foodSearchResults");
+const todayNutritionEl=document.getElementById("todayNutrition");
+const previewKcalEl=document.getElementById("previewKcal");
+const previewProteinEl=document.getElementById("previewProtein");
+const previewCarbsEl=document.getElementById("previewCarbs");
+const previewFatEl=document.getElementById("previewFat");
+
+mealEl?.addEventListener("input",()=>{window.selectedFoodId=null;renderFoodSearch();applyFoodDefaults()});
+servingsEl?.addEventListener("input",applyFoodDefaults);
+servingUnitEl?.addEventListener("change",applyFoodDefaults);
 document.addEventListener("click",e=>{
  const wrap=document.querySelector(".foodSearchWrap");
- if(wrap&&!wrap.contains(e.target))document.getElementById("foodSearchResults").hidden=true;
+ if(wrap&&!wrap.contains(e.target)&&foodSearchResultsEl)foodSearchResultsEl.hidden=true;
 });
-mealForm.onsubmit=e=>{
+if(mealFormEl) mealFormEl.onsubmit=e=>{
  e.preventDefault();
- const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(meal.value);
- db.meals.push({foodId:f?.food_id||null,meal:meal.value.trim(),servings:+servings.value||1,unit:servingUnit.value,calories:+calories.value||0,protein:+protein.value||0,carbs:+carbs.value||0,fat:+fat.value||0,mealType:mealType.value.trim(),note:mealNote.value.trim(),date:isoToday()});
- save();e.target.reset();servings.value=1;window.selectedFoodId=null;
- document.getElementById("selectedFoodCard").hidden=true;document.getElementById("foodSearchResults").hidden=true;
- foodHint.textContent="음식을 검색하면 DB에서 영양정보를 불러옵니다.";updateNutritionPreview(null);render()
+ const foodName=(mealEl?.value||"").trim();
+ const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(foodName);
+ if(!foodName){mealEl?.focus();return;}
+ db.meals.push({foodId:f?.food_id||null,meal:foodName,servings:+(servingsEl?.value)||1,unit:servingUnitEl?.value||"g",calories:+(caloriesEl?.value)||0,protein:+(proteinEl?.value)||0,carbs:+(carbsEl?.value)||0,fat:+(fatEl?.value)||0,mealType:(mealTypeEl?.value||"").trim(),note:(mealNoteEl?.value||"").trim(),date:isoToday()});
+ save();
+ e.target.reset();
+ if(servingsEl)servingsEl.value=1;
+ window.selectedFoodId=null;
+ if(selectedFoodCardEl)selectedFoodCardEl.hidden=true;
+ if(foodSearchResultsEl)foodSearchResultsEl.hidden=true;
+ if(foodHintEl)foodHintEl.textContent="음식을 검색하면 DB에서 영양정보를 불러옵니다.";
+ updateNutritionPreview(null);
+ render();
 };
 
 /* ---------- FitMind BodyCheck integrated module ---------- */
