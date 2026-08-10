@@ -1,8 +1,6 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<!-- FitMind AI v4.6 Stable: regression-safe integrated build -->
-<!-- FitMind AI v4.5 FINAL — unified Body Check + live calorie calculation + cache-safe app -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -13,8 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="FitMind AI">
 <title>FitMind AI</title>
 <link rel="stylesheet" href="style.css">
-
-
 </head>
 <body>
 <div id="app">
@@ -88,11 +84,6 @@
   <div class="hero"><div><span>AI 상태</span><strong id="aiStatus">로컬 코치</strong></div><button onclick="openPage('chat')">AI에게 질문</button></div>
   <div class="grid">
     <div class="card"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div>
-    <div class="card"><span>체지방률</span><b id="dashBodyFat">-</b><small>%</small></div>
-    <div class="card"><span>골격근량</span><b id="dashSkeletalMuscle">-</b><small>kg</small></div>
-    <div class="card"><span>체지방량</span><b id="dashFatMass">-</b><small>kg</small></div>
-  </div>
-  <div class="grid">
     <div class="card"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div>
     <div class="card"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div>
     <div class="card"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div>
@@ -103,11 +94,20 @@
 <section id="workout" class="page">
 <h2>운동 기록</h2>
 <form id="workoutForm" class="card">
-  <input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
+  <div class="exerciseSearchWrap">
+    <input id="exercise" autocomplete="off" placeholder="운동명 (예: 스쿼트, 벤치프레스, 사레레)" required>
+    <div id="exerciseSearchResults" class="foodResults"></div>
+  </div>
   <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
+  <div class="row"><input id="duration" type="number" min="1" placeholder="운동시간(분)"><input id="rpe" type="number" min="1" max="10" step=".5" placeholder="RPE 1~10"></div>
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>
 </form>
+<div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
+<div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
+<div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
+<div id="todayWorkoutCalorieMeta" class="muted">운동시간 0분 · 추정치</div>
+</div>
 <div id="workoutList"></div>
 </section>
 
@@ -116,7 +116,7 @@
 <form id="mealForm" class="card">
   <label class="fieldLabel">음식 검색</label>
   <div class="foodSearchWrap">
-    <input id="meal" autocomplete="off" placeholder="음식 이름을 입력하세요 (예: 닭가슴살, 닭찌, 현미밥)" required data-food-search="1">
+    <input id="meal" autocomplete="off" placeholder="음식 이름을 입력하세요 (예: 닭가슴살, 닭찌, 현미밥)" required>
     <div id="foodSearchResults" class="foodResults"></div>
   </div>
   <div id="selectedFoodCard" class="selectedFood" hidden></div>
@@ -149,34 +149,33 @@
 
 <section id="body" class="page">
 <h2>🧍 바디체크</h2>
-<div class="card">
-  <h3>📏 신체 데이터</h3>
-  <div class="row">
-    <input id="bodyDate" type="date">
-    <input id="bodyWeight" type="number" step=".1" placeholder="체중 kg">
-    <input id="bodyWaist" type="number" step=".1" placeholder="허리둘레 cm">
-  </div>
-  <div class="row">
-    <input id="bodyFatPercent" type="number" step=".1" placeholder="체지방률 %">
-    <input id="bodySkeletalMuscle" type="number" step=".1" placeholder="골격근량 kg">
-    <input id="bodyFatMass" type="number" step=".1" placeholder="체지방량 kg">
-  </div>
-  <button id="saveBodyDataBtn" type="button">💾 신체 데이터 저장</button>
-  <p id="bodySaveStatus" class="muted"></p>
-</div>
 
 <div class="card">
   <h3>📸 바디체크 사진</h3>
   <input id="bodyPhotoInput" type="file" accept="image/*" multiple>
-  <p class="muted">저장된 사진은 바디 탭에서 언제든 다시 볼 수 있습니다.</p>
-  <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+  <div class="muted" style="margin-top:6px;">저장된 사진은 바디 탭에서 언제든 다시 볼 수 있습니다.</div>
+  <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
+</div>
+
+<div class="card">
+  <h3>📏 신체 데이터</h3>
+  <div class="row">
+    <label>측정일<input id="bodyDate" type="date"></label>
+    <label>체중 (kg)<input id="bodyWeight" type="number" step="0.1" placeholder="67.0"></label>
+    <label>체지방률 (%)<input id="bodyFatPercent" type="number" step="0.1" placeholder="12.0"></label>
+    <label>골격근량 (kg)<input id="bodySkeletalMuscle" type="number" step="0.1" placeholder="35.3"></label>
+    <label>체지방량 (kg)<input id="bodyFatMass" type="number" step="0.1" placeholder="8.0"></label>
+    <label>허리둘레 (cm)<input id="bodyWaist" type="number" step="0.1" placeholder="75.0"></label>
+  </div>
+  <button id="saveBodyDataBtn" type="button">💾 신체 데이터 저장</button>
+  <div id="bodySaveStatus" class="muted"></div>
 </div>
 
 <div class="card">
   <h3>🔥 대사량 & 권장 섭취 칼로리</h3>
-  <div class="grid">
-    <div class="card"><span>기초대사량</span><b id="fitmindBMRResult">—</b><small>kcal</small></div>
-    <div class="card"><span>권장 섭취 칼로리</span><b id="fitmindTDEEResult">—</b><small>kcal</small></div>
+  <div class="row">
+    <div class="card"><small>기초대사량 (BMR)</small><div id="fitmindBMRResult" style="font-size:28px;font-weight:900;">—</div></div>
+    <div class="card"><small>권장 섭취 칼로리</small><div id="fitmindTDEEResult" style="font-size:28px;font-weight:900;">—</div></div>
   </div>
   <label>활동량
     <select id="bodyActivity">
@@ -187,20 +186,20 @@
       <option value="1.9">매우 높은 활동</option>
     </select>
   </label>
-  <p id="fitmindCalorieNote" class="muted"></p>
+  <div id="fitmindCalorieNote" class="muted"></div>
 </div>
 
-<div class="card" style="text-align:center">
-  <small>FITMIND BODY SCORE</small>
-  <div id="bodyScoreNumber" style="font-size:52px;font-weight:900">—</div>
-  <b id="bodyScoreGrade">측정값을 저장해주세요</b>
-  <p id="bodyScoreSummary" class="muted"></p>
+<div class="card" style="text-align:center;">
+  <div class="muted">FITMIND BODY SCORE</div>
+  <div id="bodyScoreNumber" style="font-size:52px;font-weight:900;">—</div>
+  <div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
+  <div id="bodyScoreSummary" class="muted"></div>
 </div>
-<div id="bodyScoreBreakdown" class="grid"></div>
+<div id="bodyScoreBreakdown" class="row"></div>
 
 <div class="card">
   <h3>📈 신체 변화</h3>
-  <div class="tabs">
+  <div class="row">
     <button class="body-range" data-days="7" type="button">7일</button>
     <button class="body-range" data-days="30" type="button">1개월</button>
     <button class="body-range" data-days="90" type="button">3개월</button>
@@ -211,6 +210,7 @@
 </div>
 
 <div id="fitmindBodyHistory"></div>
+<div id="bodyList" style="display:none;"></div>
 </section>
 
 <section id="report" class="page">
@@ -227,6 +227,16 @@
 </div>
 <div id="calendarBox"></div>
 <div id="reportContent"></div>
+<div id="dailyEnergyCard" class="card" style="margin:12px 0;">
+<div style="font-weight:700;">⚡ 오늘 에너지</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
+<div><small>섭취</small><strong id="dailyIntakeKcal">0 kcal</strong></div>
+<div><small>운동 소비</small><strong id="dailyWorkoutKcal">0 kcal</strong></div>
+<div><small>순섭취</small><strong id="dailyNetKcal">0 kcal</strong></div>
+</div>
+<div class="muted" style="margin-top:8px;">운동 소비량은 체중·운동시간·강도 기반 추정치</div>
+</div>
+<div id="energyReport"></div>
 <div class="card">
   <h3>데이터 관리</h3>
   <button onclick="exportBackup()">백업 파일 만들기</button>
@@ -240,11 +250,6 @@
 <form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
 <div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
-
-
-
-
-
 </main>
 
 <nav id="mainNav" class="hidden">
