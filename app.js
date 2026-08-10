@@ -121,8 +121,18 @@ function updateWorkoutCalorieUI(){
 }
 
 function normalizeDB(x){return Object.assign(cloneEmpty(),x||{});}
-function saveLocal(){if(currentUser)localStorage.setItem(localKey(currentUser.uid),JSON.stringify(db));}
-function save(){saveLocal();queueSync();}
+function saveLocal(){
+ try{
+  const key=currentUser?localKey(currentUser.uid):"fitmind_guest_data";
+  localStorage.setItem(key,JSON.stringify(db));
+  return true;
+ }catch(e){console.error("FitMind local save failed",e);return false;}
+}
+function save(){
+ const ok=saveLocal();
+ if(currentUser)queueSync();
+ return ok;
+}
 function queueSync(){clearTimeout(syncTimer);syncTimer=setTimeout(syncToCloud,800)}
 async function syncToCloud(){
  if(!currentUser)return;
@@ -436,14 +446,33 @@ document.addEventListener("click",e=>{
  const wrap=document.querySelector(".foodSearchWrap");
  if(wrap&&!wrap.contains(e.target)&&foodSearchResultsEl)foodSearchResultsEl.hidden=true;
 });
-if(mealFormEl) mealFormEl.onsubmit=e=>{
- e.preventDefault();
+function saveMealFromForm(e){
+ e?.preventDefault();
  const foodName=(mealEl?.value||"").trim();
+ if(!foodName){mealEl?.focus();return false;}
  const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(foodName);
- if(!foodName){mealEl?.focus();return;}
- db.meals.push({foodId:f?.food_id||null,meal:foodName,servings:+(servingsEl?.value)||1,unit:servingUnitEl?.value||"g",calories:+(caloriesEl?.value)||0,protein:+(proteinEl?.value)||0,carbs:+(carbsEl?.value)||0,fat:+(fatEl?.value)||0,mealType:(mealTypeEl?.value||"").trim(),note:(mealNoteEl?.value||"").trim(),date:isoToday()});
- save();
- e.target.reset();
+ const meal={
+   foodId:f?.food_id||null,
+   meal:foodName,
+   servings:+(servingsEl?.value)||1,
+   unit:servingUnitEl?.value||"g",
+   calories:+(caloriesEl?.value)||0,
+   protein:+(proteinEl?.value)||0,
+   carbs:+(carbsEl?.value)||0,
+   fat:+(fatEl?.value)||0,
+   mealType:(mealTypeEl?.value||"").trim(),
+   note:(mealNoteEl?.value||"").trim(),
+   date:isoToday()
+ };
+ if(!Array.isArray(db.meals))db.meals=[];
+ db.meals.push(meal);
+ const saved=save();
+ if(!saved){
+  db.meals.pop();
+  alert("식단 저장에 실패했습니다. 브라우저 저장공간을 확인해주세요.");
+  return false;
+ }
+ if(mealFormEl) mealFormEl.reset();
  if(servingsEl)servingsEl.value=1;
  window.selectedFoodId=null;
  if(selectedFoodCardEl)selectedFoodCardEl.hidden=true;
@@ -451,7 +480,10 @@ if(mealFormEl) mealFormEl.onsubmit=e=>{
  if(foodHintEl)foodHintEl.textContent="음식을 검색하면 DB에서 영양정보를 불러옵니다.";
  updateNutritionPreview(null);
  render();
-};
+ return true;
+}
+if(mealFormEl) mealFormEl.addEventListener("submit",e=>{e.preventDefault();saveMealFromForm(e);});
+
 
 /* ---------- FitMind BodyCheck integrated module ---------- */
 function fitmindNum(v){const n=Number(v);return Number.isFinite(n)?n:null;}

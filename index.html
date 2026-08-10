@@ -138,7 +138,7 @@
   </details>
   <textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
   <p id="foodHint" class="muted">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
-  <button>식단 저장</button>
+  <button id="saveMealBtn" type="button" onclick="return saveMealFromForm(event)">식단 저장</button>
 </form>
 <div class="card todayNutrition">
   <h3>오늘의 섭취량</h3>
