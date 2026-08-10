@@ -1,8 +1,6 @@
 const EMPTY_DB={profile:{},workouts:[],meals:[],body:[],chat:[],api:{}};
 const KEY="fitmind_v2";
 let foodDB=[];
-let exerciseDB=[];
-let aiKnowledge={rules:[],sft:[]};
 const baseFoodDB=[
   {name:"흰밥",serving:"1공기(200g)",kcal:300,protein:5.4,carbs:66,fat:.6},
   {name:"현미밥",serving:"1공기(200g)",kcal:300,protein:6,carbs:64,fat:2.2},
@@ -41,83 +39,212 @@ const cloneEmpty=()=>JSON.parse(JSON.stringify(EMPTY_DB));
 const localKey=uid=>`fitmind_v2_${uid}`;
 
 
-
-function fitmindBodyHistory(){
-  const arr = db.bodyHistory || db.bodyChecks || db.inbody || [];
-  return Array.isArray(arr) ? arr : [];
+function fitmindLocalGet(key, fallback){
+  try { const v=localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; }
 }
-function fitmindRenderBodyGraphs(){
+function fitmindLocalSet(key, value){
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){ console.warn("local save",e); }
+}
+function fitmindRenderBodyPhotos(){
+  const host=document.getElementById("bodyPhotoGallery"); if(!host)return;
+  const photos=fitmindLocalGet("fitmind_body_photos",[]);
+  host.innerHTML=photos.length ? photos.map((p,i)=>`
+    <div style="position:relative">
+      <img src="${p.data}" alt="바디체크 ${p.date}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer" onclick="fitmindOpenBodyPhoto(${i})">
+      <button type="button" onclick="fitmindDeleteBodyPhoto(${i})" style="position:absolute;right:4px;top:4px;border:0;border-radius:50%;width:26px;height:26px;">×</button>
+      <small>${p.date}</small>
+    </div>`).join("") : '<div class="muted">아직 저장된 사진이 없습니다.</div>';
+}
+function fitmindOpenBodyPhoto(i){
+  const photos=fitmindLocalGet("fitmind_body_photos",[]);
+  const p=photos[i]; if(!p)return;
+  const w=window.open("","_blank");
+  if(w) w.document.write(`<title>FitMind 바디체크</title><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center"><img src="${p.data}" style="max-width:100%;max-height:100vh;object-fit:contain"></body>`);
+}
+function fitmindDeleteBodyPhoto(i){
+  const photos=fitmindLocalGet("fitmind_body_photos",[]);
+  photos.splice(i,1); fitmindLocalSet("fitmind_body_photos",photos); fitmindRenderBodyPhotos();
+}
+async function fitmindSaveBodyPhotos(files){
+  const photos=fitmindLocalGet("fitmind_body_photos",[]);
+  for(const file of files){
+    const data=await new Promise((resolve,reject)=>{
+      const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
+    });
+    photos.push({date:new Date().toISOString().slice(0,10),name:file.name,data});
+  }
+  fitmindLocalSet("fitmind_body_photos",photos);
+  fitmindRenderBodyPhotos();
+}
+function fitmindCalculateEnergy(){
+  const row=(typeof fitmindBodyRows==="function"?fitmindBodyRows():[]).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).at(-1) || {};
+  const w=Number(row.weight), h=Number(db.profile?.height ?? db.user?.height ?? row.height);
+  const age=Number(document.getElementById("bodyAge")?.value ?? db.profile?.age ?? db.user?.age);
+  const sex=document.getElementById("bodySex")?.value ?? db.profile?.sex ?? "male";
+  const activity=Number(document.getElementById("bodyActivity")?.value ?? 1.55);
+  const goal=document.getElementById("bodyGoal")?.value ?? "maintain";
+  let bmr=null;
+  if(Number.isFinite(w)&&Number.isFinite(h)&&Number.isFinite(age)&&w>0&&h>0&&age>0){
+    bmr=sex==="female" ? 10*w+6.25*h-5*age-161 : 10*w+6.25*h-5*age+5;
+  } else if(Number.isFinite(w)&&Number.isFinite(age)){
+    // No height: use a conservative weight/age estimate only as a fallback, and label it.
+    bmr=sex==="female" ? 22*w+180 : 24*w+5;
+  }
+  const tdee=bmr ? bmr*activity : null;
+  const target=tdee ? (goal==="cut"?tdee-300:goal==="bulk"?tdee+250:tdee) : null;
+  const br=document.getElementById("fitmindBMRResult"), tr=document.getElementById("fitmindTDEEResult"), note=document.getElementById("fitmindCalorieNote");
+  if(br)br.textContent=bmr?`${Math.round(bmr).toLocaleString()} kcal`:"—";
+  if(tr)tr.textContent=target?`${Math.round(target).toLocaleString()} kcal`:"—";
+  if(note){
+    note.textContent=bmr ? (Number.isFinite(h)&&h>0 ? `Mifflin-St Jeor 기준 · 활동계수 ${activity} · ${goal==="cut"?"감량 목표 -300 kcal":goal==="bulk"?"증량 목표 +250 kcal":"유지 목표"}` : "키 정보가 없어 BMR은 대략적인 추정치입니다. 키를 프로필에 입력하면 더 정확해집니다.") : "체중과 나이(그리고 가능하면 키)를 입력해주세요.";
+  }
+}
+
+function fitmindBodyRows(){
+  if(!Array.isArray(db.bodyHistory)) db.bodyHistory=[];
+  return db.bodyHistory;
+}
+function fitmindNum(v){ const n=Number(v); return Number.isFinite(n)?n:null; }
+function fitmindCurrentGoal(){
+  return db.profile?.goal || db.user?.goal || db.settings?.goal || "maintain";
+}
+function fitmindBodyScore(row, prev){
+  // Practical app score, not a medical assessment. Uses common fitness-oriented ranges
+  // and trend as a secondary signal. Goal adjusts emphasis rather than making diagnosis.
+  const w=fitmindNum(row.weight), sm=fitmindNum(row.skeletalMuscle), bf=fitmindNum(row.bodyFatPercent);
+  let scores=[];
+  if(w!==null) scores.push(78); // Weight score needs height/target data for a better personalized calculation.
+  if(sm!==null) scores.push(Math.max(55, Math.min(98, 70 + (sm-30)*4)));
+  if(bf!==null){
+    const idealLow=8, idealHigh=18;
+    let s = bf<idealLow ? 78 : bf<=idealHigh ? 95-(bf-12)*1.7 : Math.max(55,95-(bf-18)*2.8);
+    scores.push(Math.round(Math.max(50,Math.min(98,s))));
+  }
+  let trend=80;
+  if(prev){
+    if(sm!==null && fitmindNum(prev.skeletalMuscle)!==null) trend += (sm-fitmindNum(prev.skeletalMuscle))*8;
+    if(bf!==null && fitmindNum(prev.bodyFatPercent)!==null) trend += (fitmindNum(prev.bodyFatPercent)-bf)*4;
+  }
+  trend=Math.round(Math.max(50,Math.min(100,trend)));
+  scores.push(trend);
+  const total=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  return {total, trend};
+}
+function fitmindBodyGrade(score){
+  if(score>=90) return "🟢 매우 우수";
+  if(score>=80) return "🟢 우수";
+  if(score>=70) return "🟡 양호";
+  if(score>=60) return "🟠 개선 권장";
+  return "🔴 관리 필요";
+}
+function fitmindBodyEvaluation(row, prev, score){
+  const parts=[];
+  const bf=fitmindNum(row.bodyFatPercent), sm=fitmindNum(row.skeletalMuscle);
+  if(prev){
+    const pbf=fitmindNum(prev.bodyFatPercent), psm=fitmindNum(prev.skeletalMuscle);
+    if(bf!==null && pbf!==null){
+      const d=bf-pbf;
+      if(d<-0.2) parts.push("체지방률이 감소해 긍정적인 변화가 보입니다.");
+      else if(d>0.2) parts.push("체지방률이 증가해 식단과 활동량을 점검할 필요가 있습니다.");
+      else parts.push("체지방률이 비교적 안정적으로 유지되고 있습니다.");
+    }
+    if(sm!==null && psm!==null){
+      const d=sm-psm;
+      if(d>0.2) parts.push("골격근량이 증가하고 있습니다.");
+      else if(d<-0.2) parts.push("골격근량이 감소해 회복과 섭취량을 점검하는 것이 좋습니다.");
+      else parts.push("골격근량이 안정적으로 유지되고 있습니다.");
+    }
+  }
+  if(!parts.length) parts.push("첫 측정값이 저장되었습니다. 다음 측정부터 변화 추세를 분석합니다.");
+  return parts.join(" ");
+}
+function fitmindRenderBodyScore(){
+  const rows=fitmindBodyRows().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const current=rows[rows.length-1];
+  const prev=rows.length>1?rows[rows.length-2]:null;
+  if(!current) return;
+  const result=fitmindBodyScore(current,prev);
+  const n=document.getElementById("bodyScoreNumber"), g=document.getElementById("bodyScoreGrade"), s=document.getElementById("bodyScoreSummary");
+  if(n)n.textContent=result.total;
+  if(g)g.textContent=fitmindBodyGrade(result.total);
+  if(s)s.textContent=fitmindBodyEvaluation(current,prev,result.total);
+  const bd=document.getElementById("bodyScoreBreakdown");
+  if(bd){
+    const bf=fitmindNum(current.bodyFatPercent), sm=fitmindNum(current.skeletalMuscle);
+    const items=[
+      ["체중 상태", current.weight!=null ? 80 : null],
+      ["골격근량", sm!=null ? Math.round(Math.max(55,Math.min(98,70+(sm-30)*4))) : null],
+      ["체지방률", bf!=null ? Math.round(Math.max(50,Math.min(98,95-(bf-12)*2))) : null],
+      ["변화 추세", result.trend]
+    ];
+    bd.innerHTML=items.map(([k,v])=>`<div class="card"><small>${k}</small><div style="font-size:22px;font-weight:800">${v==null?"—":v}</div></div>`).join("");
+  }
+}
+function fitmindRenderBodyGraphs(days){
   const host=document.getElementById("fitmindBodyGraphs");
-  if(!host) return;
-  const rows=fitmindBodyHistory().slice().sort((a,b)=>String(a.date||"").localeCompare(String(b.date||"")));
+  if(!host)return;
+  const all=fitmindBodyRows().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  let rows=all;
+  if(days>0 && all.length){
+    const cutoff=Date.now()-days*86400000;
+    rows=all.filter(r=>{const t=Date.parse(r.date); return !Number.isFinite(t)||t>=cutoff;});
+  }
   const series=[
     ["체중","weight","kg"],["골격근량","skeletalMuscle","kg"],["체지방률","bodyFatPercent","%"]
   ];
   host.innerHTML=series.map(([label,key,unit])=>{
-    const vals=rows.map(r=>Number(r[key] ?? r.bodyFat ?? r.body_fat)).filter(Number.isFinite);
-    if(!vals.length) return `<div class="card"><b>${label}</b><div class="muted">측정 데이터를 입력하면 그래프가 표시됩니다.</div></div>`;
-    const min=Math.min(...vals), max=Math.max(...vals), range=max-min||1;
-    const points=vals.map((v,i)=>{
-      const x=6+(i*88/Math.max(vals.length-1,1));
-      const y=90-(v-min)/range*70;
-      return `${x},${y}`;
+    const pointsData=rows.map(r=>({d:r.date,v:fitmindNum(r[key])})).filter(x=>x.v!==null);
+    if(!pointsData.length)return `<div class="card"><b>📈 ${label}</b><div class="muted">데이터 없음</div></div>`;
+    const vals=pointsData.map(x=>x.v), min=Math.min(...vals), max=Math.max(...vals), range=max-min||1;
+    const pts=pointsData.map((x,i)=>{
+      const px=6+(88*i/Math.max(pointsData.length-1,1));
+      const py=88-68*(x.v-min)/range;
+      return `${px},${py}`;
     }).join(" ");
-    return `<div class="card"><b>${label}</b><div class="muted">${min.toFixed(1)}–${max.toFixed(1)} ${unit}</div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:130px;margin-top:8px">
-        <polyline points="${points}" fill="none" stroke="currentColor" stroke-width="2"/>
-      </svg></div>`;
+    const last=pointsData[pointsData.length-1].v;
+    return `<div class="card"><b>📈 ${label}</b><div style="font-size:24px;font-weight:800">${last.toFixed(1)} ${unit}</div>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:140px;margin-top:6px">
+        <polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      </svg>
+      <div class="muted">${pointsData[0].d} → ${pointsData[pointsData.length-1].d}</div></div>`;
   }).join("");
 }
-
-function fitmindGetUserWeight(){
-  const candidates = [
-    db.profile?.weight, db.user?.weight, db.settings?.weight,
-    db.body?.weight, window.userWeight
-  ];
-  for(const x of candidates){
-    const n=Number(x);
-    if(Number.isFinite(n)&&n>0) return n;
+function fitmindRenderBodyHistory(){
+  const host=document.getElementById("fitmindBodyHistory"); if(!host)return;
+  const rows=fitmindBodyRows().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  host.innerHTML=rows.length?`<div class="card"><b>측정 기록</b>${rows.map((r,i)=>`
+    <div style="display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid rgba(128,128,128,.2)">
+      <span>${r.date}</span><span>${r.weight??"-"}kg · ${r.skeletalMuscle??"-"}kg · ${r.bodyFatPercent??"-"}%</span>
+    </div>`).join("")}</div>`:`<div class="muted">아직 측정 기록이 없습니다.</div>`;
+}
+function fitmindSaveBodyData(){
+  const row={
+    date:document.getElementById("bodyDate")?.value || new Date().toISOString().slice(0,10),
+    weight:fitmindNum(document.getElementById("bodyWeight")?.value),
+    skeletalMuscle:fitmindNum(document.getElementById("bodySkeletalMuscle")?.value),
+    bodyFatPercent:fitmindNum(document.getElementById("bodyFatPercent")?.value),
+    bodyFatMass:fitmindNum(document.getElementById("bodyFatMass")?.value),
+    bmi:fitmindNum(document.getElementById("bodyBMI")?.value),
+    bmr:fitmindNum(document.getElementById("bodyBMR")?.value)
+  };
+  if(row.weight===null && row.skeletalMuscle===null && row.bodyFatPercent===null){
+    alert("체중, 골격근량, 체지방률 중 하나 이상 입력해주세요.");
+    return;
   }
-  return 70;
+  const rows=fitmindBodyRows();
+  const idx=rows.findIndex(x=>x.date===row.date);
+  if(idx>=0)rows[idx]=row; else rows.push(row);
+  rows.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(typeof saveDB==="function") saveDB();
+  else if(typeof saveData==="function") saveData();
+  fitmindRenderBodyScore(); fitmindRenderBodyGraphs(0); fitmindRenderBodyHistory();
+  if(typeof updateWorkoutCalorieUI==="function")updateWorkoutCalorieUI();
 }
-function fitmindMET(workout){
-  const n=Number(workout?.met ?? workout?.met_default ?? workout?.MET);
-  return Number.isFinite(n)&&n>0 ? n : 5.0;
-}
-function fitmindCalcExerciseCalories(workout){
-  const weight=fitmindGetUserWeight();
-  const minutes=Number(workout?.durationMin ?? workout?.duration ?? workout?.minutes ?? 0);
-  if(minutes<=0) return 0;
-  let met=fitmindMET(workout);
-  const rpe=Number(workout?.rpe);
-  if(Number.isFinite(rpe)&&rpe>=1){
-    met *= Math.max(0.85, Math.min(1.20, 0.85 + (rpe-1)*0.035));
-  }
-  return met*3.5*weight/200*minutes;
-}
-
-function updateWorkoutCalorieUI(){
-  try{
-    const today=typeof isoToday==="function"?isoToday():new Date().toISOString().slice(0,10);
-    const workouts=(db.workouts||[]).filter(w=>w.date===today);
-    let calories=0, minutes=0;
-    workouts.forEach(w=>{
-      const c=Number(w.calories);
-      const calc=Number.isFinite(c)&&c>0?c:fitmindCalcExerciseCalories(w);
-      calories += calc; minutes += Number(w.durationMin||w.duration||0);
-    });
-    const kcal=Math.round(calories);
-    const a=document.getElementById("todayWorkoutCalories");
-    const b=document.getElementById("todayWorkoutCalorieMeta");
-    if(a)a.textContent=kcal.toLocaleString()+" kcal";
-    if(b)b.textContent="운동시간 "+minutes+"분 · 체중/MET/RPE 기반 추정치";
-    const intake=(db.meals||[]).filter(m=>m.date===today).reduce((s,m)=>s+(Number(m.calories)||0),0);
-    const i=document.getElementById("dailyIntakeKcal"), w=document.getElementById("dailyWorkoutKcal"), n=document.getElementById("dailyNetKcal");
-    if(i)i.textContent=Math.round(intake).toLocaleString()+" kcal";
-    if(w)w.textContent=kcal.toLocaleString()+" kcal";
-    if(n)n.textContent=Math.round(intake-calories).toLocaleString()+" kcal";
-    fitmindRenderBodyGraphs();
-  }catch(e){console.warn("FitMind calorie/body UI:",e);}
+function fitmindInitBodySection(){
+  const d=document.getElementById("bodyDate"); if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+  document.getElementById("saveBodyDataBtn")?.addEventListener("click",fitmindSaveBodyData);
+  document.querySelectorAll(".body-range").forEach(b=>b.addEventListener("click",()=>fitmindRenderBodyGraphs(Number(b.dataset.days))));
+  fitmindRenderBodyScore(); fitmindRenderBodyGraphs(0); fitmindRenderBodyHistory();
 }
 
 function normalizeDB(x){return Object.assign(cloneEmpty(),x||{});}
@@ -258,13 +385,12 @@ function migrateDates(){
  });
 }
 migrateDates();
-db.workouts=(db.workouts||[]).map(w=>{if(w.calories==null)w.calories=estimateWorkoutCalories(w);if(w.volume==null)w.volume=workoutVolume(w);return w;});
 
 function render(){
  const lastBody=db.body.at(-1);
  dashWeight.textContent=lastBody?.weight??"-";dashWorkout.textContent=db.workouts.length;dashMeals.textContent=db.meals.length;dashStreak.textContent=calcStreak();
  coachTip.textContent=localCoach();
- workoutList.innerHTML=db.workouts.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.exercise)}</strong> ${x.sets}세트 × ${x.reps}회 ${x.weight?`× ${x.weight}kg`:""}<br><small>${x.volume?`볼륨 ${Math.round(x.volume).toLocaleString()}kg · `:""}${x.durationMin?`${x.durationMin}분 · `:""}${x.calories?`소모 약 ${Math.round(x.calories)}kcal · `:""}${x.rpe?`RPE ${x.rpe} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 운동 기록이 없습니다.</div>";
+ workoutList.innerHTML=db.workouts.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.exercise)}</strong>${x.sets}세트 × ${x.reps}회 ${x.weight?`× ${x.weight}kg`:""}<br><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 운동 기록이 없습니다.</div>";
  mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${x.servings?`${x.servings}${x.unit||"회"} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
  renderTodayNutrition();
  bodyList.innerHTML=db.body.slice().reverse().map(x=>`<div class="item"><strong>${x.weight||"-"}kg ${x.waist?`· 허리 ${x.waist}cm`:""}</strong><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 바디체크 기록이 없습니다.</div>";
@@ -284,54 +410,9 @@ function calcStreak(){
  return n;
 }
 
-
-function currentBodyWeight(){
-  return Number(db.body.at(-1)?.weight || db.profile?.weight || 0);
-}
-function estimateWorkoutCalories(workout){
-  const weight = Number(workout.bodyWeight || currentBodyWeight() || 0);
-  const minutes = Number(workout.durationMin || 0);
-  const ex = exerciseDB.find(x=>x.exercise_id===workout.exerciseId);
-  let met = Number(workout.met || ex?.met_default || 5);
-  const rpe = Number(workout.rpe || 0);
-  if(rpe >= 9) met *= 1.15;
-  else if(rpe >= 8) met *= 1.08;
-  else if(rpe >= 7) met *= 1.03;
-  else if(rpe > 0 && rpe <= 4) met *= 0.85;
-  if(!weight || !minutes) return 0;
-  return met * 3.5 * weight / 200 * minutes;
-}
-function workoutVolume(w){
-  return (Number(w.weight)||0) * (Number(w.reps)||0) * (Number(w.sets)||0);
-}
-
-function exerciseTokens(x){return [x.exercise_name,...(x.aliases||[])].map(v=>String(v||"").toLowerCase().trim()).filter(Boolean)}
-function searchExercises(q){
- q=String(q||"").toLowerCase().trim();
- if(!q)return [];
- return exerciseDB.filter(x=>exerciseTokens(x).some(v=>v.includes(q)||q.includes(v))).slice(0,8);
-}
-function renderExerciseSearch(){
- const box=document.getElementById("exerciseSearchResults"); if(!box)return;
- const q=exercise.value.trim(); if(!q){box.innerHTML="";box.hidden=true;return;}
- const rs=searchExercises(q); box.hidden=false;
- box.innerHTML=rs.length?rs.map(x=>`<button type="button" class="foodResult" onclick="selectExercise('${String(x.exercise_id).replace(/'/g,"\\'")}')"><strong>${esc(x.exercise_name)}</strong><small>${esc(x.primary_muscle||"")} · ${esc(x.equipment||"")}</small></button>`).join(""):`<div class="foodEmpty">검색 결과가 없습니다. 직접 입력할 수 있어요.</div>`;
-}
-function selectExercise(id){
- const x=exerciseDB.find(v=>v.exercise_id===id); if(!x)return;
- exercise.value=x.exercise_name;
- if(x.default_sets)sets.value=x.default_sets;
- if(x.default_reps)reps.value=x.default_reps;
- document.getElementById("exerciseSearchResults").hidden=true;
-}
-exercise.addEventListener("input",renderExerciseSearch);
-document.addEventListener("click",e=>{const w=document.querySelector(".exerciseSearchWrap");if(w&&!w.contains(e.target)){const b=document.getElementById("exerciseSearchResults");if(b)b.hidden=true;}});
-
 workoutForm.onsubmit=e=>{
  e.preventDefault();
- const ex=exerciseDB.find(x=>x.exercise_name===exercise.value.trim());
- const w={exercise:exercise.value.trim(),exerciseId:ex?.exercise_id||null,primaryMuscle:ex?.primary_muscle||"",sets:+sets.value,reps:+reps.value,weight:+weight.value||0,durationMin:+duration.value||0,rpe:+rpe.value||0,bodyWeight:currentBodyWeight(),note:workoutNote.value.trim(),date:isoToday()};w.volume=workoutVolume(w);w.calories=estimateWorkoutCalories(w);db.workouts.push(w);
-updateWorkoutCalorieUI();
+ db.workouts.push({exercise:exercise.value.trim(),sets:+sets.value,reps:+reps.value,weight:+weight.value||0,note:workoutNote.value.trim(),date:isoToday()});
  save();e.target.reset();render()
 };
 
@@ -371,7 +452,8 @@ function selectFood(id){
  meal.value=f.name;window.selectedFoodId=f.food_id;
  const card=document.getElementById("selectedFoodCard");
  card.hidden=false;
- card.innerHTML=`<div><strong>${esc(f.name)}</strong><span>${esc(f.category||"")}</span></div><div class="foodMacros">${f.kcal!=null?`${fmtN(f.kcal)} kcal`:"영양정보 준비중"} · 단백질 ${f.protein!=null?fmtN(f.protein)+"g":"-"} · 탄수 ${f.carbs!=null?fmtN(f.carbs)+"g":"-"} · 지방 ${f.fat!=null?fmtN(f.fat)+"g":"-"}</div><small class="muted">${esc(f.nutrition_status||"영양정보 확인 필요")} · 기준 ${f.nutrition_basis_g||100}g</small>`;
+ card.innerHTML=`<div><strong>${esc(f.name)}</strong><span>${esc(f.category||"")}</span></div>
+   <div class="foodMacros">${f.kcal!=null?`${fmtN(f.kcal)} kcal`:"영양정보 준비중"} · 단백질 ${f.protein!=null?fmtN(f.protein)+"g":"-"} · 탄수 ${f.carbs!=null?fmtN(f.carbs)+"g":"-"} · 지방 ${f.fat!=null?fmtN(f.fat)+"g":"-"}</div>`;
  document.getElementById("foodSearchResults").hidden=true;
  applyFoodDefaults();
 }
@@ -489,7 +571,7 @@ function report(){
   meals:db.meals.filter(x=>inRange(x,r.start,r.end)),
   body:db.body.filter(x=>inRange(x,r.start,r.end))
  };
- const kcal=s.meals.reduce((a,x)=>a+(+x.calories||0),0),protein=s.meals.reduce((a,x)=>a+(+x.protein||0),0);const workoutKcal=s.workouts.reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0),volume=s.workouts.reduce((a,x)=>a+(+x.volume||workoutVolume(x)),0),durationMin=s.workouts.reduce((a,x)=>a+(+x.durationMin||0),0);
+ const kcal=s.meals.reduce((a,x)=>a+(x.calories||0),0),protein=s.meals.reduce((a,x)=>a+(x.protein||0),0);
  const carb=s.meals.reduce((a,x)=>a+(x.carbs||0),0),fat=s.meals.reduce((a,x)=>a+(x.fat||0),0);
  const weightChange=s.body.length>1?s.body.at(-1).weight-s.body[0].weight:null;
  renderCalendar();
@@ -503,7 +585,7 @@ function report(){
   </div>
   <div class="card">
    <p>섭취 칼로리 <b>${kcal}</b> kcal · 단백질 <b>${protein.toFixed(1)}</b>g</p>
-   <p>탄수화물 <b>${carb.toFixed(1)}</b>g · 지방 <b>${fat.toFixed(1)}</b>g</p><p>운동 소비량 <b>${Math.round(workoutKcal)}</b> kcal · 운동시간 <b>${durationMin}</b>분 · 총 볼륨 <b>${Math.round(volume).toLocaleString()}</b>kg</p>
+   <p>탄수화물 <b>${carb.toFixed(1)}</b>g · 지방 <b>${fat.toFixed(1)}</b>g</p>
    <p>${weightChange!==null?`체중 변화: ${s.body[0].weight}kg → ${s.body.at(-1).weight}kg <span class="trend ${weightChange>0?"up":weightChange<0?"down":""}">(${weightChange>0?"+":""}${weightChange.toFixed(1)}kg)</span>`:"이 기간에 바디체크를 2회 이상 기록하면 체중 변화를 볼 수 있어요."}</p>
   </div>`;
 }
@@ -518,9 +600,7 @@ restoreFile.onchange=e=>{
 };
 function saveApi(){db.api={url:apiUrl.value.trim(),key:apiKey.value};save();alert("AI 서버 설정을 저장했습니다.")}
 async function askAI(text){
- const q=String(text||"").toLowerCase();
- const relevantExercises=exerciseDB.filter(x=>exerciseTokens(x).some(v=>v&&q.includes(v))).slice(0,10);
- const relevantFoods=foodDB.filter(f=>foodTokens(f).some(v=>v&&q.includes(v))).slice(0,10);const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10),relevantExercises,relevantFoods,todayWorkoutCalories:db.workouts.filter(x=>x.date===isoToday()).reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0),fitmindRules:aiKnowledge.rules.slice(0,20)};
+ const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10)};
  if(db.api.url){
   try{let h={"Content-Type":"application/json"};if(db.api.key)h.Authorization="Bearer "+db.api.key;
    let r=await fetch(db.api.url,{method:"POST",headers:h,body:JSON.stringify({message:text,context})});
@@ -531,7 +611,7 @@ async function askAI(text){
 }
 function localAnswer(t){
  const q=t.toLowerCase(),w=db.workouts.at(-1),b=db.body.at(-1);
- if(q.includes("칼로리")&&q.includes("운동")){const c=db.workouts.filter(x=>x.date===isoToday()).reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0);return `오늘 운동으로 추정 소비한 칼로리는 약 ${Math.round(c)}kcal입니다. 체중·운동시간·강도를 기반으로 한 추정치입니다.`;}if(q.includes("운동"))return `최근 운동: ${w?w.exercise:"기록 없음"}\n오늘은 무리하지 않는 선에서 지난 운동을 기준으로 1~2개 동작을 진행해 보세요. 실제 서버 AI를 연결하면 기록 전체를 분석해 더 정교한 루틴을 만들 수 있습니다.`;
+ if(q.includes("운동"))return `최근 운동: ${w?w.exercise:"기록 없음"}\n오늘은 무리하지 않는 선에서 지난 운동을 기준으로 1~2개 동작을 진행해 보세요. 실제 서버 AI를 연결하면 기록 전체를 분석해 더 정교한 루틴을 만들 수 있습니다.`;
  if(q.includes("식단")||q.includes("먹"))return `최근 식단 ${db.meals.length}건이 기록되어 있습니다.\n단백질과 총섭취량을 함께 기록하면 개인화 분석 정확도가 올라갑니다.`;
  if(q.includes("체중")||q.includes("몸"))return `최근 체중: ${b?.weight??"미기록"}kg\n바디체크를 꾸준히 남기면 추세를 분석할 수 있습니다.`;
  return "현재는 로컬 코치 모드입니다. 운동, 식단, 체중, 루틴에 대해 질문해 주세요.";
@@ -542,21 +622,6 @@ chatForm.onsubmit=async e=>{
  let a=await askAI(t);db.chat.push({role:"ai",text:a,date:isoToday()});save();render()
 };
 function chatRender(){chatLog.innerHTML=db.chat.slice(-30).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${esc(x.text)}</div>`).join("")||"<div class='card'>안녕하세요. 기록을 바탕으로 운동과 식단을 함께 관리해 드릴게요.</div>"}
-async function loadExerciseDB(){
- try{
-  const r=await fetch("./exercise-db.json"); exerciseDB=await r.json();
-  const aliases={"사레레":["덤벨 레터럴레이즈","케이블 레터럴레이즈"],"오버헤드프레스":["바벨 오버헤드프레스","밀리터리 프레스"],"덤벨숄프":["덤벨 숄더프레스"],"숄더프레스":["덤벨 숄더프레스","머신 숄더프레스"],"벤치":["바벨 벤치프레스","덤벨 벤치프레스"],"랫풀":["랫풀다운"],"턱걸이":["풀업"],"딥스":["딥스","중량 딥스"],"케이블푸쉬다운":["케이블 푸쉬다운"],"스컬크러셔":["EZ바 스컬크러셔"]};
-  Object.entries(aliases).forEach(([a,names])=>names.forEach(n=>{const x=exerciseDB.find(v=>v.exercise_name===n);if(x)x.aliases=[...(x.aliases||[]),a]}));
- }catch(e){exerciseDB=[];console.warn("운동 DB 로드 실패",e)}
-}
-async function loadAIKnowledge(){
- try{
-  const [r1,r2]=await Promise.all([fetch("./ai-data/fitmind_rules.jsonl"),fetch("./ai-data/fitmind_sft.jsonl")]);
-  const parse=async r=>(await r.text()).split(/\r?\n/).filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);
-  aiKnowledge.rules=await parse(r1); aiKnowledge.sft=await parse(r2);
- }catch(e){console.warn("AI 지식 데이터 로드 실패",e)}
-}
-
 async function loadFoodDB(){
  try{
    const res=await fetch("./food-db.json");
@@ -580,6 +645,6 @@ function renderFoodList(){
 }
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
-Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>render());
+loadFoodDB().then(()=>render());
 
-window.addEventListener('DOMContentLoaded', updateWorkoutCalorieUI);
+window.addEventListener('DOMContentLoaded', fitmindInitBodySection);

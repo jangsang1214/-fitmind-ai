@@ -57,5 +57,3 @@ nav.hidden{display:none}.authForm{display:flex;flex-direction:column}.google{wid
 .manualNutrition summary{cursor:pointer;font-weight:700;padding:8px 0}
 .todayNutrition{margin-top:10px}
 @media(max-width:420px){.nutritionPreview b{font-size:15px}.nutritionPreview{gap:4px}.row{grid-template-columns:repeat(2,1fr)}}
-.exerciseSearchWrap{position:relative}
-.exerciseSearchWrap .foodResults{z-index:30}

@@ -94,20 +94,11 @@
 <section id="workout" class="page">
 <h2>운동 기록</h2>
 <form id="workoutForm" class="card">
-  <div class="exerciseSearchWrap">
-    <input id="exercise" autocomplete="off" placeholder="운동명 (예: 스쿼트, 벤치프레스, 사레레)" required>
-    <div id="exerciseSearchResults" class="foodResults"></div>
-  </div>
+  <input id="exercise" placeholder="운동명 (예: 스쿼트)" required>
   <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
-  <div class="row"><input id="duration" type="number" min="1" placeholder="운동시간(분)"><input id="rpe" type="number" min="1" max="10" step=".5" placeholder="RPE 1~10"></div>
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>
 </form>
-<div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
-<div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
-<div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
-<div id="todayWorkoutCalorieMeta" class="muted">운동시간 0분 · 추정치</div>
-</div>
 <div id="workoutList"></div>
 </section>
 
@@ -172,16 +163,6 @@
 </div>
 <div id="calendarBox"></div>
 <div id="reportContent"></div>
-<div id="dailyEnergyCard" class="card" style="margin:12px 0;">
-<div style="font-weight:700;">⚡ 오늘 에너지</div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
-<div><small>섭취</small><strong id="dailyIntakeKcal">0 kcal</strong></div>
-<div><small>운동 소비</small><strong id="dailyWorkoutKcal">0 kcal</strong></div>
-<div><small>순섭취</small><strong id="dailyNetKcal">0 kcal</strong></div>
-</div>
-<div class="muted" style="margin-top:8px;">운동 소비량은 체중·운동시간·강도 기반 추정치</div>
-</div>
-<div id="energyReport"></div>
 <div class="card">
   <h3>데이터 관리</h3>
   <button onclick="exportBackup()">백업 파일 만들기</button>
@@ -195,9 +176,80 @@
 <form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
 <div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
-<div id="fitmindBodyGraphs" style="display:grid;gap:12px;margin-top:12px;">
-<div class="card"><b>📈 인바디 변화</b><div class="muted">측정 데이터를 입력하면 체중·골격근량·체지방률 변화가 표시됩니다.</div></div>
-</div>
+
+<section id="fitmindBodySection" class="card" style="margin-top:16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <div>
+      <h3 style="margin:0;">🧍 신체 데이터</h3>
+      <div class="muted">측정값을 저장하면 변화 그래프와 종합점수가 자동으로 업데이트됩니다.</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+    <label>측정일<input id="bodyDate" type="date"></label>
+    <label>체중 (kg)<input id="bodyWeight" type="number" step="0.1" placeholder="예: 67.0"></label>
+    <label>골격근량 (kg)<input id="bodySkeletalMuscle" type="number" step="0.1" placeholder="예: 35.3"></label>
+    <label>체지방률 (%)<input id="bodyFatPercent" type="number" step="0.1" placeholder="예: 12.0"></label>
+    <label>체지방량 (kg)<input id="bodyFatMass" type="number" step="0.1" placeholder="선택"></label>
+    <label>BMI<input id="bodyBMI" type="number" step="0.1" placeholder="선택"></label>
+    <label>기초대사량 (kcal)<input id="bodyBMR" type="number" step="1" placeholder="선택"></label>
+  </div>
+
+  <button id="saveBodyDataBtn" type="button" style="margin-top:12px;width:100%;">저장하기</button>
+
+  <div id="fitmindBodyScore" class="card" style="margin-top:14px;text-align:center;">
+    <div class="muted">BODY SCORE</div>
+    <div id="bodyScoreNumber" style="font-size:48px;font-weight:900;line-height:1.1;">—</div>
+    <div id="bodyScoreGrade" style="font-weight:800;">측정 데이터를 입력해주세요</div>
+    <div id="bodyScoreSummary" class="muted" style="margin-top:8px;"></div>
+  </div>
+
+  <div id="bodyScoreBreakdown" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;"></div>
+
+  <div style="display:flex;gap:8px;overflow:auto;margin-top:14px;">
+    <button type="button" class="body-range" data-days="7">7일</button>
+    <button type="button" class="body-range" data-days="30">1개월</button>
+    <button type="button" class="body-range" data-days="90">3개월</button>
+    <button type="button" class="body-range" data-days="180">6개월</button>
+    <button type="button" class="body-range" data-days="0">전체</button>
+  </div>
+
+  <div id="fitmindBodyGraphs" style="display:grid;gap:12px;margin-top:12px;"></div>
+  <div id="fitmindBodyHistory" style="margin-top:12px;"></div>
+</section>
+
+<section id="fitmindBodyCheckUpgrade" class="card" style="margin-top:16px;">
+  <h3 style="margin:0;">📸 바디체크 사진</h3>
+  <div class="muted">사진을 선택하면 이 기기의 앱 저장공간에 보관되어 언제든 다시 볼 수 있습니다.</div>
+  <input id="bodyPhotoInput" type="file" accept="image/*" multiple style="margin-top:10px;">
+  <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
+</section>
+
+<section id="fitmindCalorieTarget" class="card" style="margin-top:16px;">
+  <h3 style="margin:0;">🔥 대사량 & 권장 칼로리</h3>
+  <div class="muted">나이·성별·활동량을 함께 입력하면 더 정확하게 계산됩니다.</div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+    <label>나이<input id="bodyAge" type="number" min="10" max="100" placeholder="예: 23"></label>
+    <label>성별<select id="bodySex"><option value="male">남성</option><option value="female">여성</option></select></label>
+    <label>활동량<select id="bodyActivity">
+      <option value="1.2">거의 활동 없음</option>
+      <option value="1.375">가벼운 활동</option>
+      <option value="1.55" selected>보통 활동</option>
+      <option value="1.725">높은 활동</option>
+      <option value="1.9">매우 높은 활동</option>
+    </select></label>
+    <label>목표<select id="bodyGoal">
+      <option value="maintain">체중 유지</option>
+      <option value="cut">체지방 감량</option>
+      <option value="bulk">근육 증가</option>
+    </select></label>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;">
+    <div class="card"><small>기초대사량(BMR)</small><div id="fitmindBMRResult" style="font-size:25px;font-weight:900;">—</div></div>
+    <div class="card"><small>권장 섭취 칼로리(TDEE)</small><div id="fitmindTDEEResult" style="font-size:25px;font-weight:900;">—</div></div>
+  </div>
+  <div id="fitmindCalorieNote" class="muted" style="margin-top:8px;"></div>
+</section>
 </main>
 
 <nav id="mainNav" class="hidden">
