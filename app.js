@@ -260,7 +260,16 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-function openPage(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));const page=document.getElementById(id);if(page)page.classList.add("active");if(id==="body")fitmindInitBodyCheck();render();if(id==="body"){fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();}scrollTo(0,0)}
+function openPage(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ const page=document.getElementById(id); if(page)page.classList.add("active");
+ const todayDiet=document.getElementById("todayNutrition")?.closest(".todayNutrition");
+ if(todayDiet) todayDiet.style.display=(id==="diet")?"block":"none";
+ if(id==="body")fitmindInitBodyCheck();
+ render();
+ if(id==="body"){fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();}
+ scrollTo(0,0);
+}
 function isoToday(){return new Date().toISOString().slice(0,10)}
 function dateObj(s){if(!s)return null;const d=new Date(s);return isNaN(d)?null:d}
 function fmtDate(s){const d=dateObj(s);return d?`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`:String(s||"")}
@@ -278,6 +287,9 @@ migrateDates();
 db.workouts=(db.workouts||[]).map(w=>{if(w.calories==null)w.calories=estimateWorkoutCalories(w);if(w.volume==null)w.volume=workoutVolume(w);return w;});
 
 function render(){
+ const todayDiet=document.getElementById("todayNutrition")?.closest(".todayNutrition");
+ const activePage=document.querySelector(".page.active")?.id;
+ if(todayDiet) todayDiet.style.display=(activePage==="diet")?"block":"none";
  const lastBody=db.body.at(-1);
  dashWeight.textContent=lastBody?.weight??"-";dashWorkout.textContent=db.workouts.length;dashMeals.textContent=db.meals.length;dashStreak.textContent=calcStreak();
  coachTip.textContent=localCoach();
