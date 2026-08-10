@@ -1,5 +1,5 @@
 {
-  "version": "FitMind AI v4",
+  "version": "4.5.0",
   "food_count": 500,
   "exercise_count": 300,
   "nutrition_policy": "Do not fabricate missing nutrition values",
