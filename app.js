@@ -435,9 +435,11 @@ function updateNutritionPreview(n){
  previewCarbsEl.textContent=n?fmtN(n.carbs):"-";previewFatEl.textContent=n?fmtN(n.fat):"-";
 }
 function renderTodayNutrition(){
+ const el=document.getElementById("todayNutrition");
+ if(!el || !document.getElementById("diet")?.contains(el)) return;
  const k=isoToday(), rows=db.meals.filter(x=>x.date===k);
  const totals=rows.reduce((a,x)=>({kcal:a.kcal+(+x.calories||0),protein:a.protein+(+x.protein||0),carbs:a.carbs+(+x.carbs||0),fat:a.fat+(+x.fat||0)}),{kcal:0,protein:0,carbs:0,fat:0});
- todayNutritionEl.innerHTML=`
+ el.innerHTML=`
  <div><span>칼로리</span><b>${Math.round(totals.kcal)}</b><small>kcal</small></div>
  <div><span>단백질</span><b>${totals.protein.toFixed(1)}</b><small>g</small></div>
  <div><span>탄수</span><b>${totals.carbs.toFixed(1)}</b><small>g</small></div>
