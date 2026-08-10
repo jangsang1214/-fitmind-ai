@@ -59,3 +59,5 @@ nav.hidden{display:none}.authForm{display:flex;flex-direction:column}.google{wid
 @media(max-width:420px){.nutritionPreview b{font-size:15px}.nutritionPreview{gap:4px}.row{grid-template-columns:repeat(2,1fr)}}
 .exerciseSearchWrap{position:relative}
 .exerciseSearchWrap .foodResults{z-index:30}
+
+.qtyControl{display:flex;align-items:center;gap:6px}.qtyControl input{min-width:70px;text-align:center}.qtyControl button{width:42px;height:42px;border-radius:10px;border:1px solid #ccd2dc;background:#fff;font-size:24px}.unitSettings{margin:8px 0}.unitSettings .fieldLabel{flex:1}.unitSettings button{margin-top:4px}

@@ -121,9 +121,23 @@
   </div>
   <div id="selectedFoodCard" class="selectedFood" hidden></div>
   <div class="row">
-    <input id="servings" type="number" min=".1" step=".1" value="1" placeholder="섭취량">
-    <select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option></select>
+    <div class="qtyControl">
+      <button type="button" id="qtyMinus" aria-label="섭취량 줄이기">−</button>
+      <input id="servings" type="number" min=".1" step=".1" value="1" inputmode="decimal" placeholder="섭취량">
+      <button type="button" id="qtyPlus" aria-label="섭취량 늘리기">+</button>
+    </div>
+    <select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option><option value="스쿱">스쿱</option><option value="봉">봉</option><option value="컵">컵</option></select>
     <select id="mealType"><option value="">식사 선택</option><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
+  </div>
+  <details class="unitSettings">
+    <summary>섭취 단위 기준값 설정</summary>
+    <p class="muted">g/ml는 입력량 그대로 계산하고, 개·회·팩·인분 등은 아래 기준 g으로 환산합니다.</p>
+    <div class="row">
+      <label class="fieldLabel">현재 단위 1개 기준(g)<input id="unitBasisG" type="number" min=".1" step=".1" placeholder="예: 100"></label>
+      <label class="fieldLabel">증감 단위<input id="qtyStep" type="number" min=".1" step=".1" value=".5"></label>
+    </div>
+    <button type="button" id="saveUnitSetting">이 음식에 저장</button>
+  </details>
   </div>
   <div class="nutritionPreview">
     <div><span>칼로리</span><b id="previewKcal">-</b><small>kcal</small></div>

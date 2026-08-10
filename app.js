@@ -120,7 +120,14 @@ function updateWorkoutCalorieUI(){
   }catch(e){console.warn("FitMind calorie/body UI:",e);}
 }
 
-function normalizeDB(x){return Object.assign(cloneEmpty(),x||{});}
+function normalizeDB(x){
+ const out=Object.assign(cloneEmpty(),x||{});
+ if(!Array.isArray(out.meals))out.meals=[];
+ if(!Array.isArray(out.workouts))out.workouts=[];
+ if(!Array.isArray(out.body))out.body=[];
+ if(!out.foodUnitSettings||typeof out.foodUnitSettings!=="object")out.foodUnitSettings={};
+ return out;
+}
 function saveLocal(){
  try{
   const key=currentUser?localKey(currentUser.uid):"fitmind_guest_data";
@@ -278,7 +285,7 @@ function render(){
  mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${x.servings?`${x.servings}${x.unit||"회"} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
  renderTodayNutrition();
  bodyList.innerHTML=db.body.slice().reverse().map(x=>`<div class="item"><strong>${x.weight||"-"}kg ${x.waist?`· 허리 ${x.waist}cm`:""}</strong><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 바디체크 기록이 없습니다.</div>";
- renderFoodList();report();chatRender();
+ renderFoodList();report();chatRender();updateWorkoutCalorieUI();
 }
 function localCoach(){
  const nm=db.profile?.name?`${db.profile.name}님, `:"",goal=db.profile?.goal?` (목표: ${db.profile.goal})`:"";
@@ -385,25 +392,41 @@ function selectFood(id){
  document.getElementById("foodSearchResults").hidden=true;
  applyFoodDefaults();
 }
+function getFoodUnitBasisG(f,unit){
+ if(!f)return 100;
+ if(unit==="g"||unit==="ml")return 1;
+ const id=f.food_id||f.name;
+ const saved=db.foodUnitSettings?.[id]?.[unit];
+ if(Number(saved)>0)return Number(saved);
+ const text=String(f.serving||"");
+ const m=text.match(/(\\d+(?:\\.\\d+)?)\\s*g/i);
+ if(m)return Number(m[1]);
+ const n=Number(f.basis_g||f.nutrition_basis_g||100);
+ return n>0?n:100;
+}
+function foodNutritionForAmount(f,q,unit){
+ const basis=Number(f?.basis_g||f?.nutrition_basis_g||100)>0?Number(f.basis_g||f.nutrition_basis_g):100;
+ const grams=(unit==="g"||unit==="ml")?q:q*getFoodUnitBasisG(f,unit);
+ const factor=grams/basis;
+ return {kcal:(Number(f.kcal)||0)*factor,protein:(Number(f.protein)||0)*factor,carbs:(Number(f.carbs)||0)*factor,fat:(Number(f.fat)||0)*factor,grams};
+}
 function applyFoodDefaults(){
  const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(meal.value);
- const q=Math.max(.1,+servingsEl?.value||1);
- if(!f){
-   foodHintEl.textContent="음식을 선택하면 DB 데이터를 자동으로 불러옵니다.";
-   updateNutritionPreview(null);return;
- }
+ const q=Math.max(.1,+servingsEl?.value||1), unit=servingUnitEl?.value||"g";
+ if(!f){foodHintEl.textContent="음식을 선택하면 DB 데이터를 자동으로 불러옵니다.";updateNutritionPreview(null);return;}
  window.selectedFoodId=f.food_id;
+ const basis=getFoodUnitBasisG(f,unit);
+ if(unitBasisGEl)unitBasisGEl.value=(unit==="g"||unit==="ml")?"":basis;
  const hasNutrition=f.kcal!=null&&f.protein!=null&&f.carbs!=null&&f.fat!=null;
  if(hasNutrition){
-   caloriesEl.value=Math.round(f.kcal*q);
-   proteinEl.value=(f.protein*q).toFixed(1);
-   carbsEl.value=(f.carbs*q).toFixed(1);
-   fatEl.value=(f.fat*q).toFixed(1);
-   foodHintEl.textContent=`${f.name} · 100g 기준 영양정보 · 섭취량 ${q}${servingUnitEl?.value}`;
-   updateNutritionPreview({kcal:+caloriesEl.value,protein:+proteinEl.value,carbs:+carbsEl.value,fat:+fatEl.value});
+   const n=foodNutritionForAmount(f,q,unit);
+   caloriesEl.value=Math.round(n.kcal);
+   proteinEl.value=n.protein.toFixed(1);carbsEl.value=n.carbs.toFixed(1);fatEl.value=n.fat.toFixed(1);
+   foodHintEl.textContent=`${f.name} · 기준 ${f.basis_g||f.nutrition_basis_g||100}g · ${q}${unit} 섭취`;
+   updateNutritionPreview(n);
  }else{
    caloriesEl.value="";proteinEl.value="";carbsEl.value="";fatEl.value="";
-   foodHintEl.textContent=`${f.name}은(는) 음식 DB에 등록되어 있지만 공식 영양성분 매핑이 아직 필요합니다. 직접 입력할 수 있습니다.`;
+   foodHintEl.textContent=`${f.name}은(는) 영양정보가 없어 직접 입력할 수 있습니다.`;
    updateNutritionPreview(null);
  }
 }
@@ -424,6 +447,11 @@ const mealFormEl=document.getElementById("mealForm");
 const mealEl=document.getElementById("meal");
 const servingsEl=document.getElementById("servings");
 const servingUnitEl=document.getElementById("servingUnit");
+const unitBasisGEl=document.getElementById("unitBasisG");
+const qtyStepEl=document.getElementById("qtyStep");
+const qtyMinusEl=document.getElementById("qtyMinus");
+const qtyPlusEl=document.getElementById("qtyPlus");
+const saveUnitSettingEl=document.getElementById("saveUnitSetting");
 const mealTypeEl=document.getElementById("mealType");
 const caloriesEl=document.getElementById("calories");
 const proteinEl=document.getElementById("protein");
@@ -442,6 +470,25 @@ const previewFatEl=document.getElementById("previewFat");
 mealEl?.addEventListener("input",()=>{window.selectedFoodId=null;renderFoodSearch();applyFoodDefaults()});
 servingsEl?.addEventListener("input",applyFoodDefaults);
 servingUnitEl?.addEventListener("change",applyFoodDefaults);
+function adjustMealQty(dir){
+ let q=Math.max(.1,Number(servingsEl?.value)||1),step=Math.max(.1,Number(qtyStepEl?.value)||.5);
+ q=Math.max(.1,Math.round((q+dir*step)*100)/100);
+ if(servingsEl)servingsEl.value=q;
+ applyFoodDefaults();
+}
+qtyMinusEl?.addEventListener("click",()=>adjustMealQty(-1));
+qtyPlusEl?.addEventListener("click",()=>adjustMealQty(1));
+qtyStepEl?.addEventListener("input",applyFoodDefaults);
+saveUnitSettingEl?.addEventListener("click",()=>{
+ const f=window.selectedFoodId?foodDB.find(x=>x.food_id===window.selectedFoodId):findFood(mealEl?.value);
+ const unit=servingUnitEl?.value||"g",g=Number(unitBasisGEl?.value);
+ if(!f||unit==="g"||unit==="ml"||!(g>0)){alert("음식을 선택하고 개/회/팩 등의 기준 g을 입력해주세요.");return;}
+ if(!db.foodUnitSettings)db.foodUnitSettings={};
+ const id=f.food_id||f.name;
+ if(!db.foodUnitSettings[id])db.foodUnitSettings[id]={};
+ db.foodUnitSettings[id][unit]=g;
+ save();applyFoodDefaults();
+});
 document.addEventListener("click",e=>{
  const wrap=document.querySelector(".foodSearchWrap");
  if(wrap&&!wrap.contains(e.target)&&foodSearchResultsEl)foodSearchResultsEl.hidden=true;
@@ -750,7 +797,7 @@ function renderFoodList(){
 }
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
-Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>render());
+Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>{render();updateWorkoutCalorieUI();});
 
 window.addEventListener('DOMContentLoaded', updateWorkoutCalorieUI);
 
