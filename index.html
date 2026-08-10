@@ -99,6 +99,7 @@
     <div id="exerciseSearchResults" class="foodResults"></div>
   </div>
   <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
+  <div class="row"><input id="duration" type="number" min="1" placeholder="운동시간(분)"><input id="rpe" type="number" min="1" max="10" step=".5" placeholder="RPE 1~10"></div>
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>
 </form>
@@ -166,6 +167,7 @@
 </div>
 <div id="calendarBox"></div>
 <div id="reportContent"></div>
+<div id="energyReport"></div>
 <div class="card">
   <h3>데이터 관리</h3>
   <button onclick="exportBackup()">백업 파일 만들기</button>

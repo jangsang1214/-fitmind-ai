@@ -10,7 +10,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0002",
@@ -23,7 +26,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0003",
@@ -36,7 +42,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0004",
@@ -49,7 +58,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0005",
@@ -62,7 +74,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0006",
@@ -75,7 +90,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0007",
@@ -88,7 +106,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0008",
@@ -101,7 +122,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0009",
@@ -114,7 +138,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0010",
@@ -127,7 +154,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0011",
@@ -140,7 +170,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0012",
@@ -153,7 +186,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0013",
@@ -166,7 +202,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0014",
@@ -179,7 +218,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0015",
@@ -192,7 +234,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0016",
@@ -205,7 +250,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0017",
@@ -218,7 +266,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0018",
@@ -231,7 +282,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0019",
@@ -244,7 +298,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0020",
@@ -257,7 +314,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0021",
@@ -270,7 +330,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0022",
@@ -283,7 +346,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0023",
@@ -296,7 +362,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0024",
@@ -309,7 +378,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0025",
@@ -322,7 +394,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0026",
@@ -335,7 +410,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0027",
@@ -348,7 +426,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0028",
@@ -361,7 +442,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0029",
@@ -374,7 +458,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0030",
@@ -387,7 +474,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0031",
@@ -400,7 +490,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0032",
@@ -413,7 +506,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0033",
@@ -426,7 +522,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0034",
@@ -439,7 +538,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0035",
@@ -452,7 +554,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0036",
@@ -465,7 +570,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0037",
@@ -478,7 +586,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0038",
@@ -491,7 +602,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0039",
@@ -504,7 +618,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0040",
@@ -517,7 +634,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0041",
@@ -530,7 +650,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0042",
@@ -543,7 +666,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0043",
@@ -556,7 +682,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0044",
@@ -569,7 +698,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0045",
@@ -582,7 +714,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0046",
@@ -595,7 +730,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0047",
@@ -608,7 +746,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0048",
@@ -621,7 +762,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0049",
@@ -634,7 +778,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0050",
@@ -647,7 +794,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0051",
@@ -660,7 +810,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0052",
@@ -673,7 +826,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0053",
@@ -686,7 +842,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0054",
@@ -699,7 +858,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0055",
@@ -712,7 +874,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0056",
@@ -725,7 +890,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0057",
@@ -738,7 +906,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0058",
@@ -751,7 +922,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0059",
@@ -764,7 +938,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0060",
@@ -777,7 +954,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0061",
@@ -790,7 +970,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0062",
@@ -803,7 +986,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0063",
@@ -816,7 +1002,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0064",
@@ -829,7 +1018,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0065",
@@ -842,7 +1034,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0066",
@@ -855,7 +1050,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0067",
@@ -868,7 +1066,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0068",
@@ -881,7 +1082,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0069",
@@ -894,7 +1098,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0070",
@@ -907,7 +1114,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0071",
@@ -920,7 +1130,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0072",
@@ -933,7 +1146,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0073",
@@ -946,7 +1162,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0074",
@@ -959,7 +1178,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0075",
@@ -972,7 +1194,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0076",
@@ -985,7 +1210,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0077",
@@ -998,7 +1226,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0078",
@@ -1011,7 +1242,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0079",
@@ -1024,7 +1258,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0080",
@@ -1037,7 +1274,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0081",
@@ -1050,7 +1290,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0082",
@@ -1063,7 +1306,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0083",
@@ -1076,7 +1322,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0084",
@@ -1089,7 +1338,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0085",
@@ -1102,7 +1354,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0086",
@@ -1115,7 +1370,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0087",
@@ -1128,7 +1386,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0088",
@@ -1141,7 +1402,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0089",
@@ -1154,7 +1418,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0090",
@@ -1167,7 +1434,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0091",
@@ -1180,7 +1450,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0092",
@@ -1193,7 +1466,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0093",
@@ -1206,7 +1482,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0094",
@@ -1219,7 +1498,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0095",
@@ -1232,7 +1514,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0096",
@@ -1245,7 +1530,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0097",
@@ -1258,7 +1546,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0098",
@@ -1271,7 +1562,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0099",
@@ -1284,7 +1578,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0100",
@@ -1297,7 +1594,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0101",
@@ -1310,7 +1610,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0102",
@@ -1323,7 +1626,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0103",
@@ -1336,7 +1642,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0104",
@@ -1349,7 +1658,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0105",
@@ -1362,7 +1674,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0106",
@@ -1375,7 +1690,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0107",
@@ -1388,7 +1706,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0108",
@@ -1401,7 +1722,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0109",
@@ -1414,7 +1738,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0110",
@@ -1427,7 +1754,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0111",
@@ -1440,7 +1770,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0112",
@@ -1453,7 +1786,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0113",
@@ -1466,7 +1802,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0114",
@@ -1479,7 +1818,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0115",
@@ -1492,7 +1834,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0116",
@@ -1505,7 +1850,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0117",
@@ -1518,7 +1866,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0118",
@@ -1531,7 +1882,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0119",
@@ -1544,7 +1898,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0120",
@@ -1557,7 +1914,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0121",
@@ -1570,7 +1930,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0122",
@@ -1583,7 +1946,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0123",
@@ -1596,7 +1962,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0124",
@@ -1609,7 +1978,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0125",
@@ -1622,7 +1994,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0126",
@@ -1635,7 +2010,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0127",
@@ -1648,7 +2026,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0128",
@@ -1661,7 +2042,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0129",
@@ -1674,7 +2058,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0130",
@@ -1687,7 +2074,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0131",
@@ -1700,7 +2090,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0132",
@@ -1713,7 +2106,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0133",
@@ -1726,7 +2122,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0134",
@@ -1739,7 +2138,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0135",
@@ -1752,7 +2154,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0136",
@@ -1765,7 +2170,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0137",
@@ -1778,7 +2186,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0138",
@@ -1791,7 +2202,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0139",
@@ -1804,7 +2218,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0140",
@@ -1817,7 +2234,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0141",
@@ -1830,7 +2250,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0142",
@@ -1843,7 +2266,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0143",
@@ -1856,7 +2282,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0144",
@@ -1869,7 +2298,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0145",
@@ -1882,7 +2314,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0146",
@@ -1895,7 +2330,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0147",
@@ -1908,7 +2346,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0148",
@@ -1921,7 +2362,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0149",
@@ -1934,7 +2378,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0150",
@@ -1947,7 +2394,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0151",
@@ -1960,7 +2410,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0152",
@@ -1973,7 +2426,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0153",
@@ -1986,7 +2442,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0154",
@@ -1999,7 +2458,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0155",
@@ -2012,7 +2474,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0156",
@@ -2025,7 +2490,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0157",
@@ -2038,7 +2506,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0158",
@@ -2051,7 +2522,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0159",
@@ -2064,7 +2538,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0160",
@@ -2077,7 +2554,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0161",
@@ -2090,7 +2570,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0162",
@@ -2103,7 +2586,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0163",
@@ -2116,7 +2602,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0164",
@@ -2129,7 +2618,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0165",
@@ -2142,7 +2634,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0166",
@@ -2155,7 +2650,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0167",
@@ -2168,7 +2666,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0168",
@@ -2181,7 +2682,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0169",
@@ -2194,7 +2698,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0170",
@@ -2207,7 +2714,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0171",
@@ -2220,7 +2730,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0172",
@@ -2233,7 +2746,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0173",
@@ -2246,7 +2762,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0174",
@@ -2259,7 +2778,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0175",
@@ -2272,7 +2794,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0176",
@@ -2285,7 +2810,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0177",
@@ -2298,7 +2826,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0178",
@@ -2311,7 +2842,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0179",
@@ -2324,7 +2858,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0180",
@@ -2337,7 +2874,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0181",
@@ -2350,7 +2890,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0182",
@@ -2363,7 +2906,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0183",
@@ -2376,7 +2922,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0184",
@@ -2389,7 +2938,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0185",
@@ -2402,7 +2954,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0186",
@@ -2415,7 +2970,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0187",
@@ -2428,7 +2986,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0188",
@@ -2441,7 +3002,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0189",
@@ -2454,7 +3018,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0190",
@@ -2467,7 +3034,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0191",
@@ -2480,7 +3050,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0192",
@@ -2493,7 +3066,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0193",
@@ -2506,7 +3082,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0194",
@@ -2519,7 +3098,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0195",
@@ -2532,7 +3114,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0196",
@@ -2545,7 +3130,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0197",
@@ -2558,7 +3146,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0198",
@@ -2571,7 +3162,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0199",
@@ -2584,7 +3178,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0200",
@@ -2597,7 +3194,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0201",
@@ -2610,7 +3210,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0202",
@@ -2623,7 +3226,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0203",
@@ -2636,7 +3242,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0204",
@@ -2649,7 +3258,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 8.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0205",
@@ -2662,7 +3274,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0206",
@@ -2675,7 +3290,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0207",
@@ -2688,7 +3306,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0208",
@@ -2701,7 +3322,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0209",
@@ -2714,7 +3338,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0210",
@@ -2727,7 +3354,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0211",
@@ -2740,7 +3370,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0212",
@@ -2753,7 +3386,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0213",
@@ -2766,7 +3402,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0214",
@@ -2779,7 +3418,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0215",
@@ -2792,7 +3434,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0216",
@@ -2805,7 +3450,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0217",
@@ -2818,7 +3466,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0218",
@@ -2831,7 +3482,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0219",
@@ -2844,7 +3498,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0220",
@@ -2857,7 +3514,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0221",
@@ -2870,7 +3530,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0222",
@@ -2883,7 +3546,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0223",
@@ -2896,7 +3562,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0224",
@@ -2909,7 +3578,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0225",
@@ -2922,7 +3594,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0226",
@@ -2935,7 +3610,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0227",
@@ -2948,7 +3626,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0228",
@@ -2961,7 +3642,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0229",
@@ -2974,7 +3658,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0230",
@@ -2987,7 +3674,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0231",
@@ -3000,7 +3690,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0232",
@@ -3013,7 +3706,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0233",
@@ -3026,7 +3722,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0234",
@@ -3039,7 +3738,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0235",
@@ -3052,7 +3754,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0236",
@@ -3065,7 +3770,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0237",
@@ -3078,7 +3786,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0238",
@@ -3091,7 +3802,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0239",
@@ -3104,7 +3818,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0240",
@@ -3117,7 +3834,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0241",
@@ -3130,7 +3850,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0242",
@@ -3143,7 +3866,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0243",
@@ -3156,7 +3882,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0244",
@@ -3169,7 +3898,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0245",
@@ -3182,7 +3914,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0246",
@@ -3195,7 +3930,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0247",
@@ -3208,7 +3946,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0248",
@@ -3221,7 +3962,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0249",
@@ -3234,7 +3978,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0250",
@@ -3247,7 +3994,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0251",
@@ -3260,7 +4010,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0252",
@@ -3273,7 +4026,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0253",
@@ -3286,7 +4042,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0254",
@@ -3299,7 +4058,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0255",
@@ -3312,7 +4074,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0256",
@@ -3325,7 +4090,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0257",
@@ -3338,7 +4106,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0258",
@@ -3351,7 +4122,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0259",
@@ -3364,7 +4138,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0260",
@@ -3377,7 +4154,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0261",
@@ -3390,7 +4170,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0262",
@@ -3403,7 +4186,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0263",
@@ -3416,7 +4202,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0264",
@@ -3429,7 +4218,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0265",
@@ -3442,7 +4234,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0266",
@@ -3455,7 +4250,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0267",
@@ -3468,7 +4266,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0268",
@@ -3481,7 +4282,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 8.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0269",
@@ -3494,7 +4298,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 8.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0270",
@@ -3507,7 +4314,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 8.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0271",
@@ -3520,7 +4330,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0272",
@@ -3533,7 +4346,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0273",
@@ -3546,7 +4362,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0274",
@@ -3559,7 +4378,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0275",
@@ -3572,7 +4394,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0276",
@@ -3585,7 +4410,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0277",
@@ -3598,7 +4426,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0278",
@@ -3611,7 +4442,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0279",
@@ -3624,7 +4458,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0280",
@@ -3637,7 +4474,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0281",
@@ -3650,7 +4490,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0282",
@@ -3663,7 +4506,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0283",
@@ -3676,7 +4522,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0284",
@@ -3689,7 +4538,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0285",
@@ -3702,7 +4554,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0286",
@@ -3715,7 +4570,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0287",
@@ -3728,7 +4586,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 2.5,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0288",
@@ -3741,7 +4602,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0289",
@@ -3754,7 +4618,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0290",
@@ -3767,7 +4634,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0291",
@@ -3780,7 +4650,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0292",
@@ -3793,7 +4666,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0293",
@@ -3806,7 +4682,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0294",
@@ -3819,7 +4698,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0295",
@@ -3832,7 +4714,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0296",
@@ -3845,7 +4730,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0297",
@@ -3858,7 +4746,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0298",
@@ -3871,7 +4762,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0299",
@@ -3884,7 +4778,10 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   },
   {
     "exercise_id": "E0300",
@@ -3897,6 +4794,9 @@
     "default_reps": 10,
     "default_rest_sec": 90,
     "duration_based": false,
-    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정"
+    "calorie_estimation_rule": "사용자 체중 + 운동시간 + 강도(RPE) 기반 추정",
+    "met_default": 5.0,
+    "calorie_method": "MET × 3.5 × 체중kg ÷ 200 × 운동시간분",
+    "calorie_note": "운동 종류·강도·휴식에 따른 추정치이며 의료/실험실 측정값이 아님"
   }
 ]

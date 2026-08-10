@@ -177,12 +177,13 @@ function migrateDates(){
  });
 }
 migrateDates();
+db.workouts=(db.workouts||[]).map(w=>{if(w.calories==null)w.calories=estimateWorkoutCalories(w);if(w.volume==null)w.volume=workoutVolume(w);return w;});
 
 function render(){
  const lastBody=db.body.at(-1);
  dashWeight.textContent=lastBody?.weight??"-";dashWorkout.textContent=db.workouts.length;dashMeals.textContent=db.meals.length;dashStreak.textContent=calcStreak();
  coachTip.textContent=localCoach();
- workoutList.innerHTML=db.workouts.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.exercise)}</strong>${x.sets}세트 × ${x.reps}회 ${x.weight?`× ${x.weight}kg`:""}<br><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 운동 기록이 없습니다.</div>";
+ workoutList.innerHTML=db.workouts.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.exercise)}</strong> ${x.sets}세트 × ${x.reps}회 ${x.weight?`× ${x.weight}kg`:""}<br><small>${x.volume?`볼륨 ${Math.round(x.volume).toLocaleString()}kg · `:""}${x.durationMin?`${x.durationMin}분 · `:""}${x.calories?`소모 약 ${Math.round(x.calories)}kcal · `:""}${x.rpe?`RPE ${x.rpe} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 운동 기록이 없습니다.</div>";
  mealList.innerHTML=db.meals.slice().reverse().map(x=>`<div class="item"><strong>${esc(x.meal)}</strong>${x.calories||0} kcal · 단백질 ${x.protein||0}g · 탄수화물 ${x.carbs||0}g · 지방 ${x.fat||0}g<br><small>${x.mealType?esc(x.mealType)+" · ":""}${x.servings?`${x.servings}${x.unit||"회"} · `:""}${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 식단 기록이 없습니다.</div>";
  renderTodayNutrition();
  bodyList.innerHTML=db.body.slice().reverse().map(x=>`<div class="item"><strong>${x.weight||"-"}kg ${x.waist?`· 허리 ${x.waist}cm`:""}</strong><small>${fmtDate(x.date)} · ${esc(x.note)}</small></div>`).join("")||"<div class='card'>아직 바디체크 기록이 없습니다.</div>";
@@ -200,6 +201,27 @@ function calcStreak(){
  let d=new Date();d.setHours(0,0,0,0);let n=0;
  while(days.has(dateKey(d))){n++;d.setDate(d.getDate()-1)}
  return n;
+}
+
+
+function currentBodyWeight(){
+  return Number(db.body.at(-1)?.weight || db.profile?.weight || 0);
+}
+function estimateWorkoutCalories(workout){
+  const weight = Number(workout.bodyWeight || currentBodyWeight() || 0);
+  const minutes = Number(workout.durationMin || 0);
+  const ex = exerciseDB.find(x=>x.exercise_id===workout.exerciseId);
+  let met = Number(workout.met || ex?.met_default || 5);
+  const rpe = Number(workout.rpe || 0);
+  if(rpe >= 9) met *= 1.15;
+  else if(rpe >= 8) met *= 1.08;
+  else if(rpe >= 7) met *= 1.03;
+  else if(rpe > 0 && rpe <= 4) met *= 0.85;
+  if(!weight || !minutes) return 0;
+  return met * 3.5 * weight / 200 * minutes;
+}
+function workoutVolume(w){
+  return (Number(w.weight)||0) * (Number(w.reps)||0) * (Number(w.sets)||0);
 }
 
 function exerciseTokens(x){return [x.exercise_name,...(x.aliases||[])].map(v=>String(v||"").toLowerCase().trim()).filter(Boolean)}
@@ -227,7 +249,7 @@ document.addEventListener("click",e=>{const w=document.querySelector(".exerciseS
 workoutForm.onsubmit=e=>{
  e.preventDefault();
  const ex=exerciseDB.find(x=>x.exercise_name===exercise.value.trim());
- db.workouts.push({exercise:exercise.value.trim(),exerciseId:ex?.exercise_id||null,primaryMuscle:ex?.primary_muscle||"",sets:+sets.value,reps:+reps.value,weight:+weight.value||0,note:workoutNote.value.trim(),date:isoToday()});
+ const w={exercise:exercise.value.trim(),exerciseId:ex?.exercise_id||null,primaryMuscle:ex?.primary_muscle||"",sets:+sets.value,reps:+reps.value,weight:+weight.value||0,durationMin:+duration.value||0,rpe:+rpe.value||0,bodyWeight:currentBodyWeight(),note:workoutNote.value.trim(),date:isoToday()};w.volume=workoutVolume(w);w.calories=estimateWorkoutCalories(w);db.workouts.push(w);
  save();e.target.reset();render()
 };
 
@@ -267,8 +289,7 @@ function selectFood(id){
  meal.value=f.name;window.selectedFoodId=f.food_id;
  const card=document.getElementById("selectedFoodCard");
  card.hidden=false;
- card.innerHTML=`<div><strong>${esc(f.name)}</strong><span>${esc(f.category||"")}</span></div>
-   <div class="foodMacros">${f.kcal!=null?`${fmtN(f.kcal)} kcal`:"영양정보 준비중"} · 단백질 ${f.protein!=null?fmtN(f.protein)+"g":"-"} · 탄수 ${f.carbs!=null?fmtN(f.carbs)+"g":"-"} · 지방 ${f.fat!=null?fmtN(f.fat)+"g":"-"}</div>`;
+ card.innerHTML=`<div><strong>${esc(f.name)}</strong><span>${esc(f.category||"")}</span></div><div class="foodMacros">${f.kcal!=null?`${fmtN(f.kcal)} kcal`:"영양정보 준비중"} · 단백질 ${f.protein!=null?fmtN(f.protein)+"g":"-"} · 탄수 ${f.carbs!=null?fmtN(f.carbs)+"g":"-"} · 지방 ${f.fat!=null?fmtN(f.fat)+"g":"-"}</div><small class="muted">${esc(f.nutrition_status||"영양정보 확인 필요")} · 기준 ${f.nutrition_basis_g||100}g</small>`;
  document.getElementById("foodSearchResults").hidden=true;
  applyFoodDefaults();
 }
@@ -386,7 +407,7 @@ function report(){
   meals:db.meals.filter(x=>inRange(x,r.start,r.end)),
   body:db.body.filter(x=>inRange(x,r.start,r.end))
  };
- const kcal=s.meals.reduce((a,x)=>a+(x.calories||0),0),protein=s.meals.reduce((a,x)=>a+(x.protein||0),0);
+ const kcal=s.meals.reduce((a,x)=>a+(+x.calories||0),0),protein=s.meals.reduce((a,x)=>a+(+x.protein||0),0);const workoutKcal=s.workouts.reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0),volume=s.workouts.reduce((a,x)=>a+(+x.volume||workoutVolume(x)),0),durationMin=s.workouts.reduce((a,x)=>a+(+x.durationMin||0),0);
  const carb=s.meals.reduce((a,x)=>a+(x.carbs||0),0),fat=s.meals.reduce((a,x)=>a+(x.fat||0),0);
  const weightChange=s.body.length>1?s.body.at(-1).weight-s.body[0].weight:null;
  renderCalendar();
@@ -400,7 +421,7 @@ function report(){
   </div>
   <div class="card">
    <p>섭취 칼로리 <b>${kcal}</b> kcal · 단백질 <b>${protein.toFixed(1)}</b>g</p>
-   <p>탄수화물 <b>${carb.toFixed(1)}</b>g · 지방 <b>${fat.toFixed(1)}</b>g</p>
+   <p>탄수화물 <b>${carb.toFixed(1)}</b>g · 지방 <b>${fat.toFixed(1)}</b>g</p><p>운동 소비량 <b>${Math.round(workoutKcal)}</b> kcal · 운동시간 <b>${durationMin}</b>분 · 총 볼륨 <b>${Math.round(volume).toLocaleString()}</b>kg</p>
    <p>${weightChange!==null?`체중 변화: ${s.body[0].weight}kg → ${s.body.at(-1).weight}kg <span class="trend ${weightChange>0?"up":weightChange<0?"down":""}">(${weightChange>0?"+":""}${weightChange.toFixed(1)}kg)</span>`:"이 기간에 바디체크를 2회 이상 기록하면 체중 변화를 볼 수 있어요."}</p>
   </div>`;
 }
@@ -417,7 +438,7 @@ function saveApi(){db.api={url:apiUrl.value.trim(),key:apiKey.value};save();aler
 async function askAI(text){
  const q=String(text||"").toLowerCase();
  const relevantExercises=exerciseDB.filter(x=>exerciseTokens(x).some(v=>v&&q.includes(v))).slice(0,10);
- const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10),relevantExercises,fitmindRules:aiKnowledge.rules.slice(0,20)};
+ const relevantFoods=foodDB.filter(f=>foodTokens(f).some(v=>v&&q.includes(v))).slice(0,10);const context={profile:db.profile,recentWorkout:db.workouts.slice(-10),recentMeals:db.meals.slice(-10),recentBody:db.body.slice(-10),relevantExercises,relevantFoods,todayWorkoutCalories:db.workouts.filter(x=>x.date===isoToday()).reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0),fitmindRules:aiKnowledge.rules.slice(0,20)};
  if(db.api.url){
   try{let h={"Content-Type":"application/json"};if(db.api.key)h.Authorization="Bearer "+db.api.key;
    let r=await fetch(db.api.url,{method:"POST",headers:h,body:JSON.stringify({message:text,context})});
@@ -428,7 +449,7 @@ async function askAI(text){
 }
 function localAnswer(t){
  const q=t.toLowerCase(),w=db.workouts.at(-1),b=db.body.at(-1);
- if(q.includes("운동"))return `최근 운동: ${w?w.exercise:"기록 없음"}\n오늘은 무리하지 않는 선에서 지난 운동을 기준으로 1~2개 동작을 진행해 보세요. 실제 서버 AI를 연결하면 기록 전체를 분석해 더 정교한 루틴을 만들 수 있습니다.`;
+ if(q.includes("칼로리")&&q.includes("운동")){const c=db.workouts.filter(x=>x.date===isoToday()).reduce((a,x)=>a+(+x.calories||estimateWorkoutCalories(x)),0);return `오늘 운동으로 추정 소비한 칼로리는 약 ${Math.round(c)}kcal입니다. 체중·운동시간·강도를 기반으로 한 추정치입니다.`;}if(q.includes("운동"))return `최근 운동: ${w?w.exercise:"기록 없음"}\n오늘은 무리하지 않는 선에서 지난 운동을 기준으로 1~2개 동작을 진행해 보세요. 실제 서버 AI를 연결하면 기록 전체를 분석해 더 정교한 루틴을 만들 수 있습니다.`;
  if(q.includes("식단")||q.includes("먹"))return `최근 식단 ${db.meals.length}건이 기록되어 있습니다.\n단백질과 총섭취량을 함께 기록하면 개인화 분석 정확도가 올라갑니다.`;
  if(q.includes("체중")||q.includes("몸"))return `최근 체중: ${b?.weight??"미기록"}kg\n바디체크를 꾸준히 남기면 추세를 분석할 수 있습니다.`;
  return "현재는 로컬 코치 모드입니다. 운동, 식단, 체중, 루틴에 대해 질문해 주세요.";

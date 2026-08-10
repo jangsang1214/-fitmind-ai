@@ -1,0 +1,18 @@
+{
+  "version": "FitMind AI v4",
+  "food_count": 500,
+  "exercise_count": 300,
+  "nutrition_policy": "Do not fabricate missing nutrition values",
+  "official_food_source": "K-FIND / data.go.kr integrated food nutrition standard data",
+  "exercise_calorie_formula": "MET × 3.5 × weight_kg / 200 × minutes",
+  "features": [
+    "food search",
+    "nutrition calculation",
+    "meal logging",
+    "exercise search",
+    "volume tracking",
+    "weight-based calorie estimate",
+    "daily/weekly/monthly/yearly report",
+    "AI context integration"
+  ]
+}
