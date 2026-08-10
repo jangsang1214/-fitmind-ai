@@ -631,41 +631,24 @@ function fitmindRenderBodyHistory(){
   ).join("")}</div>`:"";
 }
 function fitmindCalculateEnergy(){
-  const weight=fitmindNum(document.getElementById("bodyWeight")?.value);
-  const bf=fitmindNum(document.getElementById("bodyFatPercent")?.value);
+  const rows=fitmindBodyRows().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const row=rows.at(-1)||{};
+  const w=fitmindNum(row.weight);
+  const h=fitmindNum(fitmindGetProfileValue(["height","heightCm"]));
+  const age=fitmindNum(fitmindGetProfileValue(["age"]));
+  const sex=String(fitmindGetProfileValue(["sex","gender"])||"male").toLowerCase();
   const activity=Number(document.getElementById("bodyActivity")?.value||1.55);
-  const profileAge=fitmindNum(fitmindGetProfileValue(["age"]));
-  const profileHeight=fitmindNum(fitmindGetProfileValue(["height","heightCm"]));
-  const profileSex=String(fitmindGetProfileValue(["sex","gender"])||"male").toLowerCase();
-
-  let bmr=null, method="";
-  // If weight + body-fat are entered, Katch-McArdle can calculate BMR
-  // without requiring height/age/sex.
-  if(weight!==null && bf!==null && bf>=2 && bf<60){
-    const lean=weight*(1-bf/100);
-    bmr=370+21.6*lean;
-    method="Katch-McArdle · 체중+체지방률";
-  } else if(weight!==null && profileHeight!==null && profileAge!==null){
-    bmr=(profileSex.includes("female")||profileSex.includes("여"))
-      ? 10*weight+6.25*profileHeight-5*profileAge-161
-      : 10*weight+6.25*profileHeight-5*profileAge+5;
-    method="Mifflin-St Jeor · 프로필+체중";
-  }
-
-  const bmrEl=document.getElementById("fitmindBMRResult");
-  const tdeeEl=document.getElementById("fitmindTDEEResult");
-  const noteEl=document.getElementById("fitmindCalorieNote");
-
-  if(bmr===null){
-    if(bmrEl)bmrEl.textContent="—";
-    if(tdeeEl)tdeeEl.textContent="—";
-    if(noteEl)noteEl.textContent="체중을 입력해주세요. 체지방률까지 입력하면 바로 BMR을 계산합니다.";
+  if(w===null||h===null||age===null){
+    document.getElementById("fitmindBMRResult").textContent="—";
+    document.getElementById("fitmindTDEEResult").textContent="—";
+    document.getElementById("fitmindCalorieNote").textContent="프로필에서 키·나이·성별을 입력하면 자동 계산됩니다.";
     return;
   }
+  const bmr=sex.includes("female")||sex.includes("여") ? 10*w+6.25*h-5*age-161 : 10*w+6.25*h-5*age+5;
   const tdee=bmr*activity;
-  if(bmrEl)bmrEl.textContent=Math.round(bmr).toLocaleString()+" kcal";
-  if(tdeeEl)tdeeEl.textContent=Math.round(tdee).toLocaleString()+" kcal";
-  if(noteEl)noteEl.textContent=`${method} · 활동계수 ${activity}`;
+  document.getElementById("fitmindBMRResult").textContent=Math.round(bmr).toLocaleString()+" kcal";
+  document.getElementById("fitmindTDEEResult").textContent=Math.round(tdee).toLocaleString()+" kcal";
+  document.getElementById("fitmindCalorieNote").textContent=`Mifflin-St Jeor · 활동계수 ${activity} · 체중 ${w}kg`;
 }
 function fitmindSaveBodyData(){
   const row={
@@ -709,33 +692,7 @@ function fitmindInitBodyCheck(){
   document.getElementById("saveBodyDataBtn")?.addEventListener("click",fitmindSaveBodyData);
   document.getElementById("bodyPhotoInput")?.addEventListener("change",e=>fitmindSaveBodyPhotos([...e.target.files]));
   document.getElementById("bodyActivity")?.addEventListener("change",fitmindCalculateEnergy);
-  ["bodyWeight","bodyFatPercent","bodySkeletalMuscle","bodyFatMass"].forEach(id=>{
-    document.getElementById(id)?.addEventListener("input",fitmindCalculateEnergy);
-    document.getElementById(id)?.addEventListener("change",fitmindCalculateEnergy);
-  });
   document.querySelectorAll(".body-range").forEach(b=>b.addEventListener("click",()=>fitmindRenderBodyGraphs(Number(b.dataset.days))));
   fitmindRenderBodyPhotos(); fitmindRenderBodyScore(); fitmindRenderBodyGraphs(0); fitmindRenderBodyHistory(); fitmindCalculateEnergy();
 }
-window.addEventListener("DOMContentLoaded",()=>{fitmindInitBodyCheck();fitmindSetBodyOnlyVisibility(false);fitmindHookBodyNavigation();setTimeout(fitmindHookBodyNavigation,500);});
-
-
-function fitmindSetBodyOnlyVisibility(isBody){
-  const ids=["fitmindBodyCheckScreen"];
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=isBody?"block":"none";
-  });
-}
-function fitmindHookBodyNavigation(){
-  const candidates=[...document.querySelectorAll("button,a,[role='tab']")];
-  candidates.forEach(el=>{
-    const txt=(el.textContent||"").trim();
-    if(!el.dataset.fitmindBodyHook && /바디|body/i.test(txt)){
-      el.dataset.fitmindBodyHook="1";
-      el.addEventListener("click",()=>setTimeout(()=>fitmindSetBodyOnlyVisibility(true),0));
-    } else if(!el.dataset.fitmindHomeHook && /홈|home/i.test(txt)){
-      el.dataset.fitmindHomeHook="1";
-      el.addEventListener("click",()=>setTimeout(()=>fitmindSetBodyOnlyVisibility(false),0));
-    }
-  });
-}
+window.addEventListener("DOMContentLoaded",fitmindInitBodyCheck);

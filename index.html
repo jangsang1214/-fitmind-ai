@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<!-- FitMind AI v4.4.3 merged: v4.4.1 calorie calculation + v4.4.2 home/body separation -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -12,10 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="FitMind AI">
 <title>FitMind AI</title>
 <link rel="stylesheet" href="style.css">
-
-<style id="fitmindBodyOnlyCSS">
-#fitmindBodyCheckUpgrade,#fitmindCalorieTarget{display:none !important;}
-</style>
 </head>
 <body>
 <div id="app">
@@ -151,7 +146,68 @@
   <textarea id="bodyNote" placeholder="사진/몸 상태 메모"></textarea>
   <button>바디체크 저장</button>
 </form>
-<div id="bodyList"><section id="fitmindBodyCheckScreen" class="card" style="display:none;margin-top:16px;" style="margin-top:16px;">
+<div id="bodyList"></div>
+</section>
+
+<section id="report" class="page">
+<h2>리포트</h2>
+<div class="tabs" id="reportTabs">
+  <button data-period="week" onclick="setReportPeriod('week')">주간</button>
+  <button data-period="month" onclick="setReportPeriod('month')">월간</button>
+  <button data-period="year" onclick="setReportPeriod('year')">연간</button>
+</div>
+<div class="reportNav card">
+  <button onclick="moveReport(-1)">‹</button>
+  <strong id="reportTitle"></strong>
+  <button onclick="moveReport(1)">›</button>
+</div>
+<div id="calendarBox"></div>
+<div id="reportContent"></div>
+<div class="card">
+  <h3>데이터 관리</h3>
+  <button onclick="exportBackup()">백업 파일 만들기</button>
+  <label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
+</div>
+</section>
+
+<section id="chat" class="page">
+<h2>AI 채팅</h2>
+<div id="chatLog" class="chatlog"></div>
+<form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
+<div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
+</section>
+
+
+
+
+
+<section id="fitmindCalorieTarget" class="card" style="margin-top:16px;">
+  <h3 style="margin:0;">🔥 대사량 & 권장 칼로리</h3>
+  <div class="muted">나이·성별·활동량을 함께 입력하면 더 정확하게 계산됩니다.</div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+    <label>나이<input id="bodyAge" type="number" min="10" max="100" placeholder="예: 23"></label>
+    <label>성별<select id="bodySex"><option value="male">남성</option><option value="female">여성</option></select></label>
+    <label>활동량<select id="bodyActivity">
+      <option value="1.2">거의 활동 없음</option>
+      <option value="1.375">가벼운 활동</option>
+      <option value="1.55" selected>보통 활동</option>
+      <option value="1.725">높은 활동</option>
+      <option value="1.9">매우 높은 활동</option>
+    </select></label>
+    <label>목표<select id="bodyGoal">
+      <option value="maintain">체중 유지</option>
+      <option value="cut">체지방 감량</option>
+      <option value="bulk">근육 증가</option>
+    </select></label>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;">
+    <div class="card"><small>기초대사량(BMR)</small><div id="fitmindBMRResult" style="font-size:25px;font-weight:900;">—</div></div>
+    <div class="card"><small>권장 섭취 칼로리(TDEE)</small><div id="fitmindTDEEResult" style="font-size:25px;font-weight:900;">—</div></div>
+  </div>
+  <div id="fitmindCalorieNote" class="muted" style="margin-top:8px;"></div>
+</section>
+
+<section id="fitmindBodyCheckScreen" class="card" style="margin-top:16px;">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
     <div>
       <h2 style="margin:0;">🧍 바디체크</h2>
@@ -222,68 +278,7 @@
   </div>
 
   <div id="fitmindBodyHistory" style="margin-top:12px;"></div>
-</section></div>
 </section>
-
-<section id="report" class="page">
-<h2>리포트</h2>
-<div class="tabs" id="reportTabs">
-  <button data-period="week" onclick="setReportPeriod('week')">주간</button>
-  <button data-period="month" onclick="setReportPeriod('month')">월간</button>
-  <button data-period="year" onclick="setReportPeriod('year')">연간</button>
-</div>
-<div class="reportNav card">
-  <button onclick="moveReport(-1)">‹</button>
-  <strong id="reportTitle"></strong>
-  <button onclick="moveReport(1)">›</button>
-</div>
-<div id="calendarBox"></div>
-<div id="reportContent"></div>
-<div class="card">
-  <h3>데이터 관리</h3>
-  <button onclick="exportBackup()">백업 파일 만들기</button>
-  <label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
-</div>
-</section>
-
-<section id="chat" class="page">
-<h2>AI 채팅</h2>
-<div id="chatLog" class="chatlog"></div>
-<form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
-<div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
-</section>
-
-
-
-
-
-<section id="fitmindCalorieTarget" class="card" style="margin-top:16px;">
-  <h3 style="margin:0;">🔥 대사량 & 권장 칼로리</h3>
-  <div class="muted">나이·성별·활동량을 함께 입력하면 더 정확하게 계산됩니다.</div>
-  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
-    <label>나이<input id="bodyAge" type="number" min="10" max="100" placeholder="예: 23"></label>
-    <label>성별<select id="bodySex"><option value="male">남성</option><option value="female">여성</option></select></label>
-    <label>활동량<select id="bodyActivity">
-      <option value="1.2">거의 활동 없음</option>
-      <option value="1.375">가벼운 활동</option>
-      <option value="1.55" selected>보통 활동</option>
-      <option value="1.725">높은 활동</option>
-      <option value="1.9">매우 높은 활동</option>
-    </select></label>
-    <label>목표<select id="bodyGoal">
-      <option value="maintain">체중 유지</option>
-      <option value="cut">체지방 감량</option>
-      <option value="bulk">근육 증가</option>
-    </select></label>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;">
-    <div class="card"><small>기초대사량(BMR)</small><div id="fitmindBMRResult" style="font-size:25px;font-weight:900;">—</div></div>
-    <div class="card"><small>권장 섭취 칼로리(TDEE)</small><div id="fitmindTDEEResult" style="font-size:25px;font-weight:900;">—</div></div>
-  </div>
-  <div id="fitmindCalorieNote" class="muted" style="margin-top:8px;"></div>
-</section>
-
-
 
 </main>
 
