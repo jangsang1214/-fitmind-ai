@@ -14,10 +14,43 @@
 </head>
 <body>
 <div id="app">
-<header><div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div><button id="installBtn" hidden>설치</button></header>
+<header><div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div><div class="headerBtns"><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div></header>
 
 <main>
-<section id="dashboard" class="page active">
+<section id="auth" class="page active">
+<h1>시작하기</h1>
+<div class="card">
+<div id="authTabs" class="tabs">
+<button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button>
+<button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button>
+</div>
+<form id="loginForm" class="authForm">
+<input id="loginEmail" type="email" placeholder="이메일" required>
+<input id="loginPw" type="password" placeholder="비밀번호" required>
+<button>로그인</button>
+</form>
+<form id="signupForm" class="authForm" hidden>
+<input id="signupEmail" type="email" placeholder="이메일" required>
+<input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" required>
+<button>회원가입</button>
+</form>
+<button id="googleBtn" class="google" type="button">Google로 계속하기</button>
+<p id="authError" class="muted"></p>
+</div>
+</section>
+
+<section id="profile" class="page">
+<h2>내 정보</h2>
+<form id="profileForm" class="card">
+<input id="profName" placeholder="이름" required>
+<div class="row"><select id="profGender"><option value="">성별</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select><input id="profAge" type="number" min="1" placeholder="나이"><input id="profHeight" type="number" step=".1" placeholder="키 cm"></div>
+<input id="profGoal" placeholder="목표 (예: 체지방 감량, 근력 증가)">
+<button>정보 저장</button>
+</form>
+<button class="button" type="button" onclick="logout()">로그아웃</button>
+</section>
+
+<section id="dashboard" class="page">
   <h1>오늘의 코칭</h1>
   <div class="hero"><div><span>AI 상태</span><strong id="aiStatus">로컬 코치</strong></div><button onclick="openPage('chat')">AI에게 질문</button></div>
   <div class="grid">
@@ -78,10 +111,13 @@
 </section>
 </main>
 
-<nav>
+<nav id="mainNav" class="hidden">
 <button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button>
 </nav>
 </div>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
