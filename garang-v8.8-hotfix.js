@@ -185,10 +185,14 @@
 
   function boot(){
     version();authFix();injectStyles();navFix();renderDietOnly();
-    const mo=new MutationObserver(()=>{authFix();addCertButtons();aiPretty();renderDietOnly();});mo.observe(document.body,{subtree:true,childList:true});
+    // V8.8 certification wrapper MUST be installed before any workout card
+    // receives an "인증하기" button; otherwise the legacy 9:16-only renderer wins.
+    certEnhance();
+    const mo=new MutationObserver(()=>{authFix();certEnhance();addCertButtons();aiPretty();renderDietOnly();}); 
+    mo.observe(document.body,{subtree:true,childList:true});
     addCertButtons();aiPretty();
     // If a legacy page opener is recreated later, re-wrap it.
-    setInterval(()=>{navFix();addCertButtons();aiPretty()},1200);
+    setInterval(()=>{navFix();certEnhance();addCertButtons();aiPretty()},1200);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,120));else setTimeout(boot,120);
   window.GARANG88={version:'8.8.0',renderDietOnly,workoutRecordToCert,lastSavedWorkout};
