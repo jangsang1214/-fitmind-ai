@@ -165,7 +165,14 @@
     m.querySelector('h3').textContent=title;const body=m.querySelector('.g88-ai-body');
     if(!data){body.innerHTML='<p>아직 충분한 기록이 없습니다.</p>'}
     else if(data.daysPlan){body.innerHTML=`<div class="g88-plan-summary"><b>${esc(data.goal||'개인 목표')}</b><span>주 ${data.days||data.daysPerWeek||0}일</span></div>`+(data.daysPlan||[]).map(x=>`<div class="g88-plan-row"><strong>DAY ${x.day}</strong><div><b>${esc(x.focus)}</b><p>${esc(x.note)}</p></div></div>`).join('');}
-    else {body.innerHTML='<pre>'+esc(JSON.stringify(data,null,2))+'</pre>'}
+    else {
+      const entries=Object.entries(data||{}).filter(([k])=>!['id','createdAt','updatedAt'].includes(k));
+      body.innerHTML=entries.length?entries.map(([k,v])=>{
+        const label=String(k).replace(/([A-Z])/g,' $1').replace(/_/g,' ').replace(/^./,c=>c.toUpperCase());
+        const val=Array.isArray(v)?v.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(', '):(v&&typeof v==='object'?Object.entries(v).map(([a,b])=>`${a}: ${b}`).join(' · '):String(v??''));
+        return `<div class=\"g88-ai-kv\"><span>${esc(label)}</span><strong>${esc(val)}</strong></div>`;
+      }).join(''):'<p>아직 충분한 기록이 없습니다.</p>'
+    }
     m.classList.add('open');
   }
 
@@ -177,7 +184,7 @@
       .g88-cert-btn,.g88-record-cert{display:inline-flex!important;align-items:center;justify-content:center;margin-top:10px;border:1px solid #111;background:#111;color:#fff;border-radius:12px;padding:10px 14px;font-weight:900}
       .g88-ai-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:11000}
       #garang88AiModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:11000;padding:18px;align-items:center;justify-content:center}
-      #garang88AiModal.open{display:flex}.g88-ai-sheet{width:min(720px,100%);max-height:85vh;overflow:auto;background:#fff;color:#111;border-radius:24px;padding:18px}.g88-ai-head{display:flex;justify-content:space-between;align-items:flex-start}.g88-ai-head span{font-size:11px;letter-spacing:.14em;color:#777;font-weight:800}.g88-ai-head h3{margin:6px 0 14px;font-size:26px}.g88-ai-head button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 12px}.g88-plan-summary{display:flex;justify-content:space-between;padding:16px;background:#f4f4f1;border-radius:16px;margin-bottom:10px}.g88-plan-row{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:16px 4px;border-bottom:1px solid #eee}.g88-plan-row strong{font-size:14px}.g88-plan-row b{font-size:18px}.g88-plan-row p{margin:5px 0 0;color:#666}.g88-ai-body pre{white-space:pre-wrap;font:14px/1.6 monospace;background:#f5f5f5;padding:14px;border-radius:14px}
+      #garang88AiModal.open{display:flex}.g88-ai-sheet{width:min(720px,100%);max-height:85vh;overflow:auto;background:#fff;color:#111;border-radius:24px;padding:18px}.g88-ai-head{display:flex;justify-content:space-between;align-items:flex-start}.g88-ai-head span{font-size:11px;letter-spacing:.14em;color:#777;font-weight:800}.g88-ai-head h3{margin:6px 0 14px;font-size:26px}.g88-ai-head button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 12px}.g88-plan-summary{display:flex;justify-content:space-between;padding:16px;background:#f4f4f1;border-radius:16px;margin-bottom:10px}.g88-plan-row{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:16px 4px;border-bottom:1px solid #eee}.g88-plan-row strong{font-size:14px}.g88-plan-row b{font-size:18px}.g88-plan-row p{margin:5px 0 0;color:#666}.g88-ai-body pre{white-space:pre-wrap;font:14px/1.6 monospace;background:#f5f5f5;padding:14px;border-radius:14px}.g88-ai-kv{display:flex;justify-content:space-between;gap:18px;padding:14px 4px;border-bottom:1px solid #eee}.g88-ai-kv span{color:#777;font-size:13px}.g88-ai-kv strong{text-align:right;font-size:15px}
       .g86-modal .g86-buttons button{font-weight:900!important}.g86-modal #g86Canvas{font-weight:900}.g86-modal .g86-modal-head h3{font-weight:900!important}.g86-modal .g86-buttons button.selected{font-weight:900!important}
       @media(max-width:600px){.g88-plan-row{grid-template-columns:70px 1fr}.g88-ai-sheet{padding:15px}}
     `;document.head.appendChild(st);

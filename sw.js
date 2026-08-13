@@ -1,17 +1,18 @@
-const CACHE="garang-v8-5";
-const APP_ASSETS=["./","./index.html"];
+const CACHE="garang-v8-8-1";
+const APP_ASSETS=["./","./index.html","./manifest.webmanifest"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_ASSETS)).then(()=>self.skipWaiting())));
-self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("fitmind-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{
- const u=new URL(e.request.url);
- if(e.request.method!=="GET")return;
- // Always fetch the HTML and JS from network first so an old GitHub Pages/PWA cache
- // cannot silently keep V5/V6.1 code alive.
- if(u.pathname.endsWith(".html")||u.pathname.endsWith(".js")){
-   e.respondWith(fetch(e.request,{cache:"no-store"}).then(r=>{
-     const copy=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return r;
-   }).catch(()=>caches.match(e.request)));
- }else{
-   e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
- }
+  const u=new URL(e.request.url);
+  if(e.request.method!=="GET" || u.origin!==self.location.origin) return;
+  const p=u.pathname.toLowerCase();
+  const fresh=/\.(html?|js|css|json|jsonl|webmanifest)$/.test(p);
+  if(fresh){
+    e.respondWith(fetch(e.request,{cache:"no-store"}).then(r=>{
+      if(r && r.ok){const copy=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});}
+      return r;
+    }).catch(()=>caches.match(e.request).then(r=>r||new Response("Offline",{status:503}))));
+  }else{
+    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+  }
 });

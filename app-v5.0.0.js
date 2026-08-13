@@ -37,8 +37,23 @@ let selectedReportDate=new Date();
 selectedReportDate.setHours(0,0,0,0);
 
 const firebaseConfig={apiKey:"AIzaSyDq9kU2_tXyb8DKMxezdm7jwr4fvMuOWrE",authDomain:"fitfind-ai.firebaseapp.com",projectId:"fitfind-ai",storageBucket:"fitfind-ai.firebasestorage.app",messagingSenderId:"1025997386401",appId:"1:1025997386401:web:1d63900ff86bb1dcb036e0"};
-firebase.initializeApp(firebaseConfig);
-const fbAuth=firebase.auth(),fbStore=firebase.firestore();
+let fbAuth=null,fbStore=null;
+let firebaseReady=false;
+function initFirebaseSafe(){
+  try{
+    if(!window.firebase || typeof firebase.initializeApp!=="function") return false;
+    if(!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    fbAuth=firebase.auth();
+    fbStore=firebase.firestore();
+    firebaseReady=!!(fbAuth&&fbStore);
+    return firebaseReady;
+  }catch(e){
+    firebaseReady=false;
+    console.warn("[GARANG] Firebase 초기화 지연/실패:",e);
+    return false;
+  }
+}
+initFirebaseSafe();
 let currentUser=null,syncTimer=null;
 
 const cloneEmpty=()=>JSON.parse(JSON.stringify(EMPTY_DB));
@@ -191,11 +206,13 @@ function authErrorMsg(err){
 
 loginForm.onsubmit=async e=>{
  e.preventDefault();authError.textContent="";
+ if(!firebaseReady||!fbAuth){authError.textContent="인증 서버를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";return}
  try{await fbAuth.signInWithEmailAndPassword(loginEmail.value.trim(),loginPw.value)}
  catch(err){authError.textContent=authErrorMsg(err)}
 };
 signupForm.onsubmit=async e=>{
  e.preventDefault();authError.textContent="";
+ if(!firebaseReady||!fbAuth||!fbStore){authError.textContent="인증 서버를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";return}
  if(signupPw.value!==signupPw2.value){authError.textContent="비밀번호가 서로 다릅니다.";return}
  try{
   const cred=await fbAuth.createUserWithEmailAndPassword(signupEmail.value.trim(),signupPw.value);
@@ -207,12 +224,14 @@ signupForm.onsubmit=async e=>{
 };
 resetPwBtn.onclick=async()=>{
  const email=loginEmail.value.trim();
+ if(!firebaseReady||!fbAuth){authError.textContent="인증 서버를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";return}
  if(!email){authError.textContent="비밀번호 재설정 이메일을 받을 이메일 주소를 먼저 입력해 주세요.";return}
  try{await fbAuth.sendPasswordResetEmail(email);authError.textContent="비밀번호 재설정 이메일을 보냈습니다. 받은편지함을 확인해 주세요."}
  catch(err){authError.textContent=authErrorMsg(err)}
 };
 googleBtn.onclick=async()=>{
  authError.textContent="";
+ if(!firebaseReady||!fbAuth){authError.textContent="인증 서버를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";return}
  try{await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}
  catch(err){authError.textContent=authErrorMsg(err)}
 };
@@ -250,6 +269,7 @@ profileForm.onsubmit=e=>{
  save();accountBtn.textContent=db.profile.name?db.profile.name+"님":"내정보";openPage("dashboard");
 };
 
+if(firebaseReady && fbAuth){
 fbAuth.onAuthStateChanged(async user=>{
  currentUser=user;
  accountBtn.hidden=!user;mainNav.classList.toggle("hidden",!user);
@@ -263,6 +283,12 @@ fbAuth.onAuthStateChanged(async user=>{
   openPage("auth");
  }
 });
+}else{
+  // Firebase CDN이 지연되거나 차단되어도 인증 화면 자체는 정상적으로 작동하도록 유지.
+  currentUser=null;
+  db=cloneEmpty();
+  try{openPage("auth");}catch(e){console.warn("[GARANG] auth fallback",e)}
+}
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 
@@ -855,7 +881,7 @@ function renderFoodList(){
  list.innerHTML=foodDB.map(f=>`<option value="${esc(f.name)}">${esc(f.category||"")} · ${f.kcal!=null?fmtN(f.kcal)+" kcal / 100g":"영양정보 준비중"}</option>`).join("");
 }
 let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;installBtn.hidden=false;installBtn.onclick=()=>{deferred.prompt();deferred=null}});
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"});
 Promise.all([loadFoodDB(),loadExerciseDB(),loadAIKnowledge()]).then(()=>{render();updateWorkoutCalorieUI();});
 
 window.addEventListener('DOMContentLoaded', updateWorkoutCalorieUI);
