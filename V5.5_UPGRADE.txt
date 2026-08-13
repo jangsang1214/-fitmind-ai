@@ -1,0 +1,8 @@
+V5.5 additive upgrade
+Base: FitMind AI V5.0.0
+V5.1 data analysis
+V5.2 long/short memory
+V5.3 decision engine
+V5.4 routine generator
+V5.5 feedback learning
+The original V5.0 application, food DB, exercise DB, nutrition, body, graphs and existing coach remain intact.
