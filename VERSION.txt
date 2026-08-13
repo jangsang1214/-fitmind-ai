@@ -1,3 +1,3 @@
-FitMind AI V8.2.0
-Base: V7.7.0 FIXED / V8.1 FINAL
-Update: 운동 기록 + 다중 운동 + 식단 기록 + 다중 음식의 전체 DB를 한 칸에서 하나 선택하는 SELECT UI로 통합.
+GARANG V8.5.0
+Base: V8.2 feature baseline (V8.1 package + full DB selectors)
+Added: Brand & UX redesign, auth/onboarding UX, GARANG share cards, 9:16 media certification, running GPS tracking, profile/dashboard/AI coach UI improvements.

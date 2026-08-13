@@ -236,7 +236,7 @@ function fillProfileForm(){
  const p=db.profile||{};
  profName.value=p.name||"";profGender.value=p.gender||"";profAge.value=p.age||"";profHeight.value=p.height||"";
  profWeight.value=p.weight||"";profTargetWeight.value=p.targetWeight||"";profActivity.value=p.activity||"";
- profGoal.value=p.goal||"";profExperience.value=p.experience||"";
+ profGoal.value=p.goal||"";profExperience.value=p.experience||"";if(typeof profCoachStyle!=="undefined"&&profCoachStyle)profCoachStyle.value=(db.onboarding&&db.onboarding.coachStyle)||p.coachStyle||"";
  accountEmail.textContent=currentUser?currentUser.email||"Google 계정":"";
 }
 profileForm.onsubmit=e=>{
@@ -244,7 +244,7 @@ profileForm.onsubmit=e=>{
  db.profile={
   name:profName.value.trim(),gender:profGender.value,age:+profAge.value||0,height:+profHeight.value||0,
   weight:+profWeight.value||0,targetWeight:+profTargetWeight.value||0,activity:profActivity.value,
-  goal:profGoal.value.trim(),experience:profExperience.value
+  goal:profGoal.value.trim(),experience:profExperience.value,coachStyle:(typeof profCoachStyle!=="undefined"&&profCoachStyle?profCoachStyle.value:"")
  };
  if(db.profile.weight&&!db.body.length)db.body.push({weight:db.profile.weight,waist:0,note:"가입 프로필 체중",date:isoToday(),photo:""});
  save();accountBtn.textContent=db.profile.name?db.profile.name+"님":"내정보";openPage("dashboard");

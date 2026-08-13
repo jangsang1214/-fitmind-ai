@@ -1,0 +1,28 @@
+GARANG V8.5.0
+
+BASE
+- V8.2 기능 베이스를 보존하는 additive UX/brand upgrade
+
+BRAND & UX
+- GARANG / Your personal AI coach branding
+- mobile-first visual system
+- redesigned auth, onboarding, dashboard, profile, AI coach, running screens
+
+CERTIFICATION
+- user photo/video is the primary visual
+- transparent text-only certification overlay
+- black/white/minimal styles
+- 9:16 1080x1920 canvas
+- native share/download
+- transparent overlay PNG for video workflows
+
+RUNNING
+- browser Geolocation API GPS tracking
+- distance, time, pace, calorie estimate
+- live route preview
+- saved run history
+
+IMPORTANT
+- Background GPS while the browser is fully suspended/locked is platform-dependent and is not claimed as guaranteed by this static web app.
+- Apple login requires Apple provider configuration in Firebase.
+- Server AI remains optional; local coach continues to work.

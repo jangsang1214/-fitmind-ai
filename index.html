@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
+<meta name="theme-color" content="#0b0b0d">
 <meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitMind AI">
-<title>FitMind AI · Personal Coach</title>
+<meta name="apple-mobile-web-app-title" content="GARANG">
+<title>GARANG · Your personal AI coach</title>
 <link rel="stylesheet" href="style-v5.0.0.css">
 <link rel="stylesheet" href="style-v5.6.css">
 <style id="fitmindPageIsolation">
@@ -18,51 +18,48 @@
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
-<link rel="stylesheet" href="v8.2-db-selectors.css?v=8.2.0">
+<link rel="stylesheet" href="v8.5-brand.css?v=8.5.0">
 </head>
 <body>
 <div id="app">
-<header>
-  <div><b>FitMind AI</b><small>개인 운동·식단 코치</small></div>
-  <div class="headerBtns">
-    <button id="installBtn" hidden>설치</button>
-    <button id="accountBtn" hidden onclick="openPage('profile')">내정보</button>
-  </div>
+<header class="garangHeader">
+  <div class="brandLockup"><img src="garang-mark.svg" class="brandMark" alt="GARANG logo"><div><b>GARANG</b><small>Your personal AI coach</small></div></div>
+  <div class="headerBtns"><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div>
 </header>
 
 <main>
-<section id="auth" class="page active">
-<h1>시작하기</h1>
-<div class="card">
-  <div id="authTabs" class="tabs">
-    <button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button>
-    <button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button>
+<section id="auth" class="page active authPage">
+  <div class="authHero">
+    <img src="garang-mark.svg" class="authLogo" alt="GARANG">
+    <div class="eyebrow">YOUR PERSONAL AI COACH</div>
+    <h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1>
+    <p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
   </div>
+  <div class="card authCard">
+    <div id="authTabs" class="tabs"><button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
+    <form id="loginForm" class="authForm"><input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required><button class="primaryBtn">GARANG 시작하기</button><button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button></form>
+    <form id="signupForm" class="authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
+    <div class="authDivider"><span>또는</span></div>
+    <button id="googleBtn" class="socialBtn" type="button">Google로 계속하기</button><button id="appleBtn" class="socialBtn" type="button">Apple로 계속하기</button>
+    <p id="authError" class="error"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
+  </div>
+</section>
 
-  <form id="loginForm" class="authForm">
-    <input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required>
-    <input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required>
-    <button>로그인</button>
-    <button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button>
-  </form>
-
-  <form id="signupForm" class="authForm" hidden>
-    <input id="signupName" placeholder="닉네임" autocomplete="nickname" required>
-    <input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required>
-    <input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required>
-    <input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required>
-    <label class="check"><input id="terms" type="checkbox" required> 서비스 이용에 동의합니다.</label>
-    <button>회원가입</button>
-  </form>
-
-  <button id="googleBtn" class="google" type="button">Google로 계속하기</button>
-  <p id="authError" class="error"></p>
-  <p class="muted">가입 후 운동·식단·체중 기록은 계정별로 저장됩니다.</p>
-</div>
+<section id="onboarding" class="page onboardingPage">
+  <div class="onboardingTop"><span class="eyebrow">GARANG SETUP</span><strong id="onboardingStepText">1 / 5</strong></div>
+  <div class="progressLine"><i id="onboardingProgress"></i></div>
+  <div class="card onboardingCard">
+    <div class="onboardStep active" data-step="1"><span class="stepIcon">01</span><h1>무엇을 만들고 싶나요?</h1><p>가장 중요한 목표부터 알려주세요.</p><div class="choiceGrid" data-key="goal"><button data-value="근육 증가">💪 근육 증가</button><button data-value="체지방 감량">🔥 체지방 감량</button><button data-value="체중 유지">⚖️ 체중 유지</button><button data-value="체력 향상">🏃 체력 향상</button></div></div>
+    <div class="onboardStep" data-step="2"><span class="stepIcon">02</span><h1>현재 몸 상태</h1><p>정확할수록 코칭이 정교해집니다.</p><div class="row"><label>키(cm)<input id="onHeight" type="number" step="0.1" placeholder="174"></label><label>체중(kg)<input id="onWeight" type="number" step="0.1" placeholder="67"></label></div><div class="row"><label>목표 체중(kg)<input id="onTargetWeight" type="number" step="0.1" placeholder="67"></label><label>운동 경력<select id="onExperience"><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label></div></div>
+    <div class="onboardStep" data-step="3"><span class="stepIcon">03</span><h1>무엇을 주로 하나요?</h1><p>여러 개를 선택할 수 있습니다.</p><div class="choiceGrid multi" data-key="sports"><button data-value="헬스">🏋️ 헬스</button><button data-value="러닝">🏃 러닝</button><button data-value="축구/풋살">⚽ 축구/풋살</button><button data-value="홈트">🏠 홈트</button></div></div>
+    <div class="onboardStep" data-step="4"><span class="stepIcon">04</span><h1>어떤 코치가 좋나요?</h1><p>대화 스타일도 나에게 맞춥니다.</p><div class="choiceGrid" data-key="coachStyle"><button data-value="직설적">🎯 직설적으로</button><button data-value="친근함">🤝 친근하게</button><button data-value="데이터 중심">📊 데이터 중심</button><button data-value="강하게 밀어붙이기">🔥 강하게 밀어붙여줘</button></div></div>
+    <div class="onboardStep" data-step="5"><span class="stepIcon">05</span><h1>준비됐습니다.</h1><p>이제 GARANG이 당신의 기록을 기준으로 코칭합니다.</p><div class="onboardSummary" id="onboardSummary"></div></div>
+    <div class="onboardingActions"><button type="button" id="onPrev" class="ghostBtn">이전</button><button type="button" id="onNext" class="primaryBtn">다음</button></div>
+  </div>
 </section>
 
 <section id="profile" class="page">
-<h2>내 정보</h2>
+<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2></div><button class="ghostBtn" type="button" onclick="garangStartOnboarding()">온보딩 다시하기</button></div>
 <form id="profileForm" class="card">
   <input id="profName" placeholder="닉네임" required>
   <div class="row">
@@ -77,6 +74,7 @@
   </div>
   <input id="profGoal" placeholder="운동 목표 (예: 체지방 감량, 근력 증가)">
   <select id="profExperience"><option value="">운동 경험</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select>
+  <select id="profCoachStyle"><option value="">AI 코칭 스타일</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select>
   <button>정보 저장</button>
 </form>
 <div class="card">
@@ -88,22 +86,17 @@
 </section>
 
 <section id="dashboard" class="page">
-  <h1>오늘의 코칭</h1>
-  <div class="hero"><div><span>AI 상태</span><strong id="aiStatus">로컬 코치</strong></div><button onclick="openPage('chat')">AI에게 질문</button></div>
-  <div class="grid">
-    <div class="card"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div>
-    <div class="card"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div>
-    <div class="card"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div>
-    <div class="card"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div>
-  </div>
-  <div class="card"><h3>오늘의 AI 제안</h3><p id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</p></div>
+  <div class="dashTop"><div><span class="eyebrow">TODAY</span><h1 id="dashGreeting">좋은 하루예요.</h1><p>오늘의 기록과 코칭을 한눈에.</p></div><button class="iconAction" onclick="openPage('profile')">프로필</button></div>
+  <div class="dashboardHero"><div><span>AI COACH</span><h2 id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</h2></div><button onclick="openPage('chat')">코치에게 질문</button></div>
+  <div class="grid statGrid"><div class="card statCard"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div><div class="card statCard"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div><div class="card statCard"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div><div class="card statCard"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div></div>
+  <div class="dashboardColumns"><div class="card"><div class="sectionHead"><h3>오늘의 활동</h3><button onclick="openPage('workout')">기록하기</button></div><div id="dashActivityFeed" class="activityFeed"><p class="muted">아직 오늘의 기록이 없습니다.</p></div></div><div class="card"><div class="sectionHead"><h3>오늘의 목표</h3><button onclick="openPage('report')">리포트</button></div><div id="dashGoalProgress" class="goalProgress"></div></div></div>
 </section>
 
 <section id="workout" class="page">
-<h2>운동 기록</h2>
+<div class="pageTitle"><div><span class="eyebrow">WORKOUT</span><h2>운동 기록</h2></div><button class="ghostBtn" onclick="openPage('running')">🏃 러닝</button></div>
 <form id="workoutForm" class="card">
   <div class="exerciseSearchWrap">
-    <select id="exercise" required class="dbFullSelect"><option value="">운동을 선택하세요</option><option value="바벨 벤치프레스">바벨 벤치프레스 · 가슴</option><option value="인클라인 바벨 벤치프레스">인클라인 바벨 벤치프레스 · 가슴</option><option value="디클라인 바벨 벤치프레스">디클라인 바벨 벤치프레스 · 가슴</option><option value="덤벨 벤치프레스">덤벨 벤치프레스 · 가슴</option><option value="인클라인 덤벨 벤치프레스">인클라인 덤벨 벤치프레스 · 가슴</option><option value="디클라인 덤벨 벤치프레스">디클라인 덤벨 벤치프레스 · 가슴</option><option value="덤벨 플라이">덤벨 플라이 · 가슴</option><option value="인클라인 덤벨 플라이">인클라인 덤벨 플라이 · 가슴</option><option value="케이블 플라이">케이블 플라이 · 가슴</option><option value="하이 케이블 플라이">하이 케이블 플라이 · 가슴</option><option value="로우 케이블 플라이">로우 케이블 플라이 · 가슴</option><option value="머신 체스트프레스">머신 체스트프레스 · 가슴</option><option value="인클라인 머신 체스트프레스">인클라인 머신 체스트프레스 · 가슴</option><option value="디클라인 머신 체스트프레스">디클라인 머신 체스트프레스 · 가슴</option><option value="펙덱 플라이">펙덱 플라이 · 가슴</option><option value="스미스머신 벤치프레스">스미스머신 벤치프레스 · 가슴</option><option value="스미스머신 인클라인 벤치프레스">스미스머신 인클라인 벤치프레스 · 가슴</option><option value="스미스머신 디클라인 벤치프레스">스미스머신 디클라인 벤치프레스 · 가슴</option><option value="푸쉬업">푸쉬업 · 가슴</option><option value="와이드 푸쉬업">와이드 푸쉬업 · 가슴</option><option value="클로즈그립 푸쉬업">클로즈그립 푸쉬업 · 가슴</option><option value="디클라인 푸쉬업">디클라인 푸쉬업 · 가슴</option><option value="인클라인 푸쉬업">인클라인 푸쉬업 · 가슴</option><option value="아처 푸쉬업">아처 푸쉬업 · 가슴</option><option value="폭발적 푸쉬업">폭발적 푸쉬업 · 가슴</option><option value="체스트 딥스">체스트 딥스 · 가슴</option><option value="중량 딥스">중량 딥스 · 가슴</option><option value="링 딥스">링 딥스 · 가슴</option><option value="케이블 프레스">케이블 프레스 · 가슴</option><option value="덤벨 스퀴즈 프레스">덤벨 스퀴즈 프레스 · 가슴</option><option value="바벨 스퀴즈 프레스">바벨 스퀴즈 프레스 · 가슴</option><option value="랜드마인 프레스">랜드마인 프레스 · 가슴</option><option value="플레이트 프레스">플레이트 프레스 · 가슴</option><option value="머신 플라이">머신 플라이 · 가슴</option><option value="원암 케이블 플라이">원암 케이블 플라이 · 가슴</option><option value="원암 덤벨 플라이">원암 덤벨 플라이 · 가슴</option><option value="밴드 체스트프레스">밴드 체스트프레스 · 가슴</option><option value="밴드 플라이">밴드 플라이 · 가슴</option><option value="푸쉬업 플러스">푸쉬업 플러스 · 가슴</option><option value="Svend Press">Svend Press · 가슴</option><option value="풀업">풀업 · 등</option><option value="중량 풀업">중량 풀업 · 등</option><option value="친업">친업 · 등</option><option value="중량 친업">중량 친업 · 등</option><option value="어시스트 풀업">어시스트 풀업 · 등</option><option value="랫풀다운">랫풀다운 · 등</option><option value="와이드그립 랫풀다운">와이드그립 랫풀다운 · 등</option><option value="뉴트럴그립 랫풀다운">뉴트럴그립 랫풀다운 · 등</option><option value="언더그립 랫풀다운">언더그립 랫풀다운 · 등</option><option value="클로즈그립 랫풀다운">클로즈그립 랫풀다운 · 등</option><option value="원암 랫풀다운">원암 랫풀다운 · 등</option><option value="스트레이트암 풀다운">스트레이트암 풀다운 · 등</option><option value="케이블 풀오버">케이블 풀오버 · 등</option><option value="덤벨 풀오버">덤벨 풀오버 · 등</option><option value="바벨 로우">바벨 로우 · 등</option><option value="펜들레이 로우">펜들레이 로우 · 등</option><option value="벤트오버 바벨로우">벤트오버 바벨로우 · 등</option><option value="Yates 로우">Yates 로우 · 등</option><option value="원암 덤벨로우">원암 덤벨로우 · 등</option><option value="체스트서포티드 덤벨로우">체스트서포티드 덤벨로우 · 등</option><option value="티바로우">티바로우 · 등</option><option value="머신 티바로우">머신 티바로우 · 등</option><option value="시티드 케이블로우">시티드 케이블로우 · 등</option><option value="와이드 케이블로우">와이드 케이블로우 · 등</option><option value="클로즈그립 케이블로우">클로즈그립 케이블로우 · 등</option><option value="원암 케이블로우">원암 케이블로우 · 등</option><option value="머신 로우">머신 로우 · 등</option><option value="하이로우 머신">하이로우 머신 · 등</option><option value="로우로우 머신">로우로우 머신 · 등</option><option value="랜드마인 로우">랜드마인 로우 · 등</option><option value="인버티드 로우">인버티드 로우 · 등</option><option value="링 로우">링 로우 · 등</option><option value="바벨 슈러그">바벨 슈러그 · 등</option><option value="덤벨 슈러그">덤벨 슈러그 · 등</option><option value="머신 슈러그">머신 슈러그 · 등</option><option value="케이블 슈러그">케이블 슈러그 · 등</option><option value="랙풀">랙풀 · 등</option><option value="데드리프트">데드리프트 · 등</option><option value="컨벤셔널 데드리프트">컨벤셔널 데드리프트 · 등</option><option value="루마니안 데드리프트">루마니안 데드리프트 · 등</option><option value="스모 데드리프트">스모 데드리프트 · 등</option><option value="바벨 굿모닝">바벨 굿모닝 · 등</option><option value="백 익스텐션">백 익스텐션 · 등</option><option value="중량 백 익스텐션">중량 백 익스텐션 · 등</option><option value="리버스 하이퍼">리버스 하이퍼 · 등</option><option value="케이블 페이스풀">케이블 페이스풀 · 등</option><option value="밴드 풀어파트">밴드 풀어파트 · 등</option><option value="TRX 로우">TRX 로우 · 등</option><option value="TRX 페이스풀">TRX 페이스풀 · 등</option><option value="바벨 오버헤드프레스">바벨 오버헤드프레스 · 어깨</option><option value="밀리터리 프레스">밀리터리 프레스 · 어깨</option><option value="푸쉬프레스">푸쉬프레스 · 어깨</option><option value="덤벨 숄더프레스">덤벨 숄더프레스 · 어깨</option><option value="아놀드 프레스">아놀드 프레스 · 어깨</option><option value="시티드 덤벨 숄더프레스">시티드 덤벨 숄더프레스 · 어깨</option><option value="머신 숄더프레스">머신 숄더프레스 · 어깨</option><option value="스미스 숄더프레스">스미스 숄더프레스 · 어깨</option><option value="랜드마인 숄더프레스">랜드마인 숄더프레스 · 어깨</option><option value="덤벨 레터럴레이즈">덤벨 레터럴레이즈 · 어깨</option><option value="케이블 레터럴레이즈">케이블 레터럴레이즈 · 어깨</option><option value="원암 케이블 레터럴레이즈">원암 케이블 레터럴레이즈 · 어깨</option><option value="머신 레터럴레이즈">머신 레터럴레이즈 · 어깨</option><option value="밴드 레터럴레이즈">밴드 레터럴레이즈 · 어깨</option><option value="덤벨 프론트레이즈">덤벨 프론트레이즈 · 어깨</option><option value="케이블 프론트레이즈">케이블 프론트레이즈 · 어깨</option><option value="플레이트 프론트레이즈">플레이트 프론트레이즈 · 어깨</option><option value="바벨 프론트레이즈">바벨 프론트레이즈 · 어깨</option><option value="덤벨 리어델트 플라이">덤벨 리어델트 플라이 · 어깨</option><option value="머신 리어델트 플라이">머신 리어델트 플라이 · 어깨</option><option value="케이블 리어델트 플라이">케이블 리어델트 플라이 · 어깨</option><option value="벤트오버 레터럴레이즈">벤트오버 레터럴레이즈 · 어깨</option><option value="페이스풀">페이스풀 · 어깨</option><option value="케이블 Y레이즈">케이블 Y레이즈 · 어깨</option><option value="덤벨 Y레이즈">덤벨 Y레이즈 · 어깨</option><option value="바벨 업라이트로우">바벨 업라이트로우 · 어깨</option><option value="케이블 업라이트로우">케이블 업라이트로우 · 어깨</option><option value="덤벨 업라이트로우">덤벨 업라이트로우 · 어깨</option><option value="핸드스탠드 푸쉬업">핸드스탠드 푸쉬업 · 어깨</option><option value="파이크 푸쉬업">파이크 푸쉬업 · 어깨</option><option value="덤벨 클린앤프레스">덤벨 클린앤프레스 · 어깨</option><option value="바벨 클린앤프레스">바벨 클린앤프레스 · 어깨</option><option value="케틀벨 클린앤프레스">케틀벨 클린앤프레스 · 어깨</option><option value="터키시 겟업">터키시 겟업 · 어깨</option><option value="배틀로프 숄더">배틀로프 숄더 · 어깨</option><option value="바벨 컬">바벨 컬 · 이두</option><option value="EZ바 컬">EZ바 컬 · 이두</option><option value="덤벨 컬">덤벨 컬 · 이두</option><option value="교차 덤벨 컬">교차 덤벨 컬 · 이두</option><option value="해머 컬">해머 컬 · 이두</option><option value="인클라인 덤벨 컬">인클라인 덤벨 컬 · 이두</option><option value="프리처 컬">프리처 컬 · 이두</option><option value="EZ바 프리처 컬">EZ바 프리처 컬 · 이두</option><option value="머신 프리처 컬">머신 프리처 컬 · 이두</option><option value="케이블 컬">케이블 컬 · 이두</option><option value="원암 케이블 컬">원암 케이블 컬 · 이두</option><option value="로프 해머 컬">로프 해머 컬 · 이두</option><option value="케이블 해머 컬">케이블 해머 컬 · 이두</option><option value="리버스 컬">리버스 컬 · 이두</option><option value="EZ바 리버스 컬">EZ바 리버스 컬 · 이두</option><option value="덤벨 리버스 컬">덤벨 리버스 컬 · 이두</option><option value="컨센트레이션 컬">컨센트레이션 컬 · 이두</option><option value="스파이더 컬">스파이더 컬 · 이두</option><option value="드래그 컬">드래그 컬 · 이두</option><option value="바벨 드래그 컬">바벨 드래그 컬 · 이두</option><option value="21 컬">21 컬 · 이두</option><option value="Zottman 컬">Zottman 컬 · 이두</option><option value="덤벨 얼터네이트 컬">덤벨 얼터네이트 컬 · 이두</option><option value="시티드 덤벨 컬">시티드 덤벨 컬 · 이두</option><option value="월 컬">월 컬 · 이두</option><option value="밴드 컬">밴드 컬 · 이두</option><option value="TRX 컬">TRX 컬 · 이두</option><option value="케이블 프리처 컬">케이블 프리처 컬 · 이두</option><option value="클로즈그립 벤치프레스">클로즈그립 벤치프레스 · 삼두</option><option value="중량 클로즈그립 벤치프레스">중량 클로즈그립 벤치프레스 · 삼두</option><option value="딥스">딥스 · 삼두</option><option value="케이블 푸쉬다운">케이블 푸쉬다운 · 삼두</option><option value="로프 푸쉬다운">로프 푸쉬다운 · 삼두</option><option value="바 푸쉬다운">바 푸쉬다운 · 삼두</option><option value="V바 푸쉬다운">V바 푸쉬다운 · 삼두</option><option value="원암 케이블 푸쉬다운">원암 케이블 푸쉬다운 · 삼두</option><option value="리버스그립 푸쉬다운">리버스그립 푸쉬다운 · 삼두</option><option value="오버헤드 케이블 익스텐션">오버헤드 케이블 익스텐션 · 삼두</option><option value="로프 오버헤드 익스텐션">로프 오버헤드 익스텐션 · 삼두</option><option value="덤벨 오버헤드 익스텐션">덤벨 오버헤드 익스텐션 · 삼두</option><option value="원암 덤벨 오버헤드 익스텐션">원암 덤벨 오버헤드 익스텐션 · 삼두</option><option value="EZ바 스컬크러셔">EZ바 스컬크러셔 · 삼두</option><option value="바벨 스컬크러셔">바벨 스컬크러셔 · 삼두</option><option value="덤벨 스컬크러셔">덤벨 스컬크러셔 · 삼두</option><option value="인클라인 스컬크러셔">인클라인 스컬크러셔 · 삼두</option><option value="JM 프레스">JM 프레스 · 삼두</option><option value="덤벨 킥백">덤벨 킥백 · 삼두</option><option value="케이블 킥백">케이블 킥백 · 삼두</option><option value="원암 케이블 킥백">원암 케이블 킥백 · 삼두</option><option value="벤치 딥스">벤치 딥스 · 삼두</option><option value="다이아몬드 푸쉬업">다이아몬드 푸쉬업 · 삼두</option><option value="밴드 푸쉬다운">밴드 푸쉬다운 · 삼두</option><option value="밴드 오버헤드 익스텐션">밴드 오버헤드 익스텐션 · 삼두</option><option value="크런치">크런치 · 복근</option><option value="리버스 크런치">리버스 크런치 · 복근</option><option value="케이블 크런치">케이블 크런치 · 복근</option><option value="중량 크런치">중량 크런치 · 복근</option><option value="바이시클 크런치">바이시클 크런치 · 복근</option><option value="플러터 킥">플러터 킥 · 복근</option><option value="레그레이즈">레그레이즈 · 복근</option><option value="행잉 레그레이즈">행잉 레그레이즈 · 복근</option><option value="행잉 니레이즈">행잉 니레이즈 · 복근</option><option value="중량 행잉 니레이즈">중량 행잉 니레이즈 · 복근</option><option value="캡틴스체어 니레이즈">캡틴스체어 니레이즈 · 복근</option><option value="캡틴스체어 레그레이즈">캡틴스체어 레그레이즈 · 복근</option><option value="바닥 레그레이즈">바닥 레그레이즈 · 복근</option><option value="사이드 레그레이즈">사이드 레그레이즈 · 복근</option><option value="V업">V업 · 복근</option><option value="시티드 V업">시티드 V업 · 복근</option><option value="토터치">토터치 · 복근</option><option value="러시안 트위스트">러시안 트위스트 · 복근</option><option value="중량 러시안 트위스트">중량 러시안 트위스트 · 복근</option><option value="윈드실드 와이퍼">윈드실드 와이퍼 · 복근</option><option value="행잉 윈드실드 와이퍼">행잉 윈드실드 와이퍼 · 복근</option><option value="플랭크">플랭크 · 복근</option><option value="사이드 플랭크">사이드 플랭크 · 복근</option><option value="RKC 플랭크">RKC 플랭크 · 복근</option><option value="중량 플랭크">중량 플랭크 · 복근</option><option value="플랭크 잭">플랭크 잭 · 복근</option><option value="마운틴 클라이머">마운틴 클라이머 · 복근</option><option value="데드버그">데드버그 · 복근</option><option value="버드독">버드독 · 복근</option><option value="할로우 바디 홀드">할로우 바디 홀드 · 복근</option><option value="할로우 락">할로우 락 · 복근</option><option value="슈퍼맨">슈퍼맨 · 복근</option><option value="AB 롤아웃">AB 롤아웃 · 복근</option><option value="바벨 롤아웃">바벨 롤아웃 · 복근</option><option value="케이블 롤아웃">케이블 롤아웃 · 복근</option><option value="짐볼 크런치">짐볼 크런치 · 복근</option><option value="짐볼 레그레이즈">짐볼 레그레이즈 · 복근</option><option value="팔로프 프레스">팔로프 프레스 · 복근</option><option value="케이블 우드초퍼">케이블 우드초퍼 · 복근</option><option value="하이투로우 우드초퍼">하이투로우 우드초퍼 · 복근</option><option value="로우투하이 우드초퍼">로우투하이 우드초퍼 · 복근</option><option value="사이드 밴드">사이드 밴드 · 복근</option><option value="덤벨 사이드 밴드">덤벨 사이드 밴드 · 복근</option><option value="케이블 사이드 밴드">케이블 사이드 밴드 · 복근</option><option value="니투엘보우">니투엘보우 · 복근</option><option value="엘보우투니 크런치">엘보우투니 크런치 · 복근</option><option value="백스쿼트">백스쿼트 · 하체</option><option value="프론트스쿼트">프론트스쿼트 · 하체</option><option value="하이바 스쿼트">하이바 스쿼트 · 하체</option><option value="로우바 스쿼트">로우바 스쿼트 · 하체</option><option value="박스 스쿼트">박스 스쿼트 · 하체</option><option value="핵 스쿼트">핵 스쿼트 · 하체</option><option value="스미스 스쿼트">스미스 스쿼트 · 하체</option><option value="고블릿 스쿼트">고블릿 스쿼트 · 하체</option><option value="덤벨 스쿼트">덤벨 스쿼트 · 하체</option><option value="불가리안 스플릿 스쿼트">불가리안 스플릿 스쿼트 · 하체</option><option value="런지">런지 · 하체</option><option value="워킹 런지">워킹 런지 · 하체</option><option value="리버스 런지">리버스 런지 · 하체</option><option value="사이드 런지">사이드 런지 · 하체</option><option value="점프 스쿼트">점프 스쿼트 · 하체</option><option value="스텝업">스텝업 · 하체</option><option value="중량 스텝업">중량 스텝업 · 하체</option><option value="레그프레스">레그프레스 · 하체</option><option value="45도 레그프레스">45도 레그프레스 · 하체</option><option value="수평 레그프레스">수평 레그프레스 · 하체</option><option value="레그익스텐션">레그익스텐션 · 하체</option><option value="시티드 레그컬">시티드 레그컬 · 하체</option><option value="라잉 레그컬">라잉 레그컬 · 하체</option><option value="스탠딩 레그컬">스탠딩 레그컬 · 하체</option><option value="노르딕 햄스트링 컬">노르딕 햄스트링 컬 · 하체</option><option value="스티프레그 데드리프트">스티프레그 데드리프트 · 하체</option><option value="힙쓰러스트">힙쓰러스트 · 하체</option><option value="바벨 힙쓰러스트">바벨 힙쓰러스트 · 하체</option><option value="덤벨 힙쓰러스트">덤벨 힙쓰러스트 · 하체</option><option value="글루트 브리지">글루트 브리지 · 하체</option><option value="싱글레그 글루트 브리지">싱글레그 글루트 브리지 · 하체</option><option value="힙 어브덕션">힙 어브덕션 · 하체</option><option value="힙 어덕션">힙 어덕션 · 하체</option><option value="카프레이즈">카프레이즈 · 하체</option><option value="스탠딩 카프레이즈">스탠딩 카프레이즈 · 하체</option><option value="시티드 카프레이즈">시티드 카프레이즈 · 하체</option><option value="레그프레스 카프레이즈">레그프레스 카프레이즈 · 하체</option><option value="싱글레그 카프레이즈">싱글레그 카프레이즈 · 하체</option><option value="스모 스쿼트">스모 스쿼트 · 하체</option><option value="코사크 스쿼트">코사크 스쿼트 · 하체</option><option value="케틀벨 스윙">케틀벨 스윙 · 하체</option><option value="프론트 런지">프론트 런지 · 하체</option><option value="리어풋 엘리베이티드 스플릿 스쿼트">리어풋 엘리베이티드 스플릿 스쿼트 · 하체</option><option value="싱글레그 RDL">싱글레그 RDL · 하체</option><option value="버피">버피 · 전신/컨디셔닝</option><option value="점프 버피">점프 버피 · 전신/컨디셔닝</option><option value="점핑잭">점핑잭 · 전신/컨디셔닝</option><option value="하이니">하이니 · 전신/컨디셔닝</option><option value="스케이터 점프">스케이터 점프 · 전신/컨디셔닝</option><option value="배틀로프">배틀로프 · 전신/컨디셔닝</option><option value="케틀벨 스내치">케틀벨 스내치 · 전신/컨디셔닝</option><option value="케틀벨 클린">케틀벨 클린 · 전신/컨디셔닝</option><option value="케틀벨 터키시 겟업">케틀벨 터키시 겟업 · 전신/컨디셔닝</option><option value="덤벨 스내치">덤벨 스내치 · 전신/컨디셔닝</option><option value="덤벨 클린">덤벨 클린 · 전신/컨디셔닝</option><option value="바벨 클린">바벨 클린 · 전신/컨디셔닝</option><option value="파워클린">파워클린 · 전신/컨디셔닝</option><option value="행클린">행클린 · 전신/컨디셔닝</option><option value="클린앤저크">클린앤저크 · 전신/컨디셔닝</option><option value="푸쉬저크">푸쉬저크 · 전신/컨디셔닝</option><option value="스플릿저크">스플릿저크 · 전신/컨디셔닝</option><option value="썰매 밀기">썰매 밀기 · 전신/컨디셔닝</option><option value="썰매 끌기">썰매 끌기 · 전신/컨디셔닝</option><option value="농부걷기">농부걷기 · 전신/컨디셔닝</option><option value="수트케이스 캐리">수트케이스 캐리 · 전신/컨디셔닝</option><option value="프론트랙 캐리">프론트랙 캐리 · 전신/컨디셔닝</option><option value="오버헤드 캐리">오버헤드 캐리 · 전신/컨디셔닝</option><option value="샌드백 캐리">샌드백 캐리 · 전신/컨디셔닝</option><option value="샌드백 스쿼트">샌드백 스쿼트 · 전신/컨디셔닝</option><option value="샌드백 런지">샌드백 런지 · 전신/컨디셔닝</option><option value="로프 클라임">로프 클라임 · 전신/컨디셔닝</option><option value="배틀로프 웨이브">배틀로프 웨이브 · 전신/컨디셔닝</option><option value="배틀로프 슬램">배틀로프 슬램 · 전신/컨디셔닝</option><option value="메디신볼 슬램">메디신볼 슬램 · 전신/컨디셔닝</option><option value="메디신볼 로테이션 스로우">메디신볼 로테이션 스로우 · 전신/컨디셔닝</option><option value="메디신볼 체스트패스">메디신볼 체스트패스 · 전신/컨디셔닝</option><option value="메디신볼 오버헤드스로우">메디신볼 오버헤드스로우 · 전신/컨디셔닝</option></select>
+    <select id="exercise" required class="dbFullSelect"><option value="">운동을 선택하세요</option><option value="바벨 벤치프레스">바벨 벤치프레스 · 가슴 · </option><option value="인클라인 바벨 벤치프레스">인클라인 바벨 벤치프레스 · 가슴 · </option><option value="디클라인 바벨 벤치프레스">디클라인 바벨 벤치프레스 · 가슴 · </option><option value="덤벨 벤치프레스">덤벨 벤치프레스 · 가슴 · </option><option value="인클라인 덤벨 벤치프레스">인클라인 덤벨 벤치프레스 · 가슴 · </option><option value="디클라인 덤벨 벤치프레스">디클라인 덤벨 벤치프레스 · 가슴 · </option><option value="덤벨 플라이">덤벨 플라이 · 가슴 · </option><option value="인클라인 덤벨 플라이">인클라인 덤벨 플라이 · 가슴 · </option><option value="케이블 플라이">케이블 플라이 · 가슴 · </option><option value="하이 케이블 플라이">하이 케이블 플라이 · 가슴 · </option><option value="로우 케이블 플라이">로우 케이블 플라이 · 가슴 · </option><option value="머신 체스트프레스">머신 체스트프레스 · 가슴 · </option><option value="인클라인 머신 체스트프레스">인클라인 머신 체스트프레스 · 가슴 · </option><option value="디클라인 머신 체스트프레스">디클라인 머신 체스트프레스 · 가슴 · </option><option value="펙덱 플라이">펙덱 플라이 · 가슴 · </option><option value="스미스머신 벤치프레스">스미스머신 벤치프레스 · 가슴 · </option><option value="스미스머신 인클라인 벤치프레스">스미스머신 인클라인 벤치프레스 · 가슴 · </option><option value="스미스머신 디클라인 벤치프레스">스미스머신 디클라인 벤치프레스 · 가슴 · </option><option value="푸쉬업">푸쉬업 · 가슴 · </option><option value="와이드 푸쉬업">와이드 푸쉬업 · 가슴 · </option><option value="클로즈그립 푸쉬업">클로즈그립 푸쉬업 · 가슴 · </option><option value="디클라인 푸쉬업">디클라인 푸쉬업 · 가슴 · </option><option value="인클라인 푸쉬업">인클라인 푸쉬업 · 가슴 · </option><option value="아처 푸쉬업">아처 푸쉬업 · 가슴 · </option><option value="폭발적 푸쉬업">폭발적 푸쉬업 · 가슴 · </option><option value="체스트 딥스">체스트 딥스 · 가슴 · </option><option value="중량 딥스">중량 딥스 · 가슴 · </option><option value="링 딥스">링 딥스 · 가슴 · </option><option value="케이블 프레스">케이블 프레스 · 가슴 · </option><option value="덤벨 스퀴즈 프레스">덤벨 스퀴즈 프레스 · 가슴 · </option><option value="바벨 스퀴즈 프레스">바벨 스퀴즈 프레스 · 가슴 · </option><option value="랜드마인 프레스">랜드마인 프레스 · 가슴 · </option><option value="플레이트 프레스">플레이트 프레스 · 가슴 · </option><option value="머신 플라이">머신 플라이 · 가슴 · </option><option value="원암 케이블 플라이">원암 케이블 플라이 · 가슴 · </option><option value="원암 덤벨 플라이">원암 덤벨 플라이 · 가슴 · </option><option value="밴드 체스트프레스">밴드 체스트프레스 · 가슴 · </option><option value="밴드 플라이">밴드 플라이 · 가슴 · </option><option value="푸쉬업 플러스">푸쉬업 플러스 · 가슴 · </option><option value="Svend Press">Svend Press · 가슴 · </option><option value="풀업">풀업 · 등 · </option><option value="중량 풀업">중량 풀업 · 등 · </option><option value="친업">친업 · 등 · </option><option value="중량 친업">중량 친업 · 등 · </option><option value="어시스트 풀업">어시스트 풀업 · 등 · </option><option value="랫풀다운">랫풀다운 · 등 · </option><option value="와이드그립 랫풀다운">와이드그립 랫풀다운 · 등 · </option><option value="뉴트럴그립 랫풀다운">뉴트럴그립 랫풀다운 · 등 · </option><option value="언더그립 랫풀다운">언더그립 랫풀다운 · 등 · </option><option value="클로즈그립 랫풀다운">클로즈그립 랫풀다운 · 등 · </option><option value="원암 랫풀다운">원암 랫풀다운 · 등 · </option><option value="스트레이트암 풀다운">스트레이트암 풀다운 · 등 · </option><option value="케이블 풀오버">케이블 풀오버 · 등 · </option><option value="덤벨 풀오버">덤벨 풀오버 · 등 · </option><option value="바벨 로우">바벨 로우 · 등 · </option><option value="펜들레이 로우">펜들레이 로우 · 등 · </option><option value="벤트오버 바벨로우">벤트오버 바벨로우 · 등 · </option><option value="Yates 로우">Yates 로우 · 등 · </option><option value="원암 덤벨로우">원암 덤벨로우 · 등 · </option><option value="체스트서포티드 덤벨로우">체스트서포티드 덤벨로우 · 등 · </option><option value="티바로우">티바로우 · 등 · </option><option value="머신 티바로우">머신 티바로우 · 등 · </option><option value="시티드 케이블로우">시티드 케이블로우 · 등 · </option><option value="와이드 케이블로우">와이드 케이블로우 · 등 · </option><option value="클로즈그립 케이블로우">클로즈그립 케이블로우 · 등 · </option><option value="원암 케이블로우">원암 케이블로우 · 등 · </option><option value="머신 로우">머신 로우 · 등 · </option><option value="하이로우 머신">하이로우 머신 · 등 · </option><option value="로우로우 머신">로우로우 머신 · 등 · </option><option value="랜드마인 로우">랜드마인 로우 · 등 · </option><option value="인버티드 로우">인버티드 로우 · 등 · </option><option value="링 로우">링 로우 · 등 · </option><option value="바벨 슈러그">바벨 슈러그 · 등 · </option><option value="덤벨 슈러그">덤벨 슈러그 · 등 · </option><option value="머신 슈러그">머신 슈러그 · 등 · </option><option value="케이블 슈러그">케이블 슈러그 · 등 · </option><option value="랙풀">랙풀 · 등 · </option><option value="데드리프트">데드리프트 · 등 · </option><option value="컨벤셔널 데드리프트">컨벤셔널 데드리프트 · 등 · </option><option value="루마니안 데드리프트">루마니안 데드리프트 · 등 · </option><option value="스모 데드리프트">스모 데드리프트 · 등 · </option><option value="바벨 굿모닝">바벨 굿모닝 · 등 · </option><option value="백 익스텐션">백 익스텐션 · 등 · </option><option value="중량 백 익스텐션">중량 백 익스텐션 · 등 · </option><option value="리버스 하이퍼">리버스 하이퍼 · 등 · </option><option value="케이블 페이스풀">케이블 페이스풀 · 등 · </option><option value="밴드 풀어파트">밴드 풀어파트 · 등 · </option><option value="TRX 로우">TRX 로우 · 등 · </option><option value="TRX 페이스풀">TRX 페이스풀 · 등 · </option><option value="바벨 오버헤드프레스">바벨 오버헤드프레스 · 어깨 · </option><option value="밀리터리 프레스">밀리터리 프레스 · 어깨 · </option><option value="푸쉬프레스">푸쉬프레스 · 어깨 · </option><option value="덤벨 숄더프레스">덤벨 숄더프레스 · 어깨 · </option><option value="아놀드 프레스">아놀드 프레스 · 어깨 · </option><option value="시티드 덤벨 숄더프레스">시티드 덤벨 숄더프레스 · 어깨 · </option><option value="머신 숄더프레스">머신 숄더프레스 · 어깨 · </option><option value="스미스 숄더프레스">스미스 숄더프레스 · 어깨 · </option><option value="랜드마인 숄더프레스">랜드마인 숄더프레스 · 어깨 · </option><option value="덤벨 레터럴레이즈">덤벨 레터럴레이즈 · 어깨 · </option><option value="케이블 레터럴레이즈">케이블 레터럴레이즈 · 어깨 · </option><option value="원암 케이블 레터럴레이즈">원암 케이블 레터럴레이즈 · 어깨 · </option><option value="머신 레터럴레이즈">머신 레터럴레이즈 · 어깨 · </option><option value="밴드 레터럴레이즈">밴드 레터럴레이즈 · 어깨 · </option><option value="덤벨 프론트레이즈">덤벨 프론트레이즈 · 어깨 · </option><option value="케이블 프론트레이즈">케이블 프론트레이즈 · 어깨 · </option><option value="플레이트 프론트레이즈">플레이트 프론트레이즈 · 어깨 · </option><option value="바벨 프론트레이즈">바벨 프론트레이즈 · 어깨 · </option><option value="덤벨 리어델트 플라이">덤벨 리어델트 플라이 · 어깨 · </option><option value="머신 리어델트 플라이">머신 리어델트 플라이 · 어깨 · </option><option value="케이블 리어델트 플라이">케이블 리어델트 플라이 · 어깨 · </option><option value="벤트오버 레터럴레이즈">벤트오버 레터럴레이즈 · 어깨 · </option><option value="페이스풀">페이스풀 · 어깨 · </option><option value="케이블 Y레이즈">케이블 Y레이즈 · 어깨 · </option><option value="덤벨 Y레이즈">덤벨 Y레이즈 · 어깨 · </option><option value="바벨 업라이트로우">바벨 업라이트로우 · 어깨 · </option><option value="케이블 업라이트로우">케이블 업라이트로우 · 어깨 · </option><option value="덤벨 업라이트로우">덤벨 업라이트로우 · 어깨 · </option><option value="핸드스탠드 푸쉬업">핸드스탠드 푸쉬업 · 어깨 · </option><option value="파이크 푸쉬업">파이크 푸쉬업 · 어깨 · </option><option value="덤벨 클린앤프레스">덤벨 클린앤프레스 · 어깨 · </option><option value="바벨 클린앤프레스">바벨 클린앤프레스 · 어깨 · </option><option value="케틀벨 클린앤프레스">케틀벨 클린앤프레스 · 어깨 · </option><option value="터키시 겟업">터키시 겟업 · 어깨 · </option><option value="배틀로프 숄더">배틀로프 숄더 · 어깨 · </option><option value="바벨 컬">바벨 컬 · 이두 · </option><option value="EZ바 컬">EZ바 컬 · 이두 · </option><option value="덤벨 컬">덤벨 컬 · 이두 · </option><option value="교차 덤벨 컬">교차 덤벨 컬 · 이두 · </option><option value="해머 컬">해머 컬 · 이두 · </option><option value="인클라인 덤벨 컬">인클라인 덤벨 컬 · 이두 · </option><option value="프리처 컬">프리처 컬 · 이두 · </option><option value="EZ바 프리처 컬">EZ바 프리처 컬 · 이두 · </option><option value="머신 프리처 컬">머신 프리처 컬 · 이두 · </option><option value="케이블 컬">케이블 컬 · 이두 · </option><option value="원암 케이블 컬">원암 케이블 컬 · 이두 · </option><option value="로프 해머 컬">로프 해머 컬 · 이두 · </option><option value="케이블 해머 컬">케이블 해머 컬 · 이두 · </option><option value="리버스 컬">리버스 컬 · 이두 · </option><option value="EZ바 리버스 컬">EZ바 리버스 컬 · 이두 · </option><option value="덤벨 리버스 컬">덤벨 리버스 컬 · 이두 · </option><option value="컨센트레이션 컬">컨센트레이션 컬 · 이두 · </option><option value="스파이더 컬">스파이더 컬 · 이두 · </option><option value="드래그 컬">드래그 컬 · 이두 · </option><option value="바벨 드래그 컬">바벨 드래그 컬 · 이두 · </option><option value="21 컬">21 컬 · 이두 · </option><option value="Zottman 컬">Zottman 컬 · 이두 · </option><option value="덤벨 얼터네이트 컬">덤벨 얼터네이트 컬 · 이두 · </option><option value="시티드 덤벨 컬">시티드 덤벨 컬 · 이두 · </option><option value="월 컬">월 컬 · 이두 · </option><option value="밴드 컬">밴드 컬 · 이두 · </option><option value="TRX 컬">TRX 컬 · 이두 · </option><option value="케이블 프리처 컬">케이블 프리처 컬 · 이두 · </option><option value="클로즈그립 벤치프레스">클로즈그립 벤치프레스 · 삼두 · </option><option value="중량 클로즈그립 벤치프레스">중량 클로즈그립 벤치프레스 · 삼두 · </option><option value="딥스">딥스 · 삼두 · </option><option value="케이블 푸쉬다운">케이블 푸쉬다운 · 삼두 · </option><option value="로프 푸쉬다운">로프 푸쉬다운 · 삼두 · </option><option value="바 푸쉬다운">바 푸쉬다운 · 삼두 · </option><option value="V바 푸쉬다운">V바 푸쉬다운 · 삼두 · </option><option value="원암 케이블 푸쉬다운">원암 케이블 푸쉬다운 · 삼두 · </option><option value="리버스그립 푸쉬다운">리버스그립 푸쉬다운 · 삼두 · </option><option value="오버헤드 케이블 익스텐션">오버헤드 케이블 익스텐션 · 삼두 · </option><option value="로프 오버헤드 익스텐션">로프 오버헤드 익스텐션 · 삼두 · </option><option value="덤벨 오버헤드 익스텐션">덤벨 오버헤드 익스텐션 · 삼두 · </option><option value="원암 덤벨 오버헤드 익스텐션">원암 덤벨 오버헤드 익스텐션 · 삼두 · </option><option value="EZ바 스컬크러셔">EZ바 스컬크러셔 · 삼두 · </option><option value="바벨 스컬크러셔">바벨 스컬크러셔 · 삼두 · </option><option value="덤벨 스컬크러셔">덤벨 스컬크러셔 · 삼두 · </option><option value="인클라인 스컬크러셔">인클라인 스컬크러셔 · 삼두 · </option><option value="JM 프레스">JM 프레스 · 삼두 · </option><option value="덤벨 킥백">덤벨 킥백 · 삼두 · </option><option value="케이블 킥백">케이블 킥백 · 삼두 · </option><option value="원암 케이블 킥백">원암 케이블 킥백 · 삼두 · </option><option value="벤치 딥스">벤치 딥스 · 삼두 · </option><option value="다이아몬드 푸쉬업">다이아몬드 푸쉬업 · 삼두 · </option><option value="밴드 푸쉬다운">밴드 푸쉬다운 · 삼두 · </option><option value="밴드 오버헤드 익스텐션">밴드 오버헤드 익스텐션 · 삼두 · </option><option value="크런치">크런치 · 복근 · </option><option value="리버스 크런치">리버스 크런치 · 복근 · </option><option value="케이블 크런치">케이블 크런치 · 복근 · </option><option value="중량 크런치">중량 크런치 · 복근 · </option><option value="바이시클 크런치">바이시클 크런치 · 복근 · </option><option value="플러터 킥">플러터 킥 · 복근 · </option><option value="레그레이즈">레그레이즈 · 복근 · </option><option value="행잉 레그레이즈">행잉 레그레이즈 · 복근 · </option><option value="행잉 니레이즈">행잉 니레이즈 · 복근 · </option><option value="중량 행잉 니레이즈">중량 행잉 니레이즈 · 복근 · </option><option value="캡틴스체어 니레이즈">캡틴스체어 니레이즈 · 복근 · </option><option value="캡틴스체어 레그레이즈">캡틴스체어 레그레이즈 · 복근 · </option><option value="바닥 레그레이즈">바닥 레그레이즈 · 복근 · </option><option value="사이드 레그레이즈">사이드 레그레이즈 · 복근 · </option><option value="V업">V업 · 복근 · </option><option value="시티드 V업">시티드 V업 · 복근 · </option><option value="토터치">토터치 · 복근 · </option><option value="러시안 트위스트">러시안 트위스트 · 복근 · </option><option value="중량 러시안 트위스트">중량 러시안 트위스트 · 복근 · </option><option value="윈드실드 와이퍼">윈드실드 와이퍼 · 복근 · </option><option value="행잉 윈드실드 와이퍼">행잉 윈드실드 와이퍼 · 복근 · </option><option value="플랭크">플랭크 · 복근 · </option><option value="사이드 플랭크">사이드 플랭크 · 복근 · </option><option value="RKC 플랭크">RKC 플랭크 · 복근 · </option><option value="중량 플랭크">중량 플랭크 · 복근 · </option><option value="플랭크 잭">플랭크 잭 · 복근 · </option><option value="마운틴 클라이머">마운틴 클라이머 · 복근 · </option><option value="데드버그">데드버그 · 복근 · </option><option value="버드독">버드독 · 복근 · </option><option value="할로우 바디 홀드">할로우 바디 홀드 · 복근 · </option><option value="할로우 락">할로우 락 · 복근 · </option><option value="슈퍼맨">슈퍼맨 · 복근 · </option><option value="AB 롤아웃">AB 롤아웃 · 복근 · </option><option value="바벨 롤아웃">바벨 롤아웃 · 복근 · </option><option value="케이블 롤아웃">케이블 롤아웃 · 복근 · </option><option value="짐볼 크런치">짐볼 크런치 · 복근 · </option><option value="짐볼 레그레이즈">짐볼 레그레이즈 · 복근 · </option><option value="팔로프 프레스">팔로프 프레스 · 복근 · </option><option value="케이블 우드초퍼">케이블 우드초퍼 · 복근 · </option><option value="하이투로우 우드초퍼">하이투로우 우드초퍼 · 복근 · </option><option value="로우투하이 우드초퍼">로우투하이 우드초퍼 · 복근 · </option><option value="사이드 밴드">사이드 밴드 · 복근 · </option><option value="덤벨 사이드 밴드">덤벨 사이드 밴드 · 복근 · </option><option value="케이블 사이드 밴드">케이블 사이드 밴드 · 복근 · </option><option value="니투엘보우">니투엘보우 · 복근 · </option><option value="엘보우투니 크런치">엘보우투니 크런치 · 복근 · </option><option value="백스쿼트">백스쿼트 · 하체 · </option><option value="프론트스쿼트">프론트스쿼트 · 하체 · </option><option value="하이바 스쿼트">하이바 스쿼트 · 하체 · </option><option value="로우바 스쿼트">로우바 스쿼트 · 하체 · </option><option value="박스 스쿼트">박스 스쿼트 · 하체 · </option><option value="핵 스쿼트">핵 스쿼트 · 하체 · </option><option value="스미스 스쿼트">스미스 스쿼트 · 하체 · </option><option value="고블릿 스쿼트">고블릿 스쿼트 · 하체 · </option><option value="덤벨 스쿼트">덤벨 스쿼트 · 하체 · </option><option value="불가리안 스플릿 스쿼트">불가리안 스플릿 스쿼트 · 하체 · </option><option value="런지">런지 · 하체 · </option><option value="워킹 런지">워킹 런지 · 하체 · </option><option value="리버스 런지">리버스 런지 · 하체 · </option><option value="사이드 런지">사이드 런지 · 하체 · </option><option value="점프 스쿼트">점프 스쿼트 · 하체 · </option><option value="스텝업">스텝업 · 하체 · </option><option value="중량 스텝업">중량 스텝업 · 하체 · </option><option value="레그프레스">레그프레스 · 하체 · </option><option value="45도 레그프레스">45도 레그프레스 · 하체 · </option><option value="수평 레그프레스">수평 레그프레스 · 하체 · </option><option value="레그익스텐션">레그익스텐션 · 하체 · </option><option value="시티드 레그컬">시티드 레그컬 · 하체 · </option><option value="라잉 레그컬">라잉 레그컬 · 하체 · </option><option value="스탠딩 레그컬">스탠딩 레그컬 · 하체 · </option><option value="노르딕 햄스트링 컬">노르딕 햄스트링 컬 · 하체 · </option><option value="스티프레그 데드리프트">스티프레그 데드리프트 · 하체 · </option><option value="힙쓰러스트">힙쓰러스트 · 하체 · </option><option value="바벨 힙쓰러스트">바벨 힙쓰러스트 · 하체 · </option><option value="덤벨 힙쓰러스트">덤벨 힙쓰러스트 · 하체 · </option><option value="글루트 브리지">글루트 브리지 · 하체 · </option><option value="싱글레그 글루트 브리지">싱글레그 글루트 브리지 · 하체 · </option><option value="힙 어브덕션">힙 어브덕션 · 하체 · </option><option value="힙 어덕션">힙 어덕션 · 하체 · </option><option value="카프레이즈">카프레이즈 · 하체 · </option><option value="스탠딩 카프레이즈">스탠딩 카프레이즈 · 하체 · </option><option value="시티드 카프레이즈">시티드 카프레이즈 · 하체 · </option><option value="레그프레스 카프레이즈">레그프레스 카프레이즈 · 하체 · </option><option value="싱글레그 카프레이즈">싱글레그 카프레이즈 · 하체 · </option><option value="스모 스쿼트">스모 스쿼트 · 하체 · </option><option value="코사크 스쿼트">코사크 스쿼트 · 하체 · </option><option value="케틀벨 스윙">케틀벨 스윙 · 하체 · </option><option value="프론트 런지">프론트 런지 · 하체 · </option><option value="리어풋 엘리베이티드 스플릿 스쿼트">리어풋 엘리베이티드 스플릿 스쿼트 · 하체 · </option><option value="싱글레그 RDL">싱글레그 RDL · 하체 · </option><option value="버피">버피 · 전신/컨디셔닝 · </option><option value="점프 버피">점프 버피 · 전신/컨디셔닝 · </option><option value="점핑잭">점핑잭 · 전신/컨디셔닝 · </option><option value="하이니">하이니 · 전신/컨디셔닝 · </option><option value="스케이터 점프">스케이터 점프 · 전신/컨디셔닝 · </option><option value="배틀로프">배틀로프 · 전신/컨디셔닝 · </option><option value="케틀벨 스내치">케틀벨 스내치 · 전신/컨디셔닝 · </option><option value="케틀벨 클린">케틀벨 클린 · 전신/컨디셔닝 · </option><option value="케틀벨 터키시 겟업">케틀벨 터키시 겟업 · 전신/컨디셔닝 · </option><option value="덤벨 스내치">덤벨 스내치 · 전신/컨디셔닝 · </option><option value="덤벨 클린">덤벨 클린 · 전신/컨디셔닝 · </option><option value="바벨 클린">바벨 클린 · 전신/컨디셔닝 · </option><option value="파워클린">파워클린 · 전신/컨디셔닝 · </option><option value="행클린">행클린 · 전신/컨디셔닝 · </option><option value="클린앤저크">클린앤저크 · 전신/컨디셔닝 · </option><option value="푸쉬저크">푸쉬저크 · 전신/컨디셔닝 · </option><option value="스플릿저크">스플릿저크 · 전신/컨디셔닝 · </option><option value="썰매 밀기">썰매 밀기 · 전신/컨디셔닝 · </option><option value="썰매 끌기">썰매 끌기 · 전신/컨디셔닝 · </option><option value="농부걷기">농부걷기 · 전신/컨디셔닝 · </option><option value="수트케이스 캐리">수트케이스 캐리 · 전신/컨디셔닝 · </option><option value="프론트랙 캐리">프론트랙 캐리 · 전신/컨디셔닝 · </option><option value="오버헤드 캐리">오버헤드 캐리 · 전신/컨디셔닝 · </option><option value="샌드백 캐리">샌드백 캐리 · 전신/컨디셔닝 · </option><option value="샌드백 스쿼트">샌드백 스쿼트 · 전신/컨디셔닝 · </option><option value="샌드백 런지">샌드백 런지 · 전신/컨디셔닝 · </option><option value="로프 클라임">로프 클라임 · 전신/컨디셔닝 · </option><option value="배틀로프 웨이브">배틀로프 웨이브 · 전신/컨디셔닝 · </option><option value="배틀로프 슬램">배틀로프 슬램 · 전신/컨디셔닝 · </option><option value="메디신볼 슬램">메디신볼 슬램 · 전신/컨디셔닝 · </option><option value="메디신볼 로테이션 스로우">메디신볼 로테이션 스로우 · 전신/컨디셔닝 · </option><option value="메디신볼 체스트패스">메디신볼 체스트패스 · 전신/컨디셔닝 · </option><option value="메디신볼 오버헤드스로우">메디신볼 오버헤드스로우 · 전신/컨디셔닝 · </option></select>
     <div id="exerciseSearchResults" class="foodResults"></div>
   </div>
   <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
@@ -125,16 +118,18 @@
   <div class="batchActions"><button type="button" id="saveBatchWorkout">한 번에 운동 저장</button></div>
   <p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
 </div>
+<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공인 9:16 카드</span></div><button class="ghostBtn" type="button" onclick="garangOpenShare({type:'workout',data:(window.__FitMindV6DB?.().workouts||[]).slice(-1)[0]||{}})">인증 만들기</button></div>
 <div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
 <div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
 <div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
 <div id="todayWorkoutCalorieMeta" class="muted">운동시간 0분 · 추정치</div>
 </div>
 <div id="workoutList"></div>
+<div id="workoutShareMount"></div>
 </section>
 
 <section id="diet" class="page">
-<h2>식단</h2>
+<div class="pageTitle"><div><span class="eyebrow">NUTRITION</span><h2>식단</h2></div></div>
 <form id="mealForm" class="card">
   <label class="fieldLabel">음식 검색</label>
   <div class="foodSearchWrap">
@@ -193,6 +188,13 @@
 <div id="mealList"></div>
 </section>
 
+<section id="running" class="page">
+  <div class="pageTitle"><div><span class="eyebrow">RUN</span><h2>러닝</h2><p>GPS로 거리와 페이스를 실시간 기록하세요.</p></div></div>
+  <div class="runLive card"><div class="runMainMetric"><span id="runStatus">READY</span><strong id="runDistance">0.00</strong><small>km</small></div><div class="runMetrics"><div><span>시간</span><b id="runTime">00:00</b></div><div><span>페이스</span><b id="runPace">--:--</b></div><div><span>칼로리</span><b id="runKcal">0</b></div></div><div class="runControls"><button id="runStart" class="primaryBtn">▶ 러닝 시작</button><button id="runPause" class="ghostBtn" disabled>일시정지</button><button id="runStop" class="danger outline" disabled>■ 종료</button></div><p id="runGpsHint" class="muted">시작하면 브라우저의 위치 권한을 요청합니다. GPS는 앱 화면이 활성화된 동안 측정됩니다.</p></div>
+  <div class="card"><div class="sectionHead"><h3>경로</h3><span id="runGpsAccuracy" class="muted">GPS 대기</span></div><div id="runPath" class="runPath"><div class="runPathEmpty">러닝을 시작하면 이동 경로가 표시됩니다.</div></div></div>
+  <div class="card"><div class="sectionHead"><h3>최근 러닝</h3><span class="muted">GARANG RUN</span></div><div id="runHistory"></div></div>
+</section>
+
 <section id="body" class="page">
 <h2>🧍 바디체크</h2>
 
@@ -236,7 +238,7 @@
 </div>
 
 <div class="card" style="text-align:center;">
-  <div class="muted">FITMIND BODY SCORE</div>
+  <div class="muted">GARANG BODY SCORE</div>
   <div id="bodyScoreNumber" style="font-size:52px;font-weight:900;">—</div>
   <div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
   <div id="bodyScoreSummary" class="muted"></div>
@@ -260,7 +262,7 @@
 </section>
 
 <section id="report" class="page">
-<h2>리포트</h2>
+<div class="pageTitle"><div><span class="eyebrow">INSIGHTS</span><h2>리포트</h2></div></div>
 <div class="tabs" id="reportTabs">
   <button data-period="week" onclick="setReportPeriod('week')">주간</button>
   <button data-period="month" onclick="setReportPeriod('month')">월간</button>
@@ -291,16 +293,16 @@
 </section>
 
 <section id="chat" class="page">
-<h2>AI 채팅</h2>
+<div class="pageTitle"><div><span class="eyebrow">AI COACH</span><h2>나의 AI 코치</h2><p>운동·식단·러닝·체중 기록을 연결해서 대화합니다.</p></div><button class="ghostBtn" onclick="newGarangChat()">＋ 새 채팅</button></div>
+<div class="coachQuick"><button onclick="garangAsk('오늘 운동 뭐 할까?')">오늘 운동 뭐 할까?</button><button onclick="garangAsk('오늘 단백질 얼마나 먹어야 해?')">단백질</button><button onclick="garangAsk('최근 기록을 분석해줘')">최근 분석</button></div>
+<div id="coachInsightCard" class="card coachInsight"><span class="eyebrow">TODAY'S COACH</span><strong id="coachInsightText">최근 기록을 분석하는 중...</strong></div>
 <div id="chatLog" class="chatlog"></div>
 <form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
 <div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
 </main>
 
-<nav id="mainNav" class="hidden">
-<button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button>
-</nav>
+<nav id="mainNav" class="hidden"><button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('running')">러닝</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button><button onclick="openPage('profile')">프로필</button></nav>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -314,7 +316,7 @@
 <script src="v6/client/cloud-router-v6.js"></script>
 <script src="v6/client/data-engine-v6.5.js?v=6.5.0-final"></script>
 <script src="v6/client/dialogue-v6.5.1.js?v=6.5.1"></script>
-<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">FitMind V8.2.0</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V8.5.0</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
 <script src="v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
 <script src="v8-batch.js?v=8.0.0"></script>
 <script src="v8-personal-ai.js?v=8.0.0"></script>
@@ -322,6 +324,8 @@
 <script src="v8-nutrition.js?v=8.0.0"></script>
 <script src="v8-reports.js?v=8.0.0"></script>
 <script src="v8.1-batch-ui.js?v=8.1.0"></script>
-<script src="v8.2-db-selectors.js?v=8.2.0"></script>
+<script src="v8.5-core.js?v=8.5.0"></script>
+<script src="v8.5-running.js?v=8.5.0"></script>
+<script src="v8.5-share.js?v=8.5.0"></script>
 </body>
 </html>
