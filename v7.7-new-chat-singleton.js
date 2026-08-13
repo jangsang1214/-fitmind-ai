@@ -9,5 +9,5 @@ function cleanup(){
  });
 }
 window.addEventListener("DOMContentLoaded",cleanup);
-new MutationObserver(cleanup).observe(document.documentElement,{subtree:true,childList:true});
+
 })();

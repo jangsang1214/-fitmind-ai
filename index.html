@@ -16,6 +16,8 @@
 <style id="fitmindPageIsolation">
 .page{display:none!important}.page.active{display:block!important}
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
+[hidden]{display:none!important}
+html,body{min-height:100%;touch-action:manipulation}
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
 <link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
@@ -305,6 +307,20 @@
 <nav id="mainNav" class="hidden"><button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('running')">러닝</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button><button onclick="openPage('profile')">프로필</button></nav>
 </div>
 
+<script>
+(function(){
+  window.setAuthTab=window.setAuthTab||function(t){
+    document.querySelectorAll('#authTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+    const l=document.getElementById('loginForm'), s=document.getElementById('signupForm');
+    if(l) l.hidden=t!=='login'; if(s) s.hidden=t!=='signup';
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    const tabs=document.getElementById('authTabs');
+    if(tabs){tabs.addEventListener('click',function(e){const b=e.target.closest('button[data-tab]');if(b){e.preventDefault();window.setAuthTab(b.dataset.tab);}});}
+    window.setAuthTab('login');
+  },{once:true});
+})();
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
