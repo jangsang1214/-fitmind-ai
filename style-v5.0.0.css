@@ -65,3 +65,77 @@ nav.hidden{display:none}.authForm{display:flex;flex-direction:column}.google{wid
 
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
 #diet .todayNutrition{display:block}
+
+
+/* GARANG Modern Workout Certification v8.5.1 */
+.garang-cert-modern {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  min-height: 520px;
+  border-radius: 28px;
+  background: #111;
+  color: #fff;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif;
+  isolation: isolate;
+}
+.garang-cert-modern::after {
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.02) 35%, rgba(0,0,0,.72) 100%);
+  z-index:1; pointer-events:none;
+}
+.garang-cert-modern .cert-photo {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; z-index:0;
+}
+.garang-cert-modern .cert-top {
+  position:absolute; top:22px; left:22px; right:22px;
+  display:flex; justify-content:space-between; align-items:center;
+  z-index:2;
+}
+.garang-cert-modern .cert-brand {
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; font-weight:800; letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.garang-cert-modern .cert-mark {
+  width:24px; height:24px; border:1.5px solid currentColor;
+  border-radius:50%; display:grid; place-items:center;
+  font-size:10px; font-weight:900;
+}
+.garang-cert-modern .cert-date {
+  font-size:11px; font-weight:650; opacity:.82;
+}
+.garang-cert-modern .cert-bottom {
+  position:absolute; left:22px; right:22px; bottom:24px; z-index:2;
+}
+.garang-cert-modern .cert-kicker {
+  font-size:10px; font-weight:750; letter-spacing:.16em;
+  text-transform:uppercase; opacity:.72; margin-bottom:7px;
+}
+.garang-cert-modern .cert-title {
+  margin:0 0 14px; font-size:30px; line-height:1;
+  letter-spacing:-.045em; font-weight:900;
+}
+.garang-cert-modern .cert-stats {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px; margin-top:8px;
+}
+.garang-cert-modern .cert-stat {
+  padding:10px 11px; border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08); backdrop-filter:blur(10px);
+  border-radius:14px;
+}
+.garang-cert-modern .cert-label {
+  display:block; font-size:9px; opacity:.64;
+  letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px;
+}
+.garang-cert-modern .cert-value {
+  display:block; font-size:14px; font-weight:850; letter-spacing:-.02em;
+}
+.garang-cert-modern .cert-sets {
+  margin-top:10px; font-size:11px; font-weight:650; opacity:.84;
+}
+.garang-cert-modern.is-monochrome { filter:grayscale(1); }
+
