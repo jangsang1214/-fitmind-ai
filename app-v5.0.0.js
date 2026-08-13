@@ -27,6 +27,9 @@ const baseFoodDB=[
 ];
 
 let db=JSON.parse(localStorage.getItem(KEY)||JSON.stringify(EMPTY_DB));
+// V6 bridge: expose the same in-memory DB through a narrow accessor; core logic remains unchanged.
+window.__FitMindV6DB=()=>db;
+window.__FitMindV6Save=()=>localStorage.setItem(KEY,JSON.stringify(db));
 let reportPeriod="week";
 let reportCursor=new Date();
 reportCursor.setHours(0,0,0,0);
