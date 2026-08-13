@@ -1,0 +1,15 @@
+
+/* V8.2 complete DB selector UI */
+#workoutForm #exercise,#mealForm #meal,
+#fitmindBatchWorkoutCard .batchName,#fitmindBatchMealCard .batchName{
+ width:100%;min-height:44px;padding:10px 12px;border-radius:12px;
+ border:1px solid rgba(127,127,127,.22);background:var(--card,#fff);
+ font:inherit;box-sizing:border-box;
+}
+#workoutForm .exerciseSearchWrap,#mealForm .foodSearchWrap{width:100%}
+#workoutForm .exerciseSearchWrap input,#mealForm .foodSearchWrap input{display:none}
+#fitmindBatchWorkoutCard .batchName,#fitmindBatchMealCard .batchName{min-width:0}
+
+.dbFullSelect{appearance:auto!important}
+#workoutForm #exercise,#mealForm #meal{font-size:15px}
+#fitmindBatchWorkoutCard .batchName,#fitmindBatchMealCard .batchName{font-size:14px}
