@@ -29,17 +29,17 @@
 
 <main>
 <section id="auth" class="page active authPage">
-  <div class="authHero">
-    <img src="garang-mark.svg" class="authLogo" alt="GARANG">
+  <div class="garang-v853-auth-fix authHero">
+    <img src="garang-mark.svg" class="garang-v853-auth-fix authLogo" alt="GARANG">
     <div class="eyebrow">YOUR PERSONAL AI COACH</div>
     <h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1>
     <p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
   </div>
   <div class="card authCard">
     <div id="authTabs" class="tabs"><button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
-    <form id="loginForm" class="authForm"><input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required><button class="primaryBtn">GARANG 시작하기</button><button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button></form>
-    <form id="signupForm" class="authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
-    <div class="authDivider"><span>또는</span></div>
+    <form id="loginForm" class="garang-v853-auth-fix authForm"><input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required><button class="primaryBtn">GARANG 시작하기</button><button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button></form>
+    <form id="signupForm" class="garang-v853-auth-fix authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
+    <div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
     <button id="googleBtn" class="socialBtn" type="button">Google로 계속하기</button><button id="appleBtn" class="socialBtn" type="button">Apple로 계속하기</button>
     <p id="authError" class="error"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
   </div>
@@ -327,5 +327,11 @@
 <script src="v8.5-core.js?v=8.5.0"></script>
 <script src="v8.5-running.js?v=8.5.0"></script>
 <script src="v8.5-share.js?v=8.5.0"></script>
+<script src="garang-v8.5.2-firebase-auth.js"></script>
+<div class="garang-firebase-account-option" role="group" aria-label="Firebase 계정 가입"><strong>Firebase 계정으로 가입</strong><span>이메일과 비밀번호로 안전하게 계정을 만들 수 있어요.</span></div>
+<script src="garang-v8.5.2-runtime-auth-fix.js"></script>
+<script src="garang-v8.5.3-workout-db.js"></script>
+<script src="garang-v8.5.3-ui-bridge.js"></script>
+<script src="garang-v8.6-core.js"></script>
 </body>
 </html>

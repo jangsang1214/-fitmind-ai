@@ -1,0 +1,13 @@
+GARANG V8.5.2 FIX + TEST REPORT
+
+[PASS] index.html exists
+[PASS] firebase helper included
+[PASS] runtime auth fix included
+[PASS] auth visibility CSS present
+[PASS] workout cert module retained
+[PASS] all JS syntax valid
+
+Important runtime note:
+- Firebase credentials are intentionally NOT hardcoded. Set window.GARANG_FIREBASE_CONFIG in deployment.
+- Browser GPS, Google Maps API authorization, and Firebase backend cannot be physically exercised from this build environment.
+- Auth UI visibility and JS syntax were statically checked.
