@@ -18,7 +18,7 @@
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
-<link rel="stylesheet" href="v8.5-brand.css?v=8.5.0">
+<link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
 </head>
 <body>
 <div id="app">
@@ -118,7 +118,7 @@
   <div class="batchActions"><button type="button" id="saveBatchWorkout">한 번에 운동 저장</button></div>
   <p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
 </div>
-<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공인 9:16 카드</span></div><button class="ghostBtn" type="button" onclick="garangOpenShare({type:'workout',data:(window.__FitMindV6DB?.().workouts||[]).slice(-1)[0]||{}})">인증 만들기</button></div>
+<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공 · 9:16 / 16:9</span></div><button class="ghostBtn" type="button" onclick="GARANGV86.openCertification(GARANGV86.summary())">인증 만들기</button></div>
 <div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
 <div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
 <div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
@@ -316,7 +316,7 @@
 <script src="v6/client/cloud-router-v6.js"></script>
 <script src="v6/client/data-engine-v6.5.js?v=6.5.0-final"></script>
 <script src="v6/client/dialogue-v6.5.1.js?v=6.5.1"></script>
-<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V8.5.0</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V8.8.0</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
 <script src="v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
 <script src="v8-batch.js?v=8.0.0"></script>
 <script src="v8-personal-ai.js?v=8.0.0"></script>
@@ -332,6 +332,8 @@
 <script src="garang-v8.5.2-runtime-auth-fix.js"></script>
 <script src="garang-v8.5.3-workout-db.js"></script>
 <script src="garang-v8.5.3-ui-bridge.js"></script>
-<script src="garang-v8.6-core.js"></script>
+<script src="garang-v8.6-core.js?v=8.6.0"></script>
+<script src="garang-v8.6-integrated.js?v=8.6.0"></script>
+<script src="garang-v8.8-hotfix.js?v=8.8.0"></script>
 </body>
 </html>
