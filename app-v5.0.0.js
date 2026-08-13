@@ -303,7 +303,15 @@ function openPage(id){
  syncDietTodayNutrition(id);
  if(id==="diet")renderTodayNutrition();
  if(id==="body"){fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();}
- scrollTo(0,0);
+ if(id==="chat"){
+   setTimeout(()=>{
+     const log=document.getElementById("chatLog");
+     if(log){log.scrollTop=log.scrollHeight;log.scrollTo({top:log.scrollHeight,behavior:"instant"});}
+     window.scrollTo({top:document.documentElement.scrollHeight,behavior:"instant"});
+   },0);
+ }else{
+   scrollTo(0,0);
+ }
 }
 function isoToday(){return new Date().toISOString().slice(0,10)}
 function dateObj(s){if(!s)return null;const d=new Date(s);return isNaN(d)?null:d}

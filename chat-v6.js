@@ -81,7 +81,12 @@ function newChat(){
  d.chat=[]; save(); renderChat(); $("v6HistoryPanel")?.classList.add("hidden");
 }
 function routeCoach(text){
+ const grounded=window.FitMindDataEngineV65?.groundedAnswer?.(text);
  const context=compactContext();
+ if(grounded && grounded.text){
+   // Grounded local tools are authoritative for app-data questions; cloud is reserved for deeper synthesis.
+   return Promise.resolve(grounded.text);
+ }
  if(window.FitMindCloud?.route){
    return window.FitMindCloud.route(text,context,(t,c)=>{
      const r=window.FitMindV5?.answer?.(t,{db:db(),context:c});
@@ -89,7 +94,9 @@ function routeCoach(text){
    });
  }
  const r=window.FitMindV5?.answer?.(text,{db:db(),context});
- return Promise.resolve(r?.text||"지금은 로컬 코치로 답변할게.");
+ if(r?.text) return Promise.resolve(r.text);
+ const conversational=window.FitMindDialogueV651?.answer?.(text,context);
+ return Promise.resolve(conversational||"응, 듣고 있어. 조금 더 얘기해줘.");
 }
 async function send(text){
  const d=db(),t=String(text||"").trim();if(!t)return;

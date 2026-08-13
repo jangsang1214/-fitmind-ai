@@ -262,6 +262,18 @@
 
 <section id="chat" class="page">
 <h2>AI 채팅</h2>
+<div id="v61ChatControls" class="v61-chat-controls">
+<button type="button" id="v61NewChat">＋ 새 채팅</button>
+<button type="button" id="v61History">대화 기록</button>
+</div>
+<div id="v61HistoryPanel" class="v61-history-panel" hidden>
+<div class="v61-history-head"><strong>대화 기록</strong><button type="button" id="v61CloseHistory">닫기</button></div>
+<div id="v61HistoryList"></div>
+</div>
+<div id="v603ChatControls" class="v603-chat-controls">
+  <button type="button" id="v603NewChat">＋ 새 채팅</button>
+  <button type="button" id="v603History">대화 기록</button>
+</div>
 <div id="chatLog" class="chatlog"></div>
 <form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
 <div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
@@ -282,7 +294,10 @@
 <script src="local-coach-v5.6.js"></script>
 <script src="ui-v5.6.js"></script>
 <script src="v6/client/cloud-router-v6.js"></script>
-<script src="v6/client/chat-v6.js"></script>
-<script src="v6/client/chat-nav-v6.0.2.js"></script>
-</body>
+<script src="v6/client/chat-v6.js?v=6.5.0-final"></script>
+<script src="v6/client/chat-nav-v6.0.3.js?v=6.5.0-final"></script>
+<script src="v6/client/data-engine-v6.5.js?v=6.5.0-final"></script>
+<script src="v6/client/conversation-learning-v6.1.js?v=6.5.1"></script>
+<script src="v6/client/dialogue-v6.5.1.js?v=6.5.1"></script>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">FitMind V6.5.1</div></body>
 </html>

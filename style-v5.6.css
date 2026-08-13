@@ -19,3 +19,11 @@ nav button{font-size:11px;font-weight:800;color:#64748b;padding:8px 4px;display:
 .selectedFood,.foodResults{border-color:var(--fm-line);box-shadow:0 15px 35px rgba(15,23,42,.09)}.nutritionPreview>div{border:1px solid #edf0f5;background:#f8f9fc;border-radius:16px}.nutritionPreview b{font-size:18px}
 @media(max-width:520px){.fm-insight{grid-template-columns:1fr}.page h1,.page h2{font-size:27px}.card{padding:16px}.hero{padding:19px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.v61-chat-controls{display:flex;gap:8px;margin:10px 0 12px;position:relative;z-index:5}
+.v61-chat-controls button{border:1px solid #dfe4ee;background:#fff;border-radius:14px;padding:10px 14px;font-weight:800;cursor:pointer}
+.v61-chat-controls button:first-child{background:#111827;color:#fff;border-color:#111827}
+.v61-history-panel{background:#fff;border:1px solid #e4e8f0;border-radius:16px;padding:12px;margin:0 0 12px}
+.v61-history-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+.v65-mem-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.v65-mem-head button{border:0;background:transparent}.v65-mem-head+pre{white-space:pre-wrap;max-height:260px;overflow:auto;font-size:12px}.v65-mem-head{padding:8px}.v65-mem-head~pre{padding:8px;margin:0}.v65-mem-head{background:#f7f8fb;border-radius:12px}.v65-mem-head{border:1px solid #e5e7eb}#v65MemoryPanel{margin:8px 0 12px;border:1px solid #e5e7eb;border-radius:14px;background:#fff}
