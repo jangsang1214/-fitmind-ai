@@ -1,5 +1,5 @@
 {
-  "version": "FitMind AI v4",
+  "version": "8.1.0",
   "food_count": 500,
   "exercise_count": 300,
   "nutrition_policy": "Do not fabricate missing nutrition values",
@@ -14,5 +14,6 @@
     "weight-based calorie estimate",
     "daily/weekly/monthly/yearly report",
     "AI context integration"
-  ]
+  ],
+  "name": "FitMind AI"
 }

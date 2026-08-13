@@ -17,6 +17,7 @@
 .page{display:none!important}.page.active{display:block!important}
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
 </style>
+<link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
 </head>
 <body>
 <div id="app">
@@ -109,6 +110,20 @@
   <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
   <button>운동 저장</button>
 </form>
+
+<div class="batchCard" id="fitmindBatchWorkoutCard">
+  <div class="batchHead"><h3>🏋️ 여러 운동 한 번에 기록</h3><button type="button" id="addBatchWorkout">＋ 운동 추가</button><datalist id="fitmindExerciseList"></datalist>
+</div>
+  <div class="batchRows" id="batchWorkoutRows"></div>
+  <div class="batchTotals">
+    <div class="batchMetric"><span>총 볼륨</span><strong id="batchWorkoutVolume">0 kg</strong></div>
+    <div class="batchMetric"><span>총 소모</span><strong id="batchWorkoutKcal">0 kcal</strong></div>
+    <div class="batchMetric"><span>총 세트</span><strong id="batchWorkoutSets">0 세트</strong></div>
+    <div class="batchMetric"><span>운동시간</span><strong id="batchWorkoutTime">0 분</strong></div>
+  </div>
+  <div class="batchActions"><button type="button" id="saveBatchWorkout">한 번에 운동 저장</button></div>
+  <p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
+</div>
 <div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
 <div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
 <div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
@@ -159,6 +174,20 @@
   <p id="foodHint" class="muted">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
   <button id="saveMealBtn" type="button" onclick="return saveMealFromForm(event)">식단 저장</button>
 </form>
+
+<div class="batchCard" id="fitmindBatchMealCard">
+  <div class="batchHead"><h3>🍚 여러 음식 한 번에 기록</h3><button type="button" id="addBatchMeal">＋ 음식 추가</button></div>
+  <div class="batchRows" id="batchMealRows"></div>
+  <div class="batchTotals">
+    <div class="batchMetric"><span>총 칼로리</span><strong id="batchMealKcal">0 kcal</strong></div>
+    <div class="batchMetric"><span>단백질</span><strong id="batchMealProtein">0 g</strong></div>
+    <div class="batchMetric"><span>탄수화물</span><strong id="batchMealCarbs">0 g</strong></div>
+    <div class="batchMetric"><span>지방</span><strong id="batchMealFat">0 g</strong></div>
+  </div>
+  <div class="batchActions"><button type="button" id="saveBatchMeal">한 번에 식단 저장</button></div>
+  <p class="batchHint">음식 선택 시 100g 기준 영양정보를 자동으로 채우고, 실제 섭취량(g)에 맞춰 합산합니다.</p>
+  <datalist id="fitmindFoodList"></datalist>
+</div>
 <div id="fitmindDietOnlyTodayIntake"></div>
 <div id="mealList"></div>
 </section>
@@ -284,7 +313,13 @@
 <script src="v6/client/cloud-router-v6.js"></script>
 <script src="v6/client/data-engine-v6.5.js?v=6.5.0-final"></script>
 <script src="v6/client/dialogue-v6.5.1.js?v=6.5.1"></script>
-<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">FitMind V7.7.0 FIXED</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">FitMind V8.1.0</div><script src="v7.7-coach.js?v=7.7.0-fixed"></script>
 <script src="v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
+<script src="v8-batch.js?v=8.0.0"></script>
+<script src="v8-personal-ai.js?v=8.0.0"></script>
+<script src="v8-adaptive-program.js?v=8.0.0"></script>
+<script src="v8-nutrition.js?v=8.0.0"></script>
+<script src="v8-reports.js?v=8.0.0"></script>
+<script src="v8.1-batch-ui.js?v=8.1.0"></script>
 </body>
 </html>
