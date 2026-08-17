@@ -404,11 +404,12 @@ function workoutVolume(w){
   return (Number(w.weight)||0) * (Number(w.reps)||0) * (Number(w.sets)||0);
 }
 
-function exerciseTokens(x){return [x.exercise_name,...(x.aliases||[])].map(v=>String(v||"").toLowerCase().trim()).filter(Boolean)}
+function dbNorm(v){return String(v||"").toLowerCase().replace(/[\s_\-./()]+/g,"");}
+function exerciseTokens(x){return [x.exercise_name,...(x.aliases||[])].map(dbNorm).filter(Boolean)}
 function searchExercises(q){
- q=String(q||"").toLowerCase().trim();
+ q=dbNorm(q);
  if(!q)return [];
- return exerciseDB.filter(x=>exerciseTokens(x).some(v=>v.includes(q)||q.includes(v))).slice(0,8);
+ return exerciseDB.map(x=>{const toks=exerciseTokens(x);let score=0;for(const v of toks){if(v===q)score=Math.max(score,100);else if(v.startsWith(q))score=Math.max(score,80);else if(v.includes(q)||q.includes(v))score=Math.max(score,60);}return {x,score};}).filter(o=>o.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(o=>o.x);
 }
 function renderExerciseSearch(){
  const box=document.getElementById("exerciseSearchResults"); if(!box)return;
@@ -424,6 +425,8 @@ function selectExercise(id){
  document.getElementById("exerciseSearchResults").hidden=true;
 }
 exercise.addEventListener("input",renderExerciseSearch);
+const exerciseSearchButton=document.getElementById("exerciseSearchButton");
+exerciseSearchButton?.addEventListener("click",()=>{exercise?.focus();const q=exercise?.value?.trim()||"";const box=document.getElementById("exerciseSearchResults");if(!box)return;if(q)renderExerciseSearch();else{const top=exerciseDB.slice(0,12);box.hidden=false;box.innerHTML=top.map(x=>`<button type="button" class="foodResult" onclick="selectExercise('${String(x.exercise_id).replace(/'/g,"\\'")}')"><strong>${esc(x.exercise_name)}</strong><small>${esc(x.primary_muscle||"")} · ${esc(x.equipment||"")}</small></button>`).join("");}});
 document.addEventListener("click",e=>{const w=document.querySelector(".exerciseSearchWrap");if(w&&!w.contains(e.target)){const b=document.getElementById("exerciseSearchResults");if(b)b.hidden=true;}});
 
 workoutForm.onsubmit=e=>{
@@ -435,19 +438,19 @@ updateWorkoutCalorieUI();
 };
 
 function foodTokens(f){
- const vals=[f.name,...(f.aliases||[])].map(x=>String(x||"").toLowerCase().trim());
+ const vals=[f.name,...(f.aliases||[])].map(dbNorm);
  return vals.filter(Boolean);
 }
 function findFood(name){
- const q=String(name||"").toLowerCase().trim();
+ const q=dbNorm(name);
  if(!q)return null;
  return foodDB.find(f=>foodTokens(f).includes(q)) ||
         foodDB.find(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x)));
 }
 function searchFoods(name){
- const q=String(name||"").toLowerCase().trim();
+ const q=dbNorm(name);
  if(!q)return [];
- return foodDB.filter(f=>foodTokens(f).some(x=>x.includes(q)||q.includes(x))).slice(0,8);
+ return foodDB.map(f=>{const toks=foodTokens(f);let score=0;for(const x of toks){if(x===q)score=Math.max(score,100);else if(x.startsWith(q))score=Math.max(score,80);else if(x.includes(q)||q.includes(x))score=Math.max(score,60);}return {f,score};}).filter(o=>o.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(o=>o.f);
 }
 function fmtN(v){
  return v==null||Number.isNaN(Number(v))?"-":Number(v).toFixed(Number(v)%1?1:0);
@@ -552,6 +555,8 @@ const previewCarbsEl=document.getElementById("previewCarbs");
 const previewFatEl=document.getElementById("previewFat");
 
 mealEl?.addEventListener("input",()=>{window.selectedFoodId=null;renderFoodSearch();applyFoodDefaults()});
+const foodSearchButton=document.getElementById("foodSearchButton");
+foodSearchButton?.addEventListener("click",()=>{mealEl?.focus();const q=mealEl?.value?.trim()||"";const box=document.getElementById("foodSearchResults");if(!box)return;if(q)renderFoodSearch();else{const top=foodDB.slice(0,12);box.hidden=false;box.innerHTML=top.map(f=>`<button type="button" class="foodResult" onclick="selectFood('${String(f.food_id).replace(/'/g,"\\'")}')"><strong>${esc(f.name)}</strong><small>${esc(f.category||"")} · ${f.kcal!=null?fmtN(f.kcal)+" kcal / 100g":"영양정보 매핑 필요"}</small></button>`).join("");}});
 servingsEl?.addEventListener("input",applyFoodDefaults);
 servingUnitEl?.addEventListener("change",applyFoodDefaults);
 function adjustMealQty(dir){

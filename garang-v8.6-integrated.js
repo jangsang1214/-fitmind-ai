@@ -17,7 +17,7 @@
   function normalize(s){return String(s||'').toLowerCase().replace(/\s+/g,'');}
   function search(q){
     const n=normalize(q);
-    if(!n)return exerciseDB.slice(0,12);
+    if(!n)return [];
     return exerciseDB
       .map(x=>({x,score:(normalize(x.exercise_name||'').startsWith(n)?3:0)+(normalize(x.exercise_name||'').includes(n)?2:0)+((x.aliases||[]).some(a=>normalize(a).includes(n))?1:0)}))
       .filter(o=>o.score>0).sort((a,b)=>b.score-a.score).slice(0,12).map(o=>o.x);
@@ -88,7 +88,7 @@
     const section=document.getElementById('workout'), form=document.getElementById('workoutForm'); if(!section||!form)return;
     const panel=document.createElement('div'); panel.id='garang86WorkoutPanel'; panel.className='g86-panel';
     panel.innerHTML=`<div class="g86-panel-head"><div><span class="eyebrow">GARANG V8.6</span><h3>오늘의 운동</h3><p>여러 운동을 한 번에 기록하고 바로 인증할 수 있어요.</p></div><button type="button" id="g86Reset" class="g86-quiet">초기화</button></div>
-      <div class="g86-search"><input id="g86Search" placeholder="운동 검색 · 예: 벤치" autocomplete="off"><span>⌕</span></div><div id="garang86SearchResults" class="g86-results"></div>
+      <div class="g86-search"><input id="g86Search" placeholder="운동 검색 · 예: 벤치" autocomplete="off"><button type="button" id="g86SearchButton" aria-label="운동 DB 검색">⌕</button></div><div id="garang86SearchResults" class="g86-results"></div>
       <div id="garang86Selected" class="g86-selected"></div>
       <div class="g86-session-meta"><div><small>운동</small><b id="g86ExerciseCount">0 종</b></div><div><small>세트</small><b id="g86TotalSets">0 세트</b></div><div><small>볼륨</small><b id="g86TotalVolume">0 kg</b></div></div>
       <div class="g86-row"><input id="g86Duration" type="number" min="0" placeholder="운동시간 (분)"><input id="g86Rpe" type="number" min="1" max="10" step="0.5" placeholder="RPE (선택)"></div>
@@ -96,8 +96,7 @@
     form.insertAdjacentElement('afterend',panel);
     form.style.display='none';
     const oldBatch=document.getElementById('fitmindBatchWorkoutCard'); if(oldBatch)oldBatch.style.display='none';
-    const q=document.getElementById('g86Search'); q.oninput=()=>renderSearch(search(q.value));
-    q.onfocus=()=>renderSearch(search(q.value));
+    const q=document.getElementById('g86Search'),sb=document.getElementById('g86SearchButton'); q.oninput=()=>{const v=q.value.trim();renderSearch(v?search(v):[])}; q.onfocus=()=>{if(q.value.trim())renderSearch(search(q.value))}; sb.onclick=()=>{q.focus();const v=q.value.trim();renderSearch(v?search(v):exerciseDB.slice(0,12))};
     document.getElementById('g86Save').onclick=persistSession;
     document.getElementById('g86Cert').onclick=()=>{const s=summary();if(!s.totalSets){alert('먼저 운동 기록을 입력해줘.');return}openCert(s)};
     document.getElementById('g86Reset').onclick=()=>{session={exercises:[],startedAt:null};saveSession();renderSession()};

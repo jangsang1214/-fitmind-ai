@@ -26,12 +26,11 @@
   function chat(){
     const page=$('#chat');if(!page||page.dataset.v56==='1')return;page.dataset.v56='1';
     const h=page.querySelector('h2');if(h){h.innerHTML='<span class="fm-chat-title"><span>AI 코치</span><small class="fm-memory-pill">개인 데이터 연결됨</small></span>';}
-    const bar=page.querySelector('.chatbar');
-    if(bar){const q=document.createElement('div');q.className='fm-quick';q.innerHTML=['오늘 운동 뭐 할까?','최근 벤치 기록 봐줘','오늘 단백질 얼마나 남았어?','오늘 너무 피곤해','내 목표 기억해?'].map(x=>`<button type="button">${x}</button>`).join('');bar.parentNode.insertBefore(q,bar);q.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'){const i=$('#chatInput');if(i){i.value=e.target.textContent;i.focus();}}});}
+    page.querySelectorAll('.fm-quick').forEach(x=>x.remove());
   }
   function nav(){
     const n=$('#mainNav');if(!n||n.dataset.v56==='1')return;n.dataset.v56='1';
-    const labels=['홈','운동','식단','바디','리포트','AI'];const icons=['⌂','↗','◒','◉','▥','✦'];
+    const labels=['홈','운동','식단','바디','러닝','리포트','AI','학습','메모리','프로필'];const icons=['⌂','↗','◒','◉','🏃','▥','✦','▤','◎','◌'];
     [...n.querySelectorAll('button')].forEach((b,i)=>{if(labels[i])b.innerHTML=`<span style="font-size:17px;line-height:1">${icons[i]}</span><span>${labels[i]}</span>`});
   }
   function refreshSummary(){
