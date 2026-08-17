@@ -29,6 +29,34 @@ html,body{min-height:100%;touch-action:manipulation}
 .chatbar button,.v95-actions button,.v95-quick button,.fm-quick button{position:relative;z-index:61;pointer-events:auto!important;touch-action:manipulation}
 nav#mainNav{z-index:100!important}
 @media(max-width:650px){nav#mainNav button{flex:0 0 68px!important;min-width:68px!important}}
+
+/* V9.5 BETA FINAL — record readability hardening */
+#workout .batchCard, #diet .batchCard, #fitmindBatchWorkoutCard, #fitmindBatchMealCard {
+  background:#151619 !important; color:#f4f4f6 !important; border-color:#303239 !important;
+}
+#workout .batchHead h3, #diet .batchHead h3,
+#workout .batchRow, #diet .batchRow,
+#workout .batchRow label, #diet .batchRow label,
+#workout .batchMetric strong, #diet .batchMetric strong { color:#f4f4f6 !important; }
+#workout .batchRow, #diet .batchRow { background:#1b1c20 !important; border:1px solid #2d3036; }
+#workout .batchMetric, #diet .batchMetric { background:#202126 !important; border:1px solid #303239; }
+#workout .batchMetric span, #diet .batchMetric span,
+#workout .batchHint, #diet .batchHint { color:#c5c8cf !important; opacity:1 !important; }
+#workout .item, #diet .item, #workout #workoutList .item, #diet #mealList .item {
+  background:#17181b !important; color:#f4f4f6 !important; border:1px solid #2a2c31 !important;
+}
+#workout .item strong, #diet .item strong, #workout #workoutList .item strong, #diet #mealList .item strong { color:#ffffff !important; }
+#workout .item small, #diet .item small, #workout #workoutList .item small, #diet #mealList .item small { color:#c5c8cf !important; }
+#diet .nutritionPreview > div, #diet .selectedFood {
+  background:#1b1c20 !important; border:1px solid #303239 !important; color:#f4f4f6 !important;
+}
+#diet .nutritionPreview span, #diet .nutritionPreview small, #diet .selectedFood span,
+#diet .foodMacros, #diet .manualNutrition { color:#c5c8cf !important; }
+#diet .nutritionPreview b, #diet .selectedFood strong { color:#ffffff !important; }
+#workout .batchRow input, #workout .batchRow select, #diet .batchRow input, #diet .batchRow select {
+  background:#0c0d0f !important; color:#f4f4f4 !important; border-color:#3a3d44 !important;
+}
+#workout .batchRow input::placeholder, #diet .batchRow input::placeholder { color:#858a94 !important; opacity:1 !important; }
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
 <link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
