@@ -29,6 +29,81 @@ html,body{min-height:100%;touch-action:manipulation}
 #v93Learning .item,#v93Memory .item{padding:10px 12px;border:1px solid rgba(127,127,127,.14);border-radius:12px;margin:7px 0}
 @media(max-width:650px){#v93Learning .v93Grid{grid-template-columns:repeat(2,1fr)}}
 </style>
+
+<style id="garang-v93-black-ui">
+:root{
+  --g-bg:#070707;--g-surface:#111214;--g-surface2:#17181b;--g-ink:#f5f5f5;
+  --g-muted:#92959b;--g-line:#292b30;--g-soft:#1d1f23;--g-accent:#ffffff;
+  --g-radius:22px;--g-shadow:0 14px 45px rgba(0,0,0,.28);
+}
+html,body{background:#070707!important;color:var(--g-ink)!important}
+body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
+.garangHeader{background:#070707!important;border-bottom:1px solid #1d1e21!important;height:82px!important;padding:0 18px!important}
+.brandLockup b{color:#fff!important;font-size:21px!important;letter-spacing:.08em}
+.brandLockup small{color:#777b82!important}
+.headerBtns button,.headerBtns .primaryBtn{background:#fff!important;color:#080808!important;border:0!important;border-radius:999px!important;font-weight:800!important}
+main{max-width:900px!important;padding:24px 16px 118px!important}
+.pageTitle{margin-bottom:22px!important}
+.pageTitle h2,.page h1{color:#fff!important;font-size:32px!important;letter-spacing:-.055em!important}
+.pageTitle p,.eyebrow,.muted,.card span,.card small{color:#8d9097!important}
+.eyebrow{color:#73767d!important}
+.card,.item,.batchCard,.calendar{
+  background:linear-gradient(180deg,#141518,#101113)!important;
+  border:1px solid #26282d!important;
+  color:#f4f4f4!important;
+  box-shadow:var(--g-shadow)!important;
+  border-radius:22px!important;
+}
+.item{background:#151619!important}
+.card h3,.card h2,.card strong,.item strong{color:#fff!important}
+.hero{background:linear-gradient(135deg,#111214 0%,#202126 100%)!important;border:1px solid #292b30!important}
+button,.button,.primaryBtn{
+  background:#f4f4f4!important;color:#080808!important;border:1px solid #f4f4f4!important;
+  border-radius:14px!important;font-weight:800!important;
+}
+button:hover,.button:hover{box-shadow:0 8px 24px rgba(0,0,0,.35)!important}
+button:active{transform:scale(.98)!important}
+button.ghostBtn,.ghostBtn,.linkBtn{background:#1a1b1e!important;color:#eee!important;border:1px solid #303238!important}
+button.danger{background:#1a0f10!important;color:#ffb4b8!important;border-color:#3a2023!important}
+input,textarea,select{
+  background:#0d0e10!important;color:#f3f3f3!important;border:1px solid #303238!important;
+  border-radius:14px!important;caret-color:#fff!important;
+}
+input::placeholder,textarea::placeholder{color:#6f7279!important}
+input:focus,textarea:focus,select:focus{border-color:#8b8e95!important;box-shadow:0 0 0 3px rgba(255,255,255,.07)!important}
+option{background:#111214;color:#fff}
+nav#mainNav{
+  background:rgba(8,8,9,.96)!important;border-top:1px solid #24262a!important;
+  backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+  justify-content:flex-start!important;overflow-x:auto!important;white-space:nowrap!important;
+  padding:7px 8px max(7px,env(safe-area-inset-bottom))!important;gap:2px!important;
+}
+nav#mainNav button{
+  flex:0 0 auto!important;min-width:62px!important;padding:9px 9px!important;
+  background:transparent!important;color:#777b83!important;border:0!important;
+  font-size:11px!important;box-shadow:none!important;
+}
+nav#mainNav button:active,nav#mainNav button:hover{color:#fff!important;background:#18191c!important}
+.page.active{animation:garangPageIn .16s ease-out}
+@keyframes garangPageIn{from{opacity:.65;transform:translateY(3px)}to{opacity:1;transform:none}}
+#v93Learning .v93Metric{
+  background:#151619!important;border:1px solid #292b30!important;color:#a5a8ae!important;
+}
+#v93Learning .v93Metric b{color:#fff!important}
+#v93Learning .item,#v93Memory .item{background:#151619!important;border:1px solid #292b30!important}
+#v93MemoryList .memorySection{margin-top:8px}
+.memoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.memoryStat{background:#191a1d;border:1px solid #2b2d32;border-radius:16px;padding:13px}
+.memoryStat span{display:block;color:#80838a;font-size:11px;margin-bottom:4px}.memoryStat b{display:block;color:#fff;font-size:18px}
+.memoryList{display:grid;gap:8px;margin-top:10px}
+.memoryRow{padding:11px 12px;border-radius:14px;background:#191a1d;border:1px solid #292b30}
+.memoryRow .label{color:#777b82;font-size:11px;margin-bottom:3px}.memoryRow .value{color:#f1f1f1;font-size:14px;line-height:1.45;word-break:break-word}
+@media(max-width:680px){
+ main{padding-left:13px!important;padding-right:13px!important}
+ .pageTitle h2,.page h1{font-size:29px!important}
+ .memoryGrid{grid-template-columns:1fr 1fr}
+}
+</style>
 </head>
 <body>
 <div id="app">

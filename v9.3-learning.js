@@ -60,8 +60,52 @@
     set("v93LearnFailure",L.events.filter(e=>e.outcome?.status==="failure").length);
     const list=el("v93LearningList"); if(list)list.innerHTML=L.events.slice().reverse().slice(0,40).map(e=>`<div class="item"><b>${e.eventType}</b> · ${e.outcome?.status||"pending"}<br>${esc(JSON.stringify(e.action))}<div class="muted">${e.createdAt}</div></div>`).join("")||'<div class="muted">아직 학습 이벤트가 없습니다.</div>';
     const pl=el("v93PatternList"); if(pl)pl.innerHTML=L.patterns.map(p=>`<div class="item"><b>${p.eventType}</b> · ${p.goal} · ${p.experience}<br>표본 ${p.count} · 성공 ${p.success} · 실패 ${p.failure}</div>`).join("")||'<div class="muted">아직 패턴이 없습니다.</div>';
-    const ml=el("v93MemoryList"); const d=appDB()||{};
-    if(ml)ml.innerHTML=`<div class="item"><b>프로필</b><br>${esc(JSON.stringify(d.profile||{}))}</div><div class="item"><b>Coach Memory</b><br>${esc(JSON.stringify(d.coachMemory||{}))}</div><div class="item"><b>학습 상태</b><br>이벤트 ${s.events} · 패턴 ${s.patterns}</div>`;
+    const ml=el("v93MemoryList"); const d=appDB()||{}, p=d.profile||{}, cm=d.coachMemory||{};
+    if(ml){
+      const labelMap={name:"이름",age:"나이",height:"키",weight:"체중",targetWeight:"목표 체중",gender:"성별",goal:"목표",activity:"활동 수준",experience:"운동 경험",coachStyle:"코칭 스타일"};
+      const fmt=(k,v)=>{
+        if(v===null||v===undefined||v==="")return "-";
+        if(k==="height")return `${v} cm`; if(k==="weight"||k==="targetWeight")return `${v} kg`; if(k==="age")return `${v}세`;
+        return esc(String(v));
+      };
+      const profileRows=Object.entries(p).filter(([k])=>labelMap[k]).map(([k,v])=>`<div class="memoryRow"><div class="label">${labelMap[k]}</div><div class="value">${fmt(k,v)}</div></div>`).join("");
+      const goals=Array.isArray(cm.goals)?cm.goals.slice(-6).reverse():[];
+      const topics=Array.isArray(cm.topics)?cm.topics.slice(-8).reverse():[];
+      const facts=Array.isArray(cm.facts)?cm.facts.slice(-8).reverse():[];
+      const list=(arr,mapper,empty)=>arr.length?`<div class="memoryList">${arr.map(mapper).join("")}</div>`:`<div class="muted">${empty}</div>`;
+      ml.innerHTML=`
+        <div class="memorySection">
+          <h3>프로필</h3>
+          <div class="memoryGrid">
+            <div class="memoryStat"><span>체중</span><b>${p.weight??"-"} kg</b></div>
+            <div class="memoryStat"><span>목표 체중</span><b>${p.targetWeight??"-"} kg</b></div>
+            <div class="memoryStat"><span>운동 목표</span><b>${esc(p.goal||"-")}</b></div>
+            <div class="memoryStat"><span>코칭 스타일</span><b>${esc(p.coachStyle||"-")}</b></div>
+          </div>
+          <div class="memoryList">${profileRows||'<div class="muted">프로필 정보가 없습니다.</div>'}</div>
+        </div>
+        <div class="memorySection">
+          <h3>Coach Memory · 목표</h3>
+          ${list(goals,g=>`<div class="memoryRow"><div class="label">${esc(g.date||"")}</div><div class="value">${esc(g.text||g.topic||"")}</div></div>`,"저장된 목표가 없습니다.")}
+        </div>
+        <div class="memorySection">
+          <h3>Coach Memory · 대화 주제</h3>
+          ${list(topics,g=>`<div class="memoryRow"><div class="label">${esc(g.date||"")} · ${esc(g.topic||"conversation")}</div><div class="value">${esc(g.text||"")}</div></div>`,"저장된 대화 주제가 없습니다.")}
+        </div>
+        <div class="memorySection">
+          <h3>Coach Memory · 핵심 사실</h3>
+          ${list(facts,g=>`<div class="memoryRow"><div class="label">기억</div><div class="value">${esc(typeof g==="string"?g:(g.text||JSON.stringify(g)))}</div></div>`,"저장된 핵심 사실이 없습니다.")}
+        </div>
+        <div class="memorySection">
+          <h3>학습 상태</h3>
+          <div class="memoryGrid">
+            <div class="memoryStat"><span>학습 이벤트</span><b>${s.events}</b></div>
+            <div class="memoryStat"><span>패턴</span><b>${s.patterns}</b></div>
+            <div class="memoryStat"><span>운동 기록</span><b>${s.workouts}</b></div>
+            <div class="memoryStat"><span>식단 기록</span><b>${s.meals}</b></div>
+          </div>
+        </div>`;
+    }
   }
   function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
   window.GARANG_V93_LEARNING={
