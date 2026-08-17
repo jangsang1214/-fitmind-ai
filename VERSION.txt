@@ -1,3 +1,1 @@
-GARANG V8.8.0
-Real UI-integrated workout recording, certification, auth visibility, isolated nutrition navigation, and AI presentation fixes.
-Bold certification typography with 9:16 and 16:9 layouts.
+GARANG V9.3.3 — V8.8.2 Functional Integration + Personal AI Learning

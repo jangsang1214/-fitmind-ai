@@ -62,58 +62,41 @@
     const pl=el("v93PatternList"); if(pl)pl.innerHTML=L.patterns.map(p=>`<div class="item"><b>${p.eventType}</b> · ${p.goal} · ${p.experience}<br>표본 ${p.count} · 성공 ${p.success} · 실패 ${p.failure}</div>`).join("")||'<div class="muted">아직 패턴이 없습니다.</div>';
     const ml=el("v93MemoryList"); const d=appDB()||{}, p=d.profile||{}, cm=d.coachMemory||{};
     if(ml){
-      const labelMap={name:"이름",age:"나이",height:"키",weight:"체중",targetWeight:"목표 체중",gender:"성별",goal:"목표",activity:"활동 수준",experience:"운동 경험",coachStyle:"코칭 스타일"};
-      const fmt=(k,v)=>{
-        if(v===null||v===undefined||v==="")return "-";
-        if(k==="height")return `${v} cm`; if(k==="weight"||k==="targetWeight")return `${v} kg`; if(k==="age")return `${v}세`;
-        return esc(String(v));
-      };
-      const profileRows=Object.entries(p).filter(([k])=>labelMap[k]).map(([k,v])=>`<div class="memoryRow"><div class="label">${labelMap[k]}</div><div class="value">${fmt(k,v)}</div></div>`).join("");
-      const goals=Array.isArray(cm.goals)?cm.goals.slice(-6).reverse():[];
-      const topics=Array.isArray(cm.topics)?cm.topics.slice(-8).reverse():[];
-      const facts=Array.isArray(cm.facts)?cm.facts.slice(-8).reverse():[];
-      const list=(arr,mapper,empty)=>arr.length?`<div class="memoryList">${arr.map(mapper).join("")}</div>`:`<div class="muted">${empty}</div>`;
-      ml.innerHTML=`
-        <div class="memorySection">
-          <h3>프로필</h3>
-          <div class="memoryGrid">
-            <div class="memoryStat"><span>체중</span><b>${p.weight??"-"} kg</b></div>
-            <div class="memoryStat"><span>목표 체중</span><b>${p.targetWeight??"-"} kg</b></div>
-            <div class="memoryStat"><span>운동 목표</span><b>${esc(p.goal||"-")}</b></div>
-            <div class="memoryStat"><span>코칭 스타일</span><b>${esc(p.coachStyle||"-")}</b></div>
-          </div>
-          <div class="memoryList">${profileRows||'<div class="muted">프로필 정보가 없습니다.</div>'}</div>
-        </div>
-        <div class="memorySection">
-          <h3>Coach Memory · 목표</h3>
-          ${list(goals,g=>`<div class="memoryRow"><div class="label">${esc(g.date||"")}</div><div class="value">${esc(g.text||g.topic||"")}</div></div>`,"저장된 목표가 없습니다.")}
-        </div>
-        <div class="memorySection">
-          <h3>Coach Memory · 대화 주제</h3>
-          ${list(topics,g=>`<div class="memoryRow"><div class="label">${esc(g.date||"")} · ${esc(g.topic||"conversation")}</div><div class="value">${esc(g.text||"")}</div></div>`,"저장된 대화 주제가 없습니다.")}
-        </div>
-        <div class="memorySection">
-          <h3>Coach Memory · 핵심 사실</h3>
-          ${list(facts,g=>`<div class="memoryRow"><div class="label">기억</div><div class="value">${esc(typeof g==="string"?g:(g.text||JSON.stringify(g)))}</div></div>`,"저장된 핵심 사실이 없습니다.")}
-        </div>
-        <div class="memorySection">
-          <h3>학습 상태</h3>
-          <div class="memoryGrid">
-            <div class="memoryStat"><span>학습 이벤트</span><b>${s.events}</b></div>
-            <div class="memoryStat"><span>패턴</span><b>${s.patterns}</b></div>
-            <div class="memoryStat"><span>운동 기록</span><b>${s.workouts}</b></div>
-            <div class="memoryStat"><span>식단 기록</span><b>${s.meals}</b></div>
-          </div>
-        </div>`;
+      const label={name:"이름",age:"나이",height:"키",weight:"체중",targetWeight:"목표 체중",goal:"목표",experience:"운동 경험",activity:"활동 수준",coachStyle:"코칭 스타일"};
+      const rows=Object.entries(p).filter(([k])=>label[k]).map(([k,v])=>`<div class="memoryRow"><div class="label">${label[k]}</div><div class="value">${esc(v==null||v===""?"-":v)}</div></div>`).join("");
+      const recent=L.events.slice().reverse().slice(0,8).map(e=>`<div class="memoryRow"><div class="label">${esc(e.eventType)} · ${esc(e.createdAt||"")}</div><div class="value">${esc(typeof e.action==="string"?e.action:JSON.stringify(e.action||{}))}</div></div>`).join("");
+      const goal=cm.goal||p.goal||"-";
+      ml.innerHTML=`<div class="memoryGrid">
+        <div class="memoryStat"><span>체중</span><b>${esc(p.weight??"-")} kg</b></div>
+        <div class="memoryStat"><span>운동 기록</span><b>${s.workouts}</b></div>
+        <div class="memoryStat"><span>식단 기록</span><b>${s.meals}</b></div>
+        <div class="memoryStat"><span>러닝 기록</span><b>${s.runs}</b></div>
+      </div>
+      <h3>User State</h3>${rows||'<div class="muted">프로필 데이터가 없습니다.</div>'}
+      <div class="memoryRow"><div class="label">현재 목표</div><div class="value">${esc(goal)}</div></div>
+      <h3>최근 학습 이벤트</h3>${recent||'<div class="muted">아직 학습 이벤트가 없습니다.</div>'}
+      <div class="memoryRow"><div class="label">학습 상태</div><div class="value">이벤트 ${s.events} · 패턴 ${s.patterns} · 성공 ${L.events.filter(e=>e.outcome?.status==="success").length} · 실패 ${L.events.filter(e=>e.outcome?.status==="failure").length}</div></div>`;
     }
   }
   function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+  function userStateContext(){
+    const s=state(), d=appDB()||{}, p=d.profile||{};
+    return {
+      profile:p,
+      goal:d.coachMemory?.goal||p.goal||null,
+      activity:d.coachMemory?.activity||p.activity||null,
+      recent:{workouts:s.workouts,meals:s.meals,runs:s.runs,volume:s.recentWorkoutVolume,protein:s.recentProtein},
+      learning:{events:L.events.length,patterns:L.patterns.length}
+    };
+  }
   window.GARANG_V93_LEARNING={
     record:(type,data,outcome)=>add(type,data,outcome),
     success:(type,notes="")=>recordOutcome(type,"success",notes),
     failure:(type,notes="")=>recordOutcome(type,"failure",notes),
     sync:()=>{syncFromCore();render();},
     state,
+    userState:userStateContext,
     data:()=>L,
     clear:()=>{if(confirm("V9 학습 이벤트를 초기화할까요?")){L={events:[],patterns:[],knowledge:[]};save();}}
   };
