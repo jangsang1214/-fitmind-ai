@@ -10,8 +10,8 @@
   function save(){try{if(typeof window.__FitMindV6Save==='function')window.__FitMindV6Save();else if(typeof window.save==='function')window.save()}catch(e){}}
 
   function version(){
-    const v=$('fitmindBuildVersion'); if(v)v.textContent='GARANG V8.8.0';
-    document.title='GARANG · Your personal AI coach · V8.8.0';
+    const v=$('fitmindBuildVersion'); if(v)v.textContent='GARANG V9.5';
+    document.title='GARANG · Your personal AI coach · V9.5';
   }
 
   function authFix(){

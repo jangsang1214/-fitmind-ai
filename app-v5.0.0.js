@@ -353,7 +353,12 @@ function migrateDates(){
  });
 }
 migrateDates();
-db.workouts=(db.workouts||[]).map(w=>{if(w.calories==null)w.calories=estimateWorkoutCalories(w);if(w.volume==null)w.volume=workoutVolume(w);return w;});
+db.workouts=(db.workouts||[]).map(w=>{
+  if(w.volume==null)w.volume=workoutVolume(w);
+  if(!(Number(w.calories)>0))w.calories=estimateWorkoutCalories(w);
+  if(!(Number(w.bodyWeight)>0))w.bodyWeight=currentBodyWeight();
+  return w;
+});
 
 function render(){
  syncDietTodayNutrition();
@@ -385,11 +390,16 @@ function calcStreak(){
 
 
 function currentBodyWeight(){
-  return Number(db.body.at(-1)?.weight || db.profile?.weight || 0);
+  const latest=Array.isArray(db.body)&&db.body.length?db.body.slice().sort((a,b)=>String(a.date||"").localeCompare(String(b.date||""))).at(-1):null;
+  return Number(latest?.weight || db.profile?.weight || 0);
 }
 function estimateWorkoutCalories(workout){
   const weight = Number(workout.bodyWeight || currentBodyWeight() || 0);
-  const minutes = Number(workout.durationMin || 0);
+  const sets = Number(workout.sets || 0);
+  // If the user did not enter a duration, estimate a conservative strength-session
+  // duration from the recorded sets so workout calories do not silently become 0.
+  const explicitMinutes = Number(workout.durationMin || workout.duration || 0);
+  const minutes = explicitMinutes > 0 ? explicitMinutes : (sets > 0 ? Math.min(180, Math.max(3, sets * 3)) : 0);
   const ex = exerciseDB.find(x=>x.exercise_id===workout.exerciseId);
   let met = Number(workout.met || ex?.met_default || 5);
   const rpe = Number(workout.rpe || 0);
@@ -685,6 +695,24 @@ function fitmindRenderBodyHistory(){
   const rows=fitmindBodyRows().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   host.innerHTML=rows.length?`<div class="card"><h3>측정 기록</h3>${rows.map(r=>`<div style="padding:9px 0;border-bottom:1px solid rgba(128,128,128,.2)">${r.date} · ${r.weight??"-"}kg · ${r.bodyFatPercent??"-"}% · ${r.skeletalMuscle??"-"}kg · 체지방량 ${r.bodyFatMass??"-"}kg</div>`).join("")}</div>`:"";
 }
+function fitmindLatestBodyRow(){
+  const rows=fitmindBodyRows().filter(Boolean).slice().sort((a,b)=>String(a.date||"").localeCompare(String(b.date||"")));
+  return rows.at(-1)||null;
+}
+function fitmindRestoreBodyFields(){
+  const row=fitmindLatestBodyRow();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!==null&&v!==undefined&&v!=="")el.value=v;};
+  if(row){
+    set("bodyDate",row.date||isoToday());
+    set("bodyWeight",row.weight);set("bodyFatPercent",row.bodyFatPercent);set("bodySkeletalMuscle",row.skeletalMuscle);
+    set("bodyFatMass",row.bodyFatMass);set("bodyWaist",row.waist);
+  }else{
+    const p=db.profile||{};
+    set("bodyWeight",p.weight);set("bodyDate",isoToday());
+  }
+  const saved=db.bodyEnergy;
+  if(saved?.activity){const act=document.getElementById("bodyActivity");if(act)act.value=String(saved.activity);}
+}
 function fitmindCalculateEnergy(){
   const weight=fitmindNum(document.getElementById("bodyWeight")?.value),bf=fitmindNum(document.getElementById("bodyFatPercent")?.value);
   const activity=Number(document.getElementById("bodyActivity")?.value||1.55);
@@ -695,9 +723,11 @@ function fitmindCalculateEnergy(){
   else if(weight!==null&&height!==null&&age!==null){bmr=(sex.includes("female")||sex.includes("여"))?10*weight+6.25*height-5*age-161:10*weight+6.25*height-5*age+5;method="Mifflin-St Jeor · 프로필+체중";}
   const b=document.getElementById("fitmindBMRResult"),t=document.getElementById("fitmindTDEEResult"),n=document.getElementById("fitmindCalorieNote");
   if(bmr===null){if(b)b.textContent="—";if(t)t.textContent="—";if(n)n.textContent="체중을 입력해주세요. 체지방률까지 입력하면 바로 BMR을 계산합니다.";return;}
+  const tdee=Math.round(bmr*activity);
   if(b)b.textContent=Math.round(bmr).toLocaleString()+" kcal";
-  if(t)t.textContent=Math.round(bmr*activity).toLocaleString()+" kcal";
+  if(t)t.textContent=tdee.toLocaleString()+" kcal";
   if(n)n.textContent=`${method} · 활동계수 ${activity}`;
+  db.bodyEnergy={bmr:Math.round(bmr),tdee,activity,method,updatedAt:new Date().toISOString()};
 }
 function fitmindRenderBodyPhotos(){
   const host=document.getElementById("bodyPhotoGallery");if(!host)return;
@@ -726,9 +756,11 @@ function fitmindSaveBodyData(){
   if([row.weight,row.bodyFatPercent,row.skeletalMuscle,row.bodyFatMass,row.waist].every(v=>v===null)){alert("신체 데이터 중 하나 이상 입력해주세요.");return;}
   const rows=fitmindBodyRows(),i=rows.findIndex(x=>x.date===row.date);
   if(i>=0)rows[i]={...rows[i],...row};else rows.push(row);
+  if(row.weight!==null){db.profile=db.profile||{};db.profile.weight=row.weight;}
+  fitmindCalculateEnergy();
   save();
   document.getElementById("bodySaveStatus").textContent=`${row.date} 측정값이 저장되었습니다.`;
-  fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();render();
+  fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();render();
 }
 function fitmindInitBodyCheck(){
   const d=document.getElementById("bodyDate");if(d&&!d.value)d.value=isoToday();
@@ -737,7 +769,7 @@ function fitmindInitBodyCheck(){
   const act=document.getElementById("bodyActivity");if(act&&!act.dataset.bound){act.dataset.bound="1";act.addEventListener("change",fitmindCalculateEnergy);}
   ["bodyWeight","bodyFatPercent","bodySkeletalMuscle","bodyFatMass"].forEach(id=>{const el=document.getElementById(id);if(el&&!el.dataset.bound){el.dataset.bound="1";el.addEventListener("input",fitmindCalculateEnergy);}});
   document.querySelectorAll(".body-range").forEach(b=>{if(!b.dataset.bound){b.dataset.bound="1";b.addEventListener("click",()=>fitmindRenderBodyGraphs(Number(b.dataset.days)))}});  
-  fitmindRenderBodyPhotos();fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();
+  fitmindRestoreBodyFields();fitmindRenderBodyPhotos();fitmindRenderBodyScore();fitmindRenderBodyGraphs(0);fitmindRenderBodyHistory();fitmindCalculateEnergy();
 }
 
 function periodRange(){
