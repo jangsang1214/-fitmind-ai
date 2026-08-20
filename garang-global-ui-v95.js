@@ -24,10 +24,11 @@ const M={
 };
 const K=Object.fromEntries(Object.entries(M).map(([k,v])=>[v,k]));
 const original=new WeakMap();
-function prefs(){try{const x=JSON.parse(localStorage.getItem(PREF_KEY)||'null');return x&&typeof x==='object'?x:{language:'ko',unit:'metric'}}catch{return{language:'ko',unit:'metric'}}}
-function savePrefs(p){localStorage.setItem(PREF_KEY,JSON.stringify(p));document.documentElement.dataset.garangLanguage=p.language;document.documentElement.dataset.garangUnit=p.unit;window.GARANGPreferences=p;applyAll();}
+function prefs(){try{const x=JSON.parse(localStorage.getItem(PREF_KEY)||'null');return x&&typeof x==='object'?x:{language:'ko',country:'KR',unit:'metric'}}catch{return{language:'ko',country:'KR',unit:'metric'}}}
+function savePrefs(p){localStorage.setItem(PREF_KEY,JSON.stringify(p));document.documentElement.dataset.garangLanguage=p.language;document.documentElement.dataset.garangUnit=p.unit;document.documentElement.dataset.garangCountry=p.country||'KR';window.GARANGPreferences=p;applyAll();}
 function lang(){return prefs().language==='en'?'en':'ko'}
 function unit(){return prefs().unit==='imperial'?'imperial':'metric'}
+function country(){return prefs().country||'KR'}
 function tr(s){const x=String(s||'');return lang()==='en'?(M[x]||x):(K[x]||x)}
 function translateNode(node){if(node.nodeType!==3)return;const p=node.parentElement;if(!p||['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName))return;const raw=original.has(node)?original.get(node):node.nodeValue; if(!original.has(node))original.set(node,raw); const out=lang()==='en'?(M[raw.trim()]?raw.replace(raw.trim(),M[raw.trim()]):raw):(K[raw.trim()]?raw.replace(raw.trim(),K[raw.trim()]):raw); if(node.nodeValue!==out)node.nodeValue=out;}
 function applyAll(){
@@ -55,19 +56,40 @@ function updateUnits(){
 }
 function setupSignup(){
  const form=document.getElementById('signupForm');if(!form||form.dataset.garangGlobalBound)return;form.dataset.garangGlobalBound='1';
- const wrap=document.createElement('div');wrap.className='garangGlobalSignup';wrap.innerHTML='<label class="garangPrefLabel">Language<select id="garangSignupLanguage"><option value="ko">한국어</option><option value="en">English</option></select></label><label class="garangPrefLabel">Units<select id="garangSignupUnit"><option value="metric">Metric · kg / cm</option><option value="imperial">Imperial · lb / in</option></select></label>';
+ const wrap=document.createElement('div');wrap.className='garangGlobalSignup';wrap.innerHTML='<label class="garangPrefLabel">Country / Region<select id="garangSignupCountry"><option value="KR">🇰🇷 대한민국</option><option value="US">🇺🇸 United States</option><option value="JP">🇯🇵 日本</option><option value="GB">🇬🇧 United Kingdom</option><option value="CA">🇨🇦 Canada</option><option value="AU">🇦🇺 Australia</option><option value="DE">🇩🇪 Deutschland</option><option value="FR">🇫🇷 France</option><option value="SG">🇸🇬 Singapore</option><option value="OTHER">Other</option></select></label><label class="garangPrefLabel">Language<select id="garangSignupLanguage"><option value="ko">한국어</option><option value="en">English</option></select></label><label class="garangPrefLabel">Units<select id="garangSignupUnit"><option value="metric">Metric · kg / cm</option><option value="imperial">Imperial · lb / in</option></select></label>';
  const terms=document.getElementById('terms');if(terms)terms.parentElement.before(wrap);else form.appendChild(wrap);
- const old=form.onsubmit;form.onsubmit=function(e){const p={language:document.getElementById('garangSignupLanguage')?.value||'ko',unit:document.getElementById('garangSignupUnit')?.value||'metric'};savePrefs(p);setTimeout(()=>{try{const db=window.__FitMindV6DB?.();if(db){db.profile=db.profile||{};db.profile.language=p.language;db.profile.unit=p.unit;window.__FitMindV6Save?.()}}catch(_){ }},150);return old?old.call(this,e):true};
+ const saved=prefs();
+ const cs=document.getElementById('garangSignupCountry'),ls=document.getElementById('garangSignupLanguage'),us=document.getElementById('garangSignupUnit');
+ if(cs)cs.value=saved.country||'KR';if(ls)ls.value=saved.language||'ko';if(us)us.value=saved.unit||'metric';
+ const old=form.onsubmit;form.onsubmit=async function(e){
+   const p={country:cs?.value||'KR',language:ls?.value||'ko',unit:us?.value||'metric'};
+   try{localStorage.setItem(PREF_KEY,JSON.stringify(p));window.GARANGPreferences=p;document.documentElement.dataset.garangLanguage=p.language;document.documentElement.dataset.garangUnit=p.unit;document.documentElement.dataset.garangCountry=p.country;}catch(_){}
+   if(old)return old.call(this,e);
+ };
 }
+
 function setupChatAttach(){
  const form=document.getElementById('chatForm');if(!form||form.dataset.garangAttachBound)return;form.dataset.garangAttachBound='1';
  const input=document.getElementById('chatInput');const send=form.querySelector('button');if(!input||!send)return;
  const file=document.createElement('input');file.type='file';file.id='garangChatFile';file.accept='image/*,.pdf,.txt,.csv,.json';file.hidden=true;
- const plus=document.createElement('button');plus.type='button';plus.id='garangChatAttachBtn';plus.className='garangChatPlus';plus.setAttribute('aria-label','Attach file or photo');plus.textContent='+';
+ const plus=document.createElement('button');plus.type='button';plus.id='garangChatAttachBtn';plus.className='garangChatPlus';plus.setAttribute('aria-label','Attach file or photo');plus.textContent='＋';
  form.insertBefore(plus,input);form.appendChild(file);plus.onclick=()=>file.click();
  file.onchange=()=>{const f=file.files?.[0];if(!f)return;window.GARANGKnowledge?.recordPhoto?.(f,{source:'chat_attachment',language:lang()});const note=lang()==='en'?`Attached: ${f.name}`:`첨부됨: ${f.name}`;const tag=document.createElement('span');tag.className='garangAttachPill';tag.textContent=note;form.insertBefore(tag,input);file.value='';};
 }
+
+function authTouchSafety(){
+ const force=()=>{
+   const auth=document.getElementById('auth');
+   if(auth&&auth.classList.contains('active')){
+     auth.style.pointerEvents='auto';auth.style.position='relative';auth.style.zIndex='200';
+     auth.querySelectorAll('button,input,select,label,a').forEach(el=>{el.style.pointerEvents='auto';el.style.touchAction='manipulation';});
+     ['garang88AiModal'].forEach(id=>{const m=document.getElementById(id);if(m){m.classList.remove('open');m.style.display='none';}});
+     document.querySelectorAll('.g86-modal.open,.shareModal.open').forEach(m=>{m.classList.remove('open');m.style.display='none';});
+   }
+ };
+ force();document.addEventListener('click',force,true);window.addEventListener('pageshow',force);
+}
 function observe(){const mo=new MutationObserver(()=>{if(window.__garangI18nApplying)return;window.__garangI18nApplying=true;try{applyAll();}finally{window.__garangI18nApplying=false}});mo.observe(document.body,{subtree:true,childList:true});}
-window.GARANGPreferences={...prefs()};window.GARANGLocale={get:prefs,set:savePrefs,translate:tr,language:lang,unit};
-document.addEventListener('DOMContentLoaded',()=>{setupSignup();setupChatAttach();document.documentElement.dataset.garangLanguage=lang();document.documentElement.dataset.garangUnit=unit();applyAll();observe();});
+window.GARANGPreferences={...prefs()};window.GARANGLocale={get:prefs,set:savePrefs,translate:tr,language:lang,unit,country};
+document.addEventListener('DOMContentLoaded',()=>{setupSignup();setupChatAttach();authTouchSafety();document.documentElement.dataset.garangLanguage=lang();document.documentElement.dataset.garangUnit=unit();applyAll();observe();});
 })();

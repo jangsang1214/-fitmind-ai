@@ -97,7 +97,9 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 .memoryRow .label{color:#777b82;font-size:11px;margin-bottom:3px}.memoryRow .value{color:#eee;line-height:1.45;word-break:break-word}
 @media(max-width:650px){.memoryGrid{grid-template-columns:1fr 1fr}nav#mainNav{overflow-x:auto;white-space:nowrap}nav#mainNav button{flex:0 0 auto}}
 </style>
-<style id="garang-global-ui-style">.garangGlobalSignup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.garangPrefLabel{font-size:12px;color:#777;font-weight:700}.garangPrefLabel select{margin-top:6px;width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#111}.garangChatPlus{width:36px!important;height:36px!important;min-width:36px!important;border-radius:50%!important;padding:0!important;font-size:24px!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}.garangAttachPill{font-size:11px;padding:6px 9px;border-radius:999px;background:#eee;color:#222;white-space:nowrap}.chatbar{display:flex;align-items:center;gap:8px}.chatbar input{flex:1}@media(max-width:520px){.garangGlobalSignup{grid-template-columns:1fr}.garangAttachPill{display:none}}</style></head>
+<style id="garang-global-ui-style">.garangGlobalSignup{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.garangPrefLabel{font-size:12px;color:#777;font-weight:700}.garangPrefLabel select{margin-top:6px;width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#111}.garangChatPlus{width:36px!important;height:36px!important;min-width:36px!important;border-radius:50%!important;padding:0!important;font-size:24px!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}.garangAttachPill{font-size:11px;padding:6px 9px;border-radius:999px;background:#eee;color:#222;white-space:nowrap}.chatbar{display:flex;align-items:center;gap:8px}.chatbar input{flex:1}@media(max-width:520px){.garangGlobalSignup{grid-template-columns:1fr}.garangAttachPill{display:none}} #serverLLMSettings{display:none!important}
+#auth{position:relative;z-index:200;pointer-events:auto!important}#auth *{pointer-events:auto!important}#auth input,#auth select,#auth button,#auth label{touch-action:manipulation!important}
+</style></head>
 <body>
 <div id="app">
 <header class="garangHeader">
@@ -428,7 +430,7 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 <script src="cloud-router-v6.js"></script>
 <script src="data-engine-v6.5.js?v=6.5.0-final"></script>
 <script src="dialogue-v6.5.1.js?v=6.5.1"></script>
-<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V9.5 · V8.8.2 CORE</div>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V9.5 · GLOBAL AI</div>
 <script src="v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
 <script src="v8-batch.js?v=8.0.0"></script>
 <script src="v8-personal-ai.js?v=8.0.0"></script>
@@ -450,6 +452,7 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 <script src="v9.3-learning.js?v=9.3.2"></script>
 <script src="garang-v9.5-data-layer.js?v=9.5.0"></script>
 <script src="garang-v9.5-coach-engine.js?v=9.5.0"></script>
-<script src="garang-global-ui-v95.js?v=9.5.1"></script>
+<script src="garang-global-ui-v95.js?v=9.5.2"></script>
+<script src="garang-v9.5-ai-integration.js?v=9.5.2"></script>
 </body>
 </html>

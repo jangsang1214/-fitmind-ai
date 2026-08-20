@@ -217,7 +217,16 @@ signupForm.onsubmit=async e=>{
  try{
   const cred=await fbAuth.createUserWithEmailAndPassword(signupEmail.value.trim(),signupPw.value);
   db=cloneEmpty();
+  const gp=window.GARANGPreferences||{};
+  const language=document.getElementById("garangSignupLanguage")?.value||gp.language||"ko";
+  const country=document.getElementById("garangSignupCountry")?.value||gp.country||"KR";
+  const unit=document.getElementById("garangSignupUnit")?.value||gp.unit||"metric";
   db.profile.name=signupName.value.trim();
+  db.profile.language=language;
+  db.profile.country=country;
+  db.profile.unit=unit;
+  db.preferences={language,country,unit};
+  try{localStorage.setItem("garang_v95_preferences",JSON.stringify({language,country,unit}))}catch{}
   await fbStore.collection("users").doc(cred.user.uid).set(db);
   localStorage.setItem(localKey(cred.user.uid),JSON.stringify(db));
  }catch(err){authError.textContent=authErrorMsg(err)}
