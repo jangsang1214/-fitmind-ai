@@ -39,7 +39,27 @@ function decision(q){
 function insight(){const s=state();if(s.training.last7Sessions>=6)return"최근 운동 빈도가 높아. 다음 세션은 회복 상태를 확인한 뒤 강도를 조절하는 게 좋아.";const b=s.recentWorkouts.find(x=>/벤치/i.test(x.exercise));if(b)return`최근 ${b.exercise} ${b.weight||"-"}kg × ${b.reps||"-"}회 기록을 기준으로 다음 세션의 중량과 볼륨을 조절할 수 있어.`;if(s.running30.count)return`최근 30일 러닝 ${s.running30.count}회 · ${s.running30.distance.toFixed(1)}km가 코칭 데이터에 연결돼 있어.`;return"운동·식단·러닝·체중 기록을 연결해서 오늘의 코칭을 계속 업데이트할게."}
 function compactContext(){const d=ensure();return{version:VERSION,profile:d.profile||{},workouts:arr("workouts").slice(-40),meals:arr("meals").slice(-40),body:arr("body").slice(-14),running:runs(30),coachMemory:d.coachMemory,coachState:state(),recentChat:d.chat.slice(-20)}}
 function serverUrl(){const d=ensure();return d.api?.url||localStorage.getItem("fitmind_server_endpoint")||""}
-async function ask(text){const url=serverUrl();if(url){try{const h={"Content-Type":"application/json"},key=ensure().api?.key;if(key)h.Authorization="Bearer "+key;const r=await fetch(url,{method:"POST",headers:h,body:JSON.stringify({version:VERSION,query:text,context:compactContext()})});if(r.ok){const j=await r.json();return j.text||j.reply||j.message||decision(text)}}catch(e){}}return decision(text)}
+async function ask(text){
+ const url=serverUrl();
+ let knowledge=[];
+ try{knowledge=window.GARANGKnowledge?.knowledgeContext?.(text)||[]}catch(e){}
+ if(window.GARANGKnowledge?.search && window.GARANGKnowledge?.needsExternalSearch?.(text)){
+  try{const r=await window.GARANGKnowledge.search(text);knowledge=[...knowledge,...(r.results||[])].slice(0,8)}catch(e){}
+ }
+ const kctx=knowledge.map(x=>({title:x.title,summary:x.summary,source:x.source,url:x.url,confidence:x.confidence||"medium"}));
+ if(url){
+  try{
+   const h={"Content-Type":"application/json"},key=ensure().api?.key;if(key)h.Authorization="Bearer "+key;
+   const r=await fetch(url,{method:"POST",headers:h,body:JSON.stringify({version:VERSION,query:text,context:compactContext(),knowledge:kctx})});
+   if(r.ok){const j=await r.json();return j.text||j.reply||j.message||decision(text)}
+  }catch(e){}
+ }
+ const base=decision(text);
+ if(kctx.length){
+  return base+"\n\n[외부 지식]\n"+kctx.slice(0,4).map(x=>`- ${x.title} (${x.source})\n  ${x.summary}${x.url?'\n  '+x.url:''}`).join("\n");
+ }
+ return base;
+}
 function render(){const log=$("chatLog");if(!log)return;const d=ensure();log.innerHTML=d.chat.length?d.chat.slice(-80).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${x.role==="ai"?'<span class="v95-tag">V9.5</span>':""}${esc(x.text)}</div>`).join(""):'<div class="card coach-welcome">안녕하세요. 네 운동·식단·러닝·체중 데이터를 연결해서 같이 보자.</div>';requestAnimationFrame(()=>log.scrollTop=log.scrollHeight)}
 function record(text,answer){const d=ensure();d.coachMemory.v95=d.coachMemory.v95||{events:[]};d.coachMemory.v95.events.push({date:today(),query:String(text).slice(0,500),answer:String(answer).slice(0,1000),state:state()});d.coachMemory.v95.events=d.coachMemory.v95.events.slice(-200);d.coachMemory.lastAdvice=answer;save();try{window.GARANG_V93_LEARNING?.add?.("coach_decision",{query:String(text).slice(0,300),category:category(text),answer:String(answer).slice(0,500)},{status:"success"})}catch(e){}}
 function newChat(){const d=ensure();if(d.chat.length){const first=d.chat.find(x=>x.role==="user");d.chatSessions.push({id:"s_"+Date.now(),title:first?.text||"새 대화",createdAt:new Date().toISOString(),messages:d.chat.slice()});d.chatSessions=d.chatSessions.slice(-50)}d.chat=[];save();render();$("chatInput")?.focus()}
