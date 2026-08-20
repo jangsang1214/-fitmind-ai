@@ -30,7 +30,7 @@ html,body{min-height:100%;touch-action:manipulation}
 nav#mainNav{z-index:100!important}
 @media(max-width:650px){nav#mainNav button{flex:0 0 68px!important;min-width:68px!important}}
 
-/* V9.5 BETA FINAL — record readability hardening */
+/* V9.5 GLOBAL AI — record readability hardening */
 #workout .batchCard, #diet .batchCard, #fitmindBatchWorkoutCard, #fitmindBatchMealCard {
   background:#151619 !important; color:#f4f4f6 !important; border-color:#303239 !important;
 }
@@ -96,6 +96,9 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 .memoryRow{padding:10px 12px;border-radius:13px;background:#191a1d;border:1px solid #292b30;margin:7px 0}
 .memoryRow .label{color:#777b82;font-size:11px;margin-bottom:3px}.memoryRow .value{color:#eee;line-height:1.45;word-break:break-word}
 @media(max-width:650px){.memoryGrid{grid-template-columns:1fr 1fr}nav#mainNav{overflow-x:auto;white-space:nowrap}nav#mainNav button{flex:0 0 auto}}
+</style>
+<style id="garangV95GlobalAI">
+#v95GlobalPanel{margin-top:14px}.v95-global-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.v95-global-head h3{margin:4px 0}.v95-global-badge{padding:7px 10px;border-radius:999px;background:#191a1d;border:1px solid #303239;font-weight:800}.v95-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.v95-plan-card{padding:14px;border:1px solid #303239;border-radius:16px;background:#111216}.v95-plan-card span{display:block;color:#9b9fa8;font-size:12px;margin-top:5px;line-height:1.5}.v95-plan-card.premium{border-color:#63527d}.v95-global-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.v95-global-stats span{padding:8px 10px;border-radius:999px;background:#191a1d;border:1px solid #2b2d32;color:#9da1aa;font-size:12px}.v95-global-stats b{color:#fff}.chatbar{display:flex;gap:8px}.chatbar input{flex:1}.chatbar button{flex:0 0 auto}@media(max-width:650px){.v95-plan-grid{grid-template-columns:1fr}.v95-global-head h3{font-size:18px}}
 </style>
 </head>
 <body>
@@ -450,5 +453,6 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 <script src="v9.3-learning.js?v=9.3.2"></script>
 <script src="garang-v9.5-data-layer.js?v=9.5.0"></script>
 <script src="garang-v9.5-coach-engine.js?v=9.5.0"></script>
+<script src="garang-v9.5-global-ai.js?v=9.5.1"></script>
 </body>
 </html>
