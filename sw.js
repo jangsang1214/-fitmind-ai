@@ -1,4 +1,4 @@
-const CACHE="garang-v8-8-1";
+const CACHE="garang-v9-5-2-1";
 const APP_ASSETS=["./","./index.html","./manifest.webmanifest"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
