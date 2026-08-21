@@ -123,8 +123,11 @@
     auth.style.setProperty('z-index','2147482999','important');auth.style.setProperty('pointer-events','auto','important');
   }
   function touchGuard(){
-    const run=()=>{suppressFullscreenWhenAuth();const a=$('auth');if(a?.classList.contains('active'))a.querySelectorAll('button,input,select,label,a').forEach(e=>{e.style.setProperty('pointer-events','auto','important');e.style.touchAction='manipulation'});};
-    run();setTimeout(run,100);setTimeout(run,500);window.addEventListener('pageshow',run);document.addEventListener('touchstart',run,{capture:true,passive:true});
+    const run=()=>{suppressFullscreenWhenAuth();};
+    run();
+    setTimeout(run,100);
+    setTimeout(run,500);
+    window.addEventListener('pageshow',run);
   }
 
   function boot(){setupStyle();bindAuthSetup();patchAI();touchGuard();setTimeout(patchAI,250);setTimeout(patchAI,1000);}

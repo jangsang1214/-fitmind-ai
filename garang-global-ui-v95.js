@@ -34,7 +34,7 @@ function translateNode(node){if(node.nodeType!==3)return;const p=node.parentElem
 function applyAll(){
  document.documentElement.lang=lang()==='en'?'en':'ko';
  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{if(!el.dataset.garangPlaceholderKo)el.dataset.garangPlaceholderKo=el.getAttribute('placeholder')||'';const ko=el.dataset.garangPlaceholderKo;el.setAttribute('placeholder',lang()==='en'?(M[ko]||ko):ko)});
- document.querySelectorAll('option').forEach(el=>{if(!el.dataset.garangTextKo)el.dataset.garangTextKo=el.textContent;const ko=el.dataset.garangTextKo;el.textContent=lang()==='en'?(M[ko]||ko):ko});
+ document.querySelectorAll('option').forEach(el=>{if(!el.dataset.garangTextKo)el.dataset.garangTextKo=el.textContent;const ko=el.dataset.garangTextKo;const out=lang()==='en'?(M[ko]||ko):ko;if(el.textContent!==out)el.textContent=out});
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=walker.nextNode())translateNode(n);
  updateUnits();
 }
@@ -89,7 +89,38 @@ function authTouchSafety(){
  };
  force();document.addEventListener('click',force,true);window.addEventListener('pageshow',force);
 }
-function observe(){const mo=new MutationObserver(()=>{if(window.__garangI18nApplying)return;window.__garangI18nApplying=true;try{applyAll();}finally{window.__garangI18nApplying=false}});mo.observe(document.body,{subtree:true,childList:true});}
+function observe(){
+ let queued=false, observing=false, mo=null;
+ const schedule=()=>{
+   if(queued||window.__garangI18nApplying)return;
+   queued=true;
+   const run=()=>{
+     queued=false;
+     if(window.__garangI18nApplying)return;
+     window.__garangI18nApplying=true;
+     try{
+       if(mo) mo.disconnect();
+       applyAll();
+     }finally{
+       window.__garangI18nApplying=false;
+       if(mo&&!observing){mo.observe(document.body,{subtree:true,childList:true});}
+     }
+   };
+   if(window.requestAnimationFrame) requestAnimationFrame(run); else setTimeout(run,0);
+ };
+ mo=new MutationObserver(records=>{
+   if(window.__garangI18nApplying)return;
+   // Only react to meaningful additions/removals outside our own preference widgets.
+   const relevant=records.some(r=>{
+     if(r.type!=='childList'||(!r.addedNodes.length&&!r.removedNodes.length))return false;
+     const t=r.target;
+     return !(t&&t.closest&&t.closest('.garangGlobalSignup,#garangChatFile,#garangChatAttachBtn'));
+   });
+   if(relevant)schedule();
+ });
+ mo.observe(document.body,{subtree:true,childList:true});
+ observing=true;
+}
 window.GARANGPreferences={...prefs()};window.GARANGLocale={get:prefs,set:savePrefs,translate:tr,language:lang,unit,country};
 document.addEventListener('DOMContentLoaded',()=>{setupSignup();setupChatAttach();authTouchSafety();document.documentElement.dataset.garangLanguage=lang();document.documentElement.dataset.garangUnit=unit();applyAll();observe();});
 })();
