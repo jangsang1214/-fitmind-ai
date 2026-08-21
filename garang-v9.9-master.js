@@ -153,51 +153,38 @@
 
 
   function unifiedUIStyle(){
-    if($('garangUnifiedUIStyle'))return;
-    const st=document.createElement('style');st.id='garangUnifiedUIStyle';st.textContent=`
-      #v99UnifiedPanel{margin:10px 0 16px}
-      #v99UnifiedPanel .uaiHeader{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 20px;border:1px solid #292c34;border-radius:20px;background:#111216}
-      #v99UnifiedPanel h3{margin:4px 0 5px;font-size:22px;color:#f5f5f7}
-      #v99UnifiedPanel p{margin:0;color:#858a96;font-size:12px;line-height:1.5}
-      #v99UnifiedPanel .uaiLive{padding:6px 9px;border-radius:999px;background:#1d2026;color:#bca2ff;font-size:10px;font-weight:900}
-      #v99UnifiedPanel .uaiSources{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
-      #v99UnifiedPanel .uaiSources button,#v99UnifiedPanel .uaiAuto{min-height:62px;border:1px solid #292c34;border-radius:14px;background:#101115;color:#eee;padding:10px;text-align:left}
-      #v99UnifiedPanel .uaiSources button{cursor:pointer}
-      #v99UnifiedPanel .uaiSources button b,#v99UnifiedPanel .uaiAuto b{display:block;font-size:10px;color:#b99fff;letter-spacing:.08em}
-      #v99UnifiedPanel .uaiSources span,#v99UnifiedPanel .uaiAuto span{display:block;margin-top:5px;color:#858a96;font-size:11px}
-      @media(max-width:650px){#v99UnifiedPanel .uaiHeader{padding:16px}.uaiSources{grid-template-columns:repeat(2,1fr)!important}}
-    `;document.head.appendChild(st);
-  }
+ if($('garangUnifiedUIStyle'))return;
+ const st=document.createElement('style');st.id='garangUnifiedUIStyle';st.textContent=`
+  #v99UnifiedPanel{margin:10px 0 14px}
+  #v99UnifiedPanel .uaiHero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border:1px solid #292c34;border-radius:22px;background:linear-gradient(145deg,#111216,#15161b)}
+  #v99UnifiedPanel h3{margin:4px 0 5px;font-size:21px;color:#f5f5f7}
+  #v99UnifiedPanel p{margin:0;color:#8d929c;font-size:12px;line-height:1.5}
+  #v99UnifiedPanel .uaiBadge{padding:6px 9px;border-radius:999px;background:#20222a;color:#c6a8ff;font-size:10px;font-weight:900;white-space:nowrap}
+  #v99UnifiedPanel .uaiState{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  #v99UnifiedPanel .uaiPill{padding:7px 9px;border:1px solid #292c34;border-radius:999px;background:#101115;color:#a9adb6;font-size:10px}
+  #v99UnifiedPanel .uaiPill b{color:#eee;margin-right:4px}
+  #v99UnifiedPanel .uaiHint{margin-top:9px;color:#666b75;font-size:10px}
+  @media(max-width:650px){#v99UnifiedPanel .uaiHero{padding:15px}#v99UnifiedPanel h3{font-size:19px}.uaiBadge{display:none!important}}
+ `;document.head.appendChild(st);
+}
+function buildUnifiedAIUI(){
+ const page=$('chat');if(!page)return;
+ page.querySelector('.coachQuick')?.remove();page.querySelector('.coachInsight')?.remove();
+ const title=page.querySelector('.pageTitle');if(!title)return;
+ const h=title.querySelector('h2');if(h)h.textContent='개인 AI';
+ const p=title.querySelector('p');if(p)p.textContent='질문 하나로 내 기록·오늘 상태·기억·학습·외부 지식을 자동으로 연결합니다.';
+ const panel=$('v99UnifiedPanel');if(!panel)return;
+ const st=unifiedState(''),mem=st.memory||{},today=st.today||{},learn=st.learning||{};
+ const memoryCount=(mem.facts?.length||0)+(mem.preferences?.length||0)+(mem.goals?.length||0);
+ const learningCount=learn.learning?.events||learn.recent?.length||0;
+ panel.innerHTML=`<div class="uaiHero"><div><span class="eyebrow">GARANG UNIFIED INTELLIGENCE</span><h3>하나의 AI가 전부 판단합니다</h3><p>로컬 코치·오늘의 상태·장기 기억·학습·외부 지식을 필요할 때 자동으로 조합합니다.</p></div><span class="uaiBadge">AUTO</span></div><div class="uaiState"><span class="uaiPill"><b>기록</b>${(today.workouts?.length||0)+(today.meals?.length||0)} 오늘</span><span class="uaiPill"><b>기억</b>${memoryCount}</span><span class="uaiPill"><b>학습</b>${learningCount}</span><span class="uaiPill"><b>검색</b>필요할 때 자동</span></div><div class="uaiHint">내부 기능은 AI가 알아서 선택합니다. 사용자는 질문만 하면 됩니다.</div>`;
+ const attach=$('chatAttachBtn'),file=$('chatFile');if(attach&&file&&!attach.dataset.bound){attach.dataset.bound='1';attach.onclick=()=>file.click();file.onchange=()=>{if(file.files?.[0]){const f=file.files[0];const input=$('chatInput');if(input)input.value=`[첨부: ${f.name}] `+input.value;}}}
+}
 
-  function buildUnifiedAIUI(){
-    const page=$('chat'); if(!page)return;
-    // Remove duplicated/legacy coach blocks; keep one source of truth.
-    page.querySelector('.coachQuick')?.remove();
-    page.querySelector('.coachInsight')?.remove();
-    const title=page.querySelector('.pageTitle'); if(!title)return;
-    const h=title.querySelector('h2'); if(h)h.textContent='개인 AI 코치';
-    const p=title.querySelector('p'); if(p)p.textContent='로컬 코치 · 오늘의 코치 · 외부 지식 · 기억을 하나의 판단 흐름으로 연결합니다.';
-    let panel=$('v99UnifiedPanel');
-    if(!panel){
-      panel=document.createElement('div');panel.id='v99UnifiedPanel';title.after(panel);
-    }
-    const st=unifiedState('');
-    const mem=st.memory||{}, today=st.today||{}, learn=st.learning||{};
-    panel.innerHTML=`
-      <div class="uaiHeader"><div><span class="eyebrow">GARANG UNIFIED INTELLIGENCE</span><h3>하나의 AI가 전부 연결합니다</h3><p>질문 하나면 내 기록을 먼저 보고, 오늘 상태와 기억을 반영하고, 필요할 때 외부 지식을 자동 확인합니다.</p></div><span class="uaiLive">LIVE</span></div>
-      <div class="uaiSources">
-        <button type="button" data-open="v93Memory"><b>MEMORY</b><span>${(mem.facts?.length||0)+(mem.preferences?.length||0)+(mem.goals?.length||0)}개</span></button>
-        <button type="button" data-open="v93Learning"><b>TODAY</b><span>${today.workouts?.length||0} 운동 · ${today.meals?.length||0} 식단</span></button>
-        <button type="button" data-open="v93Learning"><b>KNOWLEDGE</b><span>${learn.learning?.events||learn.recent?.length||0} 학습</span></button>
-        <div class="uaiAuto"><b>AUTO</b><span>외부 검색 · 학습</span></div>
-      </div>`;
-    panel.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>window.openPage?.(b.dataset.open));
-  }
-
-  function bootUnified(){
+function bootUnified(){
     setupStyle();unifiedUIStyle();bindAuthSetup();patchAI();
     setTimeout(patchAI,250);setTimeout(patchAI,1000);
-    buildUnifiedAIUI();setTimeout(buildUnifiedAIUI,300);setTimeout(buildUnifiedAIUI,1000);
+    buildUnifiedAIUI();
     touchGuard();
   }
 

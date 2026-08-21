@@ -58,26 +58,52 @@ function todayUnifiedState(){
  const workouts=arr("workouts").filter(x=>iso(x)===t), meals=arr("meals").filter(x=>iso(x)===t);
  return {date:t,workouts,meals,body,workoutKcal:workouts.reduce((s,x)=>s+n(x.calories??x.kcal??x.estimatedKcal),0),kcal:meals.reduce((s,x)=>s+n(x.kcal??x.calories),0),protein:meals.reduce((s,x)=>s+n(x.protein),0)};
 }
-function compactContext(){const d=ensure();return{version:VERSION,profile:d.profile||{},workouts:arr("workouts").slice(-40),meals:arr("meals").slice(-40),body:arr("body").slice(-14),running:runs(30),coachMemory:d.coachMemory,coachState:state(),todayCoach:todayUnifiedState(),learning:window.GARANG_V93_LEARNING?.userState?.()||null,recentChat:d.chat.slice(-20)}}
+function unifiedIntent(text){
+ const q=String(text||'').trim();
+ const casual=/^(안녕|하이|ㅎㅇ|반가|고마워|감사|ㅋㅋ+|ㅎㅎ+|hi|hello|hey|thanks|thank you)[!,.? ]*$/i.test(q);
+ const personal=/(내|오늘|최근|지난|기록|운동|식단|체중|러닝|단백질|벤치|스쿼트|데드|목표|회복|수면|내가|나의)/i.test(q);
+ const external=window.GARANGIntegratedAI?.needsExternalSearch?.(q) || /(연구|논문|근거|최신|최근 연구|가이드|통계|효과|왜|무엇|어떻게|recommend|research|study|evidence|latest|guideline)/i.test(q);
+ return {casual,personal,external,mixed:personal&&external,mode:casual?'casual':(personal&&external?'mixed':external?'knowledge':personal?'personal':'general')};
+}
+function compactContext(extra={}){
+ const d=ensure(), t=todayUnifiedState();
+ return {version:VERSION, profile:d.profile||{}, workouts:arr("workouts").slice(-40), meals:arr("meals").slice(-40), body:arr("body").slice(-14), running:runs(30), coachMemory:d.coachMemory, coachState:state(), todayCoach:t, learning:window.GARANG_V93_LEARNING?.userState?.()||null, recentChat:d.chat.slice(-20), ...extra};
+}
 function serverUrl(){const d=ensure();return d.api?.url||localStorage.getItem("fitmind_server_endpoint")||""}
 async function ask(text){
- const url=serverUrl();
+ const intent=unifiedIntent(text), url=serverUrl();
  let knowledge=[];
- try{knowledge=window.GARANGKnowledge?.knowledgeContext?.(text)||[]}catch(e){}
- if(window.GARANGKnowledge?.search && window.GARANGKnowledge?.needsExternalSearch?.(text)){
-  try{const r=await window.GARANGKnowledge.search(text);knowledge=[...knowledge,...(r.results||[])].slice(0,8)}catch(e){}
- }
- const kctx=knowledge.map(x=>({title:x.title,summary:x.summary,source:x.source,url:x.url,confidence:x.confidence||"medium"}));
+ if(intent.external && window.GARANGKnowledge?.search){
+   try{const r=await window.GARANGKnowledge.search(text);knowledge=(r?.results||[]).filter(Boolean).slice(0,8)}catch(e){console.warn('[GARANG Unified AI] knowledge search skipped',e)}
+ }else{try{knowledge=window.GARANGKnowledge?.knowledgeContext?.(text)||[]}catch(e){}}
+ const kctx=knowledge.map(x=>({title:x.title,summary:x.summary,source:x.source,url:x.url,confidence:x.confidence||'medium'}));
+ const unifiedInstruction=[
+  'You are GARANG Unified Intelligence. Answer as ONE assistant, not as separate coaches.',
+  'Use the user profile, workout/nutrition/running/body records, today state, long-term memory, learning state, and external knowledge together when relevant.',
+  'Do not tell the user to open Today Coach, Local Coach, Learning, Memory, or Knowledge. Those are internal capabilities.',
+  'If external evidence is supplied, distinguish evidence from personal coaching judgment and cite the supplied sources briefly.',
+  'Prioritize the user actual records over generic assumptions. If data is missing, say what is missing instead of inventing it.',
+  'For casual conversation, respond naturally and do not force fitness analysis.'
+ ].join(' ');
+ const context=compactContext({intent,knowledge:kctx,unifiedInstruction});
+ window.GARANGIntegratedAI=window.GARANGIntegratedAI||{};
+ window.GARANGIntegratedAI.lastPacket={intent,context,knowledge:kctx,at:Date.now()};
  if(url){
   try{
    const h={"Content-Type":"application/json"},key=ensure().api?.key;if(key)h.Authorization="Bearer "+key;
-   const r=await fetch(url,{method:"POST",headers:h,body:JSON.stringify({version:VERSION,query:text,context:compactContext(),knowledge:kctx})});
-   if(r.ok){const j=await r.json();return j.text||j.reply||j.message||decision(text)}
-  }catch(e){}
+   const r=await fetch(url,{method:"POST",headers:h,body:JSON.stringify({version:VERSION,query:text,mode:'unified',instruction:unifiedInstruction,intent,context,knowledge:kctx})});
+   if(r.ok){const j=await r.json(),answer=j.text||j.reply||j.message;if(answer){
+    try{if(kctx.length)window.GARANGKnowledge?.learn?.({topic:text,query:text,title:'GARANG Unified AI evidence',summary:kctx.slice(0,5).map(x=>x.summary||x.title).join(' | '),source:'GARANG Unified Intelligence',url:kctx[0]?.url||'',confidence:'medium',tags:['v9.9','unified-ai',intent.mode]})}catch(e){}
+    return answer;
+   }}
+  }catch(e){console.warn('[GARANG Unified AI] server fallback',e)}
  }
  const base=decision(text);
  if(kctx.length){
-  return base+"\n\n[외부 지식]\n"+kctx.slice(0,4).map(x=>`- ${x.title} (${x.source})\n  ${x.summary}${x.url?'\n  '+x.url:''}`).join("\n");
+  const evidence=kctx.slice(0,3).map(x=>`• ${x.title||'외부 자료'} — ${x.summary||''}${x.source?` (${x.source})`:''}`).join('\n');
+  const suffix=garangLang()==='en'?`\n\nEvidence checked:\n${evidence}`:`\n\n외부 근거 참고:\n${evidence}`;
+  try{window.GARANGKnowledge?.learn?.({topic:text,query:text,title:'GARANG Unified AI evidence',summary:kctx.slice(0,5).map(x=>x.summary||x.title).join(' | '),source:'GARANG Unified Intelligence',url:kctx[0]?.url||'',confidence:'medium',tags:['v9.9','unified-ai',intent.mode]})}catch(e){}
+  return base+suffix;
  }
  return base;
 }
