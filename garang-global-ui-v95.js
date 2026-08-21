@@ -69,12 +69,40 @@ function setupSignup(){
 }
 
 function setupChatAttach(){
- const form=document.getElementById('chatForm');if(!form||form.dataset.garangAttachBound)return;form.dataset.garangAttachBound='1';
- const input=document.getElementById('chatInput');const send=form.querySelector('button');if(!input||!send)return;
- const file=document.createElement('input');file.type='file';file.id='garangChatFile';file.accept='image/*,.pdf,.txt,.csv,.json';file.hidden=true;
- const plus=document.createElement('button');plus.type='button';plus.id='garangChatAttachBtn';plus.className='garangChatPlus';plus.setAttribute('aria-label','Attach file or photo');plus.textContent='＋';
- form.insertBefore(plus,input);form.appendChild(file);plus.onclick=()=>file.click();
- file.onchange=()=>{const f=file.files?.[0];if(!f)return;window.GARANGKnowledge?.recordPhoto?.(f,{source:'chat_attachment',language:lang()});const note=lang()==='en'?`Attached: ${f.name}`:`첨부됨: ${f.name}`;const tag=document.createElement('span');tag.className='garangAttachPill';tag.textContent=note;form.insertBefore(tag,input);file.value='';};
+ const form=document.getElementById('chatForm');if(!form||form.dataset.garangAttachBound)return;
+ const input=document.getElementById('chatInput');const send=form.querySelector('button[type="submit"]');if(!input||!send)return;
+ // Remove any legacy attachment control left by older V9.5 global UI code.
+ form.querySelectorAll('#garangChatAttachBtn,.garangChatPlus').forEach(el=>el.remove());
+ // V9.9 already owns the official composer. Reuse its single attachment control
+ // instead of injecting a second plus button. This prevents duplicate composers.
+ let plus=document.getElementById('chatAttachBtn');
+ let file=document.getElementById('chatFile');
+ if(!plus){
+   plus=document.createElement('button');
+   plus.type='button';plus.id='chatAttachBtn';plus.className='chatPlus';
+   plus.setAttribute('aria-label','파일 또는 사진 첨부');plus.textContent='＋';
+   form.insertBefore(plus,input);
+ }
+ if(!file){
+   file=document.createElement('input');file.type='file';file.id='chatFile';
+   file.accept='image/*,.pdf,.txt,.csv,.json';file.hidden=true;form.appendChild(file);
+ }
+ if(!plus.dataset.garangAttachClickBound){
+   plus.dataset.garangAttachClickBound='1';
+   plus.addEventListener('click',()=>file.click());
+ }
+ if(!file.dataset.garangAttachChangeBound){
+   file.dataset.garangAttachChangeBound='1';
+   file.addEventListener('change',()=>{
+     const f=file.files?.[0];if(!f)return;
+     window.GARANGKnowledge?.recordPhoto?.(f,{source:'chat_attachment',language:lang()});
+     const note=lang()==='en'?`Attached: ${f.name}`:`첨부됨: ${f.name}`;
+     let tag=form.querySelector('.garangAttachPill');
+     if(!tag){tag=document.createElement('span');tag.className='garangAttachPill';form.insertBefore(tag,input);}
+     tag.textContent=note;
+   });
+ }
+ form.dataset.garangAttachBound='1';
 }
 
 function authTouchSafety(){
