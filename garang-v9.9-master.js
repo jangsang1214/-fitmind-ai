@@ -80,31 +80,125 @@
     const list=items.slice(0,5); if(!list.length)return '';
     return '\n\n'+(english?'Sources checked':'확인한 출처')+'\n'+list.map((x,i)=>`${i+1}. ${x.title} — ${x.source}${x.url?'\n   '+x.url:''}`).join('\n');
   }
+  function unifiedState(q){
+    let local={}, today={}, memory={}, learning={}, knowledge=[];
+    try{local=window.GARANGCoachEngine?.state?.()||{}}catch{}
+    try{today=window.GARANGCoachEngine?.todayUnifiedState?.()||todayState()||{}}catch{}
+    try{memory=getDb().coachMemory||{}}catch{}
+    try{learning=window.GARANG_V93_LEARNING?.userState?.()||{}}catch{}
+    try{knowledge=window.GARANGKnowledge?.knowledgeContext?.(q)||[]}catch{}
+    return {local,today,memory,learning,knowledge};
+  }
   async function integratedAsk(q,baseAsk){
-    const english=lang()==='en'; let ks=knowledge(q),searched=false;
+    const english=lang()==='en', s=unifiedState(q);
+    let ks=s.knowledge.slice(0,8),searched=false;
     if(needsSearch(q)&&window.GARANGKnowledge?.search){
-      try{const r=await window.GARANGKnowledge.search(q);const fresh=r?.results||[];ks=[...fresh,...ks].filter((x,i,a)=>x&&(x.url||x.title)&&a.findIndex(y=>(y.url||y.title)===(x.url||x.title))===i).slice(0,8);searched=!!r?.searched}catch(e){console.warn('[GARANG V9.9] external search failed',e)}
+      try{
+        const r=await window.GARANGKnowledge.search(q);
+        const fresh=r?.results||[];
+        ks=[...fresh,...ks].filter((x,i,a)=>x&&(x.url||x.title)&&a.findIndex(y=>(y.url||y.title)===(x.url||x.title))===i).slice(0,8);
+        searched=!!r?.searched;
+      }catch(e){console.warn('[GARANG V9.9] external search failed',e)}
     }
-    const base=await baseAsk(q);
-    const t=todayState();
-    const hasToday=t.workouts?.length||t.meals?.length||t.body;
-    let out=base;
-    if(hasToday) out += english?'\n\nToday Coach context: your current-day workout, nutrition and body state are included in this answer.':'\n\n오늘의 코칭 맥락: 오늘 운동·식단·바디 상태를 함께 반영했어.';
-    if(searched) out += english?'\n\nI checked external knowledge automatically because this question benefits from current evidence.':'\n\n🔎 이 질문은 최신/근거 자료가 필요한 내용이라 외부 지식을 자동으로 확인했어.';
-    if(ks.length) out += fmtSources(ks,english);
+    // The local coach remains the decision engine. Its context now includes
+    // today's state + memory + learning state; external knowledge is an evidence layer.
+    let out=await baseAsk(q);
+    const hasToday=!!(s.today.workouts?.length||s.today.meals?.length||s.today.body);
+    if(hasToday){
+      const todayLine=english
+        ? `\n\nToday integrated: ${s.today.workouts?.length||0} workouts · ${s.today.meals?.length||0} meals · ${Math.round(s.today.protein||0)}g protein.`
+        : `\n\n오늘 통합 데이터: 운동 ${s.today.workouts?.length||0}개 · 식단 ${s.today.meals?.length||0}개 · 단백질 ${Math.round(s.today.protein||0)}g.`;
+      out+=todayLine;
+    }
+    if(s.memory?.facts?.length||s.memory?.preferences?.length||s.memory?.goals?.length){
+      out+=english
+        ? `\n\nMemory integrated: ${s.memory.facts?.length||0} facts · ${s.memory.preferences?.length||0} preferences · ${s.memory.goals?.length||0} goals.`
+        : `\n\n기억 통합: 사실 ${s.memory.facts?.length||0}개 · 선호 ${s.memory.preferences?.length||0}개 · 목표 ${s.memory.goals?.length||0}개.`;
+    }
+    if(searched) out += english
+      ? '\n\n🔎 I checked external knowledge automatically and used it as evidence for this answer.'
+      : '\n\n🔎 필요한 내용은 외부 지식을 자동 검색해서 근거로 함께 사용했어.';
     if(ks.length){
-      try{window.GARANGKnowledge.learn({topic:q,query:q,title:english?'GARANG AI learned context':'GARANG AI 학습 컨텍스트',summary:ks.slice(0,5).map(x=>x.summary||x.title).join(' | '),source:'GARANG Integrated Knowledge',url:ks[0]?.url||'',confidence:'medium',tags:['v9.9','ai-integrated']})}catch{}
-      out += english?'\n\n📚 The relevant knowledge has been stored for future retrieval.':'\n\n📚 관련 지식은 다음 질문에서 다시 활용할 수 있도록 저장했어.';
+      const sources=ks.slice(0,4).map((x,i)=>`${i+1}. ${x.title||'Source'} — ${x.source||'External'}${x.url?'\n   '+x.url:''}`).join('\n');
+      out += english?`\n\nSources\n${sources}`:`\n\n확인한 출처\n${sources}`;
+      try{
+        window.GARANGKnowledge?.learn?.({
+          topic:q,query:q,
+          title:english?'GARANG Unified AI learned context':'GARANG 통합 AI 학습 컨텍스트',
+          summary:ks.slice(0,5).map(x=>x.summary||x.title).join(' | '),
+          source:'GARANG Unified Intelligence',url:ks[0]?.url||'',
+          confidence:'medium',tags:['v9.9','unified-ai','today-coach','local-coach','knowledge']
+        });
+      }catch{}
     }
+    try{window.GARANG_V93_LEARNING?.record?.('ai_unified',{query:q,usedToday:hasToday,usedKnowledge:!!ks.length,usedMemory:true},{status:'success'})}catch{}
     return out;
   }
   function patchAI(){
     const engine=window.GARANGCoachEngine;if(!engine?.ask)return;
-    if(engine.__v99Patched)return;engine.__v99Patched=true;
+    if(engine.__v99UnifiedPatched)return;
+    engine.__v99UnifiedPatched=true;
     const base=engine.ask;
     const wrapped=q=>integratedAsk(q,base);
-    engine.ask=wrapped;window.GARANGIntegratedAI={version:'9.9.0',ask:wrapped,needsExternalSearch:needsSearch,todayState};
-    window.garangAsk=async q=>{const i=$('chatInput');if(i){i.value=q;$('chatForm')?.requestSubmit()}};
+    engine.ask=wrapped;
+    window.GARANGIntegratedAI={
+      version:'9.9.1-unified',
+      ask:wrapped,
+      needsExternalSearch:needsSearch,
+      todayState:()=>{try{return engine.todayUnifiedState?.()||todayState()}catch{return{}}},
+      context:unifiedState
+    };
+    window.garangAsk=async q=>{const i=$('chatInput');if(i){i.value=q;$('chatForm')?.requestSubmit();}};
+  }
+
+
+  function unifiedUIStyle(){
+    if($('garangUnifiedUIStyle'))return;
+    const st=document.createElement('style');st.id='garangUnifiedUIStyle';st.textContent=`
+      #v99UnifiedPanel{margin:10px 0 16px}
+      #v99UnifiedPanel .uaiHeader{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 20px;border:1px solid #292c34;border-radius:20px;background:#111216}
+      #v99UnifiedPanel h3{margin:4px 0 5px;font-size:22px;color:#f5f5f7}
+      #v99UnifiedPanel p{margin:0;color:#858a96;font-size:12px;line-height:1.5}
+      #v99UnifiedPanel .uaiLive{padding:6px 9px;border-radius:999px;background:#1d2026;color:#bca2ff;font-size:10px;font-weight:900}
+      #v99UnifiedPanel .uaiSources{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+      #v99UnifiedPanel .uaiSources button,#v99UnifiedPanel .uaiAuto{min-height:62px;border:1px solid #292c34;border-radius:14px;background:#101115;color:#eee;padding:10px;text-align:left}
+      #v99UnifiedPanel .uaiSources button{cursor:pointer}
+      #v99UnifiedPanel .uaiSources button b,#v99UnifiedPanel .uaiAuto b{display:block;font-size:10px;color:#b99fff;letter-spacing:.08em}
+      #v99UnifiedPanel .uaiSources span,#v99UnifiedPanel .uaiAuto span{display:block;margin-top:5px;color:#858a96;font-size:11px}
+      @media(max-width:650px){#v99UnifiedPanel .uaiHeader{padding:16px}.uaiSources{grid-template-columns:repeat(2,1fr)!important}}
+    `;document.head.appendChild(st);
+  }
+
+  function buildUnifiedAIUI(){
+    const page=$('chat'); if(!page)return;
+    // Remove duplicated/legacy coach blocks; keep one source of truth.
+    page.querySelector('.coachQuick')?.remove();
+    page.querySelector('.coachInsight')?.remove();
+    const title=page.querySelector('.pageTitle'); if(!title)return;
+    const h=title.querySelector('h2'); if(h)h.textContent='개인 AI 코치';
+    const p=title.querySelector('p'); if(p)p.textContent='로컬 코치 · 오늘의 코치 · 외부 지식 · 기억을 하나의 판단 흐름으로 연결합니다.';
+    let panel=$('v99UnifiedPanel');
+    if(!panel){
+      panel=document.createElement('div');panel.id='v99UnifiedPanel';title.after(panel);
+    }
+    const st=unifiedState('');
+    const mem=st.memory||{}, today=st.today||{}, learn=st.learning||{};
+    panel.innerHTML=`
+      <div class="uaiHeader"><div><span class="eyebrow">GARANG UNIFIED INTELLIGENCE</span><h3>하나의 AI가 전부 연결합니다</h3><p>질문 하나면 내 기록을 먼저 보고, 오늘 상태와 기억을 반영하고, 필요할 때 외부 지식을 자동 확인합니다.</p></div><span class="uaiLive">LIVE</span></div>
+      <div class="uaiSources">
+        <button type="button" data-open="v93Memory"><b>MEMORY</b><span>${(mem.facts?.length||0)+(mem.preferences?.length||0)+(mem.goals?.length||0)}개</span></button>
+        <button type="button" data-open="v93Learning"><b>TODAY</b><span>${today.workouts?.length||0} 운동 · ${today.meals?.length||0} 식단</span></button>
+        <button type="button" data-open="v93Learning"><b>KNOWLEDGE</b><span>${learn.learning?.events||learn.recent?.length||0} 학습</span></button>
+        <div class="uaiAuto"><b>AUTO</b><span>외부 검색 · 학습</span></div>
+      </div>`;
+    panel.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>window.openPage?.(b.dataset.open));
+  }
+
+  function bootUnified(){
+    setupStyle();unifiedUIStyle();bindAuthSetup();patchAI();
+    setTimeout(patchAI,250);setTimeout(patchAI,1000);
+    buildUnifiedAIUI();setTimeout(buildUnifiedAIUI,300);setTimeout(buildUnifiedAIUI,1000);
+    touchGuard();
   }
 
   /* ---------- Touch regression guard ---------- */
@@ -130,6 +224,6 @@
     window.addEventListener('pageshow',run);
   }
 
-  function boot(){setupStyle();bindAuthSetup();patchAI();touchGuard();setTimeout(patchAI,250);setTimeout(patchAI,1000);}
+  function boot(){bootUnified();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

@@ -99,7 +99,24 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 </style>
 <style id="garang-global-ui-style">.garangGlobalSignup{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.garangPrefLabel{font-size:12px;color:#777;font-weight:700}.garangPrefLabel select{margin-top:6px;width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#111}.garangChatPlus{width:36px!important;height:36px!important;min-width:36px!important;border-radius:50%!important;padding:0!important;font-size:24px!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}.garangAttachPill{font-size:11px;padding:6px 9px;border-radius:999px;background:#eee;color:#222;white-space:nowrap}.chatbar{display:flex;align-items:center;gap:8px}.chatbar input{flex:1}@media(max-width:520px){.garangGlobalSignup{grid-template-columns:1fr}.garangAttachPill{display:none}} #serverLLMSettings{display:none!important}
 #auth{position:relative;z-index:200;pointer-events:auto!important}#auth *{pointer-events:auto!important}#auth input,#auth select,#auth button,#auth label{touch-action:manipulation!important}
-</style></head>
+</style><style>
+/* V9.9 unified intelligence + clean profile */
+.profileCard{padding:18px!important}
+.profileSection{padding:4px 0 18px;margin-bottom:18px;border-bottom:1px solid #262930}
+.profileSection:last-of-type{border-bottom:0;margin-bottom:6px}
+.profileSectionHead{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.profileIcon{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:10px;background:#1a1c21;color:#b9a0ff;font-size:10px;font-weight:900;letter-spacing:.05em}
+.profileSectionHead strong{display:block;font-size:16px}.profileSectionHead small{display:block;color:#777c87;font-size:11px;margin-top:3px}
+.profileGrid{display:grid;gap:10px}.profileGrid2{grid-template-columns:1fr 1fr}
+.profileField{display:grid;gap:6px;min-width:0}.profileField.wide{grid-column:1/-1}
+.profileField>span{font-size:11px;color:#777c87;font-weight:700}
+.profileField input,.profileField select{width:100%;box-sizing:border-box;min-height:48px!important;margin:0!important}
+.profileSaveBtn{width:100%;margin-top:4px}
+.accountCard{display:flex;justify-content:space-between;align-items:center;gap:14px}.accountCard h3{margin:3px 0}.accountCard p{margin:4px 0 0}.accountActions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:650px){.profileGrid2{grid-template-columns:1fr 1fr}.accountCard{display:block}.accountActions{margin-top:12px}.profileField.wide{grid-column:1/-1}}
+@media(max-width:390px){.profileGrid2{grid-template-columns:1fr}.profileField.wide{grid-column:auto}}
+</style>
+</head>
 <body>
 <div id="app">
 <header class="garangHeader">
@@ -139,29 +156,43 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 </section>
 
 <section id="profile" class="page">
-<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2></div><button class="ghostBtn" type="button" onclick="garangStartOnboarding()">온보딩 다시하기</button></div>
-<form id="profileForm" class="card">
-  <input id="profName" placeholder="닉네임" required>
-  <div class="row">
-    <select id="profGender"><option value="">성별</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select>
-    <input id="profAge" type="number" min="1" max="120" placeholder="나이">
-    <input id="profHeight" type="number" step=".1" placeholder="키 cm">
+<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2><p>개인 정보는 코칭과 분석의 기준이 됩니다.</p></div><button class="ghostBtn" type="button" onclick="garangStartOnboarding()">온보딩 다시하기</button></div>
+
+<form id="profileForm" class="card profileCard">
+  <div class="profileSection">
+    <div class="profileSectionHead"><span class="profileIcon">01</span><div><strong>기본 정보</strong><small>GARANG이 나를 구분하는 데 사용하는 정보</small></div></div>
+    <div class="profileGrid profileGrid2">
+      <label class="profileField wide"><span>닉네임</span><input id="profName" placeholder="닉네임" required></label>
+      <label class="profileField"><span>성별</span><select id="profGender"><option value="">선택</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select></label>
+      <label class="profileField"><span>나이</span><input id="profAge" type="number" min="1" max="120" placeholder="22"></label>
+    </div>
   </div>
-  <div class="row">
-    <input id="profWeight" type="number" step=".1" placeholder="현재 체중 kg">
-    <input id="profTargetWeight" type="number" step=".1" placeholder="목표 체중 kg">
-    <select id="profActivity"><option value="">활동 수준</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select>
+
+  <div class="profileSection">
+    <div class="profileSectionHead"><span class="profileIcon">02</span><div><strong>신체 정보</strong><small>체중·목표·활동량을 코칭 계산에 사용합니다.</small></div></div>
+    <div class="profileGrid profileGrid2">
+      <label class="profileField"><span>키</span><input id="profHeight" type="number" step=".1" placeholder="174"></label>
+      <label class="profileField"><span>현재 체중</span><input id="profWeight" type="number" step=".1" placeholder="67"></label>
+      <label class="profileField"><span>목표 체중</span><input id="profTargetWeight" type="number" step=".1" placeholder="68"></label>
+      <label class="profileField"><span>활동 수준</span><select id="profActivity"><option value="">선택</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select></label>
+    </div>
   </div>
-  <input id="profGoal" placeholder="운동 목표 (예: 체지방 감량, 근력 증가)">
-  <select id="profExperience"><option value="">운동 경험</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select>
-  <select id="profCoachStyle"><option value="">AI 코칭 스타일</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select>
-  <button>정보 저장</button>
+
+  <div class="profileSection">
+    <div class="profileSectionHead"><span class="profileIcon">03</span><div><strong>코칭 설정</strong><small>AI가 나에게 맞는 방식으로 판단합니다.</small></div></div>
+    <div class="profileGrid profileGrid2">
+      <label class="profileField wide"><span>목표</span><input id="profGoal" placeholder="예: 근육 증가, 체지방 감량"></label>
+      <label class="profileField"><span>운동 경험</span><select id="profExperience"><option value="">선택</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label>
+      <label class="profileField"><span>AI 코칭 스타일</span><select id="profCoachStyle"><option value="">선택</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select></label>
+    </div>
+  </div>
+
+  <button class="profileSaveBtn">정보 저장</button>
 </form>
-<div class="card">
-  <h3>계정</h3>
-  <p id="accountEmail" class="muted"></p>
-  <button class="danger" type="button" onclick="logout()">로그아웃</button>
-  <button class="danger outline" type="button" onclick="deleteAccount()">계정 삭제</button>
+
+<div class="card accountCard">
+  <div><span class="eyebrow">ACCOUNT</span><h3>계정 관리</h3><p id="accountEmail" class="muted"></p></div>
+  <div class="accountActions"><button class="danger" type="button" onclick="logout()">로그아웃</button><button class="danger outline" type="button" onclick="deleteAccount()">계정 삭제</button></div>
 </div>
 </section>
 
@@ -402,7 +433,7 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 </section>
 </main>
 
-<nav id="mainNav" class="hidden"><button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('running')">러닝</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button><button onclick="openPage('v93Learning')">학습</button><button onclick="openPage('v93Memory')">메모리</button><button onclick="openPage('profile')">프로필</button></nav>
+<nav id="mainNav" class="hidden"><button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('body')">바디</button><button onclick="openPage('running')">러닝</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button><button onclick="openPage('profile')">프로필</button></nav>
 </div>
 
 <script>

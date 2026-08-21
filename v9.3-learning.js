@@ -135,5 +135,5 @@
     });
     document.getElementById("v93Sync")?.addEventListener("click",()=>{syncFromCore();render();});
   });
-  setInterval(()=>{syncFromCore();render()},5000);
+  let lastRenderKey=""; setInterval(()=>{syncFromCore(); const k=JSON.stringify([L.events.length,L.patterns.length,L.lastSync]); if(k!==lastRenderKey){lastRenderKey=k;render();}},5000);
 })();

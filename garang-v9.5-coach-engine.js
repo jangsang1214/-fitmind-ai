@@ -53,7 +53,12 @@ function decision(q){
  return `현재 네 프로필과 운동 ${t.records}개, 오늘 식단 ${nu.count}개, 최근 러닝 ${s.running30.count}회를 함께 참조하고 있어. 질문하면 필요한 데이터부터 꺼내서 판단할게.`
 }
 function insight(){const s=state();if(garangLang()==="en"){if(s.training.last7Sessions>=6)return "Your training frequency is high. Check recovery before pushing intensity.";const b=s.recentWorkouts.find(x=>/bench/i.test(x.exercise));if(b)return `Recent ${b.exercise} ${b.weight||"-"}kg × ${b.reps||"-"}. I can use this to adjust your next session.`;if(s.running30.count)return `Last 30 days: ${s.running30.count} runs · ${uiDistance(s.running30.distance)}.`;return "I will keep updating your coaching from your workout, nutrition, running and body records.";}if(s.training.last7Sessions>=6)return"최근 운동 빈도가 높아. 다음 세션은 회복 상태를 확인한 뒤 강도를 조절하는 게 좋아.";const b=s.recentWorkouts.find(x=>/벤치/i.test(x.exercise));if(b)return`최근 ${b.exercise} ${b.weight||"-"}kg × ${b.reps||"-"}회 기록을 기준으로 다음 세션의 중량과 볼륨을 조절할 수 있어.`;if(s.running30.count)return`최근 30일 러닝 ${s.running30.count}회 · ${s.running30.distance.toFixed(1)}km가 코칭 데이터에 연결돼 있어.`;return"운동·식단·러닝·체중 기록을 연결해서 오늘의 코칭을 계속 업데이트할게."}
-function compactContext(){const d=ensure();return{version:VERSION,profile:d.profile||{},workouts:arr("workouts").slice(-40),meals:arr("meals").slice(-40),body:arr("body").slice(-14),running:runs(30),coachMemory:d.coachMemory,coachState:state(),recentChat:d.chat.slice(-20)}}
+function todayUnifiedState(){
+ const d=ensure(), t=today(), body=arr("body").filter(x=>iso(x)===t).slice(-1)[0]||null;
+ const workouts=arr("workouts").filter(x=>iso(x)===t), meals=arr("meals").filter(x=>iso(x)===t);
+ return {date:t,workouts,meals,body,workoutKcal:workouts.reduce((s,x)=>s+n(x.calories??x.kcal??x.estimatedKcal),0),kcal:meals.reduce((s,x)=>s+n(x.kcal??x.calories),0),protein:meals.reduce((s,x)=>s+n(x.protein),0)};
+}
+function compactContext(){const d=ensure();return{version:VERSION,profile:d.profile||{},workouts:arr("workouts").slice(-40),meals:arr("meals").slice(-40),body:arr("body").slice(-14),running:runs(30),coachMemory:d.coachMemory,coachState:state(),todayCoach:todayUnifiedState(),learning:window.GARANG_V93_LEARNING?.userState?.()||null,recentChat:d.chat.slice(-20)}}
 function serverUrl(){const d=ensure();return d.api?.url||localStorage.getItem("fitmind_server_endpoint")||""}
 async function ask(text){
  const url=serverUrl();
@@ -104,7 +109,7 @@ function buildUI(){const page=$("chat");if(!page)return;
 }
 window.garangAsk=async q=>{const input=$("chatInput");if(input){input.value=q;$("chatForm")?.requestSubmit()}};
 window.newGarangChat=newChat;
-window.GARANGCoachEngine={version:VERSION,state,ask,decision,compactContext,plan,report};
+window.GARANGCoachEngine={version:VERSION,state,ask,decision,compactContext,todayUnifiedState,plan,report};
 window.FitMindV77={version:VERSION,db,save,render,newChat,showHistory:history,planner:()=>({text:plan()}),weeklyReport:()=>({text:report()}),ask};
 const style=document.createElement("style");style.id="v95Style";style.textContent=`
 #v95CoachBar{margin:14px 0 18px}
