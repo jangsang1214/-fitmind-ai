@@ -404,11 +404,23 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 </section>
 
 <section id="chat" class="page">
-<div class="pageTitle"><div><span class="eyebrow">GARANG AI</span><h2>개인 AI</h2><p>하나의 대화창에서 내 기록·오늘 상태·기억·학습·외부 지식을 자동으로 연결합니다.</p></div><button class="ghostBtn" onclick="newGarangChat()">＋ 새 대화</button></div>
-<div id="v99UnifiedPanel" class="garangUnifiedShell"></div>
-<div id="chatLog" class="chatlog"></div>
-<form id="chatForm" class="chatbar"><button id="chatAttachBtn" class="chatPlus" type="button" aria-label="파일 또는 사진 첨부">＋</button><input id="chatFile" type="file" accept="image/*,.pdf,.txt,.json,.csv" hidden><input id="chatInput" placeholder="무엇이든 물어보세요" autocomplete="off" required><button id="chatSendBtn" type="submit">전송</button></form>
-<div id="serverLLMSettings" class="card" hidden><h3>고급 AI 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
+  <div class="aiWorkspaceHead">
+    <div>
+      <span class="eyebrow">GARANG AI</span>
+      <h2>나를 이해하는 하나의 AI</h2>
+      <p>운동·식단·러닝·회복·목표·기억을 필요한 순간 하나의 판단으로 연결합니다.</p>
+    </div>
+    <button class="ghostBtn aiNewChat" type="button" onclick="newGarangChat()">새 대화</button>
+  </div>
+  <div id="v99UnifiedPanel" class="garangUnifiedShell"></div>
+  <div id="chatLog" class="chatlog"></div>
+  <form id="chatForm" class="chatbar">
+    <button id="chatAttachBtn" class="chatPlus" type="button" aria-label="파일 또는 사진 첨부">＋</button>
+    <input id="chatFile" type="file" accept="image/*,.pdf,.txt,.json,.csv" hidden>
+    <input id="chatInput" placeholder="무엇이든 물어보세요" autocomplete="off" required>
+    <button id="chatSendBtn" type="submit">전송</button>
+  </form>
+  <div id="serverLLMSettings" class="card" hidden><h3>고급 AI 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
 
 <section id="v93Learning" class="page">
@@ -437,13 +449,34 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 
 
 <style id="garangV99CleanUI">
-#v93Learning,#v93Memory{display:none!important}
-.garangUnifiedShell{margin:10px 0 14px}
-.garangUnifiedShell .uaiHero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border:1px solid #292c34;border-radius:22px;background:linear-gradient(145deg,#111216,#15161b);}
-.garangUnifiedShell .uaiHero h3{margin:4px 0 5px;font-size:21px}.garangUnifiedShell .uaiHero p{margin:0;color:#8d929c;font-size:12px;line-height:1.5}.garangUnifiedShell .uaiBadge{padding:6px 9px;border-radius:999px;background:#20222a;color:#c6a8ff;font-size:10px;font-weight:900;white-space:nowrap}
-.garangUnifiedShell .uaiState{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.garangUnifiedShell .uaiPill{padding:7px 9px;border:1px solid #292c34;border-radius:999px;background:#101115;color:#a9adb6;font-size:10px}.garangUnifiedShell .uaiPill b{color:#eee;margin-right:4px}
-.chatbar{display:flex;align-items:center;gap:8px}.chatPlus{width:48px!important;height:48px!important;min-width:48px;padding:0!important;border-radius:50%!important;font-size:28px!important;line-height:1}.chatbar input{min-width:0}.chatbar button[type=submit]{min-width:72px}
-@media(max-width:650px){.garangUnifiedShell .uaiHero{padding:15px}.garangUnifiedShell .uaiHero h3{font-size:19px}.garangUnifiedShell .uaiBadge{display:none}.chatbar{gap:7px}.chatPlus{width:46px!important;min-width:46px}.chatbar button[type=submit]{min-width:66px}}
+#chat{padding-bottom:18px}
+.aiWorkspaceHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:10px}
+.aiWorkspaceHead h2{font-size:30px;letter-spacing:-.04em;margin:5px 0 6px}
+.aiWorkspaceHead p{max-width:620px;margin:0;color:#858a95;line-height:1.55;font-size:13px}
+.aiNewChat{white-space:nowrap;margin-top:8px}
+.garangUnifiedShell{margin:0 0 12px}
+#v99UnifiedPanel .uaiSurface{padding:16px 18px;border:1px solid #292c34;border-radius:22px;background:linear-gradient(145deg,#111216,#15161b)}
+#v99UnifiedPanel .uaiRow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#v99UnifiedPanel .uaiTitle{font-size:16px;font-weight:900;color:#f4f4f6;letter-spacing:-.02em}
+#v99UnifiedPanel .uaiSub{margin-top:4px;color:#858a95;font-size:11px;line-height:1.45}
+#v99UnifiedPanel .uaiStatus{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+#v99UnifiedPanel .uaiPill{padding:6px 9px;border:1px solid #2a2d34;border-radius:999px;background:#0f1013;color:#9297a2;font-size:10px}
+#v99UnifiedPanel .uaiPill b{color:#e8e9ed;margin-right:4px}
+#v99UnifiedPanel .uaiSuggestions{display:flex;gap:7px;overflow:auto;margin-top:11px;padding-bottom:2px;scrollbar-width:none}
+#v99UnifiedPanel .uaiSuggestions::-webkit-scrollbar{display:none}
+#v99UnifiedPanel .uaiSuggestion{flex:0 0 auto;border:1px solid #2b2e36;background:#17191e;color:#d8d9de;border-radius:13px;padding:9px 11px;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation}
+#v99UnifiedPanel .uaiAuto{font-size:10px;color:#666b75;white-space:nowrap}
+#chatLog{margin-top:8px}
+#chatLog .aiMeta{margin:6px 8px 0;color:#6f7480;font-size:10px;line-height:1.4}
+#chatLog .aiMeta a{color:#9b86c7;text-decoration:none}
+#chatLog .aiMeta .aiSourceList{display:none;margin-top:4px}
+#chatLog .aiMeta.open .aiSourceList{display:block}
+#chatLog .aiSourcesToggle{border:0;background:none;color:#8f82aa;padding:0;font-size:10px}
+.chatbar{display:flex;align-items:center;gap:8px;margin-top:10px}
+.chatPlus{width:46px!important;height:46px!important;min-width:46px!important;padding:0!important;border-radius:50%!important;font-size:25px!important;line-height:1!important}
+.chatbar input{min-width:0}
+.chatbar button[type=submit]{min-width:68px}
+@media(max-width:650px){.aiWorkspaceHead h2{font-size:25px}.aiWorkspaceHead p{font-size:12px}.aiNewChat{font-size:11px;padding:9px 10px}.chatbar{gap:6px}.chatPlus{width:44px!important;min-width:44px!important}.chatbar button[type=submit]{min-width:64px}}
 </style>
 <script>
 (function(){

@@ -136,50 +136,62 @@
   }
   function patchAI(){
     const engine=window.GARANGCoachEngine;if(!engine?.ask)return;
-    if(engine.__v99UnifiedPatched)return;
-    engine.__v99UnifiedPatched=true;
-    const base=engine.ask;
-    const wrapped=q=>integratedAsk(q,base);
-    engine.ask=wrapped;
-    window.GARANGIntegratedAI={
-      version:'9.9.1-unified',
-      ask:wrapped,
-      needsExternalSearch:needsSearch,
-      todayState:()=>{try{return engine.todayUnifiedState?.()||todayState()}catch{return{}}},
-      context:unifiedState
-    };
-    window.garangAsk=async q=>{const i=$('chatInput');if(i){i.value=q;$('chatForm')?.requestSubmit();}};
+    window.GARANGIntegratedAI=window.GARANGIntegratedAI||{};
+    window.GARANGIntegratedAI.version='9.9.2-unified-orchestrator';
+    window.GARANGIntegratedAI.ask=engine.ask;
+    window.GARANGIntegratedAI.needsExternalSearch=needsSearch;
+    window.GARANGIntegratedAI.context=unifiedState;
+    window.GARANGIntegratedAI.todayState=()=>{try{return engine.todayUnifiedState?.()||todayState()}catch{return{}}};
   }
 
-
   function unifiedUIStyle(){
- if($('garangUnifiedUIStyle'))return;
- const st=document.createElement('style');st.id='garangUnifiedUIStyle';st.textContent=`
-  #v99UnifiedPanel{margin:10px 0 14px}
-  #v99UnifiedPanel .uaiHero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border:1px solid #292c34;border-radius:22px;background:linear-gradient(145deg,#111216,#15161b)}
-  #v99UnifiedPanel h3{margin:4px 0 5px;font-size:21px;color:#f5f5f7}
-  #v99UnifiedPanel p{margin:0;color:#8d929c;font-size:12px;line-height:1.5}
-  #v99UnifiedPanel .uaiBadge{padding:6px 9px;border-radius:999px;background:#20222a;color:#c6a8ff;font-size:10px;font-weight:900;white-space:nowrap}
-  #v99UnifiedPanel .uaiState{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
-  #v99UnifiedPanel .uaiPill{padding:7px 9px;border:1px solid #292c34;border-radius:999px;background:#101115;color:#a9adb6;font-size:10px}
-  #v99UnifiedPanel .uaiPill b{color:#eee;margin-right:4px}
-  #v99UnifiedPanel .uaiHint{margin-top:9px;color:#666b75;font-size:10px}
-  @media(max-width:650px){#v99UnifiedPanel .uaiHero{padding:15px}#v99UnifiedPanel h3{font-size:19px}.uaiBadge{display:none!important}}
- `;document.head.appendChild(st);
-}
-function buildUnifiedAIUI(){
- const page=$('chat');if(!page)return;
- page.querySelector('.coachQuick')?.remove();page.querySelector('.coachInsight')?.remove();
- const title=page.querySelector('.pageTitle');if(!title)return;
- const h=title.querySelector('h2');if(h)h.textContent='개인 AI';
- const p=title.querySelector('p');if(p)p.textContent='질문 하나로 내 기록·오늘 상태·기억·학습·외부 지식을 자동으로 연결합니다.';
- const panel=$('v99UnifiedPanel');if(!panel)return;
- const st=unifiedState(''),mem=st.memory||{},today=st.today||{},learn=st.learning||{};
- const memoryCount=(mem.facts?.length||0)+(mem.preferences?.length||0)+(mem.goals?.length||0);
- const learningCount=learn.learning?.events||learn.recent?.length||0;
- panel.innerHTML=`<div class="uaiHero"><div><span class="eyebrow">GARANG UNIFIED INTELLIGENCE</span><h3>하나의 AI가 전부 판단합니다</h3><p>로컬 코치·오늘의 상태·장기 기억·학습·외부 지식을 필요할 때 자동으로 조합합니다.</p></div><span class="uaiBadge">AUTO</span></div><div class="uaiState"><span class="uaiPill"><b>기록</b>${(today.workouts?.length||0)+(today.meals?.length||0)} 오늘</span><span class="uaiPill"><b>기억</b>${memoryCount}</span><span class="uaiPill"><b>학습</b>${learningCount}</span><span class="uaiPill"><b>검색</b>필요할 때 자동</span></div><div class="uaiHint">내부 기능은 AI가 알아서 선택합니다. 사용자는 질문만 하면 됩니다.</div>`;
- const attach=$('chatAttachBtn'),file=$('chatFile');if(attach&&file&&!attach.dataset.bound){attach.dataset.bound='1';attach.onclick=()=>file.click();file.onchange=()=>{if(file.files?.[0]){const f=file.files[0];const input=$('chatInput');if(input)input.value=`[첨부: ${f.name}] `+input.value;}}}
-}
+    if($('garangUnifiedUIStyle'))return;
+    const st=document.createElement('style');st.id='garangUnifiedUIStyle';st.textContent=`
+      #v99UnifiedPanel .uaiLive{width:9px;height:9px;border-radius:50%;background:#a78bca;box-shadow:0 0 0 4px rgba(167,139,202,.09);flex:0 0 auto}
+      #v99UnifiedPanel .uaiMini{display:flex;align-items:center;gap:7px;color:#858a95;font-size:10px}
+      #v99UnifiedPanel .uaiContext{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+      #v99UnifiedPanel .uaiContext span{padding:6px 8px;border:1px solid #292c34;border-radius:999px;background:#101115;color:#8c919b;font-size:10px}
+      #v99UnifiedPanel .uaiContext b{color:#e4e5e9;margin-right:3px}
+      #v99UnifiedPanel .uaiSuggestions{display:flex;gap:7px;overflow:auto;margin-top:11px;padding-bottom:2px;scrollbar-width:none}
+      #v99UnifiedPanel .uaiSuggestions::-webkit-scrollbar{display:none}
+      #v99UnifiedPanel .uaiSuggestion{flex:0 0 auto;border:1px solid #2b2e36;background:#17191e;color:#d8d9de;border-radius:13px;padding:9px 11px;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation}
+      @media(max-width:650px){#v99UnifiedPanel .uaiContext{gap:5px}}
+    `;document.head.appendChild(st);
+  }
+  function buildUnifiedAIUI(){
+    const page=$('chat');if(!page)return;
+    page.querySelector('#v95CoachBar')?.remove();
+    const panel=$('v99UnifiedPanel');if(!panel)return;
+    const st=unifiedState(''),mem=st.memory||{},today=st.today||{},learn=st.learning||{};
+    const memoryCount=(mem.facts?.length||0)+(mem.preferences?.length||0)+(mem.goals?.length||0);
+    const learningCount=learn.learning?.events||learn.recent?.length||0;
+    const todayCount=(today.workouts?.length||0)+(today.meals?.length||0);
+    panel.innerHTML=`
+      <div class="uaiSurface">
+        <div class="uaiRow">
+          <div><div class="uaiTitle">GARANG가 지금 필요한 정보만 연결해요</div><div class="uaiSub">개인 기록 · 오늘 상태 · 기억 · 학습 · 외부 지식이 질문에 따라 자동으로 조합됩니다.</div></div>
+          <div class="uaiMini"><span class="uaiLive"></span>자동 판단</div>
+        </div>
+        <div class="uaiContext">
+          <span><b>오늘</b>${todayCount} 기록</span>
+          <span><b>기억</b>${memoryCount}</span>
+          <span><b>학습</b>${learningCount}</span>
+          <span><b>검색</b>필요할 때 자동</span>
+        </div>
+        <div class="uaiSuggestions">
+          <button class="uaiSuggestion" type="button" data-q="오늘 운동 뭐 할까?">오늘 운동 추천</button>
+          <button class="uaiSuggestion" type="button" data-q="오늘 내 식단을 보고 단백질을 얼마나 더 먹어야 해?">오늘 식단 분석</button>
+          <button class="uaiSuggestion" type="button" data-q="최근 기록을 보고 내 상태를 분석해줘">최근 상태 분석</button>
+        </div>
+      </div>`;
+    panel.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>window.garangAsk?.(b.dataset.q)));
+    const attach=$('chatAttachBtn'),file=$('chatFile');
+    if(attach&&file&&!attach.dataset.bound){
+      attach.dataset.bound='1';
+      attach.addEventListener('click',()=>file.click());
+      file.addEventListener('change',()=>{const f=file.files?.[0];if(!f)return;const input=$('chatInput');if(input){input.value=`[첨부: ${f.name}] `+input.value;input.focus()}});
+    }
+  }
 
 function bootUnified(){
     setupStyle();unifiedUIStyle();bindAuthSetup();patchAI();

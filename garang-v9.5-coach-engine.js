@@ -88,67 +88,66 @@ async function ask(text){
  const context=compactContext({intent,knowledge:kctx,unifiedInstruction});
  window.GARANGIntegratedAI=window.GARANGIntegratedAI||{};
  window.GARANGIntegratedAI.lastPacket={intent,context,knowledge:kctx,at:Date.now()};
+ window.GARANGIntegratedAI.lastMeta={mode:intent.mode,usedToday:false,usedMemory:true,usedLearning:false,usedExternal:!!kctx.length,searched:!!intent.external,sources:kctx.slice(0,5)};
  if(url){
   try{
-   const h={"Content-Type":"application/json"},key=ensure().api?.key;if(key)h.Authorization="Bearer "+key;
-   const r=await fetch(url,{method:"POST",headers:h,body:JSON.stringify({version:VERSION,query:text,mode:'unified',instruction:unifiedInstruction,intent,context,knowledge:kctx})});
+   const h={'Content-Type':'application/json'},key=ensure().api?.key;if(key)h.Authorization='Bearer '+key;
+   const r=await fetch(url,{method:'POST',headers:h,body:JSON.stringify({version:VERSION,query:text,mode:'unified',instruction:unifiedInstruction,intent,context,knowledge:kctx})});
    if(r.ok){const j=await r.json(),answer=j.text||j.reply||j.message;if(answer){
     try{if(kctx.length)window.GARANGKnowledge?.learn?.({topic:text,query:text,title:'GARANG Unified AI evidence',summary:kctx.slice(0,5).map(x=>x.summary||x.title).join(' | '),source:'GARANG Unified Intelligence',url:kctx[0]?.url||'',confidence:'medium',tags:['v9.9','unified-ai',intent.mode]})}catch(e){}
+    window.GARANGIntegratedAI.lastMeta={mode:intent.mode,usedToday:!!(context.todayCoach?.workouts?.length||context.todayCoach?.meals?.length||context.todayCoach?.body),usedMemory:true,usedLearning:!!context.learning,usedExternal:!!kctx.length,searched:!!intent.external,sources:kctx.slice(0,5)};
     return answer;
    }}
   }catch(e){console.warn('[GARANG Unified AI] server fallback',e)}
  }
- const base=decision(text);
+ const answer=decision(text);
  if(kctx.length){
-  const evidence=kctx.slice(0,3).map(x=>`• ${x.title||'외부 자료'} — ${x.summary||''}${x.source?` (${x.source})`:''}`).join('\n');
-  const suffix=garangLang()==='en'?`\n\nEvidence checked:\n${evidence}`:`\n\n외부 근거 참고:\n${evidence}`;
   try{window.GARANGKnowledge?.learn?.({topic:text,query:text,title:'GARANG Unified AI evidence',summary:kctx.slice(0,5).map(x=>x.summary||x.title).join(' | '),source:'GARANG Unified Intelligence',url:kctx[0]?.url||'',confidence:'medium',tags:['v9.9','unified-ai',intent.mode]})}catch(e){}
-  return base+suffix;
  }
- return base;
+ window.GARANGIntegratedAI.lastMeta={mode:intent.mode,usedToday:!!(context.todayCoach?.workouts?.length||context.todayCoach?.meals?.length||context.todayCoach?.body),usedMemory:true,usedLearning:!!context.learning,usedExternal:!!kctx.length,searched:!!intent.external,sources:kctx.slice(0,5)};
+ return answer;
 }
-function render(){const log=$("chatLog");if(!log)return;const d=ensure();log.innerHTML=d.chat.length?d.chat.slice(-80).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${x.role==="ai"?'<span class="v95-tag">V9.5</span>':""}${esc(x.text)}</div>`).join(""):'<div class="card coach-welcome">안녕하세요. 네 운동·식단·러닝·체중 데이터를 연결해서 같이 보자.</div>';requestAnimationFrame(()=>log.scrollTop=log.scrollHeight)}
-function record(text,answer){const d=ensure();d.coachMemory.v95=d.coachMemory.v95||{events:[]};d.coachMemory.v95.events.push({date:today(),query:String(text).slice(0,500),answer:String(answer).slice(0,1000),state:state()});d.coachMemory.v95.events=d.coachMemory.v95.events.slice(-200);d.coachMemory.lastAdvice=answer;save();try{window.GARANG_V93_LEARNING?.add?.("coach_decision",{query:String(text).slice(0,300),category:category(text),answer:String(answer).slice(0,500)},{status:"success"})}catch(e){}}
-function newChat(){const d=ensure();if(d.chat.length){const first=d.chat.find(x=>x.role==="user");d.chatSessions.push({id:"s_"+Date.now(),title:first?.text||"새 대화",createdAt:new Date().toISOString(),messages:d.chat.slice()});d.chatSessions=d.chatSessions.slice(-50)}d.chat=[];save();render();$("chatInput")?.focus()}
-function history(){const d=ensure();let p=$("v95History");if(p)p.remove();p=document.createElement("div");p.id="v95History";p.className="v95-panel";const rows=d.chatSessions.slice().reverse();p.innerHTML=`<div class="v95-panel-head"><b>대화 기록</b><button type="button" id="v95Close">닫기</button></div>${rows.length?rows.map((x,i)=>`<button type="button" class="v95-history-item" data-i="${d.chatSessions.length-1-i}"><span>${esc(String(x.title||"새 대화").slice(0,42))}</span><small>${new Date(x.createdAt).toLocaleDateString("ko-KR")}</small></button>`).join(""):"<p>저장된 대화가 없습니다.</p>"}`;$("chat")?.appendChild(p);$("v95Close").onclick=()=>p.remove();p.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const s=ensure().chatSessions[Number(b.dataset.i)];if(!s)return;const x=ensure();x.chat=s.messages.slice();save();render();p.remove()})}
-function plan(){const s=state();if(garangLang()==="en"){const focus=s.recentWorkouts[0]?.exercise||"main lift";return `Today, use your recent ${focus} record to prioritize performance quality. If the target is met, consider a small progression. You trained ${s.training.last7Sessions} days in the last 7, so recovery matters.`;}const focus=s.recentWorkouts[0]?.exercise||"주요 운동";return `오늘은 ${focus} 최근 기록을 기준으로 수행 질을 먼저 확인하고, 성공하면 소폭 증량하는 방향이 좋아. 최근 7일 운동 ${s.training.last7Sessions}일이므로 회복 상태도 함께 보자.`}
-function report(){const s=state();if(garangLang()==="en")return `Last 7 days: ${s.training.last7Sessions} training days · ${garangUnit()==="imperial"?Math.round(s.training.last7Volume*2.2046226218).toLocaleString():Math.round(s.training.last7Volume).toLocaleString()}${garangUnit()==="imperial"?"lb":"kg"} volume / Today: ${Math.round(s.nutritionToday.kcal)}kcal · ${Math.round(s.nutritionToday.protein)}g protein / Last 30 days: ${s.running30.count} runs · ${s.running30.distance.toFixed(1)}km`;return `최근 7일 운동 ${s.training.last7Sessions}일 · 볼륨 ${Math.round(s.training.last7Volume).toLocaleString()}kg / 오늘 식단 ${Math.round(s.nutritionToday.kcal)}kcal · 단백질 ${Math.round(s.nutritionToday.protein)}g / 최근 30일 러닝 ${s.running30.count}회 · ${s.running30.distance.toFixed(1)}km`;}
-function bind(){const form=$("chatForm"),input=$("chatInput");if(!form||!input||form.dataset.v95Bound)return;form.dataset.v95Bound="1";form.onsubmit=async e=>{e.preventDefault();const text=input.value.trim();if(!text)return;input.value="";const d=ensure();d.chat.push({role:"user",text,date:today(),ts:Date.now()});save();render();const answer=await ask(text);const d2=ensure();d2.chat.push({role:"ai",text:answer,date:today(),ts:Date.now(),engine:VERSION,category:category(text)});record(text,answer);save();render();};}
-function buildUI(){const page=$("chat");if(!page)return;
- page.querySelector(".coachQuick")?.remove();
- page.querySelector(".coachInsight")?.remove();
- page.querySelector(".v77-memory-mini")?.remove();
- const old=page.querySelector("#v77ChatActions");if(old)old.remove();
- const title=page.querySelector(".pageTitle");if(!title)return;
- const legacyTitle=title.querySelector("h2");if(legacyTitle)legacyTitle.textContent="개인 AI 코치";
- const legacyDesc=title.querySelector("p");if(legacyDesc)legacyDesc.textContent="운동·식단·러닝·체중 데이터를 하나의 Personal State로 연결합니다.";
- const legacyButton=title.querySelector("button");if(legacyButton)legacyButton.remove();
- let bar=$("v95CoachBar");if(!bar){bar=document.createElement("div");bar.id="v95CoachBar";title.after(bar)}
- const s=state(),m=ensure().coachMemory;
- bar.innerHTML=`<div class="v95-top"><div><span class="eyebrow">AI COACH</span><h3>개인 AI 코치</h3><p>운동 · 식단 · 러닝 · 체중 데이터를 하나의 Personal State로 연결합니다.</p></div><span class="v95-connected">개인 데이터 연결됨</span></div>
- <div class="v95-status"><span>장기기억 ${m.facts.length+m.preferences.length+m.goals.length}개</span><strong>COACH ENGINE V9.5</strong><span>운동 ${s.training.records} · 식단 ${s.nutritionToday.count} · 러닝 ${s.running30.count}</span></div>
- <div class="v95-actions"><button type="button" id="v95New">＋ 새 채팅</button><button type="button" id="v95Hist">대화 기록</button><button type="button" id="v95Plan">운동 플랜</button><button type="button" id="v95Report">주간 리포트</button></div>
- <div class="v95-quick"><button type="button" data-q="오늘 운동 뭐 할까?">오늘 운동 뭐 할까?</button><button type="button" data-q="오늘 단백질 얼마나 먹어야 해?">단백질</button><button type="button" data-q="최근 기록을 분석해줘">최근 분석</button></div>
- <div class="v95-insight"><span class="eyebrow">TODAY'S COACH</span><strong>${esc(insight())}</strong></div>`;
- $("v95New").onclick=newChat;$("v95Hist").onclick=history;$("v95Plan").onclick=()=>{const a=plan();const d=ensure();d.chat.push({role:"ai",text:a,date:today(),ts:Date.now(),engine:VERSION,category:"workout"});save();render()};$("v95Report").onclick=()=>{const a=report();const d=ensure();d.chat.push({role:"ai",text:a,date:today(),ts:Date.now(),engine:VERSION,category:"report"});save();render()};bar.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>window.garangAsk(b.dataset.q));
+function render(){
+ const log=$('chatLog');if(!log)return;const d=ensure();
+ const escAttr=s=>String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ const sourceHtml=meta=>{
+   if(!meta?.sources?.length)return '';
+   const links=meta.sources.map((x,i)=>{const u=/^https?:\/\//i.test(String(x.url||''))?x.url:'';return u?`<a href="${escAttr(u)}" target="_blank" rel="noopener">${i+1}. ${esc(x.title||x.source||'출처')}</a>`:`<span>${i+1}. ${esc(x.title||x.source||'출처')}</span>`}).join('<br>');
+   const label=garangLang()==='en'?'Sources checked':'근거 확인';
+   return `<div class="aiMeta"><button type="button" class="aiSourcesToggle">${label} ${meta.sources.length}개</button><div class="aiSourceList">${links}</div></div>`;
+ };
+ const metaFor=x=>x.meta||null;
+ log.innerHTML=d.chat.length?d.chat.slice(-80).map(x=>{
+   if(x.role==='user')return `<div class="msg user">${esc(x.text)}</div>`;
+   const m=metaFor(x);return `<div class="msg ai"><span class="v99-tag">GARANG AI</span>${esc(x.text)}${sourceHtml(m)}</div>`;
+ }).join(''):'<div class="card coach-welcome"><strong>GARANG AI</strong><p style="margin:7px 0 0;color:#858a95">운동·식단·러닝·회복·목표·일상, 필요한 정보를 내가 알아서 연결해서 답할게.</p></div>';
+ log.querySelectorAll('.aiSourcesToggle').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));
+ requestAnimationFrame(()=>log.scrollTop=log.scrollHeight);
+}
+function record(text,answer){const d=ensure();d.coachMemory.v95=d.coachMemory.v95||{events:[]};d.coachMemory.v95.events.push({date:today(),query:String(text).slice(0,500),answer:String(answer).slice(0,1000),state:state()});d.coachMemory.v95.events=d.coachMemory.v95.events.slice(-200);d.coachMemory.lastAdvice=answer;save();try{window.GARANG_V93_LEARNING?.add?.('coach_decision',{query:String(text).slice(0,300),category:category(text),answer:String(answer).slice(0,500)},{status:'success'})}catch(e){}}
+function newChat(){const d=ensure();if(d.chat.length){const first=d.chat.find(x=>x.role==='user');d.chatSessions.push({id:'s_'+Date.now(),title:first?.text||'새 대화',createdAt:new Date().toISOString(),messages:d.chat.slice()});d.chatSessions=d.chatSessions.slice(-50)}d.chat=[];save();render();$('chatInput')?.focus()}
+function history(){const d=ensure();let p=$('v95History');if(p)p.remove();p=document.createElement('div');p.id='v95History';p.className='v95-panel';const rows=d.chatSessions.slice().reverse();p.innerHTML=`<div class="v95-panel-head"><b>대화 기록</b><button type="button" id="v95Close">닫기</button></div>${rows.length?rows.map((x,i)=>`<button type="button" class="v95-history-item" data-i="${d.chatSessions.length-1-i}"><span>${esc(String(x.title||'새 대화').slice(0,42))}</span><small>${new Date(x.createdAt).toLocaleDateString('ko-KR')}</small></button>`).join(''):'<p>저장된 대화가 없습니다.</p>'}`;$('chat')?.appendChild(p);$('v95Close').onclick=()=>p.remove();p.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const s=ensure().chatSessions[Number(b.dataset.i)];if(!s)return;const x=ensure();x.chat=s.messages.slice();save();render();p.remove()})}
+function plan(){const s=state();if(garangLang()==='en'){const focus=s.recentWorkouts[0]?.exercise||'main lift';return `Today, use your recent ${focus} record to prioritize performance quality. If the target is met, consider a small progression. You trained ${s.training.last7Sessions} days in the last 7, so recovery matters.`;}const focus=s.recentWorkouts[0]?.exercise||'주요 운동';return `오늘은 ${focus} 최근 기록을 기준으로 수행 질을 먼저 확인하고, 성공하면 소폭 증량하는 방향이 좋아. 최근 7일 운동 ${s.training.last7Sessions}일이므로 회복 상태도 함께 보자.`}
+function report(){const s=state();if(garangLang()==='en')return `Last 7 days: ${s.training.last7Sessions} training days · ${garangUnit()==='imperial'?Math.round(s.training.last7Volume*2.2046226218).toLocaleString():Math.round(s.training.last7Volume).toLocaleString()}${garangUnit()==='imperial'?'lb':'kg'} volume / Today: ${Math.round(s.nutritionToday.kcal)}kcal · ${Math.round(s.nutritionToday.protein)}g protein / Last 30 days: ${s.running30.count} runs · ${s.running30.distance.toFixed(1)}km`;return `최근 7일 운동 ${s.training.last7Sessions}일 · 볼륨 ${Math.round(s.training.last7Volume).toLocaleString()}kg / 오늘 식단 ${Math.round(s.nutritionToday.kcal)}kcal · 단백질 ${Math.round(s.nutritionToday.protein)}g / 최근 30일 러닝 ${s.running30.count}회 · ${s.running30.distance.toFixed(1)}km`;}
+function bind(){const form=$('chatForm'),input=$('chatInput');if(!form||!input||form.dataset.v99Bound)return;form.dataset.v99Bound='1';form.onsubmit=async e=>{e.preventDefault();const text=input.value.trim();if(!text)return;input.value='';const d=ensure();d.chat.push({role:'user',text,date:today(),ts:Date.now()});save();render();const send=$('chatSendBtn');send?.setAttribute('disabled','disabled');try{const answer=await ask(text);const meta=window.GARANGIntegratedAI?.lastMeta||null;const d2=ensure();d2.chat.push({role:'ai',text:answer,date:today(),ts:Date.now(),engine:'GARANG Unified Intelligence',category:category(text),meta});record(text,answer);save();render()}catch(err){const d2=ensure();d2.chat.push({role:'ai',text:garangLang()==='en'?'I hit a temporary error while processing that. Please try again.':'잠깐 문제가 생겼어. 한 번만 다시 보내줘.',date:today(),ts:Date.now(),engine:'GARANG Unified Intelligence',category:'error'});save();render()}finally{send?.removeAttribute('disabled')}}}
+function buildUI(){
+ const page=$('chat');if(!page)return;
+ page.querySelector('#v95CoachBar')?.remove();page.querySelector('.coachQuick')?.remove();page.querySelector('.coachInsight')?.remove();page.querySelector('.v77-memory-mini')?.remove();page.querySelector('#v77ChatActions')?.remove();
+ const legacy=page.querySelector('.pageTitle');if(legacy)legacy.remove();
  bind();render();
 }
-window.garangAsk=async q=>{const input=$("chatInput");if(input){input.value=q;$("chatForm")?.requestSubmit()}};
+window.garangAsk=async q=>{const input=$('chatInput');if(input){input.value=q;$('chatForm')?.requestSubmit()}};
 window.newGarangChat=newChat;
 window.GARANGCoachEngine={version:VERSION,state,ask,decision,compactContext,todayUnifiedState,plan,report};
 window.FitMindV77={version:VERSION,db,save,render,newChat,showHistory:history,planner:()=>({text:plan()}),weeklyReport:()=>({text:report()}),ask};
-const style=document.createElement("style");style.id="v95Style";style.textContent=`
-#v95CoachBar{margin:14px 0 18px}
-#v95CoachBar .v95-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:20px;border:1px solid #2a2d35;border-radius:22px;background:linear-gradient(145deg,#121318,#0d0e11);box-shadow:0 16px 40px rgba(0,0,0,.28)}
-.v95-top h3{margin:4px 0 5px;font-size:29px;color:#f7f7fa}.v95-top p{margin:0;color:#8d919d;font-size:13px}.v95-connected{padding:9px 13px;border-radius:999px;background:#f1f2ff;color:#66708a;font-weight:800;font-size:12px}
-.v95-status{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 16px;border:1px solid #292c34;border-top:0;border-radius:0 0 18px 18px;background:#101116;color:#858a98;font-size:12px}.v95-status strong{color:#c4a4ff;letter-spacing:.04em}
-.v95-actions,.v95-quick{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0;position:relative;z-index:5}.v95-actions button,.v95-quick button{border:1px solid #30343d;cursor:pointer;pointer-events:auto;touch-action:manipulation;position:relative;z-index:6;border-radius:16px;padding:12px 16px;background:#17191e;color:#f1f2f5;font-weight:800}.v95-actions button:first-child{background:#202228}
-.v95-quick button{background:#111318;color:#cfd2db}
-.v95-insight{position:relative;z-index:1;padding:22px;border:1px solid #2b2e36;border-radius:22px;background:#111216;margin:14px 0 18px}.v95-insight strong{display:block;color:#f4f4f6;font-size:18px;line-height:1.55;margin-top:10px}
-.v95-tag{display:inline-block;color:#bca0ff;border:1px solid #503d69;border-radius:7px;font-size:10px;font-weight:900;padding:2px 6px;margin-right:6px}
+const style=document.createElement('style');style.id='v95Style';style.textContent=`
+#v95CoachBar{display:none!important}
+.v99-tag{display:inline-block;color:#b9a2e8;border:1px solid #46385b;border-radius:7px;font-size:9px;font-weight:900;padding:2px 6px;margin-right:7px;vertical-align:middle}
 #v95History{border:1px solid #2c3038;background:#111216;border-radius:18px;padding:14px;margin:12px 0}.v95-panel-head{display:flex;justify-content:space-between;color:#fff;margin-bottom:8px}.v95-panel-head button{background:#202228;color:#fff;border:1px solid #30343d;border-radius:10px;padding:7px 10px}.v95-history-item{width:100%;display:flex;justify-content:space-between;gap:8px;background:none;color:#ddd;border:0;border-top:1px solid #252831;padding:12px 4px;text-align:left}.v95-history-item small{color:#777}
+#chatSendBtn[disabled]{opacity:.55;cursor:wait}
 `;
 document.head.appendChild(style);
-function init(){buildUI();setTimeout(buildUI,250);setTimeout(buildUI,1000)}
-document.addEventListener("DOMContentLoaded",init);window.addEventListener("load",()=>setTimeout(init,200));
+function init(){buildUI();setTimeout(buildUI,300)}
+document.addEventListener('DOMContentLoaded',init);window.addEventListener('load',()=>setTimeout(init,250));
+
 })();

@@ -41,24 +41,12 @@ function recordPhoto(file,meta={}){const e={id:uid('photo'),name:file?.name||'ph
 function addFeedback(text,meta={}){const e={id:uid('feedback'),text:norm(text),createdAt:now(),status:'open',meta};S.feedback.unshift(e);S.feedback=S.feedback.slice(0,300);save();return e;}
 function stats(){return{knowledge:S.knowledge.length,sources:new Set(S.knowledge.map(x=>x.source)).size,connectors:S.connectors.length,photoEvents:S.photoEvents.length,feedbackOpen:S.feedback.filter(x=>x.status==='open').length,updatedAt:S.updatedAt}}
 function renderPanel(){
- const page=document.getElementById('chat');
- if(!page||document.getElementById('v95DataPanel'))return;
- const box=document.createElement('div');box.id='v95DataPanel';box.className='card';
- box.innerHTML='<div class="v95-data-head"><div><span class="eyebrow">KNOWLEDGE LAYER</span><h3>외부 지식 · 학습</h3><p>한 번 검색한 지식은 저장하고 다음 코칭에서 다시 활용합니다.</p></div><strong id="v95KnowledgeCount">0</strong></div><div class="v95-data-actions"><button type="button" id="v95SearchBtn">🔎 외부 검색</button><button type="button" id="v95KnowledgeBtn">📚 학습 지식</button></div><div id="v95DataResult" class="v95-data-result"></div>';
- const bar=page.querySelector('#chatLog');if(bar)bar.before(box);updateStats();
- document.getElementById('v95SearchBtn').onclick=async()=>{
-  const q=document.getElementById('chatInput')?.value.trim()||prompt('검색할 내용을 입력하세요');if(!q)return;
-  const out=document.getElementById('v95DataResult');out.textContent='외부 자료를 찾는 중…';
-  const r=await externalSearch(q);
-  const cards=r.results.slice(0,6).map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><strong>'+esc(x.title)+'</strong><span>'+esc(x.source)+' · '+esc(x.summary||'')+'</span></a>').join('');
-  out.innerHTML='<b>'+esc(r.searched?'새로 검색했습니다.':'저장된 지식을 사용했습니다.')+'</b>'+(cards||'<p>관련 자료를 찾지 못했습니다.</p>');updateStats();
- };
- document.getElementById('v95KnowledgeBtn').onclick=()=>{
-  const out=document.getElementById('v95DataResult');
-  const cards=S.knowledge.slice(0,12).map(x=>'<div class="v95-known"><strong>'+esc(x.title)+'</strong><span>'+esc(x.source)+' · '+esc(x.learnedAt)+'</span><p>'+esc(x.summary)+'</p></div>').join('');
-  out.innerHTML=cards||'<p>아직 학습한 외부 지식이 없습니다.</p>';
- };
+ // Knowledge is an internal capability of GARANG Unified Intelligence.
+ // Do not render a separate user-facing Knowledge Layer panel.
+ const old=document.getElementById('v95DataPanel');
+ if(old) old.remove();
 }
+
 function updateStats(){const e=document.getElementById('v95KnowledgeCount');if(e)e.textContent=String(S.knowledge.length);}
 window.GARANGDataConnectors={};
 window.GARANGKnowledge={version:'9.5.0',search:externalSearch,searchKnowledge,knowledgeContext,needsExternalSearch,learn:addKnowledge,recordPhoto,addFeedback,registerConnector,stats,data:()=>S};
