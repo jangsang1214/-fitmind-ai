@@ -1,431 +1,394 @@
 <!doctype html>
-<html lang="ko" data-theme="dark">
+<html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080a0c">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070909">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GARANG">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-<title>GARANG · Personal Fitness AI</title>
-<style id="garang-v10-shell">
-:root{--bg:#07090b;--surface:#0f1215;--surface2:#14181c;--surface3:#191e23;--line:#242b31;--text:#f5f7f8;--muted:#8d979f;--accent:#39e66f;--accent2:#20c95a;--danger:#ff5d68;--max:1180px;--nav:78px;--header:68px;--r:22px;--shadow:0 18px 50px rgba(0,0,0,.28)}
-*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}body{margin:0;background:radial-gradient(900px 500px at 50% -120px,rgba(57,230,111,.06),transparent 62%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans KR","Apple SD Gothic Neo",sans-serif;line-height:1.45;min-height:100vh;-webkit-font-smoothing:antialiased}button,input,select,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}
-.page{display:none!important;max-width:var(--max);margin:0 auto;padding:28px 20px calc(var(--nav) + 32px)}.page.active{display:block!important}[hidden]{display:none!important}
-#app{min-height:100vh}.garangHeader{position:sticky;top:0;z-index:1000;height:var(--header);display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100vw - var(--max))/2 + 20px));background:rgba(7,9,11,.84);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.brandLockup{display:flex;align-items:center;gap:10px;min-width:0}.brandMark{width:30px;height:30px;filter:invert(1);opacity:.98}.brandLockup b{font-size:21px;letter-spacing:.18em;font-weight:850}.brandLockup small{display:none}.headerBtns{display:flex;align-items:center;gap:8px}.headerBtns button{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:999px;padding:10px 15px;font-weight:800}.headerBtns #planBadge{border-color:rgba(57,230,111,.25);background:rgba(57,230,111,.08);color:var(--accent);font-size:11px;padding:8px 11px}
-#mainNav{position:fixed;z-index:1200;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(720px,calc(100vw - 20px));height:64px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px;background:rgba(14,17,20,.94);border:1px solid #2a3238;border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.5);backdrop-filter:blur(22px)}#mainNav.hidden{display:none!important}#mainNav button{border:0;background:transparent;color:#7e8991;border-radius:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:800}#mainNav button .navIcon{font-size:17px;line-height:1}#mainNav button.active{background:#18231d;color:var(--accent);box-shadow:inset 0 0 0 1px rgba(57,230,111,.16)}#moreNav{position:fixed;inset:0;z-index:1190;display:none;align-items:flex-end;background:rgba(0,0,0,.52);backdrop-filter:blur(5px)}#moreNav.open{display:flex}#moreNav .sheet{width:100%;padding:18px 18px calc(92px + env(safe-area-inset-bottom));background:#101417;border-top:1px solid #2a3238;border-radius:26px 26px 0 0}.moreGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.moreGrid button{min-height:68px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:17px;font-weight:800}
-main{min-height:calc(100vh - var(--header))}.eyebrow{display:block;color:var(--accent)!important;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase}.pageTitle,.dashTop,.aiWorkspaceHead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.pageTitle h2,.dashTop h1,.aiWorkspaceHead h2{margin:5px 0;font-size:clamp(27px,5vw,42px);line-height:1.08;letter-spacing:-.045em}.pageTitle p,.dashTop p,.aiWorkspaceHead p{margin:6px 0;color:var(--muted);font-size:14px}.card{background:linear-gradient(180deg,rgba(20,24,28,.98),rgba(13,16,19,.98));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}.grid{display:grid;gap:12px}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.sectionHead h3{margin:0}.muted{color:var(--muted)!important}.primaryBtn,button.primary,button.primaryBtn{background:var(--accent)!important;color:#041008!important;border:0!important}.ghostBtn,.outline{background:var(--surface2)!important;color:var(--text)!important;border:1px solid var(--line)!important}.danger{color:#ff8b92!important}.linkBtn{border:0!important;background:transparent!important;color:#9aa4ab!important}.error{color:#ff7881!important}.card button,.primaryBtn,.ghostBtn,.outline{min-height:44px;padding:11px 15px;border-radius:14px;font-weight:850}.card input,.card select,.card textarea{width:100%;min-height:48px;background:#090c0f;color:var(--text);border:1px solid #2a3238;border-radius:14px;padding:12px 13px;outline:0}.card input:focus,.card select:focus,.card textarea:focus{border-color:rgba(57,230,111,.65);box-shadow:0 0 0 3px rgba(57,230,111,.08)}.card textarea{min-height:100px;resize:vertical}.fieldLabel,.profileField{display:grid;gap:6px}.fieldLabel{font-size:12px;font-weight:800;color:#aab3ba}.check{display:flex!important;align-items:center;gap:8px;color:var(--muted);font-size:12px}.check input{width:18px!important;min-height:18px!important}
-/* auth */#auth{min-height:calc(100vh - var(--header));max-width:760px;padding-top:48px}.authPage{display:none!important}.authPage.active{display:block!important}.authHero{text-align:center;padding:22px 12px 24px}.authLogo{width:58px;height:58px;filter:invert(1);margin-bottom:18px}.authHero h1{font-size:clamp(38px,9vw,66px);line-height:.98;letter-spacing:-.065em;margin:12px 0}.authHero h1 em{font-style:normal;color:var(--accent)}.authHero p{max-width:560px;margin:16px auto;color:var(--muted);font-size:14px}.authCard{max-width:520px;margin:0 auto;padding:10px}.tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;background:#090c0f;border:1px solid var(--line);border-radius:16px;margin-bottom:12px}.tabs button{border:0;background:transparent;color:var(--muted);border-radius:12px;min-height:44px}.tabs button.active{background:#1a2220;color:var(--text)}.authForm{display:grid;gap:10px;padding:10px}.authDivider{display:flex;align-items:center;gap:12px;color:#667179;margin:6px 10px}.authDivider:before,.authDivider:after{content:"";height:1px;background:var(--line);flex:1}.socialBtn{width:calc(100% - 20px);margin:5px 10px;background:#f5f7f8!important;color:#080a0c!important;border:0!important}.authFineprint{padding:8px 10px 4px;text-align:center;font-size:11px}
-/* onboarding */.onboardingPage{max-width:720px}.onboardingTop{display:flex;justify-content:space-between;align-items:center;color:var(--muted);margin-bottom:8px}.progressLine{height:4px;background:#1b2226;border-radius:99px;overflow:hidden;margin-bottom:18px}.progressLine i{display:block;height:100%;width:20%;background:var(--accent);border-radius:99px}.onboardingCard{padding:26px}.onboardStep{display:none}.onboardStep.active{display:block}.stepIcon{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(57,230,111,.09);color:var(--accent);font-size:12px;font-weight:900}.onboardStep h1{font-size:30px;letter-spacing:-.04em;margin:16px 0 6px}.onboardStep p{color:var(--muted)}.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.choiceGrid button{min-height:64px;text-align:left;background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:16px}.choiceGrid button.selected{border-color:rgba(57,230,111,.65);background:rgba(57,230,111,.1);color:var(--accent)}.onboardingActions{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
-/* dashboard */.dashboardHero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:24px;border:1px solid rgba(57,230,111,.18);background:radial-gradient(400px 180px at 10% 0,rgba(57,230,111,.12),transparent 65%),linear-gradient(135deg,#111914,#0e1310);border-radius:26px;margin-bottom:12px}.dashboardHero span{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.2em}.dashboardHero h2{font-size:24px;letter-spacing:-.04em;max-width:650px;margin:8px 0 0}.statGrid{grid-template-columns:repeat(4,1fr);margin-bottom:12px}.statCard{padding:17px}.statCard span{color:var(--muted);font-size:11px}.statCard b{display:block;font-size:28px;letter-spacing:-.04em;margin-top:4px}.statCard small{color:var(--muted)}.dashboardColumns{display:grid;grid-template-columns:1.25fr .75fr;gap:12px}.activityFeed{display:grid;gap:7px;margin-top:12px}.activityItem{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px}.activityItem small{display:block;color:var(--muted);font-size:10px}.goalProgress{margin-top:16px}.progressBar{height:9px;background:#20272c;border-radius:99px;overflow:hidden;margin:12px 0}.progressBar i{display:block;height:100%;background:var(--accent);border-radius:99px}
-/* forms & lists */.page>form.card{margin-bottom:12px}.exerciseSearchWrap,.foodSearchWrap{position:relative}.dbSearchField{display:flex;gap:8px}.dbSearchField input{flex:1}.dbSearchButton{min-width:48px!important;padding:0!important}.foodResults{display:grid;gap:6px;margin-top:7px}.foodResults button{width:100%;text-align:left;background:var(--surface2)!important}.batchCard{padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:12px 0}.batchHead{display:flex;justify-content:space-between;align-items:center;gap:10px}.batchHead h3{margin:0;font-size:16px}.batchRows{display:grid;gap:8px;margin:12px 0}.batchTotals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.batchMetric{padding:12px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}.batchMetric span{display:block;color:var(--muted);font-size:10px}.batchMetric strong{display:block;margin-top:4px}.batchHint{font-size:11px;color:var(--muted)}.batchActions{margin-top:10px}.quickShareCard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}.quickShareCard span{display:block;font-size:11px;margin-top:4px}.nutritionPreview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.nutritionPreview>div{padding:12px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}.nutritionPreview span,.nutritionPreview small{display:block;color:var(--muted);font-size:10px}.nutritionPreview b{display:inline-block;margin-top:5px;font-size:20px}.qtyControl{display:grid;grid-template-columns:42px 1fr 42px;gap:5px}.qtyControl button{padding:0!important}.selectedFood{padding:14px;background:rgba(57,230,111,.06);border:1px solid rgba(57,230,111,.2);border-radius:15px;margin-top:10px}.manualNutrition,.unitSettings{margin:12px 0;color:var(--muted)}.manualNutrition summary,.unitSettings summary{cursor:pointer;font-weight:800;color:#c4ccd1}.runLive{padding:24px}.runMainMetric{text-align:center}.runMainMetric span{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.18em}.runMainMetric strong{display:block;font-size:72px;letter-spacing:-.07em;line-height:1;margin:10px 0 2px}.runMainMetric small{color:var(--muted)}.runMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}.runMetrics>div{padding:12px;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:15px}.runMetrics span{display:block;color:var(--muted);font-size:10px}.runMetrics b{font-size:18px}.runControls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}.runPath{min-height:180px;display:grid;place-items:center;color:var(--muted);background:#090c0f;border:1px dashed #2b343a;border-radius:16px}.runHistoryItem{padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px;margin:7px 0}
-/* body */#body h2{margin:0 0 18px;font-size:34px;letter-spacing:-.05em}.bodyDataGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.bodyScore{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:center}.bodyScore #bodyScoreNumber{font-size:64px!important;line-height:1}.bodyHistory{overflow:auto}.bodyHistory table{width:100%;border-collapse:collapse}.bodyHistory th,.bodyHistory td{padding:10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-/* report / ai */.reportNav{display:flex;align-items:center;justify-content:space-between;margin:10px 0}.aiWorkspaceHead h2{font-size:32px}.garangUnifiedShell{margin-bottom:12px}.uaiSurface{padding:20px!important}.chatlog{display:grid;gap:10px;min-height:240px;max-height:52vh;overflow:auto;padding:4px 0 12px}.chatlog .msg{max-width:min(760px,88%);padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--surface2);white-space:pre-wrap;overflow-wrap:anywhere}.chatlog .msg.user{margin-left:auto;background:#1d2540!important;border-color:#343d62!important}.chatlog .msg.ai{margin-right:auto;background:#111518!important}.chatbar{position:sticky;bottom:88px;z-index:50;display:flex;gap:7px;padding:8px;background:rgba(8,10,12,.9);border:1px solid #2a3238;border-radius:20px;backdrop-filter:blur(18px)}.chatbar input{min-width:0;flex:1;background:#080b0d!important}.chatPlus{width:46px!important;min-width:46px!important;padding:0!important;border-radius:50%!important}.chatbar button[type=submit]{min-width:66px}.v93Grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.v93Metric{padding:16px;background:var(--surface2);border:1px solid var(--line);border-radius:16px}.v93Metric b{display:block;font-size:24px;margin-top:4px}.item{padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px;margin:7px 0}.memoryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.memoryStat,.memoryRow{background:var(--surface2);border:1px solid var(--line);border-radius:15px;padding:13px}.memoryStat span,.memoryRow .label{display:block;color:var(--muted);font-size:10px}.memoryStat b{font-size:20px}.memoryRow{margin-top:8px}.memoryRow .value{margin-top:4px;word-break:break-word}
-/* profile */.profileCard{padding:18px}.profileSection{padding:6px 0 20px;margin-bottom:18px;border-bottom:1px solid var(--line)}.profileSection:last-child{border-bottom:0}.profileSectionHead{display:flex;align-items:center;gap:10px;margin-bottom:12px}.profileIcon{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:rgba(57,230,111,.08);color:var(--accent);font-size:10px;font-weight:900}.profileSectionHead strong{display:block}.profileSectionHead small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.profileGrid{display:grid;gap:10px}.profileGrid2{grid-template-columns:1fr 1fr}.profileField>span{font-size:10px;color:var(--muted);font-weight:800}.profileSaveBtn{width:100%;margin-top:4px}.accountCard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}.accountActions{display:flex;gap:8px;flex-wrap:wrap}
-/* keep legacy injected components usable */#fitmindBatchWorkoutCard,#fitmindBatchMealCard,#workout .batchCard,#diet .batchCard{color:var(--text)}#workoutList,#mealList,#runHistory,#bodyList,#reportContent,#calendarBox,#energyReport{margin-top:12px}#serverLLMSettings{display:none!important}
-@media(max-width:800px){.page{padding:22px 14px calc(var(--nav) + 28px)}.statGrid{grid-template-columns:repeat(2,1fr)}.dashboardColumns{grid-template-columns:1fr}.batchTotals{grid-template-columns:repeat(2,1fr)}.bodyScore{grid-template-columns:1fr}.bodyScore #bodyScoreNumber{text-align:center}.v93Grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){:root{--header:62px}.garangHeader{padding:0 14px}.brandLockup b{font-size:18px}.headerBtns #accountBtn{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pageTitle,.dashTop,.aiWorkspaceHead{margin-bottom:14px}.pageTitle h2,.dashTop h1{font-size:29px}.dashboardHero{display:block;padding:20px}.dashboardHero button{margin-top:15px;width:100%}.row,.profileGrid2{grid-template-columns:1fr 1fr}.nutritionPreview{grid-template-columns:repeat(2,1fr)}.runMainMetric strong{font-size:60px}.runControls{grid-template-columns:1fr 1fr}.runControls .primaryBtn{grid-column:1/-1}.moreGrid{grid-template-columns:repeat(2,1fr)}.authHero{padding-top:30px}.authHero h1{font-size:42px}.chatbar{bottom:76px}.quickShareCard{align-items:flex-start}.accountCard{display:block}.accountActions{margin-top:12px}.bodyDataGrid{grid-template-columns:1fr 1fr}}
-@media(max-width:390px){.row,.profileGrid2{grid-template-columns:1fr}.statGrid{grid-template-columns:1fr 1fr}.brandLockup b{letter-spacing:.12em}.mainNav{} }
+<title>GARANG V10 · Personal Performance Agent</title>
+<style>
+:root{
+  --bg:#070909;--surface:#0d1210;--surface2:#121916;--surface3:#18221e;
+  --line:#27342e;--line2:#35453e;--text:#f5f8f6;--muted:#8b9691;
+  --green:#39e86d;--green2:#22d95a;--soft:rgba(57,232,109,.10);
+  --purple:#a78bfa;--blue:#72a7ff;--red:#ff6975;--yellow:#f4c95d;
+  --r:22px;--rs:15px;--nav:82px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans KR","Apple SD Gothic Neo",sans-serif}
+body{margin:0;background:var(--bg);min-height:100vh;letter-spacing:-.018em}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.app{min-height:100vh}
+.header{position:sticky;top:0;z-index:1000;height:72px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,9,.92);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(22px)}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:34px;height:34px;display:block}
+.brandName{font-weight:900;letter-spacing:.17em;font-size:19px}
+.headerRight{display:flex;align-items:center;gap:8px}
+.planPill,.accountPill{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:999px;height:42px;padding:0 14px;font-weight:800}
+.planPill{color:var(--green);border-color:rgba(57,232,109,.25)}
+main{max-width:1040px;margin:0 auto;padding:22px 16px calc(var(--nav) + 34px)}
+.page{display:none;animation:in .18s ease}
+.page.active{display:block}
+@keyframes in{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:none}}
+.eyebrow{color:var(--green);font-size:11px;letter-spacing:.18em;font-weight:900}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:36px;line-height:1.08;letter-spacing:-.05em;margin:8px 0}
+h2{font-size:30px;line-height:1.1;letter-spacing:-.045em;margin:6px 0}
+h3{margin-bottom:10px}
+.muted{color:var(--muted)}
+.pageHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin:8px 0 20px}
+.pageHead p{margin:8px 0 0;color:var(--muted);font-size:14px}
+.card{background:linear-gradient(145deg,#111815,#0b100e);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.22);margin-bottom:12px}
+.hero{padding:24px;border-color:rgba(57,232,109,.24);background:radial-gradient(circle at 90% 0,rgba(57,232,109,.14),transparent 34%),linear-gradient(145deg,#101a14,#0a0e0c)}
+.hero h2{font-size:25px;line-height:1.35;margin:10px 0 16px}
+.btn{min-height:46px;border-radius:14px;border:1px solid var(--line2);background:#121917;color:var(--text);padding:0 15px;font-weight:800}
+.btn.primary{background:var(--green);color:#041007;border-color:var(--green);box-shadow:0 10px 28px rgba(57,232,109,.15)}
+.btn.ghost{background:transparent}
+.btn.danger{color:#ff8b94}
+.btn.pro{color:#d7c8ff;border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.08)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{padding:16px;border-radius:18px;background:#0e1411;border:1px solid var(--line)}
+.stat .label{color:var(--muted);font-size:12px}.stat b{display:block;font-size:29px;margin-top:12px;letter-spacing:-.05em}.stat small{color:var(--muted)}
+label{display:block;color:#aab5b0;font-size:12px;font-weight:700}
+input,select,textarea{width:100%;margin-top:7px;background:#080c0b;color:var(--text);border:1px solid #2a3832;border-radius:14px;padding:13px 14px;outline:none;min-height:48px}
+textarea{min-height:88px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:rgba(57,232,109,.65);box-shadow:0 0 0 4px rgba(57,232,109,.07)}
+.formGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.progress{height:8px;border-radius:99px;background:#1a2420;overflow:hidden}.progress i{display:block;height:100%;background:var(--green);border-radius:99px}
+.chip{display:inline-flex;align-items:center;min-height:30px;padding:0 10px;border:1px solid var(--line);border-radius:999px;color:#b9c2be;font-size:12px;font-weight:750;background:#0e1411}
+.chip.green{color:var(--green);border-color:rgba(57,232,109,.25);background:var(--soft)}
+.chip.pro{color:#cfc0ff;border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.08)}
+.list{display:grid;gap:8px}.rowItem{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px;border:1px solid var(--line);background:#0e1411;border-radius:16px}.rowItem strong{display:block}.rowItem small{color:var(--muted)}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:17px}
+.tableish{display:grid;gap:8px}.record{padding:15px;border:1px solid var(--line);background:#0e1411;border-radius:18px}
+.recordTop{display:flex;justify-content:space-between;gap:10px}.recordMeta{color:var(--muted);font-size:12px;margin-top:5px}.recordActions{display:flex;gap:7px;margin-top:10px}
+.nav{position:fixed;left:50%;bottom:calc(9px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:1500;width:min(760px,calc(100% - 18px));height:70px;padding:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(10,14,12,.95);border:1px solid #2b3833;border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.6);backdrop-filter:blur(22px)}
+.nav button{border:0;background:transparent;color:#707b76;border-radius:18px;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px}
+.nav button.active{color:var(--green);background:rgba(57,232,109,.10);box-shadow:inset 0 0 0 1px rgba(57,232,109,.12)}
+.navIcon{font-size:18px;line-height:1}
+.moreSheet{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.62);backdrop-filter:blur(7px);display:none;align-items:flex-end}
+.moreSheet.open{display:flex}.sheet{width:min(680px,100%);margin:auto auto 0;background:#0d1311;border:1px solid #2b3933;border-bottom:0;border-radius:28px 28px 0 0;padding:20px 16px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -30px 90px rgba(0,0,0,.55)}
+.moreGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.moreGrid button{min-height:82px;border-radius:17px;border:1px solid var(--line);background:#121917;color:var(--text);font-weight:800}
+.modal{position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px}.modal.open{display:flex}.modalCard{width:min(520px,100%);max-height:88vh;overflow:auto;background:#0d1311;border:1px solid #304039;border-radius:24px;padding:20px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 25px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:3000;opacity:0;pointer-events:none;background:#eef5f1;color:#07100b;border-radius:999px;padding:11px 16px;font-size:13px;font-weight:800;transition:.2s;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+.auth{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:24px 0}.authWrap{width:min(900px,100%);display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}.authHero .logoBig{width:70px;height:70px;margin-bottom:18px}.authHero h1{font-size:54px}.authHero h1 em{font-style:normal;color:var(--green)}.authHero p{color:var(--muted);font-size:16px;line-height:1.75}.authCard{margin:0;padding:10px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border:1px solid var(--line);background:#080c0b;border-radius:17px}.tabs button{min-height:48px;border:0;background:transparent;color:#77827d;border-radius:13px;font-weight:850}.tabs button.active{background:#18211e;color:#fff}.authForm{padding:14px 7px}.authForm .btn{width:100%;margin-top:8px}.authDivider{text-align:center;color:#69746f;margin:14px}.socials{display:grid;gap:8px}.fine{font-size:11px;text-align:center;color:#68736e;line-height:1.6;margin:14px 6px 5px}
+.goal{display:flex;align-items:center;justify-content:space-between;gap:12px}.score{font-size:58px;font-weight:900;letter-spacing:-.07em}.score small{font-size:14px;color:var(--muted);letter-spacing:0}
+.insight{border-color:rgba(167,139,250,.28);background:radial-gradient(circle at 100% 0,rgba(167,139,250,.14),transparent 38%),linear-gradient(145deg,#121516,#0b0f0e)}
+.insight .reason{display:grid;gap:7px;margin-top:12px}.reason div{padding:9px 11px;border-radius:12px;background:#0d1211;border:1px solid var(--line);font-size:12px;color:#b9c2be}
+.chat{display:grid;gap:10px;margin:12px 0}.bubble{max-width:88%;padding:13px 15px;border-radius:18px;border:1px solid var(--line);line-height:1.55}.bubble.user{justify-self:end;background:#29334f;border-color:#46547c;border-bottom-right-radius:6px}.bubble.ai{background:#111816;border-bottom-left-radius:6px}.chatInput{position:sticky;bottom:calc(var(--nav) + 12px);z-index:20;display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px;background:rgba(7,10,9,.92);border:1px solid rgba(57,232,109,.16);border-radius:20px;backdrop-filter:blur(18px)}
+.chart{height:170px;display:flex;align-items:flex-end;gap:7px;padding:15px 8px;border:1px solid var(--line);border-radius:18px;background:#0b100e}.bar{flex:1;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--green),#159842);min-height:5px}
+.photoBox{border:1px dashed var(--line2);border-radius:18px;padding:16px;text-align:center}.photoBox input{display:none}
+.proBanner{border-color:rgba(167,139,250,.28);background:linear-gradient(135deg,rgba(167,139,250,.12),rgba(57,232,109,.05));}
+.badge{font-size:10px;border-radius:999px;padding:4px 7px;font-weight:900}.badge.ok{color:#061008;background:var(--green)}.badge.pro{color:#120b23;background:var(--purple)}
+@media(max-width:780px){
+  .authWrap{grid-template-columns:1fr;gap:12px}.authHero{text-align:left}.authHero h1{font-size:42px}.authHero .logoBig{width:56px;height:56px}
+  .stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  main{padding:17px 12px calc(var(--nav) + 28px)}.header{height:66px;padding:0 14px}.brandName{font-size:18px}.logo{width:30px;height:30px}
+  h1{font-size:32px}h2{font-size:28px}.card{padding:15px;border-radius:19px}.formGrid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.pageHead{align-items:flex-start}
+  .auth{padding:12px 0}.authHero h1{font-size:38px}.authHero p{font-size:14px}.moreGrid{grid-template-columns:1fr 1fr}.score{font-size:48px}
+}
 </style>
 </head>
 <body>
 <div id="app">
-<header class="garangHeader">
-  <a href="#" class="brandLockup" onclick="event.preventDefault();openPage('dashboard')" aria-label="GARANG 홈"><img src="assets/icons/garang-mark.svg" class="brandMark" alt="GARANG logo"><div><b>GARANG</b><small>Your personal AI coach</small></div></a>
-  <div class="headerBtns"><button id="planBadge" type="button" hidden>FREE</button><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div>
+<header class="header">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-label="GARANG">
+      <path d="M31 5 8 18v28l23 13 25-14V34L43 42v7l-12 7-17-10V20L31 9l17 10v8l8-5V17L31 5Z" fill="none" stroke="#39e86d" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M31 18 19 25v14l12 7 13-7V31l-7 4v4l-6 3-7-4V29l7-4 7 4 6-4-13-7Z" fill="#39e86d"/>
+    </svg>
+    <span class="brandName">GARANG</span>
+  </div>
+  <div class="headerRight">
+    <button id="planBtn" class="planPill" type="button">FREE</button>
+    <button id="accountBtn" class="accountPill hidden" type="button">내 정보</button>
+  </div>
 </header>
-<main>
-<section class="page active authPage" id="auth">
-<div class="garang-v853-auth-fix authHero">
-<img alt="GARANG" class="garang-v853-auth-fix authLogo" src="assets/icons/garang-mark.svg"/>
-<div class="eyebrow">YOUR PERSONAL AI COACH</div>
-<h1>오늘의 나를<br/><em>더 정확하게</em> 이해하다.</h1>
-<p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
-</div>
-<div class="card authCard">
-<div class="tabs" id="authTabs"><button class="active" data-tab="login" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
-<form class="garang-v853-auth-fix authForm" id="loginForm"><input autocomplete="email" id="loginEmail" placeholder="이메일" required="" type="email"/><input autocomplete="current-password" id="loginPw" placeholder="비밀번호" required="" type="password"/><button class="primaryBtn">GARANG 시작하기</button><button class="linkBtn" id="resetPwBtn" type="button">비밀번호를 잊으셨나요?</button></form>
-<form class="garang-v853-auth-fix authForm" hidden="" id="signupForm"><input autocomplete="nickname" id="signupName" placeholder="닉네임" required=""/><input autocomplete="email" id="signupEmail" placeholder="이메일" required="" type="email"/><input autocomplete="new-password" id="signupPw" minlength="6" placeholder="비밀번호 (6자 이상)" required="" type="password"/><input autocomplete="new-password" id="signupPw2" minlength="6" placeholder="비밀번호 확인" required="" type="password"/><label class="check"><input id="terms" required="" type="checkbox"/> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
-<div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
-<button class="socialBtn" id="googleBtn" type="button">Google로 계속하기</button><button class="socialBtn" id="appleBtn" type="button">Apple로 계속하기</button>
-<p class="error" id="authError"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
-</div>
+
+<section id="authPage" class="page active">
+  <div class="auth">
+    <div class="authWrap">
+      <div class="authHero">
+        <svg class="logoBig" viewBox="0 0 64 64">
+          <path d="M31 5 8 18v28l23 13 25-14V34L43 42v7l-12 7-17-10V20L31 9l17 10v8l8-5V17L31 5Z" fill="none" stroke="#39e86d" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M31 18 19 25v14l12 7 13-7V31l-7 4v4l-6 3-7-4V29l7-4 7 4 6-4-13-7Z" fill="#39e86d"/>
+        </svg>
+        <div class="eyebrow">YOUR PERSONAL PERFORMANCE AGENT</div>
+        <h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1>
+        <p>운동·식단·체중·러닝·회복·목표를 하나의 사용자 상태로 연결하고, GARANG이 다음 행동을 판단합니다.</p>
+        <div class="actions">
+          <span class="chip green">개인 데이터 연결</span><span class="chip">AI 기억</span><span class="chip">운동 인증</span>
+        </div>
+      </div>
+      <div class="card authCard">
+        <div class="tabs">
+          <button id="loginTab" class="active" type="button">로그인</button>
+          <button id="signupTab" type="button">회원가입</button>
+        </div>
+        <form id="loginForm" class="authForm">
+          <label>이메일<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+          <label>비밀번호<input id="loginPw" type="password" autocomplete="current-password" placeholder="비밀번호" required></label>
+          <button class="btn primary" type="submit">GARANG 시작하기</button>
+          <button id="forgotBtn" class="btn ghost" type="button">비밀번호를 잊으셨나요?</button>
+        </form>
+        <form id="signupForm" class="authForm hidden">
+          <label>닉네임<input id="signupName" autocomplete="nickname" placeholder="가랑" required></label>
+          <label>이메일<input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+          <label>비밀번호<input id="signupPw" type="password" autocomplete="new-password" minlength="6" placeholder="6자 이상" required></label>
+          <label>비밀번호 확인<input id="signupPw2" type="password" autocomplete="new-password" minlength="6" placeholder="다시 입력" required></label>
+          <label style="display:flex;gap:8px;align-items:center;margin:12px 0;color:#aab5b0"><input id="terms" type="checkbox" style="width:auto;min-height:auto" required> 서비스 이용에 동의합니다.</label>
+          <button class="btn primary" type="submit">계정 만들기</button>
+        </form>
+        <div class="authDivider">또는</div>
+        <div class="socials">
+          <button id="googleBtn" class="btn" type="button">Google로 계속하기</button>
+          <button id="appleBtn" class="btn" type="button">Apple로 계속하기</button>
+        </div>
+        <p id="authMsg" class="fine">현재는 GitHub Pages에서도 즉시 테스트할 수 있는 로컬 계정 모드입니다. Firebase 연결 후 클라우드 인증으로 교체할 수 있습니다.</p>
+      </div>
+    </div>
+  </div>
 </section>
-<section class="page onboardingPage" id="onboarding">
-<div class="onboardingTop"><span class="eyebrow">GARANG SETUP</span><strong id="onboardingStepText">1 / 5</strong></div>
-<div class="progressLine"><i id="onboardingProgress"></i></div>
-<div class="card onboardingCard">
-<div class="onboardStep active" data-step="1"><span class="stepIcon">01</span><h1>무엇을 만들고 싶나요?</h1><p>가장 중요한 목표부터 알려주세요.</p><div class="choiceGrid" data-key="goal"><button data-value="근육 증가">💪 근육 증가</button><button data-value="체지방 감량">🔥 체지방 감량</button><button data-value="체중 유지">⚖️ 체중 유지</button><button data-value="체력 향상">🏃 체력 향상</button></div></div>
-<div class="onboardStep" data-step="2"><span class="stepIcon">02</span><h1>현재 몸 상태</h1><p>정확할수록 코칭이 정교해집니다.</p><div class="row"><label>키(cm)<input id="onHeight" placeholder="174" step="0.1" type="number"/></label><label>체중(kg)<input id="onWeight" placeholder="67" step="0.1" type="number"/></label></div><div class="row"><label>목표 체중(kg)<input id="onTargetWeight" placeholder="67" step="0.1" type="number"/></label><label>운동 경력<select id="onExperience"><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label></div></div>
-<div class="onboardStep" data-step="3"><span class="stepIcon">03</span><h1>무엇을 주로 하나요?</h1><p>여러 개를 선택할 수 있습니다.</p><div class="choiceGrid multi" data-key="sports"><button data-value="헬스">🏋️ 헬스</button><button data-value="러닝">🏃 러닝</button><button data-value="축구/풋살">⚽ 축구/풋살</button><button data-value="홈트">🏠 홈트</button></div></div>
-<div class="onboardStep" data-step="4"><span class="stepIcon">04</span><h1>어떤 코치가 좋나요?</h1><p>대화 스타일도 나에게 맞춥니다.</p><div class="choiceGrid" data-key="coachStyle"><button data-value="직설적">🎯 직설적으로</button><button data-value="친근함">🤝 친근하게</button><button data-value="데이터 중심">📊 데이터 중심</button><button data-value="강하게 밀어붙이기">🔥 강하게 밀어붙여줘</button></div></div>
-<div class="onboardStep" data-step="5"><span class="stepIcon">05</span><h1>준비됐습니다.</h1><p>이제 GARANG이 당신의 기록을 기준으로 코칭합니다.</p><div class="onboardSummary" id="onboardSummary"></div></div>
-<div class="onboardingActions"><button class="ghostBtn" id="onPrev" type="button">이전</button><button class="primaryBtn" id="onNext" type="button">다음</button></div>
-</div>
-</section>
-<section class="page" id="profile">
-<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2><p>개인 정보는 코칭과 분석의 기준이 됩니다.</p></div><button class="ghostBtn" onclick="garangStartOnboarding()" type="button">온보딩 다시하기</button></div>
-<form class="card profileCard" id="profileForm">
-<div class="profileSection">
-<div class="profileSectionHead"><span class="profileIcon">01</span><div><strong>기본 정보</strong><small>GARANG이 나를 구분하는 데 사용하는 정보</small></div></div>
-<div class="profileGrid profileGrid2">
-<label class="profileField wide"><span>닉네임</span><input id="profName" placeholder="닉네임" required=""/></label>
-<label class="profileField"><span>성별</span><select id="profGender"><option value="">선택</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select></label>
-<label class="profileField"><span>나이</span><input id="profAge" max="120" min="1" placeholder="22" type="number"/></label>
-</div>
-</div>
-<div class="profileSection">
-<div class="profileSectionHead"><span class="profileIcon">02</span><div><strong>신체 정보</strong><small>체중·목표·활동량을 코칭 계산에 사용합니다.</small></div></div>
-<div class="profileGrid profileGrid2">
-<label class="profileField"><span>키</span><input id="profHeight" placeholder="174" step=".1" type="number"/></label>
-<label class="profileField"><span>현재 체중</span><input id="profWeight" placeholder="67" step=".1" type="number"/></label>
-<label class="profileField"><span>목표 체중</span><input id="profTargetWeight" placeholder="68" step=".1" type="number"/></label>
-<label class="profileField"><span>활동 수준</span><select id="profActivity"><option value="">선택</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select></label>
-</div>
-</div>
-<div class="profileSection">
-<div class="profileSectionHead"><span class="profileIcon">03</span><div><strong>코칭 설정</strong><small>AI가 나에게 맞는 방식으로 판단합니다.</small></div></div>
-<div class="profileGrid profileGrid2">
-<label class="profileField wide"><span>목표</span><input id="profGoal" placeholder="예: 근육 증가, 체지방 감량"/></label>
-<label class="profileField"><span>운동 경험</span><select id="profExperience"><option value="">선택</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label>
-<label class="profileField"><span>AI 코칭 스타일</span><select id="profCoachStyle"><option value="">선택</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select></label>
-</div>
-</div>
-<button class="profileSaveBtn">정보 저장</button>
-</form>
-<div class="card accountCard">
-<div><span class="eyebrow">ACCOUNT</span><h3>계정 관리</h3><p class="muted" id="accountEmail"></p></div>
-<div class="accountActions"><button class="danger" onclick="logout()" type="button">로그아웃</button><button class="danger outline" onclick="deleteAccount()" type="button">계정 삭제</button></div>
-</div>
-</section>
-<section class="page" id="dashboard">
-<div class="dashTop"><div><span class="eyebrow">TODAY</span><h1 id="dashGreeting">좋은 하루예요.</h1><p>오늘의 기록과 코칭을 한눈에.</p></div><button class="iconAction" onclick="openPage('profile')">프로필</button></div>
-<div class="dashboardHero"><div><span>AI COACH</span><h2 id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</h2></div><button onclick="openPage('chat')">코치에게 질문</button></div>
-<div class="grid statGrid"><div class="card statCard"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div><div class="card statCard"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div><div class="card statCard"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div><div class="card statCard"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div></div>
-<div class="dashboardColumns"><div class="card"><div class="sectionHead"><h3>오늘의 활동</h3><button onclick="openPage('workout')">기록하기</button></div><div class="activityFeed" id="dashActivityFeed"><p class="muted">아직 오늘의 기록이 없습니다.</p></div></div><div class="card"><div class="sectionHead"><h3>오늘의 목표</h3><button onclick="openPage('report')">리포트</button></div><div class="goalProgress" id="dashGoalProgress"></div></div></div>
-</section>
-<section class="page" id="workout">
-<div class="pageTitle"><div><span class="eyebrow">WORKOUT</span><h2>운동 기록</h2></div><button class="ghostBtn" onclick="openPage('running')">🏃 러닝</button></div>
-<form class="card" id="workoutForm">
-<div class="exerciseSearchWrap">
-<div class="dbSearchField"><input autocomplete="off" id="exercise" placeholder="운동 검색 · 예: 벤치프레스" required=""/><button aria-label="운동 DB 검색" class="dbSearchButton" id="exerciseSearchButton" type="button">⌕</button></div>
-<div class="foodResults" id="exerciseSearchResults"></div>
-</div>
-<div class="row"><input id="sets" min="1" placeholder="세트" required="" type="number"/><input id="reps" min="1" placeholder="반복" required="" type="number"/><input id="weight" min="0" placeholder="kg" step=".5" type="number"/></div>
-<div class="row"><input id="duration" min="1" placeholder="운동시간(분)" type="number"/><input id="rpe" max="10" min="1" placeholder="RPE 1~10" step=".5" type="number"/></div>
-<textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
-<button>운동 저장</button>
-</form>
-<div class="batchCard" id="fitmindBatchWorkoutCard">
-<div class="batchHead"><h3>🏋️ 여러 운동 한 번에 기록</h3><button id="addBatchWorkout" type="button">＋ 운동 추가</button><datalist id="fitmindExerciseList"></datalist>
-</div>
-<div class="batchRows" id="batchWorkoutRows"></div>
-<div class="batchTotals">
-<div class="batchMetric"><span>총 볼륨</span><strong id="batchWorkoutVolume">0 kg</strong></div>
-<div class="batchMetric"><span>총 소모</span><strong id="batchWorkoutKcal">0 kcal</strong></div>
-<div class="batchMetric"><span>총 세트</span><strong id="batchWorkoutSets">0 세트</strong></div>
-<div class="batchMetric"><span>운동시간</span><strong id="batchWorkoutTime">0 분</strong></div>
-</div>
-<div class="batchActions"><button id="saveBatchWorkout" type="button">한 번에 운동 저장</button></div>
-<p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
-</div>
-<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공 · 9:16 / 16:9</span></div><button class="ghostBtn" onclick="GARANGV86.openCertification(GARANGV86.summary())" type="button">인증 만들기</button></div>
-<div class="card" id="todayWorkoutCalorieCard" style="margin:12px 0;">
-<div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
-<div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
-<div class="muted" id="todayWorkoutCalorieMeta">운동시간 0분 · 추정치</div>
-</div>
-<div id="workoutList"></div>
-<div id="workoutShareMount"></div>
-</section>
-<section class="page" id="diet">
-<div class="pageTitle"><div><span class="eyebrow">NUTRITION</span><h2>식단</h2></div></div>
-<form class="card" id="mealForm">
-<label class="fieldLabel">음식 검색</label>
-<div class="foodSearchWrap">
-<div class="dbSearchField"><input autocomplete="off" id="meal" placeholder="음식 검색 · 예: 닭가슴살" required=""/><button aria-label="식단 DB 검색" class="dbSearchButton" id="foodSearchButton" type="button">⌕</button></div>
-<div class="foodResults" id="foodSearchResults"></div>
-</div>
-<div class="selectedFood" hidden="" id="selectedFoodCard"></div>
-<div class="row">
-<div class="qtyControl">
-<button aria-label="섭취량 줄이기" id="qtyMinus" type="button">−</button>
-<input id="servings" inputmode="decimal" min=".1" placeholder="섭취량" step=".1" type="number" value="1"/>
-<button aria-label="섭취량 늘리기" id="qtyPlus" type="button">+</button>
-</div>
-<select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option><option value="스쿱">스쿱</option><option value="봉">봉</option><option value="컵">컵</option></select>
-<select id="mealType"><option value="">식사 선택</option><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
-</div>
-<details class="unitSettings">
-<summary>섭취 단위 기준값 설정</summary>
-<p class="muted">g/ml는 입력량 그대로 계산하고, 개·회·팩·인분 등은 아래 기준 g으로 환산합니다.</p>
-<div class="row">
-<label class="fieldLabel">현재 단위 1개 기준(g)<input id="unitBasisG" min=".1" placeholder="예: 100" step=".1" type="number"/></label>
-<label class="fieldLabel">증감 단위<input id="qtyStep" min=".1" step=".1" type="number" value=".5"/></label>
-</div>
-<button id="saveUnitSetting" type="button">이 음식에 저장</button>
-</details>
-<div class="nutritionPreview">
-<div><span>칼로리</span><b id="previewKcal">-</b><small>kcal</small></div>
-<div><span>단백질</span><b id="previewProtein">-</b><small>g</small></div>
-<div><span>탄수</span><b id="previewCarbs">-</b><small>g</small></div>
-<div><span>지방</span><b id="previewFat">-</b><small>g</small></div>
-</div>
-<details class="manualNutrition">
-<summary>영양정보 직접 수정</summary>
-<div class="row"><input id="calories" min="0" placeholder="kcal" type="number"/><input id="protein" min="0" placeholder="단백질 g" type="number"/><input id="carbs" min="0" placeholder="탄수 g" type="number"/></div>
-<input id="fat" min="0" placeholder="지방 g" type="number"/>
-</details>
-<textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
-<p class="muted" id="foodHint">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
-<button id="saveMealBtn" onclick="return saveMealFromForm(event)" type="button">식단 저장</button>
-</form>
-<div class="batchCard" id="fitmindBatchMealCard">
-<div class="batchHead"><h3>🍚 여러 음식 한 번에 기록</h3><button id="addBatchMeal" type="button">＋ 음식 추가</button></div>
-<div class="batchRows" id="batchMealRows"></div>
-<div class="batchTotals">
-<div class="batchMetric"><span>총 칼로리</span><strong id="batchMealKcal">0 kcal</strong></div>
-<div class="batchMetric"><span>단백질</span><strong id="batchMealProtein">0 g</strong></div>
-<div class="batchMetric"><span>탄수화물</span><strong id="batchMealCarbs">0 g</strong></div>
-<div class="batchMetric"><span>지방</span><strong id="batchMealFat">0 g</strong></div>
-</div>
-<div class="batchActions"><button id="saveBatchMeal" type="button">한 번에 식단 저장</button></div>
-<p class="batchHint">음식 선택 시 100g 기준 영양정보를 자동으로 채우고, 실제 섭취량(g)에 맞춰 합산합니다.</p>
-<datalist id="fitmindFoodList"></datalist>
-</div>
-<div id="fitmindDietOnlyTodayIntake"></div>
-<div id="mealList"></div>
-</section>
-<section class="page" id="running">
-<div class="pageTitle"><div><span class="eyebrow">RUN</span><h2>러닝</h2><p>GPS로 거리와 페이스를 실시간 기록하세요.</p></div></div>
-<div class="runLive card"><div class="runMainMetric"><span id="runStatus">READY</span><strong id="runDistance">0.00</strong><small>km</small></div><div class="runMetrics"><div><span>시간</span><b id="runTime">00:00</b></div><div><span>페이스</span><b id="runPace">--:--</b></div><div><span>칼로리</span><b id="runKcal">0</b></div></div><div class="runControls"><button class="primaryBtn" id="runStart">▶ 러닝 시작</button><button class="ghostBtn" disabled="" id="runPause">일시정지</button><button class="danger outline" disabled="" id="runStop">■ 종료</button></div><p class="muted" id="runGpsHint">시작하면 브라우저의 위치 권한을 요청합니다. GPS는 앱 화면이 활성화된 동안 측정됩니다.</p></div>
-<div class="card"><div class="sectionHead"><h3>경로</h3><span class="muted" id="runGpsAccuracy">GPS 대기</span></div><div class="runPath" id="runPath"><div class="runPathEmpty">러닝을 시작하면 이동 경로가 표시됩니다.</div></div></div>
-<div class="card"><div class="sectionHead"><h3>최근 러닝</h3><span class="muted">GARANG RUN</span></div><div id="runHistory"></div></div>
-</section>
-<section class="page" id="body">
-<h2>🧍 바디체크</h2>
-<div class="card">
-<h3>📸 바디체크 사진</h3>
-<input accept="image/*" id="bodyPhotoInput" multiple="" type="file"/>
-<div class="muted" style="margin-top:6px;">저장된 사진은 바디 탭에서 언제든 다시 볼 수 있습니다.</div>
-<div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
-</div>
-<div class="card">
-<h3>📏 신체 데이터</h3>
-<div class="row">
-<label>측정일<input id="bodyDate" type="date"/></label>
-<label>체중 (kg)<input id="bodyWeight" placeholder="67.0" step="0.1" type="number"/></label>
-<label>체지방률 (%)<input id="bodyFatPercent" placeholder="12.0" step="0.1" type="number"/></label>
-<label>골격근량 (kg)<input id="bodySkeletalMuscle" placeholder="35.3" step="0.1" type="number"/></label>
-<label>체지방량 (kg)<input id="bodyFatMass" placeholder="8.0" step="0.1" type="number"/></label>
-<label>허리둘레 (cm)<input id="bodyWaist" placeholder="75.0" step="0.1" type="number"/></label>
-</div>
-<button id="saveBodyDataBtn" type="button">💾 신체 데이터 저장</button>
-<div class="muted" id="bodySaveStatus"></div>
-</div>
-<div class="card">
-<h3>🔥 대사량 &amp; 권장 섭취 칼로리</h3>
-<div class="row">
-<div class="card"><small>기초대사량 (BMR)</small><div id="fitmindBMRResult" style="font-size:28px;font-weight:900;">—</div></div>
-<div class="card"><small>권장 섭취 칼로리</small><div id="fitmindTDEEResult" style="font-size:28px;font-weight:900;">—</div></div>
-</div>
-<label>활동량
-    <select id="bodyActivity">
-<option value="1.2">거의 활동 없음</option>
-<option value="1.375">가벼운 활동</option>
-<option selected="" value="1.55">보통 활동</option>
-<option value="1.725">높은 활동</option>
-<option value="1.9">매우 높은 활동</option>
-</select>
-</label>
-<div class="muted" id="fitmindCalorieNote"></div>
-</div>
-<div class="card" style="text-align:center;">
-<div class="muted">GARANG BODY SCORE</div>
-<div id="bodyScoreNumber" style="font-size:52px;font-weight:900;">—</div>
-<div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
-<div class="muted" id="bodyScoreSummary"></div>
-</div>
-<div class="row" id="bodyScoreBreakdown"></div>
-<div class="card">
-<h3>📈 신체 변화</h3>
-<div class="row">
-<button class="body-range" data-days="7" type="button">7일</button>
-<button class="body-range" data-days="30" type="button">1개월</button>
-<button class="body-range" data-days="90" type="button">3개월</button>
-<button class="body-range" data-days="180" type="button">6개월</button>
-<button class="body-range" data-days="0" type="button">전체</button>
-</div>
-<div id="fitmindBodyGraphs"></div>
-</div>
-<div id="fitmindBodyHistory"></div>
-<div id="bodyList" style="display:none;"></div>
-</section>
-<section class="page" id="report">
-<div class="pageTitle"><div><span class="eyebrow">INSIGHTS</span><h2>리포트</h2></div></div>
-<div class="tabs" id="reportTabs">
-<button data-period="week" onclick="setReportPeriod('week')">주간</button>
-<button data-period="month" onclick="setReportPeriod('month')">월간</button>
-<button data-period="year" onclick="setReportPeriod('year')">연간</button>
-</div>
-<div class="reportNav card">
-<button onclick="moveReport(-1)">‹</button>
-<strong id="reportTitle"></strong>
-<button onclick="moveReport(1)">›</button>
-</div>
-<div id="calendarBox"></div>
-<div id="reportContent"></div>
-<div class="card" id="dailyEnergyCard" style="margin:12px 0;">
-<div style="font-weight:700;">⚡ 오늘 에너지</div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
-<div><small>섭취</small><strong id="dailyIntakeKcal">0 kcal</strong></div>
-<div><small>운동 소비</small><strong id="dailyWorkoutKcal">0 kcal</strong></div>
-<div><small>순섭취</small><strong id="dailyNetKcal">0 kcal</strong></div>
-</div>
-<div class="muted" style="margin-top:8px;">운동 소비량은 체중·운동시간·강도 기반 추정치</div>
-</div>
-<div id="energyReport"></div>
-<div class="card">
-<h3>데이터 관리</h3>
-<button onclick="exportBackup()">백업 파일 만들기</button>
-<label class="button">백업 복원<input accept=".json" hidden="" id="restoreFile" type="file"/></label>
-</div>
-</section>
-<section class="page" id="chat">
-<div class="aiWorkspaceHead">
-<div>
-<span class="eyebrow">GARANG AI</span>
-<h2>나를 이해하는 하나의 AI</h2>
-<p>운동·식단·러닝·회복·목표·기억을 필요한 순간 하나의 판단으로 연결합니다.</p>
-</div>
-<button class="ghostBtn aiNewChat" onclick="newGarangChat()" type="button">새 대화</button>
-</div>
-<div class="garangUnifiedShell" id="v99UnifiedPanel"></div>
-<div class="chatlog" id="chatLog"></div>
-<form class="chatbar" id="chatForm">
-<button aria-label="파일 또는 사진 첨부" class="chatPlus" id="chatAttachBtn" type="button">＋</button>
-<input accept="image/*,.pdf,.txt,.json,.csv" hidden="" id="chatFile" type="file"/>
-<input autocomplete="off" id="chatInput" placeholder="무엇이든 물어보세요" required=""/>
-<button id="chatSendBtn" type="submit">전송</button>
-</form>
-<div class="card" hidden="" id="serverLLMSettings"><h3>고급 AI 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"/><input id="apiKey" placeholder="API Key (선택)" type="password"/><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
-</section>
-<section class="page" id="v93Learning">
-<div class="pageTitle"><div><span class="eyebrow">LEARNING</span><h2>AI Learning</h2><p>운동·식단·러닝 기록에서 개인화 패턴을 축적합니다.</p></div></div>
-<div class="card">
-<div class="v93Grid">
-<div class="v93Metric">학습 이벤트<b id="v93LearnEvents">0</b></div>
-<div class="v93Metric">패턴<b id="v93LearnPatterns">0</b></div>
-<div class="v93Metric">성공<b id="v93LearnSuccess">0</b></div>
-<div class="v93Metric">실패<b id="v93LearnFailure">0</b></div>
-</div>
-<div class="row" style="margin-top:12px"><button id="v93Sync">기록 다시 학습</button><button id="v93LearningConsent">Global Learning 동의</button><span class="muted" id="v93ServerStatus">로컬 학습 ON</span></div>
-</div>
-<div class="card"><h3>학습 패턴</h3><div id="v93PatternList"></div></div>
-<div class="card"><h3>최근 학습 이벤트</h3><div id="v93LearningList"></div></div>
-</section>
-<section class="page" id="v93Memory">
-<div class="pageTitle"><div><span class="eyebrow">MEMORY</span><h2>AI Memory</h2><p>기존 GARANG 데이터와 V9 학습 데이터를 한 곳에서 확인합니다.</p></div></div>
-<div class="card"><div id="v93MemoryList"></div></div>
-<div class="card"><button onclick="GARANG_V93_LEARNING.clear()">V9 학습 데이터 초기화</button></div>
-</section>
+
+<main id="appMain" class="hidden">
+  <section id="homePage" class="page active">
+    <div class="pageHead"><div><div class="eyebrow">TODAY</div><h2 id="greeting">좋은 하루예요.</h2><p>오늘 해야 할 일을 GARANG이 정리했어요.</p></div></div>
+    <div class="card hero">
+      <div class="eyebrow">GARANG AI</div>
+      <h2 id="todayDecision">기록을 쌓으면 오늘의 상태를 더 정확하게 판단할 수 있어요.</h2>
+      <div class="actions"><button class="btn primary" onclick="go('workout')">오늘 운동 시작</button><button class="btn" onclick="go('ai')">AI에게 물어보기</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">체중</span><b id="sWeight">—</b><small>kg</small></div>
+      <div class="stat"><span class="label">오늘 운동</span><b id="sWorkout">0</b><small>회</small></div>
+      <div class="stat"><span class="label">단백질</span><b id="sProtein">0</b><small>g</small></div>
+      <div class="stat"><span class="label">러닝</span><b id="sRun">0.0</b><small>km</small></div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="card"><div class="goal"><div><div class="eyebrow">READINESS</div><div class="score"><span id="readiness">72</span><small>/100</small></div></div><span class="chip green">오늘의 상태</span></div><div class="progress" style="margin-top:14px"><i id="readinessBar" style="width:72%"></i></div><p id="readinessText" class="muted" style="margin:10px 0 0">최근 기록을 기준으로 계산합니다.</p></div>
+      <div class="card"><div class="eyebrow">TODAY'S NEXT STEP</div><h3 id="nextStep" style="margin-top:8px">운동 기록을 하나 추가해보세요.</h3><p id="nextReason" class="muted">기록이 쌓이면 GARANG이 강도와 회복을 함께 판단합니다.</p></div>
+    </div>
+    <div class="card insight"><div class="eyebrow">AI INSIGHT</div><h3 id="homeInsight">아직 충분한 데이터가 없어요.</h3><div id="homeReasons" class="reason"></div></div>
+  </section>
+
+  <section id="workoutPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">WORKOUT</div><h2>운동</h2><p>세트·반복·중량·RPE·볼륨을 한 번에 기록합니다.</p></div></div>
+    <form id="workoutForm" class="card">
+      <div class="formGrid">
+        <label>운동<select id="wExercise" required><option value="">운동 선택</option><option>벤치프레스</option><option>스쿼트</option><option>데드리프트</option><option>덤벨 숄더프레스</option><option>OHP</option><option>랫풀다운</option><option>원암 덤벨로우</option><option>렉풀</option><option>레터럴레이즈</option><option>딥스</option><option>기타</option></select></label>
+        <label>날짜<input id="wDate" type="date" required></label>
+        <label>세트<input id="wSets" type="number" min="1" value="4" required></label>
+        <label>반복<input id="wReps" type="number" min="1" value="10" required></label>
+        <label>중량(kg)<input id="wWeight" type="number" min="0" step=".5" value="0" required></label>
+        <label>RPE<input id="wRpe" type="number" min="1" max="10" step=".5" value="8"></label>
+        <label>운동시간(분)<input id="wDuration" type="number" min="0" value="60"></label>
+        <label>메모<input id="wNote" placeholder="컨디션 / 난이도"></label>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">운동 저장</button><button class="btn" type="button" onclick="openCert()">운동 인증</button></div>
+    </form>
+    <div class="card"><div class="goal"><div><div class="eyebrow">TODAY VOLUME</div><h3 id="todayVolume">0 kg</h3></div><span class="chip">기록 기반</span></div></div>
+    <div id="workoutList" class="list"></div>
+  </section>
+
+  <section id="dietPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">NUTRITION</div><h2>식단</h2><p>칼로리와 단백질을 오늘의 목표와 함께 관리합니다.</p></div></div>
+    <div class="stats">
+      <div class="stat"><span class="label">칼로리</span><b id="dCal">0</b><small>kcal</small></div>
+      <div class="stat"><span class="label">단백질</span><b id="dPro">0</b><small>g</small></div>
+      <div class="stat"><span class="label">탄수화물</span><b id="dCarb">0</b><small>g</small></div>
+      <div class="stat"><span class="label">지방</span><b id="dFat">0</b><small>g</small></div>
+    </div>
+    <form id="mealForm" class="card" style="margin-top:12px">
+      <div class="formGrid">
+        <label>음식/식사<input id="mName" placeholder="예: 닭가슴살 + 밥" required></label>
+        <label>칼로리<input id="mCal" type="number" min="0" required></label>
+        <label>단백질(g)<input id="mPro" type="number" min="0" value="0"></label>
+        <label>탄수화물(g)<input id="mCarb" type="number" min="0" value="0"></label>
+        <label>지방(g)<input id="mFat" type="number" min="0" value="0"></label>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">식단 기록</button></div>
+    </form>
+    <div class="card"><h3>오늘 영양 진행률</h3><div style="display:grid;gap:12px"><div><div class="goal"><span>단백질</span><span id="proPct">0%</span></div><div class="progress"><i id="proBar" style="width:0%"></i></div></div><div><div class="goal"><span>칼로리</span><span id="calPct">0%</span></div><div class="progress"><i id="calBar" style="width:0%"></i></div></div></div></div>
+    <div id="mealList" class="list"></div>
+  </section>
+
+  <section id="bodyPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">BODY</div><h2>바디</h2><p>체중·체지방·골격근량을 날짜별로 쌓습니다.</p></div></div>
+    <div class="card"><form id="bodyForm" class="formGrid"><label>체중(kg)<input id="bWeight" type="number" step=".1" required></label><label>체지방률(%)<input id="bFat" type="number" step=".1" placeholder="선택"></label><label>골격근량(kg)<input id="bMuscle" type="number" step=".1" placeholder="선택"></label><label>허리(cm)<input id="bWaist" type="number" step=".1" placeholder="선택"></label><label>날짜<input id="bDate" type="date" required></label><div class="actions"><button class="btn primary" type="submit">바디 기록 저장</button></div></form></div>
+    <div class="card"><div class="eyebrow">WEIGHT TREND</div><h3 id="bodyLatest">아직 기록 없음</h3><div id="bodyChart" class="chart"></div></div>
+    <div id="bodyList" class="list"></div>
+  </section>
+
+  <section id="runningPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">RUNNING</div><h2>러닝</h2><p>거리·시간·페이스를 기록합니다. GPS는 브라우저 권한이 있을 때 연결할 수 있습니다.</p></div></div>
+    <div class="card hero"><div class="eyebrow">RUN SESSION</div><div class="score"><span id="runTimer">00:00</span></div><div class="grid3"><div class="stat"><span class="label">거리</span><b id="runLiveDist">0.00</b><small>km</small></div><div class="stat"><span class="label">페이스</span><b id="runLivePace">—</b><small>/km</small></div><div class="stat"><span class="label">칼로리</span><b id="runLiveCal">0</b><small>kcal</small></div></div><div class="actions"><button id="runStart" class="btn primary" type="button">러닝 시작</button><button id="runPause" class="btn" type="button" disabled>일시정지</button><button id="runStop" class="btn" type="button" disabled>종료</button></div></div>
+    <form id="runForm" class="card"><h3>완료한 러닝 기록</h3><div class="formGrid"><label>날짜<input id="rDate" type="date" required></label><label>거리(km)<input id="rDist" type="number" min="0" step=".01" required></label><label>시간(분)<input id="rMin" type="number" min="0" required></label><label>칼로리<input id="rCal" type="number" min="0" value="0"></label></div><div class="actions"><button class="btn primary">러닝 저장</button></div></form>
+    <div id="runList" class="list"></div>
+  </section>
+
+  <section id="reportPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">ANALYTICS</div><h2>분석</h2><p>운동·식단·바디·러닝을 한 흐름으로 봅니다.</p></div></div>
+    <div class="stats"><div class="stat"><span class="label">총 운동</span><b id="rpWorkout">0</b><small>회</small></div><div class="stat"><span class="label">총 볼륨</span><b id="rpVolume">0</b><small>kg</small></div><div class="stat"><span class="label">총 러닝</span><b id="rpRun">0</b><small>km</small></div><div class="stat"><span class="label">기록일</span><b id="rpDays">0</b><small>일</small></div></div>
+    <div class="grid2" style="margin-top:12px"><div class="card"><div class="eyebrow">WEEKLY LOAD</div><div id="loadChart" class="chart"></div></div><div class="card"><div class="eyebrow">AI SUMMARY</div><h3 id="rpSummary">데이터를 쌓으면 주간 패턴을 요약합니다.</h3><p class="muted" id="rpDetail"></p></div></div>
+    <div class="card"><h3>데이터 관리</h3><div class="actions"><button class="btn" onclick="exportData()">백업 내보내기</button><label class="btn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">백업 복원<input id="importData" type="file" accept=".json" style="display:none"></label></div></div>
+    <div class="card proBanner"><div class="goal"><div><span class="chip pro">PRO</span><h3 style="margin:10px 0 4px">장기 추세 분석</h3><p class="muted" style="margin:0">회복·훈련량·영양·체성분을 함께 분석해 다음 주 전략을 제안합니다.</p></div><button class="btn pro" onclick="upgrade()">PRO 보기</button></div></div>
+  </section>
+
+  <section id="aiPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">PERSONAL PERFORMANCE AGENT</div><h2>AI 코치</h2><p>질문 → 내 데이터 검색 → 판단 → 근거 → 다음 행동.</p></div></div>
+    <div class="card insight"><div class="goal"><div><span class="eyebrow">TODAY'S COACH</span><h3 id="aiInsight" style="margin-top:8px">데이터를 읽는 중…</h3></div><span class="chip green">자동 판단</span></div><div id="aiReasons" class="reason"></div></div>
+    <div id="chatLog" class="chat"></div>
+    <form id="chatForm" class="chatInput"><input id="chatInput" placeholder="예: 오늘 운동 뭐 할까?" required><button class="btn primary">전송</button></form>
+    <div class="actions"><button class="btn" onclick="askPreset('오늘 운동 뭐 할까?')">오늘 운동</button><button class="btn" onclick="askPreset('단백질 얼마나 먹어야 해?')">단백질</button><button class="btn" onclick="askPreset('최근 기록 분석해줘')">최근 분석</button></div>
+  </section>
+
+  <section id="learningPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">AI LEARNING</div><h2>학습</h2><p>사용자의 기록 변화에서 개인화 패턴을 축적합니다.</p></div></div>
+    <div class="stats"><div class="stat"><span class="label">학습 이벤트</span><b id="lEvents">0</b></div><div class="stat"><span class="label">패턴</span><b id="lPatterns">0</b></div><div class="stat"><span class="label">성공</span><b id="lSuccess">0</b></div><div class="stat"><span class="label">메모리</span><b id="lMemory">0</b></div></div>
+    <div class="card"><div class="actions"><button class="btn primary" onclick="learnNow()">기록 다시 학습</button><button class="btn" onclick="addMemory()">AI 메모리 추가</button></div></div>
+    <div class="card"><h3>학습 패턴</h3><div id="patternList" class="list"></div></div>
+    <div class="card"><h3>최근 학습 이벤트</h3><div id="learningList" class="list"></div></div>
+  </section>
+
+  <section id="memoryPage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">AI MEMORY</div><h2>메모리</h2><p>GARANG이 장기적으로 기억할 사용자 맥락입니다.</p></div></div>
+    <div class="card"><div class="stats" style="grid-template-columns:1fr 1fr"><div class="stat"><span class="label">기본 프로필</span><b id="memProfile">0</b></div><div class="stat"><span class="label">사용자 메모</span><b id="memCount">0</b></div></div></div>
+    <div id="memoryList" class="list"></div>
+    <div class="card proBanner"><span class="chip pro">PRO</span><h3 style="margin-top:10px">장기 개인화 메모리</h3><p class="muted">PRO에서는 장기 목표·훈련 선호·회복 패턴을 더 깊게 연결하는 구조로 확장합니다.</p><button class="btn pro" onclick="upgrade()">PRO 보기</button></div>
+  </section>
+
+  <section id="profilePage" class="page">
+    <div class="pageHead"><div><div class="eyebrow">PROFILE</div><h2>내 GARANG</h2><p>코칭에 사용하는 기본 정보를 관리합니다.</p></div></div>
+    <form id="profileForm" class="card"><div class="formGrid"><label>닉네임<input id="pName" required></label><label>나이<input id="pAge" type="number" min="1" max="120"></label><label>키(cm)<input id="pHeight" type="number" step=".1"></label><label>활동 수준<select id="pActivity"><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select></label><label>목표<select id="pGoal"><option>근육 증가</option><option>체지방 감량</option><option>체중 유지</option><option>체력 향상</option></select></label><label>운동 경력<select id="pExperience"><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label><label>목표 단백질(g)<input id="pProtein" type="number" min="0" value="140"></label><label>목표 칼로리<input id="pCalories" type="number" min="0" value="2500"></label></div><div class="actions"><button class="btn primary">프로필 저장</button></div></form>
+    <div class="card"><div class="goal"><div><span class="eyebrow">ACCOUNT</span><h3 id="accountLabel">—</h3></div><button class="btn danger" type="button" onclick="logout()">로그아웃</button></div></div>
+    <div class="card proBanner"><div class="goal"><div><span class="chip pro">PRO</span><h3 style="margin:10px 0 4px">FREE → PRO</h3><p class="muted" style="margin:0">기록 앱에서 Personal Performance Agent로 확장하세요.</p></div><button class="btn pro" onclick="upgrade()">PRO 보기</button></div></div>
+  </section>
 </main>
-<nav id="mainNav" class="hidden" aria-label="주요 메뉴">
-  <button data-page="dashboard" onclick="openPage('dashboard')"><span class="navIcon">⌂</span><span>홈</span></button>
-  <button data-page="workout" onclick="openPage('workout')"><span class="navIcon">↗</span><span>운동</span></button>
-  <button data-page="chat" onclick="openPage('chat')"><span class="navIcon">✦</span><span>AI</span></button>
-  <button data-page="diet" onclick="openPage('diet')"><span class="navIcon">◌</span><span>식단</span></button>
-  <button type="button" onclick="toggleMoreNav()"><span class="navIcon">•••</span><span>더보기</span></button>
+
+<nav id="bottomNav" class="nav hidden" aria-label="주요 메뉴">
+  <button data-page="home" class="active"><span class="navIcon">⌂</span><span>홈</span></button>
+  <button data-page="workout"><span class="navIcon">↗</span><span>운동</span></button>
+  <button data-page="diet"><span class="navIcon">◌</span><span>식단</span></button>
+  <button data-page="body"><span class="navIcon">◉</span><span>바디</span></button>
+  <button id="moreBtn"><span class="navIcon">•••</span><span>더보기</span></button>
 </nav>
-<div id="moreNav" aria-hidden="true" onclick="if(event.target===this)toggleMoreNav(false)"><div class="sheet"><div class="sectionHead" style="margin-bottom:12px"><strong>GARANG</strong><button class="ghostBtn" type="button" onclick="toggleMoreNav(false)">닫기</button></div><div class="moreGrid"><button onclick="openMorePage('running')">🏃<br>러닝</button><button onclick="openMorePage('body')">◉<br>바디</button><button onclick="openMorePage('report')">▤<br>리포트</button><button onclick="openMorePage('profile')">◎<br>프로필</button><button onclick="openMorePage('v93Learning')">⌁<br>학습</button><button onclick="openMorePage('v93Memory')">◇<br>메모리</button></div></div></div>
+
+<div id="moreSheet" class="moreSheet" aria-hidden="true">
+  <div class="sheet">
+    <div class="goal"><div><div class="eyebrow">GARANG</div><h3 style="margin-top:5px">더보기</h3></div><button id="closeMore" class="btn">닫기</button></div>
+    <div class="moreGrid">
+      <button data-more="running">🏃<br>러닝</button><button data-more="report">▤<br>분석</button><button data-more="ai">✦<br>AI 코치</button>
+      <button data-more="learning">⌁<br>AI 학습</button><button data-more="memory">◇<br>AI 메모리</button><button data-more="profile">◎<br>프로필</button>
+    </div>
+  </div>
 </div>
-<script>
-function toggleMoreNav(force){const el=document.getElementById('moreNav');if(!el)return;const open=typeof force==='boolean'?force:!el.classList.contains('open');el.classList.toggle('open',open);el.setAttribute('aria-hidden',String(!open));}
-function openMorePage(id){toggleMoreNav(false);openPage(id)}
-</script>
 
-<div id="fitmindBuildVersion" style="position:fixed;bottom:5px;right:7px;font-size:9px;opacity:.32;z-index:9999">GARANG V10 · APP SHELL</div>
-<script>
+<div id="certModal" class="modal"><div class="modalCard"><div class="goal"><div><div class="eyebrow">VERIFICATION</div><h2>운동 인증</h2></div><button class="btn" onclick="closeCert()">닫기</button></div><p class="muted">기록과 연결할 사진/영상을 선택하세요.</p><div class="photoBox"><label>사진 또는 영상 선택<input id="certFile" type="file" accept="image/*,video/*"></label><div id="certPreview" class="muted" style="margin-top:10px">선택된 파일 없음</div></div><div class="actions"><button class="btn primary" onclick="saveCert()">인증 기록 만들기</button></div></div></div>
+<div id="proModal" class="modal"><div class="modalCard"><div class="goal"><div><span class="chip pro">GARANG PRO</span><h2 style="margin-top:10px">나를 실제로 이해하는 코치</h2></div><button class="btn" onclick="closePro()">닫기</button></div><div class="list"><div class="rowItem"><div><strong>장기 AI 메모리</strong><small>선호·목표·패턴을 연결</small></div><span class="badge pro">PRO</span></div><div class="rowItem"><div><strong>통합 성과 분석</strong><small>운동·식단·바디·러닝을 함께 판단</small></div><span class="badge pro">PRO</span></div><div class="rowItem"><div><strong>개인화 훈련 전략</strong><small>다음 주 훈련 강도와 우선순위</small></div><span class="badge pro">PRO</span></div><div class="rowItem"><div><strong>고급 리포트</strong><small>장기 추세와 변화 원인</small></div><span class="badge pro">PRO</span></div></div><div class="actions"><button class="btn primary" onclick="togglePlan()">테스트용 PRO 활성화</button></div></div></div>
+<div id="toast" class="toast"></div>
 
-(function(){
-  window.setAuthTab=window.setAuthTab||function(t){
-    document.querySelectorAll('#authTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-    const l=document.getElementById('loginForm'), s=document.getElementById('signupForm');
-    if(l) l.hidden=t!=='login'; if(s) s.hidden=t!=='signup';
-  };
-  document.addEventListener('DOMContentLoaded',function(){
-    const tabs=document.getElementById('authTabs');
-    if(tabs){tabs.addEventListener('click',function(e){const b=e.target.closest('button[data-tab]');if(b){e.preventDefault();window.setAuthTab(b.dataset.tab);}});}
-    window.setAuthTab('login');
-  },{once:true});
+<script>
+(() => {
+"use strict";
+const KEY="garang_v10_state_v1";
+const USERKEY="garang_v10_users_v1";
+const SESSION="garang_v10_session_v1";
+const today=()=>new Date().toISOString().slice(0,10);
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+const defaultState=()=>({profile:{name:"",age:"",height:"",activity:"normal",goal:"근육 증가",experience:"intermediate",protein:140,calories:2500,weight:""},workouts:[],meals:[],body:[],runs:[],memories:[],learning:[],certs:[],plan:"FREE"});
+let state=defaultState(), runTimer=null, runStartAt=0, runElapsed=0, runPaused=false;
+
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERKEY)||"{}")}catch{return {}}}
+function saveUsers(u){localStorage.setItem(USERKEY,JSON.stringify(u))}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function load(){try{state={...defaultState(),...JSON.parse(localStorage.getItem(KEY)||"{}")};state.profile={...defaultState().profile,...(state.profile||{})}}catch{state=defaultState()}}
+function currentEmail(){return localStorage.getItem(SESSION)||""}
+function setSession(email){if(email)localStorage.setItem(SESSION,email);else localStorage.removeItem(SESSION)}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2200)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function dateLabel(d){return new Date(d+"T00:00:00").toLocaleDateString("ko-KR",{month:"short",day:"numeric"})}
+function isToday(d){return d===today()}
+function num(v){return Number(v)||0}
+function kcalToday(){return state.meals.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.cal),0)}
+function proteinToday(){return state.meals.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.pro),0)}
+function volumeToday(){return state.workouts.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.sets)*num(x.reps)*num(x.weight),0)}
+function readiness(){let score=72; const w=state.workouts.filter(x=>isToday(x.date)); if(w.length)score+=8; const r=state.runs.filter(x=>isToday(x.date)); if(r.length)score+=4; if(proteinToday()>=num(state.profile.protein)*.8)score+=6; if(state.body.length>=2)score+=4; return Math.max(0,Math.min(100,score))}
+function persistUser(){const email=currentEmail();if(!email)return;const u=getUsers();u[email]={...(u[email]||{}),password:u[email]?.password,name:state.profile.name,plan:state.plan};saveUsers(u)}
+function showAuth(){document.getElementById("authPage").classList.add("active");document.getElementById("appMain").classList.add("hidden");document.getElementById("bottomNav").classList.add("hidden");document.getElementById("accountBtn").classList.add("hidden")}
+function showApp(){document.getElementById("authPage").classList.remove("active");document.getElementById("appMain").classList.remove("hidden");document.getElementById("bottomNav").classList.remove("hidden");document.getElementById("accountBtn").classList.remove("hidden");renderAll()}
+function go(page){document.querySelectorAll("#appMain .page").forEach(p=>p.classList.remove("active"));document.getElementById(page+"Page").classList.add("active");document.querySelectorAll("#bottomNav button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));window.scrollTo({top:0,behavior:"smooth"});renderAll()}
+window.go=go;
+function setAuthTab(tab){const login=tab==="login";document.getElementById("loginForm").classList.toggle("hidden",!login);document.getElementById("signupForm").classList.toggle("hidden",login);document.getElementById("loginTab").classList.toggle("active",login);document.getElementById("signupTab").classList.toggle("active",!login);document.getElementById("authMsg").textContent=login?"현재는 GitHub Pages에서도 즉시 테스트할 수 있는 로컬 계정 모드입니다. Firebase 연결 후 클라우드 인증으로 교체할 수 있습니다.":"계정을 만들면 이 브라우저에 개인 데이터가 분리되어 저장됩니다."}
+function authMsg(m){document.getElementById("authMsg").textContent=m}
+document.getElementById("loginTab").onclick=()=>setAuthTab("login");
+document.getElementById("signupTab").onclick=()=>setAuthTab("signup");
+document.getElementById("loginForm").onsubmit=e=>{e.preventDefault();const email=document.getElementById("loginEmail").value.trim().toLowerCase(),pw=document.getElementById("loginPw").value;const u=getUsers()[email];if(!u||u.password!==pw){authMsg("이메일 또는 비밀번호를 확인하세요.");return}setSession(email);load();state.profile.name=u.name||state.profile.name;state.plan=u.plan||state.plan;save();showApp();toast("로그인되었습니다.")};
+document.getElementById("signupForm").onsubmit=e=>{e.preventDefault();const name=document.getElementById("signupName").value.trim(),email=document.getElementById("signupEmail").value.trim().toLowerCase(),pw=document.getElementById("signupPw").value,pw2=document.getElementById("signupPw2").value;if(pw.length<6||pw!==pw2){authMsg("비밀번호를 확인하세요. 6자 이상이며 두 입력이 같아야 합니다.");return}const u=getUsers();if(u[email]){authMsg("이미 가입된 이메일입니다. 로그인해 주세요.");return}u[email]={password:pw,name,plan:"FREE"};saveUsers(u);state=defaultState();state.profile.name=name;save();setSession(email);showApp();toast("계정이 만들어졌습니다.")};
+document.getElementById("forgotBtn").onclick=()=>authMsg("이 버전에서는 브라우저 로컬 계정이므로 비밀번호 재설정은 지원하지 않습니다. 실제 배포에서는 Firebase Auth를 연결하세요.");
+document.getElementById("googleBtn").onclick=()=>authMsg("Google 로그인은 Firebase OAuth 설정이 필요합니다. 현재 이메일/비밀번호 로컬 인증은 정상 작동합니다.");
+document.getElementById("appleBtn").onclick=()=>authMsg("Apple 로그인은 Firebase OAuth 설정이 필요합니다. 현재 이메일/비밀번호 로컬 인증은 정상 작동합니다.");
+
+document.querySelectorAll("#bottomNav button[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page));
+document.getElementById("moreBtn").onclick=()=>document.getElementById("moreSheet").classList.add("open");
+document.getElementById("closeMore").onclick=()=>document.getElementById("moreSheet").classList.remove("open");
+document.getElementById("moreSheet").onclick=e=>{if(e.target.id==="moreSheet")e.currentTarget.classList.remove("open");const b=e.target.closest("[data-more]");if(b){e.currentTarget.classList.remove("open");go(b.dataset.more)}};
+document.getElementById("accountBtn").onclick=()=>go("profile");
+document.getElementById("planBtn").onclick=()=>upgrade();
+
+document.getElementById("workoutForm").onsubmit=e=>{e.preventDefault();const x={id:uid(),exercise:wExercise.value,date:wDate.value,sets:num(wSets.value),reps:num(wReps.value),weight:num(wWeight.value),rpe:num(wRpe.value),duration:num(wDuration.value),note:wNote.value.trim()};state.workouts.unshift(x);learn("workout",x);save();e.target.reset();wDate.value=today();renderAll();toast("운동 기록 저장 완료")};
+document.getElementById("mealForm").onsubmit=e=>{e.preventDefault();const x={id:uid(),name:mName.value,date:today(),cal:num(mCal.value),pro:num(mPro.value),carb:num(mCarb.value),fat:num(mFat.value)};state.meals.unshift(x);learn("nutrition",x);save();e.target.reset();renderAll();toast("식단 기록 저장 완료")};
+document.getElementById("bodyForm").onsubmit=e=>{e.preventDefault();const x={id:uid(),date:bDate.value,weight:num(bWeight.value),fat:num(bFat.value),muscle:num(bMuscle.value),waist:num(bWaist.value)};state.body.unshift(x);state.profile.weight=x.weight;learn("body",x);save();renderAll();toast("바디 기록 저장 완료")};
+document.getElementById("runForm").onsubmit=e=>{e.preventDefault();const x={id:uid(),date:rDate.value,dist:num(rDist.value),min:num(rMin.value),cal:num(rCal.value)};state.runs.unshift(x);learn("running",x);save();e.target.reset();rDate.value=today();renderAll();toast("러닝 기록 저장 완료")};
+
+function renderHome(){const rd=readiness();sWeight.textContent=state.profile.weight||state.body[0]?.weight||"—";sWorkout.textContent=state.workouts.filter(x=>isToday(x.date)).length;sProtein.textContent=Math.round(proteinToday());sRun.textContent=state.runs.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.dist),0).toFixed(1);readiness.textContent=rd;readinessBar.style.width=rd+"%";readinessText.textContent=rd>=85?"컨디션이 좋습니다. 오늘은 계획한 훈련을 진행해도 좋아요.":rd>=70?"무난한 상태입니다. 훈련 강도를 평소 기준으로 가져가세요.":"회복을 우선하고 강도를 조절하는 편이 좋아요.";const w=state.workouts.filter(x=>isToday(x.date));todayDecision.textContent=w.length?"오늘 기록을 확인했어요. 다음 운동은 최근 볼륨과 RPE를 기준으로 조절하세요.":"오늘 운동을 아직 기록하지 않았어요. 첫 세션을 기록하면 개인화 판단이 시작됩니다.";nextStep.textContent=w.length?"오늘 기록을 마무리하고 회복을 확인하세요.":"운동 또는 식단 기록 하나를 추가하세요.";homeInsight.textContent=state.body.length>=2?"체중 흐름과 최근 훈련 데이터를 함께 볼 수 있는 상태예요.":"데이터가 쌓일수록 GARANG의 판단 정확도가 올라갑니다.";homeReasons.innerHTML=`<div>운동 기록 ${state.workouts.length}개</div><div>식단 기록 ${state.meals.length}개 · 오늘 단백질 ${Math.round(proteinToday())}g</div><div>바디 기록 ${state.body.length}개 · 러닝 ${state.runs.length}개</div>`}
+function renderWorkout(){todayVolume.textContent=Math.round(volumeToday()).toLocaleString()+" kg";workoutList.innerHTML=state.workouts.length?state.workouts.slice(0,30).map(x=>`<div class="record"><div class="recordTop"><div><strong>${esc(x.exercise)}</strong><div class="recordMeta">${dateLabel(x.date)} · ${x.sets}세트 × ${x.reps}회 · ${x.weight}kg · RPE ${x.rpe||"—"}</div></div><span class="chip">${Math.round(x.sets*x.reps*x.weight).toLocaleString()}kg</span></div><div class="recordActions"><button class="btn" onclick="deleteItem('workouts','${x.id}')">삭제</button><button class="btn" onclick="openCert('${x.id}')">인증</button></div></div>`).join(""):`<div class="empty">아직 운동 기록이 없습니다.</div>`}
+function renderDiet(){const cal=kcalToday(),pro=proteinToday(),carb=state.meals.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.carb),0),fat=state.meals.filter(x=>isToday(x.date)).reduce((a,x)=>a+num(x.fat),0);dCal.textContent=Math.round(cal).toLocaleString();dPro.textContent=Math.round(pro);dCarb.textContent=Math.round(carb);dFat.textContent=Math.round(fat);const pp=num(state.profile.protein)?Math.min(100,Math.round(pro/state.profile.protein*100)):0,cp=num(state.profile.calories)?Math.min(100,Math.round(cal/state.profile.calories*100)):0;proPct.textContent=pp+"%";proBar.style.width=pp+"%";calPct.textContent=cp+"%";calBar.style.width=cp+"%";mealList.innerHTML=state.meals.length?state.meals.slice(0,30).map(x=>`<div class="rowItem"><div><strong>${esc(x.name)}</strong><small>${dateLabel(x.date)} · ${x.cal} kcal · 단백질 ${x.pro}g</small></div><button class="btn" onclick="deleteItem('meals','${x.id}')">삭제</button></div>`).join(""):`<div class="empty">식단 기록이 없습니다.</div>`}
+function renderBody(){const arr=[...state.body].sort((a,b)=>a.date.localeCompare(b.date));bodyLatest.textContent=arr.length?`${arr[arr.length-1].weight} kg · ${dateLabel(arr[arr.length-1].date)}`:"아직 기록 없음";bodyChart.innerHTML=arr.slice(-12).map(x=>`<div class="bar" title="${x.weight}kg" style="height:${Math.max(8,Math.min(100,(x.weight||0)*1.25))}%"></div>`).join("");bodyList.innerHTML=state.body.length?state.body.slice(0,30).map(x=>`<div class="rowItem"><div><strong>${x.weight} kg</strong><small>${dateLabel(x.date)} · 체지방 ${x.fat||"—"}% · 근육 ${x.muscle||"—"}kg</small></div><button class="btn" onclick="deleteItem('body','${x.id}')">삭제</button></div>`).join(""):`<div class="empty">바디 기록이 없습니다.</div>`}
+function renderRuns(){runList.innerHTML=state.runs.length?state.runs.slice(0,30).map(x=>`<div class="rowItem"><div><strong>${x.dist.toFixed(2)} km</strong><small>${dateLabel(x.date)} · ${x.min}분 · ${x.cal} kcal · 페이스 ${x.dist?(x.min/x.dist).toFixed(2):"—"}분/km</small></div><button class="btn" onclick="deleteItem('runs','${x.id}')">삭제</button></div>`).join(""):`<div class="empty">러닝 기록이 없습니다.</div>`}
+function renderReport(){rpWorkout.textContent=state.workouts.length;rpVolume.textContent=Math.round(state.workouts.reduce((a,x)=>a+x.sets*x.reps*x.weight,0)).toLocaleString();rpRun.textContent=state.runs.reduce((a,x)=>a+x.dist,0).toFixed(1);rpDays.textContent=new Set([...state.workouts,...state.meals,...state.body,...state.runs].map(x=>x.date)).size;loadChart.innerHTML=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));const ds=d.toISOString().slice(0,10);const v=state.workouts.filter(x=>x.date===ds).reduce((a,x)=>a+x.sets*x.reps*x.weight,0);return`<div class="bar" title="${Math.round(v)}kg" style="height:${Math.max(5,Math.min(100,v/500))}%"></div>`}).join("");rpSummary.textContent=state.workouts.length>=3?"최근 훈련 데이터가 쌓였습니다. 다음 단계는 강도와 회복을 함께 보는 것입니다.":"운동 기록을 3회 이상 쌓으면 주간 패턴을 더 선명하게 볼 수 있어요.";rpDetail.textContent=`운동 ${state.workouts.length}회 · 식단 ${state.meals.length}회 · 바디 ${state.body.length}회 · 러닝 ${state.runs.length}회`}
+function renderAI(){const rd=readiness();const msg=state.workouts.length?`현재 준비도 ${rd}/100입니다. 최근 운동 기록을 기준으로 다음 세션의 강도를 조절하는 것이 좋아요.`:"아직 기록이 부족해요. 운동·식단·바디 중 하나만 기록해도 개인화 코칭이 시작됩니다.";aiInsight.textContent=msg;aiReasons.innerHTML=`<div>준비도 ${rd}/100</div><div>오늘 운동 ${state.workouts.filter(x=>isToday(x.date)).length}회 · 단백질 ${Math.round(proteinToday())}g</div><div>누적 운동 ${state.workouts.length}회 · 바디 ${state.body.length}회</div>`}
+function renderLearning(){lEvents.textContent=state.learning.length;lPatterns.textContent=buildPatterns().length;lSuccess.textContent=state.learning.filter(x=>x.success).length;lMemory.textContent=state.memories.length;patternList.innerHTML=buildPatterns().map(x=>`<div class="rowItem"><div><strong>${esc(x.title)}</strong><small>${esc(x.detail)}</small></div><span class="chip green">패턴</span></div>`).join("")||`<div class="empty">아직 학습 패턴이 없습니다.</div>`;learningList.innerHTML=state.learning.slice(0,20).map(x=>`<div class="rowItem"><div><strong>${esc(x.type)} 기록 반영</strong><small>${dateLabel(x.date)} · ${esc(x.detail)}</small></div><span class="badge ok">OK</span></div>`).join("")||`<div class="empty">학습 이벤트가 없습니다.</div>`}
+function renderMemory(){memProfile.textContent=Object.values(state.profile).filter(Boolean).length;memCount.textContent=state.memories.length;memoryList.innerHTML=state.memories.map(x=>`<div class="rowItem"><div><strong>${esc(x.text)}</strong><small>${dateLabel(x.date)} · 사용자 메모</small></div><button class="btn" onclick="deleteMemory('${x.id}')">삭제</button></div>`).join("")||`<div class="empty">AI 메모리가 없습니다. 학습 페이지에서 추가할 수 있어요.</div>`}
+function renderProfile(){pName.value=state.profile.name||"";pAge.value=state.profile.age||"";pHeight.value=state.profile.height||"";pActivity.value=state.profile.activity||"normal";pGoal.value=state.profile.goal||"근육 증가";pExperience.value=state.profile.experience||"intermediate";pProtein.value=state.profile.protein||140;pCalories.value=state.profile.calories||2500;accountLabel.textContent=currentEmail();planBtn.textContent=state.plan}
+document.getElementById("profileForm").onsubmit=e=>{e.preventDefault();state.profile={...state.profile,name:pName.value.trim(),age:pAge.value,height:pHeight.value,activity:pActivity.value,goal:pGoal.value,experience:pExperience.value,protein:num(pProtein.value),calories:num(pCalories.value)};save();persistUser();renderAll();toast("프로필 저장 완료")};
+function buildPatterns(){const out=[];if(state.workouts.length>=2){const avg=state.workouts.reduce((a,x)=>a+x.rpe,0)/state.workouts.length;out.push({title:"훈련 강도 패턴",detail:`평균 RPE ${avg.toFixed(1)} · 최근 ${state.workouts.length}개 운동 기록`})}if(state.meals.length>=2){out.push({title:"영양 기록 패턴",detail:`평균 단백질 기록 ${Math.round(state.meals.reduce((a,x)=>a+x.pro,0)/state.meals.length)}g`})}if(state.body.length>=2){const a=state.body[0],b=state.body[state.body.length-1];out.push({title:"체중 변화",detail:`최근 기록 간 ${((a.weight||0)-(b.weight||0)).toFixed(1)}kg 변화`})}return out}
+function learn(type,x){state.learning.unshift({id:uid(),type,date:today(),success:true,detail:type==="workout"?`${x.exercise} ${x.weight}kg × ${x.reps}`:type==="nutrition"?`${x.name} ${x.pro}g 단백질`:type==="body"?`${x.weight}kg`:`${x.dist}km`});state.learning=state.learning.slice(0,100)}
+function learnNow(){state.workouts.forEach(x=>{});if(!state.learning.length){state.learning.push({id:uid(),type:"system",date:today(),success:true,detail:"기존 기록을 기준으로 첫 개인화 학습을 완료했습니다."})}save();renderAll();toast("기록을 다시 학습했습니다.")}
+function addMemory(){const text=prompt("GARANG이 기억할 내용을 입력하세요.");if(!text?.trim())return;state.memories.unshift({id:uid(),date:today(),text:text.trim()});save();renderAll();toast("AI 메모리에 저장했습니다.")}
+function deleteMemory(id){state.memories=state.memories.filter(x=>x.id!==id);save();renderAll();toast("메모리를 삭제했습니다.")}
+window.addMemory=addMemory;window.learnNow=learnNow;window.deleteMemory=deleteMemory;
+function deleteItem(k,id){state[k]=state[k].filter(x=>x.id!==id);save();renderAll();toast("삭제했습니다.")}
+window.deleteItem=deleteItem;
+function renderAll(){renderHome();renderWorkout();renderDiet();renderBody();renderRuns();renderReport();renderAI();renderLearning();renderMemory();renderProfile();const p=document.querySelector("#appMain .page.active")?.id?.replace("Page","");if(p)document.querySelectorAll("#bottomNav button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===p))}
+function logout(){setSession("");showAuth();toast("로그아웃되었습니다.")};window.logout=logout;
+function upgrade(){document.getElementById("proModal").classList.add("open")};window.upgrade=upgrade;
+function closePro(){document.getElementById("proModal").classList.remove("open")};window.closePro=closePro;
+function togglePlan(){state.plan=state.plan==="PRO"?"FREE":"PRO";save();persistUser();closePro();renderAll();toast(state.plan==="PRO"?"PRO 테스트 활성화":"FREE로 전환")}
+window.togglePlan=togglePlan;
+function openCert(){document.getElementById("certModal").classList.add("open")};window.openCert=openCert;
+function closeCert(){document.getElementById("certModal").classList.remove("open")};window.closeCert=closeCert;
+document.getElementById("certFile").onchange=e=>{const f=e.target.files[0];certPreview.textContent=f?`${f.name} · ${(f.size/1024/1024).toFixed(1)}MB`:"선택된 파일 없음"};
+function saveCert(){const f=document.getElementById("certFile").files[0];if(!f){toast("사진 또는 영상을 선택하세요.");return}state.certs.unshift({id:uid(),date:today(),name:f.name,type:f.type});save();closeCert();toast("운동 인증 기록을 만들었습니다.")}
+function askPreset(q){chatInput.value=q;document.getElementById("chatForm").requestSubmit()};window.askPreset=askPreset;
+document.getElementById("chatForm").onsubmit=e=>{e.preventDefault();const q=chatInput.value.trim();if(!q)return;const log=document.getElementById("chatLog");log.insertAdjacentHTML("beforeend",`<div class="bubble user">${esc(q)}</div>`);chatInput.value="";const ans=coachAnswer(q);setTimeout(()=>{log.insertAdjacentHTML("beforeend",`<div class="bubble ai">${esc(ans).replace(/\n/g,"<br>")}</div>`);log.scrollIntoView({behavior:"smooth",block:"end"})},80)}
+function coachAnswer(q){const rd=readiness();if(q.includes("운동")){if(!state.workouts.length)return"아직 운동 기록이 없어요. 오늘은 가장 익숙한 루틴으로 시작하고, 세트·반복·중량·RPE를 기록해 주세요.";const last=state.workouts[0];return`현재 준비도는 ${rd}/100입니다.\n최근 기록은 ${last.exercise} ${last.weight}kg × ${last.reps}회, RPE ${last.rpe||"—"}예요.\n다음 세션은 최근 성공 중량을 기준으로 작은 증량을 우선 검토하세요.`}if(q.includes("단백질"))return`현재 오늘 단백질은 ${Math.round(proteinToday())}g입니다.\n설정 목표는 ${num(state.profile.protein)||140}g이에요.\n남은 목표는 약 ${Math.max(0,num(state.profile.protein)-proteinToday())}g입니다.`;if(q.includes("분석"))return`현재까지 운동 ${state.workouts.length}회, 식단 ${state.meals.length}회, 바디 ${state.body.length}회, 러닝 ${state.runs.length}회가 쌓였습니다.\n준비도 ${rd}/100 기준으로 다음 기록을 계속 쌓으면 장기 패턴 분석이 가능해집니다.`;return`GARANG은 현재 ${state.workouts.length}개의 운동 기록과 ${state.meals.length}개의 식단 기록을 알고 있어요.\n질문을 운동, 식단, 체중, 러닝, 회복 중 하나로 구체화하면 개인 데이터 기준으로 답할게요.`}
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`garang-backup-${today()}.json`;a.click();URL.revokeObjectURL(a.href);toast("백업 파일을 만들었습니다.")}
+window.exportData=exportData;
+document.getElementById("importData").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state={...defaultState(),...JSON.parse(r.result)};save();renderAll();toast("백업을 복원했습니다.")}catch{toast("백업 파일 형식이 올바르지 않습니다.")}};r.readAsText(f)};
+function setupRun(){let interval;runStart.onclick=()=>{if(!runTimer){runStartAt=Date.now()-runElapsed;runTimer=setInterval(()=>{runElapsed=Date.now()-runStartAt;runTimerEl();},1000)}runPause.disabled=false;runStop.disabled=false;runStart.disabled=true};runPause.onclick=()=>{if(runTimer){clearInterval(runTimer);runTimer=null;runPause.textContent="재개";runPaused=true}else{runStartAt=Date.now()-runElapsed;runTimer=setInterval(()=>{runElapsed=Date.now()-runStartAt;runTimerEl()},1000);runPause.textContent="일시정지";runPaused=false}};runStop.onclick=()=>{const mins=Math.max(1,Math.round(runElapsed/60000));rMin.value=mins;runTimer&&clearInterval(runTimer);runTimer=null;runElapsed=0;runTimerEl();runPause.disabled=true;runStop.disabled=true;runStart.disabled=false;runPause.textContent="일시정지";toast("러닝 세션이 종료되었습니다. 거리와 칼로리를 입력해 저장하세요.");go("running")};function runTimerEl(){const s=Math.floor(runElapsed/1000),m=Math.floor(s/60),sec=s%60;runTimer.textContent=`${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`}}
+setupRun();
+
+document.addEventListener("DOMContentLoaded",()=>{wDate.value=today();bDate.value=today();rDate.value=today();if(currentEmail()){load();const u=getUsers()[currentEmail()];if(u){state.plan=u.plan||state.plan;state.profile.name=u.name||state.profile.name}showApp()}else{showAuth()}});
 })();
-
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="ai/local-coach-v5.js"></script>
-<script src="ai/local-coach-v5.1-5.5.js"></script>
-<script src="core/app-v5.0.0.js"></script>
-<script src="ai/local-coach-v5.6.js"></script>
-<script src="ui/scripts/ui-v5.6.js"></script>
-<script src="backend/cloud-router-v6.js"></script>
-<script src="core/data-engine-v6.5.js?v=6.5.0-final"></script>
-<script src="ai/dialogue-v6.5.1.js?v=6.5.1"></script>
-<script src="ai/v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
-<script src="features/v8-batch.js?v=8.0.0"></script>
-<script src="ai/v8-personal-ai.js?v=8.0.0"></script>
-<script src="features/v8-adaptive-program.js?v=8.0.0"></script>
-<script src="features/v8-nutrition.js?v=8.0.0"></script>
-<script src="features/v8-reports.js?v=8.0.0"></script>
-<script src="features/v8.1-batch-ui.js?v=8.1.0"></script>
-<script src="core/v8.5-core.js?v=8.5.0"></script>
-<script src="features/v8.5-running.js?v=8.5.0"></script>
-<script src="features/v8.5-share.js?v=8.5.0"></script>
-<script src="auth/garang-v8.5.2-firebase-auth.js"></script>
-<script src="auth/garang-v8.5.2-runtime-auth-fix.js?v=8.8.1"></script>
-<script src="core/garang-v8.5.3-workout-db.js"></script>
-<script src="core/garang-v8.5.3-ui-bridge.js"></script>
-<script src="core/garang-v8.6-core.js?v=8.6.0"></script>
-<script src="core/garang-v8.6-integrated.js?v=8.6.0"></script>
-<script src="core/garang-v8.8-hotfix.js?v=8.8.0"></script>
-<script src="ai/v9.3-learning.js?v=9.3.2"></script>
-<script src="ai/garang-v9.5-data-layer.js?v=9.5.0"></script>
-<script src="ai/garang-v9.5-coach-engine.js?v=9.5.0"></script>
-<script src="ui/scripts/garang-global-ui-v95.js?v=9.5.3"></script>
-<script src="ai/garang-v9.5-ai-integration.js?v=9.5.2"></script>
-<script src="ai/garang-v9.9-master.js?v=9.9.0"></script>
-<script src="ai/garang-v9.9-touch-final.js?v=9.9.3"></script>
-<script>
-(function(){
-  const sync=()=>{
-    const active=document.querySelector('.page.active')?.id;
-    document.querySelectorAll('#mainNav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===active));
-    const nav=document.getElementById('mainNav');
-    const auth=document.getElementById('auth');
-    if(nav)nav.classList.toggle('hidden',!!auth?.classList.contains('active'));
-  };
-  const wrap=()=>{
-    const original=window.openPage;
-    if(typeof original!=='function'||original.__v10wrapped)return;
-  };
-  const install=()=>{
-    const original=window.openPage;
-    if(typeof original!=='function'||original.__v10wrapped)return;
-    const wrapped=function(id){original(id);setTimeout(sync,0)};
-    wrapped.__v10wrapped=true;
-    window.openPage=wrapped;
-    sync();
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
-  window.addEventListener('garang-auth-state',()=>setTimeout(sync,20));
-  window.addEventListener('pageshow',()=>setTimeout(sync,20));
-})();
-</script>
-
 </body>
 </html>
