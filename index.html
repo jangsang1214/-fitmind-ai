@@ -21,7 +21,7 @@ html,body{min-height:100%;touch-action:manipulation}
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
 <link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
-<link rel="stylesheet" href="garang-premium-v9.9.css?v=9.9.0">
+<link rel="stylesheet" href="garang-premium-v9.9.css?v=9.9.0">\n<link rel="stylesheet" href="garang-v10-release.css?v=10.0.0">
 
 <style id="garangV93Additive">
 #v93Learning .v93Grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -144,7 +144,7 @@ nav#mainNav button:nth-child(n+6){display:none!important}
   <div class="card authCard">
     <div id="authTabs" class="tabs"><button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
     <form id="loginForm" class="garang-v853-auth-fix authForm"><input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required><button class="primaryBtn">GARANG 시작하기</button><button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button></form>
-    <form id="signupForm" class="garang-v853-auth-fix authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
+    <form id="signupForm" class="garang-v853-auth-fix authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><div class="v10-signup-grid"><label>국가<select id="signupCountry"><option value="KR">🇰🇷 대한민국</option><option value="US">🇺🇸 United States</option><option value="JP">🇯🇵 日本</option><option value="GB">🇬🇧 United Kingdom</option><option value="CA">🇨🇦 Canada</option><option value="AU">🇦🇺 Australia</option><option value="DE">🇩🇪 Deutschland</option><option value="FR">🇫🇷 France</option><option value="SG">🇸🇬 Singapore</option></select></label><label>언어<select id="signupLanguage"><option value="ko">한국어</option><option value="en">English</option></select></label><label>단위<select id="signupUnit"><option value="metric">Metric · kg / cm</option><option value="imperial">Imperial · lb / in</option></select></label></div><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
     <div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
     <button id="googleBtn" class="socialBtn" type="button">Google로 계속하기</button><button id="appleBtn" class="socialBtn" type="button">Apple로 계속하기</button>
     <p id="authError" class="error"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
@@ -477,6 +477,10 @@ nav#mainNav button:nth-child(n+6){display:none!important}
 <script src="garang-v8.8-hotfix.js?v=8.8.0"></script>
 <script src="v9.3-learning.js?v=9.3.2"></script>
 <script src="garang-v9.5-coach-engine.js?v=9.5.0"></script>
-<script src="garang-premium-v9.9.js?v=9.9.0"></script>
+<script src="garang-premium-v9.9.js?v=9.9.0"></script>\n<script src="garang-v9.5-global-ai.js?v=9.5.2"></script>
+<script src="garang-v9.5-ai-integration.js?v=9.5.2"></script>
+<script src="garang-v9.9-master.js?v=9.9.2"></script>
+<script src="garang-v9.9-touch-final.js?v=9.9.4"></script>
+<script src="garang-v10-release.js?v=10.0.0"></script>
 </body>
 </html>

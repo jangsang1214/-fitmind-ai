@@ -1,5 +1,5 @@
-const CACHE="garang-v9-9-5-composer";
-const APP_ASSETS=["./","./index.html","./manifest.webmanifest"];
+const CACHE="garang-v10-0-0-release";
+const APP_ASSETS=["./","./index.html","./manifest.webmanifest","./garang-v10-release.js","./garang-v10-release.css","./garang-v9.5-global-ai.js","./garang-v9.5-ai-integration.js","./garang-v9.9-master.js","./garang-v9.9-touch-final.js"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{
