@@ -1,0 +1,5 @@
+GARANG V10.2
+1. Login screen is isolated from internal feature UI.
+2. 개인 데이터 연결 / AI 기억 / 운동 인증 are not shown on the login surface.
+3. Authentication state gates the private app shell.
+4. Deploy the extracted files at repository root for GitHub Pages.

@@ -97,7 +97,48 @@ input:focus,select:focus,textarea:focus{border-color:rgba(57,232,109,.65);box-sh
   .auth{padding:12px 0}.authHero h1{font-size:38px}.authHero p{font-size:14px}.moreGrid{grid-template-columns:1fr 1fr}.score{font-size:48px}
 }
 </style>
+
+<style id="garang-v10-2-auth-gate">
+  body.garang-locked .garang-app,
+  body.garang-locked .app-shell,
+  body.garang-locked .main-app,
+  body.garang-locked .dashboard,
+  body.garang-locked [data-app-shell],
+  body.garang-locked [data-authenticated],
+  body.garang-locked .private-app,
+  body.garang-locked .app-content {
+    display: none !important;
+  }
+  body.garang-locked .auth-only {
+    display: block !important;
+  }
+</style>
+
 </head>
+
+<script id="garang-v10-2-auth-bootstrap">
+(function () {
+  try {
+    var session = localStorage.getItem('garang_session');
+    document.body.classList.toggle('garang-locked', !session);
+  } catch (e) {
+    document.body.classList.add('garang-locked');
+  }
+  window.GARANG_AUTH = {
+    isAuthenticated: function () {
+      try { return !!localStorage.getItem('garang_session'); }
+      catch (e) { return false; }
+    },
+    unlock: function () {
+      document.body.classList.remove('garang-locked');
+    },
+    lock: function () {
+      document.body.classList.add('garang-locked');
+    }
+  };
+})();
+</script>
+
 <body>
 <div id="app">
 <header class="header">
@@ -126,7 +167,7 @@ input:focus,select:focus,textarea:focus{border-color:rgba(57,232,109,.65);box-sh
         <h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1>
         <p>운동·식단·체중·러닝·회복·목표를 하나의 사용자 상태로 연결하고, GARANG이 다음 행동을 판단합니다.</p>
         <div class="actions">
-          <span class="chip green">개인 데이터 연결</span><span class="chip">AI 기억</span><span class="chip">운동 인증</span>
+          
         </div>
       </div>
       <div class="card authCard">
@@ -193,7 +234,7 @@ input:focus,select:focus,textarea:focus{border-color:rgba(57,232,109,.65);box-sh
         <label>운동시간(분)<input id="wDuration" type="number" min="0" value="60"></label>
         <label>메모<input id="wNote" placeholder="컨디션 / 난이도"></label>
       </div>
-      <div class="actions"><button class="btn primary" type="submit">운동 저장</button><button class="btn" type="button" onclick="openCert()">운동 인증</button></div>
+      <div class="actions"><button class="btn primary" type="submit">운동 저장</button></div>
     </form>
     <div class="card"><div class="goal"><div><div class="eyebrow">TODAY VOLUME</div><h3 id="todayVolume">0 kg</h3></div><span class="chip">기록 기반</span></div></div>
     <div id="workoutList" class="list"></div>
@@ -307,12 +348,17 @@ const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 const defaultState=()=>({profile:{name:"",age:"",height:"",activity:"normal",goal:"근육 증가",experience:"intermediate",protein:140,calories:2500,weight:""},workouts:[],meals:[],body:[],runs:[],memories:[],learning:[],certs:[],plan:"FREE"});
 let state=defaultState(), runTimer=null, runStartAt=0, runElapsed=0, runPaused=false;
 
-function getUsers(){try{return JSON.parse(localStorage.getItem(USERKEY)||"{}")}catch{return {}}}
-function saveUsers(u){localStorage.setItem(USERKEY,JSON.stringify(u))}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function load(){try{state={...defaultState(),...JSON.parse(localStorage.getItem(KEY)||"{}")};state.profile={...defaultState().profile,...(state.profile||{})}}catch{state=defaultState()}}
-function currentEmail(){return localStorage.getItem(SESSION)||""}
-function setSession(email){if(email)localStorage.setItem(SESSION,email);else localStorage.removeItem(SESSION)}
+const storage={
+  get(k,f=""){try{return localStorage.getItem(k) ?? f}catch{return f}},
+  set(k,v){try{localStorage.setItem(k,v);return true}catch{return false}},
+  remove(k){try{localStorage.removeItem(k)}catch{}}
+};
+function getUsers(){try{return JSON.parse(storage.get(USERKEY,"{}"))||{}}catch{return {}}}
+function saveUsers(u){return storage.set(USERKEY,JSON.stringify(u))}
+function save(){return storage.set(KEY,JSON.stringify(state))}
+function load(){try{state={...defaultState(),...JSON.parse(storage.get(KEY,"{}"))};state.profile={...defaultState().profile,...(state.profile||{})}}catch{state=defaultState()}}
+function currentEmail(){return storage.get(SESSION,"")}
+function setSession(email){if(email)storage.set(SESSION,email);else storage.remove(SESSION)}
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2200)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function dateLabel(d){return new Date(d+"T00:00:00").toLocaleDateString("ko-KR",{month:"short",day:"numeric"})}
@@ -374,10 +420,11 @@ function upgrade(){document.getElementById("proModal").classList.add("open")};wi
 function closePro(){document.getElementById("proModal").classList.remove("open")};window.closePro=closePro;
 function togglePlan(){state.plan=state.plan==="PRO"?"FREE":"PRO";save();persistUser();closePro();renderAll();toast(state.plan==="PRO"?"PRO 테스트 활성화":"FREE로 전환")}
 window.togglePlan=togglePlan;
-function openCert(){document.getElementById("certModal").classList.add("open")};window.openCert=openCert;
+function openCert(workoutId=""){document.getElementById("certModal").dataset.workoutId=workoutId||"";document.getElementById("certModal").classList.add("open")};window.openCert=openCert;
 function closeCert(){document.getElementById("certModal").classList.remove("open")};window.closeCert=closeCert;
 document.getElementById("certFile").onchange=e=>{const f=e.target.files[0];certPreview.textContent=f?`${f.name} · ${(f.size/1024/1024).toFixed(1)}MB`:"선택된 파일 없음"};
-function saveCert(){const f=document.getElementById("certFile").files[0];if(!f){toast("사진 또는 영상을 선택하세요.");return}state.certs.unshift({id:uid(),date:today(),name:f.name,type:f.type});save();closeCert();toast("운동 인증 기록을 만들었습니다.")}
+function saveCert(){const f=document.getElementById("certFile").files[0];if(!f){toast("사진 또는 영상을 선택하세요.");return}const modal=document.getElementById("certModal");state.certs.unshift({id:uid(),workoutId:modal.dataset.workoutId||"",date:today(),name:f.name,type:f.type,size:f.size});save();document.getElementById("certFile").value="";document.getElementById("certPreview").textContent="선택된 파일 없음";closeCert();toast("운동 인증 기록을 만들었습니다.")}
+window.saveCert=saveCert;
 function askPreset(q){chatInput.value=q;document.getElementById("chatForm").requestSubmit()};window.askPreset=askPreset;
 document.getElementById("chatForm").onsubmit=e=>{e.preventDefault();const q=chatInput.value.trim();if(!q)return;const log=document.getElementById("chatLog");log.insertAdjacentHTML("beforeend",`<div class="bubble user">${esc(q)}</div>`);chatInput.value="";const ans=coachAnswer(q);setTimeout(()=>{log.insertAdjacentHTML("beforeend",`<div class="bubble ai">${esc(ans).replace(/\n/g,"<br>")}</div>`);log.scrollIntoView({behavior:"smooth",block:"end"})},80)}
 function coachAnswer(q){const rd=readiness();if(q.includes("운동")){if(!state.workouts.length)return"아직 운동 기록이 없어요. 오늘은 가장 익숙한 루틴으로 시작하고, 세트·반복·중량·RPE를 기록해 주세요.";const last=state.workouts[0];return`현재 준비도는 ${rd}/100입니다.\n최근 기록은 ${last.exercise} ${last.weight}kg × ${last.reps}회, RPE ${last.rpe||"—"}예요.\n다음 세션은 최근 성공 중량을 기준으로 작은 증량을 우선 검토하세요.`}if(q.includes("단백질"))return`현재 오늘 단백질은 ${Math.round(proteinToday())}g입니다.\n설정 목표는 ${num(state.profile.protein)||140}g이에요.\n남은 목표는 약 ${Math.max(0,num(state.profile.protein)-proteinToday())}g입니다.`;if(q.includes("분석"))return`현재까지 운동 ${state.workouts.length}회, 식단 ${state.meals.length}회, 바디 ${state.body.length}회, 러닝 ${state.runs.length}회가 쌓였습니다.\n준비도 ${rd}/100 기준으로 다음 기록을 계속 쌓으면 장기 패턴 분석이 가능해집니다.`;return`GARANG은 현재 ${state.workouts.length}개의 운동 기록과 ${state.meals.length}개의 식단 기록을 알고 있어요.\n질문을 운동, 식단, 체중, 러닝, 회복 중 하나로 구체화하면 개인 데이터 기준으로 답할게요.`}
@@ -386,6 +433,9 @@ window.exportData=exportData;
 document.getElementById("importData").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state={...defaultState(),...JSON.parse(r.result)};save();renderAll();toast("백업을 복원했습니다.")}catch{toast("백업 파일 형식이 올바르지 않습니다.")}};r.readAsText(f)};
 function setupRun(){let interval;runStart.onclick=()=>{if(!runTimer){runStartAt=Date.now()-runElapsed;runTimer=setInterval(()=>{runElapsed=Date.now()-runStartAt;runTimerEl();},1000)}runPause.disabled=false;runStop.disabled=false;runStart.disabled=true};runPause.onclick=()=>{if(runTimer){clearInterval(runTimer);runTimer=null;runPause.textContent="재개";runPaused=true}else{runStartAt=Date.now()-runElapsed;runTimer=setInterval(()=>{runElapsed=Date.now()-runStartAt;runTimerEl()},1000);runPause.textContent="일시정지";runPaused=false}};runStop.onclick=()=>{const mins=Math.max(1,Math.round(runElapsed/60000));rMin.value=mins;runTimer&&clearInterval(runTimer);runTimer=null;runElapsed=0;runTimerEl();runPause.disabled=true;runStop.disabled=true;runStart.disabled=false;runPause.textContent="일시정지";toast("러닝 세션이 종료되었습니다. 거리와 칼로리를 입력해 저장하세요.");go("running")};function runTimerEl(){const s=Math.floor(runElapsed/1000),m=Math.floor(s/60),sec=s%60;runTimer.textContent=`${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`}}
 setupRun();
+
+window.addEventListener("error",e=>{console.error("GARANG runtime error",e.error||e.message);toast("일부 기능에서 오류가 발생했습니다. 새로고침 후 다시 시도하세요.")});
+window.addEventListener("unhandledrejection",e=>{console.error("GARANG promise error",e.reason);toast("요청 처리 중 오류가 발생했습니다.")});
 
 document.addEventListener("DOMContentLoaded",()=>{wDate.value=today();bDate.value=today();rDate.value=today();if(currentEmail()){load();const u=getUsers()[currentEmail()];if(u){state.plan=u.plan||state.plan;state.profile.name=u.name||state.profile.name}showApp()}else{showAuth()}});
 })();
