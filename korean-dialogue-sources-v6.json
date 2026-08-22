@@ -20,5 +20,5 @@
     }
   ],
   "policy": "Do not redistribute source records unless the dataset license/terms permit it. Store provenance and license metadata for every imported dataset.",
-  "starter": "synthetic_korean_dialogue_v6.jsonl"
+  "starter": "data/synthetic_korean_dialogue_v6.jsonl"
 }

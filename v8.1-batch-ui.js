@@ -9,8 +9,8 @@ const refresh=()=>{try{if(typeof window.render==="function")window.render()}catc
 
 let foods=[],exercises=[];
 async function loadDBs(){
- try{foods=await fetch("food-db.json").then(r=>r.json())}catch(e){foods=[]}
- try{exercises=await fetch("exercise-db.json").then(r=>r.json())}catch(e){exercises=[]}
+ try{foods=await fetch("data/food-db.json").then(r=>r.json())}catch(e){foods=[]}
+ try{exercises=await fetch("data/exercise-db.json").then(r=>r.json())}catch(e){exercises=[]}
 }
 function exOptions(q){
  q=String(q||"").toLowerCase();

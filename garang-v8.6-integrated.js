@@ -174,7 +174,7 @@
     const v=document.getElementById('fitmindBuildVersion');if(v)v.textContent='GARANG V8.6.0';
     // Do not merge running data into diet; reinforce the separate navigation labels.
     const diet=document.querySelector('#mainNav button[onclick*="diet"]');const run=document.querySelector('#mainNav button[onclick*="running"]');if(diet)diet.textContent='식단';if(run)run.textContent='러닝';
-    fetch('exercise-db.json').then(r=>r.json()).then(x=>{exerciseDB=Array.isArray(x)?x:[];renderSearch(search(''))}).catch(()=>{exerciseDB=window.GARANG_EXERCISE_DB||[];renderSearch(search(''))});
+    fetch('data/exercise-db.json').then(r=>r.json()).then(x=>{exerciseDB=Array.isArray(x)?x:[];renderSearch(search(''))}).catch(()=>{exerciseDB=window.GARANG_EXERCISE_DB||[];renderSearch(search(''))});
   }
   window.GARANGV86={version:'8.6.0',summary,searchExercises:search,addExercise,addSet,saveWorkout:persistSession,openCertification:openCert};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,80));else setTimeout(boot,80);

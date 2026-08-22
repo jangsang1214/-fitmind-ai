@@ -892,14 +892,14 @@ chatForm.onsubmit=async e=>{
 function chatRender(){chatLog.innerHTML=db.chat.slice(-30).map(x=>`<div class="msg ${x.role==="user"?"user":"ai"}">${esc(x.text)}</div>`).join("")||"<div class='card'>안녕하세요. 기록을 바탕으로 운동과 식단을 함께 관리해 드릴게요.</div>"}
 async function loadExerciseDB(){
  try{
-  const r=await fetch("./exercise-db.json"); exerciseDB=await r.json();
+  const r=await fetch("./data/exercise-db.json"); exerciseDB=await r.json();
   const aliases={"사레레":["덤벨 레터럴레이즈","케이블 레터럴레이즈"],"오버헤드프레스":["바벨 오버헤드프레스","밀리터리 프레스"],"덤벨숄프":["덤벨 숄더프레스"],"숄더프레스":["덤벨 숄더프레스","머신 숄더프레스"],"벤치":["바벨 벤치프레스","덤벨 벤치프레스"],"랫풀":["랫풀다운"],"턱걸이":["풀업"],"딥스":["딥스","중량 딥스"],"케이블푸쉬다운":["케이블 푸쉬다운"],"스컬크러셔":["EZ바 스컬크러셔"]};
   Object.entries(aliases).forEach(([a,names])=>names.forEach(n=>{const x=exerciseDB.find(v=>v.exercise_name===n);if(x)x.aliases=[...(x.aliases||[]),a]}));
  }catch(e){exerciseDB=[];console.warn("운동 DB 로드 실패",e)}
 }
 async function loadAIKnowledge(){
  try{
-  const [r1,r2]=await Promise.all([fetch("./ai-data/fitmind_rules.jsonl"),fetch("./ai-data/fitmind_sft.jsonl")]);
+  const [r1,r2]=await Promise.all([fetch("./ai-data/data/fitmind_rules.jsonl"),fetch("./ai-data/data/fitmind_sft.jsonl")]);
   const parse=async r=>(await r.text()).split(/\r?\n/).filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);
   aiKnowledge.rules=await parse(r1); aiKnowledge.sft=await parse(r2);
  }catch(e){console.warn("AI 지식 데이터 로드 실패",e)}
@@ -907,7 +907,7 @@ async function loadAIKnowledge(){
 
 async function loadFoodDB(){
  try{
-   const res=await fetch("./food-db.json");
+   const res=await fetch("./data/food-db.json");
    const remote=await res.json();
    const known=new Map(baseFoodDB.map(f=>[f.name,f]));
    foodDB=remote.map(f=>Object.assign({},f,known.get(f.name)||{}));

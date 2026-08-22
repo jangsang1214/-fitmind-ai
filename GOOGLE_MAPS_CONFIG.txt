@@ -1,0 +1,13 @@
+GARANG V10.4 — GOOGLE MAPS CONFIG
+
+1) Google Cloud Console에서 Maps JavaScript API를 활성화합니다.
+2) 브라우저용 API Key를 발급합니다.
+3) index.html의 아래 값을 입력합니다.
+
+window.GARANG_GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_BROWSER_KEY";
+
+권장 보안 설정:
+- HTTP referrer 제한: https://jangsang1214.github.io/*
+- Maps JavaScript API만 허용
+
+키가 비어 있으면 앱은 GPS 위치/경로 데이터를 계속 기록하고 자체 경로 표시를 사용합니다.

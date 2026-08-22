@@ -1,0 +1,24 @@
+GARANG V10.5 STABILITY PATCH
+
+1. ZIP 압축을 풉니다.
+2. 이 폴더 안의 파일/폴더 전체를 GitHub Pages 저장소 루트에 덮어씁니다.
+3. index.html이 저장소 루트에 직접 있어야 합니다.
+4. 기존 파일 위에 새 폴더 자체를 넣어 중첩시키지 마세요.
+5. GitHub Pages 배포 후 Safari에서 캐시가 남으면 강력 새로고침/개인정보 보호 창에서 확인하세요.
+
+이번 패치의 핵심:
+- 로그인 화면과 앱 화면 완전 분리
+- 로그아웃 상태에서 URL hash로 dashboard/workout/etc 접근 차단
+- legacy openPage 충돌 제거
+- 로그인/회원가입 Firebase Auth 최종 바인딩
+- 회원가입 후 onboarding -> dashboard 흐름 고정
+- 하단 네비는 로그인 화면에서 항상 숨김
+- 페이지 중복 노출 방지
+- GARANG 로고 SVG 색상 고정
+- Firebase config를 명시적으로 먼저 로드
+
+Firebase Console 확인:
+- Authentication > Sign-in method > Email/Password 활성화
+- Google/Apple을 사용할 경우 해당 provider 활성화
+- Authentication > Settings > Authorized domains에 jangssang1214.github.io 도메인 등록
+- Firestore가 활성화되어 있어야 사용자 데이터 동기화 가능

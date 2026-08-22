@@ -1,387 +1,286 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0d">
-<meta name="color-scheme" content="light">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#080a0c">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GARANG">
-<title>GARANG · Your personal AI coach</title>
-<link rel="stylesheet" href="style-v5.0.0.css?v=8.8.1">
-<link rel="stylesheet" href="style-v5.6.css?v=8.8.1">
-<style id="fitmindPageIsolation">
-.page{display:none!important}.page.active{display:block!important}
-#dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
-[hidden]{display:none!important}
-html,body{min-height:100%;touch-action:manipulation}
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<title>GARANG · Personal Fitness AI</title>
+<style id="garang-v10-shell">
+:root{--bg:#07090b;--surface:#0f1215;--surface2:#14181c;--surface3:#191e23;--line:#242b31;--text:#f5f7f8;--muted:#8d979f;--accent:#39e66f;--accent2:#20c95a;--danger:#ff5d68;--max:1180px;--nav:78px;--header:68px;--r:22px;--shadow:0 18px 50px rgba(0,0,0,.28)}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}body{margin:0;background:radial-gradient(900px 500px at 50% -120px,rgba(57,230,111,.06),transparent 62%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans KR","Apple SD Gothic Neo",sans-serif;line-height:1.45;min-height:100vh;-webkit-font-smoothing:antialiased}button,input,select,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}
+.page{display:none!important;max-width:var(--max);margin:0 auto;padding:28px 20px calc(var(--nav) + 32px)}.page.active{display:block!important}[hidden]{display:none!important}
+#app{min-height:100vh}.garangHeader{position:sticky;top:0;z-index:1000;height:var(--header);display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100vw - var(--max))/2 + 20px));background:rgba(7,9,11,.84);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.brandLockup{display:flex;align-items:center;gap:10px;min-width:0}.brandMark{width:30px;height:30px;filter:invert(1);opacity:.98}.brandLockup b{font-size:21px;letter-spacing:.18em;font-weight:850}.brandLockup small{display:none}.headerBtns{display:flex;align-items:center;gap:8px}.headerBtns button{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:999px;padding:10px 15px;font-weight:800}.headerBtns #planBadge{border-color:rgba(57,230,111,.25);background:rgba(57,230,111,.08);color:var(--accent);font-size:11px;padding:8px 11px}
+#mainNav{position:fixed;z-index:1200;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(720px,calc(100vw - 20px));height:64px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px;background:rgba(14,17,20,.94);border:1px solid #2a3238;border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.5);backdrop-filter:blur(22px)}#mainNav.hidden{display:none!important}#mainNav button{border:0;background:transparent;color:#7e8991;border-radius:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:800}#mainNav button .navIcon{font-size:17px;line-height:1}#mainNav button.active{background:#18231d;color:var(--accent);box-shadow:inset 0 0 0 1px rgba(57,230,111,.16)}#moreNav{position:fixed;inset:0;z-index:1190;display:none;align-items:flex-end;background:rgba(0,0,0,.52);backdrop-filter:blur(5px)}#moreNav.open{display:flex}#moreNav .sheet{width:100%;padding:18px 18px calc(92px + env(safe-area-inset-bottom));background:#101417;border-top:1px solid #2a3238;border-radius:26px 26px 0 0}.moreGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.moreGrid button{min-height:68px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:17px;font-weight:800}
+main{min-height:calc(100vh - var(--header))}.eyebrow{display:block;color:var(--accent)!important;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase}.pageTitle,.dashTop,.aiWorkspaceHead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.pageTitle h2,.dashTop h1,.aiWorkspaceHead h2{margin:5px 0;font-size:clamp(27px,5vw,42px);line-height:1.08;letter-spacing:-.045em}.pageTitle p,.dashTop p,.aiWorkspaceHead p{margin:6px 0;color:var(--muted);font-size:14px}.card{background:linear-gradient(180deg,rgba(20,24,28,.98),rgba(13,16,19,.98));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}.grid{display:grid;gap:12px}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.sectionHead h3{margin:0}.muted{color:var(--muted)!important}.primaryBtn,button.primary,button.primaryBtn{background:var(--accent)!important;color:#041008!important;border:0!important}.ghostBtn,.outline{background:var(--surface2)!important;color:var(--text)!important;border:1px solid var(--line)!important}.danger{color:#ff8b92!important}.linkBtn{border:0!important;background:transparent!important;color:#9aa4ab!important}.error{color:#ff7881!important}.card button,.primaryBtn,.ghostBtn,.outline{min-height:44px;padding:11px 15px;border-radius:14px;font-weight:850}.card input,.card select,.card textarea{width:100%;min-height:48px;background:#090c0f;color:var(--text);border:1px solid #2a3238;border-radius:14px;padding:12px 13px;outline:0}.card input:focus,.card select:focus,.card textarea:focus{border-color:rgba(57,230,111,.65);box-shadow:0 0 0 3px rgba(57,230,111,.08)}.card textarea{min-height:100px;resize:vertical}.fieldLabel,.profileField{display:grid;gap:6px}.fieldLabel{font-size:12px;font-weight:800;color:#aab3ba}.check{display:flex!important;align-items:center;gap:8px;color:var(--muted);font-size:12px}.check input{width:18px!important;min-height:18px!important}
+/* auth */#auth{min-height:calc(100vh - var(--header));max-width:760px;padding-top:48px}.authPage{display:none!important}.authPage.active{display:block!important}.authHero{text-align:center;padding:22px 12px 24px}.authLogo{width:58px;height:58px;filter:invert(1);margin-bottom:18px}.authHero h1{font-size:clamp(38px,9vw,66px);line-height:.98;letter-spacing:-.065em;margin:12px 0}.authHero h1 em{font-style:normal;color:var(--accent)}.authHero p{max-width:560px;margin:16px auto;color:var(--muted);font-size:14px}.authCard{max-width:520px;margin:0 auto;padding:10px}.tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;background:#090c0f;border:1px solid var(--line);border-radius:16px;margin-bottom:12px}.tabs button{border:0;background:transparent;color:var(--muted);border-radius:12px;min-height:44px}.tabs button.active{background:#1a2220;color:var(--text)}.authForm{display:grid;gap:10px;padding:10px}.authDivider{display:flex;align-items:center;gap:12px;color:#667179;margin:6px 10px}.authDivider:before,.authDivider:after{content:"";height:1px;background:var(--line);flex:1}.socialBtn{width:calc(100% - 20px);margin:5px 10px;background:#f5f7f8!important;color:#080a0c!important;border:0!important}.authFineprint{padding:8px 10px 4px;text-align:center;font-size:11px}
+/* onboarding */.onboardingPage{max-width:720px}.onboardingTop{display:flex;justify-content:space-between;align-items:center;color:var(--muted);margin-bottom:8px}.progressLine{height:4px;background:#1b2226;border-radius:99px;overflow:hidden;margin-bottom:18px}.progressLine i{display:block;height:100%;width:20%;background:var(--accent);border-radius:99px}.onboardingCard{padding:26px}.onboardStep{display:none}.onboardStep.active{display:block}.stepIcon{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(57,230,111,.09);color:var(--accent);font-size:12px;font-weight:900}.onboardStep h1{font-size:30px;letter-spacing:-.04em;margin:16px 0 6px}.onboardStep p{color:var(--muted)}.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.choiceGrid button{min-height:64px;text-align:left;background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:16px}.choiceGrid button.selected{border-color:rgba(57,230,111,.65);background:rgba(57,230,111,.1);color:var(--accent)}.onboardingActions{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+/* dashboard */.dashboardHero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:24px;border:1px solid rgba(57,230,111,.18);background:radial-gradient(400px 180px at 10% 0,rgba(57,230,111,.12),transparent 65%),linear-gradient(135deg,#111914,#0e1310);border-radius:26px;margin-bottom:12px}.dashboardHero span{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.2em}.dashboardHero h2{font-size:24px;letter-spacing:-.04em;max-width:650px;margin:8px 0 0}.statGrid{grid-template-columns:repeat(4,1fr);margin-bottom:12px}.statCard{padding:17px}.statCard span{color:var(--muted);font-size:11px}.statCard b{display:block;font-size:28px;letter-spacing:-.04em;margin-top:4px}.statCard small{color:var(--muted)}.dashboardColumns{display:grid;grid-template-columns:1.25fr .75fr;gap:12px}.activityFeed{display:grid;gap:7px;margin-top:12px}.activityItem{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px}.activityItem small{display:block;color:var(--muted);font-size:10px}.goalProgress{margin-top:16px}.progressBar{height:9px;background:#20272c;border-radius:99px;overflow:hidden;margin:12px 0}.progressBar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+/* forms & lists */.page>form.card{margin-bottom:12px}.exerciseSearchWrap,.foodSearchWrap{position:relative}.dbSearchField{display:flex;gap:8px}.dbSearchField input{flex:1}.dbSearchButton{min-width:48px!important;padding:0!important}.foodResults{display:grid;gap:6px;margin-top:7px}.foodResults button{width:100%;text-align:left;background:var(--surface2)!important}.batchCard{padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:12px 0}.batchHead{display:flex;justify-content:space-between;align-items:center;gap:10px}.batchHead h3{margin:0;font-size:16px}.batchRows{display:grid;gap:8px;margin:12px 0}.batchTotals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.batchMetric{padding:12px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}.batchMetric span{display:block;color:var(--muted);font-size:10px}.batchMetric strong{display:block;margin-top:4px}.batchHint{font-size:11px;color:var(--muted)}.batchActions{margin-top:10px}.quickShareCard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}.quickShareCard span{display:block;font-size:11px;margin-top:4px}.nutritionPreview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.nutritionPreview>div{padding:12px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}.nutritionPreview span,.nutritionPreview small{display:block;color:var(--muted);font-size:10px}.nutritionPreview b{display:inline-block;margin-top:5px;font-size:20px}.qtyControl{display:grid;grid-template-columns:42px 1fr 42px;gap:5px}.qtyControl button{padding:0!important}.selectedFood{padding:14px;background:rgba(57,230,111,.06);border:1px solid rgba(57,230,111,.2);border-radius:15px;margin-top:10px}.manualNutrition,.unitSettings{margin:12px 0;color:var(--muted)}.manualNutrition summary,.unitSettings summary{cursor:pointer;font-weight:800;color:#c4ccd1}.runLive{padding:24px}.runMainMetric{text-align:center}.runMainMetric span{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.18em}.runMainMetric strong{display:block;font-size:72px;letter-spacing:-.07em;line-height:1;margin:10px 0 2px}.runMainMetric small{color:var(--muted)}.runMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}.runMetrics>div{padding:12px;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:15px}.runMetrics span{display:block;color:var(--muted);font-size:10px}.runMetrics b{font-size:18px}.runControls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}.runPath{min-height:180px;display:grid;place-items:center;color:var(--muted);background:#090c0f;border:1px dashed #2b343a;border-radius:16px}.runHistoryItem{padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px;margin:7px 0}
+/* body */#body h2{margin:0 0 18px;font-size:34px;letter-spacing:-.05em}.bodyDataGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.bodyScore{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:center}.bodyScore #bodyScoreNumber{font-size:64px!important;line-height:1}.bodyHistory{overflow:auto}.bodyHistory table{width:100%;border-collapse:collapse}.bodyHistory th,.bodyHistory td{padding:10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+/* report / ai */.reportNav{display:flex;align-items:center;justify-content:space-between;margin:10px 0}.aiWorkspaceHead h2{font-size:32px}.garangUnifiedShell{margin-bottom:12px}.uaiSurface{padding:20px!important}.chatlog{display:grid;gap:10px;min-height:240px;max-height:52vh;overflow:auto;padding:4px 0 12px}.chatlog .msg{max-width:min(760px,88%);padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--surface2);white-space:pre-wrap;overflow-wrap:anywhere}.chatlog .msg.user{margin-left:auto;background:#1d2540!important;border-color:#343d62!important}.chatlog .msg.ai{margin-right:auto;background:#111518!important}.chatbar{position:sticky;bottom:88px;z-index:50;display:flex;gap:7px;padding:8px;background:rgba(8,10,12,.9);border:1px solid #2a3238;border-radius:20px;backdrop-filter:blur(18px)}.chatbar input{min-width:0;flex:1;background:#080b0d!important}.chatPlus{width:46px!important;min-width:46px!important;padding:0!important;border-radius:50%!important}.chatbar button[type=submit]{min-width:66px}.v93Grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.v93Metric{padding:16px;background:var(--surface2);border:1px solid var(--line);border-radius:16px}.v93Metric b{display:block;font-size:24px;margin-top:4px}.item{padding:12px;border:1px solid var(--line);background:var(--surface2);border-radius:14px;margin:7px 0}.memoryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.memoryStat,.memoryRow{background:var(--surface2);border:1px solid var(--line);border-radius:15px;padding:13px}.memoryStat span,.memoryRow .label{display:block;color:var(--muted);font-size:10px}.memoryStat b{font-size:20px}.memoryRow{margin-top:8px}.memoryRow .value{margin-top:4px;word-break:break-word}
+/* profile */.profileCard{padding:18px}.profileSection{padding:6px 0 20px;margin-bottom:18px;border-bottom:1px solid var(--line)}.profileSection:last-child{border-bottom:0}.profileSectionHead{display:flex;align-items:center;gap:10px;margin-bottom:12px}.profileIcon{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:rgba(57,230,111,.08);color:var(--accent);font-size:10px;font-weight:900}.profileSectionHead strong{display:block}.profileSectionHead small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.profileGrid{display:grid;gap:10px}.profileGrid2{grid-template-columns:1fr 1fr}.profileField>span{font-size:10px;color:var(--muted);font-weight:800}.profileSaveBtn{width:100%;margin-top:4px}.accountCard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}.accountActions{display:flex;gap:8px;flex-wrap:wrap}
+/* keep legacy injected components usable */#fitmindBatchWorkoutCard,#fitmindBatchMealCard,#workout .batchCard,#diet .batchCard{color:var(--text)}#workoutList,#mealList,#runHistory,#bodyList,#reportContent,#calendarBox,#energyReport{margin-top:12px}#serverLLMSettings{display:none!important}
+@media(max-width:800px){.page{padding:22px 14px calc(var(--nav) + 28px)}.statGrid{grid-template-columns:repeat(2,1fr)}.dashboardColumns{grid-template-columns:1fr}.batchTotals{grid-template-columns:repeat(2,1fr)}.bodyScore{grid-template-columns:1fr}.bodyScore #bodyScoreNumber{text-align:center}.v93Grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){:root{--header:62px}.garangHeader{padding:0 14px}.brandLockup b{font-size:18px}.headerBtns #accountBtn{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pageTitle,.dashTop,.aiWorkspaceHead{margin-bottom:14px}.pageTitle h2,.dashTop h1{font-size:29px}.dashboardHero{display:block;padding:20px}.dashboardHero button{margin-top:15px;width:100%}.row,.profileGrid2{grid-template-columns:1fr 1fr}.nutritionPreview{grid-template-columns:repeat(2,1fr)}.runMainMetric strong{font-size:60px}.runControls{grid-template-columns:1fr 1fr}.runControls .primaryBtn{grid-column:1/-1}.moreGrid{grid-template-columns:repeat(2,1fr)}.authHero{padding-top:30px}.authHero h1{font-size:42px}.chatbar{bottom:76px}.quickShareCard{align-items:flex-start}.accountCard{display:block}.accountActions{margin-top:12px}.bodyDataGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.row,.profileGrid2{grid-template-columns:1fr}.statGrid{grid-template-columns:1fr 1fr}.brandLockup b{letter-spacing:.12em}.mainNav{} }
 </style>
-<link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
-<link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
-<link rel="stylesheet" href="garang-premium-v9.9.css?v=9.9.0">\n<link rel="stylesheet" href="garang-v10-release.css?v=10.0.0">
-
-<style id="garangV93Additive">
-#v93Learning .v93Grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-#v93Learning .v93Metric{padding:14px;border:1px solid rgba(127,127,127,.18);border-radius:14px;background:rgba(127,127,127,.05)}
-#v93Learning .v93Metric b{display:block;font-size:22px;margin-top:4px}
-#v93Learning .item,#v93Memory .item{padding:10px 12px;border:1px solid rgba(127,127,127,.14);border-radius:12px;margin:7px 0}
-@media(max-width:650px){#v93Learning .v93Grid{grid-template-columns:repeat(2,1fr)}}
-</style>
-
-<style id="GARANG_V93_PREMIUM_BLACK">
-:root{--g-bg:#070708;--g-panel:#111214;--g-panel2:#17181b;--g-line:#292b30;--g-text:#f5f5f7;--g-muted:#8b8e96}
-html,body,#app{background:var(--g-bg)!important;color:var(--g-text)!important}
-body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
-.garangHeader{background:rgba(7,7,8,.94)!important;border-bottom:1px solid #202126!important;backdrop-filter:blur(18px)}
-.brandLockup b{color:#fff!important;letter-spacing:.08em}.brandLockup small{color:#777b83!important}
-.headerBtns button{background:#f5f5f5!important;color:#080808!important;border:0!important;border-radius:999px!important;font-weight:800!important}
-.card{background:linear-gradient(180deg,#151619,#101113)!important;border:1px solid var(--g-line)!important;box-shadow:0 16px 40px rgba(0,0,0,.26)!important;border-radius:20px!important}
-.pageTitle h2,.card h2,.card h3,.card strong{color:#fff!important}
-.pageTitle p,.muted,.eyebrow{color:var(--g-muted)!important}
-button{border-radius:13px!important;font-weight:750!important}
-button.primary,button.primaryBtn{background:#f5f5f5!important;color:#080808!important;border-color:#f5f5f5!important}
-button:not(.primary):not(.primaryBtn){background:#191a1d!important;color:#ececef!important;border-color:#303239!important}
-input,textarea,select{background:#0c0d0f!important;color:#f4f4f4!important;border:1px solid #303239!important;border-radius:13px!important}
-input::placeholder,textarea::placeholder{color:#686c74!important}
-input:focus,textarea:focus,select:focus{border-color:#8b8f98!important;box-shadow:0 0 0 3px rgba(255,255,255,.06)!important}
-nav#mainNav{background:rgba(7,7,8,.97)!important;border-top:1px solid #25272c!important;backdrop-filter:blur(18px)}
-nav#mainNav button{background:transparent!important;color:#777b83!important;border:0!important}
-nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;color:#fff!important}
-#v93Learning .v93Metric{background:#17181b!important;border:1px solid #2a2c31!important;border-radius:16px!important}
-#v93Learning .item,#v93Memory .item{background:#17181b!important;border:1px solid #2a2c31!important;border-radius:14px!important}
-.memoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}
-.memoryStat{padding:13px;border-radius:15px;background:#191a1d;border:1px solid #2b2d32}
-.memoryStat span{display:block;color:#7e828a;font-size:11px;margin-bottom:4px}.memoryStat b{color:#fff;font-size:18px}
-.memoryRow{padding:10px 12px;border-radius:13px;background:#191a1d;border:1px solid #292b30;margin:7px 0}
-.memoryRow .label{color:#777b82;font-size:11px;margin-bottom:3px}.memoryRow .value{color:#eee;line-height:1.45;word-break:break-word}
-@media(max-width:650px){.memoryGrid{grid-template-columns:1fr 1fr}nav#mainNav{overflow-x:auto;white-space:nowrap}nav#mainNav button{flex:0 0 auto}}
-</style>
-
-<style id="GARANG_V10_PRODUCT_DESIGN">
-:root{
- --g-bg:#050607;--g-surface:#0d1110;--g-surface2:#111716;--g-surface3:#151c1a;
- --g-line:#26312e;--g-line2:#34423e;--g-text:#f4f7f5;--g-muted:#89938f;
- --g-green:#39e86d;--g-green2:#1fd85d;--g-greenSoft:rgba(57,232,109,.11);
- --g-purple:#a78bfa;--g-blue:#72a7ff;--g-red:#ff5f6d;
- --g-radius:24px;--g-radius-sm:16px;--g-shadow:0 20px 60px rgba(0,0,0,.28);
-}
-html,body,#app{background:var(--g-bg)!important;color:var(--g-text)!important}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans KR","Apple SD Gothic Neo",sans-serif;letter-spacing:-.018em}
-#app{min-height:100vh}
-.garangHeader{height:76px!important;padding:0 24px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;background:rgba(5,6,7,.86)!important;border-bottom:1px solid rgba(255,255,255,.07)!important;backdrop-filter:blur(22px)!important;position:sticky!important;top:0!important;z-index:1000!important}
-.brandLockup{gap:12px!important}.brandMark{width:34px!important;height:34px!important;filter:none!important}.brandLockup b{font-size:20px!important;letter-spacing:.16em!important}.brandLockup small{display:none!important}
-.headerBtns button{height:46px!important;padding:0 19px!important;background:#111716!important;color:#eaf0ed!important;border:1px solid var(--g-line)!important;border-radius:999px!important;box-shadow:none!important}
-main{max-width:1040px!important;margin:0 auto!important;padding:26px 22px 112px!important}
-.page{max-width:900px!important;margin:0 auto!important}
-.pageTitle,.dashTop{display:flex!important;justify-content:space-between!important;align-items:flex-end!important;gap:18px!important;margin:12px 0 28px!important}
-.pageTitle h2,.dashTop h1{font-size:38px!important;line-height:1.05!important;letter-spacing:-.045em!important;margin:6px 0 0!important;font-weight:850!important}
-.pageTitle p,.dashTop p{margin:10px 0 0!important;color:var(--g-muted)!important;font-size:15px!important}
-.eyebrow{font-size:12px!important;letter-spacing:.18em!important;font-weight:850!important;color:var(--g-green)!important}
-.card{background:linear-gradient(145deg,rgba(18,24,22,.96),rgba(10,14,13,.96))!important;border:1px solid var(--g-line)!important;border-radius:var(--g-radius)!important;box-shadow:var(--g-shadow)!important;padding:22px!important}
-.card h2,.card h3,.card strong{color:var(--g-text)!important}.muted{color:var(--g-muted)!important}
-button{min-height:44px!important;border-radius:14px!important;border:1px solid var(--g-line2)!important;background:#121817!important;color:#edf2ef!important;font-weight:760!important;transition:.18s ease!important}
-button:hover{transform:translateY(-1px)!important;border-color:#4b5c56!important}button:active{transform:translateY(0)!important}
-button.primary,button.primaryBtn{background:var(--g-green)!important;color:#041007!important;border-color:var(--g-green)!important;box-shadow:0 10px 30px rgba(57,232,109,.16)!important}
-button.ghostBtn,.iconAction{background:#101615!important;border-color:var(--g-line)!important;color:#dce5e1!important}
-input,select,textarea{min-height:50px!important;background:#090d0c!important;border:1px solid #28322f!important;color:#f3f6f4!important;border-radius:15px!important;padding:13px 15px!important;outline:none!important}
-input:focus,select:focus,textarea:focus{border-color:rgba(57,232,109,.62)!important;box-shadow:0 0 0 4px rgba(57,232,109,.08)!important}
-input::placeholder,textarea::placeholder{color:#606b66!important}
-.row{gap:12px!important}.grid{gap:12px!important}
-/* AUTH — premium first impression */
-.authPage{max-width:560px!important;padding:44px 0 60px!important}.authHero{text-align:left!important;padding:20px 6px 28px!important}.authLogo{width:54px!important;height:54px!important;margin-bottom:22px!important}.authHero h1{font-size:44px!important;line-height:1.08!important;letter-spacing:-.055em!important;margin:12px 0!important}.authHero h1 em{font-style:normal;color:var(--g-green)!important}.authHero p{max-width:470px!important;color:#8f9995!important;font-size:15px!important;line-height:1.7!important}.authCard{padding:9px!important}.authCard .tabs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;background:#080c0b!important;padding:5px!important;border-radius:17px!important;border:1px solid var(--g-line)!important}.authCard .tabs button{border:0!important;background:transparent!important;color:#78827e!important;min-height:46px!important}.authCard .tabs button.active{background:#18211e!important;color:#fff!important;box-shadow:inset 0 0 0 1px #30403a!important}.authForm{padding:18px 8px 4px!important}.authForm input{margin:6px 0!important}.authForm .primaryBtn{width:100%!important;height:54px!important;margin-top:9px!important;font-size:16px!important}.authDivider{color:#626d68!important;margin:16px 8px!important}.socialBtn{width:calc(100% - 16px)!important;margin:5px 8px!important;background:#0e1312!important}.authFineprint{text-align:center!important;font-size:12px!important;padding:10px!important}.linkBtn{background:transparent!important;border:0!important;color:#8d9994!important;width:100%!important}
-/* ONBOARDING */
-.onboardingPage{max-width:720px!important;padding-top:22px!important}.onboardingTop{display:flex!important;justify-content:space-between!important;color:#89938f!important;margin:10px 4px!important}.progressLine{height:4px!important;background:#151d1a!important;border-radius:99px!important;overflow:hidden!important;margin:0 4px 20px!important}.progressLine i{display:block!important;height:100%!important;background:var(--g-green)!important;border-radius:99px!important}.onboardingCard{padding:30px!important}.stepIcon{display:inline-flex!important;width:42px!important;height:42px!important;align-items:center!important;justify-content:center!important;border-radius:14px!important;background:var(--g-greenSoft)!important;color:var(--g-green)!important;font-weight:900!important}.onboardStep h1{font-size:32px!important;margin:20px 0 8px!important;letter-spacing:-.04em!important}.onboardStep>p{color:var(--g-muted)!important}.choiceGrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin-top:22px!important}.choiceGrid button{min-height:78px!important;text-align:left!important;padding:17px!important;background:#0d1311!important}.choiceGrid button.active{border-color:var(--g-green)!important;background:var(--g-greenSoft)!important;box-shadow:0 0 0 1px rgba(57,232,109,.2)!important}.onboardingActions{display:flex!important;justify-content:space-between!important;gap:10px!important;margin-top:26px!important}.onboardingActions button{flex:1!important}
-/* DASHBOARD */
-.dashboardHero{position:relative!important;overflow:hidden!important;padding:28px!important;margin-bottom:14px!important;border:1px solid rgba(57,232,109,.28)!important;border-radius:26px!important;background:radial-gradient(circle at 92% 8%,rgba(57,232,109,.14),transparent 35%),linear-gradient(145deg,#101914,#0b0f0e)!important;box-shadow:var(--g-shadow)!important}.dashboardHero:after{content:"";position:absolute;right:-80px;bottom:-120px;width:260px;height:260px;border-radius:50%;background:rgba(57,232,109,.06);filter:blur(10px)}.dashboardHero span{color:var(--g-green)!important;font-size:11px!important;letter-spacing:.18em!important;font-weight:900!important}.dashboardHero h2{font-size:24px!important;line-height:1.35!important;max-width:650px!important;margin:11px 0 20px!important}.dashboardHero button{position:relative!important;z-index:1!important}.statGrid{grid-template-columns:repeat(4,1fr)!important}.statCard{min-height:132px!important;padding:20px!important}.statCard span{display:block!important;color:#8b9691!important;font-size:13px!important}.statCard b{display:inline-block!important;font-size:34px!important;letter-spacing:-.05em!important;margin-top:18px!important}.statCard small{color:#78827e!important;margin-left:4px!important}.dashboardColumns{display:grid!important;grid-template-columns:1.25fr .75fr!important;gap:12px!important;margin-top:12px!important}.sectionHead{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important}.sectionHead h3{margin:0!important}.activityFeed,.goalProgress{min-height:120px!important}.goalProgress>div{margin:10px 0!important}
-/* WORKOUT */
-#workout .card:first-of-type{padding:16px!important}.exerciseSearchWrap select{font-size:16px!important;min-height:58px!important}.workoutSummary,.workoutHistory,.workout-record,.exerciseCard,.recordCard{border-radius:20px!important}.setRow,.exerciseRow{background:#0d1311!important;border:1px solid #26322e!important;border-radius:16px!important}
-/* DIET */
-#diet .card:first-of-type{background:linear-gradient(145deg,#101a15,#0d1110)!important;border-color:rgba(57,232,109,.22)!important}.nutritionPreview{background:#090e0c!important;border:1px solid #26322e!important;border-radius:20px!important;padding:16px!important;display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:8px!important}.nutritionPreview>div{padding:13px!important;background:#101613!important;border-radius:14px!important}.nutritionPreview span,.nutritionPreview small{color:#7f8985!important}.nutritionPreview b{display:block!important;font-size:22px!important;margin:7px 0!important}.batchCard{background:#0e1412!important;border:1px solid #26322e!important;border-radius:22px!important;padding:20px!important;margin:14px 0!important}.batchMetric{background:#111917!important;border:1px solid #26322e!important;border-radius:15px!important}
-/* RUN */
-.runLive{padding:26px!important;background:radial-gradient(circle at 18% 18%,rgba(57,232,109,.08),transparent 30%),linear-gradient(145deg,#111815,#0b0e0d)!important;border-color:rgba(57,232,109,.2)!important}.runMainMetric{padding:16px 0 22px!important}.runMainMetric strong{font-size:76px!important;letter-spacing:-.075em!important;line-height:.95!important}.runMainMetric small{font-size:22px!important;color:var(--g-green)!important;font-weight:850!important}.runMainMetric span{display:block!important;letter-spacing:.2em!important;color:#8c9792!important;font-weight:850!important;margin-bottom:10px!important}.runMetrics{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}.runMetrics>div{background:#0b100f!important;border:1px solid #28332f!important;border-radius:17px!important;padding:16px!important}.runMetrics span{display:block!important;color:#7f8985!important;font-size:12px!important}.runMetrics b{font-size:22px!important;margin-top:7px!important;display:block!important}.runControls{display:grid!important;grid-template-columns:1.4fr 1fr 1fr!important;gap:10px!important;margin-top:18px!important}.runControls button{min-height:52px!important}.runPath{min-height:220px!important;background:#080c0b!important;border:1px dashed #33403b!important;border-radius:18px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#68736e!important}
-/* BODY */
-#body>h2{font-size:38px!important;letter-spacing:-.045em!important;margin:12px 0 26px!important}.bodyPhotoGallery img{border-radius:16px!important}.body-range{min-height:42px!important}.body-range.active{background:var(--g-green)!important;color:#041007!important;border-color:var(--g-green)!important}.fitmindBMRResult,.fitmindTDEEResult{font-size:32px!important}.bodyScoreNumber{font-size:72px!important}
-/* REPORT */
-#report .tabs{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important;background:#080c0b!important;padding:5px!important;border:1px solid var(--g-line)!important;border-radius:18px!important;margin-bottom:14px!important}.tabs button{background:transparent!important;border:0!important;color:#77827d!important}.tabs button.active{background:#17201c!important;color:#fff!important}.reportNav{display:grid!important;grid-template-columns:50px 1fr 50px!important;align-items:center!important;text-align:center!important}.reportNav button{width:50px!important}.reportNav strong{font-size:20px!important}.calendar,.calendarBox{border-radius:24px!important}.calendarBox{overflow:hidden!important}.dailyEnergyCard{border-color:rgba(57,232,109,.18)!important}.dailyEnergyCard strong{font-size:21px!important}
-/* AI — core identity */
-#chat .pageTitle{align-items:flex-start!important}.coachQuick{display:flex!important;gap:8px!important;overflow-x:auto!important;padding:3px 0 14px!important}.coachQuick button{white-space:nowrap!important;flex:0 0 auto!important}.coachInsight{background:radial-gradient(circle at 100% 0,rgba(167,139,250,.12),transparent 35%),linear-gradient(145deg,#111717,#0c1110)!important;border-color:rgba(57,232,109,.25)!important}.coachInsight strong{display:block!important;font-size:18px!important;line-height:1.55!important;margin-top:10px!important}.chatlog{display:flex!important;flex-direction:column!important;gap:14px!important;margin:12px 0 100px!important}.chatbar{position:sticky!important;bottom:76px!important;z-index:30!important;display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important;background:rgba(7,10,9,.9)!important;border:1px solid rgba(57,232,109,.18)!important;padding:8px!important;border-radius:22px!important;backdrop-filter:blur(18px)!important}.chatbar input{border:0!important;background:transparent!important;min-height:52px!important}.chatbar button{min-width:78px!important;background:var(--g-green)!important;color:#041007!important;border-color:var(--g-green)!important}.chatlog .user,.chatlog .userMessage{align-self:flex-end!important;background:#29334f!important;border-color:#46547c!important;border-radius:20px 20px 6px 20px!important;max-width:82%!important;padding:14px 16px!important}.chatlog .assistant,.chatlog .assistantMessage{align-self:flex-start!important;background:#121719!important;border-color:#303b38!important;border-radius:20px 20px 20px 6px!important;max-width:88%!important;padding:16px!important}
-/* LEARNING / MEMORY */
-#v93Learning .v93Grid{grid-template-columns:repeat(4,1fr)!important;gap:10px!important}.v93Metric{background:#101614!important;border:1px solid #293630!important;border-radius:18px!important;padding:18px!important}.v93Metric b{font-size:28px!important}.memoryGrid{gap:10px!important}.memoryStat,.memoryRow{background:#101614!important;border-color:#293630!important;border-radius:16px!important}
-/* NAV — mobile app feel */
-nav#mainNav{position:fixed!important;left:50%!important;bottom:14px!important;transform:translateX(-50%)!important;width:min(920px,calc(100% - 24px))!important;height:72px!important;padding:7px!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:4px!important;background:rgba(9,13,12,.94)!important;border:1px solid #2b3733!important;border-radius:25px!important;box-shadow:0 18px 60px rgba(0,0,0,.55)!important;backdrop-filter:blur(22px)!important;z-index:2000!important}
-nav#mainNav button{min-height:56px!important;border:0!important;background:transparent!important;color:#6f7a75!important;border-radius:18px!important;font-size:11px!important;padding:5px!important;white-space:normal!important}
-nav#mainNav button.active{background:rgba(57,232,109,.11)!important;color:var(--g-green)!important}
-/* hide secondary nav items in bottom bar; retain them through pages/JS */
-nav#mainNav button:nth-child(n+6){display:none!important}
-/* common visual cleanup */
-.page>h2{font-weight:850!important}.page hr{border:0!important;border-top:1px solid #202a27!important}.danger{color:#ff7b86!important}.outline{background:transparent!important}.error{color:#ff7b86!important}
-@media(max-width:760px){
- main{padding:18px 14px 108px!important}.garangHeader{height:68px!important;padding:0 16px!important}.brandMark{width:30px!important;height:30px!important}.brandLockup b{font-size:18px!important}.headerBtns button{height:42px!important;padding:0 15px!important}
- .pageTitle,.dashTop{margin:10px 0 22px!important}.pageTitle h2,.dashTop h1,#body>h2{font-size:32px!important}.authPage{padding:26px 0 48px!important}.authHero h1{font-size:36px!important}.onboardingCard{padding:22px!important}.choiceGrid{grid-template-columns:1fr!important}.statGrid{grid-template-columns:1fr 1fr!important}.statCard{min-height:112px!important}.statCard b{font-size:30px!important}.dashboardColumns{grid-template-columns:1fr!important}.nutritionPreview{grid-template-columns:1fr 1fr!important}.runMainMetric strong{font-size:62px!important}.runControls{grid-template-columns:1.2fr 1fr!important}.runControls #runStop{grid-column:1/-1}.runMetrics{grid-template-columns:1fr 1fr 1fr!important}.runMetrics>div{padding:13px 9px!important}.runMetrics b{font-size:18px!important}.reportNav{grid-template-columns:46px 1fr 46px!important}.reportNav button{width:46px!important}.chatbar{bottom:78px!important}.coachQuick{margin-inline:-2px!important}.authCard{padding:7px!important}
- #v93Learning .v93Grid{grid-template-columns:1fr 1fr!important}
-}
-@media(min-width:900px){main{padding-top:34px!important}.page{max-width:920px!important}}
-</style>
+<link rel="stylesheet" href="ui/styles/garang-v10.css?v=10.0.1">
 </head>
 <body>
 <div id="app">
 <header class="garangHeader">
-  <div class="brandLockup"><img src="garang-mark.svg" class="brandMark" alt="GARANG logo"><div><b>GARANG</b><small>Your personal AI coach</small></div></div>
-  <div class="headerBtns"><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div>
+  <a href="#" class="brandLockup" onclick="event.preventDefault();openPage('dashboard')" aria-label="GARANG 홈"><img src="assets/icons/garang-mark.svg" class="brandMark" alt="GARANG logo"><div><b>GARANG</b><small>Your personal AI coach</small></div></a>
+  <div class="headerBtns"><button id="planBadge" type="button" hidden>FREE</button><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div>
 </header>
-
 <main>
-<section id="auth" class="page active authPage">
-  <div class="garang-v853-auth-fix authHero">
-    <img src="garang-mark.svg" class="garang-v853-auth-fix authLogo" alt="GARANG">
-    <div class="eyebrow">YOUR PERSONAL AI COACH</div>
-    <h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1>
-    <p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
-  </div>
-  <div class="card authCard">
-    <div id="authTabs" class="tabs"><button data-tab="login" class="active" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
-    <form id="loginForm" class="garang-v853-auth-fix authForm"><input id="loginEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" required><button class="primaryBtn">GARANG 시작하기</button><button id="resetPwBtn" class="linkBtn" type="button">비밀번호를 잊으셨나요?</button></form>
-    <form id="signupForm" class="garang-v853-auth-fix authForm" hidden><input id="signupName" placeholder="닉네임" autocomplete="nickname" required><input id="signupEmail" type="email" placeholder="이메일" autocomplete="email" required><input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password" minlength="6" required><input id="signupPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="6" required><div class="v10-signup-grid"><label>국가<select id="signupCountry"><option value="KR">🇰🇷 대한민국</option><option value="US">🇺🇸 United States</option><option value="JP">🇯🇵 日本</option><option value="GB">🇬🇧 United Kingdom</option><option value="CA">🇨🇦 Canada</option><option value="AU">🇦🇺 Australia</option><option value="DE">🇩🇪 Deutschland</option><option value="FR">🇫🇷 France</option><option value="SG">🇸🇬 Singapore</option></select></label><label>언어<select id="signupLanguage"><option value="ko">한국어</option><option value="en">English</option></select></label><label>단위<select id="signupUnit"><option value="metric">Metric · kg / cm</option><option value="imperial">Imperial · lb / in</option></select></label></div><label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
-    <div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
-    <button id="googleBtn" class="socialBtn" type="button">Google로 계속하기</button><button id="appleBtn" class="socialBtn" type="button">Apple로 계속하기</button>
-    <p id="authError" class="error"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
-  </div>
-</section>
-
-<section id="onboarding" class="page onboardingPage">
-  <div class="onboardingTop"><span class="eyebrow">GARANG SETUP</span><strong id="onboardingStepText">1 / 5</strong></div>
-  <div class="progressLine"><i id="onboardingProgress"></i></div>
-  <div class="card onboardingCard">
-    <div class="onboardStep active" data-step="1"><span class="stepIcon">01</span><h1>무엇을 만들고 싶나요?</h1><p>가장 중요한 목표부터 알려주세요.</p><div class="choiceGrid" data-key="goal"><button data-value="근육 증가">💪 근육 증가</button><button data-value="체지방 감량">🔥 체지방 감량</button><button data-value="체중 유지">⚖️ 체중 유지</button><button data-value="체력 향상">🏃 체력 향상</button></div></div>
-    <div class="onboardStep" data-step="2"><span class="stepIcon">02</span><h1>현재 몸 상태</h1><p>정확할수록 코칭이 정교해집니다.</p><div class="row"><label>키(cm)<input id="onHeight" type="number" step="0.1" placeholder="174"></label><label>체중(kg)<input id="onWeight" type="number" step="0.1" placeholder="67"></label></div><div class="row"><label>목표 체중(kg)<input id="onTargetWeight" type="number" step="0.1" placeholder="67"></label><label>운동 경력<select id="onExperience"><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label></div></div>
-    <div class="onboardStep" data-step="3"><span class="stepIcon">03</span><h1>무엇을 주로 하나요?</h1><p>여러 개를 선택할 수 있습니다.</p><div class="choiceGrid multi" data-key="sports"><button data-value="헬스">🏋️ 헬스</button><button data-value="러닝">🏃 러닝</button><button data-value="축구/풋살">⚽ 축구/풋살</button><button data-value="홈트">🏠 홈트</button></div></div>
-    <div class="onboardStep" data-step="4"><span class="stepIcon">04</span><h1>어떤 코치가 좋나요?</h1><p>대화 스타일도 나에게 맞춥니다.</p><div class="choiceGrid" data-key="coachStyle"><button data-value="직설적">🎯 직설적으로</button><button data-value="친근함">🤝 친근하게</button><button data-value="데이터 중심">📊 데이터 중심</button><button data-value="강하게 밀어붙이기">🔥 강하게 밀어붙여줘</button></div></div>
-    <div class="onboardStep" data-step="5"><span class="stepIcon">05</span><h1>준비됐습니다.</h1><p>이제 GARANG이 당신의 기록을 기준으로 코칭합니다.</p><div class="onboardSummary" id="onboardSummary"></div></div>
-    <div class="onboardingActions"><button type="button" id="onPrev" class="ghostBtn">이전</button><button type="button" id="onNext" class="primaryBtn">다음</button></div>
-  </div>
-</section>
-
-<section id="profile" class="page">
-<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2></div><button class="ghostBtn" type="button" onclick="garangStartOnboarding()">온보딩 다시하기</button></div>
-<form id="profileForm" class="card">
-  <input id="profName" placeholder="닉네임" required>
-  <div class="row">
-    <select id="profGender"><option value="">성별</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select>
-    <input id="profAge" type="number" min="1" max="120" placeholder="나이">
-    <input id="profHeight" type="number" step=".1" placeholder="키 cm">
-  </div>
-  <div class="row">
-    <input id="profWeight" type="number" step=".1" placeholder="현재 체중 kg">
-    <input id="profTargetWeight" type="number" step=".1" placeholder="목표 체중 kg">
-    <select id="profActivity"><option value="">활동 수준</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select>
-  </div>
-  <input id="profGoal" placeholder="운동 목표 (예: 체지방 감량, 근력 증가)">
-  <select id="profExperience"><option value="">운동 경험</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select>
-  <select id="profCoachStyle"><option value="">AI 코칭 스타일</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select>
-  <button>정보 저장</button>
-</form>
-<div class="card">
-  <h3>계정</h3>
-  <p id="accountEmail" class="muted"></p>
-  <button class="danger" type="button" onclick="logout()">로그아웃</button>
-  <button class="danger outline" type="button" onclick="deleteAccount()">계정 삭제</button>
+<section class="page active authPage" id="auth">
+<div class="garang-v853-auth-fix authHero">
+<img alt="GARANG" class="garang-v853-auth-fix authLogo" src="assets/icons/garang-mark.svg"/>
+<div class="eyebrow">YOUR PERSONAL AI COACH</div>
+<h1>오늘의 나를<br/><em>더 정확하게</em> 이해하다.</h1>
+<p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
+</div>
+<div class="card authCard">
+<div class="tabs" id="authTabs"><button class="active" data-tab="login" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
+<form class="garang-v853-auth-fix authForm" id="loginForm"><input autocomplete="email" id="loginEmail" placeholder="이메일" required="" type="email"/><input autocomplete="current-password" id="loginPw" placeholder="비밀번호" required="" type="password"/><button class="primaryBtn">GARANG 시작하기</button><button class="linkBtn" id="resetPwBtn" type="button">비밀번호를 잊으셨나요?</button></form>
+<form class="garang-v853-auth-fix authForm" hidden="" id="signupForm"><input autocomplete="nickname" id="signupName" placeholder="닉네임" required=""/><input autocomplete="email" id="signupEmail" placeholder="이메일" required="" type="email"/><input autocomplete="new-password" id="signupPw" minlength="6" placeholder="비밀번호 (6자 이상)" required="" type="password"/><input autocomplete="new-password" id="signupPw2" minlength="6" placeholder="비밀번호 확인" required="" type="password"/><label class="check"><input id="terms" required="" type="checkbox"/> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
+<div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
+<button class="socialBtn" id="googleBtn" type="button">Google로 계속하기</button><button class="socialBtn" id="appleBtn" type="button">Apple로 계속하기</button>
+<p class="error" id="authError"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
 </div>
 </section>
-
-<section id="dashboard" class="page">
-  <div class="dashTop"><div><span class="eyebrow">TODAY</span><h1 id="dashGreeting">좋은 하루예요.</h1><p>오늘의 기록과 코칭을 한눈에.</p></div><button class="iconAction" onclick="openPage('profile')">프로필</button></div>
-  <div class="dashboardHero"><div><span>AI COACH</span><h2 id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</h2></div><button onclick="openPage('chat')">코치에게 질문</button></div>
-  <div class="grid statGrid"><div class="card statCard"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div><div class="card statCard"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div><div class="card statCard"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div><div class="card statCard"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div></div>
-  <div class="dashboardColumns"><div class="card"><div class="sectionHead"><h3>오늘의 활동</h3><button onclick="openPage('workout')">기록하기</button></div><div id="dashActivityFeed" class="activityFeed"><p class="muted">아직 오늘의 기록이 없습니다.</p></div></div><div class="card"><div class="sectionHead"><h3>오늘의 목표</h3><button onclick="openPage('report')">리포트</button></div><div id="dashGoalProgress" class="goalProgress"></div></div></div>
+<section class="page onboardingPage" id="onboarding">
+<div class="onboardingTop"><span class="eyebrow">GARANG SETUP</span><strong id="onboardingStepText">1 / 5</strong></div>
+<div class="progressLine"><i id="onboardingProgress"></i></div>
+<div class="card onboardingCard">
+<div class="onboardStep active" data-step="1"><span class="stepIcon">01</span><h1>무엇을 만들고 싶나요?</h1><p>가장 중요한 목표부터 알려주세요.</p><div class="choiceGrid" data-key="goal"><button data-value="근육 증가">💪 근육 증가</button><button data-value="체지방 감량">🔥 체지방 감량</button><button data-value="체중 유지">⚖️ 체중 유지</button><button data-value="체력 향상">🏃 체력 향상</button></div></div>
+<div class="onboardStep" data-step="2"><span class="stepIcon">02</span><h1>현재 몸 상태</h1><p>정확할수록 코칭이 정교해집니다.</p><div class="row"><label>키(cm)<input id="onHeight" placeholder="174" step="0.1" type="number"/></label><label>체중(kg)<input id="onWeight" placeholder="67" step="0.1" type="number"/></label></div><div class="row"><label>목표 체중(kg)<input id="onTargetWeight" placeholder="67" step="0.1" type="number"/></label><label>운동 경력<select id="onExperience"><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label></div></div>
+<div class="onboardStep" data-step="3"><span class="stepIcon">03</span><h1>무엇을 주로 하나요?</h1><p>여러 개를 선택할 수 있습니다.</p><div class="choiceGrid multi" data-key="sports"><button data-value="헬스">🏋️ 헬스</button><button data-value="러닝">🏃 러닝</button><button data-value="축구/풋살">⚽ 축구/풋살</button><button data-value="홈트">🏠 홈트</button></div></div>
+<div class="onboardStep" data-step="4"><span class="stepIcon">04</span><h1>어떤 코치가 좋나요?</h1><p>대화 스타일도 나에게 맞춥니다.</p><div class="choiceGrid" data-key="coachStyle"><button data-value="직설적">🎯 직설적으로</button><button data-value="친근함">🤝 친근하게</button><button data-value="데이터 중심">📊 데이터 중심</button><button data-value="강하게 밀어붙이기">🔥 강하게 밀어붙여줘</button></div></div>
+<div class="onboardStep" data-step="5"><span class="stepIcon">05</span><h1>준비됐습니다.</h1><p>이제 GARANG이 당신의 기록을 기준으로 코칭합니다.</p><div class="onboardSummary" id="onboardSummary"></div></div>
+<div class="onboardingActions"><button class="ghostBtn" id="onPrev" type="button">이전</button><button class="primaryBtn" id="onNext" type="button">다음</button></div>
+</div>
 </section>
-
-<section id="workout" class="page">
+<section class="page" id="profile">
+<div class="pageTitle"><div><span class="eyebrow">PROFILE</span><h2>내 GARANG</h2><p>개인 정보는 코칭과 분석의 기준이 됩니다.</p></div><button class="ghostBtn" onclick="garangStartOnboarding()" type="button">온보딩 다시하기</button></div>
+<form class="card profileCard" id="profileForm">
+<div class="profileSection">
+<div class="profileSectionHead"><span class="profileIcon">01</span><div><strong>기본 정보</strong><small>GARANG이 나를 구분하는 데 사용하는 정보</small></div></div>
+<div class="profileGrid profileGrid2">
+<label class="profileField wide"><span>닉네임</span><input id="profName" placeholder="닉네임" required=""/></label>
+<label class="profileField"><span>성별</span><select id="profGender"><option value="">선택</option><option value="male">남성</option><option value="female">여성</option><option value="other">기타</option></select></label>
+<label class="profileField"><span>나이</span><input id="profAge" max="120" min="1" placeholder="22" type="number"/></label>
+</div>
+</div>
+<div class="profileSection">
+<div class="profileSectionHead"><span class="profileIcon">02</span><div><strong>신체 정보</strong><small>체중·목표·활동량을 코칭 계산에 사용합니다.</small></div></div>
+<div class="profileGrid profileGrid2">
+<label class="profileField"><span>키</span><input id="profHeight" placeholder="174" step=".1" type="number"/></label>
+<label class="profileField"><span>현재 체중</span><input id="profWeight" placeholder="67" step=".1" type="number"/></label>
+<label class="profileField"><span>목표 체중</span><input id="profTargetWeight" placeholder="68" step=".1" type="number"/></label>
+<label class="profileField"><span>활동 수준</span><select id="profActivity"><option value="">선택</option><option value="low">낮음</option><option value="normal">보통</option><option value="high">높음</option></select></label>
+</div>
+</div>
+<div class="profileSection">
+<div class="profileSectionHead"><span class="profileIcon">03</span><div><strong>코칭 설정</strong><small>AI가 나에게 맞는 방식으로 판단합니다.</small></div></div>
+<div class="profileGrid profileGrid2">
+<label class="profileField wide"><span>목표</span><input id="profGoal" placeholder="예: 근육 증가, 체지방 감량"/></label>
+<label class="profileField"><span>운동 경험</span><select id="profExperience"><option value="">선택</option><option value="beginner">초보</option><option value="intermediate">중급</option><option value="advanced">상급</option></select></label>
+<label class="profileField"><span>AI 코칭 스타일</span><select id="profCoachStyle"><option value="">선택</option><option value="직설적">직설적으로</option><option value="친근함">친근하게</option><option value="데이터 중심">데이터 중심</option><option value="강하게 밀어붙이기">강하게 밀어붙여줘</option></select></label>
+</div>
+</div>
+<button class="profileSaveBtn">정보 저장</button>
+</form>
+<div class="card accountCard">
+<div><span class="eyebrow">ACCOUNT</span><h3>계정 관리</h3><p class="muted" id="accountEmail"></p></div>
+<div class="accountActions"><button class="danger" onclick="logout()" type="button">로그아웃</button><button class="danger outline" onclick="deleteAccount()" type="button">계정 삭제</button></div>
+</div>
+</section>
+<section class="page" id="dashboard">
+<div class="dashTop"><div><span class="eyebrow">TODAY</span><h1 id="dashGreeting">좋은 하루예요.</h1><p>오늘의 기록과 코칭을 한눈에.</p></div><button class="iconAction" onclick="openPage('profile')">프로필</button></div>
+<div class="dashboardHero"><div><span>AI COACH</span><h2 id="coachTip">데이터를 입력하면 개인화된 제안을 만들어드려요.</h2></div><button onclick="openPage('chat')">코치에게 질문</button></div>
+<div class="grid statGrid"><div class="card statCard"><span>체중</span><b id="dashWeight">-</b><small>kg</small></div><div class="card statCard"><span>운동</span><b id="dashWorkout">0</b><small>회</small></div><div class="card statCard"><span>식단</span><b id="dashMeals">0</b><small>기록</small></div><div class="card statCard"><span>연속 기록</span><b id="dashStreak">0</b><small>일</small></div></div>
+<div class="dashboardColumns"><div class="card"><div class="sectionHead"><h3>오늘의 활동</h3><button onclick="openPage('workout')">기록하기</button></div><div class="activityFeed" id="dashActivityFeed"><p class="muted">아직 오늘의 기록이 없습니다.</p></div></div><div class="card"><div class="sectionHead"><h3>오늘의 목표</h3><button onclick="openPage('report')">리포트</button></div><div class="goalProgress" id="dashGoalProgress"></div></div></div>
+</section>
+<section class="page" id="workout">
 <div class="pageTitle"><div><span class="eyebrow">WORKOUT</span><h2>운동 기록</h2></div><button class="ghostBtn" onclick="openPage('running')">🏃 러닝</button></div>
-<form id="workoutForm" class="card">
-  <div class="exerciseSearchWrap">
-    <select id="exercise" required class="dbFullSelect"><option value="">운동을 선택하세요</option><option value="바벨 벤치프레스">바벨 벤치프레스 · 가슴 · </option><option value="인클라인 바벨 벤치프레스">인클라인 바벨 벤치프레스 · 가슴 · </option><option value="디클라인 바벨 벤치프레스">디클라인 바벨 벤치프레스 · 가슴 · </option><option value="덤벨 벤치프레스">덤벨 벤치프레스 · 가슴 · </option><option value="인클라인 덤벨 벤치프레스">인클라인 덤벨 벤치프레스 · 가슴 · </option><option value="디클라인 덤벨 벤치프레스">디클라인 덤벨 벤치프레스 · 가슴 · </option><option value="덤벨 플라이">덤벨 플라이 · 가슴 · </option><option value="인클라인 덤벨 플라이">인클라인 덤벨 플라이 · 가슴 · </option><option value="케이블 플라이">케이블 플라이 · 가슴 · </option><option value="하이 케이블 플라이">하이 케이블 플라이 · 가슴 · </option><option value="로우 케이블 플라이">로우 케이블 플라이 · 가슴 · </option><option value="머신 체스트프레스">머신 체스트프레스 · 가슴 · </option><option value="인클라인 머신 체스트프레스">인클라인 머신 체스트프레스 · 가슴 · </option><option value="디클라인 머신 체스트프레스">디클라인 머신 체스트프레스 · 가슴 · </option><option value="펙덱 플라이">펙덱 플라이 · 가슴 · </option><option value="스미스머신 벤치프레스">스미스머신 벤치프레스 · 가슴 · </option><option value="스미스머신 인클라인 벤치프레스">스미스머신 인클라인 벤치프레스 · 가슴 · </option><option value="스미스머신 디클라인 벤치프레스">스미스머신 디클라인 벤치프레스 · 가슴 · </option><option value="푸쉬업">푸쉬업 · 가슴 · </option><option value="와이드 푸쉬업">와이드 푸쉬업 · 가슴 · </option><option value="클로즈그립 푸쉬업">클로즈그립 푸쉬업 · 가슴 · </option><option value="디클라인 푸쉬업">디클라인 푸쉬업 · 가슴 · </option><option value="인클라인 푸쉬업">인클라인 푸쉬업 · 가슴 · </option><option value="아처 푸쉬업">아처 푸쉬업 · 가슴 · </option><option value="폭발적 푸쉬업">폭발적 푸쉬업 · 가슴 · </option><option value="체스트 딥스">체스트 딥스 · 가슴 · </option><option value="중량 딥스">중량 딥스 · 가슴 · </option><option value="링 딥스">링 딥스 · 가슴 · </option><option value="케이블 프레스">케이블 프레스 · 가슴 · </option><option value="덤벨 스퀴즈 프레스">덤벨 스퀴즈 프레스 · 가슴 · </option><option value="바벨 스퀴즈 프레스">바벨 스퀴즈 프레스 · 가슴 · </option><option value="랜드마인 프레스">랜드마인 프레스 · 가슴 · </option><option value="플레이트 프레스">플레이트 프레스 · 가슴 · </option><option value="머신 플라이">머신 플라이 · 가슴 · </option><option value="원암 케이블 플라이">원암 케이블 플라이 · 가슴 · </option><option value="원암 덤벨 플라이">원암 덤벨 플라이 · 가슴 · </option><option value="밴드 체스트프레스">밴드 체스트프레스 · 가슴 · </option><option value="밴드 플라이">밴드 플라이 · 가슴 · </option><option value="푸쉬업 플러스">푸쉬업 플러스 · 가슴 · </option><option value="Svend Press">Svend Press · 가슴 · </option><option value="풀업">풀업 · 등 · </option><option value="중량 풀업">중량 풀업 · 등 · </option><option value="친업">친업 · 등 · </option><option value="중량 친업">중량 친업 · 등 · </option><option value="어시스트 풀업">어시스트 풀업 · 등 · </option><option value="랫풀다운">랫풀다운 · 등 · </option><option value="와이드그립 랫풀다운">와이드그립 랫풀다운 · 등 · </option><option value="뉴트럴그립 랫풀다운">뉴트럴그립 랫풀다운 · 등 · </option><option value="언더그립 랫풀다운">언더그립 랫풀다운 · 등 · </option><option value="클로즈그립 랫풀다운">클로즈그립 랫풀다운 · 등 · </option><option value="원암 랫풀다운">원암 랫풀다운 · 등 · </option><option value="스트레이트암 풀다운">스트레이트암 풀다운 · 등 · </option><option value="케이블 풀오버">케이블 풀오버 · 등 · </option><option value="덤벨 풀오버">덤벨 풀오버 · 등 · </option><option value="바벨 로우">바벨 로우 · 등 · </option><option value="펜들레이 로우">펜들레이 로우 · 등 · </option><option value="벤트오버 바벨로우">벤트오버 바벨로우 · 등 · </option><option value="Yates 로우">Yates 로우 · 등 · </option><option value="원암 덤벨로우">원암 덤벨로우 · 등 · </option><option value="체스트서포티드 덤벨로우">체스트서포티드 덤벨로우 · 등 · </option><option value="티바로우">티바로우 · 등 · </option><option value="머신 티바로우">머신 티바로우 · 등 · </option><option value="시티드 케이블로우">시티드 케이블로우 · 등 · </option><option value="와이드 케이블로우">와이드 케이블로우 · 등 · </option><option value="클로즈그립 케이블로우">클로즈그립 케이블로우 · 등 · </option><option value="원암 케이블로우">원암 케이블로우 · 등 · </option><option value="머신 로우">머신 로우 · 등 · </option><option value="하이로우 머신">하이로우 머신 · 등 · </option><option value="로우로우 머신">로우로우 머신 · 등 · </option><option value="랜드마인 로우">랜드마인 로우 · 등 · </option><option value="인버티드 로우">인버티드 로우 · 등 · </option><option value="링 로우">링 로우 · 등 · </option><option value="바벨 슈러그">바벨 슈러그 · 등 · </option><option value="덤벨 슈러그">덤벨 슈러그 · 등 · </option><option value="머신 슈러그">머신 슈러그 · 등 · </option><option value="케이블 슈러그">케이블 슈러그 · 등 · </option><option value="랙풀">랙풀 · 등 · </option><option value="데드리프트">데드리프트 · 등 · </option><option value="컨벤셔널 데드리프트">컨벤셔널 데드리프트 · 등 · </option><option value="루마니안 데드리프트">루마니안 데드리프트 · 등 · </option><option value="스모 데드리프트">스모 데드리프트 · 등 · </option><option value="바벨 굿모닝">바벨 굿모닝 · 등 · </option><option value="백 익스텐션">백 익스텐션 · 등 · </option><option value="중량 백 익스텐션">중량 백 익스텐션 · 등 · </option><option value="리버스 하이퍼">리버스 하이퍼 · 등 · </option><option value="케이블 페이스풀">케이블 페이스풀 · 등 · </option><option value="밴드 풀어파트">밴드 풀어파트 · 등 · </option><option value="TRX 로우">TRX 로우 · 등 · </option><option value="TRX 페이스풀">TRX 페이스풀 · 등 · </option><option value="바벨 오버헤드프레스">바벨 오버헤드프레스 · 어깨 · </option><option value="밀리터리 프레스">밀리터리 프레스 · 어깨 · </option><option value="푸쉬프레스">푸쉬프레스 · 어깨 · </option><option value="덤벨 숄더프레스">덤벨 숄더프레스 · 어깨 · </option><option value="아놀드 프레스">아놀드 프레스 · 어깨 · </option><option value="시티드 덤벨 숄더프레스">시티드 덤벨 숄더프레스 · 어깨 · </option><option value="머신 숄더프레스">머신 숄더프레스 · 어깨 · </option><option value="스미스 숄더프레스">스미스 숄더프레스 · 어깨 · </option><option value="랜드마인 숄더프레스">랜드마인 숄더프레스 · 어깨 · </option><option value="덤벨 레터럴레이즈">덤벨 레터럴레이즈 · 어깨 · </option><option value="케이블 레터럴레이즈">케이블 레터럴레이즈 · 어깨 · </option><option value="원암 케이블 레터럴레이즈">원암 케이블 레터럴레이즈 · 어깨 · </option><option value="머신 레터럴레이즈">머신 레터럴레이즈 · 어깨 · </option><option value="밴드 레터럴레이즈">밴드 레터럴레이즈 · 어깨 · </option><option value="덤벨 프론트레이즈">덤벨 프론트레이즈 · 어깨 · </option><option value="케이블 프론트레이즈">케이블 프론트레이즈 · 어깨 · </option><option value="플레이트 프론트레이즈">플레이트 프론트레이즈 · 어깨 · </option><option value="바벨 프론트레이즈">바벨 프론트레이즈 · 어깨 · </option><option value="덤벨 리어델트 플라이">덤벨 리어델트 플라이 · 어깨 · </option><option value="머신 리어델트 플라이">머신 리어델트 플라이 · 어깨 · </option><option value="케이블 리어델트 플라이">케이블 리어델트 플라이 · 어깨 · </option><option value="벤트오버 레터럴레이즈">벤트오버 레터럴레이즈 · 어깨 · </option><option value="페이스풀">페이스풀 · 어깨 · </option><option value="케이블 Y레이즈">케이블 Y레이즈 · 어깨 · </option><option value="덤벨 Y레이즈">덤벨 Y레이즈 · 어깨 · </option><option value="바벨 업라이트로우">바벨 업라이트로우 · 어깨 · </option><option value="케이블 업라이트로우">케이블 업라이트로우 · 어깨 · </option><option value="덤벨 업라이트로우">덤벨 업라이트로우 · 어깨 · </option><option value="핸드스탠드 푸쉬업">핸드스탠드 푸쉬업 · 어깨 · </option><option value="파이크 푸쉬업">파이크 푸쉬업 · 어깨 · </option><option value="덤벨 클린앤프레스">덤벨 클린앤프레스 · 어깨 · </option><option value="바벨 클린앤프레스">바벨 클린앤프레스 · 어깨 · </option><option value="케틀벨 클린앤프레스">케틀벨 클린앤프레스 · 어깨 · </option><option value="터키시 겟업">터키시 겟업 · 어깨 · </option><option value="배틀로프 숄더">배틀로프 숄더 · 어깨 · </option><option value="바벨 컬">바벨 컬 · 이두 · </option><option value="EZ바 컬">EZ바 컬 · 이두 · </option><option value="덤벨 컬">덤벨 컬 · 이두 · </option><option value="교차 덤벨 컬">교차 덤벨 컬 · 이두 · </option><option value="해머 컬">해머 컬 · 이두 · </option><option value="인클라인 덤벨 컬">인클라인 덤벨 컬 · 이두 · </option><option value="프리처 컬">프리처 컬 · 이두 · </option><option value="EZ바 프리처 컬">EZ바 프리처 컬 · 이두 · </option><option value="머신 프리처 컬">머신 프리처 컬 · 이두 · </option><option value="케이블 컬">케이블 컬 · 이두 · </option><option value="원암 케이블 컬">원암 케이블 컬 · 이두 · </option><option value="로프 해머 컬">로프 해머 컬 · 이두 · </option><option value="케이블 해머 컬">케이블 해머 컬 · 이두 · </option><option value="리버스 컬">리버스 컬 · 이두 · </option><option value="EZ바 리버스 컬">EZ바 리버스 컬 · 이두 · </option><option value="덤벨 리버스 컬">덤벨 리버스 컬 · 이두 · </option><option value="컨센트레이션 컬">컨센트레이션 컬 · 이두 · </option><option value="스파이더 컬">스파이더 컬 · 이두 · </option><option value="드래그 컬">드래그 컬 · 이두 · </option><option value="바벨 드래그 컬">바벨 드래그 컬 · 이두 · </option><option value="21 컬">21 컬 · 이두 · </option><option value="Zottman 컬">Zottman 컬 · 이두 · </option><option value="덤벨 얼터네이트 컬">덤벨 얼터네이트 컬 · 이두 · </option><option value="시티드 덤벨 컬">시티드 덤벨 컬 · 이두 · </option><option value="월 컬">월 컬 · 이두 · </option><option value="밴드 컬">밴드 컬 · 이두 · </option><option value="TRX 컬">TRX 컬 · 이두 · </option><option value="케이블 프리처 컬">케이블 프리처 컬 · 이두 · </option><option value="클로즈그립 벤치프레스">클로즈그립 벤치프레스 · 삼두 · </option><option value="중량 클로즈그립 벤치프레스">중량 클로즈그립 벤치프레스 · 삼두 · </option><option value="딥스">딥스 · 삼두 · </option><option value="케이블 푸쉬다운">케이블 푸쉬다운 · 삼두 · </option><option value="로프 푸쉬다운">로프 푸쉬다운 · 삼두 · </option><option value="바 푸쉬다운">바 푸쉬다운 · 삼두 · </option><option value="V바 푸쉬다운">V바 푸쉬다운 · 삼두 · </option><option value="원암 케이블 푸쉬다운">원암 케이블 푸쉬다운 · 삼두 · </option><option value="리버스그립 푸쉬다운">리버스그립 푸쉬다운 · 삼두 · </option><option value="오버헤드 케이블 익스텐션">오버헤드 케이블 익스텐션 · 삼두 · </option><option value="로프 오버헤드 익스텐션">로프 오버헤드 익스텐션 · 삼두 · </option><option value="덤벨 오버헤드 익스텐션">덤벨 오버헤드 익스텐션 · 삼두 · </option><option value="원암 덤벨 오버헤드 익스텐션">원암 덤벨 오버헤드 익스텐션 · 삼두 · </option><option value="EZ바 스컬크러셔">EZ바 스컬크러셔 · 삼두 · </option><option value="바벨 스컬크러셔">바벨 스컬크러셔 · 삼두 · </option><option value="덤벨 스컬크러셔">덤벨 스컬크러셔 · 삼두 · </option><option value="인클라인 스컬크러셔">인클라인 스컬크러셔 · 삼두 · </option><option value="JM 프레스">JM 프레스 · 삼두 · </option><option value="덤벨 킥백">덤벨 킥백 · 삼두 · </option><option value="케이블 킥백">케이블 킥백 · 삼두 · </option><option value="원암 케이블 킥백">원암 케이블 킥백 · 삼두 · </option><option value="벤치 딥스">벤치 딥스 · 삼두 · </option><option value="다이아몬드 푸쉬업">다이아몬드 푸쉬업 · 삼두 · </option><option value="밴드 푸쉬다운">밴드 푸쉬다운 · 삼두 · </option><option value="밴드 오버헤드 익스텐션">밴드 오버헤드 익스텐션 · 삼두 · </option><option value="크런치">크런치 · 복근 · </option><option value="리버스 크런치">리버스 크런치 · 복근 · </option><option value="케이블 크런치">케이블 크런치 · 복근 · </option><option value="중량 크런치">중량 크런치 · 복근 · </option><option value="바이시클 크런치">바이시클 크런치 · 복근 · </option><option value="플러터 킥">플러터 킥 · 복근 · </option><option value="레그레이즈">레그레이즈 · 복근 · </option><option value="행잉 레그레이즈">행잉 레그레이즈 · 복근 · </option><option value="행잉 니레이즈">행잉 니레이즈 · 복근 · </option><option value="중량 행잉 니레이즈">중량 행잉 니레이즈 · 복근 · </option><option value="캡틴스체어 니레이즈">캡틴스체어 니레이즈 · 복근 · </option><option value="캡틴스체어 레그레이즈">캡틴스체어 레그레이즈 · 복근 · </option><option value="바닥 레그레이즈">바닥 레그레이즈 · 복근 · </option><option value="사이드 레그레이즈">사이드 레그레이즈 · 복근 · </option><option value="V업">V업 · 복근 · </option><option value="시티드 V업">시티드 V업 · 복근 · </option><option value="토터치">토터치 · 복근 · </option><option value="러시안 트위스트">러시안 트위스트 · 복근 · </option><option value="중량 러시안 트위스트">중량 러시안 트위스트 · 복근 · </option><option value="윈드실드 와이퍼">윈드실드 와이퍼 · 복근 · </option><option value="행잉 윈드실드 와이퍼">행잉 윈드실드 와이퍼 · 복근 · </option><option value="플랭크">플랭크 · 복근 · </option><option value="사이드 플랭크">사이드 플랭크 · 복근 · </option><option value="RKC 플랭크">RKC 플랭크 · 복근 · </option><option value="중량 플랭크">중량 플랭크 · 복근 · </option><option value="플랭크 잭">플랭크 잭 · 복근 · </option><option value="마운틴 클라이머">마운틴 클라이머 · 복근 · </option><option value="데드버그">데드버그 · 복근 · </option><option value="버드독">버드독 · 복근 · </option><option value="할로우 바디 홀드">할로우 바디 홀드 · 복근 · </option><option value="할로우 락">할로우 락 · 복근 · </option><option value="슈퍼맨">슈퍼맨 · 복근 · </option><option value="AB 롤아웃">AB 롤아웃 · 복근 · </option><option value="바벨 롤아웃">바벨 롤아웃 · 복근 · </option><option value="케이블 롤아웃">케이블 롤아웃 · 복근 · </option><option value="짐볼 크런치">짐볼 크런치 · 복근 · </option><option value="짐볼 레그레이즈">짐볼 레그레이즈 · 복근 · </option><option value="팔로프 프레스">팔로프 프레스 · 복근 · </option><option value="케이블 우드초퍼">케이블 우드초퍼 · 복근 · </option><option value="하이투로우 우드초퍼">하이투로우 우드초퍼 · 복근 · </option><option value="로우투하이 우드초퍼">로우투하이 우드초퍼 · 복근 · </option><option value="사이드 밴드">사이드 밴드 · 복근 · </option><option value="덤벨 사이드 밴드">덤벨 사이드 밴드 · 복근 · </option><option value="케이블 사이드 밴드">케이블 사이드 밴드 · 복근 · </option><option value="니투엘보우">니투엘보우 · 복근 · </option><option value="엘보우투니 크런치">엘보우투니 크런치 · 복근 · </option><option value="백스쿼트">백스쿼트 · 하체 · </option><option value="프론트스쿼트">프론트스쿼트 · 하체 · </option><option value="하이바 스쿼트">하이바 스쿼트 · 하체 · </option><option value="로우바 스쿼트">로우바 스쿼트 · 하체 · </option><option value="박스 스쿼트">박스 스쿼트 · 하체 · </option><option value="핵 스쿼트">핵 스쿼트 · 하체 · </option><option value="스미스 스쿼트">스미스 스쿼트 · 하체 · </option><option value="고블릿 스쿼트">고블릿 스쿼트 · 하체 · </option><option value="덤벨 스쿼트">덤벨 스쿼트 · 하체 · </option><option value="불가리안 스플릿 스쿼트">불가리안 스플릿 스쿼트 · 하체 · </option><option value="런지">런지 · 하체 · </option><option value="워킹 런지">워킹 런지 · 하체 · </option><option value="리버스 런지">리버스 런지 · 하체 · </option><option value="사이드 런지">사이드 런지 · 하체 · </option><option value="점프 스쿼트">점프 스쿼트 · 하체 · </option><option value="스텝업">스텝업 · 하체 · </option><option value="중량 스텝업">중량 스텝업 · 하체 · </option><option value="레그프레스">레그프레스 · 하체 · </option><option value="45도 레그프레스">45도 레그프레스 · 하체 · </option><option value="수평 레그프레스">수평 레그프레스 · 하체 · </option><option value="레그익스텐션">레그익스텐션 · 하체 · </option><option value="시티드 레그컬">시티드 레그컬 · 하체 · </option><option value="라잉 레그컬">라잉 레그컬 · 하체 · </option><option value="스탠딩 레그컬">스탠딩 레그컬 · 하체 · </option><option value="노르딕 햄스트링 컬">노르딕 햄스트링 컬 · 하체 · </option><option value="스티프레그 데드리프트">스티프레그 데드리프트 · 하체 · </option><option value="힙쓰러스트">힙쓰러스트 · 하체 · </option><option value="바벨 힙쓰러스트">바벨 힙쓰러스트 · 하체 · </option><option value="덤벨 힙쓰러스트">덤벨 힙쓰러스트 · 하체 · </option><option value="글루트 브리지">글루트 브리지 · 하체 · </option><option value="싱글레그 글루트 브리지">싱글레그 글루트 브리지 · 하체 · </option><option value="힙 어브덕션">힙 어브덕션 · 하체 · </option><option value="힙 어덕션">힙 어덕션 · 하체 · </option><option value="카프레이즈">카프레이즈 · 하체 · </option><option value="스탠딩 카프레이즈">스탠딩 카프레이즈 · 하체 · </option><option value="시티드 카프레이즈">시티드 카프레이즈 · 하체 · </option><option value="레그프레스 카프레이즈">레그프레스 카프레이즈 · 하체 · </option><option value="싱글레그 카프레이즈">싱글레그 카프레이즈 · 하체 · </option><option value="스모 스쿼트">스모 스쿼트 · 하체 · </option><option value="코사크 스쿼트">코사크 스쿼트 · 하체 · </option><option value="케틀벨 스윙">케틀벨 스윙 · 하체 · </option><option value="프론트 런지">프론트 런지 · 하체 · </option><option value="리어풋 엘리베이티드 스플릿 스쿼트">리어풋 엘리베이티드 스플릿 스쿼트 · 하체 · </option><option value="싱글레그 RDL">싱글레그 RDL · 하체 · </option><option value="버피">버피 · 전신/컨디셔닝 · </option><option value="점프 버피">점프 버피 · 전신/컨디셔닝 · </option><option value="점핑잭">점핑잭 · 전신/컨디셔닝 · </option><option value="하이니">하이니 · 전신/컨디셔닝 · </option><option value="스케이터 점프">스케이터 점프 · 전신/컨디셔닝 · </option><option value="배틀로프">배틀로프 · 전신/컨디셔닝 · </option><option value="케틀벨 스내치">케틀벨 스내치 · 전신/컨디셔닝 · </option><option value="케틀벨 클린">케틀벨 클린 · 전신/컨디셔닝 · </option><option value="케틀벨 터키시 겟업">케틀벨 터키시 겟업 · 전신/컨디셔닝 · </option><option value="덤벨 스내치">덤벨 스내치 · 전신/컨디셔닝 · </option><option value="덤벨 클린">덤벨 클린 · 전신/컨디셔닝 · </option><option value="바벨 클린">바벨 클린 · 전신/컨디셔닝 · </option><option value="파워클린">파워클린 · 전신/컨디셔닝 · </option><option value="행클린">행클린 · 전신/컨디셔닝 · </option><option value="클린앤저크">클린앤저크 · 전신/컨디셔닝 · </option><option value="푸쉬저크">푸쉬저크 · 전신/컨디셔닝 · </option><option value="스플릿저크">스플릿저크 · 전신/컨디셔닝 · </option><option value="썰매 밀기">썰매 밀기 · 전신/컨디셔닝 · </option><option value="썰매 끌기">썰매 끌기 · 전신/컨디셔닝 · </option><option value="농부걷기">농부걷기 · 전신/컨디셔닝 · </option><option value="수트케이스 캐리">수트케이스 캐리 · 전신/컨디셔닝 · </option><option value="프론트랙 캐리">프론트랙 캐리 · 전신/컨디셔닝 · </option><option value="오버헤드 캐리">오버헤드 캐리 · 전신/컨디셔닝 · </option><option value="샌드백 캐리">샌드백 캐리 · 전신/컨디셔닝 · </option><option value="샌드백 스쿼트">샌드백 스쿼트 · 전신/컨디셔닝 · </option><option value="샌드백 런지">샌드백 런지 · 전신/컨디셔닝 · </option><option value="로프 클라임">로프 클라임 · 전신/컨디셔닝 · </option><option value="배틀로프 웨이브">배틀로프 웨이브 · 전신/컨디셔닝 · </option><option value="배틀로프 슬램">배틀로프 슬램 · 전신/컨디셔닝 · </option><option value="메디신볼 슬램">메디신볼 슬램 · 전신/컨디셔닝 · </option><option value="메디신볼 로테이션 스로우">메디신볼 로테이션 스로우 · 전신/컨디셔닝 · </option><option value="메디신볼 체스트패스">메디신볼 체스트패스 · 전신/컨디셔닝 · </option><option value="메디신볼 오버헤드스로우">메디신볼 오버헤드스로우 · 전신/컨디셔닝 · </option></select>
-    <div id="exerciseSearchResults" class="foodResults"></div>
-  </div>
-  <div class="row"><input id="sets" type="number" min="1" placeholder="세트" required><input id="reps" type="number" min="1" placeholder="반복" required><input id="weight" type="number" min="0" step=".5" placeholder="kg"></div>
-  <div class="row"><input id="duration" type="number" min="1" placeholder="운동시간(분)"><input id="rpe" type="number" min="1" max="10" step=".5" placeholder="RPE 1~10"></div>
-  <textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
-  <button>운동 저장</button>
+<form class="card" id="workoutForm">
+<div class="exerciseSearchWrap">
+<div class="dbSearchField"><input autocomplete="off" id="exercise" placeholder="운동 검색 · 예: 벤치프레스" required=""/><button aria-label="운동 DB 검색" class="dbSearchButton" id="exerciseSearchButton" type="button">⌕</button></div>
+<div class="foodResults" id="exerciseSearchResults"></div>
+</div>
+<div class="row"><input id="sets" min="1" placeholder="세트" required="" type="number"/><input id="reps" min="1" placeholder="반복" required="" type="number"/><input id="weight" min="0" placeholder="kg" step=".5" type="number"/></div>
+<div class="row"><input id="duration" min="1" placeholder="운동시간(분)" type="number"/><input id="rpe" max="10" min="1" placeholder="RPE 1~10" step=".5" type="number"/></div>
+<textarea id="workoutNote" placeholder="난이도/컨디션/메모"></textarea>
+<button>운동 저장</button>
 </form>
-
 <div class="batchCard" id="fitmindBatchWorkoutCard">
-  <div class="batchHead"><h3>🏋️ 여러 운동 한 번에 기록</h3><button type="button" id="addBatchWorkout">＋ 운동 추가</button><datalist id="fitmindExerciseList"></datalist>
+<div class="batchHead"><h3>🏋️ 여러 운동 한 번에 기록</h3><button id="addBatchWorkout" type="button">＋ 운동 추가</button><datalist id="fitmindExerciseList"></datalist>
 </div>
-  <div class="batchRows" id="batchWorkoutRows"></div>
-  <div class="batchTotals">
-    <div class="batchMetric"><span>총 볼륨</span><strong id="batchWorkoutVolume">0 kg</strong></div>
-    <div class="batchMetric"><span>총 소모</span><strong id="batchWorkoutKcal">0 kcal</strong></div>
-    <div class="batchMetric"><span>총 세트</span><strong id="batchWorkoutSets">0 세트</strong></div>
-    <div class="batchMetric"><span>운동시간</span><strong id="batchWorkoutTime">0 분</strong></div>
-  </div>
-  <div class="batchActions"><button type="button" id="saveBatchWorkout">한 번에 운동 저장</button></div>
-  <p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
+<div class="batchRows" id="batchWorkoutRows"></div>
+<div class="batchTotals">
+<div class="batchMetric"><span>총 볼륨</span><strong id="batchWorkoutVolume">0 kg</strong></div>
+<div class="batchMetric"><span>총 소모</span><strong id="batchWorkoutKcal">0 kcal</strong></div>
+<div class="batchMetric"><span>총 세트</span><strong id="batchWorkoutSets">0 세트</strong></div>
+<div class="batchMetric"><span>운동시간</span><strong id="batchWorkoutTime">0 분</strong></div>
 </div>
-<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공 · 9:16 / 16:9</span></div><button class="ghostBtn" type="button" onclick="GARANGV86.openCertification(GARANGV86.summary())">인증 만들기</button></div>
-<div id="todayWorkoutCalorieCard" class="card" style="margin:12px 0;">
+<div class="batchActions"><button id="saveBatchWorkout" type="button">한 번에 운동 저장</button></div>
+<p class="batchHint">여러 운동을 추가하면 저장 전에 전체 볼륨·세트·운동시간·예상 소비 칼로리를 실시간으로 합산합니다.</p>
+</div>
+<div class="card quickShareCard"><div><b>운동 인증</b><span class="muted">내 사진이 주인공 · 9:16 / 16:9</span></div><button class="ghostBtn" onclick="GARANGV86.openCertification(GARANGV86.summary())" type="button">인증 만들기</button></div>
+<div class="card" id="todayWorkoutCalorieCard" style="margin:12px 0;">
 <div style="font-weight:700;">🔥 오늘 운동 소비 칼로리</div>
 <div id="todayWorkoutCalories" style="font-size:30px;font-weight:800;margin:6px 0;">0 kcal</div>
-<div id="todayWorkoutCalorieMeta" class="muted">운동시간 0분 · 추정치</div>
+<div class="muted" id="todayWorkoutCalorieMeta">운동시간 0분 · 추정치</div>
 </div>
 <div id="workoutList"></div>
 <div id="workoutShareMount"></div>
 </section>
-
-<section id="diet" class="page">
+<section class="page" id="diet">
 <div class="pageTitle"><div><span class="eyebrow">NUTRITION</span><h2>식단</h2></div></div>
-<form id="mealForm" class="card">
-  <label class="fieldLabel">음식 검색</label>
-  <div class="foodSearchWrap">
-    <select id="meal" required class="dbFullSelect"><option value="">음식을 선택하세요</option><option value="흰쌀밥">흰쌀밥 · 밥/곡류/면 · 313 kcal/100g</option><option value="현미밥">현미밥 · 밥/곡류/면 · 157 kcal/100g</option><option value="잡곡밥">잡곡밥 · 밥/곡류/면 · 173 kcal/100g</option><option value="보리밥">보리밥 · 밥/곡류/면 · 251 kcal/100g</option><option value="귀리밥">귀리밥 · 밥/곡류/면 · 328 kcal/100g</option><option value="콩밥">콩밥 · 밥/곡류/면 · 196 kcal/100g</option><option value="흑미밥">흑미밥 · 밥/곡류/면 · 274 kcal/100g</option><option value="곤드레밥">곤드레밥 · 밥/곡류/면 · 352 kcal/100g</option><option value="버섯밥">버섯밥 · 밥/곡류/면 · 219 kcal/100g</option><option value="김치볶음밥">김치볶음밥 · 밥/곡류/면 · 297 kcal/100g</option><option value="새우볶음밥">새우볶음밥 · 밥/곡류/면 · 165 kcal/100g</option><option value="참치볶음밥">참치볶음밥 · 밥/곡류/면 · 242 kcal/100g</option><option value="계란볶음밥">계란볶음밥 · 밥/곡류/면 · 320 kcal/100g</option><option value="햄볶음밥">햄볶음밥 · 밥/곡류/면 · 188 kcal/100g</option><option value="소고기볶음밥">소고기볶음밥 · 밥/곡류/면 · 266 kcal/100g</option><option value="닭가슴살볶음밥">닭가슴살볶음밥 · 밥/곡류/면 · 343 kcal/100g</option><option value="카레라이스">카레라이스 · 밥/곡류/면 · 211 kcal/100g</option><option value="하이라이스">하이라이스 · 밥/곡류/면 · 289 kcal/100g</option><option value="오므라이스">오므라이스 · 밥/곡류/면 · 156 kcal/100g</option><option value="비빔밥">비빔밥 · 밥/곡류/면 · 234 kcal/100g</option><option value="돌솥비빔밥">돌솥비빔밥 · 밥/곡류/면 · 312 kcal/100g</option><option value="육회비빔밥">육회비빔밥 · 밥/곡류/면 · 179 kcal/100g</option><option value="불고기덮밥">불고기덮밥 · 밥/곡류/면 · 257 kcal/100g</option><option value="제육덮밥">제육덮밥 · 밥/곡류/면 · 335 kcal/100g</option><option value="오징어덮밥">오징어덮밥 · 밥/곡류/면 · 202 kcal/100g</option><option value="참치마요덮밥">참치마요덮밥 · 밥/곡류/면 · 280 kcal/100g</option><option value="치킨마요덮밥">치킨마요덮밥 · 밥/곡류/면 · 358 kcal/100g</option><option value="장어덮밥">장어덮밥 · 밥/곡류/면 · 226 kcal/100g</option><option value="연어덮밥">연어덮밥 · 밥/곡류/면 · 303 kcal/100g</option><option value="규동">규동 · 밥/곡류/면 · 171 kcal/100g</option><option value="김치덮밥">김치덮밥 · 밥/곡류/면 · 249 kcal/100g</option><option value="돈가스덮밥">돈가스덮밥 · 밥/곡류/면 · 326 kcal/100g</option><option value="마파두부덮밥">마파두부덮밥 · 밥/곡류/면 · 194 kcal/100g</option><option value="잡채밥">잡채밥 · 밥/곡류/면 · 272 kcal/100g</option><option value="짜장밥">짜장밥 · 밥/곡류/면 · 350 kcal/100g</option><option value="짬뽕밥">짬뽕밥 · 밥/곡류/면 · 217 kcal/100g</option><option value="볶음밥">볶음밥 · 밥/곡류/면 · 295 kcal/100g</option><option value="잔치국수">잔치국수 · 밥/곡류/면 · 163 kcal/100g</option><option value="비빔국수">비빔국수 · 밥/곡류/면 · 240 kcal/100g</option><option value="칼국수">칼국수 · 밥/곡류/면 · 318 kcal/100g</option><option value="바지락칼국수">바지락칼국수 · 밥/곡류/면 · 186 kcal/100g</option><option value="멸치국수">멸치국수 · 밥/곡류/면 · 263 kcal/100g</option><option value="김치말이국수">김치말이국수 · 밥/곡류/면 · 341 kcal/100g</option><option value="냉면">냉면 · 밥/곡류/면 · 209 kcal/100g</option><option value="물냉면">물냉면 · 밥/곡류/면 · 286 kcal/100g</option><option value="비빔냉면">비빔냉면 · 밥/곡류/면 · 154 kcal/100g</option><option value="막국수">막국수 · 밥/곡류/면 · 232 kcal/100g</option><option value="쫄면">쫄면 · 밥/곡류/면 · 310 kcal/100g</option><option value="우동">우동 · 밥/곡류/면 · 177 kcal/100g</option><option value="메밀소바">메밀소바 · 밥/곡류/면 · 255 kcal/100g</option><option value="김치찌개">김치찌개 · 국/찌개/탕 · 150 kcal/100g</option><option value="된장찌개">된장찌개 · 국/찌개/탕 · 120 kcal/100g</option><option value="순두부찌개">순두부찌개 · 국/찌개/탕 · 306 kcal/100g</option><option value="부대찌개">부대찌개 · 국/찌개/탕 · 443 kcal/100g</option><option value="청국장찌개">청국장찌개 · 국/찌개/탕 · 210 kcal/100g</option><option value="고추장찌개">고추장찌개 · 국/찌개/탕 · 346 kcal/100g</option><option value="동태찌개">동태찌개 · 국/찌개/탕 · 113 kcal/100g</option><option value="참치김치찌개">참치김치찌개 · 국/찌개/탕 · 250 kcal/100g</option><option value="돼지고기김치찌개">돼지고기김치찌개 · 국/찌개/탕 · 387 kcal/100g</option><option value="비지찌개">비지찌개 · 국/찌개/탕 · 154 kcal/100g</option><option value="콩나물국">콩나물국 · 국/찌개/탕 · 291 kcal/100g</option><option value="미역국">미역국 · 국/찌개/탕 · 428 kcal/100g</option><option value="소고기미역국">소고기미역국 · 국/찌개/탕 · 195 kcal/100g</option><option value="황태국">황태국 · 국/찌개/탕 · 332 kcal/100g</option><option value="북엇국">북엇국 · 국/찌개/탕 · 98 kcal/100g</option><option value="무국">무국 · 국/찌개/탕 · 235 kcal/100g</option><option value="소고기무국">소고기무국 · 국/찌개/탕 · 372 kcal/100g</option><option value="배추된장국">배추된장국 · 국/찌개/탕 · 139 kcal/100g</option><option value="시금치된장국">시금치된장국 · 국/찌개/탕 · 276 kcal/100g</option><option value="아욱국">아욱국 · 국/찌개/탕 · 413 kcal/100g</option><option value="시래기국">시래기국 · 국/찌개/탕 · 180 kcal/100g</option><option value="감자국">감자국 · 국/찌개/탕 · 317 kcal/100g</option><option value="계란국">계란국 · 국/찌개/탕 · 84 kcal/100g</option><option value="어묵국">어묵국 · 국/찌개/탕 · 221 kcal/100g</option><option value="콩나물해장국">콩나물해장국 · 국/찌개/탕 · 358 kcal/100g</option><option value="육개장">육개장 · 국/찌개/탕 · 124 kcal/100g</option><option value="설렁탕">설렁탕 · 국/찌개/탕 · 261 kcal/100g</option><option value="곰탕">곰탕 · 국/찌개/탕 · 398 kcal/100g</option><option value="갈비탕">갈비탕 · 국/찌개/탕 · 165 kcal/100g</option><option value="삼계탕">삼계탕 · 국/찌개/탕 · 302 kcal/100g</option><option value="닭곰탕">닭곰탕 · 국/찌개/탕 · 439 kcal/100g</option><option value="감자탕">감자탕 · 국/찌개/탕 · 206 kcal/100g</option><option value="순대국">순대국 · 국/찌개/탕 · 343 kcal/100g</option><option value="돼지국밥">돼지국밥 · 국/찌개/탕 · 110 kcal/100g</option><option value="소고기국밥">소고기국밥 · 국/찌개/탕 · 246 kcal/100g</option><option value="추어탕">추어탕 · 국/찌개/탕 · 383 kcal/100g</option><option value="매운탕">매운탕 · 국/찌개/탕 · 150 kcal/100g</option><option value="알탕">알탕 · 국/찌개/탕 · 287 kcal/100g</option><option value="대구탕">대구탕 · 국/찌개/탕 · 424 kcal/100g</option><option value="아귀탕">아귀탕 · 국/찌개/탕 · 191 kcal/100g</option><option value="동태탕">동태탕 · 국/찌개/탕 · 328 kcal/100g</option><option value="해물탕">해물탕 · 국/찌개/탕 · 95 kcal/100g</option><option value="꽃게탕">꽃게탕 · 국/찌개/탕 · 232 kcal/100g</option><option value="조개탕">조개탕 · 국/찌개/탕 · 369 kcal/100g</option><option value="닭개장">닭개장 · 국/찌개/탕 · 136 kcal/100g</option><option value="만두국">만두국 · 국/찌개/탕 · 272 kcal/100g</option><option value="떡국">떡국 · 국/찌개/탕 · 409 kcal/100g</option><option value="떡만두국">떡만두국 · 국/찌개/탕 · 176 kcal/100g</option><option value="우거지국">우거지국 · 국/찌개/탕 · 313 kcal/100g</option><option value="토란국">토란국 · 국/찌개/탕 · 80 kcal/100g</option><option value="삼겹살구이">삼겹살구이 · 고기/구이/볶음 · 220 kcal/100g</option><option value="목살구이">목살구이 · 고기/구이/볶음 · 354 kcal/100g</option><option value="항정살구이">항정살구이 · 고기/구이/볶음 · 121 kcal/100g</option><option value="돼지갈비구이">돼지갈비구이 · 고기/구이/볶음 · 258 kcal/100g</option><option value="돼지불고기">돼지불고기 · 고기/구이/볶음 · 394 kcal/100g</option><option value="제육볶음">제육볶음 · 고기/구이/볶음 · 161 kcal/100g</option><option value="돼지고기수육">돼지고기수육 · 고기/구이/볶음 · 298 kcal/100g</option><option value="돼지고기보쌈">돼지고기보쌈 · 고기/구이/볶음 · 435 kcal/100g</option><option value="돼지껍데기">돼지껍데기 · 고기/구이/볶음 · 202 kcal/100g</option><option value="돼지갈비찜">돼지갈비찜 · 고기/구이/볶음 · 339 kcal/100g</option><option value="소불고기">소불고기 · 고기/구이/볶음 · 106 kcal/100g</option><option value="소갈비구이">소갈비구이 · 고기/구이/볶음 · 243 kcal/100g</option><option value="소갈비찜">소갈비찜 · 고기/구이/볶음 · 380 kcal/100g</option><option value="소등심구이">소등심구이 · 고기/구이/볶음 · 147 kcal/100g</option><option value="소안심구이">소안심구이 · 고기/구이/볶음 · 284 kcal/100g</option><option value="소채끝구이">소채끝구이 · 고기/구이/볶음 · 420 kcal/100g</option><option value="소부채살구이">소부채살구이 · 고기/구이/볶음 · 187 kcal/100g</option><option value="소곱창구이">소곱창구이 · 고기/구이/볶음 · 324 kcal/100g</option><option value="소막창구이">소막창구이 · 고기/구이/볶음 · 91 kcal/100g</option><option value="소대창구이">소대창구이 · 고기/구이/볶음 · 228 kcal/100g</option><option value="차돌박이구이">차돌박이구이 · 고기/구이/볶음 · 365 kcal/100g</option><option value="우삼겹구이">우삼겹구이 · 고기/구이/볶음 · 132 kcal/100g</option><option value="장조림">장조림 · 고기/구이/볶음 · 269 kcal/100g</option><option value="소고기장조림">소고기장조림 · 고기/구이/볶음 · 406 kcal/100g</option><option value="닭갈비">닭갈비 · 고기/구이/볶음 · 172 kcal/100g</option><option value="닭볶음탕">닭볶음탕 · 고기/구이/볶음 · 309 kcal/100g</option><option value="닭백숙">닭백숙 · 고기/구이/볶음 · 446 kcal/100g</option><option value="닭찜">닭찜 · 고기/구이/볶음 · 213 kcal/100g</option><option value="닭불고기">닭불고기 · 고기/구이/볶음 · 350 kcal/100g</option><option value="닭가슴살구이">닭가슴살구이 · 고기/구이/볶음 · 120 kcal/100g</option><option value="닭다리구이">닭다리구이 · 고기/구이/볶음 · 254 kcal/100g</option><option value="닭날개구이">닭날개구이 · 고기/구이/볶음 · 391 kcal/100g</option><option value="닭안심구이">닭안심구이 · 고기/구이/볶음 · 158 kcal/100g</option><option value="닭목살구이">닭목살구이 · 고기/구이/볶음 · 295 kcal/100g</option><option value="오리훈제">오리훈제 · 고기/구이/볶음 · 432 kcal/100g</option><option value="오리구이">오리구이 · 고기/구이/볶음 · 198 kcal/100g</option><option value="오리주물럭">오리주물럭 · 고기/구이/볶음 · 335 kcal/100g</option><option value="양념치킨">양념치킨 · 고기/구이/볶음 · 102 kcal/100g</option><option value="후라이드치킨">후라이드치킨 · 고기/구이/볶음 · 239 kcal/100g</option><option value="간장치킨">간장치킨 · 고기/구이/볶음 · 376 kcal/100g</option><option value="닭강정">닭강정 · 고기/구이/볶음 · 143 kcal/100g</option><option value="찜닭">찜닭 · 고기/구이/볶음 · 280 kcal/100g</option><option value="치킨너겟">치킨너겟 · 고기/구이/볶음 · 417 kcal/100g</option><option value="치킨텐더">치킨텐더 · 고기/구이/볶음 · 184 kcal/100g</option><option value="닭꼬치">닭꼬치 · 고기/구이/볶음 · 320 kcal/100g</option><option value="소고기볶음">소고기볶음 · 고기/구이/볶음 · 87 kcal/100g</option><option value="돼지고기볶음">돼지고기볶음 · 고기/구이/볶음 · 224 kcal/100g</option><option value="닭고기볶음">닭고기볶음 · 고기/구이/볶음 · 361 kcal/100g</option><option value="오삼불고기">오삼불고기 · 고기/구이/볶음 · 128 kcal/100g</option><option value="불고기">불고기 · 고기/구이/볶음 · 265 kcal/100g</option><option value="고등어구이">고등어구이 · 생선/해산물 · 402 kcal/100g</option><option value="고등어조림">고등어조림 · 생선/해산물 · 169 kcal/100g</option><option value="갈치구이">갈치구이 · 생선/해산물 · 306 kcal/100g</option><option value="갈치조림">갈치조림 · 생선/해산물 · 443 kcal/100g</option><option value="삼치구이">삼치구이 · 생선/해산물 · 210 kcal/100g</option><option value="삼치조림">삼치조림 · 생선/해산물 · 346 kcal/100g</option><option value="꽁치구이">꽁치구이 · 생선/해산물 · 113 kcal/100g</option><option value="꽁치조림">꽁치조림 · 생선/해산물 · 250 kcal/100g</option><option value="연어구이">연어구이 · 생선/해산물 · 387 kcal/100g</option><option value="연어스테이크">연어스테이크 · 생선/해산물 · 154 kcal/100g</option><option value="연어회">연어회 · 생선/해산물 · 291 kcal/100g</option><option value="참치회">참치회 · 생선/해산물 · 428 kcal/100g</option><option value="참치통조림">참치통조림 · 생선/해산물 · 195 kcal/100g</option><option value="광어회">광어회 · 생선/해산물 · 332 kcal/100g</option><option value="우럭회">우럭회 · 생선/해산물 · 98 kcal/100g</option><option value="도미회">도미회 · 생선/해산물 · 235 kcal/100g</option><option value="방어회">방어회 · 생선/해산물 · 372 kcal/100g</option><option value="가자미구이">가자미구이 · 생선/해산물 · 139 kcal/100g</option><option value="가자미조림">가자미조림 · 생선/해산물 · 276 kcal/100g</option><option value="임연수구이">임연수구이 · 생선/해산물 · 413 kcal/100g</option><option value="조기구이">조기구이 · 생선/해산물 · 180 kcal/100g</option><option value="조기조림">조기조림 · 생선/해산물 · 317 kcal/100g</option><option value="굴전">굴전 · 생선/해산물 · 84 kcal/100g</option><option value="굴국">굴국 · 생선/해산물 · 221 kcal/100g</option><option value="굴밥">굴밥 · 생선/해산물 · 358 kcal/100g</option><option value="새우구이">새우구이 · 생선/해산물 · 124 kcal/100g</option><option value="새우튀김">새우튀김 · 생선/해산물 · 261 kcal/100g</option><option value="새우볶음">새우볶음 · 생선/해산물 · 398 kcal/100g</option><option value="간장새우">간장새우 · 생선/해산물 · 165 kcal/100g</option><option value="새우장">새우장 · 생선/해산물 · 302 kcal/100g</option><option value="꽃게찜">꽃게찜 · 생선/해산물 · 439 kcal/100g</option><option value="꽃게무침">꽃게무침 · 생선/해산물 · 206 kcal/100g</option><option value="간장게장">간장게장 · 생선/해산물 · 343 kcal/100g</option><option value="양념게장">양념게장 · 생선/해산물 · 110 kcal/100g</option><option value="오징어볶음">오징어볶음 · 생선/해산물 · 246 kcal/100g</option><option value="오징어숙회">오징어숙회 · 생선/해산물 · 383 kcal/100g</option><option value="오징어튀김">오징어튀김 · 생선/해산물 · 150 kcal/100g</option><option value="오징어무침">오징어무침 · 생선/해산물 · 287 kcal/100g</option><option value="낙지볶음">낙지볶음 · 생선/해산물 · 424 kcal/100g</option><option value="낙지숙회">낙지숙회 · 생선/해산물 · 191 kcal/100g</option><option value="문어숙회">문어숙회 · 생선/해산물 · 328 kcal/100g</option><option value="문어초회">문어초회 · 생선/해산물 · 95 kcal/100g</option><option value="주꾸미볶음">주꾸미볶음 · 생선/해산물 · 232 kcal/100g</option><option value="주꾸미삼겹살">주꾸미삼겹살 · 생선/해산물 · 369 kcal/100g</option><option value="꼬막무침">꼬막무침 · 생선/해산물 · 136 kcal/100g</option><option value="꼬막비빔밥">꼬막비빔밥 · 생선/해산물 · 272 kcal/100g</option><option value="홍합탕">홍합탕 · 생선/해산물 · 409 kcal/100g</option><option value="홍합찜">홍합찜 · 생선/해산물 · 176 kcal/100g</option><option value="바지락찜">바지락찜 · 생선/해산물 · 313 kcal/100g</option><option value="전복구이">전복구이 · 생선/해산물 · 80 kcal/100g</option><option value="배추김치">배추김치 · 반찬/김치/나물 · 217 kcal/100g</option><option value="깍두기">깍두기 · 반찬/김치/나물 · 354 kcal/100g</option><option value="총각김치">총각김치 · 반찬/김치/나물 · 121 kcal/100g</option><option value="열무김치">열무김치 · 반찬/김치/나물 · 258 kcal/100g</option><option value="파김치">파김치 · 반찬/김치/나물 · 394 kcal/100g</option><option value="갓김치">갓김치 · 반찬/김치/나물 · 161 kcal/100g</option><option value="백김치">백김치 · 반찬/김치/나물 · 298 kcal/100g</option><option value="오이소박이">오이소박이 · 반찬/김치/나물 · 80 kcal/100g</option><option value="동치미">동치미 · 반찬/김치/나물 · 202 kcal/100g</option><option value="겉절이">겉절이 · 반찬/김치/나물 · 339 kcal/100g</option><option value="무생채">무생채 · 반찬/김치/나물 · 106 kcal/100g</option><option value="도라지무침">도라지무침 · 반찬/김치/나물 · 243 kcal/100g</option><option value="오이무침">오이무침 · 반찬/김치/나물 · 80 kcal/100g</option><option value="시금치나물">시금치나물 · 반찬/김치/나물 · 147 kcal/100g</option><option value="콩나물무침">콩나물무침 · 반찬/김치/나물 · 284 kcal/100g</option><option value="숙주나물">숙주나물 · 반찬/김치/나물 · 420 kcal/100g</option><option value="고사리나물">고사리나물 · 반찬/김치/나물 · 187 kcal/100g</option><option value="취나물">취나물 · 반찬/김치/나물 · 324 kcal/100g</option><option value="도토리묵무침">도토리묵무침 · 반찬/김치/나물 · 91 kcal/100g</option><option value="가지나물">가지나물 · 반찬/김치/나물 · 228 kcal/100g</option><option value="애호박볶음">애호박볶음 · 반찬/김치/나물 · 365 kcal/100g</option><option value="감자볶음">감자볶음 · 반찬/김치/나물 · 132 kcal/100g</option><option value="어묵볶음">어묵볶음 · 반찬/김치/나물 · 269 kcal/100g</option><option value="멸치볶음">멸치볶음 · 반찬/김치/나물 · 406 kcal/100g</option><option value="진미채볶음">진미채볶음 · 반찬/김치/나물 · 172 kcal/100g</option><option value="김자반">김자반 · 반찬/김치/나물 · 309 kcal/100g</option><option value="김구이">김구이 · 반찬/김치/나물 · 446 kcal/100g</option><option value="계란말이">계란말이 · 반찬/김치/나물 · 213 kcal/100g</option><option value="계란찜">계란찜 · 반찬/김치/나물 · 350 kcal/100g</option><option value="계란후라이">계란후라이 · 반찬/김치/나물 · 117 kcal/100g</option><option value="메추리알장조림">메추리알장조림 · 반찬/김치/나물 · 254 kcal/100g</option><option value="두부조림">두부조림 · 반찬/김치/나물 · 391 kcal/100g</option><option value="연근조림">연근조림 · 반찬/김치/나물 · 158 kcal/100g</option><option value="우엉조림">우엉조림 · 반찬/김치/나물 · 295 kcal/100g</option><option value="감자조림">감자조림 · 반찬/김치/나물 · 432 kcal/100g</option><option value="고추장멸치볶음">고추장멸치볶음 · 반찬/김치/나물 · 198 kcal/100g</option><option value="마늘장아찌">마늘장아찌 · 반찬/김치/나물 · 335 kcal/100g</option><option value="깻잎장아찌">깻잎장아찌 · 반찬/김치/나물 · 102 kcal/100g</option><option value="무장아찌">무장아찌 · 반찬/김치/나물 · 239 kcal/100g</option><option value="양파장아찌">양파장아찌 · 반찬/김치/나물 · 376 kcal/100g</option><option value="단무지">단무지 · 반찬/김치/나물 · 143 kcal/100g</option><option value="피클">피클 · 반찬/김치/나물 · 280 kcal/100g</option><option value="마카로니샐러드">마카로니샐러드 · 반찬/김치/나물 · 80 kcal/100g</option><option value="감자샐러드">감자샐러드 · 반찬/김치/나물 · 80 kcal/100g</option><option value="콘샐러드">콘샐러드 · 반찬/김치/나물 · 80 kcal/100g</option><option value="두부김치">두부김치 · 반찬/김치/나물 · 87 kcal/100g</option><option value="파전">파전 · 반찬/김치/나물 · 224 kcal/100g</option><option value="부추전">부추전 · 반찬/김치/나물 · 361 kcal/100g</option><option value="떡볶이">떡볶이 · 분식/간편식 · 128 kcal/100g</option><option value="라볶이">라볶이 · 분식/간편식 · 265 kcal/100g</option><option value="순대">순대 · 분식/간편식 · 402 kcal/100g</option><option value="튀김만두">튀김만두 · 분식/간편식 · 169 kcal/100g</option><option value="김말이튀김">김말이튀김 · 분식/간편식 · 306 kcal/100g</option><option value="야채튀김">야채튀김 · 분식/간편식 · 443 kcal/100g</option><option value="고추튀김">고추튀김 · 분식/간편식 · 210 kcal/100g</option><option value="핫도그">핫도그 · 분식/간편식 · 346 kcal/100g</option><option value="어묵꼬치">어묵꼬치 · 분식/간편식 · 113 kcal/100g</option><option value="김밥">김밥 · 분식/간편식 · 250 kcal/100g</option><option value="참치김밥">참치김밥 · 분식/간편식 · 387 kcal/100g</option><option value="돈가스김밥">돈가스김밥 · 분식/간편식 · 154 kcal/100g</option><option value="치즈김밥">치즈김밥 · 분식/간편식 · 291 kcal/100g</option><option value="불고기김밥">불고기김밥 · 분식/간편식 · 428 kcal/100g</option><option value="계란김밥">계란김밥 · 분식/간편식 · 195 kcal/100g</option><option value="삼각김밥">삼각김밥 · 분식/간편식 · 332 kcal/100g</option><option value="참치삼각김밥">참치삼각김밥 · 분식/간편식 · 120 kcal/100g</option><option value="전주비빔삼각김밥">전주비빔삼각김밥 · 분식/간편식 · 235 kcal/100g</option><option value="컵밥">컵밥 · 분식/간편식 · 372 kcal/100g</option><option value="라면">라면 · 분식/간편식 · 417 kcal/100g</option><option value="신라면">신라면 · 분식/간편식 · 276 kcal/100g</option><option value="불닭볶음면">불닭볶음면 · 분식/간편식 · 413 kcal/100g</option><option value="짜파게티">짜파게티 · 분식/간편식 · 180 kcal/100g</option><option value="너구리">너구리 · 분식/간편식 · 317 kcal/100g</option><option value="진라면">진라면 · 분식/간편식 · 84 kcal/100g</option><option value="비빔면">비빔면 · 분식/간편식 · 221 kcal/100g</option><option value="물만두">물만두 · 분식/간편식 · 358 kcal/100g</option><option value="군만두">군만두 · 분식/간편식 · 124 kcal/100g</option><option value="왕만두">왕만두 · 분식/간편식 · 261 kcal/100g</option><option value="찐만두">찐만두 · 분식/간편식 · 398 kcal/100g</option><option value="김치만두">김치만두 · 분식/간편식 · 165 kcal/100g</option><option value="고기만두">고기만두 · 분식/간편식 · 302 kcal/100g</option><option value="떡꼬치">떡꼬치 · 분식/간편식 · 439 kcal/100g</option><option value="소떡소떡">소떡소떡 · 분식/간편식 · 206 kcal/100g</option><option value="토스트">토스트 · 분식/간편식 · 343 kcal/100g</option><option value="햄치즈토스트">햄치즈토스트 · 분식/간편식 · 220 kcal/100g</option><option value="계란토스트">계란토스트 · 분식/간편식 · 246 kcal/100g</option><option value="프렌치토스트">프렌치토스트 · 분식/간편식 · 383 kcal/100g</option><option value="샌드위치">샌드위치 · 분식/간편식 · 150 kcal/100g</option><option value="에그샌드위치">에그샌드위치 · 분식/간편식 · 287 kcal/100g</option><option value="햄치즈샌드위치">햄치즈샌드위치 · 분식/간편식 · 424 kcal/100g</option><option value="치킨샌드위치">치킨샌드위치 · 분식/간편식 · 191 kcal/100g</option><option value="참치샌드위치">참치샌드위치 · 분식/간편식 · 328 kcal/100g</option><option value="베이글">베이글 · 분식/간편식 · 95 kcal/100g</option><option value="크림치즈베이글">크림치즈베이글 · 분식/간편식 · 232 kcal/100g</option><option value="핫바">핫바 · 분식/간편식 · 369 kcal/100g</option><option value="식빵">식빵 · 빵/디저트 · 136 kcal/100g</option><option value="통밀식빵">통밀식빵 · 빵/디저트 · 272 kcal/100g</option><option value="호밀빵">호밀빵 · 빵/디저트 · 409 kcal/100g</option><option value="바게트">바게트 · 빵/디저트 · 176 kcal/100g</option><option value="치아바타">치아바타 · 빵/디저트 · 313 kcal/100g</option><option value="크루아상">크루아상 · 빵/디저트 · 80 kcal/100g</option><option value="소보로빵">소보로빵 · 빵/디저트 · 217 kcal/100g</option><option value="단팥빵">단팥빵 · 빵/디저트 · 354 kcal/100g</option><option value="크림빵">크림빵 · 빵/디저트 · 220 kcal/100g</option><option value="슈크림빵">슈크림빵 · 빵/디저트 · 258 kcal/100g</option><option value="카스텔라">카스텔라 · 빵/디저트 · 394 kcal/100g</option><option value="롤케이크">롤케이크 · 빵/디저트 · 350 kcal/100g</option><option value="초코케이크">초코케이크 · 빵/디저트 · 350 kcal/100g</option><option value="치즈케이크">치즈케이크 · 빵/디저트 · 435 kcal/100g</option><option value="티라미수">티라미수 · 빵/디저트 · 202 kcal/100g</option><option value="머핀">머핀 · 빵/디저트 · 339 kcal/100g</option><option value="초코머핀">초코머핀 · 빵/디저트 · 106 kcal/100g</option><option value="블루베리머핀">블루베리머핀 · 빵/디저트 · 243 kcal/100g</option><option value="도넛">도넛 · 빵/디저트 · 380 kcal/100g</option><option value="초코도넛">초코도넛 · 빵/디저트 · 350 kcal/100g</option><option value="꽈배기">꽈배기 · 빵/디저트 · 284 kcal/100g</option><option value="약과">약과 · 빵/디저트 · 420 kcal/100g</option><option value="호떡">호떡 · 빵/디저트 · 187 kcal/100g</option><option value="붕어빵">붕어빵 · 빵/디저트 · 324 kcal/100g</option><option value="찐빵">찐빵 · 빵/디저트 · 91 kcal/100g</option><option value="호빵">호빵 · 빵/디저트 · 228 kcal/100g</option><option value="와플">와플 · 빵/디저트 · 365 kcal/100g</option><option value="팬케이크">팬케이크 · 빵/디저트 · 350 kcal/100g</option><option value="시리얼">시리얼 · 빵/디저트 · 269 kcal/100g</option><option value="그래놀라">그래놀라 · 빵/디저트 · 406 kcal/100g</option><option value="오트밀">오트밀 · 빵/디저트 · 375 kcal/100g</option><option value="콘플레이크">콘플레이크 · 빵/디저트 · 309 kcal/100g</option><option value="초코바">초코바 · 빵/디저트 · 446 kcal/100g</option><option value="에너지바">에너지바 · 빵/디저트 · 213 kcal/100g</option><option value="단백질바">단백질바 · 빵/디저트 · 350 kcal/100g</option><option value="팝콘">팝콘 · 빵/디저트 · 117 kcal/100g</option><option value="감자칩">감자칩 · 빵/디저트 · 254 kcal/100g</option><option value="고구마칩">고구마칩 · 빵/디저트 · 391 kcal/100g</option><option value="쌀과자">쌀과자 · 빵/디저트 · 350 kcal/100g</option><option value="약과쿠키">약과쿠키 · 빵/디저트 · 350 kcal/100g</option><option value="버터쿠키">버터쿠키 · 빵/디저트 · 432 kcal/100g</option><option value="초코쿠키">초코쿠키 · 빵/디저트 · 350 kcal/100g</option><option value="마들렌">마들렌 · 빵/디저트 · 335 kcal/100g</option><option value="휘낭시에">휘낭시에 · 빵/디저트 · 102 kcal/100g</option><option value="카스텔라빵">카스텔라빵 · 빵/디저트 · 239 kcal/100g</option><option value="모카빵">모카빵 · 빵/디저트 · 376 kcal/100g</option><option value="밤빵">밤빵 · 빵/디저트 · 143 kcal/100g</option><option value="앙금빵">앙금빵 · 빵/디저트 · 280 kcal/100g</option><option value="치즈빵">치즈빵 · 빵/디저트 · 417 kcal/100g</option><option value="삶은계란">삶은계란 · 유제품/계란/콩 · 184 kcal/100g</option><option value="스크램블에그">스크램블에그 · 유제품/계란/콩 · 320 kcal/100g</option><option value="반숙계란">반숙계란 · 유제품/계란/콩 · 87 kcal/100g</option><option value="훈제계란">훈제계란 · 유제품/계란/콩 · 224 kcal/100g</option><option value="메추리알">메추리알 · 유제품/계란/콩 · 361 kcal/100g</option><option value="우유">우유 · 유제품/계란/콩 · 62 kcal/100g</option><option value="저지방우유">저지방우유 · 유제품/계란/콩 · 265 kcal/100g</option><option value="무지방우유">무지방우유 · 유제품/계란/콩 · 402 kcal/100g</option><option value="초코우유">초코우유 · 유제품/계란/콩 · 169 kcal/100g</option><option value="딸기우유">딸기우유 · 유제품/계란/콩 · 306 kcal/100g</option><option value="바나나우유">바나나우유 · 유제품/계란/콩 · 443 kcal/100g</option><option value="커피우유">커피우유 · 유제품/계란/콩 · 210 kcal/100g</option><option value="두유">두유 · 유제품/계란/콩 · 346 kcal/100g</option><option value="검은콩두유">검은콩두유 · 유제품/계란/콩 · 113 kcal/100g</option><option value="무가당두유">무가당두유 · 유제품/계란/콩 · 250 kcal/100g</option><option value="요거트">요거트 · 유제품/계란/콩 · 387 kcal/100g</option><option value="플레인요거트">플레인요거트 · 유제품/계란/콩 · 154 kcal/100g</option><option value="그릭요거트">그릭요거트 · 유제품/계란/콩 · 100 kcal/100g</option><option value="저지방그릭요거트">저지방그릭요거트 · 유제품/계란/콩 · 428 kcal/100g</option><option value="딸기요거트">딸기요거트 · 유제품/계란/콩 · 195 kcal/100g</option><option value="블루베리요거트">블루베리요거트 · 유제품/계란/콩 · 332 kcal/100g</option><option value="요구르트">요구르트 · 유제품/계란/콩 · 98 kcal/100g</option><option value="치즈">치즈 · 유제품/계란/콩 · 235 kcal/100g</option><option value="슬라이스치즈">슬라이스치즈 · 유제품/계란/콩 · 372 kcal/100g</option><option value="모짜렐라치즈">모짜렐라치즈 · 유제품/계란/콩 · 220 kcal/100g</option><option value="체다치즈">체다치즈 · 유제품/계란/콩 · 276 kcal/100g</option><option value="리코타치즈">리코타치즈 · 유제품/계란/콩 · 413 kcal/100g</option><option value="파마산치즈">파마산치즈 · 유제품/계란/콩 · 220 kcal/100g</option><option value="두부">두부 · 유제품/계란/콩 · 88 kcal/100g</option><option value="연두부">연두부 · 유제품/계란/콩 · 84 kcal/100g</option><option value="순두부">순두부 · 유제품/계란/콩 · 221 kcal/100g</option><option value="부침두부">부침두부 · 유제품/계란/콩 · 358 kcal/100g</option><option value="검은콩">검은콩 · 유제품/계란/콩 · 124 kcal/100g</option><option value="대두">대두 · 유제품/계란/콩 · 261 kcal/100g</option><option value="병아리콩">병아리콩 · 유제품/계란/콩 · 398 kcal/100g</option><option value="렌틸콩">렌틸콩 · 유제품/계란/콩 · 165 kcal/100g</option><option value="강낭콩">강낭콩 · 유제품/계란/콩 · 302 kcal/100g</option><option value="팥">팥 · 유제품/계란/콩 · 439 kcal/100g</option><option value="완두콩">완두콩 · 유제품/계란/콩 · 206 kcal/100g</option><option value="콩비지">콩비지 · 유제품/계란/콩 · 343 kcal/100g</option><option value="콩국">콩국 · 유제품/계란/콩 · 110 kcal/100g</option><option value="두유라떼">두유라떼 · 유제품/계란/콩 · 246 kcal/100g</option><option value="프로틴우유">프로틴우유 · 유제품/계란/콩 · 383 kcal/100g</option><option value="단백질음료">단백질음료 · 유제품/계란/콩 · 150 kcal/100g</option><option value="요거트드링크">요거트드링크 · 유제품/계란/콩 · 287 kcal/100g</option><option value="우유커피">우유커피 · 유제품/계란/콩 · 424 kcal/100g</option><option value="카페라떼">카페라떼 · 유제품/계란/콩 · 191 kcal/100g</option><option value="카푸치노">카푸치노 · 유제품/계란/콩 · 328 kcal/100g</option><option value="사과">사과 · 과일/견과 · 52 kcal/100g</option><option value="배">배 · 과일/견과 · 232 kcal/100g</option><option value="바나나">바나나 · 과일/견과 · 89 kcal/100g</option><option value="귤">귤 · 과일/견과 · 136 kcal/100g</option><option value="오렌지">오렌지 · 과일/견과 · 272 kcal/100g</option><option value="자몽">자몽 · 과일/견과 · 409 kcal/100g</option><option value="레몬">레몬 · 과일/견과 · 176 kcal/100g</option><option value="라임">라임 · 과일/견과 · 313 kcal/100g</option><option value="포도">포도 · 과일/견과 · 80 kcal/100g</option><option value="청포도">청포도 · 과일/견과 · 217 kcal/100g</option><option value="거봉">거봉 · 과일/견과 · 354 kcal/100g</option><option value="샤인머스캣">샤인머스캣 · 과일/견과 · 121 kcal/100g</option><option value="딸기">딸기 · 과일/견과 · 258 kcal/100g</option><option value="블루베리">블루베리 · 과일/견과 · 394 kcal/100g</option><option value="라즈베리">라즈베리 · 과일/견과 · 161 kcal/100g</option><option value="복숭아">복숭아 · 과일/견과 · 298 kcal/100g</option><option value="백도">백도 · 과일/견과 · 435 kcal/100g</option><option value="황도">황도 · 과일/견과 · 202 kcal/100g</option><option value="자두">자두 · 과일/견과 · 339 kcal/100g</option><option value="살구">살구 · 과일/견과 · 106 kcal/100g</option><option value="체리">체리 · 과일/견과 · 243 kcal/100g</option><option value="수박">수박 · 과일/견과 · 380 kcal/100g</option><option value="참외">참외 · 과일/견과 · 147 kcal/100g</option><option value="멜론">멜론 · 과일/견과 · 284 kcal/100g</option><option value="망고">망고 · 과일/견과 · 420 kcal/100g</option><option value="파인애플">파인애플 · 과일/견과 · 187 kcal/100g</option><option value="키위">키위 · 과일/견과 · 324 kcal/100g</option><option value="골드키위">골드키위 · 과일/견과 · 91 kcal/100g</option><option value="감">감 · 과일/견과 · 228 kcal/100g</option><option value="홍시">홍시 · 과일/견과 · 365 kcal/100g</option><option value="곶감">곶감 · 과일/견과 · 132 kcal/100g</option><option value="석류">석류 · 과일/견과 · 269 kcal/100g</option><option value="무화과">무화과 · 과일/견과 · 406 kcal/100g</option><option value="토마토">토마토 · 과일/견과 · 80 kcal/100g</option><option value="방울토마토">방울토마토 · 과일/견과 · 80 kcal/100g</option><option value="아보카도">아보카도 · 과일/견과 · 446 kcal/100g</option><option value="코코넛">코코넛 · 과일/견과 · 213 kcal/100g</option><option value="밤">밤 · 과일/견과 · 350 kcal/100g</option><option value="호두">호두 · 과일/견과 · 117 kcal/100g</option><option value="아몬드">아몬드 · 과일/견과 · 254 kcal/100g</option><option value="땅콩">땅콩 · 과일/견과 · 391 kcal/100g</option><option value="캐슈넛">캐슈넛 · 과일/견과 · 158 kcal/100g</option><option value="피스타치오">피스타치오 · 과일/견과 · 295 kcal/100g</option><option value="잣">잣 · 과일/견과 · 432 kcal/100g</option><option value="해바라기씨">해바라기씨 · 과일/견과 · 198 kcal/100g</option><option value="호박씨">호박씨 · 과일/견과 · 335 kcal/100g</option><option value="참깨">참깨 · 과일/견과 · 102 kcal/100g</option><option value="들깨">들깨 · 과일/견과 · 239 kcal/100g</option><option value="건포도">건포도 · 과일/견과 · 376 kcal/100g</option><option value="말린무화과">말린무화과 · 과일/견과 · 143 kcal/100g</option><option value="돈가스">돈가스 · 외식/패스트푸드/음료 · 280 kcal/100g</option><option value="치즈돈가스">치즈돈가스 · 외식/패스트푸드/음료 · 417 kcal/100g</option><option value="생선까스">생선까스 · 외식/패스트푸드/음료 · 184 kcal/100g</option><option value="함박스테이크">함박스테이크 · 외식/패스트푸드/음료 · 320 kcal/100g</option><option value="파스타">파스타 · 외식/패스트푸드/음료 · 87 kcal/100g</option><option value="토마토파스타">토마토파스타 · 외식/패스트푸드/음료 · 80 kcal/100g</option><option value="크림파스타">크림파스타 · 외식/패스트푸드/음료 · 361 kcal/100g</option><option value="알리오올리오">알리오올리오 · 외식/패스트푸드/음료 · 128 kcal/100g</option><option value="투움바파스타">투움바파스타 · 외식/패스트푸드/음료 · 265 kcal/100g</option><option value="로제파스타">로제파스타 · 외식/패스트푸드/음료 · 402 kcal/100g</option><option value="봉골레파스타">봉골레파스타 · 외식/패스트푸드/음료 · 169 kcal/100g</option><option value="피자">피자 · 외식/패스트푸드/음료 · 306 kcal/100g</option><option value="페퍼로니피자">페퍼로니피자 · 외식/패스트푸드/음료 · 443 kcal/100g</option><option value="치즈피자">치즈피자 · 외식/패스트푸드/음료 · 220 kcal/100g</option><option value="고구마피자">고구마피자 · 외식/패스트푸드/음료 · 346 kcal/100g</option><option value="불고기피자">불고기피자 · 외식/패스트푸드/음료 · 113 kcal/100g</option><option value="햄버거">햄버거 · 외식/패스트푸드/음료 · 250 kcal/100g</option><option value="불고기버거">불고기버거 · 외식/패스트푸드/음료 · 387 kcal/100g</option><option value="치즈버거">치즈버거 · 외식/패스트푸드/음료 · 220 kcal/100g</option><option value="더블치즈버거">더블치즈버거 · 외식/패스트푸드/음료 · 291 kcal/100g</option><option value="새우버거">새우버거 · 외식/패스트푸드/음료 · 428 kcal/100g</option><option value="치킨버거">치킨버거 · 외식/패스트푸드/음료 · 195 kcal/100g</option><option value="베이컨버거">베이컨버거 · 외식/패스트푸드/음료 · 332 kcal/100g</option><option value="감자튀김">감자튀김 · 외식/패스트푸드/음료 · 98 kcal/100g</option><option value="핫윙">핫윙 · 외식/패스트푸드/음료 · 235 kcal/100g</option><option value="샐러드">샐러드 · 외식/패스트푸드/음료 · 80 kcal/100g</option><option value="닭가슴살샐러드">닭가슴살샐러드 · 외식/패스트푸드/음료 · 80 kcal/100g</option><option value="연어샐러드">연어샐러드 · 외식/패스트푸드/음료 · 80 kcal/100g</option><option value="시저샐러드">시저샐러드 · 외식/패스트푸드/음료 · 80 kcal/100g</option><option value="포케">포케 · 외식/패스트푸드/음료 · 180 kcal/100g</option><option value="연어포케">연어포케 · 외식/패스트푸드/음료 · 317 kcal/100g</option><option value="참치포케">참치포케 · 외식/패스트푸드/음료 · 120 kcal/100g</option><option value="닭가슴살포케">닭가슴살포케 · 외식/패스트푸드/음료 · 221 kcal/100g</option><option value="초밥">초밥 · 외식/패스트푸드/음료 · 358 kcal/100g</option><option value="연어초밥">연어초밥 · 외식/패스트푸드/음료 · 124 kcal/100g</option><option value="참치초밥">참치초밥 · 외식/패스트푸드/음료 · 261 kcal/100g</option><option value="새우초밥">새우초밥 · 외식/패스트푸드/음료 · 398 kcal/100g</option><option value="유부초밥">유부초밥 · 외식/패스트푸드/음료 · 165 kcal/100g</option><option value="회덮밥">회덮밥 · 외식/패스트푸드/음료 · 302 kcal/100g</option><option value="돈부리">돈부리 · 외식/패스트푸드/음료 · 439 kcal/100g</option><option value="우동정식">우동정식 · 외식/패스트푸드/음료 · 206 kcal/100g</option><option value="냉면정식">냉면정식 · 외식/패스트푸드/음료 · 343 kcal/100g</option><option value="김치찌개정식">김치찌개정식 · 외식/패스트푸드/음료 · 110 kcal/100g</option><option value="제육정식">제육정식 · 외식/패스트푸드/음료 · 246 kcal/100g</option><option value="닭가슴살">닭가슴살 · 기타/추가 · 109 kcal/100g</option><option value="닭가슴살볼">닭가슴살볼 · 기타/추가 · 150 kcal/100g</option><option value="닭가슴살소시지">닭가슴살소시지 · 기타/추가 · 287 kcal/100g</option><option value="닭가슴살스테이크">닭가슴살스테이크 · 기타/추가 · 424 kcal/100g</option><option value="닭가슴살햄">닭가슴살햄 · 기타/추가 · 191 kcal/100g</option><option value="저염닭가슴살">저염닭가슴살 · 기타/추가 · 328 kcal/100g</option><option value="현미누룽지">현미누룽지 · 기타/추가 · 95 kcal/100g</option><option value="누룽지">누룽지 · 기타/추가 · 232 kcal/100g</option><option value="죽">죽 · 기타/추가 · 369 kcal/100g</option><option value="전복죽">전복죽 · 기타/추가 · 136 kcal/100g</option><option value="소고기죽">소고기죽 · 기타/추가 · 272 kcal/100g</option><option value="닭죽">닭죽 · 기타/추가 · 409 kcal/100g</option><option value="야채죽">야채죽 · 기타/추가 · 176 kcal/100g</option><option value="참치죽">참치죽 · 기타/추가 · 313 kcal/100g</option><option value="팥죽">팥죽 · 기타/추가 · 80 kcal/100g</option></select>
-    <div id="foodSearchResults" class="foodResults"></div>
-  </div>
-  <div id="selectedFoodCard" class="selectedFood" hidden></div>
-  <div class="row">
-    <div class="qtyControl">
-      <button type="button" id="qtyMinus" aria-label="섭취량 줄이기">−</button>
-      <input id="servings" type="number" min=".1" step=".1" value="1" inputmode="decimal" placeholder="섭취량">
-      <button type="button" id="qtyPlus" aria-label="섭취량 늘리기">+</button>
-    </div>
-    <select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option><option value="스쿱">스쿱</option><option value="봉">봉</option><option value="컵">컵</option></select>
-    <select id="mealType"><option value="">식사 선택</option><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
-  </div>
-  <details class="unitSettings">
-    <summary>섭취 단위 기준값 설정</summary>
-    <p class="muted">g/ml는 입력량 그대로 계산하고, 개·회·팩·인분 등은 아래 기준 g으로 환산합니다.</p>
-    <div class="row">
-      <label class="fieldLabel">현재 단위 1개 기준(g)<input id="unitBasisG" type="number" min=".1" step=".1" placeholder="예: 100"></label>
-      <label class="fieldLabel">증감 단위<input id="qtyStep" type="number" min=".1" step=".1" value=".5"></label>
-    </div>
-    <button type="button" id="saveUnitSetting">이 음식에 저장</button>
-  </details>
-  <div class="nutritionPreview">
-    <div><span>칼로리</span><b id="previewKcal">-</b><small>kcal</small></div>
-    <div><span>단백질</span><b id="previewProtein">-</b><small>g</small></div>
-    <div><span>탄수</span><b id="previewCarbs">-</b><small>g</small></div>
-    <div><span>지방</span><b id="previewFat">-</b><small>g</small></div>
-  </div>
-  <details class="manualNutrition">
-    <summary>영양정보 직접 수정</summary>
-    <div class="row"><input id="calories" type="number" min="0" placeholder="kcal"><input id="protein" type="number" min="0" placeholder="단백질 g"><input id="carbs" type="number" min="0" placeholder="탄수 g"></div>
-    <input id="fat" type="number" min="0" placeholder="지방 g">
-  </details>
-  <textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
-  <p id="foodHint" class="muted">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
-  <button id="saveMealBtn" type="button" onclick="return saveMealFromForm(event)">식단 저장</button>
+<form class="card" id="mealForm">
+<label class="fieldLabel">음식 검색</label>
+<div class="foodSearchWrap">
+<div class="dbSearchField"><input autocomplete="off" id="meal" placeholder="음식 검색 · 예: 닭가슴살" required=""/><button aria-label="식단 DB 검색" class="dbSearchButton" id="foodSearchButton" type="button">⌕</button></div>
+<div class="foodResults" id="foodSearchResults"></div>
+</div>
+<div class="selectedFood" hidden="" id="selectedFoodCard"></div>
+<div class="row">
+<div class="qtyControl">
+<button aria-label="섭취량 줄이기" id="qtyMinus" type="button">−</button>
+<input id="servings" inputmode="decimal" min=".1" placeholder="섭취량" step=".1" type="number" value="1"/>
+<button aria-label="섭취량 늘리기" id="qtyPlus" type="button">+</button>
+</div>
+<select id="servingUnit"><option value="g">g</option><option value="ml">ml</option><option value="개">개</option><option value="팩">팩</option><option value="인분">인분</option><option value="회">회</option><option value="스쿱">스쿱</option><option value="봉">봉</option><option value="컵">컵</option></select>
+<select id="mealType"><option value="">식사 선택</option><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
+</div>
+<details class="unitSettings">
+<summary>섭취 단위 기준값 설정</summary>
+<p class="muted">g/ml는 입력량 그대로 계산하고, 개·회·팩·인분 등은 아래 기준 g으로 환산합니다.</p>
+<div class="row">
+<label class="fieldLabel">현재 단위 1개 기준(g)<input id="unitBasisG" min=".1" placeholder="예: 100" step=".1" type="number"/></label>
+<label class="fieldLabel">증감 단위<input id="qtyStep" min=".1" step=".1" type="number" value=".5"/></label>
+</div>
+<button id="saveUnitSetting" type="button">이 음식에 저장</button>
+</details>
+<div class="nutritionPreview">
+<div><span>칼로리</span><b id="previewKcal">-</b><small>kcal</small></div>
+<div><span>단백질</span><b id="previewProtein">-</b><small>g</small></div>
+<div><span>탄수</span><b id="previewCarbs">-</b><small>g</small></div>
+<div><span>지방</span><b id="previewFat">-</b><small>g</small></div>
+</div>
+<details class="manualNutrition">
+<summary>영양정보 직접 수정</summary>
+<div class="row"><input id="calories" min="0" placeholder="kcal" type="number"/><input id="protein" min="0" placeholder="단백질 g" type="number"/><input id="carbs" min="0" placeholder="탄수 g" type="number"/></div>
+<input id="fat" min="0" placeholder="지방 g" type="number"/>
+</details>
+<textarea id="mealNote" placeholder="양, 포만감, 컨디션"></textarea>
+<p class="muted" id="foodHint">음식을 검색하면 DB에서 영양정보를 불러옵니다.</p>
+<button id="saveMealBtn" onclick="return saveMealFromForm(event)" type="button">식단 저장</button>
 </form>
-
 <div class="batchCard" id="fitmindBatchMealCard">
-  <div class="batchHead"><h3>🍚 여러 음식 한 번에 기록</h3><button type="button" id="addBatchMeal">＋ 음식 추가</button></div>
-  <div class="batchRows" id="batchMealRows"></div>
-  <div class="batchTotals">
-    <div class="batchMetric"><span>총 칼로리</span><strong id="batchMealKcal">0 kcal</strong></div>
-    <div class="batchMetric"><span>단백질</span><strong id="batchMealProtein">0 g</strong></div>
-    <div class="batchMetric"><span>탄수화물</span><strong id="batchMealCarbs">0 g</strong></div>
-    <div class="batchMetric"><span>지방</span><strong id="batchMealFat">0 g</strong></div>
-  </div>
-  <div class="batchActions"><button type="button" id="saveBatchMeal">한 번에 식단 저장</button></div>
-  <p class="batchHint">음식 선택 시 100g 기준 영양정보를 자동으로 채우고, 실제 섭취량(g)에 맞춰 합산합니다.</p>
-  <datalist id="fitmindFoodList"></datalist>
+<div class="batchHead"><h3>🍚 여러 음식 한 번에 기록</h3><button id="addBatchMeal" type="button">＋ 음식 추가</button></div>
+<div class="batchRows" id="batchMealRows"></div>
+<div class="batchTotals">
+<div class="batchMetric"><span>총 칼로리</span><strong id="batchMealKcal">0 kcal</strong></div>
+<div class="batchMetric"><span>단백질</span><strong id="batchMealProtein">0 g</strong></div>
+<div class="batchMetric"><span>탄수화물</span><strong id="batchMealCarbs">0 g</strong></div>
+<div class="batchMetric"><span>지방</span><strong id="batchMealFat">0 g</strong></div>
+</div>
+<div class="batchActions"><button id="saveBatchMeal" type="button">한 번에 식단 저장</button></div>
+<p class="batchHint">음식 선택 시 100g 기준 영양정보를 자동으로 채우고, 실제 섭취량(g)에 맞춰 합산합니다.</p>
+<datalist id="fitmindFoodList"></datalist>
 </div>
 <div id="fitmindDietOnlyTodayIntake"></div>
 <div id="mealList"></div>
 </section>
-
-<section id="running" class="page">
-  <div class="pageTitle"><div><span class="eyebrow">RUN</span><h2>러닝</h2><p>GPS로 거리와 페이스를 실시간 기록하세요.</p></div></div>
-  <div class="runLive card"><div class="runMainMetric"><span id="runStatus">READY</span><strong id="runDistance">0.00</strong><small>km</small></div><div class="runMetrics"><div><span>시간</span><b id="runTime">00:00</b></div><div><span>페이스</span><b id="runPace">--:--</b></div><div><span>칼로리</span><b id="runKcal">0</b></div></div><div class="runControls"><button id="runStart" class="primaryBtn">▶ 러닝 시작</button><button id="runPause" class="ghostBtn" disabled>일시정지</button><button id="runStop" class="danger outline" disabled>■ 종료</button></div><p id="runGpsHint" class="muted">시작하면 브라우저의 위치 권한을 요청합니다. GPS는 앱 화면이 활성화된 동안 측정됩니다.</p></div>
-  <div class="card"><div class="sectionHead"><h3>경로</h3><span id="runGpsAccuracy" class="muted">GPS 대기</span></div><div id="runPath" class="runPath"><div class="runPathEmpty">러닝을 시작하면 이동 경로가 표시됩니다.</div></div></div>
-  <div class="card"><div class="sectionHead"><h3>최근 러닝</h3><span class="muted">GARANG RUN</span></div><div id="runHistory"></div></div>
+<section class="page" id="running">
+<div class="pageTitle"><div><span class="eyebrow">RUN</span><h2>러닝</h2><p>GPS로 거리와 페이스를 실시간 기록하세요.</p></div></div>
+<div class="runLive card"><div class="runMainMetric"><span id="runStatus">READY</span><strong id="runDistance">0.00</strong><small>km</small></div><div class="runMetrics"><div><span>시간</span><b id="runTime">00:00</b></div><div><span>페이스</span><b id="runPace">--:--</b></div><div><span>칼로리</span><b id="runKcal">0</b></div></div><div class="runControls"><button class="primaryBtn" id="runStart">▶ 러닝 시작</button><button class="ghostBtn" disabled="" id="runPause">일시정지</button><button class="danger outline" disabled="" id="runStop">■ 종료</button></div><p class="muted" id="runGpsHint">시작하면 브라우저의 위치 권한을 요청합니다. GPS는 앱 화면이 활성화된 동안 측정됩니다.</p></div>
+<div class="card"><div class="sectionHead"><h3>경로</h3><span class="muted" id="runGpsAccuracy">GPS 대기</span></div><div class="runPath" id="runPath"><div class="runPathEmpty">러닝을 시작하면 이동 경로가 표시됩니다.</div></div></div>
+<div class="card"><div class="sectionHead"><h3>최근 러닝</h3><span class="muted">GARANG RUN</span></div><div id="runHistory"></div></div>
 </section>
-
-<section id="body" class="page">
+<section class="page" id="body">
 <h2>🧍 바디체크</h2>
-
 <div class="card">
-  <h3>📸 바디체크 사진</h3>
-  <input id="bodyPhotoInput" type="file" accept="image/*" multiple>
-  <div class="muted" style="margin-top:6px;">저장된 사진은 바디 탭에서 언제든 다시 볼 수 있습니다.</div>
-  <div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
+<h3>📸 바디체크 사진</h3>
+<input accept="image/*" id="bodyPhotoInput" multiple="" type="file"/>
+<div class="muted" style="margin-top:6px;">저장된 사진은 바디 탭에서 언제든 다시 볼 수 있습니다.</div>
+<div id="bodyPhotoGallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;"></div>
 </div>
-
 <div class="card">
-  <h3>📏 신체 데이터</h3>
-  <div class="row">
-    <label>측정일<input id="bodyDate" type="date"></label>
-    <label>체중 (kg)<input id="bodyWeight" type="number" step="0.1" placeholder="67.0"></label>
-    <label>체지방률 (%)<input id="bodyFatPercent" type="number" step="0.1" placeholder="12.0"></label>
-    <label>골격근량 (kg)<input id="bodySkeletalMuscle" type="number" step="0.1" placeholder="35.3"></label>
-    <label>체지방량 (kg)<input id="bodyFatMass" type="number" step="0.1" placeholder="8.0"></label>
-    <label>허리둘레 (cm)<input id="bodyWaist" type="number" step="0.1" placeholder="75.0"></label>
-  </div>
-  <button id="saveBodyDataBtn" type="button">💾 신체 데이터 저장</button>
-  <div id="bodySaveStatus" class="muted"></div>
+<h3>📏 신체 데이터</h3>
+<div class="row">
+<label>측정일<input id="bodyDate" type="date"/></label>
+<label>체중 (kg)<input id="bodyWeight" placeholder="67.0" step="0.1" type="number"/></label>
+<label>체지방률 (%)<input id="bodyFatPercent" placeholder="12.0" step="0.1" type="number"/></label>
+<label>골격근량 (kg)<input id="bodySkeletalMuscle" placeholder="35.3" step="0.1" type="number"/></label>
+<label>체지방량 (kg)<input id="bodyFatMass" placeholder="8.0" step="0.1" type="number"/></label>
+<label>허리둘레 (cm)<input id="bodyWaist" placeholder="75.0" step="0.1" type="number"/></label>
 </div>
-
+<button id="saveBodyDataBtn" type="button">💾 신체 데이터 저장</button>
+<div class="muted" id="bodySaveStatus"></div>
+</div>
 <div class="card">
-  <h3>🔥 대사량 & 권장 섭취 칼로리</h3>
-  <div class="row">
-    <div class="card"><small>기초대사량 (BMR)</small><div id="fitmindBMRResult" style="font-size:28px;font-weight:900;">—</div></div>
-    <div class="card"><small>권장 섭취 칼로리</small><div id="fitmindTDEEResult" style="font-size:28px;font-weight:900;">—</div></div>
-  </div>
-  <label>활동량
+<h3>🔥 대사량 &amp; 권장 섭취 칼로리</h3>
+<div class="row">
+<div class="card"><small>기초대사량 (BMR)</small><div id="fitmindBMRResult" style="font-size:28px;font-weight:900;">—</div></div>
+<div class="card"><small>권장 섭취 칼로리</small><div id="fitmindTDEEResult" style="font-size:28px;font-weight:900;">—</div></div>
+</div>
+<label>활동량
     <select id="bodyActivity">
-      <option value="1.2">거의 활동 없음</option>
-      <option value="1.375">가벼운 활동</option>
-      <option value="1.55" selected>보통 활동</option>
-      <option value="1.725">높은 활동</option>
-      <option value="1.9">매우 높은 활동</option>
-    </select>
-  </label>
-  <div id="fitmindCalorieNote" class="muted"></div>
+<option value="1.2">거의 활동 없음</option>
+<option value="1.375">가벼운 활동</option>
+<option selected="" value="1.55">보통 활동</option>
+<option value="1.725">높은 활동</option>
+<option value="1.9">매우 높은 활동</option>
+</select>
+</label>
+<div class="muted" id="fitmindCalorieNote"></div>
 </div>
-
 <div class="card" style="text-align:center;">
-  <div class="muted">GARANG BODY SCORE</div>
-  <div id="bodyScoreNumber" style="font-size:52px;font-weight:900;">—</div>
-  <div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
-  <div id="bodyScoreSummary" class="muted"></div>
+<div class="muted">GARANG BODY SCORE</div>
+<div id="bodyScoreNumber" style="font-size:52px;font-weight:900;">—</div>
+<div id="bodyScoreGrade" style="font-weight:800;">측정값을 저장해주세요</div>
+<div class="muted" id="bodyScoreSummary"></div>
 </div>
-<div id="bodyScoreBreakdown" class="row"></div>
-
+<div class="row" id="bodyScoreBreakdown"></div>
 <div class="card">
-  <h3>📈 신체 변화</h3>
-  <div class="row">
-    <button class="body-range" data-days="7" type="button">7일</button>
-    <button class="body-range" data-days="30" type="button">1개월</button>
-    <button class="body-range" data-days="90" type="button">3개월</button>
-    <button class="body-range" data-days="180" type="button">6개월</button>
-    <button class="body-range" data-days="0" type="button">전체</button>
-  </div>
-  <div id="fitmindBodyGraphs"></div>
+<h3>📈 신체 변화</h3>
+<div class="row">
+<button class="body-range" data-days="7" type="button">7일</button>
+<button class="body-range" data-days="30" type="button">1개월</button>
+<button class="body-range" data-days="90" type="button">3개월</button>
+<button class="body-range" data-days="180" type="button">6개월</button>
+<button class="body-range" data-days="0" type="button">전체</button>
 </div>
-
+<div id="fitmindBodyGraphs"></div>
+</div>
 <div id="fitmindBodyHistory"></div>
 <div id="bodyList" style="display:none;"></div>
 </section>
-
-<section id="report" class="page">
+<section class="page" id="report">
 <div class="pageTitle"><div><span class="eyebrow">INSIGHTS</span><h2>리포트</h2></div></div>
 <div class="tabs" id="reportTabs">
-  <button data-period="week" onclick="setReportPeriod('week')">주간</button>
-  <button data-period="month" onclick="setReportPeriod('month')">월간</button>
-  <button data-period="year" onclick="setReportPeriod('year')">연간</button>
+<button data-period="week" onclick="setReportPeriod('week')">주간</button>
+<button data-period="month" onclick="setReportPeriod('month')">월간</button>
+<button data-period="year" onclick="setReportPeriod('year')">연간</button>
 </div>
 <div class="reportNav card">
-  <button onclick="moveReport(-1)">‹</button>
-  <strong id="reportTitle"></strong>
-  <button onclick="moveReport(1)">›</button>
+<button onclick="moveReport(-1)">‹</button>
+<strong id="reportTitle"></strong>
+<button onclick="moveReport(1)">›</button>
 </div>
 <div id="calendarBox"></div>
 <div id="reportContent"></div>
-<div id="dailyEnergyCard" class="card" style="margin:12px 0;">
+<div class="card" id="dailyEnergyCard" style="margin:12px 0;">
 <div style="font-weight:700;">⚡ 오늘 에너지</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
 <div><small>섭취</small><strong id="dailyIntakeKcal">0 kcal</strong></div>
@@ -392,46 +291,67 @@ nav#mainNav button:nth-child(n+6){display:none!important}
 </div>
 <div id="energyReport"></div>
 <div class="card">
-  <h3>데이터 관리</h3>
-  <button onclick="exportBackup()">백업 파일 만들기</button>
-  <label class="button">백업 복원<input id="restoreFile" type="file" accept=".json" hidden></label>
+<h3>데이터 관리</h3>
+<button onclick="exportBackup()">백업 파일 만들기</button>
+<label class="button">백업 복원<input accept=".json" hidden="" id="restoreFile" type="file"/></label>
 </div>
 </section>
-
-<section id="chat" class="page">
-<div class="pageTitle"><div><span class="eyebrow">AI COACH</span><h2>나의 AI 코치</h2><p>운동·식단·러닝·체중 기록을 연결해서 대화합니다.</p></div><button class="ghostBtn" onclick="newGarangChat()">＋ 새 채팅</button></div>
-<div class="coachQuick"><button onclick="garangAsk('오늘 운동 뭐 할까?')">오늘 운동 뭐 할까?</button><button onclick="garangAsk('오늘 단백질 얼마나 먹어야 해?')">단백질</button><button onclick="garangAsk('최근 기록을 분석해줘')">최근 분석</button></div>
-<div id="coachInsightCard" class="card coachInsight"><span class="eyebrow">TODAY'S COACH</span><strong id="coachInsightText">최근 기록을 분석하는 중...</strong></div>
-<div id="chatLog" class="chatlog"></div>
-<form id="chatForm" class="chatbar"><input id="chatInput" placeholder="운동/식단/내 기록에 대해 물어보세요" required><button>전송</button></form>
-<div class="card"><h3>AI 서버 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"><input id="apiKey" type="password" placeholder="API Key (선택)"><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
+<section class="page" id="chat">
+<div class="aiWorkspaceHead">
+<div>
+<span class="eyebrow">GARANG AI</span>
+<h2>나를 이해하는 하나의 AI</h2>
+<p>운동·식단·러닝·회복·목표·기억을 필요한 순간 하나의 판단으로 연결합니다.</p>
+</div>
+<button class="ghostBtn aiNewChat" onclick="newGarangChat()" type="button">새 대화</button>
+</div>
+<div class="garangUnifiedShell" id="v99UnifiedPanel"></div>
+<div class="chatlog" id="chatLog"></div>
+<form class="chatbar" id="chatForm">
+<button aria-label="파일 또는 사진 첨부" class="chatPlus" id="chatAttachBtn" type="button">＋</button>
+<input accept="image/*,.pdf,.txt,.json,.csv" hidden="" id="chatFile" type="file"/>
+<input autocomplete="off" id="chatInput" placeholder="무엇이든 물어보세요" required=""/>
+<button id="chatSendBtn" type="submit">전송</button>
+</form>
+<div class="card" hidden="" id="serverLLMSettings"><h3>고급 AI 연결</h3><input id="apiUrl" placeholder="https://your-server.example.com/chat"/><input id="apiKey" placeholder="API Key (선택)" type="password"/><button onclick="saveApi()">연결 설정 저장</button><small>실서비스에서는 API Key를 브라우저에 직접 저장하지 말고 서버 측 인증을 권장합니다.</small></div>
 </section>
-
-<section id="v93Learning" class="page">
-  <div class="pageTitle"><div><span class="eyebrow">LEARNING</span><h2>AI Learning</h2><p>운동·식단·러닝 기록에서 개인화 패턴을 축적합니다.</p></div></div>
-  <div class="card">
-    <div class="v93Grid">
-      <div class="v93Metric">학습 이벤트<b id="v93LearnEvents">0</b></div>
-      <div class="v93Metric">패턴<b id="v93LearnPatterns">0</b></div>
-      <div class="v93Metric">성공<b id="v93LearnSuccess">0</b></div>
-      <div class="v93Metric">실패<b id="v93LearnFailure">0</b></div>
-    </div>
-    <div class="row" style="margin-top:12px"><button id="v93Sync">기록 다시 학습</button><button id="v93LearningConsent">Global Learning 동의</button><span id="v93ServerStatus" class="muted">로컬 학습 ON</span></div>
-  </div>
-  <div class="card"><h3>학습 패턴</h3><div id="v93PatternList"></div></div>
-  <div class="card"><h3>최근 학습 이벤트</h3><div id="v93LearningList"></div></div>
+<section class="page" id="v93Learning">
+<div class="pageTitle"><div><span class="eyebrow">LEARNING</span><h2>AI Learning</h2><p>운동·식단·러닝 기록에서 개인화 패턴을 축적합니다.</p></div></div>
+<div class="card">
+<div class="v93Grid">
+<div class="v93Metric">학습 이벤트<b id="v93LearnEvents">0</b></div>
+<div class="v93Metric">패턴<b id="v93LearnPatterns">0</b></div>
+<div class="v93Metric">성공<b id="v93LearnSuccess">0</b></div>
+<div class="v93Metric">실패<b id="v93LearnFailure">0</b></div>
+</div>
+<div class="row" style="margin-top:12px"><button id="v93Sync">기록 다시 학습</button><button id="v93LearningConsent">Global Learning 동의</button><span class="muted" id="v93ServerStatus">로컬 학습 ON</span></div>
+</div>
+<div class="card"><h3>학습 패턴</h3><div id="v93PatternList"></div></div>
+<div class="card"><h3>최근 학습 이벤트</h3><div id="v93LearningList"></div></div>
 </section>
-<section id="v93Memory" class="page">
-  <div class="pageTitle"><div><span class="eyebrow">MEMORY</span><h2>AI Memory</h2><p>기존 GARANG 데이터와 V9 학습 데이터를 한 곳에서 확인합니다.</p></div></div>
-  <div class="card"><div id="v93MemoryList"></div></div>
-  <div class="card"><button onclick="GARANG_V93_LEARNING.clear()">V9 학습 데이터 초기화</button></div>
+<section class="page" id="v93Memory">
+<div class="pageTitle"><div><span class="eyebrow">MEMORY</span><h2>AI Memory</h2><p>기존 GARANG 데이터와 V9 학습 데이터를 한 곳에서 확인합니다.</p></div></div>
+<div class="card"><div id="v93MemoryList"></div></div>
+<div class="card"><button onclick="GARANG_V93_LEARNING.clear()">V9 학습 데이터 초기화</button></div>
 </section>
 </main>
-
-<nav id="mainNav" class="hidden"><button onclick="openPage('dashboard')">홈</button><button onclick="openPage('workout')">운동</button><button onclick="openPage('diet')">식단</button><button onclick="openPage('running')">러닝</button><button onclick="openPage('report')">리포트</button><button onclick="openPage('chat')">AI</button><button onclick="openPage('v93Learning')">학습</button><button onclick="openPage('v93Memory')">메모리</button><button onclick="openPage('profile')">프로필</button></nav>
+<nav id="mainNav" class="hidden" aria-label="주요 메뉴">
+  <button data-page="dashboard" onclick="openPage('dashboard')"><span class="navIcon">⌂</span><span>홈</span></button>
+  <button data-page="workout" onclick="openPage('workout')"><span class="navIcon">↗</span><span>운동</span></button>
+  <button data-page="chat" onclick="openPage('chat')"><span class="navIcon">✦</span><span>AI</span></button>
+  <button data-page="diet" onclick="openPage('diet')"><span class="navIcon">◌</span><span>식단</span></button>
+  <button type="button" onclick="toggleMoreNav()"><span class="navIcon">•••</span><span>더보기</span></button>
+</nav>
+<div id="moreNav" aria-hidden="true" onclick="if(event.target===this)toggleMoreNav(false)"><div class="sheet"><div class="sectionHead" style="margin-bottom:12px"><strong>GARANG</strong><button class="ghostBtn" type="button" onclick="toggleMoreNav(false)">닫기</button></div><div class="moreGrid"><button onclick="openMorePage('running')">🏃<br>러닝</button><button onclick="openMorePage('body')">◉<br>바디</button><button onclick="openMorePage('report')">▤<br>리포트</button><button onclick="openMorePage('profile')">◎<br>프로필</button><button onclick="openMorePage('v93Learning')">⌁<br>학습</button><button onclick="openMorePage('v93Memory')">◇<br>메모리</button></div></div></div>
 </div>
-
 <script>
+function toggleMoreNav(force){const el=document.getElementById('moreNav');if(!el)return;const open=typeof force==='boolean'?force:!el.classList.contains('open');el.classList.toggle('open',open);el.setAttribute('aria-hidden',String(!open));}
+function openMorePage(id){toggleMoreNav(false);openPage(id)}
+</script>
+
+<div id="fitmindBuildVersion" style="position:fixed;bottom:5px;right:7px;font-size:9px;opacity:.32;z-index:9999">GARANG V10.4 · APP SHELL</div>
+<script>
+
 (function(){
   window.setAuthTab=window.setAuthTab||function(t){
     document.querySelectorAll('#authTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
@@ -444,43 +364,73 @@ nav#mainNav button:nth-child(n+6){display:none!important}
     window.setAuthTab('login');
   },{once:true});
 })();
+
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="local-coach-v5.js"></script>
-<script src="local-coach-v5.1-5.5.js"></script>
-<script src="app-v5.0.0.js"></script>
-<script src="local-coach-v5.6.js"></script>
-<script src="ui-v5.6.js"></script>
-<script src="cloud-router-v6.js"></script>
-<script src="data-engine-v6.5.js?v=6.5.0-final"></script>
-<script src="dialogue-v6.5.1.js?v=6.5.1"></script>
-<div id="fitmindBuildVersion" style="position:fixed;bottom:4px;right:6px;font-size:9px;opacity:.35;z-index:9999">GARANG V9.9 · PREMIUM UI</div>
-<script src="v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
-<script src="v8-batch.js?v=8.0.0"></script>
-<script src="v8-personal-ai.js?v=8.0.0"></script>
-<script src="v8-adaptive-program.js?v=8.0.0"></script>
-<script src="v8-nutrition.js?v=8.0.0"></script>
-<script src="v8-reports.js?v=8.0.0"></script>
-<script src="v8.1-batch-ui.js?v=8.1.0"></script>
-<script src="v8.5-core.js?v=8.5.0"></script>
-<script src="v8.5-running.js?v=8.5.0"></script>
-<script src="v8.5-share.js?v=8.5.0"></script>
-<script src="garang-v8.5.2-firebase-auth.js"></script>
-<div class="garang-firebase-account-option" role="group" aria-label="Firebase 계정 가입"><strong>Firebase 계정으로 가입</strong><span>이메일과 비밀번호로 안전하게 계정을 만들 수 있어요.</span></div>
-<script src="garang-v8.5.2-runtime-auth-fix.js?v=8.8.1"></script>
-<script src="garang-v8.5.3-workout-db.js"></script>
-<script src="garang-v8.5.3-ui-bridge.js"></script>
-<script src="garang-v8.6-core.js?v=8.6.0"></script>
-<script src="garang-v8.6-integrated.js?v=8.6.0"></script>
-<script src="garang-v8.8-hotfix.js?v=8.8.0"></script>
-<script src="v9.3-learning.js?v=9.3.2"></script>
-<script src="garang-v9.5-coach-engine.js?v=9.5.0"></script>
-<script src="garang-premium-v9.9.js?v=9.9.0"></script>\n<script src="garang-v9.5-global-ai.js?v=9.5.2"></script>
-<script src="garang-v9.5-ai-integration.js?v=9.5.2"></script>
-<script src="garang-v9.9-master.js?v=9.9.2"></script>
-<script src="garang-v9.9-touch-final.js?v=9.9.4"></script>
-<script src="garang-v10-release.js?v=10.0.0"></script>
+<script src="backend/firebase-config.js"></script>
+<script src="ai/local-coach-v5.js"></script>
+<script src="ai/local-coach-v5.1-5.5.js"></script>
+<script src="core/app-v5.0.0.js"></script>
+<script src="ai/local-coach-v5.6.js"></script>
+<script src="ui/scripts/ui-v5.6.js"></script>
+<script src="backend/cloud-router-v6.js"></script>
+<script src="core/data-engine-v6.5.js?v=6.5.0-final"></script>
+<script src="ai/dialogue-v6.5.1.js?v=6.5.1"></script>
+<script src="ai/v7.7-new-chat-singleton.js?v=7.7.0-fixed"></script>
+<script src="features/v8-batch.js?v=8.0.0"></script>
+<script src="ai/v8-personal-ai.js?v=8.0.0"></script>
+<script src="features/v8-adaptive-program.js?v=8.0.0"></script>
+<script src="features/v8-nutrition.js?v=8.0.0"></script>
+<script src="features/v8-reports.js?v=8.0.0"></script>
+<script src="features/v8.1-batch-ui.js?v=8.1.0"></script>
+<script src="core/v8.5-core.js?v=8.5.0"></script>
+<script src="features/v8.5-running.js?v=8.5.0"></script>
+<script src="features/v8.5-share.js?v=8.5.0"></script>
+<script src="auth/garang-v8.5.2-firebase-auth.js"></script>
+<script src="auth/garang-v8.5.2-runtime-auth-fix.js?v=8.8.1"></script>
+<script src="core/garang-v8.5.3-workout-db.js"></script>
+<script src="core/garang-v8.5.3-ui-bridge.js"></script>
+<script src="core/garang-v8.6-core.js?v=8.6.0"></script>
+<script src="core/garang-v8.6-integrated.js?v=8.6.0"></script>
+<script src="core/garang-v8.8-hotfix.js?v=8.8.0"></script>
+<script src="ai/v9.3-learning.js?v=9.3.2"></script>
+<script src="ai/garang-v9.5-data-layer.js?v=9.5.0"></script>
+<script src="ai/garang-v9.5-coach-engine.js?v=9.5.0"></script>
+<script src="ui/scripts/garang-global-ui-v95.js?v=9.5.3"></script>
+<script src="ai/garang-v9.5-ai-integration.js?v=9.5.2"></script>
+<script src="ai/garang-v9.9-master.js?v=9.9.0"></script>
+<script src="ai/garang-v9.9-touch-final.js?v=9.9.3"></script>
+<script>
+(function(){
+  const sync=()=>{
+    const active=document.querySelector('.page.active')?.id;
+    document.querySelectorAll('#mainNav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===active));
+    const nav=document.getElementById('mainNav');
+    const auth=document.getElementById('auth');
+    if(nav)nav.classList.toggle('hidden',!!auth?.classList.contains('active'));
+  };
+  const wrap=()=>{
+    const original=window.openPage;
+    if(typeof original!=='function'||original.__v10wrapped)return;
+  };
+  const install=()=>{
+    const original=window.openPage;
+    if(typeof original!=='function'||original.__v10wrapped)return;
+    const wrapped=function(id){original(id);setTimeout(sync,0)};
+    wrapped.__v10wrapped=true;
+    window.openPage=wrapped;
+    sync();
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
+  window.addEventListener('garang-auth-state',()=>setTimeout(sync,20));
+  window.addEventListener('pageshow',()=>setTimeout(sync,20));
+})();
+</script>
+
+<script src="ui/scripts/garang-v10.5-stability.js?v=10.5.0"></script>
+<script>window.GARANG_GOOGLE_MAPS_API_KEY=window.GARANG_GOOGLE_MAPS_API_KEY||"";</script>
+<script src="ui/scripts/garang-v10.4-cert-gps.js?v=10.4.0"></script>
 </body>
 </html>
