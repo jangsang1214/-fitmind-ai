@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GARANG">
 <title>GARANG · Your personal AI coach</title>
-<link rel="stylesheet" href="style-v5.0.0.css?v=9.9.1">
-<link rel="stylesheet" href="style-v5.6.css?v=9.9.1">
+<link rel="stylesheet" href="style-v5.0.0.css?v=8.8.1">
+<link rel="stylesheet" href="style-v5.6.css?v=8.8.1">
 <style id="fitmindPageIsolation">
 .page{display:none!important}.page.active{display:block!important}
 #dashboard .todayNutrition,#workout .todayNutrition,#body .todayNutrition,#report .todayNutrition,#chat .todayNutrition,#profile .todayNutrition{display:none!important}
@@ -60,7 +60,6 @@ nav#mainNav{z-index:100!important}
 </style>
 <link rel="stylesheet" href="v8.1-batch.css?v=8.1.0">
 <link rel="stylesheet" href="v8.5-brand.css?v=8.8.0">
-<link rel="stylesheet" href="garang-v99-premium-sync.css?v=9.9.1">
 
 <style id="garangV93Additive">
 #v93Learning .v93Grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -117,6 +116,7 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 @media(max-width:650px){.profileGrid2{grid-template-columns:1fr 1fr}.accountCard{display:block}.accountActions{margin-top:12px}.profileField.wide{grid-column:1/-1}}
 @media(max-width:390px){.profileGrid2{grid-template-columns:1fr}.profileField.wide{grid-column:auto}}
 </style>
+<link rel="stylesheet" href="garang-v99-reference.css?v=9.9.10">
 </head>
 <body>
 <div id="app">
@@ -517,7 +517,7 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 <script src="v8.5-share.js?v=8.5.0"></script>
 <script src="garang-v8.5.2-firebase-auth.js"></script>
 <div class="garang-firebase-account-option" role="group" aria-label="Firebase 계정 가입"><strong>Firebase 계정으로 가입</strong><span>이메일과 비밀번호로 안전하게 계정을 만들 수 있어요.</span></div>
-<script src="garang-v8.5.2-runtime-auth-fix.js?v=9.9.1"></script>
+<script src="garang-v8.5.2-runtime-auth-fix.js?v=8.8.1"></script>
 <script src="garang-v8.5.3-workout-db.js"></script>
 <script src="garang-v8.5.3-ui-bridge.js"></script>
 <script src="garang-v8.6-core.js?v=8.6.0"></script>
@@ -549,5 +549,79 @@ nav#mainNav button:hover,nav#mainNav button.active{background:#18191c!important;
 </script>
 <script src="garang-v9.9-master.js?v=9.9.0"></script>
 <script src="garang-v9.9-touch-final.js?v=9.9.3"></script>
+
+<script id="garangV99ReferenceBehavior">
+(function(){
+  'use strict';
+  const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>Array.from(r.querySelectorAll(q));
+  function navSetup(){
+    const nav=$('#mainNav'); if(!nav) return;
+    const map=[['dashboard','⌂','홈'],['workout','♢','운동'],['diet','◫','식단'],['body','◉','바디'],['more','⋯','더보기']];
+    const buttons=$$('button',nav); buttons.forEach(b=>b.style.display='none');
+    nav.innerHTML='';
+    map.forEach(([id,icon,label])=>{
+      const b=document.createElement('button'); b.type='button'; b.dataset.target=id; b.innerHTML='<span class="gNavIcon">'+icon+'</span><span class="gNavLabel">'+label+'</span>';
+      if(id==='more') b.onclick=()=>morePanel(); else b.onclick=()=>{window.openPage&&window.openPage(id); setActive(id)};
+      nav.appendChild(b);
+    });
+    setActive('dashboard');
+    function setActive(id){$$('button',nav).forEach(x=>x.classList.toggle('active',x.dataset.target===id));}
+    window.garangSetNavActive=setActive;
+    const panel=document.createElement('div'); panel.className='gMorePanel'; panel.id='gMorePanel';
+    panel.innerHTML='<div class="gMoreGrid">'+[
+      ['running','🏃','러닝'],['report','▥','리포트'],['chat','✦','AI 코치'],['profile','◌','프로필'],['v93Learning','◎','AI Learning'],['v93Memory','◇','AI Memory']
+    ].map(x=>'<button class="gMoreItem" data-more="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>').join('')+'</div>';
+    document.body.appendChild(panel);
+    $$('.gMoreItem',panel).forEach(b=>b.onclick=()=>{window.openPage&&window.openPage(b.dataset.more); panel.classList.remove('open');});
+    window.addEventListener('garang-page-open',e=>{setActive(e.detail||'dashboard')});
+  }
+  function morePanel(){const p=$('#gMorePanel');if(p)p.classList.toggle('open')}
+  function injectDashboard(){
+    const hero=$('.dashboardHero'); if(!hero || $('.gScoreRing',hero)) return;
+    const oldH=hero.querySelector('h2'), oldP=hero.querySelector('p');
+    hero.innerHTML='';
+    const ring=document.createElement('div'); ring.className='gScoreRing'; ring.innerHTML='<div class="gScoreInner"><b>87</b><span>GOOD</span></div>';
+    const copy=document.createElement('div'); copy.className='coachCopy'; copy.innerHTML='<span class="eyebrow">TODAY · GARANG AI</span><h2>오늘의 퍼포먼스</h2><p>최근 운동·식단·회복 기록을 바탕으로 오늘의 우선순위를 정리했어요.</p><button type="button" onclick="openPage(\'chat\')">AI 코치에게 질문 →</button>';
+    hero.append(ring,copy);
+    const stats=$('.statGrid'); if(stats && !$('.g99DashGrid')){
+      const grid=document.createElement('div'); grid.className='g99DashGrid';
+      grid.innerHTML='<div class="g99Mini"><span class="g99Label">TODAY WORKOUT</span><b>4 / 6</b><em>운동 완료</em></div><div class="g99Mini"><span class="g99Label">PROTEIN</span><b>120 / 145g</b><em>83%</em></div><div class="g99Mini"><span class="g99Label">RECOVERY</span><b>8h 30m</b><em>GOOD</em></div><div class="g99Mini"><span class="g99Label">CALORIES</span><b>1,950</b><em>2,650 kcal</em></div>';
+      stats.parentNode.insertBefore(grid,stats);
+    }
+    if(!$('.g99AiCard')){
+      const ai=document.createElement('div'); ai.className='g99AiCard'; ai.innerHTML='<div class="g99AiOrb">✦</div><div><strong>GARANG AI INSIGHT</strong><p>최근 7일 운동량과 회복 상태를 분석했어요. 오늘은 강도를 유지하고 마지막 세트에서만 소폭 증량하는 전략을 추천합니다.</p></div><button type="button" onclick="openPage(\'chat\')">보기</button>';
+      hero.insertAdjacentElement('afterend',ai);
+    }
+  }
+  function enhanceHeadings(){
+    const heads={workout:['WORKOUT','운동'],diet:['NUTRITION','식단'],running:['RUN','러닝'],body:['BODY','바디'],report:['INSIGHTS','분석'],profile:['PROFILE','내 GARANG']};
+    Object.entries(heads).forEach(([id,v])=>{const s=document.getElementById(id), pt=s&&$('.pageTitle',s); if(pt){const ey=$('.eyebrow',pt);if(ey)ey.textContent=v[0]; const h=pt.querySelector('h2');if(h)h.textContent=v[1];}})
+  }
+  function enhanceWorkout(){
+    const w=$('#workout'); if(!w || $('.g99WorkoutHint',w)) return;
+    const card=document.createElement('div'); card.className='card g99WorkoutHint'; card.style.margin='0 0 12px'; card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><span class="eyebrow">TODAY SESSION</span><h3 style="font-size:21px;margin:5px 0 2px">Chest Day</h3><small>가슴 & 상부 · 회복 상태 양호</small></div><div style="font-size:28px;font-weight:950;color:var(--g-green)">91%</div></div>';
+    const pt=$('.pageTitle',w); pt.insertAdjacentElement('afterend',card);
+  }
+  function enhanceDiet(){
+    const d=$('#diet'); if(!d || $('.g99DietSummary',d)) return;
+    const c=document.createElement('div'); c.className='card g99DietSummary'; c.style.margin='0 0 12px'; c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="eyebrow">TODAY NUTRITION</span><h3 style="font-size:21px;margin:5px 0 2px">1,950 kcal</h3><small>목표 2,650 kcal · 단백질 145g</small></div><div style="font-size:13px;color:var(--g-green);font-weight:900">67%</div></div><div style="height:7px;background:#20282a;border-radius:999px;margin-top:13px;overflow:hidden"><div style="height:100%;width:67%;background:linear-gradient(90deg,var(--g-green),#8cffab);border-radius:999px"></div></div>';
+    $('.pageTitle',d).insertAdjacentElement('afterend',c);
+  }
+  function enhanceChat(){
+    const c=$('#chat'); if(!c) return;
+    const p=$('#v99UnifiedPanel',c); if(p && !$('.g99AiHeader',p)){
+      const h=document.createElement('div');h.className='g99AiHeader';h.style.margin='0 0 8px';h.innerHTML='<span class="eyebrow">PERSONAL PERFORMANCE AGENT</span>';
+      p.prepend(h);
+    }
+  }
+  function patchOpenPage(){
+    if(window.__garangOpenPatched) return; if(typeof window.openPage!=='function') return;
+    const orig=window.openPage; window.openPage=function(id){const r=orig.apply(this,arguments);setTimeout(()=>{window.dispatchEvent(new CustomEvent('garang-page-open',{detail:id}));},0);return r}; window.__garangOpenPatched=true;
+  }
+  function init(){navSetup();injectDashboard();enhanceHeadings();enhanceWorkout();enhanceDiet();enhanceChat();patchOpenPage();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,80));else setTimeout(init,80);
+  setTimeout(init,600);setTimeout(init,1600);
+})();
+</script>
 </body>
 </html>
