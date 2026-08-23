@@ -36,21 +36,21 @@ main{min-height:calc(100vh - var(--header))}.eyebrow{display:block;color:var(--a
 <body>
 <div id="app">
 <header class="garangHeader">
-  <a href="#" class="brandLockup" onclick="event.preventDefault();openPage('dashboard')" aria-label="GARANG 홈"><img src="assets/icons/garang-mark.svg" class="brandMark" alt="GARANG logo"><div><b>GARANG</b><small>Your personal AI coach</small></div></a>
+  <a href="#" class="brandLockup" onclick="event.preventDefault();openPage('dashboard')" aria-label="GARANG 홈"><svg class="brandMark" viewBox="0 0 120 120" aria-hidden="true"><path d="M77 20 39 41v38l38 21 22-13V53L77 65v20L55 73V48l22-12 22 13" fill="none" stroke="#39e66f" stroke-width="9" stroke-linejoin="round"/><path d="M55 48 77 36l22 13" fill="none" stroke="#39e66f" stroke-width="9" stroke-linejoin="round"/></svg><div><b>GARANG</b><small>Your personal AI coach</small></div></a>
   <div class="headerBtns"><button id="planBadge" type="button" hidden>FREE</button><button id="installBtn" hidden>설치</button><button id="accountBtn" hidden onclick="openPage('profile')">내정보</button></div>
 </header>
 <main>
 <section class="page active authPage" id="auth">
 <div class="garang-v853-auth-fix authHero">
-<img alt="GARANG" class="garang-v853-auth-fix authLogo" src="assets/icons/garang-mark.svg"/>
+<svg class="garang-v853-auth-fix authLogo" viewBox="0 0 120 120" aria-hidden="true"><path d="M77 20 39 41v38l38 21 22-13V53L77 65v20L55 73V48l22-12 22 13" fill="none" stroke="#39e66f" stroke-width="9" stroke-linejoin="round"/><path d="M55 48 77 36l22 13" fill="none" stroke="#39e66f" stroke-width="9" stroke-linejoin="round"/></svg>
 <div class="eyebrow">YOUR PERSONAL AI COACH</div>
 <h1>오늘의 나를<br/><em>더 정확하게</em> 이해하다.</h1>
 <p>운동·식단·체중·러닝 기록을 하나의 흐름으로 연결하고, 나에게 맞는 코칭을 만들어갑니다.</p>
 </div>
 <div class="card authCard">
 <div class="tabs" id="authTabs"><button class="active" data-tab="login" onclick="setAuthTab('login')">로그인</button><button data-tab="signup" onclick="setAuthTab('signup')">회원가입</button></div>
-<form class="garang-v853-auth-fix authForm" id="loginForm"><input autocomplete="email" id="loginEmail" placeholder="이메일" required="" type="email"/><input autocomplete="current-password" id="loginPw" placeholder="비밀번호" required="" type="password"/><button class="primaryBtn">GARANG 시작하기</button><button class="linkBtn" id="resetPwBtn" type="button">비밀번호를 잊으셨나요?</button></form>
-<form class="garang-v853-auth-fix authForm" hidden="" id="signupForm"><input autocomplete="nickname" id="signupName" placeholder="닉네임" required=""/><input autocomplete="email" id="signupEmail" placeholder="이메일" required="" type="email"/><input autocomplete="new-password" id="signupPw" minlength="6" placeholder="비밀번호 (6자 이상)" required="" type="password"/><input autocomplete="new-password" id="signupPw2" minlength="6" placeholder="비밀번호 확인" required="" type="password"/><label class="check"><input id="terms" required="" type="checkbox"/> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn">계정 만들기</button></form>
+<form class="garang-v853-auth-fix authForm" id="loginForm"><input autocomplete="email" id="loginEmail" placeholder="이메일" required="" type="email"/><input autocomplete="current-password" id="loginPw" placeholder="비밀번호" required="" type="password"/><button class="primaryBtn" type="submit">GARANG 시작하기</button><button class="linkBtn" id="resetPwBtn" type="button">비밀번호를 잊으셨나요?</button></form>
+<form class="garang-v853-auth-fix authForm" hidden="" id="signupForm"><input autocomplete="nickname" id="signupName" placeholder="닉네임" required=""/><input autocomplete="email" id="signupEmail" placeholder="이메일" required="" type="email"/><input autocomplete="new-password" id="signupPw" minlength="6" placeholder="비밀번호 (6자 이상)" required="" type="password"/><input autocomplete="new-password" id="signupPw2" minlength="6" placeholder="비밀번호 확인" required="" type="password"/><label class="check"><input id="terms" required="" type="checkbox"/> 서비스 이용 및 개인정보 처리에 동의합니다.</label><button class="primaryBtn" type="submit">계정 만들기</button></form>
 <div class="garang-v853-auth-fix authDivider"><span>또는</span></div>
 <button class="socialBtn" id="googleBtn" type="button">Google로 계속하기</button><button class="socialBtn" id="appleBtn" type="button">Apple로 계속하기</button>
 <p class="error" id="authError"></p><p class="muted authFineprint">가입 후 기록은 계정별로 저장되며 언제든 백업·삭제할 수 있습니다.</p>
@@ -349,7 +349,7 @@ function toggleMoreNav(force){const el=document.getElementById('moreNav');if(!el
 function openMorePage(id){toggleMoreNav(false);openPage(id)}
 </script>
 
-<div id="fitmindBuildVersion" style="position:fixed;bottom:5px;right:7px;font-size:9px;opacity:.32;z-index:9999">GARANG V10.4 · APP SHELL</div>
+<div id="fitmindBuildVersion" style="position:fixed;bottom:5px;right:7px;font-size:9px;opacity:.32;z-index:9999">GARANG V10.6 · FITNESS AI</div>
 <script>
 
 (function(){
@@ -402,34 +402,8 @@ function openMorePage(id){toggleMoreNav(false);openPage(id)}
 <script src="ai/garang-v9.5-ai-integration.js?v=9.5.2"></script>
 <script src="ai/garang-v9.9-master.js?v=9.9.0"></script>
 <script src="ai/garang-v9.9-touch-final.js?v=9.9.3"></script>
-<script>
-(function(){
-  const sync=()=>{
-    const active=document.querySelector('.page.active')?.id;
-    document.querySelectorAll('#mainNav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===active));
-    const nav=document.getElementById('mainNav');
-    const auth=document.getElementById('auth');
-    if(nav)nav.classList.toggle('hidden',!!auth?.classList.contains('active'));
-  };
-  const wrap=()=>{
-    const original=window.openPage;
-    if(typeof original!=='function'||original.__v10wrapped)return;
-  };
-  const install=()=>{
-    const original=window.openPage;
-    if(typeof original!=='function'||original.__v10wrapped)return;
-    const wrapped=function(id){original(id);setTimeout(sync,0)};
-    wrapped.__v10wrapped=true;
-    window.openPage=wrapped;
-    sync();
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
-  window.addEventListener('garang-auth-state',()=>setTimeout(sync,20));
-  window.addEventListener('pageshow',()=>setTimeout(sync,20));
-})();
-</script>
 
-<script src="ui/scripts/garang-v10.5-stability.js?v=10.5.0"></script>
+<script src="ui/scripts/garang-v10.6-auth-router.js?v=10.6.0"></script>
 <script>window.GARANG_GOOGLE_MAPS_API_KEY=window.GARANG_GOOGLE_MAPS_API_KEY||"";</script>
 <script src="ui/scripts/garang-v10.4-cert-gps.js?v=10.4.0"></script>
 </body>
