@@ -1,21 +1,12 @@
 {
-  "name": "GARANG — Your Personal AI Coach",
+  "name": "GARANG — Personal AI Fitness Coach",
   "short_name": "GARANG",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0b0d0f",
-  "theme_color": "#0b0d0f",
-  "description": "Personal AI fitness operating system",
+  "background_color": "#050607",
+  "theme_color": "#050607",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    {"src":"assets/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"assets/icon-512.png","sizes":"512x512","type":"image/png"}
   ]
 }

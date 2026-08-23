@@ -1,1 +1,8 @@
-const CACHE='garang-v99-rebuild-1';const ASSETS=['./','./index.html','./styles.css','./app.js','./firebase-config.js','./manifest.webmanifest','./garang-mark.svg','./icon-192.png','./icon-512.png'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(x=>x.put(e.request,copy));return r}).catch(()=>c)))})
+const VERSION='garang-v9.9-final-20260823';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));await self.clients.claim();})()));
+self.addEventListener('fetch',event=>{
+  const url=new URL(event.request.url);
+  if(event.request.method!=='GET' || url.origin!==location.origin) return;
+  event.respondWith(fetch(event.request,{cache:'no-store'}).catch(()=>caches.match(event.request)));
+});

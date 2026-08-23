@@ -1,38 +1,86 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0d0f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="garang-mark.svg">
-<title>GARANG — Your Personal AI Coach</title>
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050607">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GARANG — Personal AI Fitness Coach</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="garang-v99-final.css?v=20260823">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script src="config/firebase-config.js"></script>
 </head>
 <body>
-<div id="toast" class="toast" role="status"></div>
-<div id="authView" class="auth-view">
-  <div class="auth-shell">
-    <div class="brand"><img src="garang-mark.svg"><div><b>GARANG</b><span>YOUR PERSONAL AI COACH</span></div></div>
-    <div class="auth-copy"><span class="eyebrow">PERSONAL PERFORMANCE SYSTEM</span><h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1><p>운동·식단·러닝·신체 데이터를 한곳에 모으고, GARANG이 당신의 다음 행동까지 연결합니다.</p></div>
-    <div class="auth-card">
-      <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
-      <form id="loginForm"><label>이메일<input id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label><button class="primary wide" type="submit">로그인</button><button class="text-btn" id="resetPassword" type="button">비밀번호 재설정</button></form>
-      <form id="signupForm" hidden><label>이메일<input id="signupEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>비밀번호<input id="signupPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="6자 이상"></label><button class="primary wide" type="submit">계정 만들기</button></form>
-      <div class="divider"><span>또는</span></div>
-      <div class="social-grid"><button id="googleBtn" type="button" class="social">Google로 계속</button><button id="appleBtn" type="button" class="social">Apple로 계속</button></div>
-      <p class="auth-note">계정 없이도 로컬 데모로 앱 구조를 둘러볼 수 있습니다.</p><button id="demoBtn" class="ghost wide" type="button">데모로 시작하기</button>
-    </div>
-  </div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="authScreen" class="screen auth-screen">
+  <header class="topbar auth-topbar"><div class="brand"><img src="assets/garang-mark.svg" alt="GARANG"><div><strong>GARANG</strong><small>PERSONAL PERFORMANCE AGENT</small></div></div><span class="tier-badge">FREE</span></header>
+  <main class="auth-main">
+    <section class="auth-copy"><span class="eyebrow">YOUR PERSONAL AI FITNESS COACH</span><h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1><p>운동 · 식단 · 체중 · 러닝 · 회복 · 목표를 하나의 Personal State로 연결합니다.</p></section>
+    <section class="auth-card card">
+      <div class="segmented"><button type="button" class="active" data-auth-tab="login">로그인</button><button type="button" data-auth-tab="signup">회원가입</button></div>
+      <form id="loginForm" class="auth-form">
+        <label>이메일<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label>비밀번호<input id="loginPw" type="password" autocomplete="current-password" placeholder="비밀번호" required></label>
+        <button class="primary big" type="submit">GARANG 시작하기</button>
+        <button id="resetPwBtn" class="text-btn" type="button">비밀번호를 잊으셨나요?</button>
+      </form>
+      <form id="signupForm" class="auth-form" hidden>
+        <label>닉네임<input id="signupName" autocomplete="nickname" placeholder="이름 또는 닉네임" required></label>
+        <label>이메일<input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label>비밀번호<input id="signupPw" type="password" autocomplete="new-password" minlength="6" placeholder="6자 이상" required></label>
+        <label>비밀번호 확인<input id="signupPw2" type="password" autocomplete="new-password" minlength="6" placeholder="비밀번호 확인" required></label>
+        <label class="check"><input id="terms" type="checkbox" required> 서비스 이용 및 개인정보 처리에 동의합니다.</label>
+        <button class="primary big" type="submit">계정 만들기</button>
+      </form>
+      <div class="auth-divider"><span>또는</span></div>
+      <div class="social-grid"><button id="googleBtn" class="social" type="button">Google로 계속하기</button><button id="appleBtn" class="social" type="button">Apple로 계속하기</button></div>
+      <p id="authError" class="error"></p>
+      <p class="fine">계정 데이터는 사용자별로 분리됩니다. 로그인하지 않은 상태에서는 기기 로컬 테스트 데이터만 사용합니다.</p>
+    </section>
+  </main>
 </div>
-<div id="appView" hidden>
-  <header class="topbar"><button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button><div class="brand mini"><img src="garang-mark.svg"><div><b>GARANG</b><span>PERSONAL AI COACH</span></div></div><div class="top-actions"><span id="planBadge" class="badge">FREE</span><button id="logoutBtn" class="ghost small">로그아웃</button></div></header>
-  <main id="main" class="main"></main>
-  <nav class="bottom-nav" id="bottomNav">
-    <button data-page="home" class="active"><span>⌂</span><b>홈</b></button><button data-page="workout"><span>◒</span><b>운동</b></button><button data-page="nutrition"><span>◌</span><b>식단</b></button><button data-page="running"><span>⌁</span><b>러닝</b></button><button data-page="ai"><span>✦</span><b>GARANG AI</b></button>
-  </nav>
+
+<div id="appScreen" class="screen app-screen" hidden>
+<header class="topbar app-topbar"><button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button><div class="brand"><img src="assets/garang-mark.svg" alt="GARANG"><div><strong>GARANG</strong><small>PERSONAL PERFORMANCE AGENT</small></div></div><button id="tierBtn" class="tier-badge buttonish">FREE</button></header>
+<aside id="sideMenu" class="side-menu"><div class="side-user"><span id="sideAvatar">G</span><div><strong id="sideName">GARANG</strong><small id="sideEmail"></small></div></div><button data-page="body">바디체크</button><button data-page="report">리포트</button><button data-page="certify">인증센터</button><button data-page="learning">AI 학습</button><button data-page="profile">프로필</button><button id="logoutBtn">로그아웃</button></aside>
+<main id="main" class="app-main">
+<section id="home" class="page active"><div class="hero-row"><div><span class="eyebrow">TODAY</span><h1 id="homeTitle">오늘의 GARANG</h1><p id="homeSubtitle">기록이 쌓일수록 코칭이 정확해집니다.</p></div><button id="homeProfileBtn" class="secondary">프로필</button></div>
+<div class="coach-hero card"><div><span class="eyebrow">GARANG COACH</span><h2 id="coachHeadline">오늘의 상태를 분석하는 중…</h2><p id="coachSummary">운동 · 식단 · 러닝 · 체중 데이터를 연결합니다.</p></div><div class="coach-actions"><button data-page="workout" class="primary">오늘 운동 기록</button><button id="homeAskBtn" class="secondary">AI에게 물어보기</button></div></div>
+<div class="metrics-grid"><div class="metric card"><span>오늘 섭취</span><strong id="homeIntake">0</strong><small>kcal</small></div><div class="metric card"><span>운동 소비</span><strong id="homeBurn">0</strong><small>kcal</small></div><div class="metric card"><span>단백질</span><strong id="homeProtein">0</strong><small>g</small></div><div class="metric card"><span>러닝</span><strong id="homeRun">0.00</strong><small>km</small></div></div>
+<div class="home-grid"><div class="card"><div class="section-head"><h3>오늘의 활동</h3><button class="text-btn" data-page="report">리포트</button></div><div id="homeActivity" class="activity-list"></div></div><div class="card"><div class="section-head"><h3>Personal State</h3><span id="homeTier" class="mini-tier">FREE</span></div><div id="homeState" class="state-grid"></div></div></div></section>
+
+<section id="workout" class="page"><div class="page-title"><div><span class="eyebrow">WORKOUT</span><h2>운동</h2><p>한 세션에 여러 운동을 기록하고 총 볼륨과 소모 kcal를 계산합니다.</p></div><button id="workoutCertBtn" class="secondary">인증 만들기</button></div>
+<div class="card"><div id="workoutRows" class="stack"></div><div class="inline-actions"><button id="addWorkoutRow" class="secondary">＋ 운동 추가</button><button id="saveWorkoutSession" class="primary">세션 저장</button></div><div class="summary-grid"><div><span>볼륨</span><b id="workoutTotalVolume">0 kg</b></div><div><span>세트</span><b id="workoutTotalSets">0</b></div><div><span>시간</span><b id="workoutTotalMinutes">0 min</b></div><div><span>소모</span><b id="workoutTotalKcal">0 kcal</b></div></div></div>
+<div class="card"><div class="section-head"><h3>오늘 운동 소비</h3><strong id="workoutTodayKcal">0 kcal</strong></div><div id="workoutHistory"></div></div></section>
+
+<section id="diet" class="page"><div class="page-title"><div><span class="eyebrow">NUTRITION</span><h2>식단</h2><p>내장 영양 DB에서 여러 음식을 선택하고 한 끼 단위로 합산합니다.</p></div></div>
+<div class="card"><div class="meal-meta"><label>식사<select id="mealType"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select></label><label>메모<input id="mealSessionNote" placeholder="식사 메모"></label></div><div id="mealRows" class="stack"></div><div class="inline-actions"><button id="addMealRow" class="secondary">＋ 음식 추가</button><button id="saveMealSession" class="primary">식사 저장</button></div><div class="summary-grid"><div><span>총 kcal</span><b id="mealTotalKcal">0</b></div><div><span>단백질</span><b id="mealTotalProtein">0 g</b></div><div><span>탄수화물</span><b id="mealTotalCarbs">0 g</b></div><div><span>지방</span><b id="mealTotalFat">0 g</b></div></div></div>
+<div class="card"><div class="section-head"><h3>오늘 영양</h3><span id="dietDayLabel"></span></div><div id="dietDaily" class="nutrition-bars"></div><div id="mealHistory"></div></div></section>
+
+<section id="running" class="page"><div class="page-title"><div><span class="eyebrow">RUN</span><h2>러닝</h2><p>브라우저 GPS로 거리 · 시간 · 페이스 · 소모 kcal를 기록합니다.</p></div><button id="runCertBtn" class="secondary">러닝 인증</button></div>
+<div class="card run-card"><div class="run-primary"><span id="runStatus">READY</span><strong id="runDistance">0.00</strong><small>km</small></div><div class="summary-grid"><div><span>시간</span><b id="runTime">00:00</b></div><div><span>페이스</span><b id="runPace">--:--</b></div><div><span>소모</span><b id="runKcal">0 kcal</b></div><div><span>GPS</span><b id="runAccuracy">대기</b></div></div><div class="inline-actions"><button id="runStart" class="primary">▶ 시작</button><button id="runPause" class="secondary" disabled>일시정지</button><button id="runStop" class="danger" disabled>■ 종료</button></div><p id="runHint" class="fine">러닝 시작 시 위치 권한을 요청합니다. 위치 권한을 거부해도 앱은 멈추지 않습니다.</p></div>
+<div class="card"><div class="section-head"><h3>GPS 경로</h3><span id="mapStatus">Native GPS</span></div><div id="runMap" class="run-map"><div class="map-grid"></div><svg id="routeSvg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline id="routeLine" points="" /></svg><div id="mapCenter">RUN</div></div></div>
+<div class="card"><div class="section-head"><h3>최근 러닝</h3></div><div id="runHistory"></div></div></section>
+
+<section id="certify" class="page"><div class="page-title"><div><span class="eyebrow">VERIFIED</span><h2>운동 인증</h2><p>사진/영상 위에 GARANG 인증 오버레이를 적용하고 저장·공유합니다.</p></div></div><div class="cert-layout"><div class="card"><div class="cert-buttons"><button id="certCamera" class="primary">📷 사진 촬영</button><button id="certGallery" class="secondary">🖼 사진첩</button><button id="certVideo" class="secondary">🎥 영상 선택</button></div><input id="certCameraInput" type="file" accept="image/*" capture="environment" hidden><input id="certGalleryInput" type="file" accept="image/*" hidden><input id="certVideoInput" type="file" accept="video/*" hidden><label class="field">인증 종류<select id="certType"><option value="workout">WORKOUT VERIFIED</option><option value="run">RUN VERIFIED</option></select></label><div class="overlay-controls"><label>오버레이 크기<input id="overlayScale" type="range" min="0.6" max="1.6" step="0.05" value="1"></label><label>투명도<input id="overlayOpacity" type="range" min="0.25" max="1" step="0.05" value="1"></label></div></div><div class="card cert-preview"><div id="certStage" class="cert-stage"><div class="empty-state">사진 또는 영상을 선택하세요.</div><canvas id="certCanvas"></canvas><video id="certVideoPreview" controls playsinline hidden></video><div id="certOverlay" class="cert-overlay" hidden><strong>GARANG</strong><span id="certOverlayTitle">WORKOUT VERIFIED</span><small id="certOverlayStats">오늘의 기록</small></div></div><div class="inline-actions"><button id="certExport" class="primary" disabled>이미지 저장</button><button id="certShare" class="secondary" disabled>공유</button><button id="certVideoShare" class="secondary" disabled>영상 공유</button></div><p id="certHint" class="fine">사진은 인증 오버레이를 실제 이미지로 렌더링해 저장합니다. 영상은 브라우저가 지원하는 경우 오버레이 프리뷰/공유를 제공하고, 미지원 환경에서는 원본 영상 공유로 전환합니다.</p></div></div></section>
+
+<section id="ai" class="page"><div class="page-title"><div><span class="eyebrow">GARANG AI</span><h2>개인 AI 코치</h2><p>내 Personal State를 기준으로 답합니다.</p></div><button id="newChat" class="secondary">＋ 새 채팅</button></div><div class="ai-state card"><div><strong id="aiStateSummary">Personal State 연결됨</strong><span id="aiMemorySummary">장기기억 0개</span></div><div class="quick-chips"><button data-ai="오늘 운동 뭐 할까?">오늘 운동</button><button data-ai="오늘 단백질 얼마나 남았어?">단백질</button><button data-ai="최근 기록을 분석해줘">최근 분석</button><button data-ai="내 러닝 상태 알려줘">러닝</button></div></div><div id="chatLog" class="chat-log"></div><form id="chatForm" class="chat-form"><textarea id="chatInput" rows="3" placeholder="운동, 식단, 러닝, 체중, 목표에 대해 물어보세요."></textarea><button class="primary" type="submit">전송</button></form><div class="card memory-card"><div class="section-head"><h3>AI Memory</h3><span id="memoryCount">0</span></div><div id="memoryList"></div></div></section>
+
+<section id="body" class="page"><div class="page-title"><div><span class="eyebrow">BODY</span><h2>바디체크</h2><p>체중 · 체지방 · 골격근량 변화를 기록하고 에너지 상태를 계산합니다.</p></div></div><div class="card"><div class="profile-grid"><label>측정일<input id="bodyDate" type="date"></label><label>체중 kg<input id="bodyWeight" type="number" step="0.1"></label><label>체지방률 %<input id="bodyFatPercent" type="number" step="0.1"></label><label>골격근량 kg<input id="bodySkeletalMuscle" type="number" step="0.1"></label><label>체지방량 kg<input id="bodyFatMass" type="number" step="0.1"></label><label>허리둘레 cm<input id="bodyWaist" type="number" step="0.1"></label></div><label class="field" style="margin:14px 0">활동량<select id="bodyActivity"><option value="1.2">거의 활동 없음</option><option value="1.375">가벼운 활동</option><option value="1.55" selected>보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></label><button id="saveBodyData" class="primary">신체 데이터 저장</button></div><div class="metrics-grid"><div class="metric card"><span>BMR</span><strong id="bodyBmr">—</strong><small>kcal</small></div><div class="metric card"><span>TDEE</span><strong id="bodyTdee">—</strong><small>kcal</small></div><div class="metric card"><span>체지방률</span><strong id="bodyFatNow">—</strong><small>%</small></div><div class="metric card"><span>골격근량</span><strong id="bodyMuscleNow">—</strong><small>kg</small></div></div><div class="card body-score"><span class="eyebrow">GARANG BODY SCORE</span><strong id="bodyScore">—</strong><p id="bodyScoreText">측정값을 저장하면 상태를 계산합니다.</p></div><div class="card"><div class="section-head"><h3>바디 변화</h3></div><div id="bodyHistory"></div></div><div class="card"><h3>바디 사진</h3><input id="bodyPhotoInput" type="file" accept="image/*" multiple><div id="bodyPhotoGallery" class="photo-grid"></div></div></section>
+
+<section id="profile" class="page"><div class="page-title"><div><span class="eyebrow">PROFILE</span><h2>프로필</h2><p>GARANG이 개인화에 사용하는 기본 상태입니다.</p></div></div><div class="card"><div class="profile-grid"><label>이름<input id="profileName"></label><label>키(cm)<input id="profileHeight" type="number" step="0.1"></label><label>체중(kg)<input id="profileWeight" type="number" step="0.1"></label><label>목표 체중(kg)<input id="profileTargetWeight" type="number" step="0.1"></label><label>목표<select id="profileGoal"><option value="muscle_gain">근육 증가</option><option value="fat_loss">체지방 감량</option><option value="maintain">체중 유지</option><option value="performance">체력 향상</option></select></label><label>현재 권한<input id="profileTier" value="FREE" readonly></label></div><button id="saveProfile" class="primary">프로필 저장</button></div><div class="card"><div class="section-head"><h3>데이터 관리</h3></div><div class="inline-actions"><button id="backupBtn" class="secondary">백업 JSON</button><label class="secondary file-button">복원<input id="restoreInput" type="file" accept="application/json" hidden></label><button id="resetLocalBtn" class="danger">로컬 데이터 초기화</button></div><p class="fine">클라우드 계정 데이터는 Firestore와 로컬 캐시를 함께 사용합니다. 로컬 초기화는 현재 기기 캐시만 지웁니다.</p></div></section>
+
+<section id="learning" class="page"><div class="page-title"><div><span class="eyebrow">LEARNING</span><h2>AI Learning</h2><p>GARANG이 사용자의 기록과 코칭 결과에서 개인화 이벤트를 축적합니다.</p></div></div><div class="metrics-grid"><div class="metric card"><span>학습 이벤트</span><strong id="learningEvents">0</strong><small>events</small></div><div class="metric card"><span>운동</span><strong id="learningWorkout">0</strong><small></small></div><div class="metric card"><span>식단</span><strong id="learningMeal">0</strong><small></small></div><div class="metric card"><span>러닝</span><strong id="learningRun">0</strong><small></small></div></div><div class="card"><div class="section-head"><h3>최근 학습 이벤트</h3><span id="learningTier" class="mini-tier">FREE</span></div><div id="learningList"></div></div></section>
+
+<section id="report" class="page"><div class="page-title"><div><span class="eyebrow">INSIGHTS</span><h2>리포트</h2><p>운동 · 식단 · 러닝을 하나의 일일 상태로 봅니다.</p></div></div><div id="reportCards" class="report-grid"></div><div class="card"><h3>최근 7일</h3><div id="reportHistory"></div></div><div class="card" id="proInsightCard"></div></section>
+</main>
+<nav id="bottomNav"><button data-page="home" class="active"><span>⌂</span><small>홈</small></button><button data-page="workout"><span>◉</span><small>운동</small></button><button data-page="diet"><span>◌</span><small>식단</small></button><button data-page="running"><span>⌁</span><small>러닝</small></button><button data-page="ai"><span>✦</span><small>GARANG AI</small></button></nav>
 </div>
-<input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
-<script src="app.js"></script>
-</body></html>
+<script src="garang-v99-final.js?v=20260823"></script>
+</body>
+</html>
