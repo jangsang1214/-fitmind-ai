@@ -1,8 +1,6 @@
-/* GARANG V9.9 FINAL — Firebase Web App configuration.
-   This file contains only the client-side Firebase Web App configuration.
-   Do not place service-account/private-key credentials here.
-*/
-window.GARANG_FIREBASE_CONFIG = window.GARANG_FIREBASE_CONFIG || {
+/* GARANG Firebase Web App config.
+   This is a browser-side Firebase config; it contains no service-account secret. */
+window.GARANG_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDq9kU2_tXyb8DKMxezdm7jwr4fvMuOWrE",
   authDomain: "fitfind-ai.firebaseapp.com",
   projectId: "fitfind-ai",

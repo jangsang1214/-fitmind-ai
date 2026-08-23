@@ -1,26 +1,43 @@
-# GARANG V9.9 REBUILD FINAL
+# GARANG V9.9 FINAL FEATURE UPGRADE — QA BUILD
 
-이 패키지는 V5~V10 세대의 실행 스크립트를 중첩 로딩하지 않는 단일 SPA 기준선입니다.
+This package is based on the supplied GARANG V9.9 feature build and preserves the existing data assets. It is intended to be copied over the V9.9 project root.
 
-## Root overwrite
-GitHub 저장소의 앱 루트에서 기존 실행 코드(index.html, legacy JS/CSS)를 삭제한 뒤 이 폴더의 루트 파일을 업로드합니다.
+## Fixed in this QA build
+- Meal builder supports repeated additions plus batch input (`음식명, g`) and automatic DB nutrition totals.
+- Meal draft items support edit/remove before saving.
+- Workout builder supports multiple exercises per session and edit/remove before saving.
+- Workout kcal uses the exercise DB `met_default` when available, then applies a small RPE adjustment with body weight and duration.
+- Running kcal remains weight/distance based and GPS route points are rendered on the in-app route preview.
+- Certification images are composited onto a canvas before save/share, so the downloaded/shared image contains the GARANG overlay rather than the original image only.
+- Video certification attempts real-time canvas + MediaRecorder compositing when the browser supports it; unsupported browsers fall back to original-file sharing.
+- AI input auto-grows and is substantially larger on mobile.
+- Local coach knowledge assets are actually loaded for retrieval context.
+- Existing workout DB, food DB, Korean dialogue assets, FitMind rules/SFT, AI rules and certification SVG assets are preserved.
 
-## 보존된 데이터
-exercise-db.json, food-db.json, exercise_knowledge.jsonl, food_knowledge.jsonl, fitmind_sft.jsonl, fitmind_rules.jsonl, korean-dialogue-sources-v6.json, synthetic_korean_dialogue_v6.jsonl, v5_coach_rules.json을 그대로 포함합니다. 데이터는 실행 코드와 분리되어 있습니다.
+## Important architecture finding
+The supplied build is **not connected to an external web-search system or remote LLM**.
+The AI answer path is local JavaScript (`generateAnswer`) and the included JSON/JSONL assets are loaded locally. Loading local knowledge files is not the same thing as external search.
+
+If a future build is supposed to use a remote LLM or search provider, that requires an explicit backend/API integration. This package does not pretend that one exists.
 
 ## Firebase
-firebase-config.js의 기존 Web App config를 사용합니다. Firebase Console에서 Email/Password, Google, Apple provider와 GitHub Pages 도메인을 승인해야 실제 소셜 로그인이 동작합니다.
+`firebase-config.js` contains the browser Firebase configuration. Browser Firebase config is not a service-account secret, but Authentication providers and the GitHub Pages domain still must be enabled in Firebase Console. This package cannot verify Firebase Console settings from static files alone.
 
-## 주요 기능
-- Auth: Email/Password, Google, Apple
-- FREE / PRO 상태
-- Profile / Body
-- Workout / volume / RPE / calorie estimate / media certification
-- Nutrition DB / kcal / protein / carbs / fat
-- Running GPS / distance / pace / calorie / media certification
-- AI Coach / local user state / memory / learning counters
-- 모바일 safe-area / 단일 bottom navigation
-- Service Worker cache versioned
+## Static QA performed
+- `node --check app.js`
+- `node --check sw.js`
+- `node --check firebase-config.js`
+- Parsed `exercise-db.json` and `food-db.json` successfully.
+- Verified all preserved knowledge/data assets remain in the package.
+- Searched source for external search/Maps/remote-AI integration; none exists in this build.
 
-## 주의
-이 빌드는 브라우저 단독 실행 가능한 안정 기준선입니다. 외부 LLM API나 결제 서버가 없는 상태에서는 AI 답변과 PRO 전환이 로컬 코어로 동작합니다. 실제 결제/LLM 서버 연결은 별도 backend 단계에서 추가해야 합니다.
+## Files intentionally deleted
+None.
+
+## Remaining environment-dependent tests
+These require the actual deployed GitHub Pages/Firebase environment and cannot be truthfully certified from a ZIP alone:
+- Firebase email/Google/Apple authentication against the live project.
+- Firestore permission behavior against the live project.
+- iOS Safari GPS permission and background behavior.
+- iOS Safari file share/download policy.
+- Video MediaRecorder codec support on the target iPhone/Safari version.
