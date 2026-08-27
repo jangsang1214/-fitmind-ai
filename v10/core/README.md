@@ -1,39 +1,30 @@
-# GARANG V10 Step 1 — Compatibility Pack
+# GARANG V10 Real Integration Pack
 
 ## 목적
+기존 GARANG을 유지하면서 V10 Core와 제품 누락 기능의 연결 지점을 정리한다.
 
-기존 GARANG V9.x UI/데이터를 삭제하거나 교체하지 않고 V10 Core와 연결할 수 있는
-안전한 Compatibility Layer를 추가한다.
+### 포함
+- V10 bootstrap import 경로 수정
+- FREE / PRO 비교 및 upgrade 진입점
+- 실제 결제를 가짜로 완료하지 않는 payment boundary
+- 신체 데이터 / InBody 입력 진입점
+- 언어 선택 상태
+- 확장된 AI Chat UI 진입점
 
-### 보존 원칙
+## 적용
+1. `v10/core/v10-bootstrap.js`를 기존 파일과 교체한다.
+2. `v10/integration/v10-product-layer.js`를 업로드한다.
+3. `index.html`의 기존 스크립트 마지막에 추가한다.
 
-- 기존 UI 유지
-- 기존 `app.js` 직접 수정하지 않음
-- 기존 localStorage/Firebase 저장 로직을 대체하지 않음
-- 기존 운동/식단/러닝/신체 데이터 삭제하지 않음
-- API key를 코드에 넣지 않음
-- LLM provider는 외부 주입 방식
+```html
+<script type="module" src="v10/core/v10-bootstrap.js"></script>
+<script src="v10/integration/v10-product-layer.js"></script>
+```
 
-## 현재 단계에서 실제로 바뀌는 것
+단, 기존 앱에서 bootstrap을 실제 초기화하는 코드는 앱의 auth/state API에 맞춰 연결해야 한다.
 
-없다. 이 패키지는 "연결 준비 + 어댑터" 단계다.
+## 중요
+이 패키지는 결제 성공이나 LLM 응답을 가짜로 만들지 않는다.
+실제 checkout과 LLM 호출은 서버/provider 연결이 필요하다.
 
-기존 앱을 깨뜨리지 않는 것이 Step 1의 성공 조건이다.
-
-## 다음 단계
-
-1. 이 폴더를 `garang-v10-core` 브랜치의 동일한 경로에 업로드
-2. 커밋
-3. 코드가 GitHub에 들어간 화면 확인
-4. 다음 단계에서 `app.js`의 최소 bootstrap 지점만 연결
-5. 이후 FREE/PRO, body(InBody), language, AI UI 등의 제품 기능은 별도 기능 감사 후 연결
-
-## 업로드 방법
-
-ZIP을 GitHub에 그대로 넣는 것이 아니다.
-
-1. ZIP 압축 해제
-2. `v10/integration/` 폴더를 저장소 루트의 `v10/` 아래에 업로드
-3. 기존 `v10/core/` 파일은 건드리지 않는다.
-4. Commit changes
-
+Golden Baseline 브랜치에는 적용하지 않는다.
