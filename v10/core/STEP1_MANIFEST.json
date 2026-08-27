@@ -1,0 +1,14 @@
+{
+  "project": "GARANG",
+  "stage": "V10 Step 1",
+  "purpose": "non-invasive compatibility layer",
+  "branch": "garang-v10-core",
+  "ui_change": false,
+  "legacy_app_replacement": false,
+  "api_keys_included": false,
+  "files": [
+    "v10/integration/legacy-adapter.js",
+    "v10/integration/v10-bootstrap.js",
+    "v10/integration/README.md"
+  ]
+}
