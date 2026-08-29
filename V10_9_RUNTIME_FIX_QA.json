@@ -1,0 +1,15 @@
+{
+  "syntax_failures": 0,
+  "missing_local_refs": 0,
+  "duplicate_ids": 0,
+  "critical": {
+    "render_guard": true,
+    "esc": true,
+    "AI send": true,
+    "planner suggestion": true,
+    "score route": true,
+    "language handler": true,
+    "language renderer": true,
+    "menu navigation": true
+  }
+}
