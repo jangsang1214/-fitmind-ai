@@ -87,11 +87,24 @@ async function resetPassword(){if(!firebaseReady)return toast('Firebase가 연�
 function firebaseError(e){const c=e?.code||'';const map={'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.','auth/email-already-in-use':'이미 사용 중인 이메일이에요.','auth/weak-password':'비밀번호는 6자 이상이어야 해요.','auth/popup-closed-by-user':'로그인이 취소됐어요.','auth/operation-not-allowed':'Firebase Console에서 해당 로그인 방식을 활성화해 주세요.','auth/unauthorized-domain':'Firebase Authentication의 승인 도메인을 확인해 주세요.','auth/popup-blocked':'브라우저에서 팝업을 허용해 주세요.'};return map[c]||e?.message||'인증 중 오류가 발생했어요.';}
 function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});localStorage.removeItem('garang_demo');currentUser=null;showAuth();}
 function openMenu(){
-  let el=$('sideMenu');
-  if(!el){document.body.insertAdjacentHTML('beforeend',`<div id="menuBackdrop" class="menu-backdrop"></div><aside id="sideMenu" class="side-menu" aria-label="GARANG 메뉴"><div class="side-head"><div><span class="eyebrow">GARANG</span><h2>메뉴</h2></div><button id="closeMenu" class="icon-btn" aria-label="닫기">×</button></div><div class="side-plan"><span>현재 플랜</span><b>${state.plan}</b><button class="ghost small" data-menu-page="premium">FREE / PRO 보기</button></div><div class="side-links"><button data-menu-page="profile">👤 프로필</button><button data-menu-page="body">📊 인바디 / 체성분</button><button data-menu-page="score">⚡ Performance Score</button><button data-menu-page="planner">◷ 플래너</button><button data-menu-page="ai">✦ GARANG AI</button><button data-menu-page="settings">⚙ 설정</button></div><div class="side-foot"><small>GARANG V10</small><span>Personal Performance Agent</span></div></aside>`);el=$('sideMenu');
-    $('menuBackdrop').onclick=closeMenu; $('closeMenu').onclick=closeMenu; document.querySelectorAll('[data-menu-page]').forEach(b=>b.onclick=()=>{currentPage=b.dataset.menuPage;closeMenu();render();});
+  let el=$('sideMenu'), back=$('menuBackdrop');
+  const en=state.language==='en';
+  const labels=en?{
+    menu:'Menu',current:'Current plan',viewPlan:'View FREE / PRO',profile:'Profile',body:'InBody / Body Composition',
+    score:'Performance Score',planner:'Planner',ai:'GARANG AI',settings:'Settings',close:'Close'
+  }:{
+    menu:'메뉴',current:'현재 플랜',viewPlan:'FREE / PRO 보기',profile:'프로필',body:'인바디 / 체성분',
+    score:'Performance Score',planner:'플래너',ai:'GARANG AI',settings:'설정',close:'닫기'
+  };
+  if(!el){
+    document.body.insertAdjacentHTML('beforeend',`<div id="menuBackdrop" class="menu-backdrop"></div><aside id="sideMenu" class="side-menu" aria-label="${labels.menu}"></aside>`);
+    el=$('sideMenu'); back=$('menuBackdrop');
+    back.onclick=closeMenu;
   }
-  el.classList.add('open'); $('menuBackdrop').classList.add('open'); document.body.classList.add('menu-open');
+  el.innerHTML=`<div class="side-head"><div><span class="eyebrow">GARANG</span><h2>${labels.menu}</h2></div><button id="closeMenu" class="icon-btn" aria-label="${labels.close}">×</button></div><div class="side-plan"><span>${labels.current}</span><b>${state.plan}</b><button class="ghost small" data-menu-page="premium">${labels.viewPlan}</button></div><div class="side-links"><button data-menu-page="profile">👤 ${labels.profile}</button><button data-menu-page="body">📊 ${labels.body}</button><button data-menu-page="score">⚡ ${labels.score}</button><button data-menu-page="planner">◷ ${labels.planner}</button><button data-menu-page="ai">✦ ${labels.ai}</button><button data-menu-page="settings">⚙ ${labels.settings}</button></div><div class="side-foot"><small>GARANG V10</small><span>Personal Performance Agent</span></div>`;
+  $('closeMenu').onclick=closeMenu;
+  el.querySelectorAll('[data-menu-page]').forEach(b=>b.onclick=()=>{currentPage=b.dataset.menuPage;closeMenu();render();});
+  el.classList.add('open'); back.classList.add('open'); document.body.classList.add('menu-open');
 }
 function closeMenu(){ $('sideMenu')?.classList.remove('open'); $('menuBackdrop')?.classList.remove('open'); document.body.classList.remove('menu-open'); }
 function calcPerformanceScore(){
@@ -138,7 +151,36 @@ function adaptivePlannerRecommendations(){
 
 function addMemoryFromChat(q,a){ensureMemory();state.memory.events.push({type:'ai_chat',date:today(),text:String(q).slice(0,120)});if(state.memory.events.length>500)state.memory.events=state.memory.events.slice(-500);}
 function buildAIContext(){const t=totalsMeals(),score=calcPerformanceScore();return {profile:state.profile,today:{meals:dayMeals(),mealTotals:t,workoutKcal:workoutKcalToday(),workouts:state.workouts.filter(x=>x.date===today()),runs:state.runs.filter(x=>x.date===today()),planner:plannerItemsForToday()},recentWorkouts:state.workouts.slice(-10),recentRuns:state.runs.slice(-10),recentBody:state.body.slice(-5),score,memory:state.memory};}
+function chatAnswerEN(q){
+  const ctx=buildAIContext(), l=String(q).toLowerCase(), t=ctx.today.mealTotals, p=ctx.profile||{};
+  if(/hello|hi|안녕|하이/.test(l)) return `Hi${p.name?` ${p.name}`:''}! I’m GARANG. I’ll look at your workouts, nutrition, running, body composition and planner to decide the next best action.`;
+  if(/식단|단백질|먹|영양|칼로리|nutrition|protein|food|calorie/.test(l)){
+    const target=Math.round(safeNumber(p.weight,67)*1.6), gap=Math.max(0,target-t.protein);
+    return `Today you’ve logged ${Math.round(t.kcal)} kcal and ${Math.round(t.protein)}g protein. With a target of about ${target}g, you have roughly ${Math.round(gap)}g left. ${gap>0?'Prioritize 25–40g of protein at your next meal.':'You’re close to your protein target; focus next on overall calories and carb/fat balance.'}`;
+  }
+  if(/인바디|체성분|체지방|근육|체중|inbody|body|muscle|weight|body fat/.test(l)){
+    const b=ctx.recentBody.at(-1);
+    return b&&b.weight?`Your latest body composition is ${b.weight}kg${b.bodyFat!=null?`, ${b.bodyFat}% body fat`:''}${b.muscle!=null?`, ${b.muscle}kg muscle`:''}. Keep measuring under similar conditions so GARANG can track the trend more reliably.`:`You don’t have an InBody record yet. Add weight, body-fat percentage and muscle mass to feed them into your Performance Score and coaching.`;
+  }
+  if(/러닝|달리|페이스|거리|running|run|pace|distance/.test(l)){
+    const r=ctx.today.runs.at(-1)||ctx.recentRuns.at(-1);
+    return r?`Your latest run was ${safeNumber(r.distance).toFixed(2)} km in ${safeNumber(r.duration).toFixed(1)} min at ${r.pace||'—'} min/km. For the next run, increase either distance or pace slightly, not both at once.`:`You don’t have a running record yet. Log one run and I’ll use distance, time and pace to set the next target.`;
+  }
+  if(/플래너|계획|일정|오늘 뭐|planner|plan|schedule|today/.test(l)){
+    const pending=ctx.today.planner.filter(x=>!x.done);
+    return pending.length?`You have ${pending.length} plan${pending.length>1?'s':''} left today: ${pending.slice(0,3).map(x=>`${x.time} ${x.title}`).join(' · ')}. Start with the closest one.`:`Your planner is empty today. I can build a plan around training, meals and recovery.`;
+  }
+  if(/점수|score|상태|분석|어때|status|analysis/.test(l)){
+    return `Your current GARANG Performance Score is ${ctx.score.total}/100: Exercise ${ctx.score.exercise}, Nutrition ${ctx.score.nutrition}, Recovery ${ctx.score.recovery}, Activity ${ctx.score.activity}, Body ${ctx.score.body}. Start with one action in your lowest area for the clearest improvement.`;
+  }
+  if(/운동|벤치|스쿼트|데드|강도|rpe|workout|bench|squat|deadlift|intensity/.test(l)){
+    const last=ctx.recentWorkouts.at(-1);
+    return last?`Your latest ${last.name} was ${last.weight}kg × ${last.reps} × ${last.sets} sets at RPE ${last.rpe}. If RPE was 9+, stabilize the same load or reduce total volume by 5–10%. If RPE was 8 or lower, a small 2.5kg increase is an option.`:`You don’t have a workout record yet. Log your first session and I’ll connect load, reps, sets and RPE to suggest the next session.`;
+  }
+  return `I’m currently using ${state.workouts.length} workout records, ${state.meals.length} meal records, ${state.runs.length} runs, ${state.body.length} body-composition records and ${state.planner.length} planner items. Ask about training, nutrition, running, body composition or your plan and I’ll use those records.`;
+}
 function chatAnswer(q){
+  if(state.language==='en') return chatAnswerEN(q);
   const ctx=buildAIContext(), l=q.toLowerCase(), t=ctx.today.mealTotals, p=ctx.profile||{}; let a;
   if(/안녕|하이|hello|hi/.test(l)) a=`안녕${p.name?` ${p.name}`:''}! 나는 GARANG이야. 운동·식단·러닝·체성분·플래너를 함께 보고 다음 행동을 정해줄게.`;
   else if(/식단|단백질|먹|영양|칼로리/.test(l)){const target=Math.round(safeNumber(p.weight,67)*1.6),gap=Math.max(0,target-t.protein);a=`오늘 식단을 기준으로 보면 ${Math.round(t.kcal)} kcal, 단백질 ${Math.round(t.protein)}g을 기록했어. 단백질 목표를 약 ${target}g으로 잡으면 ${Math.round(gap)}g 정도 남았어. ${gap>0?'다음 식사는 단백질 25~40g을 우선 채우는 게 좋아.':'오늘 단백질 목표는 거의 채웠어. 이후 식사는 총열량과 지방/탄수화물 균형을 보면 돼.'}`;}
@@ -162,11 +204,47 @@ function applyLanguage(){
   const en=state.language==='en';
   document.documentElement.lang=en?'en':'ko';
   document.documentElement.dataset.garangLanguage=en?'en':'ko';
-  if(!en)return;
   const dict={
+    '한 세션에 여러 운동을 추가하고 운동별 MET·시간·체중 기반 소모 kcal를 계산합니다.':'Add multiple exercises to one session and calculate calories from MET, time and body weight.',
+    '한 끼에 여러 음식을 계속 추가하거나, 여러 줄로 한 번에 입력할 수 있습니다.':'Add multiple foods to one meal or enter several foods at once.',
+    'GPS 거리·페이스·소모 kcal를 기록하고 인증 미디어를 합성·저장하세요.':'Track GPS distance, pace and calories, then create and save verification media.',
+    '시간표를 만들고, 실행 여부에 따라 다음 계획을 조정합니다.':'Build a schedule and adjust the next plan based on completion.',
+    '현재 기록을 보고 기본적인 오늘 계획을 제안합니다. 실제 AI 호출 없이 안전한 규칙 기반으로 생성합니다.':'Suggests a basic plan from your current records using safe rule-based logic without an external AI call.',
+    '최근 30일 데이터를 기준으로 현재 퍼포먼스를 종합합니다.':'Your current performance is calculated from the last 30 days of data.',
+    '측정값을 기록하면 Score와 AI 코칭에 함께 반영됩니다.':'Body measurements are included in your Score and AI coaching.',
+    'GARANG을 시작하기 위한 기본 기능':'Core features to get started with GARANG',
+    '모든 데이터를 연결해 더 깊게 코칭':'Connect all your data for deeper coaching',
+    '운동·식단·러닝 기록':'Workout, nutrition and running records',
+    '기본 AI 코칭':'Basic AI coaching',
+    '고급 AI Coach / Memory':'Advanced AI Coach / Memory',
+    '고급 Planner':'Advanced Planner',
+    '현재 사용 중':'Currently active',
+    '사용 중':'Active',
+    '다운그레이드 예정':'Downgrade scheduled',
+    '결제 API 연결 전입니다. 결제 완료 처리는 하지 않았어요.':'The payment API is not connected yet. No payment was marked as completed.',
+    '이미 PRO를 사용 중이에요.':'You are already using PRO.',
+    '아직 선택한 미디어가 없어요.':'No media selected yet.',
+    '미디어를 선택하면 러닝 인증 카드가 생성됩니다.':'Select media to create a running verification card.',
+    '미디어를 선택하면 GARANG VERIFIED 오버레이를 실제 이미지에 합성할 수 있습니다.':'Select media to create a GARANG VERIFIED overlay on the image.',
+    '기록이 쌓일수록 GARANG의 코칭도 정확해져요.':'The more you record, the more precise GARANG’s coaching becomes.',
+    '오늘의 데이터':'Today’s data',
+    '오늘 약':'Today about',
+    '운동 세션 저장 완료':'Workout session saved',
+    '한 끼 저장 완료':'Meal saved',
+    '러닝 저장 완료':'Run saved',
+    '체성분 기록을 저장했어요.':'Body composition saved.',
+    '프로필을 저장했어요.':'Profile saved.',
+    '데이터를 가져왔어요.':'Data imported.',
+    '데이터 내보내기를 시작했어요.':'Data export started.',
+    '화면을 다시 불러왔어요.':'The screen was reloaded.',
+    '이 브라우저에서는 영상 합성이 제한돼 원본 공유로 전환합니다.':'Video composition is limited in this browser; sharing the original instead.',
+    '브라우저 정책상 저장이 제한됩니다. 공유 메뉴를 이용해 주세요.':'Browser policy limits saving. Please use the share menu.',
+    '저장을 시작했어요. 모바일에서는 공유 메뉴를 사용할 수 있어요.':'Saving started. On mobile, you can use the share menu.',
+    '이미지 저장 중 오류가 발생했어요.':'An error occurred while saving the image.',
+    '공유/저장이 브라우저 정책으로 제한됐어요.':'Sharing or saving is limited by browser policy.',
     '홈':'Home','운동':'Workout','식단':'Nutrition','러닝':'Running','플래너':'Planner','GARANG AI':'GARANG AI',
-    '오늘의 상태':'Today','오늘 운동 기록':'Log Workout','AI에게 물어보기':'Ask GARANG',
-    '점수 상세 보기':'View Score','오늘 계획 보기':'View Plan','프로필':'Profile','설정':'Settings',
+    '오늘의 상태':'Today’s status','오늘 운동 기록':'Log workout','AI에게 물어보기':'Ask GARANG',
+    '점수 상세 보기':'View score','오늘 계획 보기':'View plan','프로필':'Profile','설정':'Settings',
     '한국어':'Korean','언어':'Language','알림':'Notifications','플래너 알림':'Planner notifications',
     '데이터':'Data','데이터 내보내기':'Export data','데이터 가져오기':'Import data','로컬 데이터 초기화':'Reset local data',
     '인바디 / 체성분':'InBody / Body Composition','체성분 저장':'Save body composition','최근 측정':'Recent measurements',
@@ -175,16 +253,92 @@ function applyLanguage(){
     'GARANG에게 물어보세요...':'Ask GARANG...','새 대화':'New chat','오늘 상태':'Today’s status','운동 분석':'Workout analysis',
     '식단 분석':'Nutrition analysis','달성':'Unlocked','진행 중':'In progress','달성 완료':'Completed',
     '로그아웃':'Log out','현재 플랜':'Current plan','메뉴':'Menu','FREE / PRO 보기':'View FREE / PRO',
-    '오늘의 데이터':'Today’s data','오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout','최근 기록':'Recent records',
-    '운동 기록':'Workout log','식단':'Nutrition','러닝':'Running','오늘의 플래너':'Today’s Planner',
+    '오늘의 데이터':'Today’s data','오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout',
+    '최근 기록':'Recent records','운동 기록':'Workout log','운동 세션':'Workout session','운동 인증':'Workout verification',
+    '운동 추가':'Add workout','운동을 세션에 추가':'Add workout to session','운동 세션 저장':'Save workout session',
+    '운동 시간 분':'Workout duration (min)','중량 kg':'Weight (kg)','체중 kg':'Body weight (kg)','반복':'Reps','세트':'Sets','볼륨':'Volume',
+    '식사':'Meal','오늘 식사':'Today’s meals','오늘 누적':'Today’s total','섭취 kcal':'Calories','단백질 g':'Protein (g)',
+    '탄수화물 g':'Carbs (g)','지방 g':'Fat (g)','섭취량 g':'Serving (g)','음식/메뉴':'Food / menu','음식 추가':'Add food',
+    'DB 영양정보 불러오기':'Load nutrition from DB','여러 음식 한 번에 추가':'Add multiple foods','한 끼 전체 저장':'Save meal',
+    '여러 음식 빠른 추가 · 한 줄에':'Quick add multiple foods · one per line','오늘 운동 소모':'Today’s workout burn','총 세트':'Total sets',
+    '총 볼륨':'Total volume','세션 총 소모':'Session calories','러닝 기록':'Running records','러닝 인증':'Running verification',
+    'GPS 러닝 시작':'Start GPS run','정지 & 저장':'Stop & save','인증 사진/영상':'Verification photo/video','원본 공유':'Share original',
+    '러닝':'Running','GPS 대기 중':'Waiting for GPS','플래너 알림':'Planner notifications','알림 사용':'Notifications on','알림 안 함':'No notification',
+    '시간':'Time','종류':'Type','계획':'Plan','계획 추가':'Add plan','현재 상태 유지':'Maintain current state','GARANG 추천':'GARANG recommendations',
+    '이번 주 추세':'This week’s trend','가장 먼저 개선할 영역':'First area to improve','GARANG 종합 퍼포먼스 점수':'GARANG Performance Score',
+    '최근 체중':'Latest weight','체성분':'Body composition','측정일':'Measurement date','체지방률 %':'Body fat %','골격근량 kg':'Muscle mass (kg)',
+    'BMI':'BMI','기초대사량 kcal':'BMR (kcal)','프로필 저장':'Save profile','이름':'Name','나이':'Age','키 cm':'Height (cm)','목표':'Goal',
+    'FREE / PRO':'FREE / PRO','기본 기록':'Basic tracking','기본 체성분 기록':'Basic body composition tracking','기본 Planner':'Basic Planner',
+    '기본 AI 코칭':'Basic AI coaching','통합 Performance Score':'Integrated Performance Score','고급 AI Coach / Memory':'Advanced AI Coach / Memory',
+    '고급 Planner':'Advanced Planner','향후 웨어러블·외부 데이터 연동':'Future wearable / external data integration',
+    'Personal Performance':'Personal Performance','기록이 없습니다.':'No records yet.','아직 운동 기록이 없어요.':'No workout records yet.',
+    '아직 측정 기록이 없습니다.':'No body-composition records yet.','오늘 식단을 기록해 보세요.':'Log today’s nutrition.',
+    '오늘 플래너가 비어 있어. 운동·식사·회복을 기준으로 오늘 계획을 만들어볼까?':'Your planner is empty today. Want to build a plan around training, meals and recovery?',
     '결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.':'Payment is not marked as completed until a real payment API is connected.',
-    '결제 서비스 연결 전에는 실제 결제가 발생하지 않습니다.':'No real payment is processed until a payment service is connected.'
+    '결제 서비스 연결 전에는 실제 결제가 발생하지 않습니다.':'No real payment is processed until a payment service is connected.',
+    '기록이 쌓이면 추세가 표시됩니다.':'Your trend will appear as records accumulate.',
+    '화면을 다시 불러왔어요.':'The screen was reloaded.',
+    'GARANG 화면을 불러오지 못했어요.':'GARANG could not load this screen.',
+    '페이지를 새로고침해 주세요.':'Please refresh the page.',
+    '질문을 입력해 주세요.':'Please enter a question.',
+    '음식을 입력해 주세요.':'Please enter a food.',
+    '먼저 운동을 추가해 주세요.':'Add a workout first.',
+    '먼저 음식을 추가해 주세요.':'Add a food first.',
+    '계획을 입력해 주세요.':'Please enter a plan.',
+    '새 대화':'New chat','전송':'Send','닫기':'Close','메뉴':'Menu','초기화':'Reset','수정':'Edit','삭제':'Delete',
+    '알림 ON':'Notifications ON','알림 OFF':'Notifications OFF','알림 권한이 허용되지 않았어요.':'Notification permission was not granted.',
+    '이 브라우저는 알림을 지원하지 않아요.':'This browser does not support notifications.',
+    '오늘의 데이터를 쌓아 GARANG의 기준선을 만들어보자.':'Build today’s baseline with GARANG.',
+    '기록이 쌓일수록 GARANG의 코칭도 정확해져요.':'The more you record, the more precise GARANG’s coaching becomes.',
+    '네 기록을 바탕으로 대화하는 Personal Performance Agent':'A Personal Performance Agent that talks with you using your records',
+    '운동, 식단, 러닝, 체성분, 플래너를 한 번에 보고 다음 행동을 정해줄게.':'I’ll look at workouts, nutrition, running, body composition and your planner to decide the next action.',
+    '오늘 상태':'Today’s status','운동 분석':'Workout analysis','식단 분석':'Nutrition analysis','플래너':'Planner',
+    '프로필':'Profile','인바디 / 체성분':'InBody / Body Composition','Performance Score':'Performance Score','GARANG 메뉴':'GARANG Menu'
   };
+  const reverse=Object.fromEntries(Object.entries(dict).map(([ko,enText])=>[enText,ko]));
+  Object.assign(reverse,{
+    'Personal Performance Agent':'개인 퍼포먼스 에이전트',
+    'GARANG Menu':'GARANG 메뉴',
+    'A Personal Performance Agent that talks with you using your records':'네 기록을 바탕으로 대화하는 Personal Performance Agent',
+    'Today’s status':'오늘의 상태',
+    'Today':'오늘',
+    'Home':'홈','Workout':'운동','Nutrition':'식단','Running':'러닝','Planner':'플래너',
+    'Profile':'프로필','Settings':'설정','Language':'언어','Notifications':'알림','Data':'데이터',
+    'Export data':'데이터 내보내기','Import data':'데이터 가져오기','Reset local data':'로컬 데이터 초기화',
+    'InBody / Body Composition':'인바디 / 체성분','Save body composition':'체성분 저장',
+    'Recent measurements':'최근 측정','Today’s Planner':'오늘의 플래너','Notification permission':'알림 권한',
+    'AI recommended plan':'AI 추천 계획','Add plan':'계획 추가','Today’s schedule':'오늘 일정',
+    'Undo':'완료 취소','Done':'완료','Delete':'삭제','How can I help?':'무엇을 도와줄까?',
+    'Ask GARANG...':'GARANG에게 물어보세요...','New chat':'새 대화','Workout analysis':'운동 분석',
+    'Nutrition analysis':'식단 분석','Unlocked':'달성','In progress':'진행 중','Log out':'로그아웃',
+    'Current plan':'현재 플랜','Menu':'메뉴','View FREE / PRO':'FREE / PRO 보기',
+    'Basic tracking':'기본 기록','Basic body composition tracking':'기본 체성분 기록','Basic Planner':'기본 Planner',
+    'Basic AI coaching':'기본 AI 코칭','Integrated Performance Score':'통합 Performance Score',
+    'Advanced AI Coach / Memory':'고급 AI Coach / Memory','Advanced Planner':'고급 Planner',
+    'No records yet.':'기록이 없습니다.','No workout records yet.':'아직 운동 기록이 없어요.',
+    'No body-composition records yet.':'아직 측정 기록이 없습니다.','Log today’s nutrition.':'오늘 식단을 기록해 보세요.',
+    'Payment is not marked as completed until a real payment API is connected.':'결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.',
+    'No real payment is processed until a payment service is connected.':'결제 서비스 연결 전에는 실제 결제가 발생하지 않습니다.',
+    'Please enter a question.':'질문을 입력해 주세요.','Please enter a food.':'음식을 입력해 주세요.',
+    'Add a workout first.':'먼저 운동을 추가해 주세요.','Add a food first.':'먼저 음식을 추가해 주세요.',
+    'Please enter a plan.':'계획을 입력해 주세요.','Close':'닫기','Reset':'초기화','Edit':'수정',
+    'Notifications ON':'알림 ON','Notifications OFF':'알림 OFF','Send':'전송'
+  });
+  const map=en?dict:reverse;
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-  nodes.forEach(n=>{let t=n.nodeValue;for(const [ko,enText] of Object.entries(dict))if(t.includes(ko))t=t.split(ko).join(enText);n.nodeValue=t;});
-  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{if(dict[el.placeholder])el.placeholder=dict[el.placeholder];});
-  document.querySelectorAll('[aria-label]').forEach(el=>{if(dict[el.getAttribute('aria-label')])el.setAttribute('aria-label',dict[el.getAttribute('aria-label')]);});
+  const entries=Object.entries(map).sort((a,b)=>b[0].length-a[0].length);
+  nodes.forEach(n=>{
+    let t=n.nodeValue;
+    for(const [from,to] of entries) if(t.includes(from)) t=t.split(from).join(to);
+    n.nodeValue=t;
+  });
+  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{
+    const to=map[el.placeholder]; if(to)el.placeholder=to;
+  });
+  document.querySelectorAll('[aria-label]').forEach(el=>{
+    const to=map[el.getAttribute('aria-label')]; if(to)el.setAttribute('aria-label',to);
+  });
 }
 function render(){
   document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));
