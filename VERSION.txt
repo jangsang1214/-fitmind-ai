@@ -1,6 +1,2 @@
-GARANG V10.0.0 RELEASE CANDIDATE
-Base: V9.9 source archive
-UI: V10 product design layer
-AI: Unified Intelligence activation layer
-Entitlements: Free / Pro
-Global signup: country / language / units
+GARANG V10.7 integrated baseline
+Planner v1 integrated
