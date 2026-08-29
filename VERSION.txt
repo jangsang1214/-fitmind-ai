@@ -1,1 +1,2 @@
-GARANG V10.8 product upgrade based on V10.7 integrated baseline
+GARANG V10.9.1 — AI Coach Contrast + Bidirectional Language Fix
+Base: GARANG 10.9 Runtime Fix v2

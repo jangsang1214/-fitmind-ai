@@ -51,3 +51,41 @@ input,select,textarea{font-size:16px}
 @media(min-width:701px){
   .achievement-grid{grid-template-columns:repeat(3,1fr)}
 }
+
+/* V10.9.1 AI Coach contrast + iPhone stability */
+:root{
+  --primary:#d9ff45;
+  --border:#252a2f;
+  --surface-2:#171b1f;
+  --chat-ai-bg:#171b1f;
+  --chat-ai-text:#f3f5f6;
+}
+.ai-chat-page .chat-messages{color:#f3f5f6}
+.ai-chat-page .chat-row:not(.user) .chat-bubble{
+  background:var(--chat-ai-bg);
+  color:var(--chat-ai-text);
+  border:1px solid #2b3338;
+}
+.ai-chat-page .chat-row:not(.user) .chat-bubble *{color:inherit}
+.ai-chat-page .chat-row.user .chat-bubble{
+  background:var(--primary);
+  color:#101310;
+}
+.ai-chat-page .chat-empty h2,
+.ai-chat-page .chat-empty p{color:#f3f5f6}
+.ai-chat-page .chat-empty p{color:#8d959d}
+.ai-chat-page .chat-composer{
+  background:rgba(8,10,12,.97);
+  color:#f3f5f6;
+}
+.ai-chat-page .chat-composer textarea{
+  color:#f3f5f6;
+  -webkit-text-fill-color:#f3f5f6;
+}
+.ai-chat-page .chat-composer textarea::placeholder{
+  color:#8d959d;
+  opacity:1;
+}
+.ai-chat-page .chat-suggestions button{color:#eef1f3}
+.side-menu{overflow-y:auto;-webkit-overflow-scrolling:touch}
+body.menu-open{overflow:hidden}
