@@ -1,20 +1,53 @@
 
-/* GARANG V10.9 Mobile Maximum completion */
-.ai-chat-page,.chat-messages,.main{min-width:0}
-.chat-messages{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-.chat-composer{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 72px);z-index:5}
-.chat-composer textarea{width:100%;min-height:48px;max-height:180px;resize:none}
-.card,.price-card,.list-item{min-width:0}
-.metric-row{gap:12px;min-width:0}
-.metric-row>*{min-width:0}
-.list-item{overflow-wrap:anywhere}
-.score-bar{overflow:hidden}
+/* GARANG V10.9 MOBILE-MAX UX */
+:root{--safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px)}
+html,body{max-width:100%;overflow-x:hidden}
+body{padding-top:var(--safe-top)}
+img,video,canvas,iframe{max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+button{min-height:42px}
+input,select,textarea{font-size:16px}
+.card,.price-card,.list-item,.chat-bubble{min-width:0;overflow-wrap:anywhere}
+.ai-chat-page{display:flex;flex-direction:column;min-height:calc(100dvh - 110px)}
+.ai-chat-page .chat-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.coach-context{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.coach-context p{flex:1 1 100%;margin:0}
+.chat-suggestions{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;scrollbar-width:none}
+.chat-suggestions::-webkit-scrollbar{display:none}
+.chat-suggestions button{white-space:nowrap;min-height:38px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:0 14px}
+.chat-messages{flex:1;min-height:260px;max-height:58dvh;overflow-y:auto;overflow-x:hidden;padding:18px 2px;-webkit-overflow-scrolling:touch}
+.chat-row{display:flex;gap:9px;margin:12px 0;align-items:flex-start}
+.chat-row.user{flex-direction:row-reverse}
+.chat-avatar{width:32px;height:32px;min-width:32px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2,#f2f2f2);font-size:13px}
+.chat-bubble{max-width:min(78%,680px);padding:12px 14px;border-radius:18px;background:var(--surface-2,#f2f2f2);line-height:1.55}
+.chat-row.user .chat-bubble{background:var(--primary,#111);color:#fff;border-bottom-right-radius:5px}
+.chat-row:not(.user) .chat-bubble{border-bottom-left-radius:5px}
+.chat-empty{text-align:center;padding:42px 12px}
+.chat-empty-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:18px}
+.coach-action-card{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chat-composer{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:calc(66px + var(--safe-bottom));padding:8px 0;background:linear-gradient(transparent,var(--bg,#fff) 18%)}
+.chat-composer textarea{flex:1;min-height:48px;max-height:180px;resize:none;border-radius:20px;padding:12px 15px}
+.send-btn{width:48px;height:48px;min-width:48px;border-radius:50%}
+.score-hero{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.score-number{font-size:clamp(3rem,14vw,5.5rem);font-weight:800;line-height:1}
+.score-bar{height:8px;border-radius:99px;overflow:hidden;background:var(--surface-2,#eee);margin-top:9px}
+.score-bar i{display:block;height:100%;border-radius:inherit;background:currentColor}
+.achievement-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.achievement{text-align:center}
+.achievement-icon{font-size:32px}
+.file-btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 @media(max-width:700px){
-  .grid,.grid-2,.grid-3,.grid-4{grid-template-columns:1fr!important}
-  .page-head{gap:12px}
-  .page-head h1{font-size:clamp(1.55rem,7vw,2.2rem)}
+  .main{padding-bottom:calc(92px + var(--safe-bottom))}
+  .grid,.grid-2,.grid-3,.grid-4,.pricing-grid,.achievement-grid{grid-template-columns:1fr!important}
+  .page-head{gap:10px}
+  .page-head h1{font-size:clamp(1.55rem,7vw,2.3rem)}
   .actions{flex-wrap:wrap}
   .actions>*{flex:1 1 140px}
-  .bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
-  .main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  .coach-action-card{align-items:stretch;flex-direction:column}
+  .coach-action-card button{width:100%}
+  .chat-bubble{max-width:84%}
+  .chat-messages{max-height:55dvh}
+}
+@media(min-width:701px){
+  .achievement-grid{grid-template-columns:repeat(3,1fr)}
 }
