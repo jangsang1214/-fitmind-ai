@@ -1,0 +1,32 @@
+{
+  "base": "GARANG 10.8 BASE",
+  "target": "GARANG V10.9 MOBILE MAX",
+  "requested_features": {
+    "AI Coach": true,
+    "InBody": true,
+    "Performance Score": true,
+    "Adaptive Planner": true,
+    "Memory": true,
+    "Dashboard": true,
+    "Multilingual state": true,
+    "Data stability": true,
+    "Achievement": true,
+    "Mobile UX": true
+  },
+  "static_results": {
+    "javascript_files": 57,
+    "javascript_syntax_failures": 0,
+    "missing_local_references": 0,
+    "duplicate_html_ids": 0
+  },
+  "manual_runtime_required": [
+    "iPhone Safari/Chrome real tap/navigation test",
+    "Notification permission and timing test",
+    "GPS permission/location test",
+    "Firebase auth/cloud sync with configured project",
+    "real LLM backend response test",
+    "real payment provider test",
+    "Health/Watch platform integration test"
+  ],
+  "engineering_note": "Existing app code is extended in place; no existing source files were intentionally deleted."
+}
