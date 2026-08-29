@@ -2,6 +2,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clamp = (v,min,max) => Math.max(min, Math.min(max, safeNumber(v,min)));
 const uid = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : `g_${Date.now()}_${Math.random().toString(36).slice(2)}`);
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const KEY = 'garang_v99_state_v2';
@@ -159,29 +160,31 @@ function nav(){
 }
 function applyLanguage(){
   const en=state.language==='en';
+  document.documentElement.lang=en?'en':'ko';
+  document.documentElement.dataset.garangLanguage=en?'en':'ko';
   if(!en)return;
   const dict={
     '홈':'Home','운동':'Workout','식단':'Nutrition','러닝':'Running','플래너':'Planner','GARANG AI':'GARANG AI',
     '오늘의 상태':'Today','오늘 운동 기록':'Log Workout','AI에게 물어보기':'Ask GARANG',
-    'Performance Score':'Performance Score','점수 상세 보기':'View Score','오늘 계획 보기':'View Plan',
-    '프로필':'Profile','설정':'Settings','한국어':'Korean','English':'English','언어':'Language',
-    '알림':'Notifications','플래너 알림':'Planner notifications','데이터':'Data','데이터 내보내기':'Export data',
-    '데이터 가져오기':'Import data','로컬 데이터 초기화':'Reset local data','인바디 / 체성분':'InBody / Body Composition',
-    '체성분 저장':'Save body composition','최근 측정':'Recent measurements','오늘의 플래너':'Today’s Planner',
-    '알림 권한':'Notification permission','AI 추천 계획':'AI recommended plan','계획 추가':'Add plan',
-    '오늘 일정':'Today’s schedule','완료':'Done','완료 취소':'Undo','삭제':'Delete',
-    '무엇을 도와줄까?':'How can I help?','GARANG에게 물어보세요...':'Ask GARANG...',
-    '새 대화':'New chat','오늘 상태':'Today’s status','운동 분석':'Workout analysis','식단 분석':'Nutrition analysis',
-    '플래너':'Planner','달성':'Unlocked','진행 중':'In progress','달성 완료':'Completed',
-    'FREE / PRO':'FREE / PRO','결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.':'Payment is not marked as completed until a real payment API is connected.',
-    '오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout','최근 기록':'Recent records'
+    '점수 상세 보기':'View Score','오늘 계획 보기':'View Plan','프로필':'Profile','설정':'Settings',
+    '한국어':'Korean','언어':'Language','알림':'Notifications','플래너 알림':'Planner notifications',
+    '데이터':'Data','데이터 내보내기':'Export data','데이터 가져오기':'Import data','로컬 데이터 초기화':'Reset local data',
+    '인바디 / 체성분':'InBody / Body Composition','체성분 저장':'Save body composition','최근 측정':'Recent measurements',
+    '오늘의 플래너':'Today’s Planner','알림 권한':'Notification permission','AI 추천 계획':'AI recommended plan','계획 추가':'Add plan',
+    '오늘 일정':'Today’s schedule','완료 취소':'Undo','완료':'Done','삭제':'Delete','무엇을 도와줄까?':'How can I help?',
+    'GARANG에게 물어보세요...':'Ask GARANG...','새 대화':'New chat','오늘 상태':'Today’s status','운동 분석':'Workout analysis',
+    '식단 분석':'Nutrition analysis','달성':'Unlocked','진행 중':'In progress','달성 완료':'Completed',
+    '로그아웃':'Log out','현재 플랜':'Current plan','메뉴':'Menu','FREE / PRO 보기':'View FREE / PRO',
+    '오늘의 데이터':'Today’s data','오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout','최근 기록':'Recent records',
+    '운동 기록':'Workout log','식단':'Nutrition','러닝':'Running','오늘의 플래너':'Today’s Planner',
+    '결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.':'Payment is not marked as completed until a real payment API is connected.',
+    '결제 서비스 연결 전에는 실제 결제가 발생하지 않습니다.':'No real payment is processed until a payment service is connected.'
   };
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-  nodes.forEach(n=>{let t=n.nodeValue;for(const [ko,enText] of Object.entries(dict))t=t.split(ko).join(enText);n.nodeValue=t;});
-  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{
-    if(el.placeholder==='GARANG에게 물어보세요...')el.placeholder='Ask GARANG...';
-  });
+  nodes.forEach(n=>{let t=n.nodeValue;for(const [ko,enText] of Object.entries(dict))if(t.includes(ko))t=t.split(ko).join(enText);n.nodeValue=t;});
+  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{if(dict[el.placeholder])el.placeholder=dict[el.placeholder];});
+  document.querySelectorAll('[aria-label]').forEach(el=>{if(dict[el.getAttribute('aria-label')])el.setAttribute('aria-label',dict[el.getAttribute('aria-label')]);});
 }
 function render(){
   document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));
@@ -239,6 +242,7 @@ const pages={
  settings:()=>`<div class="page-head"><div><span class="eyebrow">SETTINGS</span><h1>설정</h1></div></div><div class="card"><h3>언어</h3><div class="actions"><button id="langKo" class="${state.language==='ko'?'primary':'ghost'}">한국어</button><button id="langEn" class="${state.language==='en'?'primary':'ghost'}">English</button></div><hr><h3>알림</h3><label class="toggle-row"><span>플래너 알림</span><input id="notifyToggle" type="checkbox" ${state.settings.notifications?'checked':''}></label><hr><h3>데이터</h3><div class="actions"><button id="exportData" class="ghost">데이터 내보내기</button><label class="ghost file-btn">데이터 가져오기<input id="importData" type="file" accept="application/json" hidden></label><button id="clearLocal" class="ghost danger">로컬 데이터 초기화</button></div></div>`,
  profile:()=>`<div class="page-head"><div><span class="eyebrow">PROFILE</span><h1>프로필</h1></div></div><div class="card"><div class="form-grid"><div class="field"><label>이름</label><input id="pName" value="${esc(state.profile?.name||'')}"></div><div class="field"><label>나이</label><input id="pAge" type="number" value="${state.profile?.age||''}"></div><div class="field"><label>키 cm</label><input id="pHeight" type="number" value="${state.profile?.height||''}"></div><div class="field"><label>체중 kg</label><input id="pWeight" type="number" step="0.1" value="${state.profile?.weight||''}"></div><div class="field full"><label>목표</label><input id="pGoal" value="${esc(state.profile?.goal||'퍼포먼스 향상')}"></div></div><button id="saveProfile" class="primary" style="margin-top:13px">프로필 저장</button></div>`
 };
+function handleImport(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(!incoming||typeof incoming!=='object')throw new Error('invalid');state={...state,...incoming};normalizeState();saveState();toast('데이터를 가져왔어요.');render();}catch(err){console.warn('import failed',err);toast('가져오기에 실패했어요. JSON 파일을 확인해 주세요.');}};r.readAsText(f);}
 function bindPage(){
   $('menuBtn').onclick=openMenu; $('planBadge').onclick=()=>{currentPage='premium';render();};
   document.querySelectorAll('[data-chat-q]').forEach(b=>b.onclick=()=>{$('aiQuestion').value=b.dataset.chatQ;askAI();});
@@ -246,10 +250,8 @@ function bindPage(){
   if(currentPage==='ai'){$('askAI')?.addEventListener('click',askAI);$('aiQuestion')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askAI();}});setTimeout(()=>{const box=$('chatMessages');if(box)box.scrollTop=box.scrollHeight;},0);}
   if(currentPage==='body'){$('saveBody')?.addEventListener('click',()=>{const x={id:uid(),date:$('bodyDate').value||today(),weight:safeNumber($('bodyWeight').value),bodyFat:safeNumber($('bodyFat').value),muscle:safeNumber($('bodyMuscle').value),bmi:safeNumber($('bodyBmi').value),bmr:safeNumber($('bodyBmr').value)};state.body.push(x);if(x.weight)state.profile={...(state.profile||{}),weight:x.weight};saveState();toast('체성분 기록을 저장했어요.');render();});}
   if(currentPage==='premium'){$('proCheckout')?.addEventListener('click',()=>toast(state.plan==='PRO'?'이미 PRO를 사용 중이에요.':'결제 API 연결 전입니다. 결제 완료 처리는 하지 않았어요.'));}
-  if(currentPage==='settings'){$('langKo')?.addEventListener('click',()=>{state.language='ko';saveState();render();});$('langEn')?.addEventListener('click',()=>{state.language='en';saveState();render();});$('notifyToggle')?.addEventListener('change',e=>{state.settings.notifications=e.target.checked;saveState();});$('exportData')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`GARANG_${today()}_data.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('데이터 내보내기를 시작했어요.');});$('clearLocal')?.addEventListener('click',()=>{if(confirm('이 기기의 GARANG 로컬 데이터를 삭제할까요?')){localStorage.removeItem(KEY);location.reload();}});}
-  document.querySelectorAll('[data-pagego]').forEach(b=>b.onclick=()=>{currentPage=b.dataset.pagego;render();});
-
-  document.querySelectorAll('[data-pagego]').forEach(b=>b.onclick=()=>{currentPage=b.dataset.pagego;render();});
+  if(currentPage==='settings'){$('langKo')?.addEventListener('click',()=>{state.language='ko';saveState();render();});$('langEn')?.addEventListener('click',()=>{state.language='en';saveState();render();});$('notifyToggle')?.addEventListener('change',e=>{state.settings.notifications=e.target.checked;saveState();});$('exportData')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`GARANG_${today()}_data.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('데이터 내보내기를 시작했어요.');});$('clearLocal')?.addEventListener('click',()=>{if(confirm('이 기기의 GARANG 로컬 데이터를 삭제할까요?')){localStorage.removeItem(KEY);location.reload();}});$('importData')?.addEventListener('change',handleImport);}
+  document.querySelectorAll('[data-pagego]').forEach(b=>b.onclick=()=>{const target=b.dataset.pagego;if(pages[target]){currentPage=target;closeMenu();render();}});
   document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{currentPage='ai';render();$('aiQuestion').value=b.dataset.q;askAI();});
   $('profileBtn')?.addEventListener('click',()=>{currentPage='profile';render();});
   if(currentPage==='workout'){
@@ -316,4 +318,4 @@ function saveProfile(){state.profile={name:$('pName').value.trim()||'GARANG 사�
 async function boot(){loadState();await loadDB();bindAuth();nav();initFirebase();if(localStorage.getItem('garang_demo'))showApp();else if(!firebaseReady)showAuth();}
 boot();
 setTimeout(schedulePlannerNotifications,1200);
-$('importData')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(!incoming||typeof incoming!=='object')throw new Error('invalid');state=normalizeState({...state,...incoming});saveState();toast('데이터를 가져왔어요.');render();}catch(err){toast('가져오기에 실패했어요. JSON 파일을 확인해 주세요.');}};r.readAsText(f);});})();
+})();
