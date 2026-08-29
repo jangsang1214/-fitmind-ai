@@ -1,0 +1,20 @@
+
+/* GARANG V10.9 Mobile Maximum completion */
+.ai-chat-page,.chat-messages,.main{min-width:0}
+.chat-messages{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.chat-composer{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 72px);z-index:5}
+.chat-composer textarea{width:100%;min-height:48px;max-height:180px;resize:none}
+.card,.price-card,.list-item{min-width:0}
+.metric-row{gap:12px;min-width:0}
+.metric-row>*{min-width:0}
+.list-item{overflow-wrap:anywhere}
+.score-bar{overflow:hidden}
+@media(max-width:700px){
+  .grid,.grid-2,.grid-3,.grid-4{grid-template-columns:1fr!important}
+  .page-head{gap:12px}
+  .page-head h1{font-size:clamp(1.55rem,7vw,2.2rem)}
+  .actions{flex-wrap:wrap}
+  .actions>*{flex:1 1 140px}
+  .bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
+  .main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+}
