@@ -151,8 +151,53 @@ function chatAnswer(q){
 }
 function saveChatMessage(role,text){state.aiChats.push({id:uid(),role,text:String(text),createdAt:Date.now()});state.aiChats=state.aiChats.slice(-50);saveState();}
 function renderChat(){return `<div class="ai-chat-page"><div class="chat-head"><div><span class="eyebrow">GARANG INTELLIGENCE</span><h1>GARANG AI</h1><p class="muted">네 기록을 바탕으로 대화하는 Personal Performance Agent</p></div><button id="newChat" class="ghost small">새 대화</button></div><div class="chat-suggestions"><button data-chat-q="오늘 내 상태를 분석해줘">오늘 상태</button><button data-chat-q="최근 운동을 분석해줘">운동 분석</button><button data-chat-q="오늘 식단을 분석해줘">식단 분석</button><button data-chat-q="오늘 플래너를 정리해줘">플래너</button></div><div id="chatMessages" class="chat-messages">${state.aiChats.length?state.aiChats.map(x=>`<div class="chat-row ${x.role==='user'?'user':''}"><div class="chat-avatar">${x.role==='user'?'나':'✦'}</div><div class="chat-bubble">${esc(x.text).replace(/\n/g,'<br>')}</div></div>`).join(''):`<div class="chat-empty"><div class="chat-spark">✦</div><h2>무엇을 도와줄까?</h2><p>운동, 식단, 러닝, 체성분, 플래너를 한 번에 보고 다음 행동을 정해줄게.</p></div>`}</div><div class="chat-composer"><textarea id="aiQuestion" rows="1" placeholder="GARANG에게 물어보세요..."></textarea><button id="askAI" class="send-btn" aria-label="전송">↑</button></div></div>`;}
-function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>{currentPage=b.dataset.page;render();});}
-function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');m.innerHTML=pages[currentPage]();bindPage();}
+function nav(){
+  document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>{
+    const target=b.dataset.page;
+    if(pages[target]){currentPage=target;closeMenu();render();}
+  });
+}
+function applyLanguage(){
+  const en=state.language==='en';
+  if(!en)return;
+  const dict={
+    '홈':'Home','운동':'Workout','식단':'Nutrition','러닝':'Running','플래너':'Planner','GARANG AI':'GARANG AI',
+    '오늘의 상태':'Today','오늘 운동 기록':'Log Workout','AI에게 물어보기':'Ask GARANG',
+    'Performance Score':'Performance Score','점수 상세 보기':'View Score','오늘 계획 보기':'View Plan',
+    '프로필':'Profile','설정':'Settings','한국어':'Korean','English':'English','언어':'Language',
+    '알림':'Notifications','플래너 알림':'Planner notifications','데이터':'Data','데이터 내보내기':'Export data',
+    '데이터 가져오기':'Import data','로컬 데이터 초기화':'Reset local data','인바디 / 체성분':'InBody / Body Composition',
+    '체성분 저장':'Save body composition','최근 측정':'Recent measurements','오늘의 플래너':'Today’s Planner',
+    '알림 권한':'Notification permission','AI 추천 계획':'AI recommended plan','계획 추가':'Add plan',
+    '오늘 일정':'Today’s schedule','완료':'Done','완료 취소':'Undo','삭제':'Delete',
+    '무엇을 도와줄까?':'How can I help?','GARANG에게 물어보세요...':'Ask GARANG...',
+    '새 대화':'New chat','오늘 상태':'Today’s status','운동 분석':'Workout analysis','식단 분석':'Nutrition analysis',
+    '플래너':'Planner','달성':'Unlocked','진행 중':'In progress','달성 완료':'Completed',
+    'FREE / PRO':'FREE / PRO','결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.':'Payment is not marked as completed until a real payment API is connected.',
+    '오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout','최근 기록':'Recent records'
+  };
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  nodes.forEach(n=>{let t=n.nodeValue;for(const [ko,enText] of Object.entries(dict))t=t.split(ko).join(enText);n.nodeValue=t;});
+  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{
+    if(el.placeholder==='GARANG에게 물어보세요...')el.placeholder='Ask GARANG...';
+  });
+}
+function render(){
+  document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));
+  const m=$('main');
+  try{
+    if(!pages[currentPage])currentPage='home';
+    m.innerHTML=pages[currentPage]();
+    bindPage();
+    applyLanguage();
+  }catch(err){
+    console.error('GARANG render error',err);
+    currentPage='home';
+    try{m.innerHTML=pages.home();bindPage();applyLanguage();toast('화면을 다시 불러왔어요.');}
+    catch(fallback){m.innerHTML='<div class="card"><h2>GARANG 화면을 불러오지 못했어요.</h2><p class="muted">페이지를 새로고침해 주세요.</p></div>';}
+  }
+}
 function dayMeals(){return state.meals.filter(x=>x.date===today());}
 function totalsMeals(){return dayMeals().reduce((a,x)=>({kcal:a.kcal+safeNumber(x.kcal),protein:a.protein+safeNumber(x.protein),carbs:a.carbs+safeNumber(x.carbs),fat:a.fat+safeNumber(x.fat)}),{kcal:0,protein:0,carbs:0,fat:0});}
 function workoutKcalToday(){return state.workouts.filter(x=>x.date===today()).reduce((a,x)=>a+safeNumber(x.kcal),0);}
@@ -191,7 +236,7 @@ const pages={
  body:
 ()=>{const b=state.body.at(-1)||{};return `<div class="page-head"><div><span class="eyebrow">BODY COMPOSITION</span><h1>인바디 / 체성분</h1><p class="muted">측정값을 기록하면 Score와 AI 코칭에 함께 반영됩니다.</p></div></div><div class="card"><div class="form-grid"><div class="field"><label>측정일</label><input id="bodyDate" type="date" value="${b.date||today()}"></div><div class="field"><label>체중 kg</label><input id="bodyWeight" type="number" step="0.1" value="${b.weight??state.profile?.weight??''}"></div><div class="field"><label>체지방률 %</label><input id="bodyFat" type="number" step="0.1" value="${b.bodyFat??''}"></div><div class="field"><label>골격근량 kg</label><input id="bodyMuscle" type="number" step="0.1" value="${b.muscle??''}"></div><div class="field"><label>BMI</label><input id="bodyBmi" type="number" step="0.1" value="${b.bmi??''}"></div><div class="field"><label>기초대사량 kcal</label><input id="bodyBmr" type="number" value="${b.bmr??''}"></div></div><button id="saveBody" class="primary" style="margin-top:13px">체성분 저장</button></div><div class="card"><h3>최근 측정</h3><div class="list">${state.body.slice().reverse().slice(0,20).map(x=>`<div class="list-item"><div><strong>${x.date||'—'}</strong><div class="muted">체중 ${x.weight??'—'}kg · 체지방 ${x.bodyFat??'—'}% · 골격근 ${x.muscle??'—'}kg</div></div></div>`).join('')||'<div class="empty">아직 측정 기록이 없습니다.</div>'}</div></div></div>`},
  premium:()=>{const pro=state.plan==='PRO';return `<div class="page-head"><div><span class="eyebrow">GARANG PLAN</span><h1>FREE / PRO</h1><p class="muted">결제 API 연결 전에는 실제 결제가 완료된 것처럼 처리하지 않습니다.</p></div></div><div class="pricing-grid"><div class="price-card card"><span class="pill">FREE</span><h2>기본 기록</h2><p>GARANG을 시작하기 위한 기본 기능</p><ul><li>운동·식단·러닝 기록</li><li>기본 체성분 기록</li><li>기본 Planner</li><li>기본 AI 코칭</li></ul><b>현재 ${!pro?'사용 중':'다운그레이드 예정'}</b></div><div class="price-card card featured"><span class="pill">PRO</span><h2>Personal Performance</h2><p>모든 데이터를 연결해 더 깊게 코칭</p><ul><li>통합 Performance Score</li><li>고급 AI Coach / Memory</li><li>고급 Planner</li><li>향후 웨어러블·외부 데이터 연동</li></ul><button id="proCheckout" class="primary wide">${pro?'PRO 사용 중':'PRO 전환 준비'}</button><small>결제 서비스 연결 전에는 실제 결제가 발생하지 않습니다.</small></div></div>`},
- settings:()=>`<div class="page-head"><div><span class="eyebrow">SETTINGS</span><h1>설정</h1></div></div><div class="card"><h3>언어</h3><div class="actions"><button id="langKo" class="${state.language==='ko'?'primary':'ghost'}">한국어</button><button id="langEn" class="${state.language==='en'?'primary':'ghost'}">English</button></div><hr><h3>알림</h3><label class="toggle-row"><span>플래너 알림</span><input id="notifyToggle" type="checkbox" ${state.settings.notifications?'checked':''}></label><hr><h3>데이터</h3><div class="actions"><button id="exportData" class="ghost">데이터 내보내기</button><button id="clearLocal" class="ghost danger">로컬 데이터 초기화</button></div></div>`,
+ settings:()=>`<div class="page-head"><div><span class="eyebrow">SETTINGS</span><h1>설정</h1></div></div><div class="card"><h3>언어</h3><div class="actions"><button id="langKo" class="${state.language==='ko'?'primary':'ghost'}">한국어</button><button id="langEn" class="${state.language==='en'?'primary':'ghost'}">English</button></div><hr><h3>알림</h3><label class="toggle-row"><span>플래너 알림</span><input id="notifyToggle" type="checkbox" ${state.settings.notifications?'checked':''}></label><hr><h3>데이터</h3><div class="actions"><button id="exportData" class="ghost">데이터 내보내기</button><label class="ghost file-btn">데이터 가져오기<input id="importData" type="file" accept="application/json" hidden></label><button id="clearLocal" class="ghost danger">로컬 데이터 초기화</button></div></div>`,
  profile:()=>`<div class="page-head"><div><span class="eyebrow">PROFILE</span><h1>프로필</h1></div></div><div class="card"><div class="form-grid"><div class="field"><label>이름</label><input id="pName" value="${esc(state.profile?.name||'')}"></div><div class="field"><label>나이</label><input id="pAge" type="number" value="${state.profile?.age||''}"></div><div class="field"><label>키 cm</label><input id="pHeight" type="number" value="${state.profile?.height||''}"></div><div class="field"><label>체중 kg</label><input id="pWeight" type="number" step="0.1" value="${state.profile?.weight||''}"></div><div class="field full"><label>목표</label><input id="pGoal" value="${esc(state.profile?.goal||'퍼포먼스 향상')}"></div></div><button id="saveProfile" class="primary" style="margin-top:13px">프로필 저장</button></div>`
 };
 function bindPage(){
@@ -271,4 +316,4 @@ function saveProfile(){state.profile={name:$('pName').value.trim()||'GARANG 사�
 async function boot(){loadState();await loadDB();bindAuth();nav();initFirebase();if(localStorage.getItem('garang_demo'))showApp();else if(!firebaseReady)showAuth();}
 boot();
 setTimeout(schedulePlannerNotifications,1200);
-})();
+$('importData')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(!incoming||typeof incoming!=='object')throw new Error('invalid');state=normalizeState({...state,...incoming});saveState();toast('데이터를 가져왔어요.');render();}catch(err){toast('가져오기에 실패했어요. JSON 파일을 확인해 주세요.');}};r.readAsText(f);});})();
