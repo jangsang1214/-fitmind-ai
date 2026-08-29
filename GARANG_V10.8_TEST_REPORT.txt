@@ -1,0 +1,37 @@
+GARANG V10.8 PRODUCT UPGRADE — STATIC CHECK REPORT
+Base: garang-v10.7-integrated.zip
+
+PASS
+- app.js syntax check
+- garang-v10-core.js syntax check
+- script_3.js syntax check (legacy syntax error fixed)
+- all other *.js syntax checks in package
+- index.html local asset reference check
+- required page route keys present: home, workout, nutrition, running, planner, ai, score, body, premium, settings, profile
+- service worker cache updated for V10.8 core asset
+
+IMPLEMENTED
+- ChatGPT-style conversational AI screen
+- persistent chat history (localStorage / Firestore state payload)
+- workout/nutrition/running/body/planner/memory/score context used by coach responses
+- left side menu drawer
+- InBody/body composition page
+- Performance Score page
+- FREE/PRO comparison and checkout-ready state
+- settings: language preference, planner notification toggle, data export, local reset
+- V10 Core contract loaded before app.js
+- mobile-oriented CSS for drawer/chat/pricing
+
+NOT CLAIMED AS COMPLETE
+- Real LLM API generation: requires secure backend endpoint; no secret/API key is embedded in GitHub Pages.
+- Real payment: requires Stripe/RevenueCat/App Store/Google Play or another payment provider and server-side entitlement verification.
+- Full app translation: language preference and architecture are present; existing legacy screens still contain Korean copy and need a dedicated translation pass.
+- True background push notifications after browser/site closure: requires push backend/native layer.
+
+RECOMMENDED NEXT DEVELOPMENT
+1. Secure LLM backend + Web Search adapter
+2. Real billing + server-side FREE/PRO entitlement
+3. Full i18n pass
+4. Apple Health / Samsung Health / wearable adapters
+5. Memory retrieval/ranking and evaluation suite
+6. Production security/privacy rules and automated browser/device tests

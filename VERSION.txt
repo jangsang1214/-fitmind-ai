@@ -1,2 +1,1 @@
-GARANG V10.7 integrated baseline
-Planner v1 integrated
+GARANG V10.8 product upgrade based on V10.7 integrated baseline
