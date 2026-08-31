@@ -1,5 +1,0 @@
-Commit: 9d94ef0a7e5c9b404e2bd41c197fa737020c35f2
-Branch: garang-first-major-update
-Base: supplied GARANG_V10.9.1_DEV_BASE.zip
-Status: local commit only; NOT pushed to GitHub.
-Release: V10.1 CORE BLOCKED — external provider and native-device validation outstanding.
