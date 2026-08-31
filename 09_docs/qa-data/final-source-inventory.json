@@ -1,0 +1,590 @@
+{
+  "baseArchive": "GARANG_V10.9.1_DEV_BASE.zip",
+  "originalFiles": 115,
+  "removed": [],
+  "changedOriginalFiles": [
+    "index.html",
+    "01_app/launch.html",
+    "01_app/app.js",
+    "07_config/fitmind-manifest.json",
+    "07_config/manifest.webmanifest"
+  ],
+  "firebaseConfigByteIdentical": true,
+  "files": [
+    {
+      "path": "index.html",
+      "classification": "active entry",
+      "changed": true
+    },
+    {
+      "path": "05_assets/garang-workout-standard.svg",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "05_assets/icon-192.png",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "05_assets/garang-running-standard.svg",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "05_assets/garang-mark.svg",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "05_assets/icon-512.png",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "05_assets/garang-v10.4-certification-overlay-mockup.png",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/garang-v99-reference.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/style-v5.0.0.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/style-v5.6.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/styles.css",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/v8.2-db-selectors.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/style.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/v8.1-batch.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/style-v4.9.5.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/garang-v99-final.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/garang-v10-release.css",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "03_styles/core/v8.5-brand.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/mobile/garang-v10.9-mobile-max.css",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "03_styles/features/garang-final-ai.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/features/garang-premium-v9.9.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/features/garang-v99-premium-sync.css",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "03_styles/features/garang-planner-v10.css",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V8.5_RELEASE_NOTES.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/QA_README.md",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/V10_9_1_AI_LANGUAGE_FIX_RELEASE_NOTES.md",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V8_5_1_WORKOUT_CERT_README.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/qa-data/QA_V10_9_STATIC_REPORT.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/qa-data/V10_9_RUNTIME_FIX_QA.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/qa-data/V10_9_1_QA.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/qa-data/QA_RUNTIME_10_9_ISSUES_FIXED.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/qa-data/V10_9_MOBILE_MAX_QA.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/FILE_INVENTORY.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/PROJECT_STRUCTURE.md",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V10.7_INTEGRATED_BASELINE.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V10.8_UPGRADE_NOTES.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/README.md",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V8_6_TEST_REPORT.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/V10_9_MOBILE_MAX_RELEASE_NOTES.md",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/GARANG_V10.8_TEST_REPORT.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "09_docs/VERSION.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v10.5-stability.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v10-core.js",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v10.6-auth-router.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v8.6-core.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v8.8-hotfix.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v8.6-integrated.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/garang-v10-release.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "02_core/sw.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "08_business/pricing-and-unit-economics.json",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "01_app/launch.html",
+      "classification": "preserved supporting file",
+      "changed": true
+    },
+    {
+      "path": "01_app/app.js",
+      "classification": "active entry",
+      "changed": true
+    },
+    {
+      "path": "07_config/firestore.rules",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "07_config/firebase-config.js",
+      "classification": "active entry",
+      "changed": false
+    },
+    {
+      "path": "07_config/firebase-config.example.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "07_config/fitmind-manifest.json",
+      "classification": "preserved supporting file",
+      "changed": true
+    },
+    {
+      "path": "07_config/google-maps-config.example.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "07_config/manifest.webmanifest",
+      "classification": "active entry",
+      "changed": true
+    },
+    {
+      "path": "07_config/GOOGLE_MAPS_CONFIG.txt",
+      "classification": "preserved supporting file",
+      "changed": false
+    },
+    {
+      "path": "06_features/running/garang-v10.4-cert-gps.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/running/v8.5-running.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/nutrition/v8-nutrition.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/workout/v8.5-share.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/workout/garang-v8.5.3-workout-db.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/planner/v8-batch.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/planner/v8-adaptive-program.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/planner/v8.1-batch-ui.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/conversation-learning-v6.1.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/v7.7-coach.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/local-coach-v5.6.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/garang-final-ai-orchestrator.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/garang-v9.4-coach-engine.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/v9.3-learning.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/v8-personal-ai.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/local-coach-v5.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/garang-v9.5-coach-engine.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ai-coach/coach-endpoint.example.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/garang-v9.5.2-touch-hotfix.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/garang-v8.5.3-ui-bridge.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/garang-v9.5-global-ai.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/garang-v9.9-touch-final.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/ui-v5.6.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/ui/garang-global-ui-v95.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_5.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/cloud-functions-pattern-engine.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v8.5.2-firebase-auth.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_3.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/fitmind-v7.7.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v8.6-data-test.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v9.9-master.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/v8.5-core.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/v8.2-db-selectors.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_6.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/v7.7-new-chat-singleton.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_2.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/v8-reports.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_4.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v99-final.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v9.5-ai-integration.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v9.5-data-layer.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-v8.5.2-runtime-auth-fix.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/script_7.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/garang-premium-v9.9.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "06_features/misc/GARANG_V8_6_INTEGRATION_TEST.js",
+      "classification": "historical module, not entry-loaded",
+      "changed": false
+    },
+    {
+      "path": "04_data/garang-global-running.json",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/food_knowledge.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/food-db.json",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/fitmind_sft.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/v5_conversation_sft.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/synthetic_korean_dialogue_v6.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/fitmind_rules.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/exercise_knowledge.jsonl",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/v5_coach_rules.json",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/korean-dialogue-sources-v6.json",
+      "classification": "preserved data/asset",
+      "changed": false
+    },
+    {
+      "path": "04_data/knowledge/exercise-db.json",
+      "classification": "preserved data/asset",
+      "changed": false
+    }
+  ]
+}

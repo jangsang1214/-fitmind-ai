@@ -1,0 +1,16 @@
+{
+  "base": "GARANG 10.8 BASE .zip",
+  "file_count": 104,
+  "js_count": 57,
+  "html_count": 2,
+  "css_count": 15,
+  "js_syntax_failures": [],
+  "missing_local_references": [],
+  "duplicate_html_ids": [],
+  "undefined_inline_handlers_heuristic": [],
+  "css_layout_risk_flags": [
+    "garang-premium-v9.9.css",
+    "garang-v99-reference.css",
+    "garang-v99-final.css"
+  ]
+}

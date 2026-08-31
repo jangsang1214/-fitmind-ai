@@ -1,0 +1,36 @@
+{
+  "base": "GARANG BASE 10.9",
+  "target": "GARANG MOBILE MAX",
+  "features": {
+    "AI Coach": "enhanced ChatGPT-style mobile presentation, suggestions, live context, planner action; existing local coach remains",
+    "Dashboard": "score, state, recent records and action entry points",
+    "InBody": "measurement form, history, deltas, Score/Coach data contract",
+    "Performance Score": "30-day weighted calculation, daily history, trend, weakest-area guidance",
+    "Adaptive Planner": "state-aware recommendations and add-to-planner action",
+    "Memory": "existing memory event store exposed through a dedicated page",
+    "Achievement": "achievement page, progress and streak rule",
+    "Multilingual": "existing KO/EN setting preserved; app structure ready for full string translation",
+    "Data stability": "existing persistence preserved; JSON export/import UI and reset retained",
+    "Menu/settings/profile": "existing routing retained and new Memory/Achievement routes added",
+    "Mobile UX": "safe-area, touch targets, chat composer, overflow and small-screen grid rules"
+  },
+  "static_qa": {
+    "javascript_files": 57,
+    "javascript_syntax_failures": 0,
+    "missing_local_references": 0,
+    "duplicate_html_ids": 0
+  },
+  "runtime_qa_required": [
+    "iPhone Safari/Chrome: every navigation and button tap",
+    "AI chat keyboard + scroll + send",
+    "planner notification permission and timing",
+    "GPS permission and run save",
+    "media picker/canvas certification",
+    "real Firebase auth/sync if configured",
+    "real LLM backend",
+    "real payment provider",
+    "background push",
+    "Health/Watch APIs"
+  ],
+  "note": "No fake payment/LLM success was introduced. Server/platform dependent functions remain integration work."
+}

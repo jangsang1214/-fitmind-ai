@@ -1,0 +1,62 @@
+[
+  {
+    "name": "empty score is unknown, never a fabricated positive score",
+    "status": "PASS"
+  },
+  {
+    "name": "legacy weight aliases migrate without dropping extension data",
+    "status": "PASS"
+  },
+  {
+    "name": "migration is idempotent and memory does not duplicate",
+    "status": "PASS"
+  },
+  {
+    "name": "malformed collections are tolerated on legacy load",
+    "status": "PASS"
+  },
+  {
+    "name": "strict import rejects arrays, foreign JSON and malformed rows",
+    "status": "PASS"
+  },
+  {
+    "name": "future schema rejected",
+    "status": "PASS"
+  },
+  {
+    "name": "corrupt source preserved and cannot be overwritten on fallback",
+    "status": "PASS"
+  },
+  {
+    "name": "import backup and restore keep old state",
+    "status": "PASS"
+  },
+  {
+    "name": "storage quota does not claim a saved write",
+    "status": "PASS"
+  },
+  {
+    "name": "score excludes future records, uses session IDs and updates values",
+    "status": "PASS"
+  },
+  {
+    "name": "achievements count sessions and consecutive calendar dates",
+    "status": "PASS"
+  },
+  {
+    "name": "AI context includes all required data domains without local chat logs",
+    "status": "PASS"
+  },
+  {
+    "name": "deleted migrated memory does not resurrect",
+    "status": "PASS"
+  },
+  {
+    "name": "impossible dates are rejected without a Date exception",
+    "status": "PASS"
+  },
+  {
+    "name": "unsafe numeric content cannot enter rendered numeric fields",
+    "status": "PASS"
+  }
+]

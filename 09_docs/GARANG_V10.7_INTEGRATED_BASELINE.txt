@@ -1,0 +1,13 @@
+GARANG V10.7 INTEGRATED BASELINE
+
+This package is based on the uploaded Real base file.
+Changes:
+- Integrated Planner v1 into the existing app router/state model.
+- Planner items persist locally and to Firestore when authenticated.
+- Browser notification permission + in-page scheduled notifications.
+- Added planner navigation tab.
+- Service worker cache bumped and expanded to include DB/knowledge assets.
+- Added V10 release CSS to the active index.
+- Preserved existing workout/nutrition/running/auth implementation.
+
+Limitations: true background push notifications while the app/browser is closed require a push backend/native notification layer; this package does not fake that capability. Real payment checkout is not implemented.
