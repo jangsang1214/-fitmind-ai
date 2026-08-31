@@ -1,0 +1,52 @@
+{
+  "browser": "Codex in-app Chromium on Windows",
+  "nativeSafari": false,
+  "matrix": {
+    "widths": [
+      320,
+      375,
+      390,
+      430
+    ],
+    "routes": [
+      "home",
+      "workout",
+      "nutrition",
+      "running",
+      "planner",
+      "ai",
+      "profile",
+      "body",
+      "score",
+      "memory",
+      "achievement",
+      "settings",
+      "premium"
+    ],
+    "checks": 52,
+    "overflowFailures": 0,
+    "duplicateIdFailures": 0,
+    "source": "Observed Browser tool results during this task"
+  },
+  "finalHeaderAndScoreChecks": [
+    {
+      "overflow": [],
+      "width": 320
+    },
+    {
+      "overflow": [],
+      "width": 375
+    },
+    {
+      "overflow": [],
+      "width": 390
+    },
+    {
+      "overflow": [],
+      "width": 430
+    }
+  ],
+  "backupRestore": "PASS after replacing blocking native confirmation with in-app dialog",
+  "languageRoundTrip": "PASS including reload and preservation of user-authored memory",
+  "screenshots": "screenshots/"
+}

@@ -1,0 +1,20 @@
+{
+  "base": "GARANG_10_9_RUNTIME_FIX_v2",
+  "release": "V10.9.1 AI Coach + Language Fix",
+  "checks": {
+    "javascript_syntax_failures": 0,
+    "missing_index_local_references": 0,
+    "duplicate_source_ids": 0,
+    "menu_targets_missing": 0,
+    "pagego_targets_missing": 0,
+    "bottom_nav_targets_missing": 0,
+    "ai_chat_contrast_css": true,
+    "bidirectional_language_mapping": true,
+    "english_ai_response_path": true,
+    "menu_rebuilds_for_current_language": true
+  },
+  "runtime_limits": [
+    "Actual iPhone Safari tap/keyboard/GPS/media permission testing is not reproducible in this environment.",
+    "Real LLM/payment/Health/Watch/background notification integrations remain external/platform work."
+  ]
+}

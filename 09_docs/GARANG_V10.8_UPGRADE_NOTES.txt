@@ -1,0 +1,22 @@
+GARANG V10.8 UPGRADE
+
+Base: V10.7 integrated baseline
+
+Implemented:
+- ChatGPT-style GARANG AI conversation UI with persistent local chat history
+- Data-aware coaching context: workout, nutrition, running, body composition, planner, memory, Performance Score
+- Home menu drawer with Profile, InBody/Body Composition, Performance Score, Planner, AI, Settings
+- FREE/PRO comparison and checkout-ready UI without fake payment success
+- InBody/body composition record page connected to Score and AI context
+- Performance Score page and calculation across workout/nutrition/recovery/activity/body
+- Planner remains integrated and accessible from the menu
+- Language preference persistence (ko/en foundation)
+- Data export and local reset controls
+- V10 Core contract file loaded before app.js
+- Fixed syntax error in legacy script_3.js
+- Mobile-focused AI composer, drawer and pricing styles
+
+Important limitations:
+- Real LLM generation requires a secure backend/API endpoint. This static build uses a deterministic data-aware GARANG coach so no API key is exposed in the browser.
+- Real payment checkout/entitlement is not activated; the UI is prepared but does not pretend a payment succeeded.
+- Browser notifications are not true background push when the site is closed.

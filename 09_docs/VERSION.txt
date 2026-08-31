@@ -1,0 +1,2 @@
+GARANG V10.9.1 — AI Coach Contrast + Bidirectional Language Fix
+Base: GARANG 10.9 Runtime Fix v2

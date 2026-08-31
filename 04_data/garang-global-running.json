@@ -1,0 +1,33 @@
+{
+  "version":"1.0.0",
+  "scope":"global-running-knowledge",
+  "entries":[
+    {"id":"seoul","country":"KR","city":"Seoul","tags":["서울","한국","도시","road"],"terrain":"도시·평지·하천 산책로 혼합","climate":"사계절 뚜렷; 여름 고온다습, 겨울 한랭건조","training":"여름에는 이른 아침/저녁과 수분·전해질 관리가 중요하고, 겨울에는 워밍업을 길게 잡는 편이 유리하다."},
+    {"id":"busan","country":"KR","city":"Busan","tags":["부산","한국","해안","hill"],"terrain":"해안·언덕·도시 구간 혼합","climate":"해양성 영향으로 바람과 습도 변동이 큼","training":"언덕 구간을 활용하면 힘·러닝 이코노미 훈련에 유리하지만 페이스보다 노력도 기준으로 관리한다."},
+    {"id":"tokyo","country":"JP","city":"Tokyo","tags":["도쿄","일본","도시"],"terrain":"도시 평지·공원·강변","climate":"여름 고온다습, 장마와 태풍 변수","training":"습도가 높은 날은 동일 페이스보다 심박·RPE를 기준으로 강도를 낮추고 수분을 자주 보충한다."},
+    {"id":"osaka","country":"JP","city":"Osaka","tags":["오사카","일본","도시"],"terrain":"도시 평지·강변","climate":"여름 고온다습","training":"장거리 러닝에서는 그늘·급수 지점을 미리 확인하고 더운 날은 페이스를 보수적으로 시작한다."},
+    {"id":"singapore","country":"SG","city":"Singapore","tags":["싱가포르","열대","humidity"],"terrain":"대부분 평지·도시","climate":"연중 고온다습, 강한 일사와 스콜","training":"열대 환경에서는 페이스를 낮추고 체감온도·수분·전해질을 우선한다. 적응기에는 강도보다 지속시간을 보수적으로 잡는다."},
+    {"id":"london","country":"GB","city":"London","tags":["런던","영국","park"],"terrain":"공원·도시·완만한 기복","climate":"온화하지만 비와 바람 변수가 잦음","training":"바람이 강한 날은 왕복 코스에서 맞바람 구간의 페이스보다 일정한 노력도를 유지한다."},
+    {"id":"newyork","country":"US","city":"New York","tags":["뉴욕","미국","도시","park"],"terrain":"도시·공원·교량 언덕","climate":"사계절 변동 큼","training":"도시 코스는 정지·교차로가 많으므로 목표 페이스보다 랩 평균과 RPE를 함께 본다."},
+    {"id":"losangeles","country":"US","city":"Los Angeles","tags":["LA","로스앤젤레스","미국","hill"],"terrain":"평지·언덕·해안 혼합","climate":"건조하고 일사 강함","training":"햇빛과 탈수 영향을 고려해 급수와 시간대를 조절하고, 언덕에서는 페이스보다 일정한 노력도를 유지한다."},
+    {"id":"boston","country":"US","city":"Boston","tags":["보스턴","미국","marathon"],"terrain":"도시·완만한 언덕","climate":"겨울 한랭, 봄 변동성 큼","training":"마라톤 준비에서는 누적 피로와 언덕 적응을 함께 관리하고 레이스 특성에 맞춰 장거리 훈련을 구성한다."},
+    {"id":"berlin","country":"DE","city":"Berlin","tags":["베를린","독일","marathon","flat"],"terrain":"비교적 평탄한 도시 코스","climate":"온화한 편이나 가을 기온 변동 가능","training":"평지 장거리에서는 일정 페이스 유지와 후반 피로 저항 훈련을 연결하기 좋다."},
+    {"id":"paris","country":"FR","city":"Paris","tags":["파리","프랑스","도시"],"terrain":"도시·공원·완만한 기복","climate":"온화한 계절 변화","training":"관광·도시 러닝은 교통과 보행자를 고려해 안전한 공원/강변 구간을 선택하고 페이스보다 지속성을 우선한다."},
+    {"id":"amsterdam","country":"NL","city":"Amsterdam","tags":["암스테르담","네덜란드","flat","wind"],"terrain":"매우 평탄한 도시·운하 주변","climate":"바람과 비 변수","training":"바람이 강하면 편도 기록보다 왕복 평균 노력도를 기준으로 훈련한다."},
+    {"id":"zurich","country":"CH","city":"Zurich","tags":["취리히","스위스","altitude"],"terrain":"호수 주변 평지·인근 언덕","climate":"서늘하고 계절 변화 뚜렷","training":"평지와 언덕을 조합해 유산소 기반과 근지구력을 함께 구성할 수 있다."},
+    {"id":"mexicocity","country":"MX","city":"Mexico City","tags":["멕시코시티","멕시코","altitude"],"terrain":"고지대 도시·완만한 기복","climate":"고도 영향으로 일교차 큼","training":"고도가 평소보다 높다면 초기 며칠은 페이스를 낮추고 RPE·호흡 반응을 기준으로 적응한다."},
+    {"id":"denver","country":"US","city":"Denver","tags":["덴버","미국","altitude"],"terrain":"고지대 도시·언덕","climate":"건조하고 일교차 큼","training":"고도와 건조함을 고려해 수분을 충분히 보충하고 적응 전에는 평소 기록과 직접 비교하지 않는다."},
+    {"id":"sydney","country":"AU","city":"Sydney","tags":["시드니","호주","coast"],"terrain":"해안·공원·언덕","climate":"온화하지만 일사와 해풍 변수","training":"해안 바람과 언덕이 섞인 코스에서는 일정한 RPE를 유지하면 실전 대응력이 좋아진다."},
+    {"id":"melbourne","country":"AU","city":"Melbourne","tags":["멜버른","호주","weather"],"terrain":"도시·공원·해안","climate":"날씨 변동이 비교적 빠름","training":"세션 전 기온·바람을 확인하고 페이스보다 목표 노력도를 유지한다."},
+    {"id":"vancouver","country":"CA","city":"Vancouver","tags":["밴쿠버","캐나다","rain","mountain"],"terrain":"해안·공원·산악 접근","climate":"비가 잦고 겨울 변수","training":"젖은 노면에서는 접지력과 코너링을 보수적으로 하고 산악 코스는 누적 고도까지 기록한다."},
+    {"id":"reykjavik","country":"IS","city":"Reykjavik","tags":["레이캬비크","아이슬란드","wind","cold"],"terrain":"해안·완만한 기복","climate":"강풍·저온 변수","training":"강풍에서는 맞바람 페이스를 억지로 유지하지 말고 노력도와 방향별 체감 난도를 기준으로 조절한다."},
+    {"id":"dubai","country":"AE","city":"Dubai","tags":["두바이","UAE","heat"],"terrain":"대부분 평지·도시","climate":"고온·건조","training":"고온기에는 새벽/야간을 우선하고 수분·전해질을 충분히 준비한다. 열 적응 전에는 강도를 크게 낮춘다."}
+  ],
+  "principles":[
+    {"topic":"heat","rule":"더운 환경에서는 절대 페이스보다 RPE·심박·수분 상태를 우선하고 강도를 보수적으로 조절한다."},
+    {"topic":"humidity","rule":"습도가 높으면 땀 증발이 어려워 같은 페이스에서도 체감 강도가 증가할 수 있으므로 페이스를 낮추고 수분을 계획한다."},
+    {"topic":"altitude","rule":"고도 변화가 큰 환경에서는 초기 적응 기간 동안 평소 기록과 직접 비교하지 않고 RPE와 회복을 우선한다."},
+    {"topic":"wind","rule":"바람이 강한 날은 맞바람 구간의 페이스를 억지로 맞추지 말고 왕복 평균 노력도를 기준으로 판단한다."},
+    {"topic":"terrain","rule":"언덕에서는 페이스가 자연스럽게 변하므로 일정한 노력도와 누적 고도를 함께 기록한다."}
+  ]
+}

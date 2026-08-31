@@ -1,0 +1,12 @@
+{
+  "syntax_failures": [],
+  "checks": {
+    "clamp_defined": true,
+    "render_fallback": true,
+    "language": true,
+    "import_handler": true,
+    "ai_send": true,
+    "planner_suggest": true,
+    "menu": true
+  }
+}

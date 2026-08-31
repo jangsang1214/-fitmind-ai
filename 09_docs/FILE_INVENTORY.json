@@ -1,0 +1,567 @@
+[
+  {
+    "file": "GARANG_V10.7_INTEGRATED_BASELINE.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V10.7_INTEGRATED_BASELINE.txt"
+  },
+  {
+    "file": "GARANG_V10.8_TEST_REPORT.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V10.8_TEST_REPORT.txt"
+  },
+  {
+    "file": "GARANG_V10.8_UPGRADE_NOTES.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V10.8_UPGRADE_NOTES.txt"
+  },
+  {
+    "file": "GARANG_V8.5_RELEASE_NOTES.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V8.5_RELEASE_NOTES.txt"
+  },
+  {
+    "file": "GARANG_V8_5_1_WORKOUT_CERT_README.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V8_5_1_WORKOUT_CERT_README.txt"
+  },
+  {
+    "file": "GARANG_V8_6_INTEGRATION_TEST.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/GARANG_V8_6_INTEGRATION_TEST.js"
+  },
+  {
+    "file": "GARANG_V8_6_TEST_REPORT.txt",
+    "category": "09_docs",
+    "path": "09_docs/GARANG_V8_6_TEST_REPORT.txt"
+  },
+  {
+    "file": "GOOGLE_MAPS_CONFIG.txt",
+    "category": "07_config",
+    "path": "07_config/GOOGLE_MAPS_CONFIG.txt"
+  },
+  {
+    "file": "QA_README.md",
+    "category": "09_docs",
+    "path": "09_docs/QA_README.md"
+  },
+  {
+    "file": "QA_RUNTIME_10_9_ISSUES_FIXED.json",
+    "category": "09_docs/qa-data",
+    "path": "09_docs/qa-data/QA_RUNTIME_10_9_ISSUES_FIXED.json"
+  },
+  {
+    "file": "QA_V10_9_STATIC_REPORT.json",
+    "category": "09_docs/qa-data",
+    "path": "09_docs/qa-data/QA_V10_9_STATIC_REPORT.json"
+  },
+  {
+    "file": "README.md",
+    "category": "09_docs",
+    "path": "09_docs/README.md"
+  },
+  {
+    "file": "V10_9_1_AI_LANGUAGE_FIX_RELEASE_NOTES.md",
+    "category": "09_docs",
+    "path": "09_docs/V10_9_1_AI_LANGUAGE_FIX_RELEASE_NOTES.md"
+  },
+  {
+    "file": "V10_9_1_QA.json",
+    "category": "09_docs/qa-data",
+    "path": "09_docs/qa-data/V10_9_1_QA.json"
+  },
+  {
+    "file": "V10_9_MOBILE_MAX_QA.json",
+    "category": "09_docs/qa-data",
+    "path": "09_docs/qa-data/V10_9_MOBILE_MAX_QA.json"
+  },
+  {
+    "file": "V10_9_MOBILE_MAX_RELEASE_NOTES.md",
+    "category": "09_docs",
+    "path": "09_docs/V10_9_MOBILE_MAX_RELEASE_NOTES.md"
+  },
+  {
+    "file": "V10_9_RUNTIME_FIX_QA.json",
+    "category": "09_docs/qa-data",
+    "path": "09_docs/qa-data/V10_9_RUNTIME_FIX_QA.json"
+  },
+  {
+    "file": "VERSION.txt",
+    "category": "09_docs",
+    "path": "09_docs/VERSION.txt"
+  },
+  {
+    "file": "app.js",
+    "category": "01_app",
+    "path": "01_app/app.js"
+  },
+  {
+    "file": "cloud-functions-pattern-engine.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/cloud-functions-pattern-engine.js"
+  },
+  {
+    "file": "coach-endpoint.example.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/coach-endpoint.example.js"
+  },
+  {
+    "file": "conversation-learning-v6.1.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/conversation-learning-v6.1.js"
+  },
+  {
+    "file": "exercise-db.json",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/exercise-db.json"
+  },
+  {
+    "file": "exercise_knowledge.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/exercise_knowledge.jsonl"
+  },
+  {
+    "file": "firebase-config.example.js",
+    "category": "07_config",
+    "path": "07_config/firebase-config.example.js"
+  },
+  {
+    "file": "firebase-config.js",
+    "category": "07_config",
+    "path": "07_config/firebase-config.js"
+  },
+  {
+    "file": "firestore.rules",
+    "category": "07_config",
+    "path": "07_config/firestore.rules"
+  },
+  {
+    "file": "fitmind-manifest.json",
+    "category": "07_config",
+    "path": "07_config/fitmind-manifest.json"
+  },
+  {
+    "file": "fitmind-v7.7.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/fitmind-v7.7.js"
+  },
+  {
+    "file": "fitmind_rules.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/fitmind_rules.jsonl"
+  },
+  {
+    "file": "fitmind_sft.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/fitmind_sft.jsonl"
+  },
+  {
+    "file": "food-db.json",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/food-db.json"
+  },
+  {
+    "file": "food_knowledge.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/food_knowledge.jsonl"
+  },
+  {
+    "file": "garang-final-ai-orchestrator.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/garang-final-ai-orchestrator.js"
+  },
+  {
+    "file": "garang-final-ai.css",
+    "category": "03_styles/features",
+    "path": "03_styles/features/garang-final-ai.css"
+  },
+  {
+    "file": "garang-global-running.json",
+    "category": "04_data",
+    "path": "04_data/garang-global-running.json"
+  },
+  {
+    "file": "garang-global-ui-v95.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/garang-global-ui-v95.js"
+  },
+  {
+    "file": "garang-mark.svg",
+    "category": "05_assets",
+    "path": "05_assets/garang-mark.svg"
+  },
+  {
+    "file": "garang-planner-v10.css",
+    "category": "03_styles/features",
+    "path": "03_styles/features/garang-planner-v10.css"
+  },
+  {
+    "file": "garang-premium-v9.9.css",
+    "category": "03_styles/features",
+    "path": "03_styles/features/garang-premium-v9.9.css"
+  },
+  {
+    "file": "garang-premium-v9.9.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-premium-v9.9.js"
+  },
+  {
+    "file": "garang-running-standard.svg",
+    "category": "05_assets",
+    "path": "05_assets/garang-running-standard.svg"
+  },
+  {
+    "file": "garang-v10-core.js",
+    "category": "02_core",
+    "path": "02_core/garang-v10-core.js"
+  },
+  {
+    "file": "garang-v10-release.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/garang-v10-release.css"
+  },
+  {
+    "file": "garang-v10-release.js",
+    "category": "02_core",
+    "path": "02_core/garang-v10-release.js"
+  },
+  {
+    "file": "garang-v10.4-cert-gps.js",
+    "category": "06_features/running",
+    "path": "06_features/running/garang-v10.4-cert-gps.js"
+  },
+  {
+    "file": "garang-v10.4-certification-overlay-mockup.png",
+    "category": "05_assets",
+    "path": "05_assets/garang-v10.4-certification-overlay-mockup.png"
+  },
+  {
+    "file": "garang-v10.5-stability.js",
+    "category": "02_core",
+    "path": "02_core/garang-v10.5-stability.js"
+  },
+  {
+    "file": "garang-v10.6-auth-router.js",
+    "category": "02_core",
+    "path": "02_core/garang-v10.6-auth-router.js"
+  },
+  {
+    "file": "garang-v10.9-mobile-max.css",
+    "category": "03_styles/mobile",
+    "path": "03_styles/mobile/garang-v10.9-mobile-max.css"
+  },
+  {
+    "file": "garang-v8.5.2-firebase-auth.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v8.5.2-firebase-auth.js"
+  },
+  {
+    "file": "garang-v8.5.2-runtime-auth-fix.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v8.5.2-runtime-auth-fix.js"
+  },
+  {
+    "file": "garang-v8.5.3-ui-bridge.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/garang-v8.5.3-ui-bridge.js"
+  },
+  {
+    "file": "garang-v8.5.3-workout-db.js",
+    "category": "06_features/workout",
+    "path": "06_features/workout/garang-v8.5.3-workout-db.js"
+  },
+  {
+    "file": "garang-v8.6-core.js",
+    "category": "02_core",
+    "path": "02_core/garang-v8.6-core.js"
+  },
+  {
+    "file": "garang-v8.6-data-test.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v8.6-data-test.js"
+  },
+  {
+    "file": "garang-v8.6-integrated.js",
+    "category": "02_core",
+    "path": "02_core/garang-v8.6-integrated.js"
+  },
+  {
+    "file": "garang-v8.8-hotfix.js",
+    "category": "02_core",
+    "path": "02_core/garang-v8.8-hotfix.js"
+  },
+  {
+    "file": "garang-v9.4-coach-engine.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/garang-v9.4-coach-engine.js"
+  },
+  {
+    "file": "garang-v9.5-ai-integration.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v9.5-ai-integration.js"
+  },
+  {
+    "file": "garang-v9.5-coach-engine.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/garang-v9.5-coach-engine.js"
+  },
+  {
+    "file": "garang-v9.5-data-layer.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v9.5-data-layer.js"
+  },
+  {
+    "file": "garang-v9.5-global-ai.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/garang-v9.5-global-ai.js"
+  },
+  {
+    "file": "garang-v9.5.2-touch-hotfix.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/garang-v9.5.2-touch-hotfix.js"
+  },
+  {
+    "file": "garang-v9.9-master.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v9.9-master.js"
+  },
+  {
+    "file": "garang-v9.9-touch-final.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/garang-v9.9-touch-final.js"
+  },
+  {
+    "file": "garang-v99-final.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/garang-v99-final.css"
+  },
+  {
+    "file": "garang-v99-final.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/garang-v99-final.js"
+  },
+  {
+    "file": "garang-v99-premium-sync.css",
+    "category": "03_styles/features",
+    "path": "03_styles/features/garang-v99-premium-sync.css"
+  },
+  {
+    "file": "garang-v99-reference.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/garang-v99-reference.css"
+  },
+  {
+    "file": "garang-workout-standard.svg",
+    "category": "05_assets",
+    "path": "05_assets/garang-workout-standard.svg"
+  },
+  {
+    "file": "google-maps-config.example.js",
+    "category": "07_config",
+    "path": "07_config/google-maps-config.example.js"
+  },
+  {
+    "file": "icon-192.png",
+    "category": "05_assets",
+    "path": "05_assets/icon-192.png"
+  },
+  {
+    "file": "icon-512.png",
+    "category": "05_assets",
+    "path": "05_assets/icon-512.png"
+  },
+  {
+    "file": "index.html",
+    "category": ".",
+    "path": "./index.html"
+  },
+  {
+    "file": "korean-dialogue-sources-v6.json",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/korean-dialogue-sources-v6.json"
+  },
+  {
+    "file": "launch.html",
+    "category": "01_app",
+    "path": "01_app/launch.html"
+  },
+  {
+    "file": "local-coach-v5.6.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/local-coach-v5.6.js"
+  },
+  {
+    "file": "local-coach-v5.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/local-coach-v5.js"
+  },
+  {
+    "file": "manifest.webmanifest",
+    "category": "07_config",
+    "path": "07_config/manifest.webmanifest"
+  },
+  {
+    "file": "pricing-and-unit-economics.json",
+    "category": "08_business",
+    "path": "08_business/pricing-and-unit-economics.json"
+  },
+  {
+    "file": "script_2.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_2.js"
+  },
+  {
+    "file": "script_3.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_3.js"
+  },
+  {
+    "file": "script_4.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_4.js"
+  },
+  {
+    "file": "script_5.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_5.js"
+  },
+  {
+    "file": "script_6.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_6.js"
+  },
+  {
+    "file": "script_7.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/script_7.js"
+  },
+  {
+    "file": "style-v4.9.5.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/style-v4.9.5.css"
+  },
+  {
+    "file": "style-v5.0.0.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/style-v5.0.0.css"
+  },
+  {
+    "file": "style-v5.6.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/style-v5.6.css"
+  },
+  {
+    "file": "style.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/style.css"
+  },
+  {
+    "file": "styles.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/styles.css"
+  },
+  {
+    "file": "sw.js",
+    "category": "02_core",
+    "path": "02_core/sw.js"
+  },
+  {
+    "file": "synthetic_korean_dialogue_v6.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/synthetic_korean_dialogue_v6.jsonl"
+  },
+  {
+    "file": "ui-v5.6.js",
+    "category": "06_features/ui",
+    "path": "06_features/ui/ui-v5.6.js"
+  },
+  {
+    "file": "v5_coach_rules.json",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/v5_coach_rules.json"
+  },
+  {
+    "file": "v5_conversation_sft.jsonl",
+    "category": "04_data/knowledge",
+    "path": "04_data/knowledge/v5_conversation_sft.jsonl"
+  },
+  {
+    "file": "v7.7-coach.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/v7.7-coach.js"
+  },
+  {
+    "file": "v7.7-new-chat-singleton.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/v7.7-new-chat-singleton.js"
+  },
+  {
+    "file": "v8-adaptive-program.js",
+    "category": "06_features/planner",
+    "path": "06_features/planner/v8-adaptive-program.js"
+  },
+  {
+    "file": "v8-batch.js",
+    "category": "06_features/planner",
+    "path": "06_features/planner/v8-batch.js"
+  },
+  {
+    "file": "v8-nutrition.js",
+    "category": "06_features/nutrition",
+    "path": "06_features/nutrition/v8-nutrition.js"
+  },
+  {
+    "file": "v8-personal-ai.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/v8-personal-ai.js"
+  },
+  {
+    "file": "v8-reports.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/v8-reports.js"
+  },
+  {
+    "file": "v8.1-batch-ui.js",
+    "category": "06_features/planner",
+    "path": "06_features/planner/v8.1-batch-ui.js"
+  },
+  {
+    "file": "v8.1-batch.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/v8.1-batch.css"
+  },
+  {
+    "file": "v8.2-db-selectors.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/v8.2-db-selectors.css"
+  },
+  {
+    "file": "v8.2-db-selectors.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/v8.2-db-selectors.js"
+  },
+  {
+    "file": "v8.5-brand.css",
+    "category": "03_styles/core",
+    "path": "03_styles/core/v8.5-brand.css"
+  },
+  {
+    "file": "v8.5-core.js",
+    "category": "06_features/misc",
+    "path": "06_features/misc/v8.5-core.js"
+  },
+  {
+    "file": "v8.5-running.js",
+    "category": "06_features/running",
+    "path": "06_features/running/v8.5-running.js"
+  },
+  {
+    "file": "v8.5-share.js",
+    "category": "06_features/workout",
+    "path": "06_features/workout/v8.5-share.js"
+  },
+  {
+    "file": "v9.3-learning.js",
+    "category": "06_features/ai-coach",
+    "path": "06_features/ai-coach/v9.3-learning.js"
+  }
+]
