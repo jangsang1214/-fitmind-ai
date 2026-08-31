@@ -2,23 +2,24 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0d0f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="garang-mark.svg">
+<meta name="theme-color" content="#0b0d0f"><link rel="manifest" href="07_config/manifest.webmanifest"><link rel="icon" href="05_assets/garang-mark.svg">
 <title>GARANG — Your Personal AI Coach</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="garang-v10-release.css">
-<link rel="stylesheet" href="garang-planner-v10.css">
+<link rel="stylesheet" href="03_styles/core/styles.css">
+<link rel="stylesheet" href="03_styles/core/garang-v10-release.css">
+<link rel="stylesheet" href="03_styles/features/garang-planner-v10.css">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="garang-v10-core.js"></script>
-<link rel="stylesheet" href="garang-v10.9-mobile-max.css">
+<script src="07_config/firebase-config.js"></script>
+<script src="02_core/garang-v10-core.js"></script>
+<link rel="stylesheet" href="03_styles/mobile/garang-v10.9-mobile-max.css">
+<link rel="stylesheet" href="03_styles/features/final.css">
 </head>
 <body>
 <div id="toast" class="toast" role="status"></div>
 <div id="authView" class="auth-view">
   <div class="auth-shell">
-    <div class="brand"><img src="garang-mark.svg"><div><b>GARANG</b><span>YOUR PERSONAL AI COACH</span></div></div>
+    <div class="brand"><img src="05_assets/garang-mark.svg"><div><b>GARANG</b><span>YOUR PERSONAL AI COACH</span></div></div>
     <div class="auth-copy"><span class="eyebrow">PERSONAL PERFORMANCE SYSTEM</span><h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1><p>운동·식단·러닝·신체 데이터를 한곳에 모으고, GARANG이 당신의 다음 행동까지 연결합니다.</p></div>
     <div class="auth-card">
       <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
@@ -31,12 +32,22 @@
   </div>
 </div>
 <div id="appView" hidden>
-  <header class="topbar"><button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button><div class="brand mini"><img src="garang-mark.svg"><div><b>GARANG</b><span>PERSONAL AI COACH</span></div></div><div class="top-actions"><span id="planBadge" class="badge">FREE</span><button id="logoutBtn" class="ghost small">로그아웃</button></div></header>
+  <header class="topbar"><button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button><div class="brand mini"><img src="05_assets/garang-mark.svg"><div><b>GARANG</b><span>PERSONAL AI COACH</span></div></div><div class="top-actions"><span id="planBadge" class="badge">FREE</span><button id="logoutBtn" class="ghost small">로그아웃</button></div></header>
   <main id="main" class="main"></main>
   <nav class="bottom-nav" id="bottomNav">
     <button data-page="home" class="active"><span>⌂</span><b>홈</b></button><button data-page="workout"><span>◒</span><b>운동</b></button><button data-page="nutrition"><span>◌</span><b>식단</b></button><button data-page="running"><span>⌁</span><b>러닝</b></button><button data-page="planner"><span>◷</span><b>플래너</b></button><button data-page="ai"><span>✦</span><b>GARANG AI</b></button>
   </nav>
 </div>
 <input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
-<script src="app.js"></script>
+<script src="04_data/ui-translations.js"></script>
+<script src="04_data/ui-final-translations.js"></script>
+<script src="02_core/data-schema.js"></script>
+<script src="services/storage.js"></script>
+<script src="services/performance.js"></script>
+<script src="07_config/services-config.js"></script>
+<script src="services/adapters.js"></script>
+<script src="services/records.js"></script>
+<script src="06_features/final/features.js"></script>
+<script src="01_app/app.js?v=final1"></script>
+<script src="01_app/pwa.js"></script>
 </body></html>
