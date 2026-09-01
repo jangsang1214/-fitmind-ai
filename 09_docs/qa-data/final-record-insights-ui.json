@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-01",
+  "version": "10.9.4",
+  "status": "PASS",
+  "automated": {
+    "core": 15,
+    "adapters": 8,
+    "majorUpdate": 18,
+    "total": 41,
+    "failures": 0
+  },
+  "browser": {
+    "viewport": "320x800",
+    "horizontalOverflow": 0,
+    "duplicateIds": 0,
+    "workout": {
+      "bodyParts": ["가슴", "하체"],
+      "prTypes": ["최고 중량", "추정 1RM", "최고 볼륨"],
+      "newExercisePrUpdates": 6,
+      "repeatExercisePrUpdates": 3
+    },
+    "running": {
+      "metrics": ["거리 가중 평균 페이스", "최고 페이스", "최장 거리", "누적 거리"]
+    },
+    "planner": {
+      "dateControlVisible": true,
+      "typeControlVisible": true
+    },
+    "memory": {
+      "categorySaved": "운동 습관",
+      "contentSaved": true
+    },
+    "aiPlanAction": {
+      "visible": true,
+      "fontSize": "14px",
+      "fontWeight": "900",
+      "color": "rgb(16, 19, 16)",
+      "background": "rgb(217, 255, 69)"
+    },
+    "certification": {
+      "galleryInput": true,
+      "captureForced": false,
+      "transparentPng": "1080x1350",
+      "sharePathReached": true
+    },
+    "consoleErrors": 0
+  }
+}

@@ -1,5 +1,5 @@
 /* GARANG recovery service worker: root-safe for GitHub project Pages. */
-const CACHE='garang-major-update-complete-v4';
+const CACHE='garang-major-update-complete-v5';
 const ASSETS=[
   './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./garang-v10-core.js','./data-schema.js',
   './ui-translations.js','./ui-final-translations.js','./storage.js','./performance.js',

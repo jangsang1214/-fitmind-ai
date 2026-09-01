@@ -2,6 +2,11 @@
 
 ## Completion recovery (2026-09-01)
 
+- Added workout analytics grouped by body part and exercise, with separate max-weight, estimated 1RM and per-record volume PRs. Saving a session now reports how many PR categories were updated.
+- Added running analytics that separate distance-weighted average pace, fastest pace, longest distance and total distance, plus badges on the matching run records.
+- Redesigned Planner date filtering, plan type selection and plan entry controls for clearer labels and mobile touch targets.
+- Redesigned long-term Memory category/content entry and saved-memory cards, and restored high-contrast GARANG AI `계획 추가` actions.
+- Changed workout/run certification to explicitly open the media library and added standalone 1080×1350 transparent PNG overlay export, while retaining photo and video composition.
 - InBody manual entry now requires only weight, body-fat percentage and skeletal muscle mass. Fat mass, BMI and estimated resting metabolism are calculated live; BMI uses the saved profile height and remains blank when height is unavailable.
 - Derived InBody values are read-only, explicitly labelled as automatic estimates and saved with calculation-version metadata so they are not confused with device measurements.
 - Historical records without the calculation-version marker remain labelled as recorded values instead of being misrepresented as automatically estimated.
