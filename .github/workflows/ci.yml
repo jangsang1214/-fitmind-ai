@@ -1,0 +1,22 @@
+name: GARANG release gate
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Test Commercial Core and regressions
+        run: npm test
+      - name: Validate runtime and build
+        run: npm run build
+      - name: Verify build entry
+        run: test -f dist/index.html && test -f dist/commercial-core.js && test -f dist/runtime-manifest.json

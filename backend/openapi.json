@@ -1,0 +1,23 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "GARANG Commercial API", "version": "0.10.0-beta.1"},
+  "servers": [{"url": "/v1"}],
+  "paths": {
+    "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health"}}}},
+    "/data/{domain}": {
+      "parameters": [{"name": "domain", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "get": {"responses": {"200": {"description": "User-scoped domain"}, "401": {"description": "Unauthenticated"}}},
+      "put": {"responses": {"200": {"description": "Saved idempotently"}, "400": {"description": "Invalid payload"}}},
+      "delete": {"responses": {"200": {"description": "Deleted"}}}
+    },
+    "/migrations/local": {"post": {"responses": {"200": {"description": "Migration accepted"}, "400": {"description": "Invalid migration"}}}},
+    "/user/export": {"get": {"responses": {"200": {"description": "User data export"}}}},
+    "/account": {"delete": {"responses": {"200": {"description": "Account data deleted"}, "400": {"description": "Confirmation required"}}}},
+    "/agent/actions": {"post": {"responses": {"201": {"description": "Pending action proposal"}}}},
+    "/agent/actions/{id}/confirm": {"post": {"responses": {"200": {"description": "Action confirmed or rejected"}}}},
+    "/analytics/events": {"post": {"responses": {"202": {"description": "Events accepted"}}}},
+    "/errors": {"post": {"responses": {"202": {"description": "Error accepted"}}}}
+  },
+  "components": {"securitySchemes": {"firebase": {"type": "http", "scheme": "bearer", "bearerFormat": "Firebase ID token"}}},
+  "security": [{"firebase": []}]
+}

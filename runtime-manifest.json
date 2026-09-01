@@ -1,0 +1,46 @@
+{
+  "version": "0.10.0-beta.1",
+  "entry": "index.html",
+  "branch": "main",
+  "deployRoot": ".",
+  "styles": [
+    "styles.css",
+    "garang-v10-release.css",
+    "garang-planner-v10.css",
+    "garang-v10.9-mobile-max.css",
+    "final.css",
+    "commercial.css"
+  ],
+  "scripts": [
+    "firebase-config.js",
+    "garang-v10-core.js",
+    "version.js",
+    "ui-translations.js",
+    "ui-final-translations.js",
+    "data-schema.js",
+    "storage.js",
+    "performance.js",
+    "services-config.js",
+    "commercial-core.js",
+    "adapters.js",
+    "records.js",
+    "features.js",
+    "app.js",
+    "pwa.js"
+  ],
+  "data": [
+    "exercise-db.json",
+    "food-db.json",
+    "exercise_knowledge.jsonl",
+    "food_knowledge.jsonl",
+    "fitmind_rules.jsonl",
+    "fitmind_sft.jsonl",
+    "synthetic_korean_dialogue_v6.jsonl"
+  ],
+  "assets": [
+    "manifest.webmanifest",
+    "garang-mark.svg",
+    "icon-192.png",
+    "icon-512.png"
+  ]
+}

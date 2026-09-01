@@ -35,3 +35,12 @@
 - Added reproducible core/adapter tests and static build checker. Current QA report separates implementation, tested behavior and external blockers.
 
 Historical QA files describe older builds and are retained for provenance. Only `QA_REPORT.md` and `09_docs/qa-data/final-*` refer to this delivery.
+# 0.10.0 Beta 1 — Commercial Core and visual system
+
+- Added a single runtime manifest and semantic build identity.
+- Added authenticated commercial API contracts, per-user repositories, rate limits, idempotency, migration/export/deletion paths and Firebase security rules.
+- Added an agent tool gate that separates read operations from explicitly confirmed write proposals.
+- Upgraded Memory and Planner records with origin, confirmation, revisions and deletion tombstones.
+- Redesigned the app shell, controls and mobile navigation with a unified commercial visual layer.
+- Redesigned workout/running certification preview, composite export and transparent PNG overlay.
+- Added CI and 60 passing automated checks while keeping unavailable services visibly disconnected.

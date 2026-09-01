@@ -1,0 +1,7 @@
+{
+  "name": "garang-commercial-api-core",
+  "private": true,
+  "version": "0.10.0-beta.1",
+  "description": "Provider-neutral GARANG v1 API core. Deployment adapter and credentials are intentionally absent.",
+  "scripts": {"test": "node tests/core.test.cjs"}
+}

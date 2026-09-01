@@ -1,10 +1,10 @@
 /* GARANG recovery service worker: root-safe for GitHub project Pages. */
-const CACHE='garang-major-update-complete-v6';
+const CACHE='garang-commercial-beta1-v7';
 const ASSETS=[
-  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./garang-v10-core.js','./data-schema.js',
+  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./runtime-manifest.json','./garang-v10-core.js','./version.js','./data-schema.js',
   './ui-translations.js','./ui-final-translations.js','./storage.js','./performance.js',
-  './records.js','./adapters.js','./features.js','./firebase-config.js','./services-config.js',
-  './styles.css','./garang-v10-release.css','./garang-planner-v10.css','./final.css',
+  './records.js','./adapters.js','./features.js','./firebase-config.js','./services-config.js','./commercial-core.js',
+  './styles.css','./garang-v10-release.css','./garang-planner-v10.css','./final.css','./commercial.css',
   './garang-v10.9-mobile-max.css','./garang-mark.svg','./icon-192.png','./icon-512.png',
   './exercise-db.json','./food-db.json','./exercise_knowledge.jsonl','./food_knowledge.jsonl',
   './fitmind_rules.jsonl','./fitmind_sft.jsonl','./synthetic_korean_dialogue_v6.jsonl'
