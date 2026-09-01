@@ -20,6 +20,10 @@ test('missing body measurements never become estimated zeroes',()=>{
  const x=GarangSchema.deriveBodyMetrics({weight:70,bodyFat:null,muscle:''},{height:175});
  assert.equal(x.fatMass,null);assert.equal(x.bmr,null);assert.equal(x.bmi,22.9);assert.equal(x.muscle,null);
 });
+test('history labels only versioned calculations as automatic estimates',()=>{
+ const features=fs.readFileSync(path.join(root,'features.js'),'utf8');
+ assert.match(features,/calculationVersion===G\.BODY_ESTIMATE_VERSION\?'estimateTag':'recordedValues'/);
+});
 test('first account cache safely receives demo records',()=>{
  const guest=GarangSchema.migrate({profile:{name:'Guest',weight:70},workouts:[{id:'w1',date:'2026-09-01'}]});
  const account=GarangSchema.accountBootstrap(false,guest,true);assert.equal(account.workouts.length,1);assert.equal(account.profile.weight,70);
