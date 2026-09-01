@@ -2,6 +2,7 @@
 
 ## Completion recovery (2026-09-01)
 
+- Constrained every text, number, date, time, select and textarea control to its parent card width, including intrinsic-width mobile Safari date/time fields. Narrow screens now use one-column forms and a stacked Planner date filter.
 - Added workout analytics grouped by body part and exercise, with separate max-weight, estimated 1RM and per-record volume PRs. Saving a session now reports how many PR categories were updated.
 - Added running analytics that separate distance-weighted average pace, fastest pace, longest distance and total distance, plus badges on the matching run records.
 - Redesigned Planner date filtering, plan type selection and plan entry controls for clearer labels and mobile touch targets.

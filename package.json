@@ -1,7 +1,7 @@
 {
  "name":"garang-dev-final",
  "private":true,
- "version":"10.9.4",
+ "version":"10.9.5",
  "description":"V10.1 first major update requirements applied to supplied V10.9.1 DEV BASE",
  "scripts":{"test":"node tests/core.test.cjs && node tests/adapters.test.cjs && node tests/major-update.test.cjs","lint":"node scripts/check.cjs","build":"node scripts/check.cjs --build","start":"python -m http.server 8765"}
 }

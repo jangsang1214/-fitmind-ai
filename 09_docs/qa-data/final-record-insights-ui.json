@@ -1,12 +1,12 @@
 {
   "date": "2026-09-01",
-  "version": "10.9.4",
+  "version": "10.9.5",
   "status": "PASS",
   "automated": {
     "core": 15,
     "adapters": 8,
-    "majorUpdate": 18,
-    "total": 41,
+    "majorUpdate": 19,
+    "total": 42,
     "failures": 0
   },
   "browser": {
@@ -42,6 +42,13 @@
       "captureForced": false,
       "transparentPng": "1080x1350",
       "sharePathReached": true
+    },
+    "inputSizing": {
+      "viewports": [280, 320, 390, 1280],
+      "routes": 13,
+      "controlOverflow": 0,
+      "documentOverflow": 0,
+      "plannerDateTimeConstrained": true
     },
     "consoleErrors": 0
   }

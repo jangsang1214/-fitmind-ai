@@ -52,6 +52,11 @@ test('certification supports gallery media and standalone transparent PNG overla
  for(const token of ['workoutOverlayOnly','runOverlayOnly','saveTransparentOverlay','image/png','투명 오버레이 PNG','사진첩에서 불러오기'])assert.ok(app.includes(token),token);
  assert.match(html,/id="mediaPicker"[^>]+accept="image\/\*,video\/\*"/);assert.doesNotMatch(html,/id="mediaPicker"[^>]+capture=/);
 });
+test('all form controls are constrained to their card width on narrow devices',()=>{
+ const css=fs.readFileSync(path.join(root,'final.css'),'utf8');
+ for(const token of ['min-inline-size:0','max-inline-size:100%','input[type=date],input[type=time]','::-webkit-date-and-time-value','@media(max-width:360px)'])assert.ok(css.includes(token),token);
+ assert.match(css,/\.planner-filter-actions\{grid-template-columns:1fr\}/);
+});
 test('first account cache safely receives demo records',()=>{
  const guest=GarangSchema.migrate({profile:{name:'Guest',weight:70},workouts:[{id:'w1',date:'2026-09-01'}]});
  const account=GarangSchema.accountBootstrap(false,guest,true);assert.equal(account.workouts.length,1);assert.equal(account.profile.weight,70);

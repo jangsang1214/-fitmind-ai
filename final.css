@@ -17,3 +17,12 @@ input[data-derived]{background:#1b2220;color:#d9ff45;border-style:dashed;cursor:
 @media(max-width:430px){.record-insights{gap:14px}.insight-grid,.insight-grid.run-grid{grid-template-columns:1fr}.insight-card{padding:16px}.pr-head,.bodypart-card>header,.run-record-list>article{align-items:flex-start;flex-direction:column}.pr-head>small,.bodypart-card>header small{text-align:left}.pr-metrics{grid-template-columns:1fr}.pr-metrics>span{grid-template-columns:1fr auto;align-items:center}.pr-metrics>span small,.pr-metrics>span em{grid-column:1}.pr-metrics>span b{grid-column:2;grid-row:1/3}.compact-list>div{display:grid}.record-badges{justify-content:flex-start}.planner-filter-card{display:grid}.planner-filter-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;min-width:0;width:100%}.date-control{width:100%}.planner-form-grid{grid-template-columns:1fr}.planner-title-field,.planner-notify{grid-column:auto}.memory-card{min-height:0}}
 .cert-tool-card>.actions{margin:14px 0 8px}.cert-tool-card>.helper{margin:0}.cert-controls{flex-wrap:wrap}.cert-controls button{min-width:140px}.cert-tool-card .primary{color:#101310}
 
+/* Keep every form control inside its card on browsers with intrinsic date/time widths. */
+:where(.auth-card,.card,form,.form-grid,.field,label,.select-shell,.planner-filter-actions,.chat-composer){min-width:0;max-width:100%}
+:where(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea){display:block;box-sizing:border-box;inline-size:100%;width:100%;min-inline-size:0;min-width:0;max-inline-size:100%;max-width:100%}
+:where(input[type=date],input[type=time]){inline-size:100%!important;width:100%!important;min-inline-size:0!important;min-width:0!important;max-inline-size:100%!important;max-width:100%!important}
+:where(input[type=date],input[type=time])::-webkit-date-and-time-value{min-width:0;text-align:left}
+.form-grid{inline-size:100%;width:100%;max-width:100%}.field{inline-size:100%;width:100%;max-width:100%;overflow:visible}
+@media(max-width:430px){.planner-filter-actions{grid-template-columns:1fr}.planner-filter-actions>button{width:100%}}
+@media(max-width:360px){.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.session-total{grid-template-columns:1fr}.actions>button,.actions>.file-btn{max-width:100%}}
+
