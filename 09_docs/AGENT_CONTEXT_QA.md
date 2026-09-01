@@ -1,7 +1,7 @@
 # GARANG Agent Context API QA
 
 Date: 2026-09-02  
-Status: CODE PASS / DEPLOYMENT WAITING FOR FIREBASE LOGIN
+Status: CODE PASS / DEPLOYMENT WAITING FOR BLAZE UPGRADE
 
 ## 확인 결과
 
@@ -23,4 +23,6 @@ Status: CODE PASS / DEPLOYMENT WAITING FOR FIREBASE LOGIN
 
 ## 배포 상태
 
-현재 실행 환경의 Firebase CLI에 로그인 정보가 없어 실제 Cloud Functions 배포는 수행되지 않았다. `firebase login` 후 `firebase deploy --only functions:api`를 실행해야 공개 URL이 활성화된다.
+Firebase CLI 로그인과 `fitfind-ai` 프로젝트 선택은 완료했다. 실제 배포를 실행했지만 프로젝트가 무료 Spark 요금제여서 필수 `artifactregistry.googleapis.com` API를 활성화할 수 없다는 Firebase 오류로 중단됐다. 함수는 아직 생성되지 않았다.
+
+프로젝트 소유자가 Firebase Console에서 Blaze 요금제로 업그레이드한 뒤 `firebase deploy --only functions:api`를 다시 실행해야 공개 URL이 활성화된다. 요금제 변경은 결제 계정 연결이 필요한 별도 사용자 결정이다.
