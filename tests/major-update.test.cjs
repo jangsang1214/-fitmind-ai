@@ -57,6 +57,12 @@ test('all form controls are constrained to their card width on narrow devices',(
  for(const token of ['min-inline-size:0','max-inline-size:100%','input[type=date],input[type=time]','::-webkit-date-and-time-value','@media(max-width:360px)'])assert.ok(css.includes(token),token);
  assert.match(css,/\.planner-filter-actions\{grid-template-columns:1fr\}/);
 });
+test('commercial mobile CSS preserves the Planner notification toggle and full-width date filter',()=>{
+ const css=fs.readFileSync(path.join(root,'commercial.css'),'utf8'),features=fs.readFileSync(path.join(root,'features.js'),'utf8');
+ assert.match(css,/input:not\(\[type=checkbox\]\):not\(\[type=radio\]\):not\(\[type=file\]\),select,textarea/);
+ for(const token of ['.notification-control>input[type=checkbox]','inline-size:48px!important','.planner-filter-card{grid-template-columns:minmax(0,1fr)!important'])assert.ok(css.includes(token),token);
+ assert.ok(features.includes('planner-notify notification-control'));
+});
 test('first account cache safely receives demo records',()=>{
  const guest=GarangSchema.migrate({profile:{name:'Guest',weight:70},workouts:[{id:'w1',date:'2026-09-01'}]});
  const account=GarangSchema.accountBootstrap(false,guest,true);assert.equal(account.workouts.length,1);assert.equal(account.profile.weight,70);

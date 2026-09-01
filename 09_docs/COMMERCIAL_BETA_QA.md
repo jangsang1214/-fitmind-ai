@@ -1,15 +1,16 @@
-# GARANG 0.10.0 Beta 1 QA
+# GARANG 0.10.0 Beta 2 QA
 
 Date: 2026-09-02  
 Status: PASS
 
 ## Verified
 
-- 60 automated checks passed: core 15, adapters 10, commercial browser core 8, backend core 8, major update regression 19.
+- 61 automated checks passed: core 15, adapters 10, commercial browser core 8, backend core 8, major update regression 20.
 - Static validation passed across 92 JavaScript files, 32 JSON or manifest files, 11 JSONL datasets and 30 active entry assets.
-- The active runtime manifest, package version and visible build label all resolve to 0.10.0-beta.1.
-- A 390 px mobile browser run found no document, form-control or certification-card horizontal overflow.
+- The active runtime manifest, package version and visible build label all resolve to 0.10.0-beta.2.
+- Browser runs at 390 px and across 13 routes at 320 px found no document, form-control or certification-card horizontal overflow.
 - Planner date/time/type/title inputs stay inside their cards.
+- Planner notification is restored as a fixed-size toggle; checkbox controls are excluded from full-width text-input rules.
 - Certification preview rendered the new GARANG Performance OS overlay with no browser console errors.
 - Server-side tests verify authentication, per-user isolation, idempotency, rate limiting, account deletion confirmation and agent-action confirmation.
 

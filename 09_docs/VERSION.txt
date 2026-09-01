@@ -1,2 +1,2 @@
-GARANG 0.10.0-beta.1 — Commercial Core Development Build
+GARANG 0.10.0-beta.2 — Commercial Core Development Build
 Canonical base: GARANG BETA

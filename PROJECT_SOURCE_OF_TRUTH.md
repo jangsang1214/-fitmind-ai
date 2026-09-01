@@ -3,7 +3,7 @@
 ## Canonical release
 
 - Product: GARANG Commercial Core
-- Version: `0.10.0-beta.1`
+- Version: `0.10.0-beta.2`
 - Channel: Development Build
 - Canonical source: this repository on branch `main`
 - Canonical deploy root: repository root

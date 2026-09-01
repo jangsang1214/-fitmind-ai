@@ -1,6 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": {"title": "GARANG Commercial API", "version": "0.10.0-beta.1"},
+  "info": {"title": "GARANG Commercial API", "version": "0.10.0-beta.2"},
   "servers": [{"url": "/v1"}],
   "paths": {
     "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health"}}}},

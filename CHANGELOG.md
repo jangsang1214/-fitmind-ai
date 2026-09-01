@@ -44,3 +44,8 @@ Historical QA files describe older builds and are retained for provenance. Only 
 - Redesigned the app shell, controls and mobile navigation with a unified commercial visual layer.
 - Redesigned workout/running certification preview, composite export and transparent PNG overlay.
 - Added CI and 60 passing automated checks while keeping unavailable services visibly disconnected.
+# 0.10.0 Beta 2 — Mobile Planner hotfix
+
+- Restored the Planner notification control as a fixed-size, accessible toggle.
+- Excluded checkbox, radio and file controls from full-width text-input styling.
+- Forced the mobile Planner date filter and action button into one full-width column.
