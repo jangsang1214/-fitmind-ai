@@ -63,4 +63,4 @@ AI Agent의 사용자 Prompt `{{ $json.message }}`와 GARANG Core System Instruc
 firebase deploy --only functions:api
 ```
 
-Cloud Functions 배포에는 Firebase 프로젝트의 Blaze 요금제가 필요하다. 2026-09-02 실제 배포 시도에서는 `fitfind-ai`가 Spark 요금제여서 필수 Artifact Registry API 활성화 단계에서 중단됐으며 함수는 아직 생성되지 않았다. Blaze 업그레이드 후 다시 배포해야 한다. 배포가 끝나면 위 URL에 Firebase ID 토큰 없이 요청해 `401 UNAUTHENTICATED`가 반환되는지 먼저 확인한다.
+Cloud Functions 배포에는 Firebase 프로젝트의 Blaze 요금제가 필요하다. `fitfind-ai`는 2026-09-02 Blaze 전환 후 배포를 완료했다. 위 URL에 인증 없이 요청했을 때 `401 UNAUTHENTICATED`, 위조 토큰도 `401`, POST 요청은 `405`로 차단되는 것을 실제 확인했다. Artifact Registry에는 1일 자동 정리 정책을 적용했다.

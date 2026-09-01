@@ -1,7 +1,7 @@
 # GARANG Agent Context API QA
 
 Date: 2026-09-02  
-Status: CODE PASS / DEPLOYMENT WAITING FOR BLAZE UPGRADE
+Status: DEPLOYED / LIVE SECURITY PASS
 
 ## 확인 결과
 
@@ -23,6 +23,14 @@ Status: CODE PASS / DEPLOYMENT WAITING FOR BLAZE UPGRADE
 
 ## 배포 상태
 
-Firebase CLI 로그인과 `fitfind-ai` 프로젝트 선택은 완료했다. 실제 배포를 실행했지만 프로젝트가 무료 Spark 요금제여서 필수 `artifactregistry.googleapis.com` API를 활성화할 수 없다는 Firebase 오류로 중단됐다. 함수는 아직 생성되지 않았다.
+`fitfind-ai`의 Blaze 전환 후 Node.js 22 2세대 `api` 함수를 `asia-northeast3`에 배포했다.
 
-프로젝트 소유자가 Firebase Console에서 Blaze 요금제로 업그레이드한 뒤 `firebase deploy --only functions:api`를 다시 실행해야 공개 URL이 활성화된다. 요금제 변경은 결제 계정 연결이 필요한 별도 사용자 결정이다.
+- Base URL: `https://asia-northeast3-fitfind-ai.cloudfunctions.net/api`
+- Agent Context: `https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/agent/context`
+- 인증 없음: `401 UNAUTHENTICATED`
+- 위조 토큰: `401 UNAUTHENTICATED`
+- POST 요청: `405 METHOD_NOT_ALLOWED`, `Allow: GET`
+- 응답 캐시: `Cache-Control: private, no-store`, `Vary: Authorization`
+- Artifact Registry: 1일보다 오래된 배포 이미지를 자동 삭제하는 정책 적용
+
+실제 로그인 사용자의 정상 Firebase ID 토큰을 통한 `200` 응답은 앱에서 n8n Webhook으로 토큰 전달을 연결할 때 최종 확인한다.
