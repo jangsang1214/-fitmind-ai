@@ -1,10 +1,17 @@
 /* Canonical persisted schema. Legacy aliases are accepted only at this boundary. */
 (function(root){
  'use strict';
- const VERSION=4, SCORE_FORMULA_VERSION='recording-v2', isObject=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+ const VERSION=5, SCORE_FORMULA_VERSION='recording-v2', BODY_ESTIMATE_VERSION='body-estimate-v1', isObject=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
  const date=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
  const id=()=>root.crypto?.randomUUID?.()||`g_${Date.now()}_${Math.random().toString(36).slice(2)}`;
  const numeric=(x)=>x==null||(typeof x==='string'&&!x.trim())?null:Number.isFinite(Number(x))?Number(x):null;
+ const rounded=(value,digits=1)=>{const scale=10**digits;return Math.round((value+Number.EPSILON)*scale)/scale;};
+ function deriveBodyMetrics(input={},profile={}){
+  const weight=numeric(input.weight),bodyFat=numeric(input.bodyFat),muscle=numeric(input.muscle),height=numeric(profile?.height),result={weight,bodyFat,muscle,fatMass:null,bmi:null,bmr:null,estimatedMetrics:[],calculationVersion:BODY_ESTIMATE_VERSION};
+  if(weight>0&&bodyFat!==null&&bodyFat>=0&&bodyFat<=100){result.fatMass=rounded(weight*bodyFat/100);result.estimatedMetrics.push('fatMass');const leanMass=weight-result.fatMass;if(leanMass>0){result.bmr=Math.round(370+21.6*leanMass);result.estimatedMetrics.push('bmr');}}
+  if(weight>0&&height!==null&&height>=50&&height<=300){result.bmi=rounded(weight/(height/100)**2);result.estimatedMetrics.push('bmi');result.heightAtMeasurement=height;}
+  return result;
+ }
  const rows=x=>Array.isArray(x)?x.filter(isObject):[];
  const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(new Date(x+'T12:00:00Z').getTime())&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const row=x=>({...x,id:String(x.id||id()),date:validDate(x.date)?x.date:date()});
@@ -64,5 +71,5 @@
   for(const k of ['workouts','meals','runs','body','planner','aiChats'])if(k in x&&(!Array.isArray(x[k])||x[k].some(y=>!isObject(y))))throw new Error('INVALID_DATA');
   return migrate(x);
  }
- root.GarangSchema={VERSION,SCORE_FORMULA_VERSION,empty,migrate,validateImport,validDate,numeric,id,date,hasUserData,accountBootstrap,mergeStates};
+ root.GarangSchema={VERSION,SCORE_FORMULA_VERSION,BODY_ESTIMATE_VERSION,empty,migrate,validateImport,validDate,numeric,deriveBodyMetrics,id,date,hasUserData,accountBootstrap,mergeStates};
 })(typeof window==='undefined'?globalThis:window);

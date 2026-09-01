@@ -10,6 +10,8 @@ This package keeps the recovery build's flat GitHub Pages runtime and categorize
 - Treats null and blank numeric values as missing so profile fallbacks work correctly.
 - Returns an explicit insufficient-data coach response instead of `null/100`.
 - Versions Performance Score history so legacy and current formulas are not compared as a real user trend.
+- Calculates fat mass, BMI and estimated resting metabolism from weight, body-fat percentage and skeletal muscle mass; BMI remains blank until Profile has a valid height.
+- Keeps all derived InBody values read-only and saves calculation-version metadata so estimates are distinguishable from device measurements.
 - Precaches the PWA registration script and manifest in the root-safe service worker.
 - Adds release-specific regression tests and root/source synchronization checks.
 

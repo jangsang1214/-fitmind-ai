@@ -2,6 +2,8 @@
 
 ## Completion recovery (2026-09-01)
 
+- InBody manual entry now requires only weight, body-fat percentage and skeletal muscle mass. Fat mass, BMI and estimated resting metabolism are calculated live; BMI uses the saved profile height and remains blank when height is unavailable.
+- Derived InBody values are read-only, explicitly labelled as automatic estimates and saved with calculation-version metadata so they are not confused with device measurements.
 - Kept the flat GitHub Pages runtime and categorized source synchronized so CSS, JavaScript, images, data files, manifest and service worker all resolve from the deployed root.
 - Migrated the demo session into the first signed-in account without deleting the guest backup, while keeping non-demo and existing accounts isolated.
 - Changed cloud restore from whole-state replacement to record-level merging; unique records are preserved and duplicate IDs select the newest item timestamp.

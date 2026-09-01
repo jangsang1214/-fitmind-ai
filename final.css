@@ -5,4 +5,5 @@
 
 .confirm-dialog{background:#14191b;color:#f3f5f6;border:1px solid #3f4944;border-radius:18px;width:min(92vw,440px);max-height:80dvh;overflow:auto;padding:24px}.confirm-dialog::backdrop{background:#0009}.confirm-dialog p{overflow-wrap:anywhere}.confirm-dialog .actions{display:flex;gap:12px}
 #menuBtn,#closeMenu{display:inline-flex;align-items:center;justify-content:center;min-width:36px}#logoutBtn{display:inline-flex;font-size:11px;padding:6px 8px}.topbar .brand{min-width:0;flex-shrink:1}.topbar .top-actions{flex-shrink:0}
+input[data-derived]{background:#1b2220;color:#d9ff45;border-style:dashed;cursor:default}.helper{line-height:1.5}.helper[role=status]{min-height:1.5em}
 

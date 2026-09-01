@@ -7,6 +7,19 @@ function test(name,fn){try{fn();tests.push({name,status:'PASS'});}catch(error){t
 test('null and blank numeric inputs remain missing',()=>{
  assert.equal(GarangSchema.numeric(null),null);assert.equal(GarangSchema.numeric('  '),null);assert.equal(GarangSchema.numeric('70'),70);
 });
+test('three InBody inputs derive fat mass, BMI and resting metabolism',()=>{
+ const x=GarangSchema.deriveBodyMetrics({weight:80,bodyFat:25,muscle:32},{height:180});
+ assert.equal(x.fatMass,20);assert.equal(x.bmi,24.7);assert.equal(x.bmr,1666);assert.deepEqual(x.estimatedMetrics,['fatMass','bmr','bmi']);
+ assert.equal(x.calculationVersion,GarangSchema.BODY_ESTIMATE_VERSION);assert.equal(x.heightAtMeasurement,180);
+});
+test('missing profile height leaves only BMI uncalculated',()=>{
+ const x=GarangSchema.deriveBodyMetrics({weight:'70',bodyFat:'20',muscle:'30'},{});
+ assert.equal(x.fatMass,14);assert.equal(x.bmr,1580);assert.equal(x.bmi,null);assert.doesNotMatch(JSON.stringify(x),/NaN/);
+});
+test('missing body measurements never become estimated zeroes',()=>{
+ const x=GarangSchema.deriveBodyMetrics({weight:70,bodyFat:null,muscle:''},{height:175});
+ assert.equal(x.fatMass,null);assert.equal(x.bmr,null);assert.equal(x.bmi,22.9);assert.equal(x.muscle,null);
+});
 test('first account cache safely receives demo records',()=>{
  const guest=GarangSchema.migrate({profile:{name:'Guest',weight:70},workouts:[{id:'w1',date:'2026-09-01'}]});
  const account=GarangSchema.accountBootstrap(false,guest,true);assert.equal(account.workouts.length,1);assert.equal(account.profile.weight,70);

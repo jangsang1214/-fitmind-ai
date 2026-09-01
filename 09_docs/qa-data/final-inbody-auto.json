@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-09-01T09:40:00Z",
+  "status": "PASS",
+  "environment": {
+    "origin": "clean local HTTP origin",
+    "viewport": "320x844"
+  },
+  "profile": {
+    "heightCm": 180
+  },
+  "manualInputs": {
+    "weightKg": 80,
+    "bodyFatPercent": 25,
+    "skeletalMuscleKg": 32
+  },
+  "automaticEstimates": {
+    "fatMassKg": 20,
+    "bmi": 24.7,
+    "restingMetabolismKcal": 1666
+  },
+  "checks": {
+    "derivedFieldsAreReadOnly": true,
+    "savedHistoryShowsEstimates": true,
+    "missingHeightLeavesBmiBlank": true,
+    "missingBodyFatDoesNotBecomeZero": true
+  }
+}
