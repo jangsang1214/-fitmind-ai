@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-09-01T09:13:15.546Z",
+  "status": "PASS",
+  "counts": {
+    "javascript": 85,
+    "json": 25,
+    "jsonl": 11,
+    "activeAssets": 27
+  },
+  "failures": [],
+  "scope": "All JS syntax and JSON/JSONL; active entry assets; shell IDs; service no-eval rule. Not a proof of all undefined identifiers or all legacy runtime behavior."
+}

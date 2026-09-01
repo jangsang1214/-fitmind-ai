@@ -1,0 +1,34 @@
+[
+  {
+    "name": "disconnected LLM rejects without a successful AI message",
+    "status": "PASS"
+  },
+  {
+    "name": "disconnected payment never grants PRO",
+    "status": "PASS"
+  },
+  {
+    "name": "OCR rejects non-images",
+    "status": "PASS"
+  },
+  {
+    "name": "external API endpoint is rejected before transmission",
+    "status": "PASS"
+  },
+  {
+    "name": "invalid LLM response is not rendered as success (unit stub only)",
+    "status": "PASS"
+  },
+  {
+    "name": "HTTP failure propagates (unit stub only)",
+    "status": "PASS"
+  },
+  {
+    "name": "Memory CRUD is independent from chat history",
+    "status": "PASS"
+  },
+  {
+    "name": "Planner edit keeps completion and validates impossible dates",
+    "status": "PASS"
+  }
+]

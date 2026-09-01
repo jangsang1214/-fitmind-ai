@@ -1,0 +1,93 @@
+[
+  {
+    "page": "home",
+    "duplicates": [],
+    "heading": "GARANG 사용자의 오늘",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "workout",
+    "duplicates": [],
+    "heading": "운동 기록",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "nutrition",
+    "duplicates": [],
+    "heading": "식단",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "running",
+    "duplicates": [],
+    "heading": "러닝",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "planner",
+    "duplicates": [],
+    "heading": "플래너",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "ai",
+    "duplicates": [],
+    "heading": "GARANG AI",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "premium",
+    "duplicates": [],
+    "heading": "FREE / PRO",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "profile",
+    "duplicates": [],
+    "heading": "프로필",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "body",
+    "duplicates": [],
+    "heading": "InBody",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "score",
+    "duplicates": [],
+    "heading": "Performance Score",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "memory",
+    "duplicates": [],
+    "heading": "장기 기억",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "achievement",
+    "duplicates": [],
+    "heading": "업적",
+    "overflow": [],
+    "width": 320
+  },
+  {
+    "page": "settings",
+    "duplicates": [],
+    "heading": "설정",
+    "overflow": [],
+    "width": 320
+  }
+]

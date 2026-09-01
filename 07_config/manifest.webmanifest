@@ -1,7 +1,7 @@
 {
   "name": "GARANG — Your Personal AI Coach",
   "short_name": "GARANG",
-  "start_url": "./",
+  "start_url": "../index.html",
   "display": "standalone",
   "background_color": "#0b0d0f",
   "theme_color": "#0b0d0f",
@@ -17,5 +17,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "../"
 }
