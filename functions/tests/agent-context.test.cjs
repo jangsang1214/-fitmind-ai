@@ -1,0 +1,81 @@
+'use strict';
+
+const assert=require('node:assert/strict');
+const {buildAgentContext,calculatePerformance,parseBearer}=require('../src/agent-context.cjs');
+const {createAgentContextHandler}=require('../src/http-handler.cjs');
+
+let passed=0;
+async function test(name,run){await run();passed++;console.log(`PASS ${name}`);}
+function response(){return {statusCode:null,body:null,headers:{},set(name,value){this.headers[name]=value;return this;},status(code){this.statusCode=code;return this;},json(body){this.body=body;return this;}};}
+async function call(handler,{method='GET',authorization,query={}}={}){const res=response();await handler({method,headers:{authorization},query,get:name=>name.toLowerCase()==='authorization'?authorization:undefined},res);return res;}
+
+(async()=>{
+ await test('strict Bearer token parsing',()=>{
+  assert.equal(parseBearer('Bearer token-1'),'token-1');
+  assert.equal(parseBearer('Basic token-1'),null);
+  assert.equal(parseBearer('Bearer two tokens'),null);
+ });
+
+ await test('missing authentication is rejected',async()=>{
+  const handler=createAgentContextHandler({verifyIdToken:async()=>({uid:'never'}),readUser:async()=>({})});
+  const res=await call(handler);
+  assert.equal(res.statusCode,401);
+  assert.equal(res.body.error.code,'UNAUTHENTICATED');
+ });
+
+ await test('invalid or expired token is rejected',async()=>{
+  const handler=createAgentContextHandler({verifyIdToken:async()=>{throw new Error('expired');},readUser:async()=>({})});
+  const res=await call(handler,{authorization:'Bearer expired'});
+  assert.equal(res.statusCode,401);
+ });
+
+ await test('verified token uid is the only Firestore identity',async()=>{
+  let requestedUid='';
+  const handler=createAgentContextHandler({verifyIdToken:async token=>({uid:token==='valid'?'owner-uid':'wrong'}),readUser:async uid=>{requestedUid=uid;return {profile:{name:'Owner',goal:'5 km'}};},clock:()=>new Date('2026-09-02T00:00:00.000Z')});
+  const res=await call(handler,{authorization:'Bearer valid',query:{uid:'attacker-uid'}});
+  assert.equal(res.statusCode,200);
+  assert.equal(requestedUid,'owner-uid');
+  assert.equal(res.body.data.context.goal,'5 km');
+ });
+
+ await test('non-GET requests are rejected without data access',async()=>{
+  let accessed=false;
+  const handler=createAgentContextHandler({verifyIdToken:async()=>({uid:'owner'}),readUser:async()=>{accessed=true;return {};}});
+  const res=await call(handler,{method:'POST',authorization:'Bearer valid'});
+  assert.equal(res.statusCode,405);
+  assert.equal(accessed,false);
+ });
+
+ await test('context uses only canonical persisted names',()=>{
+  const context=buildAgentContext({schemaVersion:6,profile:{name:'가랑',goal:'체력 향상'},workouts:[{id:'w',date:'2026-09-01'}],meals:[{id:'m',date:'2026-09-01'}],runs:[{id:'r',date:'2026-09-01',coords:[[37.5,127]]}],body:[{id:'b',date:'2026-09-01',weight:70}],planner:[{id:'p',date:'2026-09-02'}],memory:{facts:['fact'],preferences:[],goals:[],events:[],entries:[]},aiChats:[{text:'secret chat'}],settings:{private:true},plan:'PRO'},{now:new Date('2026-09-02T00:00:00.000Z')});
+  assert.equal(context.goal,'체력 향상');
+  assert.equal(context.meals[0].id,'m');
+  assert.equal(Object.hasOwn(context,'nutrition'),false);
+  assert.equal(Object.hasOwn(context,'aiChats'),false);
+  assert.equal(Object.hasOwn(context,'settings'),false);
+  assert.equal(Object.hasOwn(context,'plan'),false);
+  assert.equal(Object.hasOwn(context.runs[0],'coords'),false);
+ });
+
+ await test('performance score matches recording-v2 formula',()=>{
+  const state={workouts:[{id:'w',sessionId:'s1',date:'2026-09-01'}],meals:[{id:'m',date:'2026-09-01'}],runs:[{id:'r',date:'2026-09-02'}],body:[{id:'b',date:'2026-09-01',weight:70}],planner:[{id:'p1',date:'2026-09-01',type:'recovery',done:true},{id:'p2',date:'2026-09-02',type:'recovery',done:false}]};
+  const score=calculatePerformance(state,'2026-09-02');
+  assert.deepEqual(score,{exercise:8,nutrition:3,recovery:50,activity:10,body:33,total:21,coverage:5,date:'2026-09-02',formulaVersion:'recording-v2'});
+ });
+
+ await test('memory excludes deleted, unconfirmed and expired entries',()=>{
+  const context=buildAgentContext({memory:{facts:[],preferences:[],goals:[],events:[],deletedIds:['deleted'],entries:[{id:'active',text:'keep',userConfirmed:true},{id:'deleted',text:'drop'},{id:'pending',text:'drop',userConfirmed:false},{id:'expired',text:'drop',expiresAt:'2026-09-01T00:00:00.000Z'}]}},{now:new Date('2026-09-02T00:00:00.000Z')});
+  assert.deepEqual(context.memory.entries.map(item=>item.id),['active']);
+  assert.equal(Object.hasOwn(context.memory,'deletedIds'),false);
+ });
+
+ await test('empty user document produces a valid empty context',async()=>{
+  const handler=createAgentContextHandler({verifyIdToken:async()=>({uid:'new-user'}),readUser:async()=>({}),clock:()=>new Date('2026-09-02T00:00:00.000Z')});
+  const res=await call(handler,{authorization:'Bearer valid'});
+  assert.equal(res.statusCode,200);
+  assert.deepEqual(res.body.data.context.workouts,[]);
+  assert.equal(res.body.data.context.performanceScore.total,null);
+ });
+
+ console.log(`${passed} agent context tests passed`);
+})().catch(error=>{console.error(error);process.exitCode=1;});
