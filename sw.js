@@ -1,34 +1,18 @@
-/* GARANG recovery service worker: root-safe for GitHub project Pages. */
-const CACHE='garang-today-coach-v01';
-const ASSETS=[
-  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./runtime-manifest.json','./garang-v10-core.js','./version.js','./today.js','./data-schema.js',
-  './ui-translations.js','./ui-final-translations.js','./storage.js','./performance.js',
-  './records.js','./adapters.js','./features.js','./firebase-config.js','./services-config.js','./commercial-core.js',
-  './styles.css','./garang-v10-release.css','./garang-planner-v10.css','./final.css','./commercial.css',
-  './garang-v10.9-mobile-max.css','./garang-mark.svg','./icon-192.png','./icon-512.png',
-  './exercise-db.json','./food-db.json','./exercise_knowledge.jsonl','./food_knowledge.jsonl',
-  './fitmind_rules.jsonl','./fitmind_sft.jsonl','./synthetic_korean_dialogue_v6.jsonl'
-];
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
-});
-self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && (/garang|fitmind/i.test(k))).map(k => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
-  if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
+const CACHE='garang-commercial-kore-2026-09-02-v1';
+const SHELL=['./','./index.html','./styles.css','./app.js','./firebase-config.js','./garang-services-config.js','./manifest.webmanifest','./garang-mark.svg','./icon-192.png','./icon-512.png'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  const url=new URL(e.request.url);
+  if(e.request.mode==='navigate'){
+    e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',copy));return r;}).catch(()=>caches.match('./index.html')));
     return;
   }
-  event.respondWith(fetch(event.request).then(response => {
-    if (response.ok) {
-      const copy=response.clone();
-      event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)));
-    }
-    return response;
-  }).catch(() => caches.match(event.request, {ignoreSearch:true})));
+  if(url.origin===self.location.origin){
+    e.respondWith(caches.match(e.request).then(cached=>{
+      const network=fetch(e.request).then(r=>{if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}return r;}).catch(()=>cached);
+      return cached||network;
+    }));
+  }
 });

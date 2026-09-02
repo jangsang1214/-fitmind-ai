@@ -1,0 +1,4 @@
+GARANG 0.11.0-beta.1
+Commercial Core UX / Reliability Sprint
+Build date: 2026-09-02
+Baseline archive commit marker: c1c3ece01c558db50712272172f35e037e0f6dcc

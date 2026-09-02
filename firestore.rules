@@ -1,14 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function owns(uid) { return signedIn() && request.auth.uid == uid; }
-    function admin() { return signedIn() && request.auth.token.admin == true; }
-    match /users/{uid} {
-      allow read, create, update, delete: if owns(uid);
-      match /{document=**} { allow read, write: if owns(uid); }
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
-    match /admin/{document=**} { allow read, write: if admin(); }
-    match /{document=**} { allow read, write: if false; }
+
+    match /globalLearningEvents/{eventId} {
+      allow create: if request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.consent.globalLearning == true
+        && request.resource.data.keys().hasOnly(['eventType','context','outcome','actionSummary','quality','createdAt'])
+        && request.resource.data.eventType is string
+        && request.resource.data.context is map
+        && request.resource.data.outcome is map
+        && request.resource.data.actionSummary is string;
+      allow read, update, delete: if false;
+    }
+
+    match /globalPatterns/{patternId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
   }
 }

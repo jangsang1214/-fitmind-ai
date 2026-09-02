@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d0f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="garang-mark.svg">
+<title>GARANG — Your Personal AI Coach</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+</head>
+<body>
+<div id="toast" class="toast" role="status"></div>
+<div id="authView" class="auth-view">
+  <div class="auth-shell">
+    <div class="brand"><img src="garang-mark.svg"><div><b>GARANG</b><span>YOUR PERSONAL AI COACH</span></div></div>
+    <div class="auth-copy"><span class="eyebrow">PERSONAL PERFORMANCE SYSTEM</span><h1>오늘의 나를<br><em>더 정확하게</em> 이해하다.</h1><p>운동·식단·러닝·신체 데이터를 한곳에 모으고, GARANG이 당신의 다음 행동까지 연결합니다.</p></div>
+    <div class="auth-card">
+      <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
+      <form id="loginForm"><label>이메일<input id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label><button class="primary wide" type="submit">로그인</button><button class="text-btn" id="resetPassword" type="button">비밀번호 재설정</button></form>
+      <form id="signupForm" hidden><label>이메일<input id="signupEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>비밀번호<input id="signupPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="6자 이상"></label><button class="primary wide" type="submit">계정 만들기</button></form>
+      <div class="divider"><span>또는</span></div>
+      <div class="social-grid"><button id="googleBtn" type="button" class="social">Google로 계속</button><button id="appleBtn" type="button" class="social">Apple로 계속</button></div>
+      <p class="auth-note">계정 없이도 로컬 데모로 앱 구조를 둘러볼 수 있습니다.</p><button id="demoBtn" class="ghost wide" type="button">데모로 시작하기</button>
+    </div>
+  </div>
+</div>
+<div id="appView" hidden>
+  <header class="topbar"><button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button><div class="brand mini"><img src="garang-mark.svg"><div><b>GARANG</b><span>PERSONAL AI COACH</span></div></div><div class="top-actions"><span id="planBadge" class="badge">FREE</span><button id="logoutBtn" class="ghost small">로그아웃</button></div></header>
+  <main id="main" class="main"></main>
+  <nav class="bottom-nav" id="bottomNav">
+    <button data-page="home" class="active"><span>⌂</span><b>홈</b></button><button data-page="workout"><span>◒</span><b>운동</b></button><button data-page="nutrition"><span>◌</span><b>식단</b></button><button data-page="running"><span>⌁</span><b>러닝</b></button><button data-page="ai"><span>✦</span><b>GARANG AI</b></button>
+  </nav>
+</div>
+<input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
+<script src="app.js"></script>
+</body></html>
