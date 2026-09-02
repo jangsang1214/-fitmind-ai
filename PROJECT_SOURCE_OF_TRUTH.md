@@ -1,7 +1,7 @@
 # GARANG Project Source of Truth
 
 기준일: 2026-09-03
-버전: 0.11.0-beta.3
+버전: 0.11.0-beta.4
 
 ## 기준
 
@@ -63,3 +63,12 @@
 앱은 로그인 사용자마다 별도 localStorage key를 사용한다.
 클라우드 실패 시 로컬 기록을 유지하고 `pending/failed` 상태로 표시하며 자동 재시도한다.
 구버전 root user document는 읽기 migration fallback으로만 지원한다.
+
+
+## 0.11.0-beta.4 Restoration Sprint
+- Estimated 1RM restored and persisted.
+- Coach UI rebuilt as persistent chat.
+- Body Intelligence derived calculations, trends, export and compact history restored.
+- Gender-specific muscle-map silhouettes added.
+- Certification image overlay is now actually composed into exported image files.
+- Existing beta.3 navigation/settings/cloud structures remain canonical.
