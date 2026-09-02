@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#0a0908">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="garang-mark.svg">
+<title>GARANG — Personal Performance OS</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="garang-services-config.js"></script>
+</head>
+<body>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="authView" class="auth-view">
+  <div class="auth-shell">
+    <section class="auth-copy">
+      <div class="brand brand-hero"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>PERSONAL PERFORMANCE OS</span></div></div>
+      <div class="auth-korean-line" aria-hidden="true"></div>
+      <span class="eyebrow">SEOUL / PERSONAL PERFORMANCE</span>
+      <h1>기록을 넘어,<br><em>오늘의 선택</em>까지.</h1>
+      <p>운동·식단·러닝·체성분을 한 흐름으로 읽고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
+    </section>
+
+    <section class="auth-card">
+      <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
+      <form id="loginForm">
+        <label>이메일<input id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <label>비밀번호<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
+        <button class="primary wide" type="submit">로그인</button>
+        <button class="text-btn" id="resetPassword" type="button">비밀번호 재설정</button>
+      </form>
+      <form id="signupForm" hidden>
+        <label>이메일<input id="signupEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+        <label>비밀번호<input id="signupPassword" type="password" minlength="6" autocomplete="new-password" required placeholder="6자 이상"></label>
+        <button class="primary wide" type="submit">계정 만들기</button>
+      </form>
+      <div class="divider"><span>또는</span></div>
+      <div class="social-grid"><button id="googleBtn" type="button" class="social">Google로 계속</button><button id="appleBtn" type="button" class="social">Apple로 계속</button></div>
+      <p class="auth-note">로그인 없이도 로컬 데모에서 전체 구조를 확인할 수 있습니다.</p>
+      <button id="demoBtn" class="ghost wide" type="button">데모로 시작하기</button>
+    </section>
+  </div>
+</div>
+
+<div id="appView" hidden>
+  <header class="topbar">
+    <button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button>
+    <div class="brand mini"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>PERSONAL PERFORMANCE OS</span></div></div>
+    <div class="top-actions">
+      <button id="syncBadge" class="sync-badge" type="button" aria-label="동기화 상태"><span class="sync-dot"></span><span id="syncLabel">로컬 저장</span></button>
+      <span id="planBadge" class="badge">FREE</span>
+      <button id="profileTopBtn" class="ghost small" type="button">프로필</button>
+      <button id="logoutBtn" class="ghost small" type="button">로그아웃</button>
+    </div>
+  </header>
+  <main id="main" class="main"></main>
+  <nav class="bottom-nav" id="bottomNav" aria-label="주요 메뉴">
+    <button data-page="today" class="active"><span>◐</span><b>TODAY</b></button>
+    <button data-page="coach"><span>✦</span><b>COACH</b></button>
+    <button data-page="log"><span>＋</span><b>LOG</b></button>
+    <button data-page="progress"><span>⌁</span><b>PROGRESS</b></button>
+  </nav>
+</div>
+
+<input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
+<input id="mealScanPicker" type="file" accept="image/*" capture="environment" hidden>
+<script src="app.js"></script>
+</body>
+</html>

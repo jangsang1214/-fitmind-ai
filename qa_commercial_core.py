@@ -39,7 +39,11 @@ chk('mobile 320 breakpoint', '@media(max-width:360px)' in css)
 chk('mobile 560 breakpoint', '@media(max-width:560px)' in css)
 chk('firestore user isolation', 'request.auth.uid == userId' in rules)
 chk('manifest scoped start', manifest.get('start_url')=='./' and manifest.get('scope')=='./')
-chk('service worker cache bumped','garang-commercial-kore-2026-09-02-v1' in (root/'sw.js').read_text())
+chk('service worker cache bumped','garang-commercial-kore-2026-09-02-v2' in (root/'sw.js').read_text())
+chk('settings restored','function settingsPage' in app and 'languageSetting' in app and 'plan-compare' in css)
+chk('workout muscle map','function muscleMapSvg' in app and 'muscle-zone' in css and 'TARGET BODY' in app)
+chk('visual nutrition','nutrition-visual-hero' in app and 'meal-camera-stage' in css and 'manual-entry' in css)
+chk('settings top entry','settingsTopBtn' in html and "$('settingsTopBtn').onclick" in app)
 
 failed=[x for x in checks if not x[1]]
 for name,ok,detail in checks:
