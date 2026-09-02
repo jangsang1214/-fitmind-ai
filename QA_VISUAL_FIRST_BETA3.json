@@ -1,0 +1,13 @@
+{
+  "build": "0.11.0-beta.3",
+  "static_pass": 26,
+  "static_fail": 0,
+  "blocked": [
+    "full_runtime_browser_e2e",
+    "iphone_safari",
+    "firebase_e2e",
+    "n8n_llm",
+    "vision_meal_scan",
+    "payment"
+  ]
+}

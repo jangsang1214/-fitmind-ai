@@ -1,7 +1,7 @@
 # GARANG Project Source of Truth
 
-기준일: 2026-09-02
-버전: 0.11.0-beta.1
+기준일: 2026-09-03
+버전: 0.11.0-beta.3
 
 ## 기준
 
@@ -35,6 +35,15 @@
 9. Meal Scan 개발용 UI 및 실제 Vision Adapter 경계 추가
 10. 계정별 로컬 저장 분리 및 Firebase 동기화 큐/재시도/상태 표시 추가
 11. Service Worker cache 정책 개선
+
+## 0.11.0-beta.3 Visual-First 원칙
+
+- Workout은 텍스트보다 전/후면 신체와 타깃 근육을 먼저 보여준다.
+- 운동 선택은 부위 → 시각 운동 카드 → 세트 기록 순서로 진행한다.
+- Nutrition은 검색 폼보다 Meal Scan/음식 사진을 먼저 보여준다.
+- TODAY는 체크인 원본값을 늘어놓지 않고 신체 상태, GARANG 결정, 핵심 수치만 우선 노출한다.
+- Settings의 언어, 단위, FREE/PRO, Cloud Sync, 데이터 관리 기능은 상용 제품의 기본 기능으로 유지한다.
+- Workout/Running 인증 투명 오버레이 리디자인은 이번 런타임 변경에서 제외한다.
 
 ## 외부 서비스 상태
 
