@@ -1,7 +1,7 @@
 /* GARANG recovery service worker: root-safe for GitHub project Pages. */
-const CACHE='garang-commercial-beta2-v8';
+const CACHE='garang-today-coach-v01';
 const ASSETS=[
-  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./runtime-manifest.json','./garang-v10-core.js','./version.js','./data-schema.js',
+  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./runtime-manifest.json','./garang-v10-core.js','./version.js','./today.js','./data-schema.js',
   './ui-translations.js','./ui-final-translations.js','./storage.js','./performance.js',
   './records.js','./adapters.js','./features.js','./firebase-config.js','./services-config.js','./commercial-core.js',
   './styles.css','./garang-v10-release.css','./garang-planner-v10.css','./final.css','./commercial.css',

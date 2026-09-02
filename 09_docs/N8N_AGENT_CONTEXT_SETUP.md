@@ -64,3 +64,10 @@ firebase deploy --only functions:api
 ```
 
 Cloud Functions 배포에는 Firebase 프로젝트의 Blaze 요금제가 필요하다. `fitfind-ai`는 2026-09-02 Blaze 전환 후 배포를 완료했다. 위 URL에 인증 없이 요청했을 때 `401 UNAUTHENTICATED`, 위조 토큰도 `401`, POST 요청은 `405`로 차단되는 것을 실제 확인했다. Artifact Registry에는 1일 자동 정리 정책을 적용했다.
+
+## 현재 n8n 진행 상태
+
+- GARANG Webhook과 HTTP Request Tool의 URL, GET 메서드 및 Authorization 헤더 구성을 완료했다.
+- n8n 자체 Health/Webhook 응답을 확인했다.
+- OpenAI API 크레딧이 필요한 최종 AI 응답 실행만 보류했다.
+- n8n 로컬 데이터베이스와 credential 값은 저장소나 배포 ZIP에 포함하지 않는다.

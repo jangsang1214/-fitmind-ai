@@ -1,5 +1,5 @@
 {
-  "version": "0.10.0-beta.2",
+  "version": "0.11.0-beta.1",
   "entry": "index.html",
   "branch": "main",
   "deployRoot": ".",
@@ -17,6 +17,7 @@
     "version.js",
     "ui-translations.js",
     "ui-final-translations.js",
+    "today.js",
     "data-schema.js",
     "storage.js",
     "performance.js",

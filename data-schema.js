@@ -1,7 +1,7 @@
 /* Canonical persisted schema. Legacy aliases are accepted only at this boundary. */
 (function(root){
  'use strict';
- const VERSION=6, SCORE_FORMULA_VERSION='recording-v2', BODY_ESTIMATE_VERSION='body-estimate-v1', isObject=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+ const VERSION=7, SCORE_FORMULA_VERSION='recording-v2', BODY_ESTIMATE_VERSION='body-estimate-v1', isObject=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
  const date=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
  const id=()=>root.crypto?.randomUUID?.()||`g_${Date.now()}_${Math.random().toString(36).slice(2)}`;
  const numeric=(x)=>x==null||(typeof x==='string'&&!x.trim())?null:Number.isFinite(Number(x))?Number(x):null;
@@ -15,8 +15,8 @@
  const rows=x=>Array.isArray(x)?x.filter(isObject):[];
  const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(new Date(x+'T12:00:00Z').getTime())&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const row=x=>({...x,id:String(x.id||id()),date:validDate(x.date)?x.date:date()});
- function empty(){return {schemaVersion:VERSION,profile:null,workouts:[],meals:[],runs:[],body:[],planner:[],memory:{facts:[],preferences:[],goals:[],events:[],entries:[],deletedIds:[]},aiChats:[],scoreHistory:[],plan:'FREE',language:'ko',settings:{notifications:true}};}
- function hasUserData(s){return !!s&&(!!s.profile||['workouts','meals','runs','body','planner','aiChats'].some(k=>Array.isArray(s[k])&&s[k].length>0)||['facts','preferences','goals','events','entries'].some(k=>Array.isArray(s.memory?.[k])&&s.memory[k].length>0));}
+ function empty(){return {schemaVersion:VERSION,profile:null,workouts:[],meals:[],runs:[],body:[],planner:[],dailyCheckins:[],memory:{facts:[],preferences:[],goals:[],events:[],entries:[],deletedIds:[]},aiChats:[],scoreHistory:[],plan:'FREE',language:'ko',settings:{notifications:true}};}
+ function hasUserData(s){return !!s&&(!!s.profile||['workouts','meals','runs','body','planner','dailyCheckins','aiChats'].some(k=>Array.isArray(s[k])&&s[k].length>0)||['facts','preferences','goals','events','entries'].some(k=>Array.isArray(s.memory?.[k])&&s.memory[k].length>0));}
  function accountBootstrap(hasAccountCache,guestState,demoEnabled){if(hasAccountCache)return null;return demoEnabled&&hasUserData(guestState)?migrate(guestState):empty();}
  function mergeRows(localRows,remoteRows,preferRemote,key='id'){
   const result=[],positions=new Map();
@@ -31,7 +31,7 @@
  }
  function mergeStates(localInput,remoteInput){
   const local=migrate(localInput),remote=migrate(remoteInput),preferRemote=(numeric(remote.updatedAtMs)||0)>(numeric(local.updatedAtMs)||0),merged={...(preferRemote?local:remote),...(preferRemote?remote:local)};
-  for(const k of ['workouts','meals','runs','body','planner','aiChats'])merged[k]=mergeRows(local[k],remote[k],preferRemote);
+  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','aiChats'])merged[k]=mergeRows(local[k],remote[k],preferRemote);
   merged.scoreHistory=mergeRows(local.scoreHistory,remote.scoreHistory,preferRemote,'date').sort((a,b)=>a.date.localeCompare(b.date));
   merged.memory={...(preferRemote?local.memory:remote.memory),...(preferRemote?remote.memory:local.memory)};
   for(const k of ['facts','preferences','goals','events'])merged.memory[k]=[...new Map([...(local.memory[k]||[]),...(remote.memory[k]||[])].map(x=>[typeof x==='string'?x:JSON.stringify(x),x])).values()];
@@ -49,6 +49,7 @@
   if(s.profile)for(const k of ['bodyWeight','body_weight','체중'])delete s.profile[k];
   if(s.profile)for(const k of ['age','height','targetWeight','runningGoalKm'])s.profile[k]=numeric(s.profile[k]);
   for(const k of ['workouts','meals','runs','body','planner'])s[k]=rows(s[k]).map(row);
+  s.dailyCheckins=rows(s.dailyCheckins).map(x=>{const normalized=root.GarangToday?.normalizeCheckin?root.GarangToday.normalizeCheckin(x,{...x,revision:Math.max(0,(numeric(x.revision)||1)-1),createdAt:x.createdAt},new Date(x.updatedAt||x.createdAt||Date.now())):{...row(x),timezone:String(x.timezone||'UTC'),sleepHours:numeric(x.sleepHours),energy:numeric(x.energy),stress:numeric(x.stress),availableMinutes:numeric(x.availableMinutes),soreness:isObject(x.soreness)?x.soreness:{},notes:String(x.notes||''),painCaution:x.painCaution===true,schemaVersion:1,revision:Math.max(1,numeric(x.revision)||1)};return normalized;});
   const numbers=(x,keys)=>{const y={...x};for(const k of keys)y[k]=Math.max(0,numeric(x[k])||0);return y;};
   s.workouts=s.workouts.map(x=>({...numbers(x,['sets','reps','weight','rpe','duration','body','met','kcal','volume']),name:String(x.name||''),sessionId:String(x.sessionId||x.id)}));
   s.meals=s.meals.map(x=>({...numbers(x,['grams','kcal','protein','carbs','fat']),name:String(x.name||''),items:rows(x.items).map(i=>({...numbers(i,['grams','kcal','protein','carbs','fat']),name:String(i.name||'')}))}));
@@ -69,8 +70,8 @@
   return s;
  }
  function validateImport(x){
-  if(!isObject(x)||!['workouts','meals','runs','body','planner','profile','memory'].some(k=>k in x))throw new Error('INVALID_DATA');
-  for(const k of ['workouts','meals','runs','body','planner','aiChats'])if(k in x&&(!Array.isArray(x[k])||x[k].some(y=>!isObject(y))))throw new Error('INVALID_DATA');
+  if(!isObject(x)||!['workouts','meals','runs','body','planner','dailyCheckins','profile','memory'].some(k=>k in x))throw new Error('INVALID_DATA');
+  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','aiChats'])if(k in x&&(!Array.isArray(x[k])||x[k].some(y=>!isObject(y))))throw new Error('INVALID_DATA');
   return migrate(x);
  }
  root.GarangSchema={VERSION,SCORE_FORMULA_VERSION,BODY_ESTIMATE_VERSION,empty,migrate,validateImport,validDate,numeric,deriveBodyMetrics,id,date,hasUserData,accountBootstrap,mergeStates};

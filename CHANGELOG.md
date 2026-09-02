@@ -1,5 +1,17 @@
 # First major update on V10.9.1 DEV BASE
 
+## 0.11.0 Beta 1 — TODAY and Coach Engine V0 (2026-09-02)
+
+- Replaced the Home view with a responsive TODAY dashboard for the current local date.
+- Added a per-user Daily Check-in for sleep, energy, stress, available time, soreness, notes and pain caution.
+- Added deterministic Coach Engine V0 recommendations with visible reason codes and Korean explanations.
+- Preserved unknown numeric values as `null`, while keeping a deliberately entered zero distinct from missing data.
+- Added today's actual nutrition totals, Planner items and a clear goal-not-configured state without fabricating targets.
+- Connected the workout recommendation action to the existing workout recording screen without mutating Planner data.
+- Upgraded the persisted schema to version 7 and added Daily Check-in merge, import and account-isolation support.
+- Added the TODAY runtime asset to the service worker and runtime manifest and bumped the app to `0.11.0-beta.1`.
+- Added seven Coach Engine regression scenarios and completed mobile browser checks for persistence, navigation and horizontal overflow.
+
 ## Completion recovery (2026-09-01)
 
 - Constrained every text, number, date, time, select and textarea control to its parent card width, including intrinsic-width mobile Safari date/time fields. Narrow screens now use one-column forms and a stacked Planner date filter.

@@ -1,1 +1,34 @@
-const CACHE='garang-v10.9.1-dev-base';const ASSETS=["../","../index.html","../03_styles/core/styles.css","../03_styles/core/garang-v10-release.css","../03_styles/features/garang-planner-v10.css","../01_app/app.js","./garang-v10-core.js","../07_config/firebase-config.js","../07_config/manifest.webmanifest","../05_assets/garang-mark.svg","../05_assets/icon-192.png","../05_assets/icon-512.png","../04_data/knowledge/exercise-db.json","../04_data/knowledge/food-db.json","../04_data/knowledge/exercise_knowledge.jsonl","../04_data/knowledge/food_knowledge.jsonl","../04_data/knowledge/fitmind_rules.jsonl","../04_data/knowledge/fitmind_sft.jsonl","../04_data/knowledge/synthetic_korean_dialogue_v6.jsonl"];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))).then(()=>self.clients.claim()))));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(x=>x.put(e.request,copy));return r}).catch(()=>c)))});
+/* GARANG recovery service worker: root-safe for GitHub project Pages. */
+const CACHE='garang-today-coach-v01';
+const ASSETS=[
+  './','./index.html','./app.js','./pwa.js','./manifest.webmanifest','./runtime-manifest.json','./garang-v10-core.js','./version.js','./today.js','./data-schema.js',
+  './ui-translations.js','./ui-final-translations.js','./storage.js','./performance.js',
+  './records.js','./adapters.js','./features.js','./firebase-config.js','./services-config.js','./commercial-core.js',
+  './styles.css','./garang-v10-release.css','./garang-planner-v10.css','./final.css','./commercial.css',
+  './garang-v10.9-mobile-max.css','./garang-mark.svg','./icon-192.png','./icon-512.png',
+  './exercise-db.json','./food-db.json','./exercise_knowledge.jsonl','./food_knowledge.jsonl',
+  './fitmind_rules.jsonl','./fitmind_sft.jsonl','./synthetic_korean_dialogue_v6.jsonl'
+];
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && (/garang|fitmind/i.test(k))).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
+    return;
+  }
+  event.respondWith(fetch(event.request).then(response => {
+    if (response.ok) {
+      const copy=response.clone();
+      event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)));
+    }
+    return response;
+  }).catch(() => caches.match(event.request, {ignoreSearch:true})));
+});
