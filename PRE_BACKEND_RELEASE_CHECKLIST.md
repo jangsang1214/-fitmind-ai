@@ -3,7 +3,7 @@
 ## P0 — backend 전에 반드시 닫기
 1. Canonical runtime 고정: index/app/styles/service worker/source-of-truth 일치
 2. 320/375/390/430px 전 페이지 visual regression 및 iPhone Safari 실기기 QA
-3. Workout/Nutrition/Running/Body/Planner/Coach/Memory/Settings 데이터 schema v4 확정 및 migration fixture 테스트
+3. Workout/Nutrition/Running/Body/Planner/Coach/Memory/Settings 데이터 schema v5 확정 및 migration fixture 테스트
 4. 로컬 저장 → refresh → logout/login → user A/B 격리 테스트
 5. Estimated 1RM, Body 자동계산, Progress 산식에 unit tests 추가
 6. 이미지 인증 합성: 세로/가로/고해상도 사진 export 테스트; EXIF orientation 케이스 확인

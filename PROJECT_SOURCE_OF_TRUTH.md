@@ -1,7 +1,7 @@
 # GARANG Project Source of Truth
 
 기준일: 2026-09-03
-버전: 0.11.0-beta.4
+버전: 0.11.0-beta.5
 
 ## 기준
 
@@ -72,3 +72,15 @@
 - Gender-specific muscle-map silhouettes added.
 - Certification image overlay is now actually composed into exported image files.
 - Existing beta.3 navigation/settings/cloud structures remain canonical.
+
+
+## 0.11.0-beta.5 Visual Integration Repair
+
+- Flat body silhouettes replaced with separate male/female anatomical vector models.
+- Coach surface rebuilt as ChatGPT-style conversation UI.
+- Body trend chart rewritten to prevent mobile collapse and label overlap.
+- Body input/history moved behind disclosure controls to reduce clutter.
+- Estimated 1RM hierarchy and spacing repaired.
+- Workout/Running certification overlay updated to approved premium transparent direction and actual JPEG Canvas composition.
+- 320/375/390/430px Chromium in-memory runtime harness: no horizontal overflow on TODAY/COACH/LOG/WORKOUT/BODY.
+- Real iPhone Safari/Firebase/n8n/Vision/payment remain environment-dependent release gates.
