@@ -1,0 +1,38 @@
+{
+  "base": "GARANG_BASE_2793e9d3.zip",
+  "strategy": "Base UI/functionality unchanged; merge approved GARANG logo and typography only.",
+  "changed_existing_files": [
+    "index.html",
+    "sw.js",
+    "garang-mark.svg"
+  ],
+  "added_files": [
+    "garang-font-logo-v1.css",
+    "garang-mark-exact.png"
+  ],
+  "functional_js_all_unchanged": true,
+  "functional_js_integrity": {
+    "app.js": {"unchanged": true,"sha256": "c433d51c0d598d4f1e3f4a8818b33d2f5c00ca8728af8b5fecb47bbd206a58f2"},
+    "features.js": {"unchanged": true,"sha256": "59badb986806b90920b6216565383606a9f692873bfaccffbd429f60f619761c"},
+    "garang-auth-bootstrap.js": {"unchanged": true,"sha256": "70d4fc51a888bd62f8d90d7056923de45041a0c361c004508e31cdbd766824bd"},
+    "garang-functional-recovery.js": {"unchanged": true,"sha256": "212df5065cdb379d25d4e38aef887ac502ce1e331b01ca637d39e0fb6f86822e"},
+    "garang-brand-runtime-v2.js": {"unchanged": true,"sha256": "50400d2437f6d6ce7e822ca1198937a8d6c58e515cf818640caee73340b6ea04"},
+    "garang-polish-v3.js": {"unchanged": true,"sha256": "4ca89b60d758280eb3a12ff249fca6d270dc4d003922623f34a3cadb7d7351a1"},
+    "garang-polish-v3-fix.js": {"unchanged": true,"sha256": "2ff8bf2a22ebb482b2a58b6231e90bd008fbab2c6d7ed5b0dd185588bff3594d"},
+    "firebase-config.js": {"unchanged": true,"sha256": "2a53f958d62ea709e4658aadae616f0fda1597f86e2830fb7a4814a3323be6d7"},
+    "garang-services-config.js": {"unchanged": true,"sha256": "b96d4fbbe38860bb266f315bfefe0ba9d282a13d3d891e48ad6ca283838842c3"},
+    "services-config.js": {"unchanged": true,"sha256": "9acb48366a9cd482676a2aaba48e13682a703b877a867b646b4f18e6ca291fe2"},
+    "data-schema.js": {"unchanged": true,"sha256": "a2a3638f2df2b5096a741a0e97562e8469cc780c168cc7a6583b0b328ea110df"},
+    "storage.js": {"unchanged": true,"sha256": "af15150749438534bd2b56cb737af0ccc9061a28e498714cbbac5b1236e993c7"},
+    "performance.js": {"unchanged": true,"sha256": "6ecb372bba0e298a118b89981a955b0bbb499034f6d013d03fb1014e1daa5acc"},
+    "records.js": {"unchanged": true,"sha256": "4642f418a5a203ebfe88d2e6e54e047deaded88293d262d4fb70b23401179f6a"},
+    "adapters.js": {"unchanged": true,"sha256": "dfa1c967e685bca5eebcbfdd0fe71923adf61c8377cb9431e71de560d4099a8b"},
+    "pwa.js": {"unchanged": true,"sha256": "89314ebcd1c22c0c0401286478424c5c1f9683d79e3af58ec4961436da1d3a75"}
+  },
+  "notes": [
+    "No app.js/features.js/Auth/Firebase/storage/service/route/handler logic modified.",
+    "index.html receives one CSS link and logo cache-version update only.",
+    "sw.js receives a cache-version bump plus the new CSS asset so PWA does not serve stale styling.",
+    "garang-mark.svg is replaced with the confirmed droplet+ripple visual extracted from GARANG.PNG."
+  ]
+}
