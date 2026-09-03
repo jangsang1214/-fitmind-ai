@@ -1,4 +1,4 @@
-const CACHE='garang-commercial-v11-exact-reference';
+const CACHE='garang-commercial-v12-exact-reference';
 const SHELL=['./','./index.html','./styles.css','./garang-target-ui.css','./garang-exact-reference.css','./garang-exact-functional.css','./garang-nutrition-reference.css','./garang-reference-data.css','./garang-final-reference-overrides.css','./garang-screen-nav.css','./garang-workout-reference.css','./garang-body-reference.css','./garang-progress-reference.css','./garang-icon-reference.css','./app.js','./garang-reference-interactions.js','./garang-route-bridge.js','./garang-screen-nav.js','./garang-nutrition-reference.js','./garang-reference-data.js','./garang-body-reference.js','./garang-progress-reference.js','./garang-reference-access.js','./firebase-config.js','./garang-services-config.js','./manifest.webmanifest','./garang-mark.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
