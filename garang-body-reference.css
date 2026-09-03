@@ -1,0 +1,7 @@
+/* Body screen final reference alignment. */
+.gx-body-export{width:100%!important;height:40px!important;min-height:40px!important;margin-top:18px!important;font-size:9px!important}
+#main[data-gx-body-tab="inbody"] .body-trend-primary{margin-top:10px!important}
+#main[data-gx-body-tab="inbody"] .body-trend-svg{height:205px!important}
+#main[data-gx-body-tab="inbody"] .gx-body-result{margin-bottom:10px!important}
+#main[data-gx-body-tab="trends"] .gx-body-export{display:block!important}
+#main[data-gx-body-tab="input"] .gx-body-export{display:none!important}
