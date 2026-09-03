@@ -1,0 +1,8 @@
+/* Detail screens in the approved board use back navigation instead of the persistent bottom bar. */
+body:not(:has(.visual-today-hero)) #appView:not([hidden]) .bottom-nav{display:none!important}
+body:not(:has(.visual-today-hero)) .main{padding-bottom:18px!important}
+.gx-back-button{position:relative;z-index:4;flex:0 0 28px;width:28px;height:32px;background:transparent;border:0;padding:0;margin:0;color:#aeb0ab}
+.gx-back-button:before,.gx-back-button:after{content:"";position:absolute;left:7px;top:50%;width:10px;height:1px;background:currentColor;transform-origin:left center}
+.gx-back-button:before{transform:translateY(-.5px) rotate(-45deg)}.gx-back-button:after{transform:translateY(-.5px) rotate(45deg)}
+.page-head:has(.gx-back-button){position:relative!important;justify-content:flex-start!important}.page-head:has(.gx-back-button)>div{position:absolute!important;left:50%!important;transform:translateX(-50%)!important;text-align:center!important;white-space:nowrap!important}.page-head:has(.gx-back-button)>.ghost.small{margin-left:auto!important}
+.coach-app-head:has(.gx-back-button):before{display:none!important}.coach-app-head:has(.gx-back-button){position:relative!important}.coach-app-head:has(.gx-back-button)>.gx-back-button{position:absolute!important;left:0!important;top:4px!important}.coach-app-head:has(.gx-back-button)>div{position:absolute!important;left:50%!important;transform:translateX(-50%)!important}.coach-app-head:has(.gx-back-button)>.ghost{margin-left:auto!important}
