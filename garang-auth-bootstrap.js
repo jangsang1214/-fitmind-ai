@@ -1,4 +1,4 @@
-/* GARANG AUTH BOOTSTRAP v1
+/* GARANG AUTH BOOTSTRAP v1.1
    Keeps the first screen responsive even while app data is loading.
    app.js can safely overwrite these handlers once its normal boot finishes.
 */
@@ -6,19 +6,6 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const nativeFetch = window.fetch.bind(window);
-  const guardedAsset = /(?:exercise-db\.json|food-db\.json|exercise_knowledge\.jsonl|food_knowledge\.jsonl|fitmind_rules\.jsonl)(?:\?|$)/i;
-
-  // app.js currently waits for DB loading before bindAuth(). A stalled asset request
-  // must never leave the login screen completely inert.
-  window.fetch = (input, init = {}) => {
-    const url = typeof input === 'string' ? input : (input && input.url) || '';
-    if (!guardedAsset.test(url) || init.signal) return nativeFetch(input, init);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2600);
-    return nativeFetch(input, {...init, signal: controller.signal}).finally(() => clearTimeout(timer));
-  };
-
   function toast(message) {
     const t = $('toast');
     if (!t) return;

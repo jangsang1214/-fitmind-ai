@@ -121,7 +121,7 @@ function render(){
   const nt=db.nutrition.filter(x=>x.date===today());
   set("sumKcal",nt.reduce((a,x)=>a+x.calories,0));set("sumProtein",nt.reduce((a,x)=>a+x.protein,0)+"g");set("sumCarb",nt.reduce((a,x)=>a+x.carbs,0)+"g");set("sumFat",nt.reduce((a,x)=>a+x.fat,0)+"g");
   set("rSets",db.workouts.reduce((a,x)=>a+x.sets.length,0));set("rVolume",Math.round(db.workouts.reduce((a,x)=>a+x.volume,0))+"kg");set("rKcal",nt.reduce((a,x)=>a+x.calories,0));set("rDistance",db.running.reduce((a,x)=>a+x.distanceKm,0).toFixed(2)+"km");
-  set("reportAI",`현재 준비도: ${s.readiness.label}${s.readiness.score!=null?` (${s.readiness.score}/100)`:``)}\n최근 14일 운동: ${s.training.sessions14d}\n최근 14일 볼륨: ${Math.round(s.training.volume14d)}kg\n최근 7일 평균 단백질: ${s.nutrition.avgProtein?Math.round(s.nutrition.avgProtein)+"g/day":"데이터 부족"}`);
+  set("reportAI",`현재 준비도: ${s.readiness.label}${s.readiness.score!=null?` (${s.readiness.score}/100)`:``}\n최근 14일 운동: ${s.training.sessions14d}\n최근 14일 볼륨: ${Math.round(s.training.volume14d)}kg\n최근 7일 평균 단백질: ${s.nutrition.avgProtein?Math.round(s.nutrition.avgProtein)+"g/day":"데이터 부족"}`);
   html("longMemory",(db.memory.longTerm.length?db.memory.longTerm:[{text:"현재 저장된 장기 기억 없음"}]).map(x=>`<div class=item>${x.text||JSON.stringify(x)}</div>`).join(""));
   html("shortMemory",db.memory.shortTerm.slice().reverse().slice(0,20).map(x=>`<div class=item>${x.text}</div>`).join("")||"<div class=muted>없음</div>");
   html("eventMemory",db.memory.events.slice().reverse().slice(0,20).map(x=>`<div class=item><b>${x.type}</b> · ${JSON.stringify(x.data)}<div class=muted>${x.createdAt}</div></div>`).join("")||"<div class=muted>없음</div>");

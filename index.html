@@ -6,15 +6,19 @@
 <meta name="theme-color" content="#050605">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./garang-mark.svg?v=font-logo-v1-20260904" type="image/svg+xml">
+<link rel="icon" href="./garang-app-icon.svg?v=stability-v1-20260904" type="image/svg+xml">
 <title>GARANG — Quietly Becoming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./styles.css?v=0.11.0-beta.5">
 <link rel="stylesheet" href="./garang-target-ui.css?v=2.1.0">
 <link rel="stylesheet" href="./garang-functional-recovery.css?v=1.0.0">
 <link rel="stylesheet" href="./garang-runtime-final.css?v=1.0.0">
 <link rel="stylesheet" href="./garang-brand-runtime-v2.css?v=2.0.0">
 <link rel="stylesheet" href="./garang-polish-v3.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-font-logo-v1.css?v=1.0.0">
+<link rel="stylesheet" href="./garang-font-logo-v1.css?v=2.0.0">
+<link rel="stylesheet" href="./garang-stability-v1.css?v=1.0.0">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -73,11 +77,13 @@
     <button data-page="progress"><span></span><b>Progress</b></button>
   </nav>
 </div>
-<input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
+<input id="mediaPicker" type="file" accept="image/*,video/*" hidden>
 <input id="mealScanPicker" type="file" accept="image/*" capture="environment" hidden>
 <input id="bodyScanPicker" type="file" accept="image/*,.pdf" capture="environment" hidden>
-<script src="./garang-auth-bootstrap.js?v=1.0.0"></script>
-<script src="./app.js?v=0.11.0-beta.5"></script>
+<script src="./data-schema.js?v=7"></script>
+<script src="./performance.js?v=recording-v2"></script>
+<script src="./garang-auth-bootstrap.js?v=1.1.0"></script>
+<script src="./app.js?v=0.11.0-beta.5-stability1"></script>
 <script src="./garang-functional-recovery.js?v=1.1.0"></script>
 <script src="./garang-brand-runtime-v2.js?v=2.0.0"></script>
 <script src="./garang-polish-v3.js?v=3.0.0"></script>

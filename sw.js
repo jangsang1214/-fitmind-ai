@@ -1,7 +1,7 @@
-const CACHE='garang-font-logo-v1-20260904';
+const CACHE='garang-stability-v1-20260904';
 const SHELL=[
-  './','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css','./garang-runtime-final.css','./garang-brand-runtime-v2.css','./garang-polish-v3.css','./garang-font-logo-v1.css',
-  './garang-auth-bootstrap.js','./app.js','./garang-functional-recovery.js','./garang-brand-runtime-v2.js','./garang-polish-v3.js','./garang-polish-v3-fix.js','./firebase-config.js','./garang-services-config.js',
+  './','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css','./garang-runtime-final.css','./garang-brand-runtime-v2.css','./garang-polish-v3.css','./garang-font-logo-v1.css','./garang-stability-v1.css',
+  './data-schema.js','./performance.js','./garang-auth-bootstrap.js','./app.js','./garang-functional-recovery.js','./garang-brand-runtime-v2.js','./garang-polish-v3.js','./garang-polish-v3-fix.js','./firebase-config.js','./garang-services-config.js',
   './manifest.webmanifest','./garang-mark.svg','./garang-app-icon.svg','./exercise-db.json','./food-db.json'
 ];
 self.addEventListener('install',event=>{
