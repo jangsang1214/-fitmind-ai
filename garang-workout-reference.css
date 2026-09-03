@@ -1,0 +1,19 @@
+/* Workout screen aligned to approved 03 WORKOUT reference. */
+#main[data-gx-workout-tab="overview"] .workout-hero-v2{position:relative!important;display:block!important;height:305px!important;overflow:hidden!important;background:#050605!important;border:0!important;padding:0!important;margin:0!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .muscle-map-wrap{height:305px!important;display:block!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .muscle-map{display:block!important;height:305px!important;max-height:305px!important;background:#050605!important;border:0!important;padding:0!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view:first-child{display:grid!important;place-items:center!important;width:100%!important;height:305px!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view:last-child{display:none!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view span{display:none!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view svg{width:175px!important;height:315px!important;overflow:visible!important;filter:contrast(1.12) saturate(.72)!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-silhouette{fill:#4d4944!important;stroke:#7e7770!important;stroke-width:.6!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .muscle-zone{fill:#9a5c43!important;stroke:#b5795e!important;stroke-width:.35!important;opacity:.94!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2 .anatomy-line{stroke:#26221f!important;opacity:.85!important}
+#main[data-gx-workout-tab="overview"] .workout-hero-v2:after{content:"●  Primary\A ●  Secondary\A ●  Tertiary";white-space:pre;position:absolute;right:7px;top:8px;font-size:7px;line-height:1.75;color:#8b8c87;letter-spacing:.02em}
+#main[data-gx-workout-tab="overview"] .gx-workout-summary{margin-top:0!important}
+#main[data-gx-workout-tab="overview"] .compact-history .workout-history-row:nth-child(n+4){display:none!important}
+#main[data-gx-workout-tab="overview"] .workout-history-row{position:relative!important;padding-right:28px!important}
+#main[data-gx-workout-tab="overview"] .workout-history-row:after{content:"✓";position:absolute;right:5px;top:50%;transform:translateY(-50%);width:15px;height:15px;border-radius:50%;border:1px solid #2c7764;color:#5ab499;display:grid;place-items:center;font-size:8px}
+#main[data-gx-workout-tab="overview"] .compact-history:before{margin-top:11px!important}
+#main[data-gx-workout-tab="overview"] .gx-workout-start{margin-top:17px!important}
+@media(max-width:380px){#main[data-gx-workout-tab="overview"] .workout-hero-v2,#main[data-gx-workout-tab="overview"] .workout-hero-v2 .muscle-map,#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view:first-child{height:282px!important}#main[data-gx-workout-tab="overview"] .workout-hero-v2 .body-view svg{height:292px!important;width:164px!important}}
