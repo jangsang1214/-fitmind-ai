@@ -18,6 +18,11 @@
     } catch { return 'GARANG User'; }
   }
 
+  function greetingWord() {
+    const h=new Date().getHours();
+    return h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,';
+  }
+
   function decorateToday() {
     const panel = main.querySelector('.today-decision-panel');
     if (!panel || panel.querySelector('.gx-today-greeting')) return;
@@ -27,14 +32,28 @@
 
     const greeting = document.createElement('div');
     greeting.className='gx-today-greeting';
-    greeting.innerHTML=`<span>Good morning,</span><strong>${name}.</strong>`;
+    greeting.innerHTML=`<span>${greetingWord()}</span><strong>${name}.</strong>`;
     panel.insertBefore(greeting,panel.firstChild);
+
+    const snapshot=main.querySelector('.today-snapshot');
+    const focus=main.querySelector('.today-body-panel');
+    if (snapshot && focus) {
+      snapshot.insertAdjacentElement('afterend',focus);
+      const existingTitle=focus.querySelector('.today-body-label strong')?.textContent?.trim() || 'Today’s Focus';
+      const label=focus.querySelector('.today-body-label');
+      if (label && !label.querySelector('.gx-focus-copy')) {
+        const copy=document.createElement('div');
+        copy.className='gx-focus-copy';
+        copy.innerHTML=`<small>TODAY'S FOCUS</small><strong>${decisionTitle}</strong><p>${decisionSummary || existingTitle}</p>`;
+        label.appendChild(copy);
+      }
+    }
 
     const decision = document.createElement('section');
     decision.className='gx-today-decision-card';
     decision.innerHTML=`<span>DECISION</span><strong>${decisionTitle}</strong><p>${decisionSummary}</p>`;
-    const quick=main.querySelector('.quick-visual-grid');
-    quick?.insertAdjacentElement('afterend',decision);
+    if (focus) focus.insertAdjacentElement('afterend',decision);
+    else snapshot?.insertAdjacentElement('afterend',decision);
   }
 
   function text(el, fallback='—') { const t=el?.textContent?.trim(); return t || fallback; }
@@ -46,6 +65,9 @@
     const draftCount=text(main.querySelector('.workout-builder-v2 .pill'),'0 exercises').match(/\d+/)?.[0] || '0';
     const volume=mini[0]?text(mini[0].querySelector('strong')):'—';
     const duration=mini[2]?text(mini[2].querySelector('strong')):'—';
+    const selected=text(main.querySelector('.workout-selected-name'),'Workout');
+    const pageTitle=main.querySelector('.page-head h1');
+    if (pageTitle) pageTitle.textContent=selected;
     const summary=document.createElement('section');
     summary.className='gx-workout-summary';
     summary.innerHTML=`<span class="gx-label">SESSION SUMMARY</span><div><article><small>VOLUME</small><strong>${volume}</strong><em>kg</em></article><article><small>EST. 1RM</small><strong>${oneRm}</strong></article><article><small>EXERCISES</small><strong>${draftCount}</strong></article><article><small>DURATION</small><strong>${duration}</strong><em>min</em></article></div>`;
@@ -55,6 +77,8 @@
 
   function decorateBody() {
     if (!main.querySelector('.body-trend-primary') || main.querySelector('.gx-body-result')) return;
+    const pageTitle=main.querySelector('.page-head h1');
+    if (pageTitle) pageTitle.textContent='Body';
     const heroMetrics=[...main.querySelectorAll('.body-hero-metrics>div')];
     const result=document.createElement('section');
     result.className='gx-body-result';
