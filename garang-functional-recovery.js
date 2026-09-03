@@ -1,54 +1,68 @@
-/* GARANG FUNCTIONAL RECOVERY v1.0
-   Repairs the current reference-layer regressions without replacing canonical app.js logic. */
+/* GARANG FUNCTIONAL RECOVERY v1.1
+   Keep canonical app.js in control; repair only UI regressions introduced by reference facades. */
 (() => {
   'use strict';
   const main = document.getElementById('main');
   if (!main) return;
-
-  const inlineMark = () => `
-    <svg class="garang-inline-mark" viewBox="0 0 120 140" aria-hidden="true" focusable="false">
-      <g fill="#F0EDE7" fill-rule="evenodd"><path d="M60 4C60 28 59 43 55 54C51 65 44 72 36 83C32 89 34 94 40 98C45 102 52 104 60 104C68 104 75 102 80 98C86 94 88 89 84 83C76 72 69 65 65 54C61 43 60 28 60 4ZM60 56C57 64 51 71 44 80C39 86 38 89 41 92C45 96 52 98 60 98C68 98 75 96 79 92C82 89 81 86 76 80C69 71 63 64 60 56Z"/></g>
-      <g fill="none" stroke="#F0EDE7" stroke-linecap="round"><ellipse cx="60" cy="119" rx="12" ry="3.2" stroke-width="1.8"/><ellipse cx="60" cy="122" rx="27" ry="6.3" stroke-width="1.65" opacity=".94"/></g>
-    </svg>`;
+  const EXACT_MARK = './garang-mark.svg?v=approved-exact-20260903';
+  const SESSION_KEY = 'garang_live_workout_session_v1';
+  let sessionTimer = null;
 
   function killCachedFacades() {
-    document.querySelectorAll('.grx-facade,.grx-anatomy,.grx-reference-anatomy,[data-reference-bitmap="anatomy"]').forEach(el => el.remove());
-    document.querySelectorAll('.grx-reference-original').forEach(el => { el.classList.remove('grx-reference-original'); });
+    document.querySelectorAll('.grx-facade,.grx-anatomy,.grx-reference-anatomy,.workout-reference-image,[data-reference-bitmap="anatomy"]').forEach(el => el.remove());
+    document.querySelectorAll('.grx-reference-original').forEach(el => el.classList.remove('grx-reference-original'));
+  }
+
+  function repairBrandImages() {
+    document.querySelectorAll('img[src*="garang-mark.svg"]').forEach(img => {
+      if (img.dataset.garangExact === '1') return;
+      img.dataset.garangExact = '1';
+      img.src = EXACT_MARK;
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        img.parentElement?.classList.add('garang-mark-load-fallback');
+      }, {once:true});
+    });
   }
 
   function repairCoach() {
     document.querySelectorAll('.gpt-avatar').forEach(avatar => {
-      if (avatar.querySelector('.garang-inline-mark')) return;
-      avatar.innerHTML = inlineMark();
+      if (avatar.querySelector('img[data-garang-exact="1"]')) return;
+      avatar.innerHTML = `<img data-garang-exact="1" src="${EXACT_MARK}" alt="GARANG">`;
+      const img = avatar.querySelector('img');
+      img?.addEventListener('error', () => {
+        avatar.innerHTML = '<span class="garang-avatar-word">GARANG</span>';
+      }, {once:true});
     });
-    // If any old broken reference image survived in Coach chrome, remove the image instead of showing a blue ? box.
     document.querySelectorAll('.coach-app-shell img').forEach(img => {
-      if (/garang-mark|brand|logo/i.test(img.getAttribute('src') || '') && !img.complete) img.remove();
+      if (/garang-mark|brand|logo/i.test(img.getAttribute('src') || '')) img.src = EXACT_MARK;
     });
   }
 
   function muscleKeyFromZone(zone) {
-    const names = ['chest','back','shoulders','biceps','triceps','core','legs'];
-    return names.find(k => zone.classList.contains(`muscle-${k}`)) || null;
+    return ['chest','back','shoulders','biceps','triceps','core','legs'].find(k => zone.classList.contains(`muscle-${k}`)) || null;
   }
 
   function makeModelInteractive() {
-    const map = main.querySelector('.workout-hero-v2 .muscle-map.anatomical-pro');
-    if (!map) return;
-    map.querySelectorAll('.muscle-zone').forEach(zone => {
-      const key = muscleKeyFromZone(zone);
-      if (!key) return;
-      zone.setAttribute('role','button');
-      zone.setAttribute('tabindex','0');
-      zone.setAttribute('aria-label',`${key} 운동 보기`);
-      if (zone.dataset.garangModelBound === '1') return;
-      zone.dataset.garangModelBound = '1';
-      const activate = () => {
-        const pick = main.querySelector(`[data-muscle-pick="${key}"]`);
-        if (pick) pick.click();
-      };
-      zone.addEventListener('click', activate);
-      zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+    const maps = main.querySelectorAll('.muscle-map.anatomical-pro');
+    maps.forEach(map => {
+      map.querySelectorAll('.muscle-zone').forEach(zone => {
+        const key = muscleKeyFromZone(zone);
+        if (!key) return;
+        zone.setAttribute('role','button');
+        zone.setAttribute('tabindex','0');
+        zone.setAttribute('aria-label',`${key} 운동 필터`);
+        if (zone.dataset.garangModelBound === '1') return;
+        zone.dataset.garangModelBound = '1';
+        const activate = () => {
+          const pick = main.querySelector(`[data-muscle-pick="${key}"]`);
+          if (pick) pick.click();
+        };
+        zone.addEventListener('click', activate);
+        zone.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+        });
+      });
     });
   }
 
@@ -59,16 +73,59 @@
     target.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
+  function readLiveSession() {
+    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
+  }
+  function writeLiveSession(value) {
+    if (value) sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(SESSION_KEY);
+  }
+  function formatElapsed(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+    return h ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function updateLiveSessionBar() {
+    const bar = main.querySelector('.garang-live-session');
+    if (!bar) return;
+    const live = readLiveSession();
+    if (!live) { bar.remove(); clearInterval(sessionTimer); sessionTimer=null; return; }
+    const time = bar.querySelector('[data-live-elapsed]');
+    if (time) time.textContent = formatElapsed(Date.now() - live.startedAt);
+  }
+  function startLiveSession(builder) {
+    let live = readLiveSession();
+    if (!live) {
+      live = {startedAt:Date.now()};
+      writeLiveSession(live);
+    }
+    ensureLiveSessionBar(builder);
+    builder.scrollIntoView({behavior:'smooth',block:'start'});
+    requestAnimationFrame(() => main.querySelector('#wName')?.focus());
+  }
+  function ensureLiveSessionBar(builder) {
+    if (!readLiveSession() || main.querySelector('.garang-live-session')) return;
+    const bar = document.createElement('section');
+    bar.className = 'garang-live-session';
+    bar.innerHTML = `<div><small>ACTIVE SESSION</small><strong data-live-elapsed>00:00</strong><span>종목을 추가하고 세션 저장을 누르면 실제 기록에 저장됩니다.</span></div><button type="button" data-live-cancel>종료</button>`;
+    builder.parentNode.insertBefore(bar,builder);
+    bar.querySelector('[data-live-cancel]').onclick = () => {
+      if (window.confirm('현재 진행 표시를 종료할까요? 추가한 운동 초안은 유지됩니다.')) {
+        writeLiveSession(null); updateLiveSessionBar();
+      }
+    };
+    updateLiveSessionBar();
+    if (!sessionTimer) sessionTimer=setInterval(updateLiveSessionBar,1000);
+  }
+
   function repairWorkout() {
     const hero = main.querySelector('.workout-hero-v2');
     const builder = main.querySelector('.workout-builder-v2');
     if (!hero || !builder) return;
 
-    // Never allow a static reference photograph to replace the real inline SVG body model.
+    // The model must be the real DOM/SVG model generated by canonical app.js, never a screenshot/photo.
     hero.querySelectorAll('img,picture,canvas').forEach(el => el.remove());
     document.querySelectorAll('.grx-anatomy,.workout-reference-image').forEach(el => el.remove());
-
-    // Remove the old fake Start Session/tab layer if an old cached script injected it.
     main.querySelectorAll('.gx-screen-tabs,.gx-workout-start,.gx-workout-summary').forEach(el => el.remove());
     delete main.dataset.gxWorkoutTab;
 
@@ -88,26 +145,31 @@
       const start = document.createElement('button');
       start.type = 'button';
       start.className = 'garang-session-start';
-      start.textContent = '세션 기록 시작';
-      start.onclick = () => {
-        builder.scrollIntoView({behavior:'smooth',block:'start'});
-        requestAnimationFrame(() => main.querySelector('#wName')?.focus());
-      };
+      start.textContent = readLiveSession() ? '진행 중인 세션 계속' : '세션 기록 시작';
+      start.onclick = () => startLiveSession(builder);
       hero.insertAdjacentElement('afterend', start);
     }
 
-    // Explicitly restore the real logger controls even if stale CSS tried to hide them.
     [builder, main.querySelector('#addWorkout'), main.querySelector('#clearWorkoutDraft'), main.querySelector('#saveWorkoutSession')].filter(Boolean).forEach(el => {
-      el.style.removeProperty('display');
-      el.style.removeProperty('visibility');
-      el.style.removeProperty('opacity');
+      el.style.setProperty('display', el.tagName === 'BUTTON' ? 'flex' : 'block', 'important');
+      el.style.setProperty('visibility','visible','important');
+      el.style.setProperty('opacity','1','important');
     });
 
+    const save = main.querySelector('#saveWorkoutSession');
+    if (save && save.dataset.garangRecoveryBound !== '1') {
+      save.dataset.garangRecoveryBound='1';
+      save.addEventListener('click', () => {
+        // Canonical app.js performs validation + persistence. We only clear the live timer when a real draft existed.
+        if (main.querySelectorAll('[data-remove-workout]').length > 0) setTimeout(() => { writeLiveSession(null); clearInterval(sessionTimer); sessionTimer=null; }, 100);
+      }, true);
+    }
+
+    ensureLiveSessionBar(builder);
     makeModelInteractive();
   }
 
   function navigateAny(page) {
-    // Canonical `go()` is private inside app.js. Reuse an already-bound primary nav button as a safe proxy.
     const proxy = document.querySelector('#bottomNav button');
     if (!proxy) return;
     const old = proxy.dataset.page;
@@ -124,6 +186,7 @@
       <div class="garang-more-head"><strong>GARANG</strong><button type="button" aria-label="닫기">×</button></div>
       <div class="garang-more-grid">
         <button data-route="running">Running<small>GPS · pace · records</small></button>
+        <button data-route="nutrition">Nutrition<small>Meal Scan · macros · meals</small></button>
         <button data-route="planner">Planner<small>plans · AI suggestions</small></button>
         <button data-route="memory">Memory<small>long-term context</small></button>
         <button data-route="progress">Progress<small>analytics · weekly review</small></button>
@@ -149,16 +212,16 @@
 
   function repair() {
     killCachedFacades();
+    repairBrandImages();
     repairCoach();
     repairWorkout();
     bindGlobalRecovery();
   }
 
-  let queued = false;
-  const observer = new MutationObserver(() => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => { queued = false; repair(); });
+  let queued=false;
+  const observer=new MutationObserver(()=>{
+    if(queued)return;queued=true;
+    requestAnimationFrame(()=>{queued=false;repair();});
   });
   observer.observe(main,{childList:true,subtree:true});
   repair();
