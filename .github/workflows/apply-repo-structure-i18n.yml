@@ -1,0 +1,60 @@
+name: Apply GARANG repository structure and i18n
+
+on:
+  push:
+    branches:
+      - fix/repo-structure-full-i18n
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/repo-structure-full-i18n
+          path: patch
+
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: target
+          fetch-depth: 0
+
+      - name: Verify main baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target rev-parse HEAD)" = "7c442d18ba0580cb453fce2f038343ca0414f9cc"
+
+      - name: Apply categorized repository and full English UI migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp patch/scripts/apply_repo_structure_i18n.py target/scripts/apply_repo_structure_i18n.py
+          cd target
+          python scripts/apply_repo_structure_i18n.py
+
+      - name: Run regression tests
+        working-directory: target
+        run: npm test
+
+      - name: Validate runtime and build
+        working-directory: target
+        run: npm run build
+
+      - name: Commit migration to main
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Organize GARANG repository and complete English UI runtime"
+          git push origin HEAD:main
