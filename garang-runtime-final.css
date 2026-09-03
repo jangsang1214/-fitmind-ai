@@ -1,0 +1,11 @@
+/* GARANG runtime final fixes — loaded last */
+.gpt-avatar img[data-garang-exact="1"]{display:block!important;width:22px!important;height:30px!important;object-fit:contain!important;border:0!important;background:transparent!important}
+.garang-avatar-word{font-family:Georgia,serif;font-size:7px;letter-spacing:.12em;color:#d8d4ce;white-space:nowrap}
+.garang-mark-load-fallback:after{content:"GARANG";font-family:Georgia,serif;font-size:8px;letter-spacing:.16em;color:#ddd}
+.garang-live-session{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0;padding:13px 14px;border:1px solid rgba(79,174,146,.23);border-radius:10px;background:linear-gradient(90deg,rgba(15,42,35,.48),rgba(11,12,11,.96));position:sticky;top:68px;z-index:18;backdrop-filter:blur(18px)}
+.garang-live-session>div{min-width:0}.garang-live-session small{display:block;font-size:7px;letter-spacing:.15em;color:#7db5a5}.garang-live-session strong{display:block;font-family:Georgia,serif;font-size:24px;font-weight:400;margin-top:3px;font-variant-numeric:tabular-nums}.garang-live-session span{display:block;font-size:9px;color:#777a75;margin-top:3px;white-space:normal;word-break:keep-all}.garang-live-session button{flex:0 0 auto;border:1px solid rgba(255,255,255,.1);background:#111;color:#999;border-radius:8px;padding:8px 10px;font-size:9px}
+/* Model state: selected body region is visually clear while all zones remain actual SVG elements. */
+.muscle-map[data-muscle="chest"] .muscle-chest,.muscle-map[data-muscle="back"] .muscle-back,.muscle-map[data-muscle="shoulders"] .muscle-shoulders,.muscle-map[data-muscle="biceps"] .muscle-biceps,.muscle-map[data-muscle="triceps"] .muscle-triceps,.muscle-map[data-muscle="core"] .muscle-core,.muscle-map[data-muscle="legs"] .muscle-legs{fill:#a96f57!important;stroke:#c4937c!important;opacity:1!important;filter:drop-shadow(0 0 5px rgba(169,111,87,.22))!important}
+.muscle-map:not([data-muscle="full"]) .muscle-zone{transition:fill .16s ease,opacity .16s ease,filter .16s ease}
+/* Mobile menu is the gateway to features not present in the five-screen reference. */
+@media(max-width:799px){.icon-btn#menuBtn{display:block!important;flex:0 0 34px!important;width:34px!important;height:34px!important;padding:0!important}.garang-live-session{top:58px}.brand.mini{min-width:0}.brand.mini b{white-space:nowrap}}
