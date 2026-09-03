@@ -1,0 +1,68 @@
+name: Apply GARANG font logo ZIP
+
+on:
+  push:
+    branches: [apply/font-logo-zip]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: apply/font-logo-zip
+          path: src
+
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          path: target
+
+      - name: Verify baseline and reconstruct exact logo asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='2793e9d3fb7a7f7bf7a14f455b2757388ff0f04b'
+          test "$(git -C target rev-parse HEAD)" = "$BASE"
+
+          cat src/.tmp_garang_apply/png.*.b64 | tr -d '\r\n' > /tmp/garang-logo.b64
+          base64 --decode /tmp/garang-logo.b64 > target/garang-mark-exact.png
+          echo 'e3fafb18e2c759908e63816fae65c80c1be1f5b3b6a4d853d31dc97c8c0ba348  target/garang-mark-exact.png' | sha256sum -c -
+
+          LOGO_B64="$(cat /tmp/garang-logo.b64)"
+          printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 207" role="img" aria-label="GARANG droplet and ripple mark">\n  <image width="92" height="207" href="data:image/png;base64,%s"/>\n</svg>' "$LOGO_B64" > target/garang-mark.svg
+          echo 'f36635c75800585ec8f75577023035987691bd3297865e31bd670ac252c6240f  target/garang-mark.svg' | sha256sum -c -
+
+          cp src/.tmp_garang_apply/index.html target/index.html
+          cp src/.tmp_garang_apply/sw.js target/sw.js
+          cp src/.tmp_garang_apply/garang-font-logo-v1.css target/garang-font-logo-v1.css
+          cp src/.tmp_garang_apply/FONT_LOGO_MERGE_REPORT.json target/FONT_LOGO_MERGE_REPORT.json
+
+          echo '9dbcf4e846f0198a114a03370d64df87153be6e26011537ab5983f8e5b9b122f  target/index.html' | sha256sum -c -
+          echo '6249153125670ad539cc8a39c06ef3d78ac3481213856bff1beb2bdd51a80752  target/sw.js' | sha256sum -c -
+          echo 'fd9102fd7d05be5cca25b093f86e841849bc885d72446d42e863ca168de963e0  target/garang-font-logo-v1.css' | sha256sum -c -
+
+          echo 'c433d51c0d598d4f1e3f4a8818b33d2f5c00ca8728af8b5fecb47bbd206a58f2  target/app.js' | sha256sum -c -
+          echo '70d4fc51a888bd62f8d90d7056923de45041a0c361c004508e31cdbd766824bd  target/garang-auth-bootstrap.js' | sha256sum -c -
+          echo '212df5065cdb379d25d4e38aef887ac502ce1e331b01ca637d39e0fb6f86822e  target/garang-functional-recovery.js' | sha256sum -c -
+          echo '50400d2437f6d6ce7e822ca1198937a8d6c58e515cf818640caee73340b6ea04  target/garang-brand-runtime-v2.js' | sha256sum -c -
+          echo '4ca89b60d758280eb3a12ff249fca6d270dc4d003922623f34a3cadb7d7351a1  target/garang-polish-v3.js' | sha256sum -c -
+          echo '2ff8bf2a22ebb482b2a58b6231e90bd008fbab2c6d7ed5b0dd185588bff3594d  target/garang-polish-v3-fix.js' | sha256sum -c -
+
+      - name: Commit to main
+        shell: bash
+        working-directory: target
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html sw.js garang-mark.svg garang-font-logo-v1.css garang-mark-exact.png FONT_LOGO_MERGE_REPORT.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply GARANG brand logo and typography'
+          git push origin HEAD:main
