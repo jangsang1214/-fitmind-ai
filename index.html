@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<meta name="theme-color" content="#0a0908">
+<meta name="theme-color" content="#070807">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="garang-mark.svg">
-<title>GARANG — Personal Performance OS</title>
+<title>GARANG — Quietly Becoming</title>
 <link rel="stylesheet" href="styles.css?v=0.11.0-beta.5">
+<link rel="stylesheet" href="garang-target-ui.css?v=2.0.0">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -21,9 +22,9 @@
 <div id="authView" class="auth-view">
   <div class="auth-shell">
     <section class="auth-copy">
-      <div class="brand brand-hero"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>PERSONAL PERFORMANCE OS</span></div></div>
+      <div class="brand brand-hero"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>QUIETLY BECOMING.</span></div></div>
       <div class="auth-korean-line" aria-hidden="true"></div>
-      <span class="eyebrow">SEOUL / PERSONAL PERFORMANCE</span>
+      <span class="eyebrow">PERSONAL PERFORMANCE / ACCUMULATION</span>
       <h1>기록을 넘어,<br><em>오늘의 선택</em>까지.</h1>
       <p>운동·식단·러닝·체성분을 한 흐름으로 읽고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
     </section>
@@ -52,7 +53,7 @@
 <div id="appView" hidden>
   <header class="topbar">
     <button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button>
-    <div class="brand mini"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>PERSONAL PERFORMANCE OS</span></div></div>
+    <div class="brand mini"><img src="garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>QUIETLY BECOMING.</span></div></div>
     <div class="top-actions">
       <button id="syncBadge" class="sync-badge" type="button" aria-label="동기화 상태"><span class="sync-dot"></span><span id="syncLabel">로컬 저장</span></button>
       <span id="planBadge" class="badge">FREE</span>
@@ -65,7 +66,8 @@
   <nav class="bottom-nav" id="bottomNav" aria-label="주요 메뉴">
     <button data-page="today" class="active"><span>◐</span><b>TODAY</b></button>
     <button data-page="coach"><span>✦</span><b>COACH</b></button>
-    <button data-page="log"><span>＋</span><b>LOG</b></button>
+    <button data-page="workout"><span>◇</span><b>WORKOUT</b></button>
+    <button data-page="body"><span>◎</span><b>BODY</b></button>
     <button data-page="progress"><span>⌁</span><b>PROGRESS</b></button>
   </nav>
 </div>
