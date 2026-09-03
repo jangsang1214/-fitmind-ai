@@ -32,6 +32,13 @@ jobs:
           set -euo pipefail
           test "$(git -C target rev-parse HEAD)" = "55966ddf91e7b0916f3d8e2809396f15bf3a7f79"
 
+      - name: Rebuild exact uploaded PNG from verified chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat patch/05_assets/logo_chunks/*.txt | tr -d '\n\r' | base64 --decode > /tmp/GARANG_logo_exact.png
+          echo "e3fafb18e2c759908e63816fae65c80c1be1f5b3b6a4d853d31dc97c8c0ba348  /tmp/GARANG_logo_exact.png" | sha256sum -c -
+
       - name: Prepare image tooling
         run: python -m pip install --disable-pip-version-check pillow
 
@@ -40,7 +47,7 @@ jobs:
         run: |
           set -euo pipefail
           python patch/scripts/apply_exact_garang_png_logo.py \
-            patch/05_assets/garang-logo-exact.png \
+            /tmp/GARANG_logo_exact.png \
             target
 
       - name: Run regression tests
