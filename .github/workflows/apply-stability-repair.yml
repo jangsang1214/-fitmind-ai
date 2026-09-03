@@ -31,8 +31,10 @@ jobs:
           set -euo pipefail
           test "$(git -C target rev-parse HEAD)" = "af755dfba13bb8d98ed0392a4010879f97db1f98"
           cp patch/scripts/apply_stability_repair.py target/scripts/apply_stability_repair.py
+          cp patch/scripts/fix_build_integrity.py target/scripts/fix_build_integrity.py
           cd target
           python scripts/apply_stability_repair.py
+          python scripts/fix_build_integrity.py
 
       - name: Run tests
         working-directory: target
@@ -49,6 +51,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js 01_app/app.js index.html garang-auth-bootstrap.js garang-font-logo-v1.css garang-stability-v1.css garang-app-icon.svg manifest.webmanifest sw.js
+          git add app.js 01_app/app.js index.html garang-auth-bootstrap.js garang-font-logo-v1.css garang-stability-v1.css garang-app-icon.svg manifest.webmanifest sw.js runtime-manifest.json script_3.js
           git commit -m "Fix GARANG login, regressions, typography and app icon"
           git push origin HEAD:main
