@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#050605",
   "theme_color": "#050605",
-  "description": "운동·식단·러닝·체성분을 연결해 오늘의 다음 행동을 제안하는 GARANG Personal Performance OS",
+  "description": "GARANG Intelligence — 당신의 기록과 반복된 선택을 기억하고 다음 행동을 판단하는 AI.",
   "icons": [
     {
       "src": "../05_assets/garang-app-icon.svg",
