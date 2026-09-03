@@ -4,8 +4,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#070807",
-  "theme_color": "#070807",
+  "background_color": "#050605",
+  "theme_color": "#050605",
   "description": "운동·식단·러닝·체성분을 연결해 오늘의 다음 행동을 제안하는 GARANG Personal Performance OS",
   "icons": [
     {"src":"garang-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
