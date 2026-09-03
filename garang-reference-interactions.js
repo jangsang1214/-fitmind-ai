@@ -1,6 +1,6 @@
-/* GARANG approved-reference interaction bridge v3.0
-   Keeps the visual board exact on the primary surface while exposing every existing function through real tabs/actions.
-   No state, persistence, calculation or adapter logic is replaced here.
+/* GARANG approved-reference interaction bridge v3.1
+   Keeps the approved board as the visible language while exposing all canonical features.
+   No state, persistence, calculation or service-adapter logic is replaced here.
 */
 (() => {
   'use strict';
@@ -19,6 +19,25 @@
     if (active) b.classList.add('active');
     b.addEventListener('click', onClick);
     return b;
+  }
+
+  function normalizeBottomNav() {
+    const spec = [
+      ['today','⌂','Today'],
+      ['workout','♧','Train'],
+      ['body','♧','Body'],
+      ['nutrition','♢','Nutrition'],
+      ['coach','♙','Coach']
+    ];
+    document.querySelectorAll('#bottomNav button').forEach((b, i) => {
+      const row = spec[i];
+      if (!row) return;
+      b.dataset.page = row[0];
+      const icon = b.querySelector('span');
+      const label = b.querySelector('b');
+      if (icon) icon.textContent = row[1];
+      if (label) label.textContent = row[2];
+    });
   }
 
   function injectTodayActions() {
@@ -95,8 +114,6 @@
     ['Nutrition','Performance','Insights'].forEach((label, i) => {
       const b = button(label, i === 0, () => {
         tabs.querySelectorAll('button').forEach((x, j) => x.classList.toggle('active', j === i));
-        // Preserve the canonical page. These tabs are a visual top-level selector;
-        // existing range/data controls remain available below and are never deleted.
         main.dataset.gxProgressTab = ['nutrition','performance','insights'][i];
       });
       tabs.appendChild(b);
@@ -105,11 +122,58 @@
     main.querySelector('.page-head')?.insertAdjacentElement('afterend', tabs);
   }
 
+  function repairCoachGear() {
+    const head = main.querySelector('.coach-app-head');
+    const gear = head?.querySelector('.ghost');
+    if (!gear || gear.dataset.gxSettingsBound === '1') return;
+    gear.dataset.gxSettingsBound = '1';
+    gear.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      clickExisting('#settingsTopBtn');
+    }, true);
+  }
+
+  function injectSecondaryAccess() {
+    if (!main.querySelector('.settings-stack') || main.querySelector('.gx-secondary-access')) return;
+    const panel = document.createElement('section');
+    panel.className = 'card gx-secondary-access';
+    panel.innerHTML = '<span class="eyebrow">GARANG EXPERIENCE</span><div class="gx-secondary-grid"></div>';
+    const grid = panel.querySelector('.gx-secondary-grid');
+    [
+      ['Progress','progress'],
+      ['Running','running'],
+      ['Planner','planner'],
+      ['Memory','memory'],
+      ['Profile','profile']
+    ].forEach(([label, route]) => {
+      const b = button(label, false, () => clickExisting(`[data-pagego="${route}"]`));
+      b.className = 'ghost';
+      // If the canonical screen currently has no route button rendered, create a temporary proxy via bottom app navigation API.
+      b.addEventListener('click', () => {
+        const candidate = main.querySelector(`[data-pagego="${route}"]`);
+        if (!candidate) {
+          const navProxy = document.createElement('button');
+          navProxy.dataset.page = route;
+          navProxy.style.display = 'none';
+          document.getElementById('bottomNav')?.appendChild(navProxy);
+          navProxy.click();
+          navProxy.remove();
+        }
+      });
+      grid.appendChild(b);
+    });
+    main.appendChild(panel);
+  }
+
   function repair() {
+    normalizeBottomNav();
     injectTodayActions();
     injectWorkoutTabs();
     injectBodyTabs();
     injectProgressTabs();
+    repairCoachGear();
+    injectSecondaryAccess();
   }
 
   let queued = false;
@@ -119,5 +183,6 @@
     requestAnimationFrame(() => { queued = false; repair(); });
   });
   observer.observe(main, { childList:true, subtree:true });
+  observer.observe(document.getElementById('bottomNav'), { childList:true, subtree:true, characterData:true });
   repair();
 })();
