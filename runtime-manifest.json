@@ -5,43 +5,41 @@
   "deployRoot": ".",
   "styles": [
     "styles.css",
-    "garang-v10-release.css",
-    "garang-planner-v10.css",
-    "garang-v10.9-mobile-max.css",
-    "final.css",
-    "commercial.css"
+    "garang-target-ui.css",
+    "garang-exact-reference.css",
+    "garang-exact-functional.css",
+    "garang-nutrition-reference.css",
+    "garang-reference-data.css",
+    "garang-final-reference-overrides.css",
+    "garang-screen-nav.css",
+    "garang-workout-reference.css",
+    "garang-body-reference.css",
+    "garang-progress-reference.css",
+    "garang-icon-reference.css"
   ],
   "scripts": [
     "firebase-config.js",
-    "garang-v10-core.js",
-    "version.js",
-    "ui-translations.js",
-    "ui-final-translations.js",
-    "today.js",
-    "data-schema.js",
-    "storage.js",
-    "performance.js",
-    "services-config.js",
-    "commercial-core.js",
-    "adapters.js",
-    "records.js",
-    "features.js",
+    "garang-services-config.js",
     "app.js",
-    "pwa.js"
+    "garang-reference-interactions.js",
+    "garang-route-bridge.js",
+    "garang-screen-nav.js",
+    "garang-nutrition-reference.js",
+    "garang-reference-data.js",
+    "garang-body-reference.js",
+    "garang-progress-reference.js",
+    "garang-reference-access.js"
   ],
   "data": [
     "exercise-db.json",
     "food-db.json",
     "exercise_knowledge.jsonl",
     "food_knowledge.jsonl",
-    "fitmind_rules.jsonl",
-    "fitmind_sft.jsonl",
-    "synthetic_korean_dialogue_v6.jsonl"
+    "fitmind_rules.jsonl"
   ],
   "assets": [
     "manifest.webmanifest",
-    "garang-mark.svg",
-    "icon-192.png",
-    "icon-512.png"
+    "sw.js",
+    "garang-mark.svg"
   ]
 }
