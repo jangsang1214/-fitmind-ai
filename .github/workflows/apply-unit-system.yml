@@ -1,0 +1,60 @@
+name: Apply GARANG metric imperial unit system
+
+on:
+  push:
+    branches:
+      - fix/unit-system-runtime
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout patch branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/unit-system-runtime
+          path: patch
+
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: target
+          fetch-depth: 0
+
+      - name: Verify baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target rev-parse HEAD)" = "fe37a4e4f6a238b67b7d941e2fa975ec99707ce2"
+
+      - name: Apply unit system
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp patch/scripts/apply_unit_system.py target/scripts/apply_unit_system.py
+          cd target
+          python scripts/apply_unit_system.py
+
+      - name: Run regression tests
+        working-directory: target
+        run: npm test
+
+      - name: Validate build
+        working-directory: target
+        run: npm run build
+
+      - name: Commit to main
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add GARANG metric and imperial unit conversion"
+          git push origin HEAD:main
