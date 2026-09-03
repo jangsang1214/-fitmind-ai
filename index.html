@@ -9,17 +9,8 @@
 <link rel="icon" href="./garang-mark.svg" type="image/svg+xml">
 <title>GARANG — Quietly Becoming</title>
 <link rel="stylesheet" href="./styles.css?v=0.11.0-beta.5">
-<link rel="stylesheet" href="./garang-target-ui.css?v=2.0.0">
-<link rel="stylesheet" href="./garang-exact-reference.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-exact-functional.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-nutrition-reference.css?v=3.2.0">
-<link rel="stylesheet" href="./garang-reference-data.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-final-reference-overrides.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-screen-nav.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-workout-reference.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-body-reference.css?v=3.1.0">
-<link rel="stylesheet" href="./garang-progress-reference.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-icon-reference.css?v=3.0.0">
+<link rel="stylesheet" href="./garang-target-ui.css?v=2.1.0">
+<link rel="stylesheet" href="./garang-functional-recovery.css?v=1.0.0">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -33,9 +24,9 @@
     <section class="auth-copy">
       <div class="brand brand-hero"><img src="./garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>QUIETLY BECOMING.</span></div></div>
       <div class="auth-korean-line" aria-hidden="true"></div>
-      <span class="eyebrow">PERSONAL PERFORMANCE / ACCUMULATION</span>
-      <h1>기록을 넘어,<br><em>오늘의 선택</em>까지.</h1>
-      <p>운동·식단·러닝·체성분을 한 흐름으로 읽고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
+      <span class="eyebrow">GARANG INTELLIGENCE / ACCUMULATION</span>
+      <h1>기록을 넘어,<br><em>당신의 시간을 이해하는 AI.</em></h1>
+      <p>운동·식단·러닝·체성분과 반복되는 선택을 기억하고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
     </section>
     <section class="auth-card">
       <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
@@ -52,14 +43,14 @@
       </form>
       <div class="divider"><span>또는</span></div>
       <div class="social-grid"><button id="googleBtn" type="button" class="social">Google로 계속</button><button id="appleBtn" type="button" class="social">Apple로 계속</button></div>
-      <p class="auth-note">로그인 없이도 로컬 데모에서 전체 구조를 확인할 수 있습니다.</p>
+      <p class="auth-note">로그인 없이도 로컬 데모에서 전체 기능을 확인할 수 있습니다.</p>
       <button id="demoBtn" class="ghost wide" type="button">데모로 시작하기</button>
     </section>
   </div>
 </div>
 <div id="appView" hidden>
   <header class="topbar">
-    <button id="menuBtn" class="icon-btn" aria-label="메뉴">☰</button>
+    <button id="menuBtn" class="icon-btn" aria-label="전체 기능">☰</button>
     <div class="brand mini"><img src="./garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>QUIETLY BECOMING.</span></div></div>
     <div class="top-actions">
       <button id="syncBadge" class="sync-badge" type="button" aria-label="동기화 상태"><span class="sync-dot"></span><span id="syncLabel">로컬 저장</span></button>
@@ -72,23 +63,16 @@
   <main id="main" class="main"></main>
   <nav class="bottom-nav" id="bottomNav" aria-label="주요 메뉴">
     <button data-page="today" class="active"><span></span><b>Today</b></button>
-    <button data-page="workout"><span></span><b>Train</b></button>
-    <button data-page="body"><span></span><b>Body</b></button>
-    <button data-page="nutrition"><span></span><b>Nutrition</b></button>
     <button data-page="coach"><span></span><b>Coach</b></button>
+    <button data-page="workout"><span></span><b>Workout</b></button>
+    <button data-page="body"><span></span><b>Body</b></button>
+    <button data-page="progress"><span></span><b>Progress</b></button>
   </nav>
 </div>
 <input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
 <input id="mealScanPicker" type="file" accept="image/*" capture="environment" hidden>
 <input id="bodyScanPicker" type="file" accept="image/*,.pdf" capture="environment" hidden>
 <script src="./app.js?v=0.11.0-beta.5"></script>
-<script src="./garang-reference-interactions.js?v=3.1.0"></script>
-<script src="./garang-route-bridge.js?v=3.0.0"></script>
-<script src="./garang-screen-nav.js?v=3.0.0"></script>
-<script src="./garang-nutrition-reference.js?v=3.2.0"></script>
-<script src="./garang-reference-data.js?v=3.3.0"></script>
-<script src="./garang-body-reference.js?v=3.0.0"></script>
-<script src="./garang-progress-reference.js?v=3.0.0"></script>
-<script src="./garang-reference-access.js?v=3.0.0"></script>
+<script src="./garang-functional-recovery.js?v=1.0.0"></script>
 </body>
 </html>
