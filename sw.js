@@ -1,6 +1,6 @@
-const CACHE='garang-functional-recovery-v2';
+const CACHE='garang-functional-recovery-v3';
 const SHELL=[
-  './','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css',
+  './','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css','./garang-runtime-final.css',
   './app.js','./garang-functional-recovery.js','./firebase-config.js','./garang-services-config.js',
   './manifest.webmanifest','./garang-mark.svg','./garang-app-icon.svg','./exercise-db.json','./food-db.json'
 ];
