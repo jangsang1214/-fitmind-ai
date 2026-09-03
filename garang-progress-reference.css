@@ -1,0 +1,15 @@
+/* GARANG Progress reference styles */
+body:has(.gx-range-tabs) .page-head h1{font-size:12px!important}
+.gx-progress-title-tabs{margin-top:-6px!important;margin-bottom:10px!important}
+.gx-range-tabs{display:flex!important;gap:6px!important;border:0!important;margin:0 0 10px!important;height:auto!important}
+.gx-range-tabs button{border:1px solid rgba(255,255,255,.07)!important;border-radius:999px!important;padding:6px 9px!important;font-size:7px!important;color:#747772!important}
+.gx-range-tabs button.active{background:#101511!important;border-color:#2b4f44!important;color:#abc8be!important}
+.gx-performance-metrics{grid-template-columns:repeat(2,1fr)!important;gap:7px!important}
+.gx-performance-metrics .card{min-height:92px!important;padding:12px!important}
+.gx-performance-metrics .stat.big,.gx-performance-metrics .stat{font-family:var(--gx-display)!important;font-size:28px!important;font-weight:400!important}
+.gx-performance-metrics .stat-label{font-size:7px!important;color:#747772!important}
+.gx-score-grid{grid-template-columns:1fr!important}
+#main[data-gx-progress-tab="performance"] .gx-score-title,#main[data-gx-progress-tab="performance"] .gx-score-grid{display:none!important}
+#main[data-gx-progress-tab="insights"] .gx-performance-metrics,#main[data-gx-progress-tab="insights"] .gx-weekly-title,#main[data-gx-progress-tab="insights"] .gx-weekly-card{display:none!important}
+#main[data-gx-progress-tab="insights"] .gx-score-title{display:flex!important}
+#main[data-gx-progress-tab="insights"] .gx-score-grid{display:grid!important}
