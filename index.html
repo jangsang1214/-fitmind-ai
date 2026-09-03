@@ -14,12 +14,13 @@
 <link rel="stylesheet" href="./garang-exact-functional.css?v=3.0.0">
 <link rel="stylesheet" href="./garang-nutrition-reference.css?v=3.2.0">
 <link rel="stylesheet" href="./garang-reference-data.css?v=3.0.0">
-<link rel="stylesheet" href="./garang-final-reference-overrides.css?v=3.0.0">
 <link rel="stylesheet" href="./garang-screen-nav.css?v=3.0.0">
 <link rel="stylesheet" href="./garang-workout-reference.css?v=3.0.0">
 <link rel="stylesheet" href="./garang-body-reference.css?v=3.1.0">
 <link rel="stylesheet" href="./garang-progress-reference.css?v=3.0.0">
 <link rel="stylesheet" href="./garang-icon-reference.css?v=3.0.0">
+<link rel="stylesheet" href="./garang-final-reference-overrides.css?v=3.0.0">
+<link rel="stylesheet" href="./garang-reference-lock.css?v=4.0.0">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -33,9 +34,9 @@
     <section class="auth-copy">
       <div class="brand brand-hero"><img src="./garang-mark.svg" alt="GARANG"><div><b>GARANG</b><span>QUIETLY BECOMING.</span></div></div>
       <div class="auth-korean-line" aria-hidden="true"></div>
-      <span class="eyebrow">PERSONAL PERFORMANCE / ACCUMULATION</span>
-      <h1>기록을 넘어,<br><em>오늘의 선택</em>까지.</h1>
-      <p>운동·식단·러닝·체성분을 한 흐름으로 읽고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
+      <span class="eyebrow">GARANG INTELLIGENCE / ACCUMULATION</span>
+      <h1>기록을 넘어,<br><em>당신의 시간을 이해하는 AI.</em></h1>
+      <p>운동·식단·러닝·체성분과 반복되는 선택을 기억하고, GARANG이 지금 필요한 다음 행동을 제안합니다.</p>
     </section>
     <section class="auth-card">
       <div class="auth-tabs"><button data-auth-tab="login" class="active">로그인</button><button data-auth-tab="signup">회원가입</button></div>
@@ -72,10 +73,10 @@
   <main id="main" class="main"></main>
   <nav class="bottom-nav" id="bottomNav" aria-label="주요 메뉴">
     <button data-page="today" class="active"><span></span><b>Today</b></button>
-    <button data-page="workout"><span></span><b>Train</b></button>
-    <button data-page="body"><span></span><b>Body</b></button>
-    <button data-page="nutrition"><span></span><b>Nutrition</b></button>
     <button data-page="coach"><span></span><b>Coach</b></button>
+    <button data-page="workout"><span></span><b>Workout</b></button>
+    <button data-page="body"><span></span><b>Body</b></button>
+    <button data-page="nutrition"><span></span><b>Progress</b></button>
   </nav>
 </div>
 <input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>
@@ -90,5 +91,6 @@
 <script src="./garang-body-reference.js?v=3.0.0"></script>
 <script src="./garang-progress-reference.js?v=3.0.0"></script>
 <script src="./garang-reference-access.js?v=3.0.0"></script>
+<script src="./garang-reference-lock.js?v=4.0.0"></script>
 </body>
 </html>
