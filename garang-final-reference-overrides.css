@@ -1,0 +1,21 @@
+/* Final approved-reference alignment. Loaded last. */
+/* TODAY: exact reading order — greeting, recovery, metrics, focus, decision, actions. */
+body:has(.visual-today-hero) .visual-today-hero{display:block!important}
+body:has(.visual-today-hero) .today-body-panel{display:grid!important;grid-template-columns:1fr 118px!important;min-height:121px!important;padding:11px 10px!important;margin-top:10px!important;background:#0b0c0b!important;border:1px solid rgba(255,255,255,.075)!important;border-radius:8px!important;overflow:hidden!important;position:relative!important}
+.today-body-panel .today-body-label{display:block!important;align-self:center!important;z-index:2!important}.today-body-panel .today-body-label>.eyebrow,.today-body-panel .today-body-label>strong{display:none!important}.gx-focus-copy small{display:block;font-size:7px;letter-spacing:.1em;color:#747772;margin-bottom:8px}.gx-focus-copy strong{display:block;font-family:var(--gx-display);font-size:16px;font-weight:400;line-height:1.1;color:#e6e2dd}.gx-focus-copy p{font-size:8px;line-height:1.45;color:#858883;margin:7px 0 0;max-width:175px}
+.today-body-panel .compact-map{position:absolute!important;right:-8px!important;bottom:-18px!important;width:135px!important;height:145px!important;max-height:none!important;opacity:.88!important}.today-body-panel .muscle-map{display:block!important;background:transparent!important;border:0!important}.today-body-panel .body-view:first-child{display:none!important}.today-body-panel .body-view:last-child{display:block!important}.today-body-panel .body-view span{display:none!important}.today-body-panel .body-view svg{width:124px!important;height:150px!important;filter:saturate(.68) contrast(1.08)!important}
+body:has(.visual-today-hero) .quick-visual-grid{display:none!important}body:has(.visual-today-hero) .section-title:last-of-type{display:none!important}
+.gx-today-decision-card{margin-top:9px!important}.gx-today-cta{margin-top:8px!important}
+.today-score-line{display:block!important;min-height:122px!important}.today-score-line:before{content:"RECOVERY SCORE";display:block;font-size:7px;letter-spacing:.1em;color:#777b76;margin-bottom:9px}
+.today-score-line>div:first-child{position:relative!important;width:100%!important;height:92px!important;display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;background:none!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.today-score-line>div:first-child:after{content:"";position:absolute;right:5px;top:0;width:91px;height:91px;border-radius:50%;background:conic-gradient(#6bb9a4 calc(var(--score,70)*1%),#252927 0);-webkit-mask:radial-gradient(circle,transparent 64%,#000 65%);mask:radial-gradient(circle,transparent 64%,#000 65%)}
+.today-score-line .score-orb>div{display:block!important;z-index:2!important}.today-score-line .score-orb strong{font-family:var(--gx-display)!important;font-size:47px!important;font-weight:400!important;line-height:.85!important}.today-score-line .score-orb strong:after{content:" /100";font-family:var(--gx-ui);font-size:10px;color:#858883}.today-score-line .score-orb span{display:block!important;font-size:0!important;margin-top:8px}.today-score-line .score-orb span:after{content:"Good";font-size:11px;color:#4fae92}
+
+/* Workout title must be actual runtime content, never a sample program name. */
+body:has(.workout-hero-v2) .page-head h1{font-size:12px!important}body:has(.workout-hero-v2) .page-head h1:after{content:none!important}
+
+/* Body title/runtime data are supplied by the data layer. */
+body:has(.body-trend-primary) .page-head h1{font-size:12px!important}
+
+/* Settings secondary routes use the same restrained button system. */
+.gx-secondary-access{margin-top:8px!important}.gx-secondary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}.gx-secondary-grid .ghost{font-size:9px!important;height:38px!important;min-height:38px!important}
