@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           python patch/scripts/apply_exact_garang_png_logo.py \
-            patch/05_assets/garang-logo-exact.png.b64.txt \
+            patch/05_assets/garang-logo-exact.png \
             target
 
       - name: Run regression tests
