@@ -18,6 +18,7 @@
     "07_config/garang-services-config.js",
     "02_core/data-schema.js",
     "services/performance.js",
+    "services/units.js",
     "06_features/ui/runtime/garang-auth-bootstrap.js",
     "01_app/app.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
@@ -26,7 +27,8 @@
     "06_features/ui/runtime/garang-polish-v3-fix.js",
     "06_features/ui/runtime/garang-coach-home-hotfix.js",
     "06_features/ui/i18n/translations.js",
-    "06_features/ui/i18n/runtime.js"
+    "06_features/ui/i18n/runtime.js",
+    "06_features/ui/runtime/garang-units-runtime.js"
   ],
   "data": [
     "04_data/knowledge/exercise-db.json",

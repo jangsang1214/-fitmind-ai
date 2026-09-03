@@ -1,0 +1,22 @@
+(() => {
+'use strict';
+const KG_TO_LB=2.2046226218487757;
+const CM_TO_IN=1/2.54;
+const KM_TO_MI=0.621371192237334;
+const finite=v=>{const n=Number(v);return Number.isFinite(n)?n:null;};
+const rounded=(v,d=1)=>{const p=10**Math.max(0,d);return Math.round((v+Number.EPSILON)*p)/p;};
+const normalize=unit=>unit==='imperial'?'imperial':'metric';
+const weight=(kg,unit='metric',digits=1)=>{const n=finite(kg);if(n===null)return null;return rounded(normalize(unit)==='imperial'?n*KG_TO_LB:n,digits);};
+const toMetricWeight=(value,unit='metric')=>{const n=finite(value);if(n===null)return null;return normalize(unit)==='imperial'?n/KG_TO_LB:n;};
+const length=(cm,unit='metric',digits=1)=>{const n=finite(cm);if(n===null)return null;return rounded(normalize(unit)==='imperial'?n*CM_TO_IN:n,digits);};
+const toMetricLength=(value,unit='metric')=>{const n=finite(value);if(n===null)return null;return normalize(unit)==='imperial'?n/CM_TO_IN:n;};
+const distance=(km,unit='metric',digits=2)=>{const n=finite(km);if(n===null)return null;return rounded(normalize(unit)==='imperial'?n*KM_TO_MI:n,digits);};
+const toMetricDistance=(value,unit='metric')=>{const n=finite(value);if(n===null)return null;return normalize(unit)==='imperial'?n/KM_TO_MI:n;};
+const pace=(minutesPerKm,unit='metric',digits=2)=>{const n=finite(minutesPerKm);if(n===null)return null;return rounded(normalize(unit)==='imperial'?n/KM_TO_MI:n,digits);};
+const weightUnit=unit=>normalize(unit)==='imperial'?'lb':'kg';
+const lengthUnit=unit=>normalize(unit)==='imperial'?'in':'cm';
+const distanceUnit=unit=>normalize(unit)==='imperial'?'mi':'km';
+const paceUnit=unit=>normalize(unit)==='imperial'?'min/mi':'min/km';
+const formatPace=(minutes,unit='metric')=>{const p=pace(minutes,unit,3);if(p===null||!Number.isFinite(p))return '—';let m=Math.floor(p),s=Math.round((p-m)*60);if(s===60){m+=1;s=0;}return `${m}:${String(s).padStart(2,'0')}`;};
+globalThis.GarangUnits={KG_TO_LB,CM_TO_IN,KM_TO_MI,normalize,weight,toMetricWeight,length,toMetricLength,distance,toMetricDistance,pace,weightUnit,lengthUnit,distanceUnit,paceUnit,formatPace};
+})();

@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..'),ctx=vm.createContext({console});
+vm.runInContext(fs.readFileSync(path.join(root,'services/units.js'),'utf8'),ctx);
+const U=ctx.GarangUnits;
+assert.equal(U.weight(70,'metric',1),70);
+assert.equal(U.weight(70,'imperial',1),154.3);
+assert.equal(U.length(180,'imperial',1),70.9);
+assert.equal(U.distance(5,'imperial',2),3.11);
+assert.equal(U.formatPace(5,'imperial'),'8:03');
+assert.ok(Math.abs(U.toMetricWeight(U.weight(80,'imperial',4),'imperial')-80)<0.01);
+assert.ok(Math.abs(U.toMetricLength(U.length(175,'imperial',4),'imperial')-175)<0.01);
+const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),manifest=require('../runtime-manifest.json');
+for(const token of ['metricWeight($(\'wWeight\').value)','metricLength($(\'bHeight\').value)','shownDistance(runState.distance','distanceUnit()','weightUnit()'])assert.ok(app.includes(token),token);
+assert.ok(html.includes('./services/units.js'));assert.ok(html.includes('./06_features/ui/runtime/garang-units-runtime.js'));
+assert.ok(manifest.scripts.includes('services/units.js'));assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-units-runtime.js'));
+console.log(JSON.stringify([{name:'metric and imperial unit system',status:'PASS'}],null,2));
