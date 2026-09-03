@@ -9,9 +9,9 @@
   "description": "GARANG Intelligence — 운동·식단·러닝·체성분과 누적된 선택을 이해해 다음 행동을 제안합니다.",
   "icons": [
     {
-      "src": "../05_assets/garang-app-icon.svg",
+      "src": "../05_assets/garang-app-icon-exact.png?v=exact-png-20260904",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

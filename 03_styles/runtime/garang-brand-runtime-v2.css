@@ -119,3 +119,10 @@
   .g2-composer{border-radius:15px}
   .g2-empty-inner h2{font-size:25px}
 }
+
+/* User-approved GARANG PNG logo */
+.garang-exact-logo{display:block;object-fit:contain;object-position:center;background:transparent}
+.g2-message-avatar .garang-exact-logo{width:22px;height:34px}
+.g2-empty-inner>.garang-exact-logo{width:54px;height:86px;margin-inline:auto}
+.g2-sidebar-brand>.garang-exact-logo{width:28px;height:44px}
+.g2-chat-head>.garang-exact-logo{width:24px;height:38px;flex:0 0 auto}

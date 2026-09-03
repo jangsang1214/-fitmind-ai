@@ -1,5 +1,5 @@
 /* GARANG BRAND RUNTIME v2
-   - exact GARANG mark rendered from SVG code, never an image
+   - exact GARANG mark uses the user-approved PNG asset
    - workout body model rendered from interactive SVG code
    - ChatGPT-like multi-thread Coach with stable latest-message scrolling
 */
@@ -13,13 +13,8 @@
   const num = (v,f=0) => Number.isFinite(Number(v)) ? Number(v) : f;
   const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
 
-  function markSVG(className='garang-code-mark') {
-    return `<svg class="${className}" viewBox="0 0 130 180" role="img" aria-label="GARANG droplet and ripple mark" focusable="false">
-      <path class="g2-mark-line" d="M65 8 L65 60 C65 82 58.5 99 46 113 C37.5 122.5 31.5 132.2 34.6 137.5 C38.6 144.2 49.6 148.5 65 148.5"/>
-      <path class="g2-mark-line" d="M65 60 C65 82 71.5 99 84 113 C92.5 122.5 98.5 132.2 95.4 137.5 C91.4 144.2 80.4 148.5 65 148.5"/>
-      <ellipse class="g2-mark-ripple" cx="65" cy="158.2" rx="13.2" ry="3.2"/>
-      <ellipse class="g2-mark-ripple outer" cx="65" cy="165" rx="30.5" ry="6.5"/>
-    </svg>`;
+  function markPNG(className='garang-code-mark') {
+    return `<img class="${className} garang-exact-logo" src="./05_assets/garang-logo-exact.png?v=exact-png-20260904" alt="GARANG" draggable="false">`;
   }
 
   function svgNode(html) {
@@ -29,11 +24,10 @@
   function replaceBrandMarks(root=document) {
     root.querySelectorAll('img').forEach(img => {
       const src=img.getAttribute('src')||'';
-      if (!/garang-mark\.svg/i.test(src)) return;
-      const node=svgNode(markSVG());
-      node.classList.add(...[...img.classList].filter(Boolean));
-      if(img.id)node.id=img.id;
-      img.replaceWith(node);
+      if (!/garang-(?:mark|app-icon)\.svg/i.test(src)) return;
+      img.src='./05_assets/garang-logo-exact.png?v=exact-png-20260904';
+      img.alt='GARANG';
+      img.classList.add('garang-exact-logo');
     });
   }
 
@@ -156,7 +150,7 @@
 
   function messageHTML(m){
     if(m.role==='user')return `<article class="g2-message user" data-message-id="${m.id}"><div class="g2-message-body"><div class="g2-message-text">${esc(m.text)}</div></div></article>`;
-    return `<article class="g2-message assistant" data-message-id="${m.id}"><div class="g2-message-avatar">${markSVG()}</div><div class="g2-message-body"><div class="g2-message-text">${esc(m.text)}</div><div class="g2-message-meta">${m.local?'GARANG LOCAL ENGINE':'GARANG INTELLIGENCE'} · ${fmtDate(m.at)}</div></div></article>`;
+    return `<article class="g2-message assistant" data-message-id="${m.id}"><div class="g2-message-avatar">${markPNG()}</div><div class="g2-message-body"><div class="g2-message-text">${esc(m.text)}</div><div class="g2-message-meta">${m.local?'GARANG LOCAL ENGINE':'GARANG INTELLIGENCE'} · ${fmtDate(m.at)}</div></div></article>`;
   }
 
   function forceBottom(runtime){
@@ -168,7 +162,7 @@
   function renderMessages(runtime){
     const thread=currentThread(runtime),scroller=runtime.root.querySelector('.g2-chat-scroll');if(!thread||!scroller)return;
     if(!thread.messages.length){
-      scroller.innerHTML=`<div class="g2-empty-chat"><div class="g2-empty-inner">${markSVG()}<h2>What will you build today?</h2><p>GARANG은 당신의 운동·식단·회복·반복되는 선택을 읽고 다음 행동을 함께 판단합니다.</p><div class="g2-prompts"><button data-g2-prompt="오늘 운동 강도를 정해줘">오늘 운동</button><button data-g2-prompt="내 최근 기록을 분석해줘">최근 기록</button><button data-g2-prompt="오늘 식단을 분석해줘">오늘 식단</button><button data-g2-prompt="회복 상태를 알려줘">회복 상태</button></div></div></div>`;
+      scroller.innerHTML=`<div class="g2-empty-chat"><div class="g2-empty-inner">${markPNG()}<h2>What will you build today?</h2><p>GARANG은 당신의 운동·식단·회복·반복되는 선택을 읽고 다음 행동을 함께 판단합니다.</p><div class="g2-prompts"><button data-g2-prompt="오늘 운동 강도를 정해줘">오늘 운동</button><button data-g2-prompt="내 최근 기록을 분석해줘">최근 기록</button><button data-g2-prompt="오늘 식단을 분석해줘">오늘 식단</button><button data-g2-prompt="회복 상태를 알려줘">회복 상태</button></div></div></div>`;
     }else scroller.innerHTML=thread.messages.map(messageHTML).join('');
     runtime.root.querySelector('.g2-chat-head-copy strong').textContent=thread.title;
     runtime.root.querySelectorAll('[data-g2-prompt]').forEach(b=>b.onclick=()=>{runtime.input.value=b.dataset.g2Prompt||'';sendMessage(runtime);});
@@ -200,7 +194,7 @@
     const thread=currentThread(runtime);if(!thread)return;
     const m={id:uid(),role:'user',text,at:now(),local:false};thread.messages.push(m);thread.updatedAt=m.at;if(thread.title==='새 대화')thread.title=text.replace(/\s+/g,' ').slice(0,34)+(text.length>34?'…':'');runtime.input.value='';runtime.input.style.height='auto';saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);
     runtime.sending=true;runtime.send.disabled=true;
-    const scroller=runtime.root.querySelector('.g2-chat-scroll');const thinking=document.createElement('article');thinking.className='g2-message assistant';thinking.dataset.thinking='1';thinking.innerHTML=`<div class="g2-message-avatar">${markSVG()}</div><div class="g2-message-body"><div class="g2-thinking"><i></i><i></i><i></i></div></div>`;scroller.appendChild(thinking);forceBottom(runtime);
+    const scroller=runtime.root.querySelector('.g2-chat-scroll');const thinking=document.createElement('article');thinking.className='g2-message assistant';thinking.dataset.thinking='1';thinking.innerHTML=`<div class="g2-message-avatar">${markPNG()}</div><div class="g2-message-body"><div class="g2-thinking"><i></i><i></i><i></i></div></div>`;scroller.appendChild(thinking);forceBottom(runtime);
     const result=await getCoachAnswer(text,thread);thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);runtime.input.focus();forceBottom(runtime);
   }
 
@@ -208,9 +202,9 @@
     const old=main.querySelector('.coach-app-shell');if(!old||main.querySelector('.garang-coach-v2'))return;
     const loaded=loadThreadStore();
     const root=document.createElement('section');root.className='garang-coach-v2';root.innerHTML=`
-      <aside class="g2-chat-sidebar"><div class="g2-sidebar-brand">${markSVG()}<strong>GARANG</strong></div><button class="g2-new-chat" type="button"><b>＋</b><span>새 대화</span></button><div class="g2-thread-label">CONVERSATIONS</div><div class="g2-thread-list"></div><div class="g2-sidebar-foot">GARANG INTELLIGENCE<br>Memory-led personal performance coach.</div></aside>
+      <aside class="g2-chat-sidebar"><div class="g2-sidebar-brand">${markPNG()}<strong>GARANG</strong></div><button class="g2-new-chat" type="button"><b>＋</b><span>새 대화</span></button><div class="g2-thread-label">CONVERSATIONS</div><div class="g2-thread-list"></div><div class="g2-sidebar-foot">GARANG INTELLIGENCE<br>Memory-led personal performance coach.</div></aside>
       <div class="g2-sidebar-backdrop"></div>
-      <div class="g2-chat-main"><header class="g2-chat-head"><button class="g2-mobile-threads" type="button" aria-label="대화 목록">☰</button>${markSVG()}<div class="g2-chat-head-copy"><small>GARANG INTELLIGENCE</small><strong>새 대화</strong></div><button class="g2-head-new" type="button">＋ 새 대화</button></header><div class="g2-chat-scroll" id="garangCoachScroll"></div><footer class="g2-composer-wrap"><div class="g2-composer"><textarea rows="1" placeholder="GARANG에게 메시지 보내기" aria-label="GARANG에게 메시지 보내기"></textarea><button class="g2-send" type="button" aria-label="전송">↑</button></div><div class="g2-composer-note">GARANG은 저장된 개인 데이터를 근거로 답합니다. 중요한 판단은 직접 확인하세요.</div></footer></div>`;
+      <div class="g2-chat-main"><header class="g2-chat-head"><button class="g2-mobile-threads" type="button" aria-label="대화 목록">☰</button>${markPNG()}<div class="g2-chat-head-copy"><small>GARANG INTELLIGENCE</small><strong>새 대화</strong></div><button class="g2-head-new" type="button">＋ 새 대화</button></header><div class="g2-chat-scroll" id="garangCoachScroll"></div><footer class="g2-composer-wrap"><div class="g2-composer"><textarea rows="1" placeholder="GARANG에게 메시지 보내기" aria-label="GARANG에게 메시지 보내기"></textarea><button class="g2-send" type="button" aria-label="전송">↑</button></div><div class="g2-composer-note">GARANG은 저장된 개인 데이터를 근거로 답합니다. 중요한 판단은 직접 확인하세요.</div></footer></div>`;
     old.replaceWith(root);
     const runtime={root,key:loaded.key,data:loaded.data,input:root.querySelector('textarea'),send:root.querySelector('.g2-send'),sending:false,resizeObserver:null};
     runtime.input.oninput=()=>{runtime.input.style.height='auto';runtime.input.style.height=Math.min(140,runtime.input.scrollHeight)+'px';};

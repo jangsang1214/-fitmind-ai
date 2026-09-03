@@ -43,7 +43,7 @@
     "07_config/manifest.webmanifest",
     "sw.js",
     "02_core/sw-runtime.js",
-    "05_assets/garang-mark.svg",
-    "05_assets/garang-app-icon.svg"
+    "05_assets/garang-logo-exact.png",
+    "05_assets/garang-app-icon-exact.png"
   ]
 }
