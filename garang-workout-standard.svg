@@ -1,1 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"><g fill="none"><rect x="58" y="1510" width="964" height="352" rx="30" fill="#040a07" fill-opacity=".58" stroke="#d9ff45" stroke-opacity=".72" stroke-width="3"/><path d="M86 1530h130" stroke="#d9ff45" stroke-width="7" stroke-linecap="round"/><text x="86" y="1600" fill="#d9ff45" font-family="Arial,sans-serif" font-size="26" font-weight="900" letter-spacing="5">GARANG</text><text x="86" y="1660" fill="#fff" font-family="Arial,sans-serif" font-size="48" font-weight="900">WORKOUT VERIFIED</text><text x="86" y="1715" fill="#fff" font-family="Arial,sans-serif" font-size="28" font-weight="800">ACTIVITY · SETS · VOLUME</text><text x="86" y="1760" fill="#b8c4bc" font-family="Arial,sans-serif" font-size="19" font-weight="600">DATE · RPE · KCAL</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <g fill="none">
+    <rect x="58" y="1510" width="964" height="352" rx="30" fill="#050605" fill-opacity=".72" stroke="#3A3D3A" stroke-opacity=".9" stroke-width="2"/>
+    <g transform="translate(82 1533) scale(.42)">
+      <path fill="#F0EDE7" fill-rule="evenodd" d="M60 4C60 28 59 43 55 54C51 65 44 72 36 83C32 89 34 94 40 98C45 102 52 104 60 104C68 104 75 102 80 98C86 94 88 89 84 83C76 72 69 65 65 54C61 43 60 28 60 4ZM60 56C57 64 51 71 44 80C39 86 38 89 41 92C45 96 52 98 60 98C68 98 75 96 79 92C82 89 81 86 76 80C69 71 63 64 60 56Z"/>
+      <ellipse cx="60" cy="119" rx="12" ry="3.2" stroke="#F0EDE7" stroke-width="1.8"/>
+      <ellipse cx="60" cy="122" rx="27" ry="6.3" stroke="#F0EDE7" stroke-width="1.65" opacity=".94"/>
+    </g>
+    <text x="148" y="1576" fill="#F0EDE7" font-family="Georgia,serif" font-size="26" font-weight="400" letter-spacing="11">GARANG</text>
+    <text x="86" y="1660" fill="#F0EDE7" font-family="Arial,sans-serif" font-size="46" font-weight="500">WORKOUT VERIFIED</text>
+    <text x="86" y="1715" fill="#D5D1CB" font-family="Arial,sans-serif" font-size="27" font-weight="500">ACTIVITY · SETS · VOLUME</text>
+    <text x="86" y="1760" fill="#858984" font-family="Arial,sans-serif" font-size="19" font-weight="500">DATE · RPE · KCAL</text>
+    <path d="M86 1806H994" stroke="#2F8F78" stroke-width="2" opacity=".72"/>
+  </g>
+</svg>
