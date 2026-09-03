@@ -1,0 +1,76 @@
+/* GARANG POLISH v3 — exact-brand vector anatomy + stable Coach viewport */
+:root{--g3-ink:#0A0A0A;--g3-graphite:#1A1A1D;--g3-ivory:#F2EFE8;--g3-silver:#BDBFC4;--g3-jade:#10332E;--g3-jade-bright:#4fae92;--g3-primary:#a96f57;--g3-secondary:#8c9c8d;--g3-tertiary:#557f75}
+
+/* Brand mark proportions from the approved lockup. */
+.garang-code-mark{color:var(--g3-ivory)!important}
+.garang-code-mark .g2-mark-line{stroke-width:1.5!important}
+.garang-code-mark .g2-mark-ripple{stroke-width:1.25!important}
+
+/* High-detail code anatomy. No img/picture/canvas is used. */
+.g3-body-model{display:block;width:100%;height:100%;max-height:430px;overflow:visible;filter:drop-shadow(0 20px 28px rgba(0,0,0,.36))}
+.g3-body-model .g3-base{fill:url(#g3Body);stroke:#777972;stroke-width:.65}
+.g3-body-model .g3-limb{fill:url(#g3Limb);stroke:#6f716c;stroke-width:.55}
+.g3-body-model .g3-detail{fill:none;stroke:#171917;stroke-width:.7;opacity:.9;stroke-linecap:round}
+.g3-body-model .g3-fine{fill:none;stroke:#96958e;stroke-width:.28;opacity:.3;stroke-linecap:round}
+.g3-body-model .g3-muscle{fill:url(#g3Muscle);stroke:#272925;stroke-width:.52;opacity:.94;cursor:pointer;transition:fill .15s ease,stroke .15s ease,filter .15s ease,opacity .15s ease}
+.g3-body-model .g3-muscle:hover,.g3-body-model .g3-muscle:focus{fill:#8f6554;stroke:#c18b73;filter:drop-shadow(0 0 5px rgba(193,139,115,.28));outline:none}
+.g3-body-model .g3-shadow{fill:#151715;opacity:.72}
+.g3-body-model .g3-highlight{fill:none;stroke:#c9c6bf;stroke-width:.34;opacity:.16}
+
+/* Selected muscle is the clear primary state; other body detail remains graphite. */
+.muscle-map[data-muscle="chest"] .g3-body-model .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-body-model .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-body-model .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-body-model .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-body-model .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-body-model .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-body-model .muscle-legs{fill:linear-gradient(#b67a60,#875747)!important;fill:#a96f57!important;stroke:#cf9b82!important;opacity:1!important;filter:drop-shadow(0 0 7px rgba(169,111,87,.3))!important}
+
+.g3-anatomy-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;padding:0 2px}
+.g3-view-switch{display:flex;gap:3px;border:1px solid rgba(255,255,255,.075);border-radius:8px;padding:3px;background:#090a09}
+.g3-view-switch button{height:27px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:#6f736e;font-size:7px;letter-spacing:.11em}
+.g3-view-switch button.active{background:#151715;color:#e5e2dc}
+.g3-anatomy-legend{display:flex;gap:10px;align-items:center;color:#6f726d;font-size:6.5px;white-space:nowrap}
+.g3-anatomy-legend span{display:flex;gap:4px;align-items:center}
+.g3-anatomy-legend i{display:block;width:5px;height:5px;border-radius:50%;background:#777}
+.g3-anatomy-legend span:nth-child(1) i{background:var(--g3-primary)}
+.g3-anatomy-legend span:nth-child(2) i{background:var(--g3-secondary)}
+.g3-anatomy-legend span:nth-child(3) i{background:var(--g3-tertiary)}
+
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded{position:relative!important;min-width:0!important}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{min-width:0!important}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-body-model{width:100%!important;max-width:235px!important;height:405px!important}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view>span{font-size:6.5px!important;letter-spacing:.18em!important;color:#71746f!important}
+
+/* Coach is a fixed-height workspace. Only the conversation pane scrolls. */
+body:has(.garang-coach-v2){overflow:hidden!important}
+body:has(.garang-coach-v2) .main{overflow:hidden!important}
+.garang-coach-v2,.g2-chat-main{min-height:0!important}
+.g2-chat-scroll{overflow-y:auto!important;overflow-x:hidden!important;scroll-anchor:none!important;overflow-anchor:none!important;touch-action:pan-y!important}
+.g2-chat-scroll *{overflow-anchor:none!important}
+.g2-composer-wrap{z-index:8}
+.g2-message:last-child{scroll-margin-bottom:26px}
+.g2-thread-list{scrollbar-width:thin;scrollbar-color:#292d29 transparent}
+
+/* Empty/new chat follows the approved Coach board rather than a generic chatbot. */
+.g2-empty-inner .garang-code-mark{width:44px!important;height:60px!important}
+.g2-empty-inner h2:before{content:"GARANG Coach";display:block;font:400 21px/1.05 var(--g2-display);color:#e8e5df;margin-bottom:6px}
+.g2-empty-inner h2{font-size:0!important}
+.g2-empty-inner h2:after{content:"AI Performance Coach";display:block;font:400 8px/1.3 var(--g2-ui);letter-spacing:.04em;color:#777a75}
+
+@media(max-width:800px){
+  body:has(.garang-coach-v2) .topbar{display:none!important}
+  body:has(.garang-coach-v2) .bottom-nav{display:none!important}
+  body:has(.garang-coach-v2) .main{padding:0!important;width:100%!important;max-width:none!important;height:100svh!important}
+  .garang-coach-v2{height:100svh!important}
+  .g2-chat-head{padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top))!important}
+  .g2-composer-wrap{padding-bottom:calc(10px + env(safe-area-inset-bottom))!important}
+
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{display:block!important;position:relative!important;min-height:430px!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view{display:none!important;min-height:410px!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:first-child,
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="back"] .body-view:last-child{display:grid!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-body-model{height:398px!important;max-width:230px!important}
+  .g3-anatomy-tools{margin-top:2px}
+  .g3-anatomy-legend{gap:7px;font-size:6px}
+}
