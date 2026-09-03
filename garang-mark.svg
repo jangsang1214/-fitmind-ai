@@ -1,8 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="GARANG">
-  <g fill="none" stroke="#F2F0ED" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M60 7C60 34 55 49 43 66C35 77 37 87 45 93C49 96 54 98 60 98C66 98 71 96 75 93C83 87 85 77 77 66C65 49 60 34 60 7Z" stroke-width="2.7"/>
-    <path d="M44 73C48 82 53 87 60 89" stroke-width="1.8" opacity=".78"/>
-    <ellipse cx="60" cy="106" rx="13" ry="3.2" stroke-width="1.7" opacity=".92"/>
-    <ellipse cx="60" cy="106" rx="25" ry="7.2" stroke-width="1.5" opacity=".72"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140" role="img" aria-label="GARANG droplet and ripple mark">
+  <g fill="#F0EDE7" fill-rule="evenodd">
+    <path d="M60 4
+      C60 28 59 43 55 54
+      C51 65 44 72 36 83
+      C32 89 34 94 40 98
+      C45 102 52 104 60 104
+      C68 104 75 102 80 98
+      C86 94 88 89 84 83
+      C76 72 69 65 65 54
+      C61 43 60 28 60 4Z
+      M60 56
+      C57 64 51 71 44 80
+      C39 86 38 89 41 92
+      C45 96 52 98 60 98
+      C68 98 75 96 79 92
+      C82 89 81 86 76 80
+      C69 71 63 64 60 56Z"/>
+  </g>
+  <g fill="none" stroke="#F0EDE7" stroke-linecap="round">
+    <ellipse cx="60" cy="119" rx="12" ry="3.2" stroke-width="1.8"/>
+    <ellipse cx="60" cy="122" rx="27" ry="6.3" stroke-width="1.65" opacity=".94"/>
   </g>
 </svg>
