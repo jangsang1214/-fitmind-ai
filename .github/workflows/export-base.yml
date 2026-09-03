@@ -1,0 +1,32 @@
+name: Export GARANG baseline
+on:
+  push:
+    branches: ["export/base-2793e9d3"]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pinned baseline
+        uses: actions/checkout@v4
+        with:
+          ref: 2793e9d3fb7a7f7bf7a14f455b2757388ff0f04b
+      - name: Write baseline metadata
+        run: |
+          cat > BASELINE.txt <<'EOF'
+          GARANG BASELINE SNAPSHOT
+          repository: jangsang1214/-fitmind-ai
+          branch: main
+          commit: 2793e9d3fb7a7f7bf7a14f455b2757388ff0f04b
+          purpose: UI refinement + API/server integration while preserving current features
+          EOF
+      - name: Create ZIP
+        run: |
+          zip -r GARANG_BASE_2793e9d3.zip . -x '.git/*'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GARANG_BASE_2793e9d3
+          path: GARANG_BASE_2793e9d3.zip
+          if-no-files-found: error
