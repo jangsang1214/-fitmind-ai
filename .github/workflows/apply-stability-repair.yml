@@ -1,0 +1,222 @@
+name: Apply GARANG stability repair
+
+on:
+  push:
+    branches:
+      - fix/stability-login-regressions
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply stability fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "af755dfba13bb8d98ed0392a4010879f97db1f98"
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          def replace_once(text, old, new, label):
+              count=text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 occurrence, found {count}')
+              return text.replace(old,new,1)
+
+          # ---------- index.html ----------
+          p=Path('index.html')
+          idx=p.read_text()
+          idx=replace_once(idx,
+              '<link rel="icon" href="./garang-mark.svg?v=font-logo-v1-20260904" type="image/svg+xml">',
+              '<link rel="icon" href="./garang-app-icon.svg?v=stability-v1-20260904" type="image/svg+xml">',
+              'favicon')
+          idx=replace_once(idx,
+              '<title>GARANG — Quietly Becoming</title>\n',
+              '<title>GARANG — Quietly Becoming</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">\n',
+              'font links')
+          idx=replace_once(idx,
+              '<link rel="stylesheet" href="./garang-font-logo-v1.css?v=1.0.0">',
+              '<link rel="stylesheet" href="./garang-font-logo-v1.css?v=2.0.0">\n<link rel="stylesheet" href="./garang-stability-v1.css?v=1.0.0">',
+              'stability css')
+          idx=idx.replace('<input id="mediaPicker" type="file" accept="image/*,video/*" capture="environment" hidden>',
+                          '<input id="mediaPicker" type="file" accept="image/*,video/*" hidden>')
+          idx=replace_once(idx,
+              '<script src="./garang-auth-bootstrap.js?v=1.0.0"></script>\n<script src="./app.js?v=0.11.0-beta.5"></script>',
+              '<script src="./data-schema.js?v=7"></script>\n<script src="./performance.js?v=recording-v2"></script>\n<script src="./garang-auth-bootstrap.js?v=1.1.0"></script>\n<script src="./app.js?v=0.11.0-beta.5-stability1"></script>',
+              'runtime scripts')
+          p.write_text(idx)
+
+          # ---------- auth bootstrap: no global fetch monkey patch ----------
+          p=Path('garang-auth-bootstrap.js')
+          auth=p.read_text()
+          auth=auth.replace('GARANG AUTH BOOTSTRAP v1','GARANG AUTH BOOTSTRAP v1.1',1)
+          block="""  const nativeFetch = window.fetch.bind(window);\n  const guardedAsset = /(?:exercise-db\\.json|food-db\\.json|exercise_knowledge\\.jsonl|food_knowledge\\.jsonl|fitmind_rules\\.jsonl)(?:\\?|$)/i;\n\n  // app.js currently waits for DB loading before bindAuth(). A stalled asset request\n  // must never leave the login screen completely inert.\n  window.fetch = (input, init = {}) => {\n    const url = typeof input === 'string' ? input : (input && input.url) || '';\n    if (!guardedAsset.test(url) || init.signal) return nativeFetch(input, init);\n    const controller = new AbortController();\n    const timer = setTimeout(() => controller.abort(), 2600);\n    return nativeFetch(input, {...init, signal: controller.signal}).finally(() => clearTimeout(timer));\n  };\n\n"""
+          if block not in auth:
+              raise SystemExit('auth fetch guard block not found')
+          auth=auth.replace(block,'',1)
+          p.write_text(auth)
+
+          # ---------- active app runtime ----------
+          p=Path('app.js')
+          app=p.read_text()
+          app=replace_once(app,
+              "const num = (v,f=0) => Number.isFinite(Number(v)) ? Number(v) : f;",
+              "function num(v,f=0){const n=window.GarangSchema?GarangSchema.numeric(v):(v==null||(typeof v==='string'&&!v.trim())?null:(Number.isFinite(Number(v))?Number(v):null));return n===null?f:n;}",
+              'safe numeric')
+          app=replace_once(app,
+              "const SERVICES = window.GARANG_SERVICES || {};",
+              "const SERVICES = window.GARANG_SERVICES || {};\nconst accountBootstrapSafe=(...args)=>window.GarangSchema?GarangSchema.accountBootstrap(...args):null;\nconst mergeStatesSafe=(...args)=>window.GarangSchema?GarangSchema.mergeStates(...args):args[0];\nconst coachSummarySafe=(score,lang)=>window.GarangPerformance?GarangPerformance.coachSummary(score,lang):'';",
+              'safety helpers')
+
+          old_init="""    if(firebaseReady)firebase.auth().onAuthStateChanged(async u=>{\n      currentUser=u;\n      if(u){storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);await cloudLoadAndMerge();showApp();}\n      else if(localStorage.getItem('garang_demo')==='1'){storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}\n      else showAuth();\n    });"""
+          new_init="""    if(firebaseReady)firebase.auth().onAuthStateChanged(u=>{\n      currentUser=u;\n      if(u){\n        storageKey=`garang_user_${u.uid}_v3`;\n        loadLocal(storageKey);\n        showApp();\n        cloudLoadAndMerge().catch(e=>{captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});\n      }\n      else if(localStorage.getItem('garang_demo')==='1'){storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}\n      else showAuth();\n    });"""
+          app=replace_once(app,old_init,new_init,'auth state immediate transition')
+
+          old_boot="async function boot(){storageKey=localStorage.getItem('garang_demo')==='1'?DEMO_KEY:DEMO_KEY;loadLocal(storageKey);await loadDB();bindAuth();nav();initFirebase();registerSW();if(localStorage.getItem('garang_demo')==='1'&&!firebaseReady)showApp();else if(!firebaseReady)showAuth();}"
+          new_boot="async function boot(){storageKey=DEMO_KEY;loadLocal(storageKey);bindAuth();nav();initFirebase();registerSW();if(localStorage.getItem('garang_demo')==='1'&&!firebaseReady)showApp();else if(!firebaseReady)showAuth();loadDB().then(()=>{if(!$('appView')?.hidden)render();}).catch(e=>{captureError('db_load',e);toast('일부 운동/식단 데이터는 연결 후 다시 불러옵니다.');});}"
+          app=replace_once(app,old_boot,new_boot,'nonblocking boot')
+
+          insights=r'''
+const ux=(ko,en)=>uiLang()==='en'?en:ko;
+function renderWorkoutInsights(){
+  if(!window.GarangPerformance?.workoutInsights)return '';
+  const x=GarangPerformance.workoutInsights(state,db.exercise),fmt=n=>Math.round(num(n)).toLocaleString();
+  if(!x.records?.length)return `<div class="section-title"><h2>${ux('운동 분석','Workout insights')}</h2></div><div class="card empty">${ux('운동을 저장하면 부위별 최근 기록과 PR이 자동으로 정리됩니다.','Save a workout to build body-part history and personal records.')}</div>`;
+  const topCard=(label,record,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${record?value(record):'—'}</strong><small>${record?`${esc(record.name)} · ${esc(record.date||'—')}${meta?` · ${meta(record)}`:''}`:ux('기록 없음','No record')}</small></article>`;
+  const prRow=e=>`<article class="pr-row"><div class="pr-head"><div><span class="muscle-chip">${esc(e.primaryMuscle)}</span><strong>${esc(e.name)}</strong></div><small>${ux('최근','Latest')} ${esc(e.latest?.date||'—')} · ${e.count}${ux('회',' logs')}</small></div><div class="pr-metrics"><span><small>${ux('최고 중량','Max weight')}</small><b>${e.maxWeight?`${e.maxWeight.weight} kg`:'—'}</b></span><span><small>${ux('추정 1RM','Est. 1RM')}</small><b>${e.maxEstimated1RM?`${num(e.maxEstimated1RM.estimated1RM).toFixed(1)} kg`:'—'}</b></span><span><small>${ux('최고 볼륨','Max volume')}</small><b>${e.maxVolume?`${fmt(e.maxVolume.volume)} kg`:'—'}</b></span></div></article>`;
+  const muscleCard=g=>`<article class="bodypart-card"><header><div><span class="muscle-chip">${esc(g.name)}</span><b>${g.sessionCount}${ux('세션',' sessions')}</b></div><small>${ux('누적 볼륨','Total volume')} ${fmt(g.totalVolume)} kg</small></header><div class="compact-list">${g.records.slice(0,3).map(r=>`<div><span><time>${esc(r.date||'—')}</time><strong>${esc(r.name)}</strong><small>${num(r.sets)}×${num(r.reps)} · ${num(r.weight)} kg · ${fmt(r.volume)} kg</small></span></div>`).join('')}</div></article>`;
+  const shown=x.exercises.slice(0,8),rest=x.exercises.slice(8);
+  return `<section class="record-insights"><div class="section-title"><div><span class="eyebrow">PERSONAL RECORDS</span><h2>${ux('최고 기록과 PR','Best records and PRs')}</h2></div><span class="pill">${x.exercises.length}${ux('종목',' exercises')}</span></div><div class="insight-grid">${topCard(ux('전체 최고 중량','Overall max weight'),x.topWeight,r=>`${r.weight} kg`,r=>r.primaryMuscle)}${topCard(ux('전체 추정 1RM','Overall estimated 1RM'),x.topEstimated1RM,r=>`${num(r.estimated1RM).toFixed(1)} kg`,r=>r.primaryMuscle)}${topCard(ux('전체 최고 볼륨','Overall max volume'),x.topVolume,r=>`${fmt(r.volume)} kg`,r=>r.primaryMuscle)}</div><div class="section-title compact"><h2>${ux('종목별 PR 현황','PRs by exercise')}</h2></div><div class="pr-list">${shown.map(prRow).join('')}</div>${rest.length?`<details class="more-records"><summary>${ux('나머지 PR 보기','Show all PRs')} · ${rest.length}</summary><div class="pr-list">${rest.map(prRow).join('')}</div></details>`:''}<div class="section-title compact"><h2>${ux('부위별 최근 운동','Recent workouts by body part')}</h2></div><div class="bodypart-grid">${x.byMuscle.map(muscleCard).join('')}</div></section>`;
+}
+function renderRunningInsights(){
+  if(!window.GarangPerformance?.runningInsights)return '';
+  const x=GarangPerformance.runningInsights(state),pace=GarangPerformance.formatPace,fmt=n=>num(n).toFixed(2);
+  if(!x.records?.length)return `<div class="section-title"><h2>${ux('러닝 분석','Running insights')}</h2></div><div class="card empty">${ux('러닝을 저장하면 평균 페이스와 최고 기록이 표시됩니다.','Save a run to see average pace and best records.')}</div>`;
+  const card=(label,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${value}</strong><small>${meta}</small></article>`;
+  return `<section class="record-insights"><div class="section-title"><div><span class="eyebrow">RUNNING RECORDS</span><h2>${ux('평균 페이스와 최고 기록','Average pace and best records')}</h2></div><span class="pill">${x.count}${ux('회',' runs')}</span></div><div class="insight-grid run-grid">${card(ux('전체 평균 페이스','Overall average pace'),`${pace(x.averagePace)} /km`,ux('거리 가중 평균','Distance-weighted average'))}${card(ux('최고 페이스','Fastest pace'),`${pace(x.fastest?.pace)} /km`,`${esc(x.fastest?.date||'—')} · ${fmt(x.fastest?.distance)} km`)}${card(ux('최장 거리','Longest distance'),`${fmt(x.longest?.distance)} km`,`${esc(x.longest?.date||'—')} · ${pace(x.longest?.pace)} /km`)}${card(ux('누적 거리','Total distance'),`${fmt(x.totalDistance)} km`,`${x.count}${ux('회 러닝',' runs')}`)}</div></section>`;
+}
+'''
+          marker='function workoutPage(){'
+          if marker not in app: raise SystemExit('workout page marker missing')
+          app=app.replace(marker,insights+'\nfunction workoutPageBase(){',1)
+          app=replace_once(app,'function renderWorkoutDraft(){','function workoutPage(){return workoutPageBase()+renderWorkoutInsights();}\nfunction renderWorkoutDraft(){','workout wrapper')
+          app=replace_once(app,'function runningPage(){return','function runningPageBase(){return','running base')
+          app=replace_once(app,'function bodyDerived(','function runningPage(){return runningPageBase()+renderRunningInsights();}\nfunction bodyDerived(','running wrapper')
+
+          app=replace_once(app,
+              '<div class="cert-poster-placeholder premium-placeholder"><div class="cert-mark">G</div><div><strong>Performance Plaque</strong><span>사진을 가리지 않는 프리미엄 투명 오버레이</span></div></div><button id="certWorkout" class="ghost wide">사진 / 영상 선택</button>',
+              '<div class="cert-poster-placeholder premium-placeholder"><img class="cert-mark-img" src="./garang-mark.svg" alt="GARANG"><div><strong>Performance Plaque</strong><span>사진을 가리지 않는 프리미엄 투명 오버레이</span></div></div><div class="actions"><button id="certWorkout" class="ghost">사진첩에서 불러오기</button><button id="workoutOverlayOnly" class="ghost">투명 오버레이 PNG</button></div>',
+              'workout overlay ui')
+          app=replace_once(app,
+              '<button id="runStart" class="primary">러닝 시작</button><button id="runStop" class="ghost">정지 & 저장</button><button id="runCert" class="ghost">인증 미디어</button>',
+              '<button id="runStart" class="primary">러닝 시작</button><button id="runStop" class="ghost">정지 & 저장</button><button id="runCert" class="ghost">사진첩에서 불러오기</button><button id="runOverlayOnly" class="ghost">투명 오버레이 PNG</button>',
+              'running overlay ui')
+          app=replace_once(app,
+              "  $('certWorkout').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.workout=m;showCert('workoutCertArea',m,state.workouts.at(-1),'workout');});",
+              "  $('certWorkout').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.workout=m;showCert('workoutCertArea',m,state.workouts.at(-1),'workout');});$('workoutOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('workout'));",
+              'bind workout overlay')
+          app=replace_once(app,
+              "function bindRunning(){$('runStart').onclick=startRun;$('runStop').onclick=stopRun;$('runCert').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');});}",
+              "function bindRunning(){$('runStart').onclick=startRun;$('runStop').onclick=stopRun;$('runCert').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');});$('runOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('running'));}",
+              'bind running overlay')
+
+          overlay=r'''
+async function saveTransparentOverlay(kind,providedInfo){
+  try{
+    const info=providedInfo||certInfo(kind==='running'?state.runs.at(-1):state.workouts.at(-1),kind),canvas=document.createElement('canvas');
+    canvas.width=1080;canvas.height=1350;const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,pad=70;
+    c.clearRect(0,0,w,h);c.strokeStyle='rgba(242,240,237,.72)';c.lineWidth=2;drawRoundRect(c,34,34,w-68,h-68,28);c.stroke();
+    c.fillStyle='rgba(7,8,7,.82)';drawRoundRect(c,48,48,430,118,24);c.fill();drawRoundRect(c,48,h-430,w-96,360,28);c.fill();
+    c.fillStyle='#f2f0ed';c.font='500 46px "Cormorant Garamond",Georgia,serif';c.fillText('GARANG',pad,112);c.font='600 19px "Noto Sans KR",system-ui,sans-serif';c.fillStyle='rgba(242,240,237,.70)';c.fillText(info.title,pad,146);
+    c.fillStyle='#f2f0ed';c.font='600 64px "Noto Sans KR",system-ui,sans-serif';c.fillText(String(info.headline||'GARANG VERIFIED').slice(0,25),pad,h-315);
+    c.font='500 24px "Noto Sans KR",system-ui,sans-serif';c.fillStyle='rgba(242,240,237,.76)';c.fillText(String(info.sub||'').slice(0,60),pad,h-265);
+    if(kind==='running')drawRouteCanvas(c,info.coords,w-350,h-660,230,300);else drawAnatomyBadgeCanvas(c,info.muscleKey||'full',w-330,h-690,190,340);
+    const cell=(w-pad*2)/3;info.metrics.slice(0,3).forEach((mt,i)=>{const x=pad+i*cell;c.fillStyle='rgba(242,240,237,.55)';c.font='600 15px "Noto Sans KR",system-ui,sans-serif';c.fillText(String(mt[0]),x,h-190);c.fillStyle='#f2f0ed';c.font='600 24px "Noto Sans KR",system-ui,sans-serif';c.fillText(String(mt[1]),x,h-154);});
+    c.fillStyle='rgba(242,240,237,.62)';c.font='500 17px "Noto Sans KR",system-ui,sans-serif';c.fillText(`${info.date||today()} · GARANG`,pad,h-92);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw new Error('overlay export failed');
+    const name=`GARANG_${kind==='running'?'RUN':'WORKOUT'}_${today()}_OVERLAY.png`,file=new File([blob],name,{type:'image/png'});
+    if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'GARANG VERIFIED',files:[file]});return;}
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200);
+  }catch(e){captureError('transparent_overlay',e);toast('투명 오버레이 PNG 생성에 실패했습니다.');}
+}
+'''
+          share_marker='async function shareCompositeImage(m,record,kind)'
+          if share_marker not in app: raise SystemExit('share marker missing')
+          app=app.replace(share_marker,overlay+'\n'+share_marker,1)
+          p.write_text(app)
+          Path('01_app/app.js').write_text(app)
+
+          # ---------- Korean typography ----------
+          Path('garang-font-logo-v1.css').write_text(r'''/* GARANG typography v2 — one Korean UI family, separate English brand display */
+:root{
+  --garang-brand-display:"Cormorant Garamond","Iowan Old Style",Baskerville,Georgia,"Times New Roman",serif;
+  --garang-brand-ui:"Noto Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  --garang-brand-korean:var(--garang-brand-ui);
+}
+html[lang="ko"],body{font-family:var(--garang-brand-ui)!important;}
+button,input,select,textarea,label,.muted,.helper,.pill,.badge,.eyebrow,.stat-label,.chat-text,.gpt-text,.settings-row,.plan-row,.memory-card{font-family:var(--garang-brand-ui)!important;}
+.page-head h1,.auth-copy h1,.chat-head h1,.coach-app-head h1,.section-title h2,.card h2,.card h3,.today-decision-panel h2,.profile-goal{font-family:var(--garang-brand-ui)!important;font-style:normal!important;letter-spacing:-.035em!important;}
+.brand b,.cert-wordmark,.score-number,.metric-big,.nutrition-kcal strong,.workout-primary-metric strong{font-family:var(--garang-brand-display)!important;font-weight:500!important;}
+.brand b{letter-spacing:.30em!important;}
+.brand span{font-family:var(--garang-brand-ui)!important;font-weight:500!important;letter-spacing:.18em!important;}
+''')
+
+          # ---------- new stability UI styles ----------
+          Path('garang-stability-v1.css').write_text(r'''/* GARANG stability + regression UI */
+.record-insights{margin-top:18px;display:grid;gap:12px}.record-insights .section-title{margin:10px 0 2px}.record-insights .section-title.compact{margin-top:12px}.insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.insight-grid.run-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.insight-card{min-width:0;background:#0b0c0b;border:1px solid var(--line);border-radius:12px;padding:14px}.insight-card span{display:block;color:var(--muted);font-size:9px}.insight-card strong{display:block;margin:7px 0 4px;font-size:22px;font-weight:600;letter-spacing:-.03em}.insight-card small{display:block;color:#777a75;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-list,.bodypart-grid{display:grid;gap:8px}.bodypart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pr-row,.bodypart-card{background:#0b0c0b;border:1px solid var(--line);border-radius:12px;padding:13px}.pr-head,.bodypart-card header{display:flex;justify-content:space-between;gap:12px;align-items:center}.pr-head>div{display:flex;align-items:center;gap:8px;min-width:0}.pr-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.muscle-chip{display:inline-flex;border:1px solid #28493f;background:#0d1c17;color:#a8c8bd;border-radius:999px;padding:4px 7px;font-size:8px;white-space:nowrap}.pr-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:10px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}.pr-metrics span{display:grid;gap:3px;background:#090a09;padding:9px}.pr-metrics small,.bodypart-card small{color:var(--muted);font-size:8px}.pr-metrics b{font-size:12px}.compact-list{display:grid;gap:1px;margin-top:9px}.compact-list>div{background:#090a09;padding:9px;border-radius:8px}.compact-list time,.compact-list small{display:block;color:var(--muted);font-size:8px}.compact-list strong{display:block;margin:3px 0;font-size:11px}.more-records{border:1px solid var(--line);border-radius:12px;background:#090a09;overflow:hidden}.more-records summary{cursor:pointer;padding:11px 13px;font-size:10px}.more-records .pr-list{padding:0 10px 10px}.cert-mark-img{width:48px;height:78px;object-fit:contain;display:block}.cert-entry-card .actions{margin-top:10px}.auth-view,.auth-card{isolation:isolate}.auth-card{pointer-events:auto!important}.auth-card button,.auth-card input{pointer-events:auto!important}
+@media(max-width:760px){.insight-grid,.insight-grid.run-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bodypart-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.insight-grid,.insight-grid.run-grid{grid-template-columns:1fr}.pr-metrics{grid-template-columns:1fr}.pr-head{align-items:flex-start}.cert-entry-card .actions{display:grid}.cert-entry-card .actions>*{width:100%}}
+''')
+
+          # ---------- app icon: same exact mark, centered in square app tile ----------
+          mark=Path('garang-mark.svg').read_text()
+          m=re.search(r'href="(data:image/png;base64,[^"]+)"',mark)
+          if not m: raise SystemExit('exact GARANG mark payload not found')
+          payload=m.group(1)
+          Path('garang-app-icon.svg').write_text(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="GARANG app icon">\n  <rect width="512" height="512" rx="112" fill="#050605"/>\n  <image href="{payload}" x="178" y="80" width="156" height="351" preserveAspectRatio="xMidYMid meet"/>\n</svg>\n''')
+
+          # ---------- manifest ----------
+          manifest=json.loads(Path('manifest.webmanifest').read_text())
+          manifest['icons']=[{"src":"garang-app-icon.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]
+          manifest['description']='GARANG Intelligence — 운동·식단·러닝·체성분과 누적된 선택을 이해해 다음 행동을 제안합니다.'
+          Path('manifest.webmanifest').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+
+          # ---------- service worker cache ----------
+          p=Path('sw.js');sw=p.read_text()
+          sw=re.sub(r"const CACHE='[^']+';","const CACHE='garang-stability-v1-20260904';",sw,count=1)
+          sw=replace_once(sw,
+              "'./','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css','./garang-runtime-final.css','./garang-brand-runtime-v2.css','./garang-polish-v3.css','./garang-font-logo-v1.css',",
+              "'./','./index.html','./styles.css','./garang-target-ui.css','./garang-functional-recovery.css','./garang-runtime-final.css','./garang-brand-runtime-v2.css','./garang-polish-v3.css','./garang-font-logo-v1.css','./garang-stability-v1.css',",
+              'sw css assets')
+          sw=replace_once(sw,
+              "'./garang-auth-bootstrap.js','./app.js','./garang-functional-recovery.js'",
+              "'./data-schema.js','./performance.js','./garang-auth-bootstrap.js','./app.js','./garang-functional-recovery.js'",
+              'sw runtime assets')
+          p.write_text(sw)
+          PY
+
+      - name: Run regression suite
+        run: npm test
+
+      - name: Validate runtime build
+        run: npm run build
+
+      - name: Commit repair to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js 01_app/app.js index.html garang-auth-bootstrap.js garang-font-logo-v1.css garang-stability-v1.css garang-app-icon.svg manifest.webmanifest sw.js
+          git commit -m "Fix GARANG login, regressions, typography and app icon"
+          git push origin HEAD:main
