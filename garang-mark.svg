@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 180" role="img" aria-label="GARANG droplet and ripple mark">
-  <g fill="none" stroke="#F0EDE7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M65 8 L65 60 C65 82 58.5 99 46 113 C37.5 122.5 31.5 132.2 34.6 137.5 C38.6 144.2 49.6 148.5 65 148.5" stroke-width="1.65"/>
-    <path d="M65 60 C65 82 71.5 99 84 113 C92.5 122.5 98.5 132.2 95.4 137.5 C91.4 144.2 80.4 148.5 65 148.5" stroke-width="1.65"/>
-    <ellipse cx="65" cy="158.2" rx="13.2" ry="3.2" stroke-width="1.45"/>
-    <ellipse cx="65" cy="165" rx="30.5" ry="6.5" stroke-width="1.45" opacity=".92"/>
+  <g fill="none" stroke="#F2EFE8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M65 8V54" stroke-width="1.5"/>
+    <path d="M65 49C64.7 72 59.2 91 47.2 110.8C40.2 122.4 32.9 132.5 35.2 138.1C38.3 145.6 50.4 149.8 65 149.8" stroke-width="1.5"/>
+    <path d="M65 49C65.3 72 70.8 91 82.8 110.8C89.8 122.4 97.1 132.5 94.8 138.1C91.7 145.6 79.6 149.8 65 149.8" stroke-width="1.5"/>
+    <ellipse cx="65" cy="159" rx="12.7" ry="3" stroke-width="1.25"/>
+    <ellipse cx="65" cy="165.4" rx="29.5" ry="6.1" stroke-width="1.25" opacity=".92"/>
   </g>
 </svg>
