@@ -25,8 +25,10 @@
     main.dataset.gxNutritionEntry='closed';
     const target=main.querySelector('.protein-target');
     const pct=Number(target?.textContent.match(/(\d+)%/)?.[1]||0);
+    const status=pct>=80?'On track':pct>=50?'Building':'Needs attention';
     hero.style.setProperty('--gx-nutrition-pct',Math.max(0,Math.min(100,pct)));
-    hero.dataset.gxStatus=pct>=80?'On track':pct>=50?'Building':'Needs attention';
+    hero.dataset.gxStatus=status;
+    const kcal=main.querySelector('.nutrition-kcal');if(kcal)kcal.dataset.gxStatus=status;
 
     const tabs=document.createElement('div');tabs.className='gx-screen-tabs gx-nutrition-tabs';
     ['Nutrition','Performance','Insights'].forEach((label,i)=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(i===0)b.classList.add('active');b.onclick=()=>{if(i===1)route('progress');if(i===2)route('coach');};tabs.appendChild(b);});
