@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-09-01T19:30:49.015Z",
+  "timestamp": "2026-09-03T17:50:35.482Z",
   "status": "PASS",
   "counts": {
-    "javascript": 92,
-    "json": 32,
-    "jsonl": 11,
-    "activeAssets": 30
+    "javascript": 108,
+    "json": 33,
+    "jsonl": 6,
+    "activeAssets": 29
   },
   "failures": [],
-  "scope": "All JS syntax and JSON/JSONL; active entry assets; shell IDs; service no-eval rule. Not a proof of all undefined identifiers or all legacy runtime behavior."
+  "scope": "Categorized runtime, JS/JSON syntax, active entry assets, shell IDs, i18n wiring, no loose root runtime duplicates."
 }

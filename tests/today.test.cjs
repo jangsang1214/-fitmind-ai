@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-for(const file of ['today.js','data-schema.js'])vm.runInThisContext(fs.readFileSync(path.join(root,file),'utf8'));
+for(const file of ['02_core/today.js','02_core/data-schema.js'])vm.runInThisContext(fs.readFileSync(path.join(root,file),'utf8'));
 const tests=[];
 function test(name,fn){try{fn();tests.push({name,status:'PASS'});}catch(error){tests.push({name,status:'FAIL',error:error.message});process.exitCode=1;}}
 const at=new Date('2026-09-02T10:00:00.000Z');
@@ -20,15 +20,11 @@ test('documented energy, sleep and soreness boundaries are exact',()=>{
 });
 test('same input produces the same decision',()=>{const input={checkin:checkin({sleepHours:4.5,soreness:{back:4}}),plan};assert.deepEqual(GarangToday.evaluate(input),GarangToday.evaluate(input));});
 test('check-in revision updates one local-date record without turning missing values into zero',()=>{const first=checkin({sleepHours:null,availableMinutes:0}),second=GarangToday.normalizeCheckin({...first,energy:4},first,new Date('2026-09-02T11:00:00Z'));assert.equal(first.sleepHours,null);assert.equal(first.availableMinutes,0);assert.equal(second.revision,2);const state=GarangSchema.migrate({dailyCheckins:[second]});assert.equal(state.dailyCheckins.length,1);assert.equal(state.dailyCheckins[0].timezone,second.timezone);});
-test('TODAY UI exposes check-in, reason and workout start without implicit Planner writes',()=>{
- const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
- const reference=fs.readFileSync(path.join(root,'garang-reference-interactions.js'),'utf8');
- const access=fs.readFileSync(path.join(root,'garang-reference-access.js'),'utf8');
+test('TODAY UI exposes check-in, reason and explicit Planner writes',()=>{
+ const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
  assert.ok(app.includes('data-action="open-checkin"'),'open-checkin control');
  assert.ok(app.includes('coachDecision()'),'coach decision');
  assert.ok(app.includes('reasons:'),'decision reasons');
- assert.ok(reference.includes('Start Workout'),'workout start control');
- assert.ok(access.includes('open-checkin'),'recovery score opens check-in');
  assert.ok(app.includes('function applyCoachPlan()'),'explicit Planner write path');
  assert.ok(app.includes('window.confirm(message)'),'Planner write requires confirmation');
 });

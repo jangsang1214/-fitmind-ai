@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..'),pkg=require('../package.json'),manifest=require('../runtime-manifest.json');
 const ctx=vm.createContext({console,Date,Math,URL,AbortController,setTimeout,clearTimeout,structuredClone,crypto:crypto.webcrypto,location:{origin:'https://example.test'},GARANG_SERVICES_CONFIG:{apiBase:null}});
-for(const file of ['version.js','commercial-core.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
+for(const file of ['07_config/version.js','06_features/final/commercial-core.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
 const tests=[];function test(name,fn){try{fn();tests.push({name,status:'PASS'});}catch(error){tests.push({name,status:'FAIL',error:error.message});process.exitCode=1;}}
 test('one version controls package, runtime manifest and browser label',()=>{assert.equal(pkg.version,manifest.version);assert.equal(ctx.GARANG_BUILD.version,pkg.version);});
 test('disconnected analytics reports the real state without queuing fake success',()=>{const a=ctx.GarangCommercial.analytics(),x=a.track('screen_view');assert.equal(x.accepted,false);assert.equal(x.reason,'NOT_CONNECTED');assert.equal(a.pending.length,0);});

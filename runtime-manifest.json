@@ -4,41 +4,44 @@
   "branch": "main",
   "deployRoot": ".",
   "styles": [
-    "styles.css",
-    "garang-target-ui.css",
-    "garang-functional-recovery.css",
-    "garang-runtime-final.css",
-    "garang-brand-runtime-v2.css",
-    "garang-polish-v3.css",
-    "garang-font-logo-v1.css",
-    "garang-stability-v1.css"
+    "03_styles/runtime/styles.css",
+    "03_styles/runtime/garang-target-ui.css",
+    "03_styles/runtime/garang-functional-recovery.css",
+    "03_styles/runtime/garang-runtime-final.css",
+    "03_styles/runtime/garang-brand-runtime-v2.css",
+    "03_styles/runtime/garang-polish-v3.css",
+    "03_styles/runtime/garang-font-logo-v1.css",
+    "03_styles/runtime/garang-stability-v1.css"
   ],
   "scripts": [
-    "firebase-config.js",
-    "garang-services-config.js",
-    "data-schema.js",
-    "performance.js",
-    "garang-auth-bootstrap.js",
-    "app.js",
-    "garang-functional-recovery.js",
-    "garang-brand-runtime-v2.js",
-    "garang-polish-v3.js",
-    "garang-polish-v3-fix.js",
-    "garang-coach-home-hotfix.js"
+    "07_config/firebase-config.js",
+    "07_config/garang-services-config.js",
+    "02_core/data-schema.js",
+    "services/performance.js",
+    "06_features/ui/runtime/garang-auth-bootstrap.js",
+    "01_app/app.js",
+    "06_features/ui/runtime/garang-functional-recovery.js",
+    "06_features/ui/runtime/garang-brand-runtime-v2.js",
+    "06_features/ui/runtime/garang-polish-v3.js",
+    "06_features/ui/runtime/garang-polish-v3-fix.js",
+    "06_features/ui/runtime/garang-coach-home-hotfix.js",
+    "06_features/ui/i18n/translations.js",
+    "06_features/ui/i18n/runtime.js"
   ],
   "data": [
-    "exercise-db.json",
-    "food-db.json",
-    "exercise_knowledge.jsonl",
-    "food_knowledge.jsonl",
-    "fitmind_rules.jsonl",
-    "fitmind_sft.jsonl",
-    "synthetic_korean_dialogue_v6.jsonl"
+    "04_data/knowledge/exercise-db.json",
+    "04_data/knowledge/food-db.json",
+    "04_data/knowledge/exercise_knowledge.jsonl",
+    "04_data/knowledge/food_knowledge.jsonl",
+    "04_data/knowledge/fitmind_rules.jsonl",
+    "04_data/knowledge/fitmind_sft.jsonl",
+    "04_data/knowledge/synthetic_korean_dialogue_v6.jsonl"
   ],
   "assets": [
-    "manifest.webmanifest",
+    "07_config/manifest.webmanifest",
     "sw.js",
-    "garang-mark.svg",
-    "garang-app-icon.svg"
+    "02_core/sw-runtime.js",
+    "05_assets/garang-mark.svg",
+    "05_assets/garang-app-icon.svg"
   ]
 }

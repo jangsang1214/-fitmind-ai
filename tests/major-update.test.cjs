@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-for(const file of ['data-schema.js','performance.js'])vm.runInThisContext(fs.readFileSync(path.join(root,file),'utf8'));
+for(const file of ['02_core/data-schema.js','services/performance.js'])vm.runInThisContext(fs.readFileSync(path.join(root,file),'utf8'));
 const tests=[];
 function test(name,fn){try{fn();tests.push({name,status:'PASS'});}catch(error){tests.push({name,status:'FAIL',error:error.message});process.exitCode=1;}}
 
@@ -21,7 +21,7 @@ test('missing body measurements never become estimated zeroes',()=>{
  assert.equal(x.fatMass,null);assert.equal(x.bmr,null);assert.equal(x.bmi,22.9);assert.equal(x.muscle,null);
 });
 test('history labels only versioned calculations as automatic estimates',()=>{
- const features=fs.readFileSync(path.join(root,'features.js'),'utf8');
+ const features=fs.readFileSync(path.join(root,'06_features/final/features.js'),'utf8');
  assert.match(features,/calculationVersion===G\.BODY_ESTIMATE_VERSION\?'estimateTag':'recordedValues'/);
 });
 test('workout insights group body parts and expose weight, e1RM and volume PRs',()=>{
@@ -39,26 +39,26 @@ test('running insights separate distance-weighted average, fastest and longest r
  const x=GarangPerformance.runningInsights(state);assert.equal(x.count,2);assert.equal(x.totalDistance,15);assert.equal(x.averagePace,85/15);assert.equal(x.fastest.id,'r2');assert.equal(x.longest.id,'r2');assert.equal(GarangPerformance.formatPace(x.averagePace),'5:40');
 });
 test('workout and running pages render the new record dashboards',()=>{
- const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
+ const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
  for(const token of ['renderWorkoutInsights()','renderRunningInsights()','primaryMuscle','종목별 PR 현황','거리 가중 평균'])assert.ok(app.includes(token),token);
 });
 test('planner, AI action and memory controls use readable application UI',()=>{
- const features=fs.readFileSync(path.join(root,'features.js'),'utf8'),css=fs.readFileSync(path.join(root,'final.css'),'utf8');
+ const features=fs.readFileSync(path.join(root,'06_features/final/features.js'),'utf8'),css=fs.readFileSync(path.join(root,'03_styles/features/final.css'),'utf8');
  for(const token of ['planner-filter-card','select-shell','memory-form-card','memory-category-chip','data-ai-plan'])assert.ok(features.includes(token),token);
  for(const token of ['.planner-filter-card','.memory-form-card','.memory-category-chip','button[data-ai-plan]'])assert.ok(css.includes(token),token);
 });
 test('certification supports gallery media and standalone transparent PNG overlays',()=>{
- const app=fs.readFileSync(path.join(root,'app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  for(const token of ['workoutOverlayOnly','runOverlayOnly','saveTransparentOverlay','image/png','투명 오버레이 PNG','사진첩에서 불러오기'])assert.ok(app.includes(token),token);
  assert.match(html,/id="mediaPicker"[^>]+accept="image\/\*,video\/\*"/);assert.doesNotMatch(html,/id="mediaPicker"[^>]+capture=/);
 });
 test('all form controls are constrained to their card width on narrow devices',()=>{
- const css=fs.readFileSync(path.join(root,'final.css'),'utf8');
+ const css=fs.readFileSync(path.join(root,'03_styles/features/final.css'),'utf8');
  for(const token of ['min-inline-size:0','max-inline-size:100%','input[type=date],input[type=time]','::-webkit-date-and-time-value','@media(max-width:360px)'])assert.ok(css.includes(token),token);
  assert.match(css,/\.planner-filter-actions\{grid-template-columns:1fr\}/);
 });
 test('commercial mobile CSS preserves the Planner notification toggle and full-width date filter',()=>{
- const css=fs.readFileSync(path.join(root,'commercial.css'),'utf8'),features=fs.readFileSync(path.join(root,'features.js'),'utf8');
+ const css=fs.readFileSync(path.join(root,'03_styles/features/commercial.css'),'utf8'),features=fs.readFileSync(path.join(root,'06_features/final/features.js'),'utf8');
  assert.match(css,/input:not\(\[type=checkbox\]\):not\(\[type=radio\]\):not\(\[type=file\]\),select,textarea/);
  for(const token of ['.notification-control>input[type=checkbox]','inline-size:48px!important','.planner-filter-card{grid-template-columns:minmax(0,1fr)!important'])assert.ok(css.includes(token),token);
  assert.ok(features.includes('planner-notify notification-control'));
@@ -91,16 +91,14 @@ test('empty score coach response never exposes null',()=>{
  assert.equal(score.total,null);assert.doesNotMatch(ko,/null\/100|null/);assert.doesNotMatch(en,/null\/100|null/);assert.match(ko,/기록이 부족/);
 });
 test('active application consumes the safety helpers',()=>{
- const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
+ const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
  for(const token of ['GarangSchema.numeric(v)','GarangSchema.accountBootstrap','GarangSchema.mergeStates','GarangPerformance.coachSummary'])assert.match(app,new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  assert.doesNotMatch(app,/\(!state\.profile&&!state\.workouts\.length\)/);
 });
-test('flat runtime and categorized source stay synchronized',()=>{
- const exact={'data-schema.js':'02_core/data-schema.js','performance.js':'services/performance.js','features.js':'06_features/final/features.js','final.css':'03_styles/features/final.css'};
- for(const [flat,source] of Object.entries(exact))assert.equal(fs.readFileSync(path.join(root,flat),'utf8'),fs.readFileSync(path.join(root,source),'utf8'),flat);
- let flat=fs.readFileSync(path.join(root,'app.js'),'utf8').replace(/\r\n/g,'\n'),source=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8').replace(/\r\n/g,'\n');
- for(const name of ['exercise-db.json','food-db.json','exercise_knowledge.jsonl','food_knowledge.jsonl','fitmind_rules.jsonl','fitmind_sft.jsonl','synthetic_korean_dialogue_v6.jsonl'])source=source.replaceAll('04_data/knowledge/'+name,name);
- assert.equal(flat,source,'app.js');
+test('runtime uses categorized sources without loose root duplicates',()=>{
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
+ for(const token of ['01_app/app.js','02_core/data-schema.js','services/performance.js','06_features/ui/i18n/runtime.js'])assert.ok(manifest.scripts.includes(token),token);
+ for(const loose of ['app.js','data-schema.js','performance.js','styles.css','features.js','final.css'])assert.equal(fs.existsSync(path.join(root,loose)),false,loose);
 });
 
 console.log(JSON.stringify(tests,null,2));

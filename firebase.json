@@ -1,10 +1,27 @@
 {
-  "functions": [{"source": "functions", "codebase": "default", "runtime": "nodejs22"}],
-  "firestore": {"rules": "firestore.rules", "indexes": "firestore.indexes.json"},
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs22"
+    }
+  ],
+  "firestore": {
+    "rules": "07_config/firestore.rules",
+    "indexes": "07_config/firestore.indexes.json"
+  },
   "emulators": {
-    "auth": {"port": 9099},
-    "firestore": {"port": 8080},
-    "functions": {"port": 5001},
-    "ui": {"enabled": true}
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }
