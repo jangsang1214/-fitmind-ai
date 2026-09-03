@@ -1,0 +1,101 @@
+/* GARANG FUNCTIONAL RECOVERY v1.0
+   Canonical app.js stays in control. No facades, no bitmap anatomy, no hidden core features. */
+:root{
+  --gr-bg:#050605;--gr-surface:#0b0c0b;--gr-surface2:#101210;
+  --gr-line:rgba(242,239,233,.09);--gr-line2:rgba(242,239,233,.16);
+  --gr-ivory:#f2efe9;--gr-muted:#858681;--gr-jade:#4fae92;--gr-deep:#0f2a23;
+  --gr-display:"Cormorant Garamond","Iowan Old Style","Baskerville","Times New Roman",serif;
+  --gr-ui:"Inter","Pretendard","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+html,body,#appView{background:var(--gr-bg)!important;color:var(--gr-ivory)!important}
+body{font-family:var(--gr-ui)!important;overflow-x:hidden!important}
+/* Kill every old static reference facade if an older cached script tries to inject it. */
+.grx-facade,.grx-anatomy,.grx-reference-anatomy,.workout-reference-image,[data-reference-bitmap="anatomy"]{display:none!important}
+.grx-reference-original{display:contents!important}
+.topbar{display:flex!important}
+.main{display:block!important;width:min(1120px,100%)!important;max-width:1120px!important;margin:0 auto!important;padding:22px 18px calc(92px + env(safe-area-inset-bottom))!important;min-height:100svh!important;background:var(--gr-bg)!important}
+.card{background:var(--gr-surface)!important;border:1px solid var(--gr-line)!important;box-shadow:none!important}
+
+/* Coach — no broken boxed image placeholders. */
+.gpt-avatar{flex:0 0 28px!important;width:28px!important;height:34px!important;border:0!important;background:transparent!important;border-radius:0!important;display:grid!important;place-items:center!important;overflow:visible!important}
+.gpt-avatar img{display:none!important}
+.gpt-avatar .garang-inline-mark{display:block;width:22px;height:30px;overflow:visible}
+.gpt-message-inner{align-items:flex-start!important;gap:10px!important}
+.gpt-content{min-width:0!important;max-width:min(78%,560px)!important}
+.gpt-text{word-break:keep-all!important;overflow-wrap:anywhere!important;line-height:1.65!important}
+.gpt-message.user .gpt-text{background:var(--gr-deep)!important;border-color:rgba(79,174,146,.28)!important}
+.coach-app-shell{max-width:760px!important}
+
+/* Workout — the real inline SVG model is the only model. */
+.workout-hero-v2{display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(260px,.92fr)!important;gap:20px!important;align-items:center!important;overflow:visible!important;background:var(--gr-surface)!important;border:1px solid var(--gr-line)!important;border-radius:14px!important;padding:18px!important;height:auto!important;min-height:430px!important}
+.workout-hero-v2 .muscle-map-wrap{display:block!important;height:auto!important;min-height:390px!important;width:100%!important;overflow:visible!important}
+.workout-hero-v2 .muscle-map.anatomical-pro{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;height:auto!important;max-height:none!important;background:transparent!important;border:0!important;padding:0!important;overflow:visible!important}
+.workout-hero-v2 .body-view{display:grid!important;grid-template-rows:auto 1fr!important;place-items:center!important;min-width:0!important;min-height:390px!important;position:relative!important}
+.workout-hero-v2 .body-view>span{display:block!important;font-size:7px!important;letter-spacing:.16em!important;color:#777a75!important;margin-bottom:4px!important}
+.workout-hero-v2 .body-view svg{display:block!important;width:100%!important;max-width:205px!important;height:365px!important;overflow:visible!important;filter:none!important;touch-action:manipulation!important}
+.workout-hero-v2 .body-silhouette{fill:#393a37!important;stroke:#77766f!important;stroke-width:.7!important}
+.workout-hero-v2 .muscle-zone{fill:#715043!important;stroke:#a67b68!important;stroke-width:.45!important;opacity:.72!important;cursor:pointer!important;transition:opacity .15s ease,fill .15s ease,filter .15s ease!important;pointer-events:all!important}
+.workout-hero-v2 .muscle-zone:hover,.workout-hero-v2 .muscle-zone:focus{fill:#a86b55!important;opacity:1!important;filter:drop-shadow(0 0 4px rgba(168,107,85,.28))!important}
+.workout-hero-v2 .anatomy-line{stroke:#20211f!important;opacity:.8!important}
+.workout-visual-copy{min-width:0!important}
+.workout-visual-copy h2,.workout-selected-name,.exercise-visual-card strong,.workout-history-row strong,.workout-history-row span{word-break:keep-all!important;overflow-wrap:normal!important;white-space:normal!important}
+.workout-selected-name{font-size:15px!important;line-height:1.4!important}
+
+/* Non-destructive screen tabs: navigation only, never hide controls. */
+.garang-workout-tabs{height:46px;display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--gr-line);margin:0 0 14px}
+.garang-workout-tabs button{position:relative;border:0;background:transparent;color:#6f716d;font-size:12px;padding:0 8px}
+.garang-workout-tabs button.active{color:var(--gr-ivory)}
+.garang-workout-tabs button.active:after{content:"";position:absolute;left:28%;right:28%;bottom:-1px;height:1px;background:var(--gr-ivory)}
+.garang-session-start{width:100%!important;min-height:52px!important;margin:14px 0 4px!important;background:linear-gradient(180deg,#154638,#10382e)!important;border:1px solid rgba(79,174,146,.35)!important;border-radius:10px!important;color:#eef4f1!important;font-size:14px!important}
+
+/* Canonical workout logger must always remain usable. */
+.workout-builder-v2{display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;overflow:visible!important;background:var(--gr-surface)!important;border:1px solid var(--gr-line)!important;border-radius:14px!important;padding:16px!important}
+.workout-builder-v2 .workout-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.workout-builder-v2 .workout-fields .full{grid-column:1/-1!important}
+.workout-builder-v2 .field,.workout-builder-v2 input,.workout-builder-v2 select{min-width:0!important;max-width:100%!important}
+.workout-builder-v2 .workout-entry-actions{display:flex!important;gap:8px!important;flex-wrap:wrap!important}
+.workout-builder-v2 .draft-area,#saveWorkoutSession,#addWorkout,#clearWorkoutDraft{display:flex!important;visibility:visible!important;opacity:1!important}
+#saveWorkoutSession{width:100%!important;justify-content:center!important;min-height:48px!important;margin-top:10px!important}
+.exercise-visual-library{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.exercise-visual-card{min-width:0!important;overflow:hidden!important}
+.exercise-visual-card strong{font-size:12px!important;line-height:1.35!important}
+.exercise-visual-card span{font-size:10px!important;line-height:1.35!important}
+.compact-history .workout-history-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:14px!important;align-items:center!important;min-width:0!important}
+.compact-history .workout-history-row>*{min-width:0!important}
+
+/* Preserve every secondary feature visually and keep navigation usable. */
+.garang-more-sheet{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);display:grid;align-items:end}
+.garang-more-panel{width:min(520px,100%);margin:0 auto;background:#0b0c0b;border:1px solid var(--gr-line2);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:82svh;overflow:auto}
+.garang-more-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.garang-more-head strong{font-family:var(--gr-display);font-size:25px;font-weight:400}.garang-more-head button{width:36px;height:36px;border:1px solid var(--gr-line);border-radius:50%;background:#111;color:#ddd}
+.garang-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.garang-more-grid button{min-height:52px;text-align:left;border:1px solid var(--gr-line);border-radius:10px;background:#0f100f;color:#ddd;padding:10px 12px}.garang-more-grid button small{display:block;color:#71736f;font-size:9px;margin-top:3px}
+
+/* General mobile fixes for screenshots: no vertical word fragmentation / overflow. */
+.list-item,.plan-row,.memory-card,.meal-visual-card,.review-cell,.card{min-width:0!important}
+button,strong,b,p,span,label{word-break:keep-all}
+input,select,textarea,button{max-width:100%}
+.bottom-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+
+@media(max-width:799px){
+  .topbar{height:56px!important;padding:0 12px!important}.top-actions #syncBadge,.top-actions #planBadge,.top-actions #profileTopBtn,.top-actions #logoutBtn{display:none!important}
+  .main{padding:14px 16px calc(86px + env(safe-area-inset-bottom))!important;max-width:430px!important}
+  .page-head h1{font-size:30px!important}
+  .workout-hero-v2{grid-template-columns:1fr!important;min-height:0!important;padding:12px!important;gap:12px!important}
+  .workout-hero-v2 .muscle-map-wrap{min-height:340px!important}
+  .workout-hero-v2 .muscle-map.anatomical-pro{grid-template-columns:1fr 1fr!important;gap:2px!important}
+  .workout-hero-v2 .body-view{min-height:335px!important}
+  .workout-hero-v2 .body-view svg{height:320px!important;max-width:170px!important}
+  .workout-visual-copy h2{font-size:28px!important}
+  .exercise-visual-library{grid-template-columns:1fr 1fr!important}
+  .workout-builder-v2 .workout-fields{grid-template-columns:1fr 1fr!important}
+  .compact-history .workout-history-row{grid-template-columns:minmax(0,1fr) auto!important}
+  .gpt-content{max-width:84%!important}
+}
+@media(max-width:380px){
+  .main{padding-left:12px!important;padding-right:12px!important}
+  .workout-hero-v2 .body-view svg{height:292px!important;max-width:150px!important}
+  .workout-hero-v2 .body-view{min-height:305px!important}
+  .workout-hero-v2 .muscle-map-wrap{min-height:310px!important}
+  .workout-builder-v2 .workout-fields{grid-template-columns:1fr!important}
+  .workout-builder-v2 .workout-fields .full{grid-column:auto!important}
+  .exercise-visual-library{grid-template-columns:1fr!important}
+}
