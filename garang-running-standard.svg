@@ -1,15 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
   <g fill="none">
-    <rect x="58" y="1510" width="964" height="352" rx="30" fill="#050605" fill-opacity=".72" stroke="#3A3D3A" stroke-opacity=".9" stroke-width="2"/>
-    <g transform="translate(82 1533) scale(.42)">
-      <path fill="#F0EDE7" fill-rule="evenodd" d="M60 4C60 28 59 43 55 54C51 65 44 72 36 83C32 89 34 94 40 98C45 102 52 104 60 104C68 104 75 102 80 98C86 94 88 89 84 83C76 72 69 65 65 54C61 43 60 28 60 4ZM60 56C57 64 51 71 44 80C39 86 38 89 41 92C45 96 52 98 60 98C68 98 75 96 79 92C82 89 81 86 76 80C69 71 63 64 60 56Z"/>
-      <ellipse cx="60" cy="119" rx="12" ry="3.2" stroke="#F0EDE7" stroke-width="1.8"/>
-      <ellipse cx="60" cy="122" rx="27" ry="6.3" stroke="#F0EDE7" stroke-width="1.65" opacity=".94"/>
-    </g>
-    <text x="148" y="1576" fill="#F0EDE7" font-family="Georgia,serif" font-size="26" font-weight="400" letter-spacing="11">GARANG</text>
-    <text x="86" y="1660" fill="#F0EDE7" font-family="Arial,sans-serif" font-size="46" font-weight="500">RUN VERIFIED</text>
+    <rect x="58" y="1510" width="964" height="352" rx="30" fill="#050605" fill-opacity=".76" stroke="#3A3D3A" stroke-opacity=".86" stroke-width="2"/>
+    <image href="garang-mark.svg" x="78" y="1524" width="64" height="88" preserveAspectRatio="xMidYMid meet"/>
+    <text x="155" y="1576" fill="#F2EFE9" font-family="Georgia,serif" font-size="26" font-weight="400" letter-spacing="11">GARANG</text>
+    <text x="86" y="1660" fill="#F2EFE9" font-family="Arial,sans-serif" font-size="46" font-weight="500">RUN VERIFIED</text>
     <text x="86" y="1715" fill="#D5D1CB" font-family="Arial,sans-serif" font-size="27" font-weight="500">DISTANCE · PACE · TIME</text>
     <text x="86" y="1760" fill="#858984" font-family="Arial,sans-serif" font-size="19" font-weight="500">GPS · KCAL · DATE</text>
-    <path d="M86 1806H994" stroke="#2F8F78" stroke-width="2" opacity=".72"/>
+    <path d="M86 1806H994" stroke="#4FAE92" stroke-width="2" opacity=".62"/>
   </g>
 </svg>
