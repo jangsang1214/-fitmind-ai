@@ -2,7 +2,7 @@
    - Simplifies workout set recording without removing native data bindings.
    - Keeps Settings in one canonical top-bar route.
    - Hides manual Memory UI while preserving and enriching stored memory.
-   - Adds Coach thread "학습시키기 / Learn" to persist conversation context.
+   - Adds Coach thread "학습시키기 / Learn" and injects learned conversations into future Coach context.
 */
 (() => {
   'use strict';
@@ -53,7 +53,7 @@
 
   function hideRedundantRoutes() {
     /* Settings has one canonical entry: the top-bar gear. */
-    document.querySelectorAll('[data-pagego="settings"]').forEach(el => {
+    document.querySelectorAll('[data-pagego="settings"], [data-page="settings"]').forEach(el => {
       el.hidden = true;
       el.classList.add('garang-route-hidden');
       el.setAttribute('aria-hidden', 'true');
@@ -101,6 +101,7 @@
     if (pill) {
       const count = main.querySelectorAll('#workoutDraftArea .list-item').length;
       pill.textContent = ko ? `${count} 기록` : `${count} records`;
+      pill.hidden = count === 0;
     }
 
     const fields = card.querySelector('.workout-fields');
@@ -254,6 +255,27 @@
     catch (error) { console.warn('[GARANG] automatic memory save failed', error); }
   }
 
+  function coachLearningKey(appKey) {
+    return `garang_coach_learning_v1::${appKey}`;
+  }
+
+  function readCoachLearning(appKey) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(coachLearningKey(appKey)) || 'null');
+      if (parsed?.version === 1 && Array.isArray(parsed.entries)) return parsed;
+    } catch {}
+    return { version: 1, entries: [] };
+  }
+
+  function saveCoachLearning(appKey, entry) {
+    const store = readCoachLearning(appKey);
+    const existing = store.entries.find(x => x.threadId === entry.threadId);
+    if (existing) Object.assign(existing, entry);
+    else store.entries.push(entry);
+    store.entries = store.entries.sort((a, b) => String(a.learnedAt).localeCompare(String(b.learnedAt))).slice(-30);
+    localStorage.setItem(coachLearningKey(appKey), JSON.stringify(store));
+  }
+
   function learnCoachThread(threadId, button, popover) {
     const rec = activeAppRecord();
     if (!rec) return toast(isKo() ? '학습할 사용자 데이터가 없습니다.' : 'No user data to learn into.');
@@ -270,31 +292,44 @@
       const role = m.role === 'user' ? 'USER' : 'GARANG';
       return `${role}: ${String(m.text || '').trim()}`;
     }).filter(Boolean).join('\n').slice(0, 6500);
+    const title = String(thread.title || 'Coach conversation').slice(0, 80);
+    const learnedAt = now();
 
+    /* Keep a dedicated learning store so ordinary app saves cannot accidentally erase a learned chat. */
+    try {
+      saveCoachLearning(rec.key, {
+        threadId: thread.id,
+        title,
+        learnedAt,
+        content: transcript
+      });
+    } catch (error) {
+      console.warn('[GARANG] coach learning store failed', error);
+      return toast(isKo() ? '학습 저장에 실패했습니다.' : 'Could not save learning.');
+    }
+
+    /* Mirror it into Memory as a user-confirmed high-importance insight. */
     const entries = ensureMemoryShape(rec.state);
     const memoryKey = `coach_thread:${thread.id}`;
     upsertMemory(entries, {
       type: 'coaching_insight', key: memoryKey,
-      value: `[${String(thread.title || 'Coach conversation').slice(0, 80)}]\n${transcript}`,
+      value: `[${title}]\n${transcript}`,
       source: 'coach_thread_learning', confidence: 1, importance: 5, userConfirmed: true
     });
     rec.state.actionLog.push({
       id: uid(), action: 'learn_coach_thread', targetId: thread.id,
-      userConfirmed: true, sourceData: ['coach_thread'], at: now()
+      userConfirmed: true, sourceData: ['coach_thread'], at: learnedAt
     });
     rec.state.meta = rec.state.meta && typeof rec.state.meta === 'object' ? rec.state.meta : {};
-    rec.state.meta.updatedAt = now();
+    rec.state.meta.updatedAt = learnedAt;
 
-    try {
-      localStorage.setItem(rec.key, JSON.stringify(rec.state));
-      button.textContent = isKo() ? '학습 완료 ✓' : 'Learned ✓';
-      button.disabled = true;
-      toast(isKo() ? '이 대화를 GARANG이 학습했습니다.' : 'GARANG learned from this conversation.');
-      setTimeout(() => popover?.remove(), 700);
-    } catch (error) {
-      console.warn('[GARANG] coach learning failed', error);
-      toast(isKo() ? '학습 저장에 실패했습니다.' : 'Could not save learning.');
-    }
+    try { localStorage.setItem(rec.key, JSON.stringify(rec.state)); }
+    catch (error) { console.warn('[GARANG] coach memory mirror failed', error); }
+
+    button.textContent = isKo() ? '학습 완료 ✓' : 'Learned ✓';
+    button.disabled = true;
+    toast(isKo() ? '이 대화를 GARANG이 학습했습니다.' : 'GARANG learned from this conversation.');
+    setTimeout(() => popover?.remove(), 500);
   }
 
   function injectCoachLearning(threadId) {
@@ -305,8 +340,56 @@
     learn.dataset.act = 'learn';
     learn.className = 'g2-learn-thread';
     learn.textContent = isKo() ? '학습시키기' : 'Learn from chat';
-    learn.addEventListener('click', () => learnCoachThread(threadId, learn, pop));
-    pop.appendChild(learn);
+    const danger = pop.querySelector('.danger');
+    if (danger) pop.insertBefore(learn, danger); else pop.appendChild(learn);
+    learn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      learnCoachThread(threadId, learn, pop);
+    });
+  }
+
+  function patchCoachFetch() {
+    if (window.__garangCoachLearningFetchPatched) return;
+    window.__garangCoachLearningFetchPatched = true;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      try {
+        const endpoint = window.GARANG_SERVICES?.coachEndpoint;
+        const requestUrl = typeof input === 'string' ? input : input?.url;
+        const sameEndpoint = endpoint && requestUrl &&
+          new URL(requestUrl, location.href).href === new URL(endpoint, location.href).href;
+        if (sameEndpoint && typeof init?.body === 'string') {
+          const payload = JSON.parse(init.body);
+          const rec = activeAppRecord();
+          const learned = rec ? readCoachLearning(rec.key).entries.slice(-6) : [];
+          if (payload?.context && learned.length) {
+            payload.context.learnedConversations = learned.map(x => ({
+              threadId: x.threadId,
+              title: x.title,
+              learnedAt: x.learnedAt,
+              content: x.content
+            }));
+            const existingMemory = Array.isArray(payload.context.memory) ? payload.context.memory : [];
+            const learnedMemory = learned.map(x => ({
+              type: 'coaching_insight',
+              key: `coach_thread:${x.threadId}`,
+              value: `[${x.title}]\n${x.content}`,
+              source: 'coach_thread_learning',
+              confidence: 1,
+              importance: 5,
+              userConfirmed: true,
+              updatedAt: x.learnedAt
+            }));
+            payload.context.memory = [...existingMemory, ...learnedMemory].slice(-60);
+            init = { ...init, body: JSON.stringify(payload) };
+          }
+        }
+      } catch (error) {
+        console.warn('[GARANG] learned Coach context injection skipped', error);
+      }
+      return nativeFetch(input, init);
+    };
   }
 
   function run() {
@@ -332,6 +415,7 @@
     if (event.target.closest('[data-page],[data-pagego]')) setTimeout(schedule, 0);
   }, true);
 
+  patchCoachFetch();
   setInterval(syncAutomaticMemory, 3000);
   schedule();
 })();
