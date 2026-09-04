@@ -1,8 +1,7 @@
 /* GARANG workout library v2 — four-card default + full database expansion */
 .exercise-visual-card[hidden]{display:none!important}
 
-/* Primary screens keep only the small bilingual kicker. The oversized titles
-   (오늘 / 운동 / Body Intelligence / 진행 상황) are intentionally removed. */
+/* Primary screens keep only the small bilingual kicker. */
 #main.garang-primary-title-hidden .page-head h1{display:none!important}
 #main.garang-primary-title-hidden .page-head>div{display:flex;flex-direction:column;gap:0}
 #main.garang-primary-title-hidden .page-head .eyebrow{margin-bottom:0}
@@ -48,6 +47,138 @@
 .garang-library-more-button b{font-size:12px;font-weight:500;color:#7a817b}
 .exercise-visual-library.garang-library-expanded{padding-bottom:2px}
 
+/* Workout verification: one quiet primary action, advanced export stays available on demand. */
+.cert-entry-card.garang-cert-minimal{
+  position:relative;
+  overflow:hidden;
+  padding:20px;
+  border-color:rgba(189,191,196,.12);
+  background:
+    radial-gradient(circle at 88% 10%,rgba(16,51,46,.22),transparent 34%),
+    linear-gradient(180deg,rgba(13,15,14,.98),rgba(7,8,7,.99));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018);
+}
+.cert-entry-card.garang-cert-minimal .visual-section-head{margin-bottom:14px}
+.cert-entry-card.garang-cert-minimal .visual-section-head h3{
+  margin-top:3px;
+  font-size:17px;
+  font-weight:500;
+  letter-spacing:-.025em;
+}
+.cert-entry-card.garang-cert-minimal .premium-placeholder{
+  min-height:0;
+  margin:0;
+  padding:14px 0 16px;
+  border:0;
+  border-top:1px solid rgba(189,191,196,.09);
+  border-bottom:1px solid rgba(189,191,196,.09);
+  border-radius:0;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.cert-entry-card.garang-cert-minimal .premium-placeholder .cert-mark-img{
+  width:34px;
+  height:48px;
+  flex:0 0 auto;
+  object-fit:contain;
+  opacity:.84;
+}
+.cert-entry-card.garang-cert-minimal .premium-placeholder>div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.cert-entry-card.garang-cert-minimal .premium-placeholder strong{
+  color:var(--hanji,#f2eee7);
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:-.02em;
+}
+.cert-entry-card.garang-cert-minimal .premium-placeholder span{
+  color:rgba(242,238,231,.48);
+  font-size:10px;
+  line-height:1.55;
+  letter-spacing:-.015em;
+}
+.cert-entry-card.garang-cert-minimal>.actions{
+  display:block;
+  margin-top:14px;
+}
+.cert-entry-card.garang-cert-minimal #certWorkout.garang-cert-primary{
+  width:100%;
+  min-height:46px;
+  margin:0;
+  border:1px solid rgba(91,166,143,.36);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(16,66,57,.88),rgba(12,48,42,.92));
+  color:#f2efe8;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.cert-entry-card.garang-cert-minimal #certWorkout.garang-cert-primary:active{transform:translateY(1px)}
+.garang-cert-options{
+  margin:8px 0 0;
+  padding:0;
+  border:0;
+}
+.garang-cert-options-summary{
+  list-style:none;
+  cursor:pointer;
+  width:max-content;
+  margin-left:auto;
+  padding:6px 2px;
+  color:rgba(242,238,231,.38);
+  font-size:9px;
+  font-weight:500;
+  letter-spacing:.02em;
+}
+.garang-cert-options-summary::-webkit-details-marker{display:none}
+.garang-cert-options-summary::after{content:'  ·  +';color:rgba(105,171,151,.55)}
+.garang-cert-options[open] .garang-cert-options-summary::after{content:'  ·  −'}
+.garang-cert-options-body{
+  padding:8px 0 2px;
+  display:flex;
+  justify-content:flex-end;
+}
+.garang-cert-options-body #workoutOverlayOnly{
+  min-height:34px;
+  padding:7px 11px;
+  border-color:rgba(189,191,196,.10);
+  background:transparent;
+  color:rgba(242,238,231,.52);
+  font-size:9px;
+}
+.cert-entry-card.garang-cert-minimal #workoutCertArea.empty{
+  min-height:0;
+  margin-top:10px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:rgba(242,238,231,.33);
+  font-size:9px;
+  line-height:1.5;
+}
+.cert-entry-card.garang-cert-minimal .cert-controls{
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.cert-entry-card.garang-cert-minimal #certShare{
+  min-height:38px;
+  padding:8px 14px;
+  border-radius:10px;
+  font-size:10px;
+  letter-spacing:-.01em;
+}
+.cert-entry-card.garang-cert-minimal .cert-video-note{display:none}
+
 /* Keep the first screen intentionally compact: exactly four exercise cards. */
 @media(min-width:901px){
   .exercise-visual-library:not(.garang-library-expanded){grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -59,4 +190,7 @@
   .exercise-visual-library{gap:8px}
   .garang-library-more-wrap{margin:10px 0 16px}
   .garang-library-more-button{min-height:40px;font-size:10px}
+  .cert-entry-card.garang-cert-minimal{padding:17px}
+  .cert-entry-card.garang-cert-minimal .premium-placeholder{padding:12px 0 14px}
+  .cert-entry-card.garang-cert-minimal #certWorkout.garang-cert-primary{min-height:44px}
 }
