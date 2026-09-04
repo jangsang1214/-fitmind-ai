@@ -1,8 +1,8 @@
-/* GARANG experience v4.1
+/* GARANG experience v4.2
    - Memory remains fully internal to GARANG's intelligence/data model.
    - Settings has one canonical entry: the permanent top-bar gear.
    - Today removes the obsolete duplicate FRONT/BACK tools; only the interactive compact switch remains.
-   - Settings keeps the compact SETTING / 설정 eyebrow and removes the oversized page title.
+   - Settings, Profile and User Model keep compact eyebrow headers without oversized page titles.
 */
 (() => {
   'use strict';
@@ -41,8 +41,9 @@
     main.querySelectorAll('.today-body-panel .g3-anatomy-tools').forEach(el => el.remove());
   }
 
-  function cleanSettingsHeading() {
-    if (!main.querySelector('#savePreferences')) return;
+  function cleanCompactPageHeading() {
+    /* These utility screens keep only the compact bilingual eyebrow. */
+    if (!main.querySelector('#savePreferences, #saveProfile, #saveOnboarding')) return;
     const head = main.querySelector('.page-head');
     if (!head) return;
     head.querySelector('h1')?.remove();
@@ -89,7 +90,7 @@
     scheduled = false;
     internalizeMemorySurface();
     cleanTodayAnatomy();
-    cleanSettingsHeading();
+    cleanCompactPageHeading();
   }
 
   function schedule() {
