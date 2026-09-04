@@ -1,0 +1,174 @@
+/* GARANG Today premium anatomy + Korean typography fix
+   Scope is intentionally limited to the Today hero so existing functionality remains unchanged. */
+
+/* Korean focus / decision typography: never fall back to the English display serif. */
+.today-body-label strong,
+.today-decision-panel h2{
+  font-family:"Noto Sans KR",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif!important;
+  font-style:normal!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+}
+.today-body-label strong{
+  font-size:30px!important;
+  font-weight:500!important;
+  line-height:1.08!important;
+  letter-spacing:-.045em!important;
+  color:#f2f0ed!important;
+}
+.today-decision-panel h2{
+  font-size:clamp(30px,4.6vw,44px)!important;
+  font-weight:600!important;
+  line-height:1.16!important;
+  letter-spacing:-.05em!important;
+  text-wrap:balance;
+}
+
+/* Today anatomy becomes a dedicated premium visual stage. */
+.today-body-panel{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  min-height:360px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:1px solid rgba(189,191,196,.14)!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 76% 40%,rgba(47,143,120,.105),transparent 34%),
+    radial-gradient(circle at 32% 18%,rgba(255,255,255,.025),transparent 30%),
+    linear-gradient(155deg,#0d0f0e 0%,#090a09 58%,#070807 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018)!important;
+}
+.today-body-panel:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent 49.88%,rgba(255,255,255,.04) 50%,transparent 50.12%);
+  opacity:.55;
+}
+.today-body-label{
+  position:relative!important;
+  inset:auto!important;
+  z-index:3!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  padding:20px 22px 8px!important;
+  min-width:0!important;
+}
+.today-body-label .eyebrow{
+  color:#6ea795!important;
+  font-size:9px!important;
+  font-weight:600!important;
+  letter-spacing:.14em!important;
+}
+
+/* Remove the generic workout controls from the compact Today visual only. */
+.today-body-panel > .g3-anatomy-tools{display:none!important}
+.today-body-panel .compact-map.garang-today-anatomy-premium{
+  width:100%!important;
+  max-height:none!important;
+  min-height:0!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  padding:0 12px 12px!important;
+}
+.today-body-panel .garang-today-anatomy-map,
+.today-body-panel .compact-map .muscle-map{
+  width:100%!important;
+  max-width:none!important;
+  min-height:300px!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:end!important;
+  gap:8px!important;
+  padding:18px 4px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.today-body-panel .body-view{
+  position:relative!important;
+  min-width:0!important;
+  min-height:292px!important;
+  display:grid!important;
+  place-items:end center!important;
+  padding-top:26px!important;
+  overflow:visible!important;
+}
+.today-body-panel .body-view + .body-view:before{
+  content:"";
+  position:absolute;
+  left:-4px;
+  top:34px;
+  bottom:18px;
+  width:1px;
+  background:linear-gradient(180deg,transparent,rgba(189,191,196,.08) 18%,rgba(189,191,196,.08) 82%,transparent);
+}
+.today-body-panel .body-view>span{
+  top:7px!important;
+  left:0!important;
+  right:0!important;
+  bottom:auto!important;
+  color:#767b76!important;
+  font-size:7.5px!important;
+  font-weight:600!important;
+  letter-spacing:.15em!important;
+  opacity:.9!important;
+}
+.today-body-panel .body-view svg,
+.today-body-panel .body-view svg.g3-body-model{
+  display:block!important;
+  width:100%!important;
+  max-width:176px!important;
+  height:292px!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  transform:scale(1.035)!important;
+  transform-origin:center bottom!important;
+  filter:drop-shadow(0 22px 28px rgba(0,0,0,.36))!important;
+}
+
+/* Decision card hierarchy stays clean beside / below the larger anatomy stage. */
+.today-decision-panel{
+  padding:18px 10px 12px!important;
+}
+.today-decision-panel .eyebrow{
+  letter-spacing:.17em!important;
+}
+.today-decision-copy{
+  max-width:46rem!important;
+  font-size:13px!important;
+  line-height:1.72!important;
+}
+
+@media(max-width:799px){
+  .visual-today-hero{gap:14px!important}
+  .today-body-panel{min-height:338px!important}
+  .today-body-label{padding:18px 18px 6px!important}
+  .today-body-label strong{font-size:28px!important}
+  .today-body-panel .compact-map.garang-today-anatomy-premium{padding:0 6px 10px!important}
+  .today-body-panel .garang-today-anatomy-map,
+  .today-body-panel .compact-map .muscle-map{min-height:282px!important;padding:14px 0 0!important;gap:2px!important}
+  .today-body-panel .body-view{min-height:272px!important;padding-top:24px!important}
+  .today-body-panel .body-view svg,
+  .today-body-panel .body-view svg.g3-body-model{height:264px!important;max-width:136px!important;transform:scale(1.045)!important}
+  .today-decision-panel h2{font-size:31px!important;line-height:1.18!important}
+}
+
+@media(max-width:390px){
+  .today-body-panel{min-height:320px!important}
+  .today-body-label{padding:16px 16px 4px!important}
+  .today-body-label strong{font-size:27px!important}
+  .today-body-panel .garang-today-anatomy-map,
+  .today-body-panel .compact-map .muscle-map{min-height:266px!important}
+  .today-body-panel .body-view{min-height:256px!important}
+  .today-body-panel .body-view svg,
+  .today-body-panel .body-view svg.g3-body-model{height:248px!important;max-width:126px!important}
+  .today-decision-panel h2{font-size:29px!important}
+}
