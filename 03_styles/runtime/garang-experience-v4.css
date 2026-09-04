@@ -1,4 +1,4 @@
-/* GARANG experience v4.3 */
+/* GARANG experience v4.4 */
 .garang-single-route{
   grid-template-columns:1fr!important;
 }
@@ -9,6 +9,13 @@
 
 /* Today owns one compact interactive FRONT/BACK switch only. Prevent the obsolete Polish v3 control from flashing back in. */
 .today-body-panel .g3-anatomy-tools{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* Keep the Primary / Secondary / Tertiary anatomy legend hidden on every viewport, including Windows desktop. */
+.today-body-panel .today-muscle-legend{
   display:none!important;
   visibility:hidden!important;
   pointer-events:none!important;
