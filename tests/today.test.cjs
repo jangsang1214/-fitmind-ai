@@ -28,5 +28,9 @@ test('TODAY UI exposes check-in, reason and explicit Planner writes',()=>{
  assert.ok(app.includes('function applyCoachPlan()'),'explicit Planner write path');
  assert.ok(app.includes('window.confirm(message)'),'Planner write requires confirmation');
 });
+test('TODAY anatomy legend stays hidden on desktop and mobile',()=>{
+ const css=fs.readFileSync(path.join(root,'03_styles/runtime/garang-experience-v4.css'),'utf8');
+ assert.match(css,/\.today-body-panel \.today-muscle-legend\s*\{[\s\S]*?display:none!important/);
+});
 
 console.log(JSON.stringify(tests,null,2));
