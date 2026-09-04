@@ -1,8 +1,20 @@
-/* GARANG experience v4 */
+/* GARANG experience v4.1 */
 .garang-single-route{
   grid-template-columns:1fr!important;
 }
 .utility-row.garang-single-route{
   display:grid!important;
   grid-template-columns:1fr!important;
+}
+
+/* Today owns one compact interactive FRONT/BACK switch only. Prevent the obsolete Polish v3 control from flashing back in. */
+.today-body-panel .g3-anatomy-tools{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* Settings keeps only the compact eyebrow header; the oversized title is intentionally removed by runtime. */
+.main:has(#savePreferences) .page-head h1{
+  display:none!important;
 }
