@@ -50,6 +50,9 @@
   function currentScreenKey(title, eyebrow) {
     const page = currentPage();
     const text = `${title?.textContent || ''} ${eyebrow?.textContent || ''}`.trim().toLowerCase();
+    if (/profile|프로필/.test(text) || main.querySelector('#saveProfile')) return 'profile';
+    if (/settings?|설정/.test(text) || main.querySelector('#savePreferences')) return 'settings';
+    if (/modeling|사용자 모델|garang이 먼저 알아야 할 것|start/.test(text) || main.querySelector('#saveOnboarding')) return 'modeling';
     if (/nutrition|식단/.test(text)) return 'nutrition';
     if (/running|러닝/.test(text)) return 'running';
     if (/body intelligence|체성분/.test(text)) return 'body';
@@ -74,7 +77,10 @@
       workout: ko ? 'WORKOUT / 운동' : 'WORKOUT',
       body: ko ? 'BODY / 체성분' : 'BODY',
       running: ko ? 'RUNNING / 러닝' : 'RUNNING',
-      nutrition: ko ? 'NUTRITION / 식단' : 'NUTRITION'
+      nutrition: ko ? 'NUTRITION / 식단' : 'NUTRITION',
+      profile: ko ? 'PROFILE / 프로필' : 'PROFILE',
+      settings: ko ? 'SETTING / 설정' : 'SETTING',
+      modeling: ko ? 'MODELING / 모델링' : 'MODELING'
     };
     if (labels[screen]) eyebrow.textContent = labels[screen];
   }
