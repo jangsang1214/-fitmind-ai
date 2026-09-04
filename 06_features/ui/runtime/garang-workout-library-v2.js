@@ -2,6 +2,7 @@
    - Korean headers use bilingual compact labels across primary tracking screens.
    - Large primary titles are removed from Today, Workout, Body, Progress, Running and Nutrition.
    - Workout shows 4 exercises by default, then expands to every matching DB exercise.
+   - Workout certification keeps all export functions while presenting one primary action.
    - Existing workout state/data logic remains owned by app.js. */
 (() => {
   'use strict';
@@ -78,6 +79,62 @@
     if (labels[screen]) eyebrow.textContent = labels[screen];
   }
 
+  function polishWorkoutCertification() {
+    if (currentPage() !== 'workout') return;
+    const card = main.querySelector('.cert-entry-card');
+    if (!card) return;
+
+    const ko = document.documentElement.lang !== 'en';
+    card.classList.add('garang-cert-minimal');
+
+    const eyebrow = card.querySelector('.visual-section-head .eyebrow');
+    const heading = card.querySelector('.visual-section-head h3');
+    if (eyebrow) eyebrow.textContent = 'GARANG VERIFIED';
+    if (heading) heading.textContent = ko ? '운동 인증' : 'Workout verification';
+
+    const poster = card.querySelector('.cert-poster-placeholder');
+    const posterTitle = poster?.querySelector('strong');
+    const posterCopy = poster?.querySelector('span');
+    if (posterTitle) posterTitle.textContent = ko ? '오늘의 기록' : 'Today’s record';
+    if (posterCopy) posterCopy.textContent = ko ? '사진 한 장에 GARANG의 기록을 담습니다.' : 'Turn one photo into a GARANG record.';
+
+    const certButton = card.querySelector('#certWorkout');
+    if (certButton) {
+      certButton.textContent = ko ? '인증 만들기' : 'Create verification';
+      certButton.classList.add('garang-cert-primary');
+    }
+
+    const overlayButton = card.querySelector('#workoutOverlayOnly');
+    let options = card.querySelector('.garang-cert-options');
+    if (overlayButton && !options) {
+      options = document.createElement('details');
+      options.className = 'garang-cert-options';
+      const summary = document.createElement('summary');
+      summary.className = 'garang-cert-options-summary';
+      const body = document.createElement('div');
+      body.className = 'garang-cert-options-body';
+      options.append(summary, body);
+      overlayButton.parentElement?.insertAdjacentElement('afterend', options);
+      body.appendChild(overlayButton);
+    }
+
+    if (options) {
+      const summary = options.querySelector('.garang-cert-options-summary');
+      if (summary) summary.textContent = ko ? '추가 옵션' : 'More options';
+    }
+    if (overlayButton) overlayButton.textContent = ko ? '오버레이만 저장' : 'Save overlay only';
+
+    const certArea = card.querySelector('#workoutCertArea');
+    if (certArea?.classList.contains('empty')) {
+      certArea.textContent = ko ? '사진을 선택하면 최근 운동 기록이 자동으로 적용됩니다.' : 'Choose a photo and your latest workout will be applied automatically.';
+    }
+
+    const share = card.querySelector('#certShare');
+    if (share) share.textContent = share.closest('.cert-controls')?.querySelector('.cert-video-note')
+      ? (ko ? '영상 공유' : 'Share video')
+      : (ko ? '저장 / 공유' : 'Save / Share');
+  }
+
   function setCardContent(card, ex, muscleKey) {
     const name = String(ex?.exercise_name || '').trim();
     card.dataset.exercisePick = name;
@@ -129,8 +186,6 @@
     if (library.dataset.garangLibraryV2 === signature) return;
     library.dataset.garangLibraryV2 = signature;
 
-    /* app.js currently renders its first eight. Keep the first four visible and preserve
-       their native event bindings; cards 5+ become the expandable collection. */
     let cards = [...library.querySelectorAll('.exercise-visual-card[data-exercise-pick]')];
     cards.forEach((card, index) => {
       card.classList.toggle('garang-library-extra', index >= 4);
@@ -185,7 +240,9 @@
   async function run() {
     scheduled = false;
     polishPageHeader();
+    polishWorkoutCertification();
     await enhanceWorkoutLibrary();
+    polishWorkoutCertification();
   }
 
   function schedule() {
