@@ -29,7 +29,6 @@
 }
 .auth-copy{min-width:0;max-width:650px}
 
-/* Brand lockup: let the identity breathe, but keep it quieter than the message. */
 .auth-copy .brand-hero{
   margin:0 0 clamp(54px,8vh,92px);
   gap:12px;
@@ -52,7 +51,6 @@
   color:#757973;
 }
 
-/* The old floating ornament competed with the copy. The eyebrow now anchors the section alone. */
 .auth-korean-line{display:none!important}
 .auth-copy .eyebrow{
   display:block;
@@ -98,7 +96,6 @@
   word-break:keep-all;
 }
 
-/* Form area: remove the nested-card look. The interface should feel like part of the page. */
 .auth-card{
   width:100%;
   max-width:410px;
@@ -220,6 +217,23 @@
   font-weight:560!important;
 }
 
+/* English uses the approved serif display voice and a deliberate two-line lockup. */
+html[lang="en"] .auth-copy h1{
+  max-width:620px;
+  font-family:"Cormorant Garamond",Georgia,serif!important;
+  font-size:clamp(50px,4.8vw,62px);
+  font-weight:500!important;
+  line-height:.98!important;
+  letter-spacing:-.025em!important;
+}
+html[lang="en"] .auth-copy h1 em{white-space:nowrap}
+html[lang="en"] .auth-copy p{
+  max-width:500px;
+  font-size:12.5px;
+  line-height:1.7;
+  letter-spacing:.005em;
+}
+
 @media(max-width:760px){
   .auth-view{
     padding:max(28px,env(safe-area-inset-top)) 24px calc(42px + env(safe-area-inset-bottom));
@@ -230,9 +244,7 @@
     display:block;
   }
   .auth-copy{max-width:none}
-  .auth-copy .brand-hero{
-    margin:0 0 46px;
-  }
+  .auth-copy .brand-hero{margin:0 0 46px}
   .auth-copy .brand-hero img{width:46px;height:46px}
   .auth-copy .brand-hero b{font-size:24px}
   .auth-copy .brand-hero span{font-size:7px;margin-top:6px}
@@ -257,6 +269,18 @@
     font-size:12px;
     line-height:1.72;
   }
+  html[lang="en"] .auth-copy h1{
+    max-width:100%;
+    font-size:clamp(39px,9.8vw,44px);
+    line-height:1!important;
+    letter-spacing:-.02em!important;
+  }
+  html[lang="en"] .auth-copy h1 em{white-space:nowrap}
+  html[lang="en"] .auth-copy p{
+    max-width:360px;
+    font-size:11.5px;
+    line-height:1.68;
+  }
   .auth-card{
     max-width:none;
     margin-top:38px;
@@ -272,5 +296,6 @@
   .auth-view{padding-left:20px;padding-right:20px}
   .auth-copy .brand-hero{margin-bottom:40px}
   .auth-copy h1{font-size:clamp(36px,10.5vw,42px)}
+  html[lang="en"] .auth-copy h1{font-size:clamp(36px,9.7vw,39px)}
   .auth-card{margin-top:34px}
 }
