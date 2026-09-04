@@ -11,7 +11,8 @@
     "03_styles/runtime/garang-brand-runtime-v2.css",
     "03_styles/runtime/garang-polish-v3.css",
     "03_styles/runtime/garang-font-logo-v1.css",
-    "03_styles/runtime/garang-stability-v1.css"
+    "03_styles/runtime/garang-stability-v1.css",
+    "03_styles/runtime/garang-today-premium-fix.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
@@ -28,7 +29,8 @@
     "06_features/ui/runtime/garang-coach-home-hotfix.js",
     "06_features/ui/i18n/translations.js",
     "06_features/ui/i18n/runtime.js",
-    "06_features/ui/runtime/garang-units-runtime.js"
+    "06_features/ui/runtime/garang-units-runtime.js",
+    "06_features/ui/runtime/garang-today-premium-fix.js"
   ],
   "data": [
     "04_data/knowledge/exercise-db.json",
