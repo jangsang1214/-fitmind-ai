@@ -1,6 +1,6 @@
 /* GARANG workout library v2
-   - Korean headers use TODAY / 오늘 and WORKOUT / 운동.
-   - Large primary titles are removed from Today, Workout, Body and Progress.
+   - Korean headers use bilingual compact labels across primary tracking screens.
+   - Large primary titles are removed from Today, Workout, Body, Progress, Running and Nutrition.
    - Workout shows 4 exercises by default, then expands to every matching DB exercise.
    - Existing workout state/data logic remains owned by app.js. */
 (() => {
@@ -11,7 +11,7 @@
 
   let exerciseDBPromise = null;
   let scheduled = false;
-  const compactHeaderPages = new Set(['today', 'workout', 'body', 'progress']);
+  const compactHeaderPages = new Set(['today', 'workout', 'body', 'progress', 'running', 'nutrition']);
 
   const muscleKeyFromLabel = label => {
     const x = String(label || '').toLowerCase();
@@ -46,17 +46,36 @@
     return document.querySelector('#bottomNav button.active')?.dataset.page || '';
   }
 
-  function polishPageHeader() {
+  function currentScreenKey(title, eyebrow) {
     const page = currentPage();
+    const text = `${title?.textContent || ''} ${eyebrow?.textContent || ''}`.trim().toLowerCase();
+    if (/nutrition|식단/.test(text)) return 'nutrition';
+    if (/running|러닝/.test(text)) return 'running';
+    if (/body intelligence|체성분/.test(text)) return 'body';
+    if (/progress|진행 상황|흐름/.test(text)) return 'progress';
+    if (/workout|log workout|운동/.test(text)) return 'workout';
+    if (/today|오늘/.test(text)) return 'today';
+    return page;
+  }
+
+  function polishPageHeader() {
     const eyebrow = main.querySelector('.page-head .eyebrow');
     const title = main.querySelector('.page-head h1');
-    const compact = compactHeaderPages.has(page);
+    const screen = currentScreenKey(title, eyebrow);
+    const compact = compactHeaderPages.has(screen);
     main.classList.toggle('garang-primary-title-hidden', compact);
     if (title) title.hidden = compact;
     if (!eyebrow) return;
+
     const ko = document.documentElement.lang !== 'en';
-    if (page === 'today') eyebrow.textContent = ko ? 'TODAY / 오늘' : 'TODAY';
-    if (page === 'workout') eyebrow.textContent = ko ? 'WORKOUT / 운동' : 'WORKOUT';
+    const labels = {
+      today: ko ? 'TODAY / 오늘' : 'TODAY',
+      workout: ko ? 'WORKOUT / 운동' : 'WORKOUT',
+      body: ko ? 'BODY / 체성분' : 'BODY',
+      running: ko ? 'RUNNING / 러닝' : 'RUNNING',
+      nutrition: ko ? 'NUTRITION / 식단' : 'NUTRITION'
+    };
+    if (labels[screen]) eyebrow.textContent = labels[screen];
   }
 
   function setCardContent(card, ex, muscleKey) {
