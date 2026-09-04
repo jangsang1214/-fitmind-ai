@@ -41,7 +41,7 @@ test('active app aliases migrate to canonical server fields without data loss',(
  assert.equal('completed' in x.planner[0],false);
  assert.equal('source' in x.planner[0],false);
  assert.equal(x.memory.entries[0].importance,4);
- assert.deepEqual(G.validateContract(x),[]);
+ assert.equal(G.validateContract(x).length,0);
 });
 
 test('legacy normalized memory importance is upgraded to the 1-5 contract scale',()=>{
@@ -67,7 +67,7 @@ test('contract validation rejects malformed canonical state',()=>{
 test('migration and transport are idempotent at the frozen boundary',()=>{
  const a=G.toTransport({profile:{name:'A',weight:70},workouts:[{id:'w1',date:'2026-09-04',name:'Bench',sets:3,reps:10,weight:80}],memory:{entries:[]}});
  const b=G.toTransport(a);
- assert.deepEqual(b,a);
+ assert.equal(JSON.stringify(b),JSON.stringify(a));
 });
 
 test('AI context is generated from the canonical contract, including user model and check-ins',()=>{
