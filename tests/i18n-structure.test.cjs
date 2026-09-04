@@ -8,5 +8,6 @@ for(const p of ['./03_styles/runtime/styles.css','./01_app/app.js','./06_feature
 assert.match(app,/preferences:\{language:'ko'/);assert.match(app,/language:\$\('languageSetting'\)\.value==='en'\?'en':'ko'/);assert.match(app,/saveState\(\{event:'settings_updated'\}\)/);
 for(const phrase of ['기록을 넘어,','오늘의 상태','운동 선택','사진 촬영 / 선택','러닝 인증','언어 및 표시','GARANG이 먼저 알아야 할 것'])assert.ok(tr.includes(phrase),phrase);
 for(const token of ['MutationObserver','document.documentElement.lang','window.confirm','placeholder','aria-label','GarangI18n'])assert.ok(rt.includes(token),token);
+for(const phrase of ['ACCUMULATION.','Your time, in the end,','becomes who you are.','GARANG remembers your training, nutrition, running, and body composition,','reads what you have built over time and designs your next choice.'])assert.ok(rt.includes(phrase),phrase);
 for(const loose of ['app.js','styles.css','data-schema.js','performance.js','garang-auth-bootstrap.js','garang-mark.svg','garang-app-icon.svg','garang-logo-exact.png','garang-app-icon-exact.png','exercise-db.json','food-db.json'])assert.equal(fs.existsSync(path.join(root,loose)),false,loose);
-console.log(JSON.stringify({status:'PASS',scope:'categorized runtime + persistent English UI translation wiring'},null,2));
+console.log(JSON.stringify({status:'PASS',scope:'categorized runtime + persistent English UI translation wiring + auth brand copy'},null,2));
