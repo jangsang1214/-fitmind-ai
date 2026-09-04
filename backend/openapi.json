@@ -1,17 +1,21 @@
 {
   "openapi": "3.1.0",
-  "info": {"title": "GARANG Commercial API", "version": "0.10.0-beta.2"},
+  "info": {
+    "title": "GARANG Commercial API",
+    "version": "0.11.0-beta.1",
+    "description": "Server boundary for GARANG contract garang-state-v1 / schema v8. Internal UI state may differ, but requests crossing this API boundary must be canonicalized first."
+  },
   "servers": [{"url": "/v1"}],
   "paths": {
-    "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health"}}}},
+    "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health including contractVersion and schemaVersion"}}}},
     "/data/{domain}": {
-      "parameters": [{"name": "domain", "in": "path", "required": true, "schema": {"type": "string"}}],
-      "get": {"responses": {"200": {"description": "User-scoped domain"}, "401": {"description": "Unauthenticated"}}},
-      "put": {"responses": {"200": {"description": "Saved idempotently"}, "400": {"description": "Invalid payload"}}},
+      "parameters": [{"name": "domain", "in": "path", "required": true, "schema": {"type": "string", "enum": ["profile","userModel","workouts","meals","runs","body","planner","dailyCheckins","memory","aiChats","scoreHistory","settings"]}}],
+      "get": {"responses": {"200": {"description": "User-scoped canonical domain"}, "401": {"description": "Unauthenticated"}}},
+      "put": {"responses": {"200": {"description": "Saved idempotently after top-level domain type validation"}, "400": {"description": "Invalid domain payload"}}},
       "delete": {"responses": {"200": {"description": "Deleted"}}}
     },
-    "/migrations/local": {"post": {"responses": {"200": {"description": "Migration accepted"}, "400": {"description": "Invalid migration"}}}},
-    "/user/export": {"get": {"responses": {"200": {"description": "User data export"}}}},
+    "/migrations/local": {"post": {"description": "Accepts local data only when contractVersion is garang-state-v1 and schemaVersion is supported.", "responses": {"200": {"description": "Migration accepted with canonical contract acknowledgement"}, "400": {"description": "Invalid migration, contract or schema"}}}},
+    "/user/export": {"get": {"responses": {"200": {"description": "User data export with contractVersion and schemaVersion"}}}},
     "/account": {"delete": {"responses": {"200": {"description": "Account data deleted"}, "400": {"description": "Confirmation required"}}}},
     "/agent/actions": {"post": {"responses": {"201": {"description": "Pending action proposal"}}}},
     "/agent/actions/{id}/confirm": {"post": {"responses": {"200": {"description": "Action confirmed or rejected"}}}},
