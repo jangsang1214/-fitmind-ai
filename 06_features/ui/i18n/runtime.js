@@ -1,6 +1,13 @@
 (() => {
 'use strict';
 const dict=window.GARANG_UI_TRANSLATIONS||{};
+const authBrandCopy={
+ '누적. / ACCUMULATION.':'ACCUMULATION.',
+ '당신의 시간은,':'Your time, in the end,',
+ '결국 당신이 됩니다.':'becomes who you are.',
+ '운동 · 식단 · 러닝 · 체성분을 기억하고,':'GARANG remembers your training, nutrition, running, and body composition,',
+ '쌓인 시간을 읽어 당신의 다음 선택을 설계합니다.':'reads what you have built over time and designs your next choice.'
+};
 const textState=new WeakMap(),attrState=new WeakMap();
 const skipSelector='script,style,noscript,code,pre,textarea,[data-i18n-skip],.gpt-message.user .gpt-text,.memory-value,.meal-visual-copy>strong,.workout-history-row strong,.pr-head strong,.list-item strong';
 const nativeConfirm=window.confirm.bind(window),nativeAlert=window.alert.bind(window),nativePrompt=window.prompt?.bind(window);
@@ -31,7 +38,7 @@ function dynamic(s){
 function translateCore(source){
  if(lang()!=='en'||!source||!/[가-힣]/.test(source))return source;
  const m=source.match(/^(\s*)([\s\S]*?)(\s*)$/),lead=m?m[1]:'',body=m?m[2]:source,tail=m?m[3]:'';
- let out=dict[body]||dynamic(body);
+ let out=authBrandCopy[body]||dict[body]||dynamic(body);
  if(out===body){for(const [ko,en] of glossary)out=out.split(ko).join(en);}
  return lead+out+tail;
 }
