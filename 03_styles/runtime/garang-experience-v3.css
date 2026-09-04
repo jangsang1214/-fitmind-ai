@@ -1,0 +1,176 @@
+/* GARANG experience v3 */
+.garang-route-hidden{display:none!important}
+
+/* Set recording: keep the four frequent inputs visible, move advanced values on demand. */
+.workout-builder-v2.garang-set-minimal{
+  padding:18px;
+  border-color:rgba(189,191,196,.12);
+  background:
+    radial-gradient(circle at 92% 8%,rgba(16,51,46,.16),transparent 30%),
+    linear-gradient(180deg,rgba(13,14,13,.98),rgba(8,9,8,.99));
+}
+.workout-builder-v2.garang-set-minimal .visual-section-head{margin-bottom:14px}
+.workout-builder-v2.garang-set-minimal .visual-section-head h3{
+  margin-top:3px;
+  font-size:17px;
+  font-weight:500;
+  letter-spacing:-.025em;
+}
+.workout-builder-v2.garang-set-minimal .visual-section-head .pill{
+  background:rgba(105,171,151,.08);
+  border-color:rgba(105,171,151,.16);
+  color:rgba(200,221,214,.66);
+  font-size:9px;
+}
+.workout-builder-v2.garang-set-minimal .garang-set-quick-fields{
+  display:grid;
+  grid-template-columns:minmax(180px,1.65fr) repeat(3,minmax(90px,.75fr));
+  gap:9px;
+  margin:0;
+}
+.workout-builder-v2.garang-set-minimal .garang-set-quick-fields .field{
+  min-width:0;
+}
+.workout-builder-v2.garang-set-minimal .garang-set-quick-fields .field.full{
+  grid-column:auto;
+}
+.workout-builder-v2.garang-set-minimal .garang-set-quick-fields label{
+  color:rgba(242,238,231,.46);
+  font-size:9px;
+  letter-spacing:.01em;
+}
+.workout-builder-v2.garang-set-minimal .garang-set-quick-fields input{
+  min-height:43px;
+  border-color:rgba(189,191,196,.11);
+  background:rgba(255,255,255,.018);
+}
+.workout-builder-v2.garang-set-minimal .workout-entry-actions{
+  display:block;
+  margin:12px 0 0;
+}
+.workout-builder-v2.garang-set-minimal #addWorkout.garang-set-primary{
+  width:100%;
+  min-height:45px;
+  border:1px solid rgba(91,166,143,.34);
+  border-radius:11px;
+  background:linear-gradient(180deg,rgba(16,66,57,.86),rgba(11,47,41,.92));
+  color:#f2efe8;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+.garang-set-options{
+  margin:8px 0 0;
+  border:0;
+}
+.garang-set-options>summary{
+  list-style:none;
+  width:max-content;
+  margin-left:auto;
+  padding:6px 2px;
+  cursor:pointer;
+  color:rgba(242,238,231,.36);
+  font-size:9px;
+  font-weight:500;
+  letter-spacing:.02em;
+}
+.garang-set-options>summary::-webkit-details-marker{display:none}
+.garang-set-options>summary::after{content:'  ·  +';color:rgba(105,171,151,.55)}
+.garang-set-options[open]>summary::after{content:'  ·  −'}
+.garang-set-options-body{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  align-items:end;
+  margin-top:4px;
+  padding:12px;
+  border:1px solid rgba(189,191,196,.08);
+  border-radius:11px;
+  background:rgba(255,255,255,.012);
+}
+.garang-set-options-body .one-rm-panel{
+  grid-column:1/-1;
+  margin:0 0 2px;
+  border-color:rgba(189,191,196,.08);
+  background:transparent;
+  box-shadow:none;
+}
+.garang-set-options-body .field{margin:0}
+.garang-set-options-body .field label{
+  color:rgba(242,238,231,.42);
+  font-size:9px;
+}
+.garang-set-options-body .field input{
+  min-height:40px;
+  background:rgba(255,255,255,.018);
+  border-color:rgba(189,191,196,.10);
+}
+.garang-set-options-body .garang-set-clear{
+  grid-column:1/-1;
+  width:max-content;
+  margin-left:auto;
+  min-height:32px;
+  padding:6px 10px;
+  border-color:rgba(189,191,196,.09);
+  background:transparent;
+  color:rgba(242,238,231,.42);
+  font-size:9px;
+}
+.workout-builder-v2.garang-set-minimal #workoutDraftArea{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid rgba(189,191,196,.07);
+}
+.workout-builder-v2.garang-set-minimal #workoutDraftArea.garang-draft-empty{
+  display:none;
+}
+.workout-builder-v2.garang-set-minimal #workoutDraftArea .list-item{
+  padding:10px 0;
+  border-color:rgba(189,191,196,.07);
+}
+.workout-builder-v2.garang-set-minimal #saveWorkoutSession{
+  min-height:43px;
+  margin-top:10px;
+  border-radius:11px;
+  font-size:11px;
+}
+.workout-builder-v2.garang-set-minimal #saveWorkoutSession:disabled{
+  display:none;
+}
+
+/* Coach menu: learning is deliberately quieter than destructive delete. */
+.g2-thread-popover .g2-learn-thread{
+  margin-top:3px;
+  border-top:1px solid rgba(189,191,196,.08)!important;
+  color:rgba(169,207,195,.78)!important;
+}
+.g2-thread-popover .g2-learn-thread:hover,
+.g2-thread-popover .g2-learn-thread:focus-visible{
+  background:rgba(16,51,46,.22)!important;
+  color:#dfece7!important;
+}
+.g2-thread-popover .g2-learn-thread:disabled{
+  opacity:.7;
+  cursor:default;
+}
+
+@media(max-width:760px){
+  .workout-builder-v2.garang-set-minimal{padding:16px}
+  .workout-builder-v2.garang-set-minimal .garang-set-quick-fields{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .workout-builder-v2.garang-set-minimal .garang-set-quick-fields .field:first-child{
+    grid-column:1/-1;
+  }
+  .garang-set-options-body{grid-template-columns:1fr 1fr}
+  .garang-set-options-body .one-rm-panel{grid-column:1/-1}
+  .garang-set-options-body .garang-set-clear{grid-column:1/-1}
+}
+
+@media(max-width:460px){
+  .workout-builder-v2.garang-set-minimal .garang-set-quick-fields{gap:7px}
+  .workout-builder-v2.garang-set-minimal .garang-set-quick-fields input{min-height:41px}
+  .garang-set-options-body{grid-template-columns:1fr;padding:10px}
+  .garang-set-options-body .one-rm-panel,
+  .garang-set-options-body .garang-set-clear{grid-column:1}
+}
