@@ -1,8 +1,8 @@
-/* GARANG experience v4.2
+/* GARANG experience v4.3
    - Memory remains fully internal to GARANG's intelligence/data model.
    - Settings has one canonical entry: the permanent top-bar gear.
    - Today removes the obsolete duplicate FRONT/BACK tools; only the interactive compact switch remains.
-   - Settings, Profile and User Model keep compact eyebrow headers without oversized page titles.
+   - Screen identity and page-header policy are owned by GarangScreens.
 */
 (() => {
   'use strict';
@@ -39,14 +39,6 @@
   function cleanTodayAnatomy() {
     /* Old Polish v3 controls are obsolete on Today and can otherwise appear as a second FRONT/BACK switch. */
     main.querySelectorAll('.today-body-panel .g3-anatomy-tools').forEach(el => el.remove());
-  }
-
-  function cleanCompactPageHeading() {
-    /* These utility screens keep only the compact bilingual eyebrow. */
-    if (!main.querySelector('#savePreferences, #saveProfile, #saveOnboarding')) return;
-    const head = main.querySelector('.page-head');
-    if (!head) return;
-    head.querySelector('h1')?.remove();
   }
 
   function internalizeMemorySurface() {
@@ -90,7 +82,6 @@
     scheduled = false;
     internalizeMemorySurface();
     cleanTodayAnatomy();
-    cleanCompactPageHeading();
   }
 
   function schedule() {
