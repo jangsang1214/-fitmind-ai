@@ -1,5 +1,7 @@
 /* GARANG experience v3 */
 .garang-route-hidden{display:none!important}
+.grid:has(> .garang-route-hidden[data-pagego="memory"]){grid-template-columns:1fr!important}
+.utility-row:has(> .garang-route-hidden[data-pagego="settings"]){grid-template-columns:1fr!important}
 
 /* Set recording: keep the four frequent inputs visible, move advanced values on demand. */
 .workout-builder-v2.garang-set-minimal{
