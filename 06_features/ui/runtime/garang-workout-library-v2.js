@@ -1,5 +1,6 @@
 /* GARANG workout library v2
    - Korean headers use TODAY / 오늘 and WORKOUT / 운동.
+   - Large primary titles are removed from Today, Workout, Body and Progress.
    - Workout shows 4 exercises by default, then expands to every matching DB exercise.
    - Existing workout state/data logic remains owned by app.js. */
 (() => {
@@ -10,6 +11,7 @@
 
   let exerciseDBPromise = null;
   let scheduled = false;
+  const compactHeaderPages = new Set(['today', 'workout', 'body', 'progress']);
 
   const muscleKeyFromLabel = label => {
     const x = String(label || '').toLowerCase();
@@ -47,6 +49,10 @@
   function polishPageHeader() {
     const page = currentPage();
     const eyebrow = main.querySelector('.page-head .eyebrow');
+    const title = main.querySelector('.page-head h1');
+    const compact = compactHeaderPages.has(page);
+    main.classList.toggle('garang-primary-title-hidden', compact);
+    if (title) title.hidden = compact;
     if (!eyebrow) return;
     const ko = document.documentElement.lang !== 'en';
     if (page === 'today') eyebrow.textContent = ko ? 'TODAY / 오늘' : 'TODAY';
@@ -172,7 +178,7 @@
   new MutationObserver(schedule).observe(main, { childList: true, subtree: true });
   new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   document.addEventListener('click', e => {
-    if (e.target.closest('[data-page="today"],[data-page="workout"],[data-pagego="today"],[data-pagego="workout"],[data-muscle-pick]')) setTimeout(schedule, 0);
+    if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0);
   }, true);
   schedule();
 })();
