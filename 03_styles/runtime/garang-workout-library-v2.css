@@ -1,0 +1,54 @@
+/* GARANG workout library v2 — four-card default + full database expansion */
+.exercise-visual-card[hidden]{display:none!important}
+.garang-library-more-wrap{
+  display:flex;
+  justify-content:center;
+  margin:12px 0 18px;
+}
+.garang-library-more-button{
+  width:min(360px,100%);
+  min-height:42px;
+  padding:10px 15px;
+  border:1px solid rgba(189,191,196,.14);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(20,22,20,.96),rgba(12,13,12,.96));
+  color:var(--hanji,#f2eee7);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  font-family:var(--garang-brand-ui,"Noto Sans KR",Pretendard,system-ui,sans-serif);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:-.015em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+.garang-library-more-button:hover{border-color:rgba(105,171,151,.38);background:#111411}
+.garang-library-more-button span{display:flex;align-items:center;gap:7px}
+.garang-library-more-button small{
+  display:inline-grid;
+  place-items:center;
+  min-width:24px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  background:rgba(105,171,151,.10);
+  color:#7bb5a3;
+  font-size:9px;
+  font-weight:600;
+}
+.garang-library-more-button b{font-size:12px;font-weight:500;color:#7a817b}
+.exercise-visual-library.garang-library-expanded{padding-bottom:2px}
+
+/* Keep the first screen intentionally compact: exactly four exercise cards. */
+@media(min-width:901px){
+  .exercise-visual-library:not(.garang-library-expanded){grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .exercise-visual-library{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+  .exercise-visual-library{gap:8px}
+  .garang-library-more-wrap{margin:10px 0 16px}
+  .garang-library-more-button{min-height:40px;font-size:10px}
+}
