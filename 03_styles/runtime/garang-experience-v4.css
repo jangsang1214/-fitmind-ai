@@ -1,0 +1,8 @@
+/* GARANG experience v4 */
+.garang-single-route{
+  grid-template-columns:1fr!important;
+}
+.utility-row.garang-single-route{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+}
