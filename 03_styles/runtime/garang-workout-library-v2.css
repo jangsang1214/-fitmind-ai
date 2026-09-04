@@ -1,5 +1,13 @@
 /* GARANG workout library v2 — four-card default + full database expansion */
 .exercise-visual-card[hidden]{display:none!important}
+
+/* Primary screens keep only the small bilingual kicker. The oversized titles
+   (오늘 / 운동 / Body Intelligence / 진행 상황) are intentionally removed. */
+#main.garang-primary-title-hidden .page-head h1{display:none!important}
+#main.garang-primary-title-hidden .page-head>div{display:flex;flex-direction:column;gap:0}
+#main.garang-primary-title-hidden .page-head .eyebrow{margin-bottom:0}
+#main.garang-primary-title-hidden .page-head{margin-bottom:14px}
+
 .garang-library-more-wrap{
   display:flex;
   justify-content:center;
