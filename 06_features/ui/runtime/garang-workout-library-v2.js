@@ -1,9 +1,9 @@
-/* GARANG workout library v2
-   - Korean headers use bilingual compact labels across primary tracking screens.
-   - Large primary titles are removed from Today, Workout, Body, Progress, Running and Nutrition.
+/* GARANG workout library v2.5
+   - Screen identity/header labels are owned by GarangScreens.
    - Workout shows 4 exercises by default, then expands to every matching DB exercise.
    - Workout certification keeps all export functions while presenting one primary action.
-   - Existing workout state/data logic remains owned by app.js. */
+   - Existing workout state/data logic remains owned by app.js.
+*/
 (() => {
   'use strict';
 
@@ -12,7 +12,6 @@
 
   let exerciseDBPromise = null;
   let scheduled = false;
-  const compactHeaderPages = new Set(['today', 'workout', 'body', 'progress', 'running', 'nutrition']);
 
   const muscleKeyFromLabel = label => {
     const x = String(label || '').toLowerCase();
@@ -43,50 +42,23 @@
     return exerciseDBPromise;
   }
 
-  function currentPage() {
+  function activeNavPage() {
     return document.querySelector('#bottomNav button.active')?.dataset.page || '';
   }
 
-  function currentScreenKey(title, eyebrow) {
-    const page = currentPage();
-    const text = `${title?.textContent || ''} ${eyebrow?.textContent || ''}`.trim().toLowerCase();
-    if (/profile|프로필/.test(text) || main.querySelector('#saveProfile')) return 'profile';
-    if (/settings?|설정/.test(text) || main.querySelector('#savePreferences')) return 'settings';
-    if (/modeling|사용자 모델|garang이 먼저 알아야 할 것|start/.test(text) || main.querySelector('#saveOnboarding')) return 'modeling';
-    if (/nutrition|식단/.test(text)) return 'nutrition';
-    if (/running|러닝/.test(text)) return 'running';
-    if (/body intelligence|체성분/.test(text)) return 'body';
-    if (/progress|진행 상황|흐름/.test(text)) return 'progress';
-    if (/workout|log workout|운동/.test(text)) return 'workout';
-    if (/today|오늘/.test(text)) return 'today';
-    return page;
+  function currentScreen() {
+    return window.GarangScreens?.detect(main, document) || activeNavPage();
   }
 
   function polishPageHeader() {
-    const eyebrow = main.querySelector('.page-head .eyebrow');
-    const title = main.querySelector('.page-head h1');
-    const screen = currentScreenKey(title, eyebrow);
-    const compact = compactHeaderPages.has(screen);
-    main.classList.toggle('garang-primary-title-hidden', compact);
-    if (title) title.hidden = compact;
-    if (!eyebrow) return;
-
-    const ko = document.documentElement.lang !== 'en';
-    const labels = {
-      today: ko ? 'TODAY / 오늘' : 'TODAY',
-      workout: ko ? 'WORKOUT / 운동' : 'WORKOUT',
-      body: ko ? 'BODY / 체성분' : 'BODY',
-      running: ko ? 'RUNNING / 러닝' : 'RUNNING',
-      nutrition: ko ? 'NUTRITION / 식단' : 'NUTRITION',
-      profile: ko ? 'PROFILE / 프로필' : 'PROFILE',
-      settings: ko ? 'SETTING / 설정' : 'SETTING',
-      modeling: ko ? 'MODELING / 모델링' : 'MODELING'
-    };
-    if (labels[screen]) eyebrow.textContent = labels[screen];
+    const screen = window.GarangScreens?.applyHeader(main, document);
+    if (!screen && !window.GarangScreens) {
+      console.warn('[GARANG] screen registry is unavailable; header polish skipped.');
+    }
   }
 
   function polishWorkoutCertification() {
-    if (currentPage() !== 'workout') return;
+    if (currentScreen() !== 'workout') return;
     const card = main.querySelector('.cert-entry-card');
     if (!card) return;
 
@@ -168,7 +140,7 @@
   }
 
   async function enhanceWorkoutLibrary() {
-    if (currentPage() !== 'workout') return;
+    if (currentScreen() !== 'workout') return;
     const library = main.querySelector('.exercise-visual-library');
     if (!library) return;
 
