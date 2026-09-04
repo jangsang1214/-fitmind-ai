@@ -12,7 +12,8 @@
     "03_styles/runtime/garang-polish-v3.css",
     "03_styles/runtime/garang-font-logo-v1.css",
     "03_styles/runtime/garang-stability-v1.css",
-    "03_styles/runtime/garang-today-premium-fix.css"
+    "03_styles/runtime/garang-today-premium-fix.css",
+    "03_styles/runtime/garang-today-v2.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
