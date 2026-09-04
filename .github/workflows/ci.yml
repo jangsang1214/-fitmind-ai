@@ -19,4 +19,4 @@ jobs:
       - name: Validate runtime and build
         run: npm run build
       - name: Verify build entry
-        run: test -f dist/index.html && test -f dist/commercial-core.js && test -f dist/runtime-manifest.json
+        run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
