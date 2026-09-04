@@ -6,22 +6,6 @@
   const main=document.getElementById('main');
   if(!main)return;
 
-  /* Load the categorized workout-library refinement without changing the core app entry. */
-  if(!document.querySelector('link[data-garang-workout-library-v2]')){
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='./03_styles/runtime/garang-workout-library-v2.css?v=2.0.0';
-    link.dataset.garangWorkoutLibraryV2='1';
-    document.head.appendChild(link);
-  }
-  if(!document.querySelector('script[data-garang-workout-library-v2]')){
-    const script=document.createElement('script');
-    script.src='./06_features/ui/runtime/garang-workout-library-v2.js?v=2.0.0';
-    script.defer=true;
-    script.dataset.garangWorkoutLibraryV2='1';
-    document.body.appendChild(script);
-  }
-
   let scheduled=false;
 
   function ensureKey(panel){
