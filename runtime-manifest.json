@@ -14,7 +14,10 @@
     "03_styles/runtime/garang-stability-v1.css",
     "03_styles/runtime/garang-today-premium-fix.css",
     "03_styles/runtime/garang-today-v2.css",
-    "03_styles/runtime/garang-workout-library-v2.css"
+    "03_styles/runtime/garang-workout-library-v2.css",
+    "03_styles/runtime/garang-experience-v3.css",
+    "03_styles/runtime/garang-experience-v4.css",
+    "03_styles/runtime/garang-auth-brand-v1.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
@@ -22,6 +25,7 @@
     "02_core/data-schema.js",
     "services/performance.js",
     "services/units.js",
+    "06_features/ui/runtime/garang-screen-registry-v1.js",
     "06_features/ui/runtime/garang-auth-bootstrap.js",
     "01_app/app.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
@@ -33,7 +37,9 @@
     "06_features/ui/i18n/runtime.js",
     "06_features/ui/runtime/garang-units-runtime.js",
     "06_features/ui/runtime/garang-today-premium-fix.js",
-    "06_features/ui/runtime/garang-workout-library-v2.js"
+    "06_features/ui/runtime/garang-workout-library-v2.js",
+    "06_features/ui/runtime/garang-experience-v3.js",
+    "06_features/ui/runtime/garang-experience-v4.js"
   ],
   "data": [
     "04_data/knowledge/exercise-db.json",
