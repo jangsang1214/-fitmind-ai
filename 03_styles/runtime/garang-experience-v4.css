@@ -1,4 +1,4 @@
-/* GARANG experience v4.2 */
+/* GARANG experience v4.3 */
 .garang-single-route{
   grid-template-columns:1fr!important;
 }
@@ -12,25 +12,4 @@
   display:none!important;
   visibility:hidden!important;
   pointer-events:none!important;
-}
-
-/* Settings, Profile and User Model keep only their compact eyebrow headers. Runtime removes the H1; this is the visual fallback. */
-.main:has(#savePreferences) .page-head h1,
-.main:has(#saveProfile) .page-head h1,
-.main:has(#saveOnboarding) .page-head h1{
-  display:none!important;
-}
-
-/* Planner is opened outside the fixed bottom-nav set, so the older header polisher can misread it as Today. Replace only the visible eyebrow without touching Planner logic. */
-.main:has(#addPlan) .page-head .eyebrow{
-  font-size:0!important;
-}
-.main:has(#addPlan) .page-head .eyebrow::after{
-  content:"PLAN / 계획";
-  font-size:9px;
-  line-height:1.35;
-  letter-spacing:.18em;
-}
-html[lang="en"] .main:has(#addPlan) .page-head .eyebrow::after{
-  content:"PLAN";
 }
