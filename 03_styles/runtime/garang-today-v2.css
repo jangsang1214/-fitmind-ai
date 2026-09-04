@@ -190,16 +190,8 @@ html[lang="ko"] .today-decision-panel h2{
   outline:1px solid rgba(105,171,151,.7)!important;
   outline-offset:2px!important;
 }
-.today-muscle-legend{
-  display:flex!important;
-  align-items:center!important;
-  gap:6px!important;
-  padding-right:3px!important;
-  color:rgba(189,191,196,.38)!important;
-  font-size:5.5px!important;
-  line-height:1!important;
-  white-space:nowrap!important;
-}
+/* The Primary / Secondary / Tertiary legend is visual noise on Home; keep it hidden on every viewport. */
+.today-muscle-legend{display:none!important}
 .today-key-item{display:inline-flex!important;align-items:center!important;gap:3px!important}
 .today-key-item i{display:block!important;width:4px!important;height:4px!important;border-radius:50%!important;background:#777!important}
 .today-key-item.primary i{background:var(--g3-primary,#a96f57)!important}
@@ -229,7 +221,6 @@ html[lang="ko"] .today-decision-panel h2{
   }
   .today-anatomy-key{right:9px!important;top:8px!important}
   .today-view-switch button{min-width:44px!important;height:24px!important;padding:0 8px!important}
-  .today-muscle-legend{display:none!important}
   html[lang="ko"] .today-decision-panel h2{font-size:37px!important;line-height:1.17!important}
 }
 
