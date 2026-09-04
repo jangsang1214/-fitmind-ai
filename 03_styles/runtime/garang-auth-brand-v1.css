@@ -1,0 +1,276 @@
+/* GARANG AUTH BRAND v1 — quiet luxury, reduced chrome, stronger hierarchy */
+:root{
+  --ga-bg:#050605;
+  --ga-ivory:#f2f0eb;
+  --ga-muted:#8e918c;
+  --ga-muted-soft:#686c67;
+  --ga-line:rgba(242,240,235,.11);
+  --ga-line-strong:rgba(242,240,235,.18);
+  --ga-jade:#4fae92;
+  --ga-jade-deep:#10372d;
+}
+
+.auth-view{
+  min-height:100svh;
+  display:block;
+  padding:clamp(34px,6vh,72px) clamp(22px,4vw,54px) clamp(42px,7vh,76px);
+  background:
+    radial-gradient(circle at 14% 6%,rgba(79,174,146,.055),transparent 28%),
+    var(--ga-bg);
+}
+.auth-shell{
+  width:min(1080px,100%);
+  min-height:calc(100svh - clamp(76px,13vh,148px));
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(340px,.78fr);
+  gap:clamp(58px,8vw,112px);
+  align-items:center;
+}
+.auth-copy{min-width:0;max-width:650px}
+
+/* Brand lockup: let the identity breathe, but keep it quieter than the message. */
+.auth-copy .brand-hero{
+  margin:0 0 clamp(54px,8vh,92px);
+  gap:12px;
+}
+.auth-copy .brand-hero img{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+}
+.auth-copy .brand-hero b{
+  font-size:27px;
+  line-height:1;
+  letter-spacing:.30em!important;
+  color:#d9d7d2;
+}
+.auth-copy .brand-hero span{
+  margin-top:7px;
+  font-size:8px;
+  letter-spacing:.22em!important;
+  color:#757973;
+}
+
+/* The old floating ornament competed with the copy. The eyebrow now anchors the section alone. */
+.auth-korean-line{display:none!important}
+.auth-copy .eyebrow{
+  display:block;
+  margin:0 0 19px;
+  color:#7f837e;
+  font-size:9px;
+  line-height:1.35;
+  font-weight:600;
+  letter-spacing:.20em;
+}
+.auth-copy h1{
+  max-width:610px;
+  margin:0;
+  color:var(--ga-ivory);
+  font-family:var(--garang-brand-korean,"Noto Sans KR",sans-serif)!important;
+  font-size:clamp(46px,5.25vw,66px);
+  font-weight:580!important;
+  line-height:1.08!important;
+  letter-spacing:-.045em!important;
+  word-break:keep-all;
+}
+.auth-copy h1 em{
+  position:static;
+  color:inherit;
+  font-style:normal;
+}
+.auth-copy h1 em:after{display:none!important}
+.auth-copy h1:after{
+  content:"";
+  display:block;
+  width:52px;
+  height:1px;
+  margin-top:24px;
+  background:rgba(79,174,146,.78);
+}
+.auth-copy p{
+  max-width:520px;
+  margin:18px 0 0;
+  color:#8b8e89;
+  font-size:13px;
+  line-height:1.78;
+  font-weight:400;
+  word-break:keep-all;
+}
+
+/* Form area: remove the nested-card look. The interface should feel like part of the page. */
+.auth-card{
+  width:100%;
+  max-width:410px;
+  justify-self:end;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.auth-tabs{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  margin:0 0 28px;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid var(--ga-line)!important;
+  border-radius:0!important;
+}
+.auth-tabs button{
+  position:relative;
+  min-height:46px;
+  padding:0 4px 13px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#686c67!important;
+  font-size:12px;
+  font-weight:600!important;
+  letter-spacing:-.01em;
+}
+.auth-tabs button.active{
+  color:var(--ga-ivory)!important;
+  background:transparent!important;
+}
+.auth-tabs button.active:after{
+  content:"";
+  position:absolute;
+  left:18%;
+  right:18%;
+  bottom:-1px;
+  height:1px;
+  background:var(--ga-jade);
+}
+.auth-card form{gap:18px!important}
+.auth-card label{
+  gap:8px!important;
+  color:#9a9d98!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:-.01em;
+}
+.auth-card input{
+  min-height:52px;
+  padding:0 15px!important;
+  border:1px solid var(--ga-line)!important;
+  border-radius:10px!important;
+  background:rgba(13,15,14,.72)!important;
+  color:var(--ga-ivory)!important;
+  font-size:15px;
+  font-weight:450;
+  box-shadow:none!important;
+}
+.auth-card input::placeholder{color:#636762;opacity:1}
+.auth-card input:focus{
+  border-color:rgba(79,174,146,.48)!important;
+  box-shadow:0 0 0 3px rgba(79,174,146,.055)!important;
+}
+.auth-card .primary.wide{
+  min-height:54px;
+  margin-top:4px;
+  border:1px solid rgba(79,174,146,.28)!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,#154a3b,#10382e)!important;
+  color:#f2f4f1!important;
+  font-size:14px;
+  font-weight:650!important;
+  box-shadow:none!important;
+}
+.auth-card .primary.wide:hover{background:linear-gradient(180deg,#185241,#123f33)!important}
+.auth-card .text-btn{
+  min-height:32px;
+  padding:3px 0!important;
+  color:#767a75!important;
+  font-size:10px!important;
+  font-weight:550!important;
+}
+.auth-card .divider{
+  margin:23px 0 18px!important;
+  color:#5e625d;
+  font-size:9px;
+}
+.auth-card .divider:before,.auth-card .divider:after{background:var(--ga-line)!important}
+.auth-card .social-grid{gap:8px}
+.auth-card .social{
+  min-height:46px;
+  border:1px solid var(--ga-line)!important;
+  border-radius:10px!important;
+  background:rgba(12,14,13,.72)!important;
+  color:#b9bcb7!important;
+  font-size:11px;
+  font-weight:560!important;
+}
+.auth-card .auth-note{
+  margin:17px 0 10px!important;
+  color:#61655f!important;
+  font-size:10px!important;
+  line-height:1.6;
+}
+.auth-card .ghost.wide{
+  min-height:46px;
+  border:1px solid var(--ga-line)!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#8f938e!important;
+  font-size:11px;
+  font-weight:560!important;
+}
+
+@media(max-width:760px){
+  .auth-view{
+    padding:max(28px,env(safe-area-inset-top)) 24px calc(42px + env(safe-area-inset-bottom));
+  }
+  .auth-shell{
+    width:min(430px,100%);
+    min-height:0;
+    display:block;
+  }
+  .auth-copy{max-width:none}
+  .auth-copy .brand-hero{
+    margin:0 0 46px;
+  }
+  .auth-copy .brand-hero img{width:46px;height:46px}
+  .auth-copy .brand-hero b{font-size:24px}
+  .auth-copy .brand-hero span{font-size:7px;margin-top:6px}
+  .auth-copy .eyebrow{
+    margin-bottom:15px;
+    font-size:8px;
+    letter-spacing:.18em;
+  }
+  .auth-copy h1{
+    max-width:11em;
+    font-size:clamp(39px,10.7vw,47px);
+    line-height:1.10!important;
+    letter-spacing:-.048em!important;
+  }
+  .auth-copy h1:after{
+    width:44px;
+    margin-top:20px;
+  }
+  .auth-copy p{
+    max-width:355px;
+    margin-top:15px;
+    font-size:12px;
+    line-height:1.72;
+  }
+  .auth-card{
+    max-width:none;
+    margin-top:38px;
+  }
+  .auth-tabs{margin-bottom:24px}
+  .auth-tabs button{min-height:43px;padding-bottom:12px!important;font-size:11px}
+  .auth-card form{gap:16px!important}
+  .auth-card input{min-height:50px;font-size:16px}
+  .auth-card .primary.wide{min-height:52px;margin-top:3px}
+}
+
+@media(max-width:390px){
+  .auth-view{padding-left:20px;padding-right:20px}
+  .auth-copy .brand-hero{margin-bottom:40px}
+  .auth-copy h1{font-size:clamp(36px,10.5vw,42px)}
+  .auth-card{margin-top:34px}
+}
