@@ -1,11 +1,13 @@
 'use strict';
 
+const {prepareMemoryContext}=require('./memory-engine.cjs');
 const SCORE_FORMULA_VERSION='recording-v2';
 const isObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const rows=value=>Array.isArray(value)?value.filter(isObject):[];
 const number=value=>Number.isFinite(Number(value))?Number(value):0;
 const cap=value=>Math.round(Math.max(0,Math.min(100,value)));
 const validLimit=value=>Math.max(1,Math.min(200,Number.parseInt(value,10)||50));
+const validMemoryLimit=value=>Math.max(1,Math.min(50,Number.parseInt(value,10)||24));
 
 function parseBearer(value){
  const match=typeof value==='string'&&value.match(/^Bearer\s+([^\s]+)$/i);
@@ -43,19 +45,6 @@ function calculatePerformance(state,asOf){
  return {...values,total:available.length?cap(available.reduce((sum,value)=>sum+value,0)/available.length):null,coverage:available.length,date:asOf,formulaVersion:SCORE_FORMULA_VERSION};
 }
 
-function activeMemory(value,now){
- const memory=isObject(value)?value:{};
- const deleted=new Set(Array.isArray(memory.deletedIds)?memory.deletedIds.map(String):[]);
- const entries=rows(memory.entries).filter(entry=>entry.userConfirmed!==false&&!deleted.has(String(entry.id))&&(!entry.expiresAt||Date.parse(entry.expiresAt)>now.getTime()));
- return {
-  facts:Array.isArray(memory.facts)?memory.facts:[],
-  preferences:Array.isArray(memory.preferences)?memory.preferences:[],
-  goals:Array.isArray(memory.goals)?memory.goals:[],
-  events:Array.isArray(memory.events)?memory.events:[],
-  entries
- };
-}
-
 function buildAgentContext(stateInput,options={}){
  const state=isObject(stateInput)?stateInput:{},now=options.now instanceof Date?options.now:new Date(),limit=validLimit(options.limit);
  const asOf=now.toISOString().slice(0,10),profile=isObject(state.profile)?state.profile:null;
@@ -69,8 +58,8 @@ function buildAgentContext(stateInput,options={}){
   body:latest(state.body,limit),
   performanceScore:calculatePerformance(state,asOf),
   planner:latest(state.planner,limit),
-  memory:activeMemory(state.memory,now)
+  memory:prepareMemoryContext(state.memory,state,{query:String(options.query||''),now,limit:validMemoryLimit(options.memoryLimit)})
  };
 }
 
-module.exports={parseBearer,buildAgentContext,calculatePerformance,validLimit};
+module.exports={parseBearer,buildAgentContext,calculatePerformance,validLimit,validMemoryLimit};
