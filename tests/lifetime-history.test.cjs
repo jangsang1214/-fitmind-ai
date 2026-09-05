@@ -25,21 +25,19 @@ test('explicit tombstone still prevents resurrection',()=>{
  assert.equal(History.mergeStateWithHistory(current,{workouts:[{id:'w1',updatedAt:'2026-09-05T01:00:00.000Z'}]}).workouts.length,0);
 });
 
-test('emergency recovery restores stable UI boot path',()=>{
+test('known-good app boot path stays isolated from experimental recovery runtimes',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const sw=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
  const runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-lifetime-history-v1.js'),'utf8');
- assert.ok(html.includes('id="menuBtn"'), 'hamburger/menu button must exist');
- assert.ok(html.includes('./01_app/app.js'), 'main app runtime must stay wired');
- assert.equal(html.includes('./02_core/lifetime-history.js'),false,'lifetime core must stay out of UI boot path');
- assert.equal(html.includes('./06_features/ui/runtime/garang-lifetime-history-v1.js'),false,'lifetime runtime must stay out of UI boot path');
- assert.equal(sw.includes('./02_core/lifetime-history.js'),false,'service worker must not cache lifetime core');
- assert.equal(sw.includes('./06_features/ui/runtime/garang-lifetime-history-v1.js'),false,'service worker must not cache lifetime runtime');
+ assert.ok(html.includes('id="menuBtn"'),'hamburger/menu button must exist in markup');
+ assert.ok(html.includes('./01_app/app.js'),'main app runtime must stay wired');
+ for(const forbidden of ['./02_core/lifetime-history.js','./06_features/ui/runtime/garang-lifetime-history-v1.js','./06_features/ui/runtime/garang-boot-safety-v1.js','./03_styles/runtime/garang-interaction-safety-v1.css']){
+   assert.equal(html.includes(forbidden),false,`${forbidden} must stay out of UI boot path`);
+   assert.equal(sw.includes(forbidden),false,`${forbidden} must stay out of service-worker shell`);
+ }
  for(const forbidden of ['setInterval(','location.reload','onAuthStateChanged','firebase.firestore','Storage.prototype','stopImmediatePropagation'])assert.equal(runtime.includes(forbidden),false,forbidden);
  assert.ok(runtime.includes('disabled:true'));
- assert.ok(/const CACHE='garang-[^']+';/.test(sw),'service worker must keep an explicit versioned GARANG cache');
- assert.ok(sw.includes('./06_features/ui/runtime/garang-boot-safety-v1.js'),'service worker must cache boot safety');
- assert.ok(sw.includes('./03_styles/runtime/garang-interaction-safety-v1.css'),'service worker must cache interaction safety');
+ assert.ok(sw.includes("const CACHE='garang-known-good-boot-rollback-v5-20260906'"));
 });
 
 console.log(`${passed} lifetime history/recovery tests passed`);

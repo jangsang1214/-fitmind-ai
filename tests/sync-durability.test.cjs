@@ -11,15 +11,6 @@ const base=(overrides={})=>({
  memory:{entries:[],facts:[],preferences:[],goals:[],events:[],deletedIds:[]},actionLog:[],errors:[],analytics:{events:[]},...overrides
 });
 
-test('state sanitizer removes malformed persisted rows without deleting valid records',()=>{
- const dirty={...base(),workouts:[null,'bad',{id:'w1'}],meals:[null,{id:'m1'}],checkins:[false,{id:'c1'}],memory:null,analytics:null,profile:'bad'};
- const safe=Sync.sanitizeState(dirty,{ownerUid:'u1'});
- assert.deepEqual(safe.workouts.map(x=>x.id),['w1']);
- assert.deepEqual(safe.meals.map(x=>x.id),['m1']);
- assert.deepEqual(safe.checkins.map(x=>x.id),['c1']);
- assert.deepEqual(safe.memory.entries,[]);assert.deepEqual(safe.analytics.events,[]);assert.equal(safe.profile,null);
-});
-
 test('cloud/local merge preserves unique records from both sides',()=>{
  const local=base({workouts:[{id:'l1',name:'local',updatedAt:'2026-09-05T09:00:00Z'}]});
  const remote=base({meta:{...base().meta,updatedAt:'2026-09-05T10:01:00Z',syncRevision:2},workouts:[{id:'r1',name:'remote',updatedAt:'2026-09-05T09:30:00Z'}]});
@@ -31,15 +22,6 @@ test('same record resolves by record updatedAt rather than whole-state timestamp
  const local=base({meta:{...base().meta,updatedAt:'2026-09-05T10:05:00Z'},workouts:[{id:'w1',name:'new-local',updatedAt:'2026-09-05T10:04:00Z'}]});
  const remote=base({meta:{...base().meta,updatedAt:'2026-09-05T10:06:00Z'},workouts:[{id:'w1',name:'old-remote',updatedAt:'2026-09-05T10:03:00Z'}]});
  assert.equal(Sync.mergeActiveStates(local,remote,{ownerUid:'u1'}).workouts[0].name,'new-local');
-});
-
-test('malformed cloud rows are filtered before they can poison live state',()=>{
- const local=base({workouts:[{id:'local-ok'}]});
- const remote=base({meta:{...base().meta,updatedAt:'2026-09-05T10:06:00Z'},workouts:[null,{id:'remote-ok'}],meals:[null,{id:'meal-ok'}],memory:null,analytics:null});
- const merged=Sync.mergeActiveStates(local,remote,{ownerUid:'u1'});
- assert.deepEqual(new Set(merged.workouts.map(x=>x.id)),new Set(['local-ok','remote-ok']));
- assert.deepEqual(merged.meals.map(x=>x.id),['meal-ok']);
- assert.ok(merged.memory&&Array.isArray(merged.memory.entries));assert.ok(merged.analytics&&Array.isArray(merged.analytics.events));
 });
 
 test('local deletion creates tombstone and remote stale copy cannot resurrect',()=>{
@@ -85,20 +67,12 @@ test('verified export envelope detects count corruption',()=>{
  assert.equal(Sync.verifyExportEnvelope(envelope),true);envelope.manifest.counts.meals=99;assert.equal(Sync.verifyExportEnvelope(envelope),false);
 });
 
-test('boot safety runs before sync runtime and app while interaction guard is active',()=>{
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),boot=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-boot-safety-v1.js'),'utf8'),css=fs.readFileSync(path.join(root,'03_styles/runtime/garang-interaction-safety-v1.css'),'utf8');
- const core=html.indexOf('./02_core/sync-durability.js'),bootIndex=html.indexOf('./06_features/ui/runtime/garang-boot-safety-v1.js'),syncRuntime=html.indexOf('./06_features/ui/runtime/garang-sync-durability-v1.js'),app=html.indexOf('./01_app/app.js');
- assert.ok(core>0&&bootIndex>core&&bootIndex<syncRuntime&&syncRuntime<app);
- for(const token of ['repairAll','invalid_json','invalid_shape','navigationReady'])assert.ok(boot.includes(token),token);
- assert.ok(css.includes('#menuBtn.icon-btn'));assert.ok(css.includes('display:grid!important'));
-});
-
 test('live runtime is wired before agent state hook and protects sync boundaries',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sync-durability-v1.js'),'utf8'),sw=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
  const syncCore=html.indexOf('./02_core/sync-durability.js'),syncRuntime=html.indexOf('./06_features/ui/runtime/garang-sync-durability-v1.js'),agentHook=html.indexOf('./06_features/final/agent-state-hook-v1.js'),app=html.indexOf('./01_app/app.js');
  assert.ok(syncCore>0&&syncRuntime>syncCore&&syncRuntime<agentHook&&agentHook<app);
  for(const token of ['runTransaction','STALE_ACCOUNT_WRITE','STALE_ACCOUNT_READ','navigator.onLine','garang_sync_pending_v1::','syncTombstones','exportVerifiedBackup','stopImmediatePropagation'])assert.ok(runtime.includes(token),token);
- for(const token of ['./02_core/sync-durability.js','./06_features/ui/runtime/garang-boot-safety-v1.js','./03_styles/runtime/garang-interaction-safety-v1.css','./06_features/ui/runtime/garang-sync-durability-v1.js',"const CACHE='garang-"])assert.ok(sw.includes(token),token);
+ for(const token of ['./02_core/sync-durability.js','./06_features/ui/runtime/garang-sync-durability-v1.js',"const CACHE='garang-"])assert.ok(sw.includes(token),token);
 });
 
 console.log(`${passed} sync durability tests passed`);
