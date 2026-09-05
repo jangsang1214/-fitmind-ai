@@ -64,14 +64,14 @@ function applyWrite(tool,args={}){
  switch(tool){
   case 'createPlan':{
    state.planner=Array.isArray(state.planner)?state.planner:[];
-   const row={id:id('plan'),date:String(args.date||today()),time:String(args.time||''),type:String(args.type||'custom'),title:String(args.title||'').trim(),source:'agent',status:'confirmed',completed:false,createdAt:stamp,updatedAt:stamp};
+   const row={id:id('plan'),date:String(args.date||today()),time:String(args.time||''),type:String(args.type||'custom'),title:String(args.title||'').trim(),source:'ai',origin:'ai',status:'confirmed',completed:false,createdAt:stamp,updatedAt:stamp};
    if(!row.title)throw new Error('INVALID_TOOL_ARGS');
    state.planner.push(row);persist(tool,args);return clone(row);
   }
   case 'updatePlan':{
    const row=(Array.isArray(state.planner)?state.planner:[]).find(item=>String(item.id)===String(args.id));if(!row)throw new Error('PLAN_NOT_FOUND');
    for(const key of ['title','date','time','type'])if(args[key]!==undefined)row[key]=String(args[key]);
-   if(args.completed!==undefined)row.completed=!!args.completed;if(args.done!==undefined)row.completed=!!args.done;row.updatedAt=stamp;row.source='agent';persist(tool,args);return clone(row);
+   if(args.completed!==undefined)row.completed=!!args.completed;if(args.done!==undefined)row.completed=!!args.done;row.updatedAt=stamp;row.source='ai';row.origin='ai';persist(tool,args);return clone(row);
   }
   case 'saveMemory':{
    state.memory=isObject(state.memory)?state.memory:{};state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];
