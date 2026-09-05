@@ -15,12 +15,15 @@ Object.assign(dict,{
 const previous=window.GarangTranslateDynamic;
 const entity=()=>window.GarangEntityI18n;
 const replaceAll=(text,from,to)=>String(text).split(from).join(to);
-const isCoachText=text=>/(외부 AI|외부 LLM|로컬|Coach Engine|체크인|회복 지표|저장된 운동 기록|오늘 기록 기준|최근 기록:|오늘 단백질|현재 사용자 Context)/i.test(text);
+const isCoachText=text=>/(외부 AI|외부 LLM|로컬|로Curl|Coach Engine|체크인|회복 지표|저장된 운동 기록|오늘 기록 기준|최근 기록:|오늘 단백질|현재 사용자 Context)/i.test(String(text||''));
 function exerciseName(name){return entity()?.translateExercise?.(name)||name;}
 
 function translateCoach(source){
   let out=String(source??'');
   const exact=dict[out.trim()];if(exact)return out.replace(out.trim(),exact);
+
+  /* Repair the old token-level corruption first, then translate the whole Coach sentence. */
+  out=replaceAll(out,'로Curl','로컬');
 
   out=out.replace(/오늘 기록 기준으로\s*([0-9.]+)\s*kcal,\s*단백질\s*([0-9.]+)g입니다\.\s*목표 단백질을 약\s*([0-9.]+)g으로 보면\s*([0-9.]+)g 정도 남아 있습니다\.\s*지금은 실제 저장된 식단 기록만 사용해 판단했습니다\./gs,
     'Based on today’s records: $1 kcal and $2 g protein. With a protein target of about $3 g, roughly $4 g remains. This judgment uses only your actual saved nutrition records.');
@@ -69,16 +72,22 @@ function translateCoach(source){
   out=out.replace(/최근 러닝\s*(\d+)회를 함께 반영했습니다\./g,'Also included $1 recent runs.');
   out=out.replace(/오늘 Planner의 “([^”]+)” 일정과 함께 판단했습니다\./g,'Judged together with today’s Planner item “$1”.');
 
-  /* Never let the Korean word 로컬 be damaged by exercise token translation (컬 -> Curl). */
   out=replaceAll(out,'로컬','local');
   return out;
 }
 
 window.GarangTranslateDynamic=function(source,target){
-  let out=typeof previous==='function'?previous(source,target):source;
+  /* Coach text must be translated before the generic token translator can touch it.
+     This prevents words such as 로컬 from ever becoming mixed strings such as 로Curl. */
+  if(target==='en'&&typeof source==='string'&&isCoachText(source)){
+    const direct=translateCoach(source);
+    if(!/[가-힣]/.test(direct))return direct;
+    const fallback=typeof previous==='function'?previous(direct,target):direct;
+    return translateCoach(fallback);
+  }
+  const out=typeof previous==='function'?previous(source,target):source;
   if(target!=='en'||typeof out!=='string')return out;
-  if(isCoachText(source)||isCoachText(out))out=translateCoach(out);
-  return out;
+  return isCoachText(out)?translateCoach(out):out;
 };
 
 window.GarangCoachLanguagePolicy=Object.freeze({translate:translateCoach,isCoachText});
