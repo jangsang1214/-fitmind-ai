@@ -1,5 +1,5 @@
 /* GARANG Coach Decision UI v1
-   Surfaces the deterministic Stage 3 decision above Coach prompts.
+   Surfaces the deterministic Stage 3 decision at the top of the Coach conversation.
    It never writes data directly. Plan changes still flow through the existing approval gate.
 */
 (() => {
@@ -14,17 +14,25 @@ const LABELS={
 const SIGNAL={readinessBand:{ko:'준비도',en:'Readiness'},fatigueBand:{ko:'피로',en:'Fatigue'},loadBand:{ko:'부하',en:'Load'}};
 function text(pair){return english()?pair?.en:pair?.ko;}
 function ensureStyle(){if(document.getElementById('garang-coach-decision-v1-style'))return;const style=document.createElement('style');style.id='garang-coach-decision-v1-style';style.textContent=`
-.garang-decision-card{margin:0 0 8px;padding:12px 13px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(255,255,255,.035);display:grid;gap:8px}
-.garang-decision-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.86}.garang-decision-head b{font-size:12px;letter-spacing:0;text-transform:none;opacity:1}
+.garang-decision-card{margin:8px 0 12px;padding:12px 13px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(255,255,255,.035);display:grid;gap:8px}
+.garang-coach-v2>.garang-decision-card{margin-left:0;margin-right:0}.garang-decision-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.86}.garang-decision-head b{font-size:12px;letter-spacing:0;text-transform:none;opacity:1}
 .garang-decision-summary{margin:0;font-size:13px;line-height:1.5}.garang-decision-signals{display:flex;gap:6px;flex-wrap:wrap}.garang-decision-signals span{font-size:11px;padding:5px 7px;border:1px solid rgba(255,255,255,.1);border-radius:999px;opacity:.82}
 .garang-decision-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;opacity:.7}.garang-decision-action{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:inherit;border-radius:10px;padding:7px 10px;font-size:11px;cursor:pointer}
 @media(max-width:800px){.garang-decision-card{padding:10px 11px}.garang-decision-foot{align-items:flex-end}.garang-decision-action{padding:7px 9px}}
 `;document.head.appendChild(style);}
+function placeCard(root,card,wrap,composer){
+ const head=root.querySelector('.g2-chat-head,.coach-app-head');
+ if(head?.parentNode){if(head.nextElementSibling!==card)head.parentNode.insertBefore(card,head.nextSibling);return;}
+ const thread=root.querySelector('.g2-chat-main,.g2-thread,.coach-thread,#coachChat');
+ if(thread?.parentNode){if(thread.previousElementSibling!==card)thread.parentNode.insertBefore(card,thread);return;}
+ if(wrap&&composer&&card.parentNode!==wrap)wrap.insertBefore(card,wrap.querySelector('.g4-prompt-strip')||composer);
+}
 function render(){
  const root=main.querySelector('.garang-coach-v2'),Bridge=window.GarangAgentStateBridge;if(!root||!Bridge?.ready?.()||!Bridge.getDecisionContext)return;
  const wrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');if(!wrap||!composer||!input)return;
  let decision=null;try{decision=Bridge.getDecisionContext();}catch{return;}if(!decision)return;
- let card=wrap.querySelector('.garang-decision-card');if(!card){card=document.createElement('section');card.className='garang-decision-card';card.dataset.garangDecision=VERSION;wrap.insertBefore(card,wrap.querySelector('.g4-prompt-strip')||composer);}
+ let card=root.querySelector('.garang-decision-card');if(!card){card=document.createElement('section');card.className='garang-decision-card';card.dataset.garangDecision=VERSION;}
+ placeCard(root,card,wrap,composer);
  const isEn=english(),mode=LABELS[decision.mode]||{ko:decision.mode,en:decision.mode},confidence=Math.round((Number(decision.confidence)||0)*100),signals=decision.signals||{},summary=text(decision.summary)||'',canPlan=!!decision.actionProposal;
  const signature=JSON.stringify([isEn,decision.decisionId,decision.mode,confidence,signals,summary,canPlan]);if(card.dataset.signature===signature)return;card.dataset.signature=signature;
  card.innerHTML=`<div class="garang-decision-head"><span>${isEn?'GARANG DECISION':'GARANG 판단'}</span><b>${esc(text(mode))}</b></div><p class="garang-decision-summary">${esc(summary)}</p><div class="garang-decision-signals"><span>${text(SIGNAL.readinessBand)} · ${esc(signals.readinessBand||'unknown')}</span><span>${text(SIGNAL.fatigueBand)} · ${esc(signals.fatigueBand||'unknown')}</span><span>${text(SIGNAL.loadBand)} · ${esc(signals.loadBand||'unknown')}</span></div><div class="garang-decision-foot"><span>${isEn?'Confidence':'판단 신뢰도'} ${confidence}% · ${isEn?'No silent changes':'자동 변경 없음'}</span>${canPlan?`<button type="button" class="garang-decision-action">${isEn?'Propose this plan':'이 판단으로 계획 제안'}</button>`:''}</div>`;
