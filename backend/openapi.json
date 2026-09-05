@@ -3,11 +3,11 @@
   "info": {
     "title": "GARANG Commercial API",
     "version": "0.11.0-beta.1",
-    "description": "Server boundary for GARANG contract garang-state-v1 / schema v8. Internal UI state may differ, but requests crossing this API boundary must be canonicalized first."
+    "description": "Server boundary for GARANG contract garang-state-v1 / schema v8. AI responses use garang-ai-v1 and mutation tools use garang-tools-v1. Provider-specific adapters must translate at the edge without changing GARANG state semantics."
   },
   "servers": [{"url": "/v1"}],
   "paths": {
-    "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health including contractVersion and schemaVersion"}}}},
+    "/health": {"get": {"security": [], "responses": {"200": {"description": "Service health including data, AI and tool contract versions"}}}},
     "/data/{domain}": {
       "parameters": [{"name": "domain", "in": "path", "required": true, "schema": {"type": "string", "enum": ["profile","userModel","workouts","meals","runs","body","planner","dailyCheckins","memory","aiChats","scoreHistory","settings"]}}],
       "get": {"responses": {"200": {"description": "User-scoped canonical domain"}, "401": {"description": "Unauthenticated"}}},
@@ -17,11 +17,30 @@
     "/migrations/local": {"post": {"description": "Accepts local data only when contractVersion is garang-state-v1 and schemaVersion is supported.", "responses": {"200": {"description": "Migration accepted with canonical contract acknowledgement"}, "400": {"description": "Invalid migration, contract or schema"}}}},
     "/user/export": {"get": {"responses": {"200": {"description": "User data export with contractVersion and schemaVersion"}}}},
     "/account": {"delete": {"responses": {"200": {"description": "Account data deleted"}, "400": {"description": "Confirmation required"}}}},
-    "/agent/actions": {"post": {"responses": {"201": {"description": "Pending action proposal"}}}},
-    "/agent/actions/{id}/confirm": {"post": {"responses": {"200": {"description": "Action confirmed or rejected"}}}},
+    "/coach/respond": {
+      "post": {
+        "description": "Provider-neutral GARANG Coach response endpoint. The current development adapter is Mock AI. Tool calls are validated and converted to pending actions; they never mutate user state before explicit confirmation.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["message"], "properties": {"message": {"type": "string", "maxLength": 4000}, "context": {"type": "object"}, "mockScenario": {"type": ["string","null"]}}, "additionalProperties": false}}}},
+        "responses": {"200": {"description": "AI text plus zero or more pending actions"}, "400": {"description": "Invalid GARANG AI request"}, "502": {"description": "Provider failure or tool-contract violation"}}
+      }
+    },
+    "/agent/actions": {
+      "post": {
+        "description": "Creates a validated pending GARANG action. Allowed tools: createPlan, updatePlan, saveMemory, deleteRecord, updateGoal.",
+        "responses": {"201": {"description": "Pending action proposal"}, "400": {"description": "Tool or arguments violate garang-tools-v1"}}
+      }
+    },
+    "/agent/actions/{id}/confirm": {
+      "post": {
+        "description": "Explicitly confirms or rejects one user-owned pending action. A confirmed action is applied to canonical user state and returns the execution result.",
+        "responses": {"200": {"description": "Action confirmed/applied or rejected"}, "404": {"description": "Action not found for this user"}, "409": {"description": "Action already resolved"}}
+      }
+    },
     "/analytics/events": {"post": {"responses": {"202": {"description": "Events accepted"}}}},
     "/errors": {"post": {"responses": {"202": {"description": "Error accepted"}}}}
   },
-  "components": {"securitySchemes": {"firebase": {"type": "http", "scheme": "bearer", "bearerFormat": "Firebase ID token"}}},
+  "components": {
+    "securitySchemes": {"firebase": {"type": "http", "scheme": "bearer", "bearerFormat": "Firebase ID token"}}
+  },
   "security": [{"firebase": []}]
 }
