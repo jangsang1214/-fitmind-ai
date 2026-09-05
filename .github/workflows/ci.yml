@@ -8,7 +8,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,3 +20,7 @@ jobs:
         run: npm run build
       - name: Verify build entry
         run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
+      - name: Install browser smoke dependency
+        run: npm install --no-save --package-lock=false playwright@1.55.0 && npx playwright install chromium
+      - name: Verify real browser interactions
+        run: node tests/browser-interaction.test.cjs

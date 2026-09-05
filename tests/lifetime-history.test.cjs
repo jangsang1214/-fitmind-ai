@@ -37,7 +37,9 @@ test('emergency recovery restores stable UI boot path',()=>{
  assert.equal(sw.includes('./06_features/ui/runtime/garang-lifetime-history-v1.js'),false,'service worker must not cache lifetime runtime');
  for(const forbidden of ['setInterval(','location.reload','onAuthStateChanged','firebase.firestore','Storage.prototype','stopImmediatePropagation'])assert.equal(runtime.includes(forbidden),false,forbidden);
  assert.ok(runtime.includes('disabled:true'));
- assert.ok(sw.includes('garang-ui-recovery-v2-20260906'));
+ assert.ok(/const CACHE='garang-[^']+';/.test(sw),'service worker must keep an explicit versioned GARANG cache');
+ assert.ok(sw.includes('./06_features/ui/runtime/garang-boot-safety-v1.js'),'service worker must cache boot safety');
+ assert.ok(sw.includes('./03_styles/runtime/garang-interaction-safety-v1.css'),'service worker must cache interaction safety');
 });
 
 console.log(`${passed} lifetime history/recovery tests passed`);

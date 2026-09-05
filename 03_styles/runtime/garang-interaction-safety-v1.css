@@ -1,0 +1,24 @@
+/* GARANG interaction safety v1
+   Keep primary app controls reachable on desktop and mobile.
+   Decorative layers must never steal pointer input from app chrome.
+*/
+#appView:not([hidden]) #menuBtn.icon-btn{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  padding:0!important;
+  pointer-events:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#appView:not([hidden]) .topbar,
+#appView:not([hidden]) .topbar button,
+#appView:not([hidden]) .bottom-nav,
+#appView:not([hidden]) .bottom-nav button{
+  pointer-events:auto!important;
+}
+body:before{pointer-events:none!important}
+.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel{pointer-events:auto}
+.garang-more-sheet[hidden],.modal-backdrop[hidden],.gcp-backdrop[hidden],.gcp-panel[hidden]{display:none!important}
