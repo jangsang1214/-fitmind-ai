@@ -9,7 +9,7 @@ function fixture(){
  const workouts=[];for(const offset of [-34,-31,-27,-24,-20,-17,-13,-10])workouts.push({id:`w${offset}`,sessionId:`s${offset}`,date:d(offset),duration:40,rpe:5,volume:3000});
  for(const offset of [-6,-4,-2,-1])workouts.push({id:`h${offset}`,sessionId:`hs${offset}`,date:d(offset),duration:75,rpe:9,volume:7000});
  const dailyCheckins=[-3,-2,-1].map((offset,i)=>({id:`c${offset}`,date:d(offset),sleepHours:5.2+i*.1,energy:2,stress:4,soreness:{legs:4},painCaution:false}));
- const body=[{id:'b1',date:d(-21),weight:72},{id:'b2',date:d(-10),weight:71.3},{id:'b3',date:d(-1),weight:70.6}];
+ const body=[{id:'b1',date:d(-21),weight:72},{id:'b2',date:d(-10),weight:68.5},{id:'b3',date:d(-1),weight:65}];
  const runs=[{id:'r1',date:d(-5),duration:40,distance:7},{id:'r2',date:d(-2),duration:50,distance:9}];
  const meals=[-6,-5,-4,-3,-2,-1].map(offset=>({id:`m${offset}`,date:d(offset),kcal:2200,protein:150}));
  return {profile:{goal:'10K under 45 minutes'},userModel:{goal:'10K under 45 minutes'},workouts,runs,meals,body,dailyCheckins,planner:[],memory:{entries:[]}};
