@@ -40,6 +40,7 @@
     "06_features/ui/runtime/garang-screen-registry-v1.js",
     "06_features/ui/runtime/garang-auth-bootstrap.js",
     "01_app/app.js",
+    "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
     "06_features/ui/runtime/garang-sync-quiet-ux-v1.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
     "06_features/ui/runtime/garang-brand-runtime-v2.js",
