@@ -5,6 +5,7 @@ let passed=0;
 async function test(name,fn){await fn();passed++;console.log(`PASS ${name}`);}
 const clock=()=>new Date('2026-09-05T00:00:00.000Z');
 let seq=0;const idFactory=prefix=>`${prefix}_${++seq}`;
+const codeIs=code=>error=>error?.code===code;
 
 (async()=>{
  await test('request freezes the provider language contract',()=>{
@@ -30,7 +31,7 @@ let seq=0;const idFactory=prefix=>`${prefix}_${++seq}`;
 
  await test('unknown tools are rejected at contract boundary',()=>{
   const req=Agent.createRequest({message:'x',context:{},language:'en'},{clock,idFactory});
-  assert.throws(()=>Agent.validateResponse({answer:'x',toolCalls:[{tool:'executeCode',args:{}}]},req,{idFactory}),/TOOL_NOT_ALLOWED/);
+  assert.throws(()=>Agent.validateResponse({answer:'x',toolCalls:[{tool:'executeCode',args:{}}]},req,{idFactory}),codeIs('TOOL_NOT_ALLOWED'));
  });
 
  await test('write proposal never mutates before user approval',async()=>{
@@ -54,7 +55,7 @@ let seq=0;const idFactory=prefix=>`${prefix}_${++seq}`;
   const result=await session.run({message:'Create a plan',context:{},language:'en'},{adapter:Agent.createMockAdapter({idFactory})});
   const id=result.proposals[0].id,confirmed=session.confirm(id,true);
   assert.equal(confirmed.proposal.status,'confirmed');assert.equal(applied,1);assert.equal(lastTool,'createPlan');assert.deepEqual(confirmed.result,{saved:true});
-  assert.throws(()=>session.confirm(id,true),/PROPOSAL_ALREADY_RESOLVED/);assert.equal(applied,1);
+  assert.throws(()=>session.confirm(id,true),codeIs('PROPOSAL_ALREADY_RESOLVED'));assert.equal(applied,1);
  });
 
  await test('read tools execute without mutating source state',async()=>{
@@ -67,7 +68,7 @@ let seq=0;const idFactory=prefix=>`${prefix}_${++seq}`;
 
  await test('write tool arguments are validated before proposal',()=>{
   const req=Agent.createRequest({message:'x',context:{},language:'en'},{clock,idFactory});
-  assert.throws(()=>Agent.validateResponse({answer:'x',toolCalls:[{tool:'deleteRecord',args:{domain:'settings',id:'x'}}]},req,{idFactory}),/INVALID_TOOL_ARGS/);
+  assert.throws(()=>Agent.validateResponse({answer:'x',toolCalls:[{tool:'deleteRecord',args:{domain:'settings',id:'x'}}]},req,{idFactory}),codeIs('INVALID_TOOL_ARGS'));
  });
 
  console.log(`${passed} agent contract tests passed`);
