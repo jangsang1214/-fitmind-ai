@@ -15,13 +15,14 @@ const DecisionIntelligence=window.GarangDecisionIntelligence||null;
 let liveState=null;
 let activeKey=null;
 let syncTimer=null;
+let lastStampMs=0;
 
 const isObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const isState=value=>isObject(value)&&Array.isArray(value.planner)&&Array.isArray(value.workouts)&&Array.isArray(value.meals)&&isObject(value.memory)&&isObject(value.preferences);
 const isStateKey=key=>/^garang_(?:demo_state_v3|user_.+_v3)$/.test(String(key||''));
 const clone=value=>value===undefined?undefined:nativeParse(nativeStringify(value));
 const id=prefix=>globalThis.crypto?.randomUUID?.()||`${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-const now=()=>new Date().toISOString();
+const now=()=>{const wall=Date.now(),ms=Math.max(wall,lastStampMs+1);lastStampMs=ms;return new Date(ms).toISOString();};
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 
 function capture(value){if(isState(value))liveState=value;return value;}
