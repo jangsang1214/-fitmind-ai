@@ -26,6 +26,7 @@
     "02_core/data-schema.js",
     "02_core/sync-durability.js",
     "02_core/privacy-security.js",
+    "02_core/memory-intelligence-v1.js",
     "services/performance.js",
     "services/units.js",
     "06_features/final/agent-contract-v1.js",
