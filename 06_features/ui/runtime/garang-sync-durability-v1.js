@@ -1,4 +1,4 @@
-/* GARANG sync durability runtime v1.2
+/* GARANG sync durability runtime v1.3
    Harden local/cloud persistence before app.js without owning ordinary app clicks.
 */
 (() => {
@@ -39,6 +39,12 @@ function safeCloudState(value,uid){return sanitize(stripCloudFields(value),uid);
 function mergeSyncMeta(outgoing,persisted,uid){const out=safeCloudState(outgoing,uid);out.meta={...(out.meta||{})};const meta=persisted?.meta||{};for(const key of ['syncOwnerUid','syncDeviceId','syncRevision','syncLastLocalAt','syncLastMergeAt','syncTombstones'])if(meta[key]!==undefined)out.meta[key]=meta[key];if(!out.meta.syncOwnerUid)out.meta.syncOwnerUid=uid;return out;}
 function snapshotWithData(snapshot,data){return {exists:snapshot.exists,id:snapshot.id,ref:snapshot.ref,metadata:snapshot.metadata,data:()=>data,get:field=>data?.[field]};}
 function stateFingerprint(value){try{return Core.fingerprint(value);}catch{return '';}}
+function onboardingReady(value){return !!(value?.onboarding?.complete||value?.onboarding?.skipped);}
+function publishCloudStateReady(uid,before,after){
+  const detail=Object.freeze({uid:String(uid),onboardingReady:onboardingReady(after),needsTodayRoute:onboardingReady(after)&&!onboardingReady(before),at:new Date().toISOString()});
+  window.__garangCloudStateReady=detail;
+  window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail}));
+}
 
 /* Preserve sync metadata, but sanitize malformed rows before anything can reach app render. */
 Storage.prototype.setItem=function(key,value){
@@ -70,8 +76,9 @@ function patchFirestore(){
       if(navigator.onLine===false){markPending(uid,'offline_read');throw syncError('unavailable','Offline sync deferred.');}
       const snapshot=await originalGet.apply(this,args);if(!snapshot?.exists)return snapshot;
       const remote=safeCloudState(snapshot.data(),uid),local=readUserState(uid);
-      if(!local)return snapshotWithData(snapshot,remote);
+      if(!local){publishCloudStateReady(uid,null,remote);return snapshotWithData(snapshot,remote);}
       const merged=Core.mergeActiveStates(local,remote,{ownerUid:uid,clock:Date.now()});
+      publishCloudStateReady(uid,local,merged);
       if(stateFingerprint(merged)!==stateFingerprint(remote)){markPending(uid,'merge_needed',{increment:false});scheduleRetry(uid,{immediate:true});}
       return snapshotWithData(snapshot,merged);
     };
@@ -112,5 +119,5 @@ window.addEventListener('online',()=>{document.documentElement.dataset.garangNet
 window.addEventListener('offline',()=>{document.documentElement.dataset.garangNetwork='offline';const uid=currentUid();if(uid)markPending(uid,'offline',{increment:false});});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine!==false){const uid=currentUid();if(uid&&readPending(uid))scheduleRetry(uid,{immediate:true});}});
 setTimeout(bootFirebaseGuards,0);setTimeout(patchFirestore,700);window.addEventListener('load',()=>{patchFirestore();authWatch();},{once:true});
-window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v1.2',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup});
+window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v1.3',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup});
 })();
