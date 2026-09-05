@@ -11,9 +11,10 @@ const DEMO_KEY='garang_demo_state_v3';
 const DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','checkins','aiChat']);
 const CLOUD_LIMITS=Object.freeze({workouts:350,meals:350,body:250,checkins:180,planner:300,actionLog:300,errors:80,runs:200,aiChat:80});
 const TOMBSTONE_TTL_MS=180*24*60*60*1000;
+const jsonParse=JSON.parse.bind(JSON),jsonStringify=JSON.stringify.bind(JSON);
 
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
-const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const clone=value=>value===undefined?undefined:jsonParse(jsonStringify(value));
 const iso=value=>{const n=Date.parse(value||0);return Number.isFinite(n)&&n>0?n:0;};
 const nowIso=clock=>new Date(typeof clock==='number'?clock:Date.now()).toISOString();
 const error=(code,message=code)=>{const e=new Error(message);e.code=code;return e;};
@@ -92,7 +93,7 @@ function enforceOwner(state,ownerUid){
 }
 function mergeUnique(a,b){
   const m=new Map();
-  for(const item of [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])m.set(typeof item==='string'?`s:${item}`:`o:${JSON.stringify(item)}`,item);
+  for(const item of [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])m.set(typeof item==='string'?`s:${item}`:`o:${jsonStringify(item)}`,item);
   return [...m.values()];
 }
 function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now()}={}){
@@ -152,7 +153,7 @@ function verifyExportEnvelope(envelope){
   return Object.keys(actual).every(k=>Number(expected[k])===actual[k]);
 }
 function fingerprint(state){
-  const s=compactForCloud(state||{});delete s.cloudUpdatedAt;return JSON.stringify(s);
+  const s=compactForCloud(state||{});delete s.cloudUpdatedAt;return jsonStringify(s);
 }
 
 return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,createExportEnvelope,verifyExportEnvelope,fingerprint});
