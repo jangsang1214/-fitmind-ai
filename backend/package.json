@@ -3,5 +3,9 @@
   "private": true,
   "version": "0.10.0-beta.2",
   "description": "Provider-neutral GARANG v1 API core. Deployment adapter and credentials are intentionally absent.",
-  "scripts": {"test": "node tests/core.test.cjs"}
+  "scripts": {
+    "test": "node tests/core.test.cjs && node tests/ai-action-e2e.test.cjs",
+    "test:core": "node tests/core.test.cjs",
+    "test:ai-e2e": "node tests/ai-action-e2e.test.cjs"
+  }
 }
