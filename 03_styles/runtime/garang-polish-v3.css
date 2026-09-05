@@ -48,7 +48,7 @@
 .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-body-model{width:100%!important;max-width:235px!important;height:405px!important}
 .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view>span{font-size:6.5px!important;letter-spacing:.18em!important;color:#71746f!important}
 
-/* Coach is a fixed-height workspace. Only the conversation pane scrolls. */
+/* Coach keeps its internal conversation scroll, but it must not own or hide global app chrome. */
 body:has(.garang-coach-v2){overflow:hidden!important}
 body:has(.garang-coach-v2) .main{overflow:hidden!important}
 .garang-coach-v2,.g2-chat-main{min-height:0!important}
@@ -65,12 +65,17 @@ body:has(.garang-coach-v2) .main{overflow:hidden!important}
 .g2-empty-inner h2:after{content:"AI Performance Coach";display:block;font:400 8px/1.3 var(--g2-ui);letter-spacing:.04em;color:#777a75}
 
 @media(max-width:800px){
-  body:has(.garang-coach-v2) .topbar{display:none!important}
-  body:has(.garang-coach-v2) .bottom-nav{display:none!important}
-  body:has(.garang-coach-v2) .main{padding:0!important;width:100%!important;max-width:none!important;height:100svh!important}
-  .garang-coach-v2{height:100svh!important}
-  .g2-chat-head{padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top))!important}
-  .g2-composer-wrap{padding-bottom:calc(10px + env(safe-area-inset-bottom))!important}
+  /* Global navigation remains visible and interactive on every screen. */
+  body:has(.garang-coach-v2) .topbar{display:flex!important}
+  body:has(.garang-coach-v2) .bottom-nav{display:grid!important}
+  body:has(.garang-coach-v2) .main{
+    padding:0 0 calc(68px + env(safe-area-inset-bottom))!important;
+    width:100%!important;max-width:none!important;
+    height:calc(100svh - 56px)!important;
+  }
+  .garang-coach-v2{height:calc(100svh - 56px - 68px - env(safe-area-inset-bottom))!important}
+  .g2-chat-head{height:52px!important}
+  .g2-composer-wrap{padding-bottom:10px!important}
 
   .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{display:block!important;position:relative!important;min-height:430px!important}
   .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view{display:none!important;min-height:410px!important}
