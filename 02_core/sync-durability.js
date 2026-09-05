@@ -25,28 +25,6 @@ const rowStamp=row=>Math.max(iso(row?.updatedAt),iso(row?.createdAt),Number(row?
 const stateStamp=state=>Math.max(iso(state?.meta?.updatedAt),iso(state?.clientUpdatedAt),Number(state?.updatedAtMs)||0,Number(state?.meta?.syncRevision)||0);
 
 function rows(value){return Array.isArray(value)?value.filter(object):[];}
-function sanitizeState(input,{ownerUid=null,clock=Date.now()}={}){
-  let out={};
-  try{out=object(input)?clone(input):{};}catch{out={};}
-  if(!object(out))out={};
-  out.meta=object(out.meta)?out.meta:{};
-  if(ownerUid&&!out.meta.syncOwnerUid)out.meta.syncOwnerUid=String(ownerUid);
-  out.meta.syncTombstones=normalizeTombstones(out.meta.syncTombstones,clock);
-  for(const domain of DOMAINS)out[domain]=rows(out[domain]);
-  out.meals=out.meals.map(meal=>Array.isArray(meal.items)?{...meal,items:meal.items.filter(object)}:meal);
-  out.actionLog=rows(out.actionLog);
-  out.errors=rows(out.errors);
-  out.analytics=object(out.analytics)?out.analytics:{};
-  out.analytics.events=rows(out.analytics.events);
-  out.memory=object(out.memory)?out.memory:{};
-  out.memory.entries=rows(out.memory.entries);
-  for(const bucket of ['facts','preferences','goals','events'])out.memory[bucket]=Array.isArray(out.memory[bucket])?out.memory[bucket].filter(value=>value!=null):[];
-  out.memory.deletedIds=Array.isArray(out.memory.deletedIds)?[...new Set(out.memory.deletedIds.filter(value=>value!=null).map(String))]:[];
-  out.onboarding=object(out.onboarding)?out.onboarding:{};
-  out.preferences=object(out.preferences)?out.preferences:{};
-  if(out.profile!==null&&!object(out.profile))out.profile=null;
-  return out;
-}
 function itemsForDomain(state,domain){
   if(domain==='memory')return rows(state?.memory?.entries);
   return rows(state?.[domain]);
@@ -93,7 +71,7 @@ function collectNewTombstones(previous,next,{ownerUid=null,clock=Date.now()}={})
   return out;
 }
 function withLocalMetadata(previousInput,nextInput,{ownerUid=null,deviceId=null,clock=Date.now()}={}){
-  const previous=object(previousInput)?sanitizeState(previousInput,{ownerUid,clock}):null,next=sanitizeState(nextInput,{ownerUid,clock});
+  const previous=object(previousInput)?previousInput:null,next=clone(nextInput||{});
   next.meta=object(next.meta)?next.meta:{};
   const existingOwner=next.meta.syncOwnerUid?String(next.meta.syncOwnerUid):null;
   if(ownerUid&&existingOwner&&existingOwner!==String(ownerUid))throw error('SYNC_OWNER_MISMATCH');
@@ -120,7 +98,7 @@ function mergeUnique(a,b){
   return [...m.values()];
 }
 function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now()}={}){
-  const local=sanitizeState(localInput,{ownerUid,clock}),remote=sanitizeState(remoteInput,{ownerUid,clock});
+  const local=object(localInput)?clone(localInput):{},remote=object(remoteInput)?clone(remoteInput):{};
   enforceOwner(local,ownerUid);enforceOwner(remote,ownerUid);
   delete local.cloudUpdatedAt;delete remote.cloudUpdatedAt;
   const localStamp=stateStamp(local),remoteStamp=stateStamp(remote),preferRemote=remoteStamp>localStamp;
@@ -144,14 +122,14 @@ function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now(
   merged.meta.syncRevision=Math.max(Number(local?.meta?.syncRevision)||0,Number(remote?.meta?.syncRevision)||0);
   merged.meta.syncLastMergeAt=nowIso(clock);
   merged.clientUpdatedAt=merged.meta.updatedAt||merged.clientUpdatedAt||null;
-  return sanitizeState(merged,{ownerUid,clock});
+  return merged;
 }
 function newestRows(list,limit){
   if(!Array.isArray(list)||list.length<=limit)return Array.isArray(list)?list:[];
   return list.slice().sort((a,b)=>rowStamp(a)-rowStamp(b)).slice(-limit);
 }
 function compactForCloud(input){
-  const out=sanitizeState(input||{});delete out.syncState;delete out.cloudUpdatedAt;
+  const out=clone(input||{});delete out.syncState;delete out.cloudUpdatedAt;
   for(const [domain,limit] of Object.entries(CLOUD_LIMITS))out[domain]=newestRows(out[domain],limit);
   if(object(out.memory)){
     out.memory.entries=newestRows(out.memory.entries,400);
@@ -168,7 +146,7 @@ function counts(state){
   result.memory=Array.isArray(state?.memory?.entries)?state.memory.entries.length:0;return result;
 }
 function createExportEnvelope(state,{scope='local',exportedAt=new Date().toISOString()}={}){
-  const payload=sanitizeState(state||{});return {format:'GARANG_BACKUP_V1',version:1,exportedAt,scope,manifest:{schemaVersion:Number(payload?.meta?.schemaVersion||payload?.schemaVersion)||null,counts:counts(payload),updatedAt:payload?.meta?.updatedAt||null},payload};
+  const payload=clone(state||{});return {format:'GARANG_BACKUP_V1',version:1,exportedAt,scope,manifest:{schemaVersion:Number(payload?.meta?.schemaVersion||payload?.schemaVersion)||null,counts:counts(payload),updatedAt:payload?.meta?.updatedAt||null},payload};
 }
 function verifyExportEnvelope(envelope){
   if(!object(envelope)||envelope.format!=='GARANG_BACKUP_V1'||envelope.version!==1||!object(envelope.payload))return false;
@@ -181,5 +159,5 @@ function fingerprint(state){
   return jsonStringify(s);
 }
 
-return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,sanitizeState,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,createExportEnvelope,verifyExportEnvelope,fingerprint});
+return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,createExportEnvelope,verifyExportEnvelope,fingerprint});
 });
