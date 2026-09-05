@@ -72,7 +72,7 @@ test('live runtime is wired before agent state hook and protects sync boundaries
  const syncCore=html.indexOf('./02_core/sync-durability.js'),syncRuntime=html.indexOf('./06_features/ui/runtime/garang-sync-durability-v1.js'),agentHook=html.indexOf('./06_features/final/agent-state-hook-v1.js'),app=html.indexOf('./01_app/app.js');
  assert.ok(syncCore>0&&syncRuntime>syncCore&&syncRuntime<agentHook&&agentHook<app);
  for(const token of ['runTransaction','STALE_ACCOUNT_WRITE','STALE_ACCOUNT_READ','navigator.onLine','garang_sync_pending_v1::','syncTombstones','exportVerifiedBackup','stopImmediatePropagation'])assert.ok(runtime.includes(token),token);
- for(const token of ['./02_core/sync-durability.js','./06_features/ui/runtime/garang-sync-durability-v1.js','garang-item5-sync-durability-v1'])assert.ok(sw.includes(token),token);
+ for(const token of ['./02_core/sync-durability.js','./06_features/ui/runtime/garang-sync-durability-v1.js',"const CACHE='garang-"])assert.ok(sw.includes(token),token);
 });
 
 console.log(`${passed} sync durability tests passed`);

@@ -1,28 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+    function validConsentDocument(data) {
+      return !('consent' in data) || (
+        data.consent is map
+        && data.consent.keys().hasOnly(['globalLearning','analytics','updatedAt'])
+        && (!('globalLearning' in data.consent) || data.consent.globalLearning is bool)
+        && (!('analytics' in data.consent) || data.consent.analytics is bool)
+      );
+    }
+    function validStateOwner(data, userId) {
+      return !('meta' in data) || (
+        data.meta is map
+        && (!('syncOwnerUid' in data.meta) || data.meta.syncOwnerUid == null || data.meta.syncOwnerUid == userId)
+      );
+    }
+    function globalLearningConsented() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.consent.globalLearning == true;
+    }
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validConsentDocument(request.resource.data);
+      allow delete: if isOwner(userId);
+
+      match /app/state {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validStateOwner(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
       match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
       }
     }
 
     match /globalLearningEvents/{eventId} {
-      allow create: if request.auth != null
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.consent.globalLearning == true
+      allow create: if globalLearningConsented()
         && request.resource.data.keys().hasOnly(['eventType','context','outcome','actionSummary','quality','createdAt'])
+        && request.resource.data.keys().hasAll(['eventType','context','outcome','actionSummary','quality','createdAt'])
         && request.resource.data.eventType is string
+        && request.resource.data.eventType.size() <= 80
         && request.resource.data.context is map
         && request.resource.data.outcome is map
-        && request.resource.data.actionSummary is string;
+        && request.resource.data.actionSummary is string
+        && request.resource.data.actionSummary.size() <= 500
+        && request.resource.data.createdAt is timestamp;
       allow read, update, delete: if false;
     }
 
     match /globalPatterns/{patternId} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

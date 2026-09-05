@@ -3,7 +3,7 @@
   "private": true,
   "main": "index.js",
   "engines": {"node": "22"},
-  "scripts": {"test": "node tests/memory-engine.test.cjs && node tests/agent-context.test.cjs"},
+  "scripts": {"test": "node tests/memory-engine.test.cjs && node tests/agent-context.test.cjs && node tests/account-security.test.cjs"},
   "dependencies": {
     "express": "^4.21.2",
     "firebase-admin": "^13.4.0",

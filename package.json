@@ -4,7 +4,7 @@
   "version": "0.11.0-beta.1",
   "description": "GARANG Commercial Core development build",
   "scripts": {
-    "test": "node tests/core.test.cjs && node tests/schema-contract.test.cjs && node tests/adapters.test.cjs && node tests/commercial-core.test.cjs && node tests/agent-contract.test.cjs && node tests/agent-e2e.test.cjs && node tests/sync-durability.test.cjs && node backend/tests/core.test.cjs && node functions/tests/memory-engine.test.cjs && node functions/tests/agent-context.test.cjs && node tests/today.test.cjs && node tests/major-update.test.cjs && node tests/i18n-structure.test.cjs && node tests/entity-i18n.test.cjs && node tests/units.test.cjs && node tests/screen-registry.test.cjs",
+    "test": "node tests/core.test.cjs && node tests/schema-contract.test.cjs && node tests/adapters.test.cjs && node tests/commercial-core.test.cjs && node tests/agent-contract.test.cjs && node tests/agent-e2e.test.cjs && node tests/sync-durability.test.cjs && node tests/privacy-security.test.cjs && node tests/security-rules.test.cjs && node tests/app-e2e-smoke.test.cjs && node backend/tests/core.test.cjs && node functions/tests/memory-engine.test.cjs && node functions/tests/agent-context.test.cjs && node functions/tests/account-security.test.cjs && node tests/today.test.cjs && node tests/major-update.test.cjs && node tests/i18n-structure.test.cjs && node tests/entity-i18n.test.cjs && node tests/units.test.cjs && node tests/screen-registry.test.cjs",
     "lint": "node scripts/check.cjs",
     "build": "node scripts/check.cjs --build",
     "start": "python -m http.server 8765"
