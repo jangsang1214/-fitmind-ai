@@ -81,7 +81,8 @@ function withLocalMetadata(previousInput,nextInput,{ownerUid=null,deviceId=null,
   next.meta.syncTombstones=mergeTombstones(previous?.meta?.syncTombstones,next.meta.syncTombstones,clock);
   next.meta.syncTombstones=mergeTombstones(next.meta.syncTombstones,newDeletes,clock);
   next.meta.syncOwnerUid=ownerUid||existingOwner||prevOwner||null;
-  if(deviceId)next.meta.syncDeviceId=String(deviceId);
+  if(deviceId)next.meta.syncDeviceId=String(deviceId);else if(previous?.meta?.syncDeviceId&&!next.meta.syncDeviceId)next.meta.syncDeviceId=previous.meta.syncDeviceId;
+  if(previous?.meta?.syncLastMergeAt&&!next.meta.syncLastMergeAt)next.meta.syncLastMergeAt=previous.meta.syncLastMergeAt;
   next.meta.syncRevision=Math.max(Number(previous?.meta?.syncRevision)||0,Number(next.meta.syncRevision)||0)+1;
   next.meta.syncLastLocalAt=nowIso(clock);
   return next;
@@ -153,7 +154,9 @@ function verifyExportEnvelope(envelope){
   return Object.keys(actual).every(k=>Number(expected[k])===actual[k]);
 }
 function fingerprint(state){
-  const s=compactForCloud(state||{});delete s.cloudUpdatedAt;return jsonStringify(s);
+  const s=compactForCloud(state||{});delete s.cloudUpdatedAt;delete s.clientUpdatedAt;
+  if(object(s.meta))for(const key of ['syncLastMergeAt','syncLastLocalAt','syncRevision','syncDeviceId'])delete s.meta[key];
+  return jsonStringify(s);
 }
 
 return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,createExportEnvelope,verifyExportEnvelope,fingerprint});
