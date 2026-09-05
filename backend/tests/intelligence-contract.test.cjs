@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const Contract=require('../src/intelligence-contract.cjs');
+let passed=0;const test=(name,fn)=>{fn();passed++;console.log(`PASS ${name}`);};
+const userState={engineVersion:'state-intelligence-v1',asOf:'2026-09-06',confidence:.7,coverage:{score:.8}};
+const decision={engineVersion:'decision-intelligence-v1',mode:'maintain',confidence:.7,guardrails:{requiresConfirmation:true}};
+test('enterprise envelope requires tenant and subject scope',()=>{assert.throws(()=>Contract.createEnvelope({subjectId:'u1',userState,decision}),e=>e.code==='TENANT_REQUIRED');assert.throws(()=>Contract.createEnvelope({tenantId:'t1',userState,decision}),e=>e.code==='SUBJECT_REQUIRED');});
+test('enterprise envelope carries only compact intelligence domains',()=>{const e=Contract.createEnvelope({tenantId:'t1',subjectId:'u1',userState,decision,memoryContext:{entries:[{id:'m1',memoryClass:'semantic',type:'goal',key:'primary_goal',value:'10K',userConfirmed:true,status:'active'}]},generatedAt:'2026-09-06T00:00:00Z'});assert.equal(e.contractVersion,'garang-personal-intelligence-v1');assert.equal(e.policy.tenantIsolated,true);assert.equal(e.policy.requiresConfirmationForWrites,true);assert.deepEqual(Object.keys(e.intelligence).sort(),['decision','memory','userState']);assert.equal(Object.hasOwn(e.intelligence,'workouts'),false);assert.equal(Object.hasOwn(e.intelligence,'aiChats'),false);});
+test('unconfirmed memory is excluded from enterprise context',()=>{const e=Contract.createEnvelope({tenantId:'t1',subjectId:'u1',userState,decision,memoryContext:{entries:[{id:'a',value:'keep',userConfirmed:true},{id:'b',value:'drop',userConfirmed:false}]}});assert.deepEqual(e.intelligence.memory.entries.map(x=>x.id),['a']);});
+test('tenant and subject mismatches are rejected',()=>{const e=Contract.createEnvelope({tenantId:'t1',subjectId:'u1',userState,decision});assert.equal(Contract.assertScope(e,{tenantId:'t1',subjectId:'u1'}),true);assert.throws(()=>Contract.assertScope(e,{tenantId:'t2',subjectId:'u1'}),x=>x.code==='TENANT_SCOPE_MISMATCH');assert.throws(()=>Contract.assertScope(e,{tenantId:'t1',subjectId:'u2'}),x=>x.code==='SUBJECT_SCOPE_MISMATCH');});
+console.log(`${passed} enterprise intelligence contract tests passed`);

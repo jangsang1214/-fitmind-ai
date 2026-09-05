@@ -11,6 +11,7 @@ const nativeStringify=JSON.stringify.bind(JSON);
 const nativeSetItem=Storage.prototype.setItem;
 const Memory=window.GarangMemoryIntelligence||null;
 const StateIntelligence=window.GarangStateIntelligence||null;
+const DecisionIntelligence=window.GarangDecisionIntelligence||null;
 let liveState=null;
 let activeKey=null;
 let syncTimer=null;
@@ -48,7 +49,18 @@ function intelligentUpsert(state,candidate,stamp){const memory=ensureMemory(stat
 function applyWrite(tool,args={}){
  const state=requireState(),stamp=now();
  switch(tool){
-  case 'createPlan':{state.planner=Array.isArray(state.planner)?state.planner:[];const row={id:id('plan'),date:String(args.date||today()),time:String(args.time||''),type:String(args.type||'custom'),title:String(args.title||'').trim(),source:'ai',origin:'ai',status:'confirmed',completed:false,createdAt:stamp,updatedAt:stamp};if(!row.title)throw new Error('INVALID_TOOL_ARGS');state.planner.push(row);persist(tool,args);return clone(row);}
+  case 'createPlan':{
+   state.planner=Array.isArray(state.planner)?state.planner:[];
+   const row={id:id('plan'),date:String(args.date||today()),time:String(args.time||''),type:String(args.type||'custom'),title:String(args.title||'').trim(),source:'ai',origin:'ai',status:'confirmed',completed:false,createdAt:stamp,updatedAt:stamp};
+   if(!row.title)throw new Error('INVALID_TOOL_ARGS');
+   if(Number.isFinite(Number(args.duration)))row.duration=Math.max(5,Math.min(240,Math.round(Number(args.duration))));
+   if(Number.isFinite(Number(args.intensityScale)))row.intensityScale=Math.max(.3,Math.min(1.3,Number(args.intensityScale)));
+   if(Number.isFinite(Number(args.volumeScale)))row.volumeScale=Math.max(.3,Math.min(1.3,Number(args.volumeScale)));
+   if(args.decisionEngineVersion)row.decisionEngineVersion=String(args.decisionEngineVersion);
+   if(args.decisionMode)row.decisionMode=String(args.decisionMode);
+   if(Array.isArray(args.reasonCodes))row.decisionReasonCodes=args.reasonCodes.map(String).slice(0,8);
+   state.planner.push(row);persist(tool,args);return clone(row);
+  }
   case 'updatePlan':{const row=(Array.isArray(state.planner)?state.planner:[]).find(item=>String(item.id)===String(args.id));if(!row)throw new Error('PLAN_NOT_FOUND');for(const key of ['title','date','time','type'])if(args[key]!==undefined)row[key]=String(args[key]);if(args.completed!==undefined)row.completed=!!args.completed;if(args.done!==undefined)row.completed=!!args.done;row.updatedAt=stamp;row.source='ai';row.origin='ai';persist(tool,args);return clone(row);}
   case 'saveMemory':{const type=String(args.type||'note').trim()||'note',key=String(args.key||'').trim(),value=String(args.value||'').trim();if(!key||!value)throw new Error('INVALID_TOOL_ARGS');const row=intelligentUpsert(state,{id:args.id||id('mem'),memoryClass:args.memoryClass||null,type,key,value,source:'agent',confidence:.95,utility:Number.isFinite(Number(args.utility))?Number(args.utility):.8,importance:Math.max(1,Math.min(5,Number(args.importance)||3)),userConfirmed:true,expiresAt:args.expiresAt||null},stamp);persist(tool,args);return row;}
   case 'deleteRecord':{const domain=String(args.domain||''),target=String(args.id||'');let removed=false;if(domain==='memory'){const memory=ensureMemory(state);removed=removeById(memory.entries,target);if(removed&&!memory.deletedIds.includes(target))memory.deletedIds.push(target);if(memory.deletedIds.length>500)memory.deletedIds.splice(0,memory.deletedIds.length-500);}else if(['workouts','meals','runs','body','planner'].includes(domain)){state[domain]=Array.isArray(state[domain])?state[domain]:[];removed=removeById(state[domain],target);}else throw new Error('INVALID_TOOL_ARGS');if(!removed)throw new Error('RECORD_NOT_FOUND');persist(tool,args);return {domain,id:target,deleted:true};}
@@ -57,13 +69,18 @@ function applyWrite(tool,args={}){
  }
 }
 function userState(){return StateIntelligence?.estimateState?StateIntelligence.estimateState(requireState()):null;}
+function memoryContext(query='',options={}){return Memory?.prepareMemoryContext?Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options}):ensureMemory(requireState());}
+function decision(){const stateResult=userState();return DecisionIntelligence?.decide?DecisionIntelligence.decide(stateResult,{memoryContext:memoryContext('',{limit:24,budgetChars:6000})}):null;}
 window.GarangAgentStateBridge=Object.freeze({
  ready:()=>!!liveState,capture,getState:()=>clone(requireState()),getLiveState:()=>requireState(),getStorageKey:()=>resolveKey(),
- getMemoryContext:(query='',options={})=>Memory?.prepareMemoryContext?clone(Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options})):clone(ensureMemory(requireState())),
+ getMemoryContext:(query='',options={})=>clone(memoryContext(query,options)),
  getMemoryDiagnostics:()=>Memory?.diagnostics?clone(Memory.diagnostics(ensureMemory(requireState()).entries)):null,
  getUserState:()=>clone(userState()),
  getUserStateContext:()=>StateIntelligence?.compactForContext?clone(StateIntelligence.compactForContext(userState())):clone(userState()),
  getUserStateDiagnostics:()=>StateIntelligence?.diagnostics?clone(StateIntelligence.diagnostics(requireState())):null,
+ getDecision:()=>clone(decision()),
+ getDecisionContext:()=>DecisionIntelligence?.compactForContext?clone(DecisionIntelligence.compactForContext(decision())):clone(decision()),
+ getDecisionDiagnostics:()=>DecisionIntelligence?.diagnostics?clone(DecisionIntelligence.diagnostics(userState(),{memoryContext:memoryContext('',{limit:24,budgetChars:6000})})):null,
  applyWrite
 });
 })();
