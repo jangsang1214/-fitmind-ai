@@ -9,8 +9,9 @@ let currentState={
  checkins:[{id:'today-live',date:'2026-09-06',sleep:8,energy:4,stress:2,soreness:2,updatedAt:'2026-09-06T00:30:00.000Z'}]
 };
 const main={querySelector(){return null;},querySelectorAll(){return[];},appendChild(){}};
+const head={appendChild(){}};
 const document={
- documentElement:{lang:'ko'},
+ documentElement:{lang:'ko'},head,
  getElementById(id){return id==='main'?main:null;},
  addEventListener(){},
  createElement(){return {style:{},classList:{add(){},remove(){},toggle(){}},setAttribute(){},appendChild(){},querySelector(){return null;},querySelectorAll(){return[];}};}
