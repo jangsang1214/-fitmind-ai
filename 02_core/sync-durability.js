@@ -33,6 +33,7 @@ function sanitizeState(input,{ownerUid=null,clock=Date.now()}={}){
   if(ownerUid&&!out.meta.syncOwnerUid)out.meta.syncOwnerUid=String(ownerUid);
   out.meta.syncTombstones=normalizeTombstones(out.meta.syncTombstones,clock);
   for(const domain of DOMAINS)out[domain]=rows(out[domain]);
+  out.meals=out.meals.map(meal=>Array.isArray(meal.items)?{...meal,items:meal.items.filter(object)}:meal);
   out.actionLog=rows(out.actionLog);
   out.errors=rows(out.errors);
   out.analytics=object(out.analytics)?out.analytics:{};
