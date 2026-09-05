@@ -14,7 +14,7 @@ const baseSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getIte
 const DEVICE_KEY='garang_sync_device_v1';
 const PENDING_PREFIX='garang_sync_pending_v1::';
 const BACKUP_PREFIX='garang_sync_backup_v1::';
-let activeAuthUid=null,retryTimer=null,firestorePatched=false;
+let activeAuthUid=null,retryTimer=null,firestorePatched=false,authWatching=false;
 
 function uuid(){return globalThis.crypto?.randomUUID?.()||`device_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function deviceId(){let value=baseGetItem.call(localStorage,DEVICE_KEY);if(!value){value=uuid();baseSetItem.call(localStorage,DEVICE_KEY,value);}return value;}
@@ -54,7 +54,7 @@ function stripCloudFields(value){if(!value||typeof value!=='object')return {};co
 function mergeSyncMeta(outgoing,persisted,uid){
   const out=stripCloudFields(outgoing);out.meta={...(out.meta||{})};
   const meta=persisted?.meta||{};
-  for(const key of ['syncOwnerUid','syncDeviceId','syncRevision','syncLastLocalAt','syncTombstones'])if(meta[key]!==undefined)out.meta[key]=meta[key];
+  for(const key of ['syncOwnerUid','syncDeviceId','syncRevision','syncLastLocalAt','syncLastMergeAt','syncTombstones'])if(meta[key]!==undefined)out.meta[key]=meta[key];
   if(!out.meta.syncOwnerUid)out.meta.syncOwnerUid=uid;
   return out;
 }
@@ -138,10 +138,12 @@ document.addEventListener('click',event=>{
 },true);
 
 function authWatch(){
+  if(authWatching)return true;
   try{
     if(!window.firebase?.apps?.length)return false;
+    authWatching=true;
     window.firebase.auth().onAuthStateChanged(user=>{const before=activeAuthUid;activeAuthUid=user?.uid||null;if(before&&before!==activeAuthUid&&retryTimer){clearTimeout(retryTimer);retryTimer=null;}if(activeAuthUid&&readPending(activeAuthUid))scheduleRetry(activeAuthUid,{immediate:true});});return true;
-  }catch{return false;}
+  }catch{authWatching=false;return false;}
 }
 function bootFirebaseGuards(){if(!patchFirestore())setTimeout(patchFirestore,250);if(!authWatch())setTimeout(authWatch,300);}
 window.addEventListener('online',()=>{document.documentElement.dataset.garangNetwork='online';const uid=currentUid();if(uid){markPending(uid,'network_restored',{increment:false});scheduleRetry(uid,{immediate:true});}});
