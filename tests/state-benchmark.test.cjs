@@ -21,7 +21,7 @@ const cases=[];
  const s=base();s.dailyCheckins=[-3,-2,-1].map(n=>({date:day(n),sleepHours:5.3,energy:2,stress:4,soreness:{legs:4}}));cases.push(['sleep_debt_detected',()=>State.estimateState(s,{now}).patterns.some(p=>p.id==='sleep_debt')]);cases.push(['fatigue_cluster_detected',()=>State.estimateState(s,{now}).patterns.some(p=>p.id==='fatigue_cluster')]);
 }
 {
- const s=base();s.body=[{date:day(-20),weight:72},{date:day(-10),weight:71.4},{date:day(-1),weight:70.8}];cases.push(['weight_down_trend',()=>State.estimateState(s,{now}).trends.bodyWeight.direction==='down']);
+ const s=base();s.body=[{date:day(-20),weight:72},{date:day(-10),weight:68.5},{date:day(-1),weight:65}];cases.push(['weight_down_trend',()=>State.estimateState(s,{now}).trends.bodyWeight.direction==='down']);
 }
 {
  const s=base();s.profile.goal='10K under 45 minutes';s.runs=[{date:day(-12),distance:5,duration:30},{date:day(-8),distance:6,duration:36},{date:day(-5),distance:7,duration:40},{date:day(-2),distance:8,duration:44}];cases.push(['running_goal_alignment',()=>{const x=State.estimateState(s,{now});return x.goalAlignment.score>=70&&x.goalAlignment.confidence>0;}]);
