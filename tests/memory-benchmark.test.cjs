@@ -24,9 +24,9 @@ for(const [query,expected] of retrievalCases){const top=Memory.selectMemory(corp
 const precisionAt1=retrievalHits/retrievalCases.length;
 
 const conflictCases=[
- [{id:'a',type:'goal',key:'g',value:'cut',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'goal',key:'g',value:'gain',userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}],'b'],
- [{id:'a',type:'preference',key:'time',value:'morning',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'preference',key:'time',value:'evening',userConfirmed:false,observedAt:'2026-09-01T00:00:00Z'}],'a'],
- [{id:'a',type:'note',key:'x',value:'same',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'note',key:'x',value:'same',userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}],'a']
+ [[{id:'a',type:'goal',key:'g',value:'cut',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'goal',key:'g',value:'gain',userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}],'b'],
+ [[{id:'a',type:'preference',key:'time',value:'morning',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'preference',key:'time',value:'evening',userConfirmed:false,observedAt:'2026-09-01T00:00:00Z'}],'a'],
+ [[{id:'a',type:'note',key:'x',value:'same',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'note',key:'x',value:'same',userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}],'a']
 ];
 let conflictHits=0;
 for(const [input,expected] of conflictCases){const out=Memory.resolveConflicts(input,{now}),active=out.find(x=>x.status==='active');if(active?.id===expected)conflictHits++;else console.error('BENCH conflict miss',{expected,actual:active?.id});}
