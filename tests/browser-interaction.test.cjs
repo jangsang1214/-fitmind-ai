@@ -14,7 +14,20 @@ const dirtyState=()=>({
   checkins:[null,{id:'c-safe',date:'2026-09-06',sleep:7,energy:3,stress:2,soreness:2,updatedAt:'2026-09-06T00:00:00.000Z'}],
   runs:[null],body:[null],planner:[null],aiChat:[null],actionLog:[null],errors:[null],memory:null,analytics:null,plan:'FREE'
 });
-async function tap(page,locator,touch){if(!touch){await locator.click();return;}const box=await locator.boundingBox();assert.ok(box,'touch target must have a box');await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);}
+async function tap(page,locator,touch,label='target'){
+  if(!touch){await locator.click();return;}
+  const box=await locator.boundingBox();
+  if(!box){
+    const diagnostic=await page.evaluate(()=>({
+      screen:document.getElementById('main')?.dataset?.garangScreen||'',
+      mainText:(document.getElementById('main')?.innerText||'').slice(0,180),
+      bottomNav:{hidden:document.getElementById('bottomNav')?.hidden??null,display:document.getElementById('bottomNav')?getComputedStyle(document.getElementById('bottomNav')).display:null,html:document.getElementById('bottomNav')?.innerHTML||''},
+      sheet:{exists:!!document.querySelector('.garang-more-sheet'),display:document.querySelector('.garang-more-sheet')?getComputedStyle(document.querySelector('.garang-more-sheet')).display:null}
+    }));
+    throw new Error(`${label} has no touch box: ${JSON.stringify(diagnostic)}`);
+  }
+  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+}
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
 
 (async()=>{
@@ -41,14 +54,14 @@ async function assertOwnsPoint(page,selector){const ok=await page.locator(select
       await assertOwnsPoint(page,'[data-today-view="back"]');
 
       const back=page.locator('[data-today-view="back"]'),front=page.locator('[data-today-view="front"]');
-      await tap(page,back,mode.touch);await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
-      await tap(page,front,mode.touch);await page.waitForFunction(()=>document.querySelector('[data-today-view="front"]')?.classList.contains('active'));
+      await tap(page,back,mode.touch,`${mode.name}: today back`);await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
+      await tap(page,front,mode.touch,`${mode.name}: today front`);await page.waitForFunction(()=>document.querySelector('[data-today-view="front"]')?.classList.contains('active'));
 
-      await tap(page,menu,mode.touch);await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
-      const running=page.locator('.garang-more-sheet [data-route="running"]');await tap(page,running,mode.touch);await page.waitForFunction(()=>/러닝|RUNNING/i.test(document.getElementById('main')?.innerText||''));
+      await tap(page,menu,mode.touch,`${mode.name}: hamburger`);await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
+      const running=page.locator('.garang-more-sheet [data-route="running"]');await tap(page,running,mode.touch,`${mode.name}: running menu item`);await page.waitForFunction(()=>/러닝|RUNNING/i.test(document.getElementById('main')?.innerText||''));
 
       for(const route of ['today','coach','workout','body','progress']){
-        const button=page.locator(`#bottomNav button[data-page="${route}"]`);await tap(page,button,mode.touch);
+        const button=page.locator(`#bottomNav button[data-page="${route}"]`);await tap(page,button,mode.touch,`${mode.name}: bottom nav ${route}`);
         await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);
         assert.ok((await page.locator('#main').innerText()).trim().length>0,`${mode.name}: ${route} must render`);
       }
