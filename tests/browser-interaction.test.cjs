@@ -43,10 +43,12 @@ async function waitForServer(){
     page.on('pageerror',error=>pageErrors.push(String(error?.stack||error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
+    await page.waitForFunction(()=>typeof document.querySelector('#bottomNav button[data-page="today"]')?.onclick==='function',{timeout:5000});
 
     const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
     assert.equal(repaired.workouts.length,1,'malformed workout rows should be removed');
     assert.equal(repaired.meals.length,1,'malformed meal rows should be removed');
+    assert.equal(repaired.meals[0].items.length,1,'malformed nested meal items should be removed');
     assert.equal(repaired.checkins.length,1,'malformed check-in rows should be removed');
     assert.ok(repaired.memory&&Array.isArray(repaired.memory.entries),'memory shape should be repaired');
     assert.ok(repaired.analytics&&Array.isArray(repaired.analytics.events),'analytics shape should be repaired');
@@ -55,8 +57,8 @@ async function waitForServer(){
     await menu.waitFor({state:'visible',timeout:5000});
     await menu.click();
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
-    await page.locator('.garang-more-sheet [data-route="settings"]').click();
-    await page.waitForFunction(()=>/설정|SETTINGS/i.test(document.getElementById('main')?.innerText||''));
+    await page.locator('.garang-more-sheet [data-route="running"]').click();
+    await page.waitForFunction(()=>/러닝|RUNNING/i.test(document.getElementById('main')?.innerText||''));
 
     for(const route of ['today','coach','workout','body','progress']){
       const button=page.locator(`#bottomNav button[data-page="${route}"]`);
@@ -66,8 +68,10 @@ async function waitForServer(){
 
     const settingsTop=page.locator('#settingsTopBtn');
     await settingsTop.click();
-    await page.waitForFunction(()=>/설정|SETTINGS/i.test(document.getElementById('main')?.innerText||''));
+    await page.waitForFunction(()=>/설정|SETTING/i.test(document.getElementById('main')?.innerText||''));
 
+    const menuVisible=await menu.isVisible();
+    assert.equal(menuVisible,true,'desktop hamburger must stay visible after route changes');
     assert.deepEqual(pageErrors,[],`browser runtime errors:\n${pageErrors.join('\n')}`);
     console.log('browser-interaction: PASS');
   } finally {
