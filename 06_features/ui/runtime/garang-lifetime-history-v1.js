@@ -1,6 +1,6 @@
-/* GARANG lifetime workout + meal history runtime v1
-   Mirrors workout/meal records into per-user Firestore history collections.
-   The existing app/state snapshot remains unchanged for compatibility.
+/* GARANG lifetime workout + meal history runtime v1.1
+   Non-invasive persistence: never replaces Storage, Firestore, or document click handlers.
+   Observes authenticated local state, archives workout/meal records, and restores history on login.
 */
 (() => {
 'use strict';
@@ -10,21 +10,24 @@ if(!Core||window.__garangLifetimeHistoryRuntime)return;
 window.__garangLifetimeHistoryRuntime=true;
 
 const nativeParse=JSON.parse.bind(JSON),nativeStringify=JSON.stringify.bind(JSON);
-const stateSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getItem;
 const PENDING_PREFIX='garang_lifetime_history_pending_v1::';
 const BACKFILL_PREFIX='garang_lifetime_history_backfill_v1::';
-let activeUid=null,flushTimer=null,flushing=false,firestorePatched=false,authWatching=false,logoutBypass=false;
+const RELOAD_PREFIX='garang_lifetime_history_restore_reload_v1::';
+let activeUid=null,flushTimer=null,flushing=false,authWatching=false;
+const observed=new Map();
 
 const safeParse=raw=>{try{return raw?nativeParse(raw):null;}catch{return null;}};
 const now=()=>new Date().toISOString();
 const currentUid=()=>{try{return window.firebase?.auth?.().currentUser?.uid||activeUid||null;}catch{return activeUid||null;}};
 const pendingKey=uid=>`${PENDING_PREFIX}${uid}`;
 const backfillKey=uid=>`${BACKFILL_PREFIX}${uid}`;
-const readRaw=key=>{try{return baseGetItem.call(localStorage,key);}catch{return null;}};
+const reloadKey=uid=>`${RELOAD_PREFIX}${uid}`;
+const readRaw=key=>{try{return localStorage.getItem(key);}catch{return null;}};
 const readState=uid=>safeParse(readRaw(Core.stateKey(uid)));
 const readPending=uid=>safeParse(readRaw(pendingKey(uid)))||{ops:{}};
-const writePending=(uid,value)=>stateSetItem.call(localStorage,pendingKey(uid),nativeStringify(value));
+const writePending=(uid,value)=>{try{localStorage.setItem(pendingKey(uid),nativeStringify(value));}catch(error){console.warn('[GARANG] lifetime pending queue unavailable',error);}};
 const opKey=(domain,id)=>`${domain}::${String(id)}`;
+const archiveFingerprint=state=>nativeStringify({workouts:Array.isArray(state?.workouts)?state.workouts:[],meals:Array.isArray(state?.meals)?state.meals:[],syncTombstones:Array.isArray(state?.meta?.syncTombstones)?state.meta.syncTombstones.filter(item=>Core.DOMAINS.includes(String(item?.domain||''))):[]});
 
 function queueDiff(uid,diff){
   if(!uid||!diff)return;
@@ -39,10 +42,9 @@ function queueDiff(uid,diff){
   }
   queue.updatedAt=now();writePending(uid,queue);scheduleFlush(uid);
 }
-function queueFullState(uid,state){queueDiff(uid,Core.diffForArchive({},state||{}));}
 function scheduleFlush(uid,{immediate=false}={}){
   if(!uid||uid!==currentUid()||navigator.onLine===false)return;
-  clearTimeout(flushTimer);flushTimer=setTimeout(()=>flush(uid),immediate?80:500);
+  clearTimeout(flushTimer);flushTimer=setTimeout(()=>flush(uid),immediate?40:450);
 }
 async function flush(uid){
   if(flushing||!uid||uid!==currentUid()||navigator.onLine===false||!window.firebase?.apps?.length)return false;
@@ -59,28 +61,29 @@ async function flush(uid){
     await batch.commit();
     const latest=readPending(uid);latest.ops=latest.ops&&typeof latest.ops==='object'?latest.ops:{};
     for(const [key,committed] of selected){const current=latest.ops[key];if(current&&current.type===committed.type&&current.queuedAt===committed.queuedAt)delete latest.ops[key];}
-    latest.updatedAt=now();writePending(uid,latest);
-    flushing=false;
-    if(Object.keys(latest.ops).length)return flush(uid);
+    latest.updatedAt=now();writePending(uid,latest);flushing=false;
+    if(Object.keys(latest.ops).length)scheduleFlush(uid,{immediate:true});
     return true;
   }catch(error){
     flushing=false;console.warn('[GARANG] lifetime history sync deferred',error);setTimeout(()=>scheduleFlush(uid,{immediate:true}),2500);return false;
   }
 }
 
-/* Capture the final persisted state after the durability layer has added tombstones/metadata. */
-Storage.prototype.setItem=function(key,value){
-  if(this!==localStorage||!Core.isStateKey(key))return stateSetItem.call(this,key,value);
-  const previous=safeParse(readRaw(key));
-  const result=stateSetItem.call(this,key,value);
-  const persisted=safeParse(readRaw(key)),uid=Core.ownerFromKey(key);
-  if(uid&&persisted)queueDiff(uid,Core.diffForArchive(previous,persisted));
-  return result;
-};
+function observeLocal(uid,{force=false}={}){
+  if(!uid)return false;
+  const state=readState(uid);if(!state)return false;
+  const prior=observed.get(uid)||null,signature=Core.historySignature(state),backfill=readRaw(backfillKey(uid));
+  if(!prior){
+    observed.set(uid,state);
+    if(force||backfill!==signature){queueDiff(uid,Core.diffForArchive({},state));try{localStorage.setItem(backfillKey(uid),signature);}catch{}}
+    return true;
+  }
+  const diff=Core.diffForArchive(prior,state);
+  observed.set(uid,state);
+  if((diff.upserts||[]).length||(diff.deletes||[]).length)queueDiff(uid,diff);
+  return true;
+}
 
-function methodOwner(object,name){let current=object;while(current){if(Object.prototype.hasOwnProperty.call(current,name)&&typeof current[name]==='function')return current;current=Object.getPrototypeOf(current);}return null;}
-function statePathUid(ref){const match=String(ref?.path||'').match(/^users\/([^/]+)\/app\/state$/);return match?match[1]:null;}
-function snapshotWithData(snapshot,data,exists=true){return {exists,id:snapshot?.id||'state',ref:snapshot?.ref,metadata:snapshot?.metadata,data:()=>data,get:field=>data?.[field]};}
 async function loadHistory(uid){
   const db=window.firebase.firestore(),out={workouts:[],meals:[]};
   for(const domain of Core.DOMAINS){
@@ -90,67 +93,44 @@ async function loadHistory(uid){
   }
   return out;
 }
-function patchFirestore(){
-  if(firestorePatched)return true;
-  try{
-    if(!window.firebase?.apps?.length)return false;
-    const db=window.firebase.firestore(),probe=db.collection('__garang_history_probe__').doc('__probe__'),getOwner=methodOwner(probe,'get');
-    if(!getOwner)return false;if(getOwner.get.__garangLifetimeHistoryPatched){firestorePatched=true;return true;}
-    const originalGet=getOwner.get;
-    getOwner.get=async function(...args){
-      const uid=statePathUid(this);if(!uid)return originalGet.apply(this,args);
-      const snapshot=await originalGet.apply(this,args),auth=currentUid();
-      if(auth&&auth!==uid)return snapshot;
-      try{
-        const history=await loadHistory(uid),hasHistory=Core.DOMAINS.some(domain=>history[domain]?.length);
-        if(!hasHistory)return snapshot;
-        const merged=Core.mergeStateWithHistory(snapshot?.exists?snapshot.data():{},history);
-        return snapshotWithData(snapshot,merged,true);
-      }catch(error){console.warn('[GARANG] lifetime history restore deferred',error);return snapshot;}
-    };
-    getOwner.get.__garangLifetimeHistoryPatched=true;firestorePatched=true;return true;
-  }catch(error){console.warn('[GARANG] lifetime history patch deferred',error);return false;}
+async function restoreLocal(uid){
+  if(!uid||uid!==currentUid()||navigator.onLine===false||!window.firebase?.apps?.length)return false;
+  const history=await loadHistory(uid),local=readState(uid)||{},merged=Core.mergeStateWithHistory(local,history);
+  if(archiveFingerprint(local)===archiveFingerprint(merged)){try{sessionStorage.removeItem(reloadKey(uid));}catch{}return false;}
+  const stamp=now();merged.meta={...(merged.meta||{}),updatedAt:stamp,lifetimeHistoryRestoredAt:stamp};
+  try{localStorage.setItem(Core.stateKey(uid),nativeStringify(merged));}catch(error){console.warn('[GARANG] lifetime restore local write failed',error);return false;}
+  observed.set(uid,merged);
+  let reloads=0;try{reloads=Number(sessionStorage.getItem(reloadKey(uid))||0)||0;sessionStorage.setItem(reloadKey(uid),String(reloads+1));}catch{}
+  if(reloads<2)setTimeout(()=>location.reload(),0);
+  return true;
 }
-function backfillIfNeeded(uid){
-  const state=readState(uid);if(!state)return;
-  const signature=Core.historySignature(state),previous=readRaw(backfillKey(uid));
-  if(previous===signature)return;
-  queueFullState(uid,state);stateSetItem.call(localStorage,backfillKey(uid),signature);scheduleFlush(uid,{immediate:true});
-}
+
 function authWatch(){
   if(authWatching)return true;
   try{
     if(!window.firebase?.apps?.length)return false;
     authWatching=true;window.firebase.auth().onAuthStateChanged(user=>{
-      activeUid=user?.uid||null;
+      const previous=activeUid;activeUid=user?.uid||null;
+      if(previous&&previous!==activeUid)observed.delete(previous);
       if(!activeUid){clearTimeout(flushTimer);flushTimer=null;return;}
-      setTimeout(()=>{backfillIfNeeded(activeUid);scheduleFlush(activeUid,{immediate:true});},700);
+      setTimeout(()=>{observeLocal(activeUid,{force:false});scheduleFlush(activeUid,{immediate:true});restoreLocal(activeUid).catch(error=>console.warn('[GARANG] lifetime restore deferred',error));},120);
     });return true;
   }catch{authWatching=false;return false;}
 }
+function boot(){if(!authWatch())setTimeout(authWatch,120);}
 
-/* A save followed immediately by logout must still reach account history before auth is cleared. */
-document.addEventListener('click',event=>{
-  const button=event.target?.closest?.('#logoutBtn,#settingsLogout');
-  if(!button||logoutBypass)return;
-  const uid=currentUid();if(!uid)return;
-  event.preventDefault();event.stopImmediatePropagation();
-  backfillIfNeeded(uid);
-  flush(uid).catch(()=>false).finally(()=>{
-    logoutBypass=true;
-    try{button.click();}finally{logoutBypass=false;}
-  });
-},true);
-
-function boot(){if(!patchFirestore())setTimeout(patchFirestore,220);if(!authWatch())setTimeout(authWatch,260);}
-window.addEventListener('online',()=>{const uid=currentUid();if(uid){backfillIfNeeded(uid);scheduleFlush(uid,{immediate:true});}});
-window.addEventListener('load',()=>{patchFirestore();authWatch();const uid=currentUid();if(uid)backfillIfNeeded(uid);},{once:true});
-setTimeout(boot,0);setTimeout(patchFirestore,650);
+/* No event cancellation: interaction remains owned by the app. */
+window.addEventListener('online',()=>{const uid=currentUid();if(uid){observeLocal(uid);scheduleFlush(uid,{immediate:true});restoreLocal(uid).catch(()=>false);}});
+window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const uid=currentUid();if(uid){observeLocal(uid);scheduleFlush(uid,{immediate:true});}}});
+window.addEventListener('pagehide',()=>{const uid=currentUid();if(uid)observeLocal(uid);});
+setInterval(()=>{const uid=currentUid();if(uid){observeLocal(uid);if(navigator.onLine!==false)scheduleFlush(uid);}},900);
+setTimeout(boot,0);setTimeout(authWatch,280);setTimeout(authWatch,900);window.addEventListener('load',authWatch,{once:true});
 
 window.GarangLifetimeHistoryRuntime=Object.freeze({
-  version:Core.VERSION,
-  status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:Object.keys(readPending(currentUid()||'').ops||{}).length}),
-  forceSync:async()=>{const uid=currentUid();if(!uid)return false;backfillIfNeeded(uid);return flush(uid);},
+  version:'garang-lifetime-history-v1.1',
+  status:()=>({uid:currentUid(),online:navigator.onLine!==false,pending:currentUid()?Object.keys(readPending(currentUid()).ops||{}).length:0,nonInvasive:true}),
+  forceSync:async()=>{const uid=currentUid();if(!uid)return false;observeLocal(uid,{force:true});return flush(uid);},
+  restore:async()=>{const uid=currentUid();return uid?restoreLocal(uid):false;},
   loadAll:async()=>{const uid=currentUid();return uid?loadHistory(uid):{workouts:[],meals:[]};}
 });
 })();

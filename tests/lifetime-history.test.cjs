@@ -46,12 +46,18 @@ test('archive payload preserves original record and account owner',()=>{
  assert.equal(History.hydrateArchiveDoc(payload).name,'protein');
 });
 
+test('lifetime history runtime is non-invasive so touch/click ownership stays with app',()=>{
+ const runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-lifetime-history-v1.js'),'utf8');
+ for(const forbidden of ['Storage.prototype.setItem=function','getOwner.get=','setOwner.set=','stopImmediatePropagation','event.preventDefault()',"document.addEventListener('click'"])assert.equal(runtime.includes(forbidden),false,forbidden);
+ for(const required of ['nonInvasive:true','observeLocal','restoreLocal','setInterval','batch.commit','Core.mergeStateWithHistory'])assert.ok(runtime.includes(required),required);
+});
+
 test('runtime is wired before app state capture and PWA shell caches it',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8'),coreSource=fs.readFileSync(path.join(root,'02_core/lifetime-history.js'),'utf8'),runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-lifetime-history-v1.js'),'utf8');
  const core=html.indexOf('./02_core/lifetime-history.js'),historyRuntime=html.indexOf('./06_features/ui/runtime/garang-lifetime-history-v1.js'),agent=html.indexOf('./06_features/final/agent-state-hook-v1.js'),app=html.indexOf('./01_app/app.js');
  assert.ok(core>0&&historyRuntime>core&&historyRuntime<agent&&agent<app);
  for(const token of ['workoutHistory','mealHistory','mergeStateWithHistory','syncTombstones'])assert.ok(coreSource.includes(token),token);
- for(const token of ['batch.commit','Core.mergeStateWithHistory','backfillIfNeeded','#logoutBtn,#settingsLogout','stopImmediatePropagation','return flush(uid)'])assert.ok(runtime.includes(token),token);
+ for(const token of ['batch.commit','Core.mergeStateWithHistory','observeLocal','restoreLocal','location.reload'])assert.ok(runtime.includes(token),token);
  for(const token of ['./02_core/lifetime-history.js','./06_features/ui/runtime/garang-lifetime-history-v1.js'])assert.ok(sw.includes(token),token);
 });
 
