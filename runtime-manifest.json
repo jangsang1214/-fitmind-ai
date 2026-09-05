@@ -29,6 +29,7 @@
     "02_core/memory-intelligence-v1.js",
     "02_core/state-intelligence-v1.js",
     "02_core/decision-intelligence-v1.js",
+    "02_core/workout-intelligence-v1.js",
     "services/performance.js",
     "services/units.js",
     "06_features/final/agent-contract-v1.js",
@@ -55,7 +56,8 @@
     "06_features/ui/runtime/garang-today-premium-fix.js",
     "06_features/ui/runtime/garang-workout-library-v2.js",
     "06_features/ui/runtime/garang-experience-v3.js",
-    "06_features/ui/runtime/garang-experience-v4.js"
+    "06_features/ui/runtime/garang-experience-v4.js",
+    "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js"
   ],
   "data": [
     "04_data/knowledge/exercise-db.json",
