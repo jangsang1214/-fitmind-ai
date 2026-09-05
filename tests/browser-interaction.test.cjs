@@ -45,6 +45,21 @@ async function waitForServer(){
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
     await page.waitForFunction(()=>typeof document.querySelector('#bottomNav button[data-page="today"]')?.onclick==='function',{timeout:5000});
 
+    // Catch delayed blockers/watchdogs that appear after the initial render.
+    await page.waitForTimeout(4500);
+    const hitTest=await page.evaluate(()=>{
+      const vw=innerWidth,vh=innerHeight;
+      const fullscreen=[...document.querySelectorAll('body *')].map(el=>{
+        const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+        return {el,cs,r};
+      }).filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.pointerEvents!=='none'&&['fixed','absolute'].includes(x.cs.position)&&x.r.width>=vw*.8&&x.r.height>=vh*.8)
+        .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:x.el.className||'',pointerEvents:x.cs.pointerEvents,opacity:x.cs.opacity,zIndex:x.cs.zIndex,hidden:x.el.hidden,ariaHidden:x.el.getAttribute('aria-hidden')}));
+      const describe=(x,y)=>document.elementsFromPoint(x,y).slice(0,6).map(el=>({tag:el.tagName,id:el.id||'',cls:el.className||''}));
+      return {fullscreen,center:describe(vw/2,vh/2),top:describe(vw/2,34),bottom:describe(vw/2,vh-28)};
+    });
+    assert.equal(hitTest.fullscreen.length,0,`unexpected fullscreen pointer blocker: ${JSON.stringify(hitTest,null,2)}`);
+    assert.ok(hitTest.center.some(x=>x.id==='main'||/card|main|today/i.test(String(x.cls))),`center hit-test is not app content: ${JSON.stringify(hitTest.center)}`);
+
     const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
     assert.equal(repaired.workouts.length,1,'malformed workout rows should be removed');
     assert.equal(repaired.meals.length,1,'malformed meal rows should be removed');
