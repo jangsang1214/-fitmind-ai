@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const sanitizer=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-state-sanitizer-v1.js'),'utf8');
+const sync=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sync-durability-v1.js'),'utf8');
+const chrome=fs.readFileSync(path.join(root,'03_styles/runtime/garang-app-chrome-fix-v1.css'),'utf8');
+const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+const swRuntime=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
+assert.ok(html.indexOf('garang-state-sanitizer-v1.js')<html.indexOf('garang-sync-durability-v1.js'),'sanitizer must run before sync runtime');
+assert.ok(html.includes('garang-app-chrome-fix-v1.css'));
+for(const forbidden of ['addEventListener(\'click\'','addEventListener("click"','setInterval(','MutationObserver','firebase.','Storage.prototype'])assert.equal(sanitizer.includes(forbidden),false,`data sanitizer must stay non-interactive: ${forbidden}`);
+assert.equal(sync.includes('stopImmediatePropagation'),false,'sync runtime must never stop unrelated tap propagation');
+assert.ok(sync.includes('safeCloudState(snapshot.data(),uid)'),'cloud state must be sanitized before app render');
+assert.ok(chrome.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(chrome.includes('display:grid!important'));
+assert.ok(sw.includes('touch-state-recovery-v6-20260906'),'root service worker bytes must be versioned');
+assert.ok(swRuntime.includes("garang-touch-state-recovery-v6-20260906"));
+console.log('touch-state-recovery-contract: PASS');
