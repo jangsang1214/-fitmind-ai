@@ -49,6 +49,7 @@
     "06_features/ui/i18n/coach-language-v3.js",
     "06_features/ui/i18n/runtime.js",
     "06_features/ui/runtime/garang-coach-agent-v4.js",
+    "06_features/ui/runtime/garang-coach-profile-stability-v1.js",
     "06_features/ui/runtime/garang-coach-decision-v1.js",
     "06_features/ui/runtime/garang-coach-item4-final.js",
     "06_features/ui/runtime/garang-privacy-security-v1.js",
