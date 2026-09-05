@@ -36,6 +36,8 @@ test('live shell, manifest and PWA cache include the new Coach and sync UX runti
  for(const file of ['garang-sync-quiet-ux-v1.js','garang-coach-avatar-profile-v1.js']){
   assert.ok(html.includes(file),`index ${file}`);assert.ok(manifest.includes(file),`manifest ${file}`);assert.ok(sw.includes(file),`sw ${file}`);
  }
- assert.ok(sw.includes('garang-coach-top-decision-sync-quiet-v1-20260906'));
+ // Cache versions intentionally change as new releases add assets. Test the contract, not an old version label.
+ assert.ok(/const CACHE='garang-[^']+';/.test(sw),'PWA cache key');
+ assert.ok(sw.includes('caches.open(CACHE)'),'PWA cache usage');
 });
 console.log(`${passed} Coach top/sync UX tests passed`);
