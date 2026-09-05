@@ -1,0 +1,40 @@
+/* GARANG Collapsible Intelligence UI v1
+   Keeps advanced controls available without letting them dominate the screen.
+   Daily Workout, set-by-set entry and Coach decision data default to compact mode,
+   expand on demand, and collapse again with the same control.
+*/
+(() => {
+'use strict';
+const main=document.getElementById('main');if(!main)return;
+const VERSION='garang-collapsible-intelligence-ui-v1';
+const STORE_PREFIX='garang_ui_expand_v1_';
+let queued=false;
+const english=()=>document.documentElement.lang==='en';
+function readOpen(key,defaultValue=false){try{const v=sessionStorage.getItem(STORE_PREFIX+key);return v===null?defaultValue:v==='1';}catch{return defaultValue;}}
+function writeOpen(key,value){try{sessionStorage.setItem(STORE_PREFIX+key,value?'1':'0');}catch{}}
+function ensureStyle(){if(document.getElementById('garang-collapsible-intelligence-ui-style'))return;const style=document.createElement('style');style.id='garang-collapsible-intelligence-ui-style';style.textContent=`
+.gci-toggle{margin-left:auto;min-width:74px;height:32px;padding:0 9px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.045);color:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:10px;cursor:pointer;white-space:nowrap}.gci-toggle-icon{font-size:17px;line-height:1;font-weight:300}.gci-collapse-body[hidden]{display:none!important}.gci-compact-summary{font-size:11px!important;opacity:.68!important;margin-top:5px!important}.gci-expanded .gci-compact-summary{display:none!important}
+.garang-daily-workout.gci-collapsible{gap:0}.garang-daily-workout.gci-collapsible .garang-daily-head{align-items:center;cursor:default}.garang-daily-workout.gci-collapsible:not(.gci-expanded) .garang-daily-head p{display:none}.garang-daily-workout.gci-collapsible .gci-collapse-body{padding-top:14px;display:grid;gap:14px}
+.garang-set-builder.gci-collapsible summary{list-style:none;position:relative;padding-right:90px}.garang-set-builder.gci-collapsible summary::-webkit-details-marker{display:none}.garang-set-builder.gci-collapsible .gci-details-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:5px;font-size:10px;opacity:.78}.garang-set-builder.gci-collapsible .gci-details-toggle b{font-size:17px;font-weight:300;line-height:1}
+.garang-decision-card.gci-collapsible{gap:0}.garang-decision-card.gci-collapsible .garang-decision-head{min-height:32px;opacity:1}.garang-decision-card.gci-collapsible .gci-collapse-body{padding-top:8px;display:grid;gap:8px}.garang-decision-card.gci-collapsible .gci-decision-compact{margin-left:auto;font-size:10px;opacity:.62;white-space:nowrap}.garang-decision-card.gci-collapsible .gci-toggle{margin-left:0;min-width:68px;height:29px}
+@media(max-width:700px){.gci-toggle{min-width:62px;padding:0 8px}.gci-toggle-label{display:none}.garang-set-builder.gci-collapsible summary{padding-right:46px}.garang-set-builder.gci-collapsible .gci-details-toggle span{display:none}.garang-decision-card.gci-collapsible .gci-decision-compact{display:none}}
+`;document.head.appendChild(style);}
+function toggleHTML(open){return `<span class="gci-toggle-icon">${open?'−':'+'}</span><span class="gci-toggle-label">${english()?(open?'Less':'More'):(open?'간소화':'더보기')}</span>`;}
+function directBody(container){return [...container.children].find(x=>x.classList?.contains('gci-collapse-body'))||null;}
+function wrapAfter(container,head){let body=directBody(container);if(body)return body;body=document.createElement('div');body.className='gci-collapse-body';while(head.nextSibling)body.appendChild(head.nextSibling);container.appendChild(body);return body;}
+function applyOpen(container,body,button,key,open){container.classList.toggle('gci-expanded',open);container.dataset.gciExpanded=open?'true':'false';body.hidden=!open;button.setAttribute('aria-expanded',open?'true':'false');button.innerHTML=toggleHTML(open);writeOpen(key,open);}
+function bindButton(button,container,body,key){if(button.dataset.gciBound==='1')return;button.dataset.gciBound='1';button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();applyOpen(container,body,button,key,!container.classList.contains('gci-expanded'));});}
+function dailySummary(head){let el=head.querySelector('.gci-compact-summary');if(!el){el=document.createElement('div');el.className='gci-compact-summary';(head.querySelector('div')||head).appendChild(el);}let stored=null;try{stored=JSON.parse(sessionStorage.getItem('garang_daily_workout_plan_v1')||'null');}catch{}const plan=stored?.plan;el.textContent=plan?(english()?`${plan.minutes} min · RPE ${plan.targetRPE}`:`${plan.minutes}분 · RPE ${plan.targetRPE}`):(english()?'Target · time · intensity':'부위 · 시간 · 강도 선택');}
+function enhanceDaily(){const card=main.querySelector('.garang-daily-workout');if(!card)return;const head=card.querySelector('.garang-daily-head');if(!head)return;card.classList.add('gci-collapsible');dailySummary(head);const body=wrapAfter(card,head);let button=head.querySelector('.gci-toggle');if(!button){button=document.createElement('button');button.type='button';button.className='gci-toggle';button.setAttribute('aria-label',english()?'Toggle Daily Workout details':'오늘 운동 추천 상세 열기/닫기');head.appendChild(button);}bindButton(button,card,body,'daily');const open=readOpen('daily',false);applyOpen(card,body,button,'daily',open);}
+function updateSetSummary(details){const summary=details.querySelector('summary');if(!summary)return;let marker=summary.querySelector('.gci-details-toggle');if(!marker){marker=document.createElement('span');marker.className='gci-details-toggle';summary.appendChild(marker);}marker.innerHTML=`<b>${details.open?'−':'+'}</b><span>${english()?(details.open?'Less':'More'):(details.open?'간소화':'더보기')}</span>`;summary.setAttribute('aria-expanded',details.open?'true':'false');}
+function enhanceSets(){const details=main.querySelector('.garang-set-builder');if(!details)return;details.classList.add('gci-collapsible');if(details.dataset.gciInitialized!=='1'){details.dataset.gciInitialized='1';details.open=readOpen('sets',false);details.addEventListener('toggle',()=>{writeOpen('sets',details.open);updateSetSummary(details);});}updateSetSummary(details);}
+function decisionCompact(card,head){let compact=head.querySelector('.gci-decision-compact');if(!compact){compact=document.createElement('span');compact.className='gci-decision-compact';head.appendChild(compact);}const foot=directBody(card)?.querySelector('.garang-decision-foot span')||card.querySelector('.garang-decision-foot span');const raw=String(foot?.textContent||'');const match=raw.match(/(?:Confidence|판단 신뢰도)\s*(\d+)%/i);compact.textContent=match?(english()?`Confidence ${match[1]}%`:`신뢰도 ${match[1]}%`):'';}
+function enhanceDecision(){const card=main.querySelector('.garang-decision-card');if(!card)return;const head=card.querySelector('.garang-decision-head');if(!head)return;card.classList.add('gci-collapsible');const body=wrapAfter(card,head);decisionCompact(card,head);let button=head.querySelector('.gci-toggle');if(!button){button=document.createElement('button');button.type='button';button.className='gci-toggle';button.setAttribute('aria-label',english()?'Toggle Coach decision details':'코치 판단 데이터 상세 열기/닫기');head.appendChild(button);}bindButton(button,card,body,'decision');const open=readOpen('decision',false);applyOpen(card,body,button,'decision',open);}
+function run(){queued=false;ensureStyle();enhanceDaily();enhanceSets();enhanceDecision();}
+function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(run));}
+new MutationObserver(schedule).observe(main,{childList:true,subtree:true});
+new MutationObserver(schedule).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+window.addEventListener('garang:agent-write',schedule);window.addEventListener('garang:agent-proposal-resolved',schedule);
+schedule();
+window.GarangCollapsibleIntelligenceUI=Object.freeze({version:VERSION});
+})();

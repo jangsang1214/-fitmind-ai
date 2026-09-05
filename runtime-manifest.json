@@ -57,7 +57,8 @@
     "06_features/ui/runtime/garang-workout-library-v2.js",
     "06_features/ui/runtime/garang-experience-v3.js",
     "06_features/ui/runtime/garang-experience-v4.js",
-    "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js"
+    "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js",
+    "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js"
   ],
   "data": [
     "04_data/knowledge/exercise-db.json",
