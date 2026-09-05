@@ -33,7 +33,8 @@ assert.equal(bridge.ready(),true);
   const confirmed=session.confirm(result.proposals[0].id,true);
   assert.equal(confirmed.proposal.status,'confirmed');
   assert.equal(state.planner.length,1);
-  assert.equal(state.planner[0].source,'agent');
+  assert.equal(state.planner[0].source,'ai');
+  assert.equal(state.planner[0].origin,'ai');
   assert.equal(state.planner[0].status,'confirmed');
  });
 
@@ -63,12 +64,28 @@ assert.equal(bridge.ready(),true);
   assert.equal(rows.length,1);assert.equal(rows[0].value,'10K under 44 minutes');assert.equal(rows[0].userConfirmed,true);
  });
 
- await test('Coach v4 keeps full-English prompts persistent above composer',()=>{
+ await test('Coach final runtime keeps bilingual prompts persistent above composer',()=>{
   const source=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-agent-v4.js'),'utf8');
-  for(const text of ["Set today's training intensity based on my records.",'Analyze my recent workout records.',"Analyze today's nutrition based on my saved meals.",'How is my recovery today?','Create a plan for today.'])assert.ok(source.includes(text),text);
+  const finalSource=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-item4-final.js'),'utf8');
+  for(const text of ["Set today's training intensity based on my records.",'Analyze my recent workout records.',"Analyze today's nutrition based on my saved meals.",'How is my recovery today?','Create a plan for today.'])assert.ok(finalSource.includes(text),text);
+  for(const text of ['오늘 운동 강도를 내 기록 기준으로 정해줘','내 최근 운동 기록을 분석해줘','오늘 저장된 식단 기록을 분석해줘','오늘 회복 상태를 알려줘','오늘 계획을 만들어줘'])assert.ok(finalSource.includes(text),text);
   assert.ok(source.includes("composerWrap.insertBefore(strip,composer)"));
+  assert.ok(finalSource.includes("wrap.insertBefore(strip,composer)"));
+  assert.ok(finalSource.includes("data-garang-persistent"));
+  assert.ok(finalSource.includes("data-garang-canonical-prompt"));
   assert.ok(source.includes("session.confirm(entry.proposal.id,approved)"));
-  assert.ok(source.includes("root.querySelector('.g2-empty-chat .g2-prompts')?.remove()"));
+ });
+
+ await test('Coach final runtime repairs mixed English display from stored source',()=>{
+  const finalSource=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-item4-final.js'),'utf8');
+  for(const phrase of [
+   'Based on today’s records:',
+   'There are ${count} saved workout records.',
+   'Today’s recovery score is about',
+   'The external AI is not connected yet, so GARANG is responding with its local Coach Engine.'
+  ])assert.ok(finalSource.includes(phrase),phrase);
+  assert.ok(finalSource.includes("threadMessageById"));
+  assert.ok(finalSource.includes("promptByKo.has(source)"));
  });
 
  console.log(`${passed} Agent E2E tests passed`);
