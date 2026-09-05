@@ -1,6 +1,6 @@
 'use strict';
 
-const {parseBearer,buildAgentContext,validLimit}=require('./agent-context.cjs');
+const {parseBearer,buildAgentContext,validLimit,validMemoryLimit}=require('./agent-context.cjs');
 
 function json(response,status,body){
  response.set('Cache-Control','private, no-store');
@@ -21,8 +21,8 @@ function createAgentContextHandler({verifyIdToken,readUser,clock=()=>new Date()}
    const decoded=await verifyIdToken(token);
    if(!decoded?.uid)throw new Error('INVALID_TOKEN');
    const state=await readUser(decoded.uid);
-   const now=clock();
-   return json(response,200,{ok:true,data:{generatedAt:now.toISOString(),recordLimit:validLimit(request.query?.limit),context:buildAgentContext(state,{now,limit:request.query?.limit})}});
+   const now=clock(),recordLimit=validLimit(request.query?.limit),memoryLimit=validMemoryLimit(request.query?.memoryLimit),query=String(request.query?.q||request.query?.query||'').slice(0,500);
+   return json(response,200,{ok:true,data:{generatedAt:now.toISOString(),recordLimit,memoryLimit,context:buildAgentContext(state,{now,limit:recordLimit,memoryLimit,query})}});
   }catch(error){
    if(error?.code==='USER_DATA_READ_FAILED')return json(response,503,{ok:false,error:{code:'DATA_UNAVAILABLE',message:'User data is temporarily unavailable.'}});
    return json(response,401,{ok:false,error:{code:'UNAUTHENTICATED',message:'The Firebase ID token is invalid or expired.'}});
