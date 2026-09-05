@@ -1,0 +1,16 @@
+/* GARANG app chrome fix v1
+   Keep the app menu visible on laptop and mobile without changing overlay pointer ownership.
+*/
+#appView:not([hidden]) #menuBtn.icon-btn{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  padding:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#authView[hidden],#appView[hidden]{display:none!important;pointer-events:none!important}
+body:before{pointer-events:none!important}
