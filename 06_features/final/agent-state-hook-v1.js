@@ -68,7 +68,18 @@ function applyWrite(tool,args={}){
   default:throw new Error('TOOL_NOT_ALLOWED');
  }
 }
-function userState(){return StateIntelligence?.estimateState?StateIntelligence.estimateState(requireState()):null;}
+function stateForIntelligence(){
+ const state=clone(requireState());
+ const canonical=Array.isArray(state.dailyCheckins)&&state.dailyCheckins.length?state.dailyCheckins:(Array.isArray(state.checkins)?state.checkins:[]);
+ state.dailyCheckins=canonical.map(item=>{
+  const row=isObject(item)?{...item}:{};
+  const scalarSoreness=Number(row.soreness);
+  const soreness=isObject(row.soreness)?clone(row.soreness):(Number.isFinite(scalarSoreness)?{general:scalarSoreness}:{});
+  return {...row,sleepHours:row.sleepHours??row.sleep??null,soreness,painCaution:row.painCaution===true};
+ });
+ return state;
+}
+function userState(){return StateIntelligence?.estimateState?StateIntelligence.estimateState(stateForIntelligence()):null;}
 function memoryContext(query='',options={}){return Memory?.prepareMemoryContext?Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options}):ensureMemory(requireState());}
 function decision(){const stateResult=userState();return DecisionIntelligence?.decide?DecisionIntelligence.decide(stateResult,{memoryContext:memoryContext('',{limit:24,budgetChars:6000})}):null;}
 window.GarangAgentStateBridge=Object.freeze({
@@ -77,7 +88,7 @@ window.GarangAgentStateBridge=Object.freeze({
  getMemoryDiagnostics:()=>Memory?.diagnostics?clone(Memory.diagnostics(ensureMemory(requireState()).entries)):null,
  getUserState:()=>clone(userState()),
  getUserStateContext:()=>StateIntelligence?.compactForContext?clone(StateIntelligence.compactForContext(userState())):clone(userState()),
- getUserStateDiagnostics:()=>StateIntelligence?.diagnostics?clone(StateIntelligence.diagnostics(requireState())):null,
+ getUserStateDiagnostics:()=>StateIntelligence?.diagnostics?clone(StateIntelligence.diagnostics(stateForIntelligence())):null,
  getDecision:()=>clone(decision()),
  getDecisionContext:()=>DecisionIntelligence?.compactForContext?clone(DecisionIntelligence.compactForContext(decision())):clone(decision()),
  getDecisionDiagnostics:()=>DecisionIntelligence?.diagnostics?clone(DecisionIntelligence.diagnostics(userState(),{memoryContext:memoryContext('',{limit:24,budgetChars:6000})})):null,
