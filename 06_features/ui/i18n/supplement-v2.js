@@ -40,6 +40,9 @@ Object.assign(dict,{
 
 const previousDynamic=window.GarangTranslateDynamic;
 const replaceAll=(text,from,to)=>text.split(from).join(to);
+const embeddedTerms=[
+ ['스미스머신','Smith machine'],['인클라인','Incline'],['디클라인','Decline'],['덤벨','Dumbbell'],['바벨','Barbell'],['체스트프레스','Chest press'],['벤치프레스','Bench press'],['랫풀다운','Lat pulldown'],['숄더프레스','Shoulder press'],['레그프레스','Leg press'],['레그익스텐션','Leg extension'],['레그컬','Leg curl'],['데드리프트','Deadlift'],['스쿼트','Squat'],['런지','Lunge'],['풀업','Pull-up'],['친업','Chin-up'],['딥스','Dips'],['푸시업','Push-up'],['플라이','Fly'],['프레스','Press'],['컬','Curl'],['익스텐션','Extension'],['레이즈','Raise'],['크런치','Crunch'],['플랭크','Plank'],['브리지','Bridge'],['킥백','Kickback'],['풀오버','Pullover'],['슈러그','Shrug'],['케이블','Cable'],['머신','Machine'],['가슴','Chest'],['등','Back'],['어깨','Shoulders'],['하체','Lower body'],['이두','Biceps'],['삼두','Triceps'],['코어','Core'],['전신','Full body']
+];
 function translateDynamic(source,target){
   let out=typeof previousDynamic==='function'?previousDynamic(source,target):source;
   if(target!=='en')return out;
@@ -76,6 +79,7 @@ function translateDynamic(source,target){
     '외부 AI 연결에 실패했습니다. 가짜 응답으로 처리하지 않고 로컬 Coach Engine 분석을 표시합니다.':'The external AI connection failed. GARANG will show its local Coach Engine analysis instead of fabricating a response.'
   };
   for(const [from,to] of Object.entries(phrases))out=replaceAll(out,from,to);
+  if(/[가-힣]/.test(out))for(const [ko,en] of embeddedTerms)out=replaceAll(out,ko,en);
   return out;
 }
 window.GarangTranslateDynamic=translateDynamic;
@@ -112,9 +116,11 @@ window.fetch=function(input,init){
     if(endpoint&&url===endpoint&&init?.body&&typeof init.body==='string'){
       const payload=JSON.parse(init.body);
       const english=document.documentElement.lang==='en';
-      payload.language=english?'en':'ko';
-      payload.locale=english?'en-US':'ko-KR';
-      payload.responseLanguage=english?'English':'Korean';
+      const language=english?'en':'ko',locale=english?'en-US':'ko-KR',responseLanguage=english?'English':'Korean';
+      payload.language=language;
+      payload.locale=locale;
+      payload.responseLanguage=responseLanguage;
+      payload.context={...(payload.context&&typeof payload.context==='object'?payload.context:{}),uiLanguage:language,locale,responseLanguage};
       init={...init,body:JSON.stringify(payload)};
     }
   }catch(error){console.warn('[GARANG] coach language policy fallback',error);}
