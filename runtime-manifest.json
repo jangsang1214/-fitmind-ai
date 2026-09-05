@@ -1,5 +1,5 @@
 {
-  "version": "0.11.0-beta.1-touch-state-recovery-v6",
+  "version": "0.11.0-beta.1",
   "entry": "index.html",
   "branch": "main",
   "deployRoot": ".",
