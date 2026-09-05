@@ -1,5 +1,6 @@
-/* GARANG app chrome fix v1
-   Keep the app menu visible on laptop and mobile without changing overlay pointer ownership.
+/* GARANG app chrome fix v1.1
+   Shared app chrome + iOS/WebKit-safe scrolling boundaries.
+   Ordinary screens grow with their content. Coach alone owns a constrained inner workspace.
 */
 #appView:not([hidden]) #menuBtn.icon-btn{
   display:grid!important;
@@ -14,3 +15,32 @@
 }
 #authView[hidden],#appView[hidden]{display:none!important;pointer-events:none!important}
 body:before{pointer-events:none!important}
+
+/*
+  WebKit safety boundary:
+  Some earlier visual layers leave #main with a computed cross-axis overflow of
+  "clip visible". Chromium paints overflowing vertical content, while iOS WebKit
+  can clip that content at the main box/compositing boundary. That produced the
+  hard horizontal cut through the second Today quick-record row on physical iOS.
+
+  Screen Registry writes data-garang-screen after every canonical render, so keep
+  every normal screen content-sized and fully paintable. Coach remains excluded
+  because it intentionally owns a fixed-height conversation viewport.
+*/
+#appView:not([hidden]) > #main[data-garang-screen]:not([data-garang-screen="coach"]){
+  overflow:visible!important;
+  overflow-x:visible!important;
+  overflow-y:visible!important;
+  height:auto!important;
+  max-height:none!important;
+  contain:none!important;
+}
+
+/* Avoid a WebKit fixed+blur compositing surface sitting above long mobile content. */
+@media(max-width:799px){
+  #appView:not([hidden]) > .bottom-nav{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:#070807!important;
+  }
+}
