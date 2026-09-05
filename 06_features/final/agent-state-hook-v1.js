@@ -9,6 +9,7 @@
 const nativeParse=JSON.parse.bind(JSON);
 const nativeStringify=JSON.stringify.bind(JSON);
 const nativeSetItem=Storage.prototype.setItem;
+const Memory=window.GarangMemoryIntelligence||null;
 let liveState=null;
 let activeKey=null;
 let syncTimer=null;
@@ -58,6 +59,14 @@ function persist(tool,args){
 
 function requireState(){if(!liveState)throw new Error('AGENT_STATE_NOT_READY');return liveState;}
 function removeById(list,idValue){const index=list.findIndex(row=>String(row?.id)===String(idValue));if(index<0)return false;list.splice(index,1);return true;}
+function ensureMemory(state){state.memory=isObject(state.memory)?state.memory:{};state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];state.memory.deletedIds=Array.isArray(state.memory.deletedIds)?state.memory.deletedIds:[];return state.memory;}
+function intelligentUpsert(state,candidate,stamp){
+ const memory=ensureMemory(state);
+ if(Memory?.upsertMemory){memory.entries=Memory.upsertMemory(memory.entries,{...candidate,updatedAt:stamp,observedAt:candidate.observedAt||stamp,lastSeenAt:stamp},{now:new Date(stamp)});const key=Memory.semanticKey(candidate);return clone(memory.entries.find(row=>row.status==='active'&&Memory.semanticKey(row)===key)||memory.entries.at(-1));}
+ const type=String(candidate.type||'note'),key=String(candidate.key||''),value=String(candidate.value||'');let row=memory.entries.find(item=>String(item?.type||'note')===type&&String(item?.key||'')===key);
+ if(row)Object.assign(row,{value,source:candidate.source||'agent',confidence:Math.max(Number(row.confidence)||0,Number(candidate.confidence)||.95),importance:Math.max(Number(row.importance)||0,Number(candidate.importance)||3),userConfirmed:true,updatedAt:stamp,lastSeenAt:stamp});
+ else{row={id:id('mem'),...candidate,type,key,value,source:candidate.source||'agent',confidence:Number(candidate.confidence)||.95,importance:Math.max(1,Math.min(5,Number(candidate.importance)||3)),evidenceCount:1,userConfirmed:true,createdAt:stamp,updatedAt:stamp,lastSeenAt:stamp,expiresAt:candidate.expiresAt||null};memory.entries.push(row);}return clone(row);
+}
 
 function applyWrite(tool,args={}){
  const state=requireState(),stamp=now();
@@ -74,16 +83,13 @@ function applyWrite(tool,args={}){
    if(args.completed!==undefined)row.completed=!!args.completed;if(args.done!==undefined)row.completed=!!args.done;row.updatedAt=stamp;row.source='ai';row.origin='ai';persist(tool,args);return clone(row);
   }
   case 'saveMemory':{
-   state.memory=isObject(state.memory)?state.memory:{};state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];
    const type=String(args.type||'note').trim()||'note',key=String(args.key||'').trim(),value=String(args.value||'').trim();if(!key||!value)throw new Error('INVALID_TOOL_ARGS');
-   let row=state.memory.entries.find(item=>String(item?.type||'note')===type&&String(item?.key||'')===key);
-   if(row){Object.assign(row,{value,source:'agent',confidence:Math.max(Number(row.confidence)||0,.95),importance:Math.max(Number(row.importance)||0,Number(args.importance)||3),userConfirmed:true,updatedAt:stamp,lastSeenAt:stamp});}
-   else{row={id:id('mem'),type,key,value,source:'agent',confidence:.95,importance:Math.max(1,Math.min(5,Number(args.importance)||3)),evidenceCount:1,userConfirmed:true,createdAt:stamp,updatedAt:stamp,lastSeenAt:stamp,expiresAt:args.expiresAt||null};state.memory.entries.push(row);}
-   persist(tool,args);return clone(row);
+   const row=intelligentUpsert(state,{id:args.id||id('mem'),memoryClass:args.memoryClass||null,type,key,value,source:'agent',confidence:.95,utility:Number.isFinite(Number(args.utility))?Number(args.utility):.8,importance:Math.max(1,Math.min(5,Number(args.importance)||3)),userConfirmed:true,expiresAt:args.expiresAt||null},stamp);
+   persist(tool,args);return row;
   }
   case 'deleteRecord':{
    const domain=String(args.domain||''),target=String(args.id||'');let removed=false;
-   if(domain==='memory'){state.memory=isObject(state.memory)?state.memory:{};state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];removed=removeById(state.memory.entries,target);}
+   if(domain==='memory'){const memory=ensureMemory(state);removed=removeById(memory.entries,target);if(removed&&!memory.deletedIds.includes(target))memory.deletedIds.push(target);if(memory.deletedIds.length>500)memory.deletedIds.splice(0,memory.deletedIds.length-500);}
    else if(['workouts','meals','runs','body','planner'].includes(domain)){state[domain]=Array.isArray(state[domain])?state[domain]:[];removed=removeById(state[domain],target);}
    else throw new Error('INVALID_TOOL_ARGS');
    if(!removed)throw new Error('RECORD_NOT_FOUND');persist(tool,args);return {domain,id:target,deleted:true};
@@ -92,6 +98,7 @@ function applyWrite(tool,args={}){
    const goal=String(args.goal||'').trim();if(!goal)throw new Error('INVALID_TOOL_ARGS');
    state.profile=isObject(state.profile)?state.profile:{};state.profile.goal=goal;
    state.onboarding=isObject(state.onboarding)?state.onboarding:{};state.onboarding.goal=goal;
+   intelligentUpsert(state,{id:id('mem'),memoryClass:'semantic',type:'goal',key:'primary_goal',value:goal,source:'agent',confidence:.99,utility:1,importance:5,userConfirmed:true},stamp);
    persist(tool,args);return {goal};
   }
   default:throw new Error('TOOL_NOT_ALLOWED');
@@ -104,6 +111,8 @@ window.GarangAgentStateBridge=Object.freeze({
  getState:()=>clone(requireState()),
  getLiveState:()=>requireState(),
  getStorageKey:()=>resolveKey(),
+ getMemoryContext:(query='',options={})=>Memory?.prepareMemoryContext?clone(Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options})):clone(ensureMemory(requireState())),
+ getMemoryDiagnostics:()=>Memory?.diagnostics?clone(Memory.diagnostics(ensureMemory(requireState()).entries)):null,
  applyWrite
 });
 })();
