@@ -10,10 +10,10 @@ if(!Core||window.__garangLifetimeHistoryRuntime)return;
 window.__garangLifetimeHistoryRuntime=true;
 
 const nativeParse=JSON.parse.bind(JSON),nativeStringify=JSON.stringify.bind(JSON);
-const stateSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getItem,baseRemoveItem=Storage.prototype.removeItem;
+const stateSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getItem;
 const PENDING_PREFIX='garang_lifetime_history_pending_v1::';
 const BACKFILL_PREFIX='garang_lifetime_history_backfill_v1::';
-let activeUid=null,flushTimer=null,flushing=false,firestorePatched=false,authWatching=false;
+let activeUid=null,flushTimer=null,flushing=false,firestorePatched=false,authWatching=false,logoutBypass=false;
 
 const safeParse=raw=>{try{return raw?nativeParse(raw):null;}catch{return null;}};
 const now=()=>new Date().toISOString();
@@ -61,7 +61,7 @@ async function flush(uid){
     for(const [key,committed] of selected){const current=latest.ops[key];if(current&&current.type===committed.type&&current.queuedAt===committed.queuedAt)delete latest.ops[key];}
     latest.updatedAt=now();writePending(uid,latest);
     flushing=false;
-    if(Object.keys(latest.ops).length)scheduleFlush(uid,{immediate:true});
+    if(Object.keys(latest.ops).length)return flush(uid);
     return true;
   }catch(error){
     flushing=false;console.warn('[GARANG] lifetime history sync deferred',error);setTimeout(()=>scheduleFlush(uid,{immediate:true}),2500);return false;
@@ -128,6 +128,20 @@ function authWatch(){
     });return true;
   }catch{authWatching=false;return false;}
 }
+
+/* A save followed immediately by logout must still reach account history before auth is cleared. */
+document.addEventListener('click',event=>{
+  const button=event.target?.closest?.('#logoutBtn,#settingsLogout');
+  if(!button||logoutBypass)return;
+  const uid=currentUid();if(!uid)return;
+  event.preventDefault();event.stopImmediatePropagation();
+  backfillIfNeeded(uid);
+  flush(uid).catch(()=>false).finally(()=>{
+    logoutBypass=true;
+    try{button.click();}finally{logoutBypass=false;}
+  });
+},true);
+
 function boot(){if(!patchFirestore())setTimeout(patchFirestore,220);if(!authWatch())setTimeout(authWatch,260);}
 window.addEventListener('online',()=>{const uid=currentUid();if(uid){backfillIfNeeded(uid);scheduleFlush(uid,{immediate:true});}});
 window.addEventListener('load',()=>{patchFirestore();authWatch();const uid=currentUid();if(uid)backfillIfNeeded(uid);},{once:true});
@@ -136,7 +150,7 @@ setTimeout(boot,0);setTimeout(patchFirestore,650);
 window.GarangLifetimeHistoryRuntime=Object.freeze({
   version:Core.VERSION,
   status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:Object.keys(readPending(currentUid()||'').ops||{}).length}),
-  forceSync:()=>{const uid=currentUid();if(uid){backfillIfNeeded(uid);scheduleFlush(uid,{immediate:true});}},
+  forceSync:async()=>{const uid=currentUid();if(!uid)return false;backfillIfNeeded(uid);return flush(uid);},
   loadAll:async()=>{const uid=currentUid();return uid?loadHistory(uid):{workouts:[],meals:[]};}
 });
 })();
