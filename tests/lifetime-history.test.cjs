@@ -48,7 +48,7 @@ test('archive payload preserves original record and account owner',()=>{
 
 test('lifetime history runtime is non-invasive so touch/click ownership stays with app',()=>{
  const runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-lifetime-history-v1.js'),'utf8');
- for(const forbidden of ['Storage.prototype.setItem=function','getOwner.get=','setOwner.set=','stopImmediatePropagation','event.preventDefault()','document.addEventListener(\'click\''])assert.equal(runtime.includes(forbidden),false,forbidden);
+ for(const forbidden of ['Storage.prototype.setItem=function','getOwner.get=','setOwner.set=','stopImmediatePropagation','event.preventDefault()',"document.addEventListener('click'"])assert.equal(runtime.includes(forbidden),false,forbidden);
  for(const required of ['nonInvasive:true','observeLocal','restoreLocal','setInterval','batch.commit','Core.mergeStateWithHistory'])assert.ok(runtime.includes(required),required);
 });
 
