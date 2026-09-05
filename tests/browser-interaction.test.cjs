@@ -46,7 +46,7 @@ async function assertTodayNotClipped(page,label){
       .filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.position==='fixed'&&x.r.width>=innerWidth*.75&&x.r.height>=120)
       .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:String(x.el.className||''),top:Math.round(x.r.top),bottom:Math.round(x.r.bottom),height:Math.round(x.r.height),z:x.cs.zIndex,pointer:x.cs.pointerEvents,opacity:x.cs.opacity,background:x.cs.backgroundColor}));
     return {
-      hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',
+      viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',
       main:{overflow:mainStyle?.overflow||'',overflowY:mainStyle?.overflowY||'',height:mainStyle?.height||'',minHeight:mainStyle?.minHeight||'',clientHeight:main?.clientHeight||0,scrollHeight:main?.scrollHeight||0},
       cards,clipping,fixed
     };
@@ -54,7 +54,7 @@ async function assertTodayNotClipped(page,label){
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
   assert.ok(diagnostic.cards.length>=4,`${label}: Today quick record must render four cards: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.clipping.length,0,`${label}: Today cards are clipped by an overflow ancestor: ${JSON.stringify(diagnostic)}`);
-  const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<innerHeight);
+  const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<diagnostic.viewportHeight);
   assert.equal(suspicious.length,0,`${label}: unexpected fixed layer can cover Today content: ${JSON.stringify(diagnostic)}`);
 }
 
