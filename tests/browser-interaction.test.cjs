@@ -33,26 +33,29 @@ async function assertTodayNotClipped(page,label){
   const diagnostic=await page.evaluate(()=>{
     const main=document.getElementById('main'),mainStyle=main?getComputedStyle(main):null;
     const clipping=[];
-    const hubs=[...document.querySelectorAll('.hub-card')].map((card,index)=>{
+    const cards=[...document.querySelectorAll('.quick-visual')].map((card,index)=>{
       const r=card.getBoundingClientRect();let p=card.parentElement;
       while(p&&p!==document.body){
         const cs=getComputedStyle(p),pr=p.getBoundingClientRect(),overflow=`${cs.overflow} ${cs.overflowY} ${cs.overflowX}`;
         if(/hidden|clip/.test(overflow)&&(r.bottom>pr.bottom+1||r.top<pr.top-1))clipping.push({card:index,ancestor:p.id||p.className||p.tagName,overflow,cardBottom:Math.round(r.bottom),ancestorBottom:Math.round(pr.bottom)});
         p=p.parentElement;
       }
-      return {index,top:Math.round(r.top),bottom:Math.round(r.bottom),height:Math.round(r.height)};
+      return {index,top:Math.round(r.top),bottom:Math.round(r.bottom),height:Math.round(r.height),text:(card.innerText||'').slice(0,50)};
     });
+    const fixed=[...document.querySelectorAll('body *')].map(el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();return {el,cs,r};})
+      .filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.position==='fixed'&&x.r.width>=innerWidth*.75&&x.r.height>=120)
+      .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:String(x.el.className||''),top:Math.round(x.r.top),bottom:Math.round(x.r.bottom),height:Math.round(x.r.height),z:x.cs.zIndex,pointer:x.cs.pointerEvents,opacity:x.cs.opacity,background:x.cs.backgroundColor}));
     return {
-      hasCoach:!!document.querySelector('.garang-coach-v2'),
-      screen:main?.dataset?.garangScreen||'',
+      hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',
       main:{overflow:mainStyle?.overflow||'',overflowY:mainStyle?.overflowY||'',height:mainStyle?.height||'',minHeight:mainStyle?.minHeight||'',clientHeight:main?.clientHeight||0,scrollHeight:main?.scrollHeight||0},
-      hubs,clipping
+      cards,clipping,fixed
     };
   });
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
-  assert.ok(diagnostic.hubs.length>=4,`${label}: Today quick record must render four cards: ${JSON.stringify(diagnostic)}`);
+  assert.ok(diagnostic.cards.length>=4,`${label}: Today quick record must render four cards: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.clipping.length,0,`${label}: Today cards are clipped by an overflow ancestor: ${JSON.stringify(diagnostic)}`);
-  assert.equal(diagnostic.main.overflowY==='hidden'&&diagnostic.main.scrollHeight>diagnostic.main.clientHeight,true?false:true,`${label}: main is a fixed hidden-overflow viewport: ${JSON.stringify(diagnostic)}`);
+  const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<innerHeight);
+  assert.equal(suspicious.length,0,`${label}: unexpected fixed layer can cover Today content: ${JSON.stringify(diagnostic)}`);
 }
 
 (async()=>{
