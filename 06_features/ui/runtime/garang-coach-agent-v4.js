@@ -70,7 +70,9 @@ function renderProposalCard(messageEl,entry){
  if(!card){card=document.createElement('section');card.className='g4-agent-proposal';card.dataset.g4Proposal=proposal.id;wrap.appendChild(card);}
  const status=entry.status||proposal.status||'pending';
  const pending=status==='pending';
- card.dataset.status=status;
+ const renderKey=`${english()?'en':'ko'}:${status}:${proposal.tool}:${proposalSummary(proposal)}`;
+ if(card.dataset.renderKey===renderKey)return;
+ card.dataset.status=status;card.dataset.renderKey=renderKey;
  card.innerHTML=`<div class="g4-proposal-head"><span>${english()?'ACTION PROPOSAL':'행동 제안'}</span><b>${esc(toolLabel(proposal.tool))}</b></div><p>${esc(proposalSummary(proposal))}</p><div class="g4-proposal-state">${pending?(english()?'Nothing changes until you approve this action.':'승인하기 전에는 아무것도 변경되지 않습니다.'):(status==='confirmed'?(english()?'Approved and applied.':'승인되어 적용되었습니다.'):(status==='rejected'?(english()?'Rejected. No data was changed.':'거절되었습니다. 데이터는 변경되지 않았습니다.'):(english()?'This proposal is no longer active.':'이 제안은 더 이상 활성 상태가 아닙니다.')))}</div>${pending?`<div class="g4-proposal-actions"><button type="button" data-g4-reject>${english()?'Reject':'거절'}</button><button type="button" class="approve" data-g4-approve>${english()?'Approve':'승인'}</button></div>`:''}`;
  if(pending){
   card.querySelector('[data-g4-reject]').onclick=()=>resolveProposal(messageEl,entry,false);
@@ -120,18 +122,24 @@ async function processAssistant(messageEl){
  }
 }
 
+function promptSignature(items){return items.map(item=>`${item.label}\u0001${item.prompt}`).join('\u0002');}
+function currentPromptSignature(strip){return [...strip.querySelectorAll('[data-g4-prompt]')].map(button=>`${button.textContent}\u0001${button.dataset.g4Prompt||''}`).join('\u0002');}
 function syncPromptStrip(root){
  const composerWrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');
  if(!composerWrap||!composer||!input)return;
  root.querySelector('.g2-empty-chat .g2-prompts')?.remove();
  let strip=composerWrap.querySelector('.g4-prompt-strip');
  if(!strip){strip=document.createElement('div');strip.className='g4-prompt-strip';composerWrap.insertBefore(strip,composer);}
- strip.innerHTML=prompts().map(item=>`<button type="button" data-g4-prompt="${esc(item.prompt)}">${esc(item.label)}</button>`).join('');
- strip.querySelectorAll('[data-g4-prompt]').forEach(button=>button.onclick=()=>{
-  input.value=button.dataset.g4Prompt||'';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();
- });
- input.placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';
- input.setAttribute('aria-label',input.placeholder);
+ const items=prompts(),wanted=promptSignature(items);
+ if(currentPromptSignature(strip)!==wanted){
+  strip.innerHTML=items.map(item=>`<button type="button" data-g4-prompt="${esc(item.prompt)}">${esc(item.label)}</button>`).join('');
+  strip.querySelectorAll('[data-g4-prompt]').forEach(button=>button.onclick=()=>{
+   input.value=button.dataset.g4Prompt||'';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();
+  });
+ }
+ const placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';
+ if(input.placeholder!==placeholder)input.placeholder=placeholder;
+ if(input.getAttribute('aria-label')!==placeholder)input.setAttribute('aria-label',placeholder);
 }
 
 function syncProposalLanguage(root){
