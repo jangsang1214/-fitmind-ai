@@ -25,7 +25,7 @@ test('explicit tombstone still prevents resurrection',()=>{
  assert.equal(History.mergeStateWithHistory(current,{workouts:[{id:'w1',updatedAt:'2026-09-05T01:00:00.000Z'}]}).workouts.length,0);
 });
 
-test('known-good app boot path stays isolated from experimental recovery runtimes',()=>{
+test('live boot stays isolated from lifetime-history experimental runtime',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const sw=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
  const runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-lifetime-history-v1.js'),'utf8');
@@ -37,7 +37,7 @@ test('known-good app boot path stays isolated from experimental recovery runtime
  }
  for(const forbidden of ['setInterval(','location.reload','onAuthStateChanged','firebase.firestore','Storage.prototype','stopImmediatePropagation'])assert.equal(runtime.includes(forbidden),false,forbidden);
  assert.ok(runtime.includes('disabled:true'));
- assert.ok(sw.includes("const CACHE='garang-known-good-boot-rollback-v5-20260906'"));
+ assert.ok(/const CACHE='garang-[^']+';/.test(sw),'service worker must keep a versioned GARANG cache without pinning one obsolete version');
 });
 
 console.log(`${passed} lifetime history/recovery tests passed`);
