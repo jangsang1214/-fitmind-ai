@@ -1,0 +1,24 @@
+/* GARANG Coach Agent v4 — persistent prompts + approval-gated actions */
+.g2-empty-chat .g2-prompts{display:none!important}
+.g4-prompt-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 1px 8px;overscroll-behavior-x:contain}
+.g4-prompt-strip::-webkit-scrollbar{display:none}
+.g4-prompt-strip button{flex:0 0 auto;min-height:30px;padding:0 11px;border:1px solid rgba(79,174,146,.18);background:#0a1210;color:#99b6ad;border-radius:999px;font:500 8px/1.2 var(--g2-ui);white-space:nowrap;letter-spacing:.01em}
+.g4-prompt-strip button:hover,.g4-prompt-strip button:focus-visible{border-color:rgba(79,174,146,.36);background:#0d1814;color:#d9e5e0;outline:none}
+.g4-agent-proposals{display:grid;gap:8px;margin-top:12px;max-width:560px}
+.g4-agent-proposal{border:1px solid rgba(242,239,233,.11);background:#0a0d0b;border-radius:12px;padding:11px 12px}
+.g4-agent-proposal[data-status="confirmed"]{border-color:rgba(79,174,146,.28);background:#09110e}
+.g4-agent-proposal[data-status="rejected"],.g4-agent-proposal[data-status="expired"]{opacity:.72}
+.g4-proposal-head{display:flex;align-items:center;gap:9px}
+.g4-proposal-head span{font-size:6.5px;letter-spacing:.16em;color:#69716c}
+.g4-proposal-head b{font-size:10px;font-weight:600;color:#dddcd7}
+.g4-agent-proposal p{margin:7px 0 0;color:#aaaDA8;font-size:10px;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere}
+.g4-proposal-state{margin-top:6px;color:#696e69;font-size:8px;line-height:1.5}
+.g4-proposal-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+.g4-proposal-actions button{height:30px;padding:0 12px;border:1px solid rgba(255,255,255,.1);background:#0d0f0e;color:#979b96;border-radius:8px;font-size:8px}
+.g4-proposal-actions button.approve{border-color:rgba(79,174,146,.28);background:#10231d;color:#bcd8cf}
+.g4-proposal-actions button:hover{filter:brightness(1.12)}
+@media(max-width:800px){
+ .g4-prompt-strip{margin-inline:-1px;padding-bottom:7px}
+ .g4-prompt-strip button{min-height:29px;padding-inline:10px;font-size:8px}
+ .g4-agent-proposals{max-width:100%}
+}
