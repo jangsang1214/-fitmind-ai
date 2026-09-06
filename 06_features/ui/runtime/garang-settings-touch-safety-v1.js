@@ -1,6 +1,6 @@
-/* GARANG Settings Touch Safety v1.1
-   Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation
-   without changing timing for unrelated routes. */
+/* GARANG Settings Touch Safety v1.2
+   Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation.
+   Preserve the canonical app/router handlers and only delay their execution until WebKit settles. */
 (() => {
   'use strict';
 
@@ -27,49 +27,65 @@
     document.body.classList.remove('menu-open');
   }
 
-  function navigateViaCanonicalRouter(page) {
-    const proxy = document.querySelector('#bottomNav button');
-    if (!proxy) return;
-    const oldPage = proxy.dataset.page;
-    proxy.dataset.page = page;
-    proxy.click();
-    proxy.dataset.page = oldPage;
-  }
-
-  function safeNavigate(page) {
-    if (!page || navigationPending) return;
+  function afterWebKitSettles(run) {
+    if (navigationPending || typeof run !== 'function') return false;
     navigationPending = true;
     deactivateTransientLayers();
 
-    /* WebKit can retain a removed fixed layer in the hit-test tree for the current frame.
-       Cross two animation frames before mounting Settings. */
+    /* A removed fixed layer can remain in WebKit's hit-test tree for the current frame.
+       Cross two animation frames before executing the already-bound canonical route. */
     requestAnimationFrame(() => requestAnimationFrame(() => {
       navigationPending = false;
-      navigateViaCanonicalRouter(page);
+      run();
     }));
+    return true;
   }
 
-  document.addEventListener('click', event => {
-    const settingsButton = event.target?.closest?.('#settingsTopBtn');
-    if (settingsButton) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      safeNavigate('settings');
-      return;
-    }
+  function bindTopSettings() {
+    const button = document.getElementById('settingsTopBtn');
+    if (!button || button.dataset.garangSettingsTouchBound === '1') return false;
+    const original = button.onclick;
+    if (typeof original !== 'function') return false;
 
-    /* Preserve Functional Recovery's synchronous routing for every other More-sheet route.
-       Only Settings needs the WebKit hit-test settling frame. */
-    const settingsRouteButton = event.target?.closest?.('.garang-more-sheet [data-route="settings"]');
-    if (settingsRouteButton) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      safeNavigate('settings');
-    }
-  }, true);
+    button.dataset.garangSettingsTouchBound = '1';
+    button.onclick = function(event) {
+      event?.preventDefault?.();
+      afterWebKitSettles(() => original.call(button, event));
+    };
+    return true;
+  }
+
+  function bindSheetSettings(root = document) {
+    const buttons = root.querySelectorAll?.('.garang-more-sheet [data-route="settings"]') || [];
+    buttons.forEach(button => {
+      if (button.dataset.garangSettingsTouchBound === '1') return;
+      const original = button.onclick;
+      if (typeof original !== 'function') return;
+
+      button.dataset.garangSettingsTouchBound = '1';
+      button.onclick = function(event) {
+        event?.preventDefault?.();
+        afterWebKitSettles(() => original.call(button, event));
+      };
+    });
+  }
+
+  /* app.js binds the top Settings handler synchronously before this runtime loads. */
+  bindTopSettings();
+  bindSheetSettings();
+
+  /* More-sheet controls are created dynamically. MutationObserver runs after Functional Recovery
+     has created the sheet and assigned its canonical onclick handlers. */
+  const observer = new MutationObserver(() => {
+    bindTopSettings();
+    bindSheetSettings();
+  });
+  observer.observe(document.body, {childList:true, subtree:true});
 
   window.GarangSettingsTouchSafety = Object.freeze({
     deactivateTransientLayers,
-    safeNavigate
+    afterWebKitSettles,
+    bindTopSettings,
+    bindSheetSettings
   });
 })();
