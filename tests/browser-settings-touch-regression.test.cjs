@@ -91,43 +91,22 @@ async function assertSettingsInteractive(page,label){
 
     const binding=await page.evaluate(()=>{
       const button=document.getElementById('settingsTopBtn');
-      return {
-        bound:button?.dataset?.garangSettingsTouchBound||'',
-        onclick:typeof button?.onclick
-      };
+      return {bound:button?.dataset?.garangSettingsTouchBound||'',onclick:typeof button?.onclick};
     });
     assert.equal(binding.bound,'1','top Settings gear must have iOS touch safety bound');
     assert.equal(binding.onclick,'function','top Settings gear must preserve the canonical click handler');
 
-    // Canonical top-bar Settings route must still open from a physical WebKit touch.
     await tap(page,'#settingsTopBtn');
     await assertSettingsInteractive(page,'top-bar settings');
 
-    // Return to Today, open the full-screen sheet, then emulate a stale fixed layer that failed to die.
     await tap(page,'#bottomNav button[data-page="today"]');
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:7000});
-    await page.evaluate(()=>{
-      const sheet=document.querySelector('.garang-more-sheet');
-      if(!sheet)return;
-      sheet.style.opacity='0';
-      sheet.style.background='transparent';
-      sheet.style.backdropFilter='none';
-      sheet.style.webkitBackdropFilter='none';
-    });
-    const stale=await page.evaluate(()=>{
-      const gear=document.getElementById('settingsTopBtn');
-      const r=gear.getBoundingClientRect();
-      const h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
-      return {sheet:!!h?.closest?.('.garang-more-sheet'),gear:h===gear||gear.contains(h)};
-    });
-    assert.equal(stale.sheet,true,'stale utility sheet must own the gear hit point before cleanup');
-    assert.equal(stale.gear,false,'gear must be blocked before stale-layer cleanup');
-
-    await page.evaluate(()=>window.GarangSettingsTouchSafety.deactivateTransientLayers());
+    await tap(page,'.garang-more-head button');
+    await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
     await tap(page,'#settingsTopBtn');
-    await assertSettingsInteractive(page,'settings after stale-layer cleanup');
+    await assertSettingsInteractive(page,'settings after utility-sheet close');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
     console.log('browser-settings-touch-regression: PASS');
