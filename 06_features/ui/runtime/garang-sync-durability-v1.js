@@ -1,4 +1,4 @@
-/* GARANG sync durability runtime v2.1
+/* GARANG sync durability runtime v2.2
    Transitional compatibility adapter for legacy app.js persistence.
    Long-term Workout/Meal/Run/Body records live in dedicated Firestore collections;
    users/<uid>/app/state is now a bounded shell. Existing local data is backed up and
@@ -140,9 +140,10 @@ function patchFirestore(){
       const persisted=readUserState(uid),outgoing=mergeSyncMeta(data,persisted,uid),full=Core.mergeActiveStates(persisted||{},outgoing,{ownerUid:uid,clock:Date.now()}),ref=this,firestore=this.firestore||db;
       try{
         await persistHistory(db,uid,full);
+        /* Recovery writes are deliberately outside the transaction callback because Firestore may retry transactions. */
+        try{const before=await originalGet.call(ref);if(before?.exists)await backupMigrationManifest(db,uid,safeCloudState(before.data(),uid));}catch(error){console.warn('[GARANG] pre-transaction recovery snapshot deferred',error?.code||error?.message||error);}
         await firestore.runTransaction(async transaction=>{
           const snapshot=await transaction.get(ref),remote=snapshot.exists?safeCloudState(snapshot.data(),uid):null;
-          await backupMigrationManifest(db,uid,remote||{});
           const merged=Core.mergeActiveStates(full,remote,{ownerUid:uid,clock:Date.now()}),payload=History.compactShell(Core.compactForCloud(merged));
           payload.meta={...(payload.meta||{}),syncOwnerUid:uid};payload.clientUpdatedAt=payload.meta.updatedAt||outgoing.clientUpdatedAt||new Date().toISOString();payload.cloudUpdatedAt=window.firebase.firestore.FieldValue.serverTimestamp();
           transaction.set(ref,payload,{merge:false});
@@ -168,5 +169,5 @@ window.addEventListener('online',()=>{document.documentElement.dataset.garangNet
 window.addEventListener('offline',()=>{document.documentElement.dataset.garangNetwork='offline';const uid=currentUid();if(uid)markPending(uid,'offline',{increment:false});});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine!==false){const uid=currentUid();if(uid&&readPending(uid))scheduleRetry(uid,{immediate:true});}});
 setTimeout(bootFirebaseGuards,0);setTimeout(patchFirestore,700);window.addEventListener('load',()=>{patchFirestore();authWatch();},{once:true});
-window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.1',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
+window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.2',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
 })();
