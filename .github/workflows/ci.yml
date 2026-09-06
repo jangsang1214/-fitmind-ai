@@ -43,3 +43,5 @@ jobs:
         run: node tests/browser-webkit-regression.test.cjs
       - name: Verify WebKit Settings touch regression
         run: node tests/browser-settings-touch-regression.test.cjs
+      - name: Verify mobile button health audit
+        run: node tests/browser-mobile-button-audit.test.cjs
