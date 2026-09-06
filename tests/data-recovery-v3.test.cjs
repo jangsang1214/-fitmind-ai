@@ -7,8 +7,8 @@ const runtimePath=path.join(root,'06_features/ui/runtime/garang-data-migration-v
 
 for(const token of ["const PROTECTED=Object.freeze(['workouts','meals','runs','body'])",'recoverySnapshots','garang_state_backup_v3::','garang_cloud_recovery_backup_v3::','garang_recovery_backup_v3::','guardedPersistHistory','History.rowStamp(item.remote)>History.rowStamp(item.local)','데이터 복구 확인','누락 기록 안전 복구'])assert.ok(runtime.includes(token),`missing recovery contract: ${token}`);
 assert.equal(runtime.includes('구버전 로컬 데이터를 찾지 못했습니다.'),false,'recovery UX must not equate one missing legacy key with missing user history');
-assert.ok(runtime.includes("key===activeKey()||key===LEGACY_KEY"),'local scan must include active state and the legacy key');
-assert.ok(runtime.includes("return key.includes(active)"),'same-account backup filtering must be present');
+assert.ok(runtime.includes('const active=activeKey()')&&runtime.includes('key===active||key===LEGACY_KEY'),'local scan must include active state and the legacy key');
+assert.ok(runtime.includes('return key.includes(active)'),'same-account backup filtering must be present');
 
 const storage=new Map();
 const localStorage={get length(){return storage.size;},key(i){return [...storage.keys()][i]||null;},getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(String(k),String(v));},removeItem(k){storage.delete(k);}};
