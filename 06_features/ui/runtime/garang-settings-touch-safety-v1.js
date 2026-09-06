@@ -23,11 +23,35 @@
   let lastCanonicalStartAt = 0;
   let lastCanonicalReturnAt = 0;
   let lastTaskSource = '';
+  let lastImmediateSettingsPresent = false;
+  let lastImmediateScreen = '';
+  let lastImmediateHead = '';
+  let settingsMutationTrace = [];
   let dispatchSequence = 0;
   let serviceSequence = 0;
   let navigationSequence = 0;
   let pendingToken = 0;
   let navigating = false;
+
+  function screenSnapshot(reason) {
+    const save = main.querySelector('#savePreferences');
+    const head = main.querySelector('.page-head');
+    const snapshot = {
+      reason,
+      at: Date.now(),
+      hasSave: !!save,
+      screen: main.dataset.garangScreen || '',
+      head: (head?.textContent || '').replace(/\s+/g,' ').trim().slice(0,160),
+      activeNav: document.querySelector('#bottomNav button.active')?.dataset?.page || '',
+      childCount: main.childElementCount,
+      firstClass: main.firstElementChild?.className || '',
+      htmlStart: (main.innerHTML || '').replace(/\s+/g,' ').slice(0,260)
+    };
+    settingsMutationTrace.push(snapshot);
+    settingsMutationTrace = settingsMutationTrace.slice(-12);
+    console.log('[GARANG][settings-touch]', JSON.stringify(snapshot));
+    return snapshot;
+  }
 
   function disableTransientLayer(el) {
     if (!el) return;
@@ -85,6 +109,11 @@
       lastCanonicalReturnAt = Date.now();
       lastNavigationAt = Date.now();
       navigationSequence += 1;
+
+      const immediate = screenSnapshot('canonical-return-immediate');
+      lastImmediateSettingsPresent = immediate.hasSave;
+      lastImmediateScreen = immediate.screen;
+      lastImmediateHead = immediate.head;
 
       const scroller = document.scrollingElement || document.documentElement;
       if (scroller) scroller.scrollTop = 0;
@@ -172,7 +201,10 @@
 
   installCaptureIsolation();
 
-  const observer = new MutationObserver(scheduleSettingsCleanup);
+  const observer = new MutationObserver(() => {
+    if (lastCanonicalReturnAt || main.querySelector('#savePreferences')) screenSnapshot('main-mutation');
+    scheduleSettingsCleanup();
+  });
   observer.observe(main, {childList:true, subtree:true});
   scheduleSettingsCleanup();
 
@@ -194,6 +226,10 @@
     get lastNavigationAt(){ return lastNavigationAt; },
     get lastCanonicalStartAt(){ return lastCanonicalStartAt; },
     get lastCanonicalReturnAt(){ return lastCanonicalReturnAt; },
+    get lastImmediateSettingsPresent(){ return lastImmediateSettingsPresent; },
+    get lastImmediateScreen(){ return lastImmediateScreen; },
+    get lastImmediateHead(){ return lastImmediateHead; },
+    get settingsMutationTrace(){ return settingsMutationTrace.slice(); },
     get dispatchSequence(){ return dispatchSequence; },
     get serviceSequence(){ return serviceSequence; },
     get navigationSequence(){ return navigationSequence; },
