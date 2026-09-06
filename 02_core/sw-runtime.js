@@ -1,5 +1,5 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v11-20260906`;
+const CACHE=`${CACHE_PREFIX}v12-20260906`;
 
 async function precache(){
   const cache=await caches.open(CACHE);
