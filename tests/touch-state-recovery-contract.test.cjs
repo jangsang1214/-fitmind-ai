@@ -7,6 +7,7 @@ const sync=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sync-du
 const route=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-auth-route-reconcile-v1.js'),'utf8');
 const chrome=fs.readFileSync(path.join(root,'03_styles/runtime/garang-app-chrome-fix-v1.css'),'utf8');
 const polish=fs.readFileSync(path.join(root,'03_styles/runtime/garang-polish-v3.css'),'utf8');
+const firebaseConfig=fs.readFileSync(path.join(root,'07_config/firebase-config.js'),'utf8');
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 const swRuntime=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
 assert.ok(html.indexOf('garang-state-sanitizer-v1.js')<html.indexOf('garang-sync-durability-v1.js'),'sanitizer must run before sync runtime');
@@ -23,7 +24,10 @@ assert.ok(chrome.includes('#main[data-garang-screen]:not([data-garang-screen="co
 for(const token of ['overflow:visible!important','overflow-x:visible!important','overflow-y:visible!important','height:auto!important','max-height:none!important'])assert.ok(chrome.includes(token),`iOS-safe ordinary-screen boundary missing: ${token}`);
 assert.ok(chrome.includes('-webkit-backdrop-filter:none!important'),'mobile fixed nav must avoid the WebKit blur compositor');
 assert.equal(/body:has\(\.garang-coach-v2\) \.bottom-nav\{display:none!important\}/.test(polish),false,'Coach must never hide global bottom navigation');
-assert.ok(/mobile-layout-recovery-v\d+-20260906/.test(sw),'root service worker bytes must be versioned for mobile layout recovery');
-assert.ok(/garang-mobile-layout-recovery-v\d+-20260906/.test(swRuntime),'shell cache must move with the mobile layout recovery worker');
+assert.ok(firebaseConfig.includes('cdn.jsdelivr.net/npm/firebase@'),'Firebase bootstrap must have a secondary SDK CDN');
+assert.ok(firebaseConfig.includes("typeof document === 'undefined'"),'Firebase fallback must stay safe for static tooling');
+assert.ok(/firebase-auth-recovery-v\d+-20260906/.test(sw),'root service worker bytes must move for Firebase auth recovery');
+assert.ok(/garang-firebase-auth-recovery-v\d+-20260906/.test(swRuntime),'shell cache must move with Firebase auth recovery');
+assert.ok(swRuntime.includes('./07_config/firebase-config.js'),'recovery shell must cache the Firebase config');
 assert.ok(swRuntime.includes('./06_features/ui/runtime/garang-auth-route-reconcile-v1.js'));
 console.log('touch-state-recovery-contract: PASS');
