@@ -48,6 +48,16 @@ async function tapVisibleBackdrop(page){
   await page.touchscreen.tap(point.x,point.y);
 }
 
+async function waitForSidebarClosed(page){
+  await page.waitForFunction(()=>{
+    const root=document.querySelector('.garang-coach-v2');
+    const sidebar=root?.querySelector('.g2-chat-sidebar');
+    if(!root||!sidebar||root.classList.contains('sidebar-open'))return false;
+    const r=sidebar.getBoundingClientRect();
+    return r.right<=1;
+  },{timeout:1500});
+}
+
 async function assertCoachSettles(page){
   await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g2-chat-head'),{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-decision-toggle'),{timeout:10000});
@@ -79,6 +89,7 @@ async function assertCoachSettles(page){
   await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
   await tapVisibleBackdrop(page);
   await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
+  await waitForSidebarClosed(page);
 
   await tap(page,'.g2-head-new');
   await page.waitForTimeout(80);
