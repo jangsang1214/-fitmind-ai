@@ -1,4 +1,4 @@
-/* GARANG Settings Touch Safety v1.4
+/* GARANG Settings Touch Safety v1.5
    Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation.
    The canonical Settings click handler is never replaced, delayed, prevented, or re-dispatched. */
 (() => {
@@ -37,9 +37,8 @@
 
     /* Physical iOS/PWA input: release stale hit blockers before the browser creates the click.
        No preventDefault/stopPropagation here; app.js keeps full ownership of navigation. */
-    const release = () => deactivateTransientLayers();
-    button.addEventListener('touchstart', release, {passive:true, capture:true});
-    button.addEventListener('pointerdown', release, {passive:true, capture:true});
+    button.addEventListener('touchstart', deactivateTransientLayers, {passive:true, capture:true});
+    button.addEventListener('pointerdown', deactivateTransientLayers, {passive:true, capture:true});
 
     return true;
   }
@@ -47,12 +46,25 @@
   /* app.js already owns settingsTopBtn.onclick. This runtime only adds pre-click cleanup listeners. */
   bindTopSettings();
 
+  /* If a stale composited sheet incorrectly owns hit testing over the gear, capture the first touch
+     at document level, release blockers synchronously, and let the browser continue the same gesture. */
+  document.addEventListener('touchstart', event => {
+    if (!document.querySelector('.garang-more-sheet,.garang-coach-v2.sidebar-open,.modal-backdrop:not([hidden]),.gcp-backdrop:not([hidden]),.gcp-panel:not([hidden])')) return;
+    const touch=event.touches?.[0];
+    const gear=document.getElementById('settingsTopBtn');
+    if (!touch || !gear) return;
+    const r=gear.getBoundingClientRect();
+    if (touch.clientX>=r.left && touch.clientX<=r.right && touch.clientY>=r.top && touch.clientY<=r.bottom) {
+      deactivateTransientLayers();
+    }
+  }, {passive:true, capture:true});
+
   /* Re-apply if another runtime ever recreates the permanent top-bar button. */
   const observer = new MutationObserver(() => bindTopSettings());
   observer.observe(document.body, {childList:true, subtree:true});
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'1.4.0',
+    version:'1.5.0',
     deactivateTransientLayers,
     bindTopSettings
   });
