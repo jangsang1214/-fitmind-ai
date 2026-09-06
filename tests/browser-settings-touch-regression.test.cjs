@@ -8,6 +8,9 @@ const root=path.resolve(__dirname,'..');
 const serveRoot=path.join(root,'dist');
 const port=8771;
 const baseURL=`http://127.0.0.1:${port}`;
+const watchdog=setTimeout(()=>{console.error('browser-settings-touch-regression: WATCHDOG TIMEOUT');process.exit(1);},45000);
+
+function stage(name){console.log(`settings-touch-stage: ${name}`);}
 
 async function waitForServer(){
   const deadline=Date.now()+15000;
@@ -33,6 +36,7 @@ async function tap(page,selector){
 }
 
 async function assertSettingsInteractive(page,label){
+  stage(`${label}: wait save`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
   const state=await page.evaluate(()=>{
     const target=document.getElementById('savePreferences');
@@ -44,38 +48,33 @@ async function assertSettingsInteractive(page,label){
         return s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'&&box.width>0&&box.height>0;
       })
       .map(el=>el.className||el.id||el.tagName);
-    return {
-      hit:!!target&&!!hit&&(hit===target||target.contains(hit)),
-      blockers,
-      screen:document.getElementById('main')?.dataset?.garangScreen||''
-    };
+    return {hit:!!target&&!!hit&&(hit===target||target.contains(hit)),blockers};
   });
   assert.equal(state.hit,true,`${label}: Settings save button must be hit-testable`);
   assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain`);
+  stage(`${label}: tap save`);
   await tap(page,'#savePreferences');
+  stage(`${label}: save tapped`);
 }
 
 (async()=>{
   const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
   let browser;
   try{
+    stage('server');
     await waitForServer();
     browser=await webkit.launch({headless:true});
     const context=await browser.newContext({
-      viewport:{width:390,height:844},
-      isMobile:true,
-      hasTouch:true,
+      viewport:{width:390,height:844},isMobile:true,hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
       localStorage.setItem('garang_demo','1');
       localStorage.setItem('garang_demo_state_v3',JSON.stringify({
-        meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},
-        profile:{name:'WebKit Settings',weight:70},
+        meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},profile:{name:'WebKit Settings',weight:70},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},
-        preferences:{language:'ko',unit:'metric'},
-        workouts:[],meals:[],runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
+        preferences:{language:'ko',unit:'metric'},workouts:[],meals:[],runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
         memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},plan:'FREE'
       }));
     });
@@ -84,39 +83,41 @@ async function assertSettingsInteractive(page,label){
     const errors=[];
     page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
 
+    stage('goto');
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
     await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.5.0',null,{timeout:7000});
 
-    const binding=await page.evaluate(()=>{
-      const button=document.getElementById('settingsTopBtn');
-      return {bound:button?.dataset?.garangSettingsTouchBound||'',onclick:typeof button?.onclick};
-    });
+    const binding=await page.evaluate(()=>{const b=document.getElementById('settingsTopBtn');return {bound:b?.dataset?.garangSettingsTouchBound||'',onclick:typeof b?.onclick};});
     assert.equal(binding.bound,'1','top Settings gear must have iOS touch safety bound');
     assert.equal(binding.onclick,'function','top Settings gear must preserve the canonical click handler');
 
+    stage('tap gear first');
     await tap(page,'#settingsTopBtn');
+    stage('gear first tapped');
     await assertSettingsInteractive(page,'top-bar settings');
 
+    stage('return today');
     await tap(page,'#bottomNav button[data-page="today"]');
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
+    stage('open more');
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:7000});
+    stage('close more');
     await tap(page,'.garang-more-head button');
     await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
+    stage('tap gear second');
     await tap(page,'#settingsTopBtn');
+    stage('gear second tapped');
     await assertSettingsInteractive(page,'settings after utility-sheet close');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
+    stage('pass');
     console.log('browser-settings-touch-regression: PASS');
   }finally{
-    if(browser){
-      await Promise.race([
-        browser.close().catch(()=>{}),
-        new Promise(resolve=>setTimeout(resolve,4000))
-      ]);
-    }
+    clearTimeout(watchdog);
+    if(browser) await Promise.race([browser.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,4000))]);
     if(server.exitCode===null) server.kill('SIGKILL');
   }
-})().catch(error=>{console.error(error);process.exit(1);});
+})().catch(error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
