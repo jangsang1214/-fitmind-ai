@@ -4,25 +4,170 @@ const path=require('node:path');
 const {spawn}=require('node:child_process');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8768,baseURL=`http://127.0.0.1:${port}`;
-async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,200));}throw new Error('WebKit GARANG server did not start');}
-async function tap(page,selector){const loc=page.locator(selector);await loc.waitFor({state:'visible',timeout:7000});const box=await loc.boundingBox();assert.ok(box,`${selector} must have touch box`);const hit=await loc.evaluate(el=>{const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,h=document.elementFromPoint(x,y);return !!h&&(h===el||el.contains(h));});assert.equal(hit,true,`${selector} must own hit point`);await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);}
+
+async function waitForServer(){
+  const deadline=Date.now()+15000;
+  while(Date.now()<deadline){
+    try{const r=await fetch(baseURL);if(r.ok)return;}catch{}
+    await new Promise(r=>setTimeout(r,200));
+  }
+  throw new Error('WebKit GARANG server did not start');
+}
+
+async function tap(page,selector){
+  const loc=page.locator(selector);
+  await loc.waitFor({state:'visible',timeout:7000});
+  const box=await loc.boundingBox();
+  assert.ok(box,`${selector} must have touch box`);
+  const hit=await loc.evaluate(el=>{
+    const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,h=document.elementFromPoint(x,y);
+    return !!h&&(h===el||el.contains(h));
+  });
+  assert.equal(hit,true,`${selector} must own hit point`);
+  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+}
+
+async function assertCoachSettles(page){
+  await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g2-chat-head'),{timeout:10000});
+  await page.waitForFunction(()=>document.querySelector('.garang-decision-toggle'),{timeout:10000});
+  await page.waitForTimeout(250);
+
+  const idleMutations=await page.evaluate(()=>new Promise(resolve=>{
+    let childListMutations=0;
+    const target=document.getElementById('main');
+    const observer=new MutationObserver(records=>{
+      childListMutations+=records.filter(record=>record.type==='childList').length;
+    });
+    observer.observe(target,{childList:true,subtree:true});
+    setTimeout(()=>{
+      observer.disconnect();
+      resolve(childListMutations);
+    },400);
+  }));
+  assert.ok(
+    idleMutations<=4,
+    `Coach shell must settle instead of self-triggering MutationObserver writes; childList mutations=${idleMutations}`
+  );
+
+  await tap(page,'.garang-decision-toggle');
+  await page.waitForFunction(()=>document.querySelector('.garang-decision-card')?.dataset.expanded==='true');
+  await tap(page,'.garang-decision-toggle');
+  await page.waitForFunction(()=>document.querySelector('.garang-decision-card')?.dataset.expanded==='false');
+
+  await tap(page,'.g2-mobile-threads');
+  await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
+  await tap(page,'.g2-sidebar-backdrop');
+  await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
+
+  await tap(page,'.g2-head-new');
+  await page.waitForTimeout(80);
+
+  const hitState=await page.evaluate(()=>{
+    const selectors=['.g2-mobile-threads','.g2-head-new','.garang-decision-toggle','#bottomNav button[data-page="today"]'];
+    return selectors.map(selector=>{
+      const el=document.querySelector(selector);
+      if(!el)return {selector,hit:false};
+      const r=el.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+      return {selector,hit:!!h&&(h===el||el.contains(h))};
+    });
+  });
+  assert.ok(hitState.every(item=>item.hit),`Coach controls must remain hit-testable after repeated touches: ${JSON.stringify(hitState)}`);
+}
+
 (async()=>{
- const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});let browser;
- try{
-  await waitForServer();browser=await webkit.launch({headless:true});
-  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
-  await context.addInitScript(()=>{try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify({meta:{schemaVersion:5,updatedAt:'2026-09-06T00:00:00Z'},profile:{name:'WebKit',weight:70},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat'}],meals:[null,{id:'m1',date:'2026-09-06',name:'Meal',items:[null,{id:'f1',name:'Egg',grams:100,kcal:150,protein:13,carbs:1,fat:10}]}],runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},plan:'FREE'}));});
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
-  await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
-  const layout=await page.evaluate(()=>{const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),hit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;return {x:s.overflowX,y:s.overflowY,max:s.maxHeight,cards:[...document.querySelectorAll('.quick-visual')].map(x=>x.getBoundingClientRect().height),top:{top:tr?.top,bottom:tr?.bottom,height:tr?.height},menu:{display:menu?getComputedStyle(menu).display:'none',height:mr?.height,hit:!!hit&&(hit===menu||menu?.contains(hit))}};});
-  assert.equal(layout.x,'visible');assert.equal(layout.y,'visible');assert.equal(layout.max,'none');assert.ok(layout.cards.length>=4&&layout.cards.every(h=>h>40));assert.ok(layout.top.height>=50&&layout.top.bottom>0,'physical-iOS topbar must remain on screen');assert.notEqual(layout.menu.display,'none');assert.ok(layout.menu.height>=30&&layout.menu.hit,'hamburger must own its hit point');
-  await tap(page,'[data-today-view="back"]');await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
-  await tap(page,'[data-today-view="front"]');
-  await page.locator('.quick-visual').first().scrollIntoViewIfNeeded();await page.waitForTimeout(80);
-  const scrolled=await page.evaluate(()=>{const top=document.querySelector('.topbar')?.getBoundingClientRect(),menu=document.getElementById('menuBtn'),mr=menu?.getBoundingClientRect(),quick=document.querySelector('.quick-visual'),qr=quick?.getBoundingClientRect(),qh=qr?document.elementFromPoint(qr.left+qr.width/2,qr.top+Math.min(qr.height/2,30)):null,mh=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;return {topVisible:!!top&&top.bottom>0&&top.top>=-1,menuHit:!!mh&&(mh===menu||menu?.contains(mh)),quickHeight:qr?.height||0,quickHit:!!qh&&(qh===quick||quick?.contains(qh)),scrollY:window.scrollY};});
-  assert.ok(scrolled.scrollY>0,'test must exercise the long Today scroll seen on physical iPhone');assert.ok(scrolled.topVisible,'sticky topbar must survive Today scroll');assert.ok(scrolled.menuHit,'hamburger must stay tappable after Today scroll');assert.ok(scrolled.quickHeight>40&&scrolled.quickHit,'quick-record content must remain painted and hit-testable after scroll');
-  await tap(page,'#menuBtn');await page.locator('.garang-more-sheet').waitFor({state:'visible'});await tap(page,'.garang-more-sheet [data-route="running"]');
-  for(const route of ['today','coach','today','workout','body','progress']){await tap(page,`#bottomNav button[data-page="${route}"]`);await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);}
-  assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);console.log('browser-webkit-regression: PASS');
- }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
+  const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
+  let browser;
+  try{
+    await waitForServer();
+    browser=await webkit.launch({headless:true});
+    const context=await browser.newContext({
+      viewport:{width:390,height:844},
+      isMobile:true,
+      hasTouch:true,
+      userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
+    });
+    await context.addInitScript(()=>{
+      try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
+      localStorage.setItem('garang_demo','1');
+      localStorage.setItem('garang_demo_state_v3',JSON.stringify({
+        meta:{schemaVersion:5,updatedAt:'2026-09-06T00:00:00Z'},
+        profile:{name:'WebKit',weight:70},
+        onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},
+        preferences:{language:'ko',unit:'metric'},
+        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat'}],
+        meals:[null,{id:'m1',date:'2026-09-06',name:'Meal',items:[null,{id:'f1',name:'Egg',grams:100,kcal:150,protein:13,carbs:1,fat:10}]}],
+        runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
+        memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
+        analytics:{events:[]},plan:'FREE'
+      }));
+    });
+
+    const page=await context.newPage(),errors=[];
+    page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+
+    await page.goto(baseURL,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
+    await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
+
+    const layout=await page.evaluate(()=>{
+      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),
+        tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),hit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;
+      return {
+        x:s.overflowX,y:s.overflowY,max:s.maxHeight,
+        cards:[...document.querySelectorAll('.quick-visual')].map(x=>x.getBoundingClientRect().height),
+        top:{top:tr?.top,bottom:tr?.bottom,height:tr?.height},
+        menu:{display:menu?getComputedStyle(menu).display:'none',height:mr?.height,hit:!!hit&&(hit===menu||menu?.contains(hit))}
+      };
+    });
+    assert.equal(layout.x,'visible');
+    assert.equal(layout.y,'visible');
+    assert.equal(layout.max,'none');
+    assert.ok(layout.cards.length>=4&&layout.cards.every(h=>h>40));
+    assert.ok(layout.top.height>=50&&layout.top.bottom>0,'physical-iOS topbar must remain on screen');
+    assert.notEqual(layout.menu.display,'none');
+    assert.ok(layout.menu.height>=30&&layout.menu.hit,'hamburger must own its hit point');
+
+    await tap(page,'[data-today-view="back"]');
+    await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
+    await tap(page,'[data-today-view="front"]');
+
+    await page.locator('.quick-visual').first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(80);
+    const scrolled=await page.evaluate(()=>{
+      const top=document.querySelector('.topbar')?.getBoundingClientRect(),menu=document.getElementById('menuBtn'),mr=menu?.getBoundingClientRect(),
+        quick=document.querySelector('.quick-visual'),qr=quick?.getBoundingClientRect(),
+        qh=qr?document.elementFromPoint(qr.left+qr.width/2,qr.top+Math.min(qr.height/2,30)):null,
+        mh=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;
+      return {
+        topVisible:!!top&&top.bottom>0&&top.top>=-1,
+        menuHit:!!mh&&(mh===menu||menu?.contains(mh)),
+        quickHeight:qr?.height||0,
+        quickHit:!!qh&&(qh===quick||quick?.contains(qh)),
+        scrollY:window.scrollY
+      };
+    });
+    assert.ok(scrolled.scrollY>0,'test must exercise the long Today scroll seen on physical iPhone');
+    assert.ok(scrolled.topVisible,'sticky topbar must survive Today scroll');
+    assert.ok(scrolled.menuHit,'hamburger must stay tappable after Today scroll');
+    assert.ok(scrolled.quickHeight>40&&scrolled.quickHit,'quick-record content must remain painted and hit-testable after scroll');
+
+    await tap(page,'#menuBtn');
+    await page.locator('.garang-more-sheet').waitFor({state:'visible'});
+    await tap(page,'.garang-more-sheet [data-route="running"]');
+
+    await tap(page,'#bottomNav button[data-page="coach"]');
+    await page.waitForFunction(()=>document.querySelector('#bottomNav button[data-page="coach"]')?.classList.contains('active'));
+    await assertCoachSettles(page);
+
+    for(const route of ['today','workout','body','progress','coach','today']){
+      await tap(page,`#bottomNav button[data-page="${route}"]`);
+      await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);
+    }
+
+    assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);
+    console.log('browser-webkit-regression: PASS');
+  }finally{
+    if(browser)await browser.close().catch(()=>{});
+    server.kill('SIGTERM');
+  }
 })().catch(error=>{console.error(error);process.exit(1);});
