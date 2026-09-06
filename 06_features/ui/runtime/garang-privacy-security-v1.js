@@ -2,7 +2,7 @@
 (() => {
 'use strict';
 const Policy=window.GarangPrivacySecurity;if(!Policy||window.__garangPrivacySecurityRuntime)return;window.__garangPrivacySecurityRuntime=true;
-const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const HISTORY_COLLECTIONS=['workoutHistory','mealHistory','runHistory','bodyHistory','recoverySnapshots'];
 function user(){try{return window.firebase?.auth?.().currentUser||null;}catch{return null;}}
 function userKey(uid){return `garang_user_${uid}_v3`;}
