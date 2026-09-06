@@ -1,7 +1,21 @@
-/* GARANG app chrome fix v1.2
-   Physical iOS/PWA-safe app chrome, hit testing and scrolling boundaries.
+/* GARANG app chrome fix v1.3
+   Physical iOS/PWA-safe auth + app chrome, hit testing and scrolling boundaries.
    Ordinary screens grow with their content. Coach alone owns a constrained inner workspace.
 */
+#authView:not([hidden]),
+#authView:not([hidden]) .auth-shell,
+#authView:not([hidden]) .auth-card,
+#authView:not([hidden]) .auth-card form,
+#authView:not([hidden]) .auth-card button,
+#authView:not([hidden]) .auth-card input{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+#authView:not([hidden]) .auth-card{
+  position:relative!important;
+  z-index:100!important;
+  isolation:isolate!important;
+}
 #appView:not([hidden]) > .topbar{
   display:flex!important;
   visibility:visible!important;
