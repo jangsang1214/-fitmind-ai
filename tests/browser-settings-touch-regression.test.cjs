@@ -39,25 +39,6 @@ async function tap(page,selector){
   ]);
 }
 
-async function safetySnapshot(page){
-  return page.evaluate(()=>{
-    const s=window.GarangSettingsTouchSafety;
-    return {
-      dispatch:s?.dispatchSequence||0,
-      service:s?.serviceSequence||0,
-      navigation:s?.navigationSequence||0,
-      intercept:s?.lastInterceptAt||0,
-      task:s?.lastTaskAt||0,
-      taskSource:s?.lastTaskSource||'',
-      attempt:s?.lastNavigationAttemptAt||0,
-      canonicalStart:s?.lastCanonicalStartAt||0,
-      canonicalReturn:s?.lastCanonicalReturnAt||0,
-      cleanup:s?.lastCleanupAt||0,
-      pending:s?.pendingToken||0
-    };
-  });
-}
-
 async function installBodyBlocker(page){
   await page.evaluate(()=>{
     document.querySelector('#settings-test-stale-blocker')?.remove();
@@ -72,17 +53,35 @@ async function installBodyBlocker(page){
   });
 }
 
-async function assertSettingsInteractive(page,label,before){
-  stage(`${label}: wait message dispatch`);
-  await page.waitForFunction(n=>window.GarangSettingsTouchSafety?.dispatchSequence>n,before.dispatch,{timeout:3000});
-  stage(`${label}: wait independent message task`);
-  await page.waitForFunction(n=>window.GarangSettingsTouchSafety?.serviceSequence>n,before.service,{timeout:3000});
-  stage(`${label}: wait route completion`);
-  await page.waitForFunction(n=>window.GarangSettingsTouchSafety?.navigationSequence>n,before.navigation,{timeout:3000});
+async function assertSettingsSettles(page,label){
+  const result=await Promise.race([
+    page.evaluate(()=>new Promise(resolve=>{
+      const main=document.getElementById('main');
+      let childListMutations=0;
+      const observer=new MutationObserver(records=>{
+        childListMutations+=records.filter(record=>record.type==='childList').length;
+      });
+      observer.observe(main,{childList:true,subtree:true});
+      setTimeout(()=>{
+        observer.disconnect();
+        resolve({
+          childListMutations,
+          suppressions:window.GarangSettingsTouchSafety?.sameTextWriteSuppressions||0
+        });
+      },500);
+    })),
+    timeout(2500,`${label}: Settings DOM did not settle`)
+  ]);
+  assert.ok(result.childListMutations<=3,`${label}: Settings must settle instead of self-triggering MutationObserver writes; childList mutations=${result.childListMutations}`);
+  assert.ok(result.suppressions>=1,`${label}: same-value Settings text write should be suppressed to prove the feedback loop is guarded`);
+}
+
+async function assertSettingsInteractive(page,label){
   stage(`${label}: wait settings controls`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
   await page.locator('#proInfo').waitFor({state:'visible',timeout:7000});
-  await page.waitForTimeout(40);
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset.garangScreen==='settings',null,{timeout:3000});
+  await page.waitForTimeout(60);
 
   const state=await page.evaluate(()=>{
     const target=document.getElementById('proInfo');
@@ -94,30 +93,24 @@ async function assertSettingsInteractive(page,label,before){
         return s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'&&box.width>0&&box.height>0;
       })
       .map(el=>el.className||el.id||el.tagName);
-    const safety=window.GarangSettingsTouchSafety;
     return {
       hit:!!target&&!!hit&&(hit===target||target.contains(hit)),
       blockers,
-      downstream:window.__settingsDownstreamGearClicks||0,
-      taskSource:safety?.lastTaskSource||'',
-      taskAt:safety?.lastTaskAt||0,
-      canonicalStarted:safety?.lastCanonicalStartAt||0,
-      canonicalReturned:safety?.lastCanonicalReturnAt||0,
-      pending:safety?.pendingToken||0
+      screen:document.getElementById('main')?.dataset.garangScreen||'',
+      canonicalGearIntact:window.GarangSettingsTouchSafety?.canonicalGearIntact===true
     };
   });
 
+  assert.equal(state.screen,'settings',`${label}: Settings must own the explicit screen id`);
+  assert.equal(state.canonicalGearIntact,true,`${label}: canonical top gear onclick must remain untouched`);
   assert.equal(state.hit,true,`${label}: Settings control must be hit-testable`);
   assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain`);
-  assert.equal(state.downstream,0,`${label}: Settings gear click must not reach downstream document delegates`);
-  assert.ok(['message-channel','window-post-message'].includes(state.taskSource),`${label}: route must run from an independent message task`);
-  assert.ok(state.taskAt>0,`${label}: independent message task must execute`);
-  assert.ok(state.canonicalStarted>0&&state.canonicalReturned>=state.canonicalStarted,`${label}: canonical Settings route must return`);
-  assert.equal(state.pending,0,`${label}: route token must be fully consumed`);
 
-  stage(`${label}: tap harmless settings control`);
+  await assertSettingsSettles(page,label);
+  stage(`${label}: tap PRO info`);
   await tap(page,'#proInfo');
-  stage(`${label}: settings control tapped`);
+  await page.locator('#toast.show').waitFor({state:'visible',timeout:3000});
+  stage(`${label}: settings control responded`);
 }
 
 (async()=>{
@@ -150,43 +143,24 @@ async function assertSettingsInteractive(page,label,before){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='2.2.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.0.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
-      window.__settingsDownstreamGearClicks=0;
-      document.addEventListener('click',event=>{
-        const target=event.target;
-        if(target&&(target===gear||gear.contains(target)))window.__settingsDownstreamGearClicks++;
-      },true);
       return {
         onclick:typeof gear?.onclick,
         capture:gear?.dataset?.garangSettingsCapture||'',
         messageTask:gear?.dataset?.garangSettingsMessageTask||''
       };
     });
-    assert.equal(binding.onclick,'function','top Settings gear must retain a fallback click handler');
-    assert.equal(binding.capture,'1','top Settings gear must install capture-phase isolation');
-    assert.equal(binding.messageTask,'1','top Settings gear must dispatch routing to a message task');
+    assert.equal(binding.onclick,'function','top Settings gear must retain the canonical app onclick');
+    assert.equal(binding.capture,'','Settings safety must not intercept the canonical gear click');
+    assert.equal(binding.messageTask,'','Settings safety must not reroute through a synthetic task');
 
-    /* First prove the canonical Settings render is safe when it is not inside a touch/click event.
-       This isolates render safety from the physical WebKit task-boundary bug. */
-    stage('preflight programmatic settings route');
-    const preflight=await Promise.race([
-      page.evaluate(()=>window.GarangSettingsTouchSafety.navigateSettingsNow()),
-      timeout(3000,'programmatic Settings route did not return')
-    ]);
-    assert.equal(preflight,true,'programmatic Settings route must return outside touch');
-    await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
-    stage('preflight return today');
-    await tap(page,'#bottomNav button[data-page="today"]');
-    await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
-
-    let before=await safetySnapshot(page);
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
     stage('gear first tapped');
-    await assertSettingsInteractive(page,'top-bar settings',before);
+    await assertSettingsInteractive(page,'top-bar settings');
 
     stage('return today');
     await tap(page,'#bottomNav button[data-page="today"]');
@@ -200,11 +174,10 @@ async function assertSettingsInteractive(page,label,before){
     await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
     await installBodyBlocker(page);
 
-    before=await safetySnapshot(page);
     stage('tap gear second');
     await tap(page,'#settingsTopBtn');
     stage('gear second tapped');
-    await assertSettingsInteractive(page,'settings after utility-sheet close',before);
+    await assertSettingsInteractive(page,'settings after utility-sheet close');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
     stage('pass');
