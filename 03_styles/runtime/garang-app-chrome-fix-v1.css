@@ -1,4 +1,4 @@
-/* GARANG app chrome fix v1.3
+/* GARANG app chrome fix v1.4
    Physical iOS/PWA-safe auth + app chrome, hit testing and scrolling boundaries.
    Ordinary screens grow with their content. Coach alone owns a constrained inner workspace.
 */
@@ -81,13 +81,18 @@ body:before{pointer-events:none!important}
 }
 
 /*
-  viewport-fit=cover exposes the iOS status-bar safe area in Safari/PWA standalone mode.
-  The topbar owns that inset so the hamburger cannot sit underneath the status bar.
+  iOS WebKit can drop a sticky header once long document content crosses a compositing
+  boundary. The physical symptom is exactly the missing hamburger after scrolling.
+  Use a fixed mobile chrome layer instead and reserve its space on #main. This makes
+  header ownership independent of document overflow/contain rules and PWA mode.
 */
 @media(max-width:799px){
   #appView:not([hidden]) > .topbar{
-    position:sticky!important;
+    position:fixed!important;
     top:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
     box-sizing:border-box!important;
     height:calc(56px + env(safe-area-inset-top,0px))!important;
     min-height:calc(56px + env(safe-area-inset-top,0px))!important;
@@ -98,15 +103,18 @@ body:before{pointer-events:none!important}
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
     background:#070807!important;
-    z-index:80!important;
+    z-index:800!important;
+    transform:none!important;
+    contain:none!important;
+  }
+  #appView:not([hidden]) > #main{
+    margin-top:calc(56px + env(safe-area-inset-top,0px))!important;
+    min-height:calc(100dvh - 56px - env(safe-area-inset-top,0px))!important;
   }
   #appView:not([hidden]) > .bottom-nav{
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
     background:#070807!important;
-    z-index:70!important;
-  }
-  #appView:not([hidden]) > #main{
-    min-height:calc(100dvh - 56px - env(safe-area-inset-top,0px))!important;
+    z-index:700!important;
   }
 }
