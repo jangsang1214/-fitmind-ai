@@ -5,10 +5,11 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='garang-sync-durability-v2.1';
+const VERSION='garang-sync-durability-v2.2';
 const USER_KEY_RE=/^garang_user_(.+)_v3$/;
 const DEMO_KEY='garang_demo_state_v3';
 const DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','checkins','aiChat']);
+const APPEND_ONLY_DOMAINS=Object.freeze(['workouts','meals','runs','body']);
 const CLOUD_LIMITS=Object.freeze({workouts:350,meals:350,body:250,checkins:180,planner:300,actionLog:300,errors:80,runs:200,aiChat:80});
 const jsonParse=JSON.parse.bind(JSON),jsonStringify=JSON.stringify.bind(JSON);
 
@@ -33,14 +34,19 @@ function normalizeTombstones(input){
   for(const raw of rows(input)){
     const domain=String(raw.domain||''),id=String(raw.id||''),deletedAt=String(raw.deletedAt||'');
     if(!domain||!id||!iso(deletedAt))continue;
-    const item={domain,id,deletedAt,ownerUid:raw.ownerUid?String(raw.ownerUid):null};
+    const item={domain,id,deletedAt,ownerUid:raw.ownerUid?String(raw.ownerUid):null,explicit:raw.explicit===true};
     const key=tombstoneKey(item),prev=byKey.get(key);
-    if(!prev||iso(item.deletedAt)>iso(prev.deletedAt))byKey.set(key,item);
+    if(!prev||iso(item.deletedAt)>iso(prev.deletedAt)||(iso(item.deletedAt)===iso(prev.deletedAt)&&item.explicit&&!prev.explicit))byKey.set(key,item);
   }
   return [...byKey.values()].sort((a,b)=>iso(a.deletedAt)-iso(b.deletedAt));
 }
 function mergeTombstones(a,b){return normalizeTombstones([...(a||[]),...(b||[])]);}
-function deletedBy(tombstones,domain,id,record){const hit=tombstones.find(x=>x.domain===domain&&String(x.id)===String(id));return !!hit&&iso(hit.deletedAt)>=rowStamp(record);}
+function deletedBy(tombstones,domain,id,record){
+  const hit=tombstones.find(x=>x.domain===domain&&String(x.id)===String(id));
+  if(!hit)return false;
+  if(APPEND_ONLY_DOMAINS.includes(domain)&&hit.explicit!==true)return false;
+  return iso(hit.deletedAt)>=rowStamp(record);
+}
 function mergeRows(localRows,remoteRows,{preferRemote=false,tombstones=[],domain=''}={}){
   const result=[],positions=new Map();
   const feed=(list,source)=>{
@@ -59,11 +65,25 @@ function collectNewTombstones(previous,next,{ownerUid=null,clock=Date.now()}={})
   if(!object(previous)||!object(next))return [];
   const deletedAt=nowIso(clock),out=[];
   for(const domain of [...DOMAINS,'memory']){
+    if(APPEND_ONLY_DOMAINS.includes(domain))continue;
     const before=new Map(itemsForDomain(previous,domain).filter(x=>x?.id).map(x=>[String(x.id),x]));
     const after=new Set(itemsForDomain(next,domain).filter(x=>x?.id).map(x=>String(x.id)));
-    for(const id of before.keys())if(!after.has(id))out.push({domain,id,deletedAt,ownerUid});
+    for(const id of before.keys())if(!after.has(id))out.push({domain,id,deletedAt,ownerUid,explicit:true});
   }
   return out;
+}
+function createExplicitTombstone(domain,id,{ownerUid=null,clock=Date.now()}={}){
+  if(!domain||!id)throw error('INVALID_TOMBSTONE');
+  return {domain:String(domain),id:String(id),deletedAt:nowIso(clock),ownerUid:ownerUid?String(ownerUid):null,explicit:true};
+}
+function hasProtectedShrink(previous,next){
+  if(!object(previous)||!object(next))return false;
+  for(const domain of APPEND_ONLY_DOMAINS){
+    const before=new Set(itemsForDomain(previous,domain).filter(x=>x?.id).map(x=>String(x.id)));
+    const after=new Set(itemsForDomain(next,domain).filter(x=>x?.id).map(x=>String(x.id)));
+    for(const id of before)if(!after.has(id))return true;
+  }
+  return false;
 }
 function withLocalMetadata(previousInput,nextInput,{ownerUid=null,deviceId=null,clock=Date.now()}={}){
   const previous=object(previousInput)?previousInput:null,next=clone(nextInput||{});
@@ -133,5 +153,5 @@ function verifyExportEnvelope(envelope){
 }
 function fingerprint(state){const s=compactForCloud(state||{});delete s.cloudUpdatedAt;delete s.clientUpdatedAt;if(object(s.meta))for(const key of ['syncLastMergeAt','syncLastLocalAt','syncRevision','syncDeviceId'])delete s.meta[key];return jsonStringify(s);}
 
-return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,checksum,createExportEnvelope,verifyExportEnvelope,fingerprint});
+return Object.freeze({VERSION,DOMAINS,APPEND_ONLY_DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,createExplicitTombstone,hasProtectedShrink,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,checksum,createExportEnvelope,verifyExportEnvelope,fingerprint});
 });
