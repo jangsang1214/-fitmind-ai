@@ -53,6 +53,8 @@ async function installBodyBlocker(page){
 }
 
 async function assertSettingsInteractive(page,label){
+  stage(`${label}: wait capture intercept`);
+  await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastInterceptAt>0,null,{timeout:3000});
   stage(`${label}: wait route attempt`);
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAttemptAt>0,null,{timeout:3000});
   stage(`${label}: wait route completion`);
@@ -71,10 +73,11 @@ async function assertSettingsInteractive(page,label){
         return s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'&&box.width>0&&box.height>0;
       })
       .map(el=>el.className||el.id||el.tagName);
-    return {hit:!!target&&!!hit&&(hit===target||target.contains(hit)),blockers};
+    return {hit:!!target&&!!hit&&(hit===target||target.contains(hit)),blockers,downstream:window.__settingsDownstreamGearClicks||0};
   });
   assert.equal(state.hit,true,`${label}: Settings save button must be hit-testable`);
   assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain`);
+  assert.equal(state.downstream,0,`${label}: Settings gear click must not reach downstream document delegates`);
   stage(`${label}: tap save`);
   await tap(page,'#savePreferences');
   stage(`${label}: save tapped`);
@@ -110,14 +113,24 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.9.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='2.0.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
-      return {onclick:typeof gear?.onclick,deferred:gear?.dataset?.garangSettingsDeferred||''};
+      window.__settingsDownstreamGearClicks=0;
+      document.addEventListener('click',event=>{
+        const target=event.target;
+        if(target&&(target===gear||gear.contains(target)))window.__settingsDownstreamGearClicks++;
+      },true);
+      return {
+        onclick:typeof gear?.onclick,
+        deferred:gear?.dataset?.garangSettingsDeferred||'',
+        capture:gear?.dataset?.garangSettingsCapture||''
+      };
     });
-    assert.equal(binding.onclick,'function','top Settings gear must retain a click handler');
+    assert.equal(binding.onclick,'function','top Settings gear must retain a fallback click handler');
     assert.equal(binding.deferred,'1','top Settings gear must defer synchronous route rendering');
+    assert.equal(binding.capture,'1','top Settings gear must install capture-phase isolation');
 
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
