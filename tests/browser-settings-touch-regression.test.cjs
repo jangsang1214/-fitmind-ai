@@ -57,6 +57,8 @@ async function assertSettingsInteractive(page,label){
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastInterceptAt>0,null,{timeout:3000});
   stage(`${label}: wait route attempt`);
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAttemptAt>0,null,{timeout:3000});
+  stage(`${label}: wait canonical return`);
+  await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastCanonicalReturnAt>0,null,{timeout:3000});
   stage(`${label}: wait route completion`);
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAt>0,null,{timeout:3000});
   stage(`${label}: wait save`);
@@ -73,11 +75,19 @@ async function assertSettingsInteractive(page,label){
         return s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'&&box.width>0&&box.height>0;
       })
       .map(el=>el.className||el.id||el.tagName);
-    return {hit:!!target&&!!hit&&(hit===target||target.contains(hit)),blockers,downstream:window.__settingsDownstreamGearClicks||0};
+    const safety=window.GarangSettingsTouchSafety;
+    return {
+      hit:!!target&&!!hit&&(hit===target||target.contains(hit)),
+      blockers,
+      downstream:window.__settingsDownstreamGearClicks||0,
+      canonicalStarted:safety?.lastCanonicalStartAt||0,
+      canonicalReturned:safety?.lastCanonicalReturnAt||0
+    };
   });
   assert.equal(state.hit,true,`${label}: Settings save button must be hit-testable`);
   assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain`);
   assert.equal(state.downstream,0,`${label}: Settings gear click must not reach downstream document delegates`);
+  assert.ok(state.canonicalStarted>0&&state.canonicalReturned>=state.canonicalStarted,`${label}: canonical Settings route must return synchronously`);
   stage(`${label}: tap save`);
   await tap(page,'#savePreferences');
   stage(`${label}: save tapped`);
@@ -113,7 +123,7 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='2.0.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='2.1.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
@@ -124,13 +134,13 @@ async function assertSettingsInteractive(page,label){
       },true);
       return {
         onclick:typeof gear?.onclick,
-        deferred:gear?.dataset?.garangSettingsDeferred||'',
-        capture:gear?.dataset?.garangSettingsCapture||''
+        capture:gear?.dataset?.garangSettingsCapture||'',
+        synchronous:gear?.dataset?.garangSettingsSynchronous||''
       };
     });
     assert.equal(binding.onclick,'function','top Settings gear must retain a fallback click handler');
-    assert.equal(binding.deferred,'1','top Settings gear must defer synchronous route rendering');
     assert.equal(binding.capture,'1','top Settings gear must install capture-phase isolation');
+    assert.equal(binding.synchronous,'1','top Settings gear must finish its route in the isolated capture task');
 
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
