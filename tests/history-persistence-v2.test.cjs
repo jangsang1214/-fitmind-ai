@@ -32,6 +32,11 @@ assert.equal(hydrated.body.length,300);
 assert.equal(hydrated.runs.at(-1).coords.length,250,'history hydration restores full GPS route');
 assert.ok(History.rowStamp({date:'2026-09-06'})>0,'date-only legacy rows must have a deterministic timestamp');
 
+const inferredState={meta:{syncOwnerUid:'u1',syncTombstones:[{domain:'workouts',id:'w0',deletedAt:'2040-01-01T00:00:00Z'}]},workouts:[],meals:[],runs:[],body:[]};
+assert.equal(History.mergeStateWithHistory(inferredState,{workouts:[workouts[0]]}).workouts.length,1,'legacy inferred tombstones must not hide durable history');
+const explicitState={meta:{syncOwnerUid:'u1',syncTombstones:[Sync.createExplicitTombstone('workouts','w0',{ownerUid:'u1',clock:Date.parse('2040-01-01T00:00:00Z')})]},workouts:[],meals:[],runs:[],body:[]};
+assert.equal(History.mergeStateWithHistory(explicitState,{workouts:[workouts[0]]}).workouts.length,0,'explicit future delete flow may still suppress a durable record');
+
 const normalized=History.normalizeRecord('workouts',{date:'2026-09-06',name:'legacy row'},'u1');
 assert.ok(normalized.id&&normalized.createdAt&&normalized.updatedAt&&normalized.revision===1);
 assert.equal(normalized.ownerUid,'u1');
