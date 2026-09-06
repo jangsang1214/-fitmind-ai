@@ -1,7 +1,21 @@
-/* GARANG interaction safety v1.1
-   Keep primary app controls reachable without overriding modal lifecycle semantics.
+/* GARANG interaction safety v1.2
+   Keep auth + primary app controls reachable without overriding modal lifecycle semantics.
    Closed/hidden overlays must never intercept pointer input.
 */
+#authView:not([hidden]),
+#authView:not([hidden]) .auth-shell,
+#authView:not([hidden]) .auth-card,
+#authView:not([hidden]) .auth-card form,
+#authView:not([hidden]) .auth-card button,
+#authView:not([hidden]) .auth-card input{
+  pointer-events:auto!important;
+  touch-action:manipulation;
+}
+#authView:not([hidden]) .auth-card{
+  position:relative!important;
+  z-index:100!important;
+  isolation:isolate!important;
+}
 #appView:not([hidden]) #menuBtn.icon-btn{
   display:grid!important;
   place-items:center!important;
@@ -18,6 +32,7 @@
 #appView:not([hidden]) .bottom-nav,
 #appView:not([hidden]) .bottom-nav button{
   pointer-events:auto!important;
+  touch-action:manipulation;
 }
 body:before{pointer-events:none!important}
 .garang-more-sheet[hidden],
