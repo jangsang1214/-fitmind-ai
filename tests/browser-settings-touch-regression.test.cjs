@@ -53,6 +53,8 @@ async function installBodyBlocker(page){
 }
 
 async function assertSettingsInteractive(page,label){
+  stage(`${label}: wait route`);
+  await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAt>0,null,{timeout:3000});
   stage(`${label}: wait save`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastCleanupAt>0,null,{timeout:7000});
@@ -100,13 +102,13 @@ async function assertSettingsInteractive(page,label){
 
     const page=await context.newPage();
     const errors=[];
-    page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+    page.on('pageerror',e=>{const msg=String(e?.stack||e?.message||e);errors.push(msg);console.error(`settings-pageerror: ${msg}`);});
 
     stage('goto');
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.7.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.8.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
@@ -115,7 +117,6 @@ async function assertSettingsInteractive(page,label){
     assert.equal(binding.onclick,'function','top Settings gear must retain a click handler');
     assert.equal(binding.deferred,'1','top Settings gear must defer synchronous route rendering');
 
-    // Exact user path first: Today -> physical gear tap -> Settings.
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
     stage('gear first tapped');
@@ -125,7 +126,6 @@ async function assertSettingsInteractive(page,label){
     await tap(page,'#bottomNav button[data-page="today"]');
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
 
-    // Stress stale fixed-layer history: open/close More, leave a body blocker, then tap Settings again.
     stage('open more');
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:7000});
