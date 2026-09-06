@@ -32,7 +32,10 @@ async function tap(page,selector){
     return !!h&&(h===el||el.contains(h));
   });
   assert.equal(hit,true,`${selector} must own its hit point`);
-  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+  await Promise.race([
+    page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${selector} physical tap did not settle`)),4000))
+  ]);
 }
 
 async function installBodyBlocker(page){
@@ -103,13 +106,16 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.6.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.7.0',null,{timeout:7000});
 
-    const binding=await page.evaluate(()=>({onclick:typeof document.getElementById('settingsTopBtn')?.onclick}));
-    assert.equal(binding.onclick,'function','top Settings gear must preserve the canonical click handler');
+    const binding=await page.evaluate(()=>{
+      const gear=document.getElementById('settingsTopBtn');
+      return {onclick:typeof gear?.onclick,deferred:gear?.dataset?.garangSettingsDeferred||''};
+    });
+    assert.equal(binding.onclick,'function','top Settings gear must retain a click handler');
+    assert.equal(binding.deferred,'1','top Settings gear must defer synchronous route rendering');
 
-    // Leave the top bar clear while a stale full-screen-style layer blocks the body below it.
-    await installBodyBlocker(page);
+    // Exact user path first: Today -> physical gear tap -> Settings.
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
     stage('gear first tapped');
@@ -118,14 +124,16 @@ async function assertSettingsInteractive(page,label){
     stage('return today');
     await tap(page,'#bottomNav button[data-page="today"]');
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
+
+    // Stress stale fixed-layer history: open/close More, leave a body blocker, then tap Settings again.
     stage('open more');
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:7000});
     stage('close more');
     await tap(page,'.garang-more-head button');
     await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
-
     await installBodyBlocker(page);
+
     stage('tap gear second');
     await tap(page,'#settingsTopBtn');
     stage('gear second tapped');
