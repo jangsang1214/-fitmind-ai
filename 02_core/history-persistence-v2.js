@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='garang-history-persistence-v2.1';
+const VERSION='garang-history-persistence-v2.2';
 const DOMAINS=Object.freeze(['workouts','meals','runs','body']);
 const COLLECTIONS=Object.freeze({workouts:'workoutHistory',meals:'mealHistory',runs:'runHistory',body:'bodyHistory'});
 const SHELL_LIMITS=Object.freeze({workouts:40,meals:40,runs:20,body:40});
@@ -35,11 +35,16 @@ function trimAuxiliary(out){
   if(object(out.analytics)&&Array.isArray(out.analytics.events))out.analytics.events=out.analytics.events.slice(-120);
   if(object(out.memory)){if(Array.isArray(out.memory.entries))out.memory.entries=out.memory.entries.slice(-180);if(Array.isArray(out.memory.events))out.memory.events=out.memory.events.slice(-120);}
 }
+function historyUpdatedAt(input){
+  const stamps=[iso(input?.meta?.updatedAt),iso(input?.clientUpdatedAt),Number(input?.updatedAtMs)||0];
+  for(const domain of DOMAINS)for(const row of rows(input?.[domain]))stamps.push(rowStamp(row));
+  const latest=Math.max(0,...stamps);return latest?new Date(latest).toISOString():null;
+}
 function compactShell(input){
   const out=clone(object(input)?input:{});
   for(const domain of DOMAINS){const limit=SHELL_LIMITS[domain],list=rows(out[domain]).slice().sort((a,b)=>rowStamp(a)-rowStamp(b)).slice(-limit);out[domain]=domain==='runs'?list.map(run=>({...run,coords:[]})):list;}
   out.meta=object(out.meta)?out.meta:{};
-  out.meta.historyV2={version:2,collections:{...COLLECTIONS},counts:Object.fromEntries(DOMAINS.map(d=>[d,rows(input?.[d]).length])),updatedAt:new Date().toISOString()};
+  out.meta.historyV2={version:2,collections:{...COLLECTIONS},counts:Object.fromEntries(DOMAINS.map(d=>[d,rows(input?.[d]).length])),updatedAt:historyUpdatedAt(input)};
   if(estimateJsonBytes(out)>TARGET_SHELL_BYTES)trimAuxiliary(out);
   out.meta.historyV2.shellBytes=estimateJsonBytes(out);
   return out;
@@ -48,5 +53,5 @@ function docPayload(domain,record,ownerUid){const normalized=normalizeRecord(dom
 function recordFromDoc(value){if(!object(value))return null;if(object(value.record))return clone(value.record);return value.id?clone(value):null;}
 function fingerprint(domain,row){const normalized=normalizeRecord(domain,row,row?.ownerUid||null);return normalized?fnv1a(stableStringify(normalized)):'';}
 function historyIndex(state){const out={};for(const domain of DOMAINS)out[domain]=Object.fromEntries(rows(state?.[domain]).map(row=>{const normalized=normalizeRecord(domain,row,state?.meta?.syncOwnerUid||row?.ownerUid||null);return [normalized.id,fingerprint(domain,normalized)];}));return out;}
-return Object.freeze({VERSION,DOMAINS,COLLECTIONS,SHELL_LIMITS,TARGET_SHELL_BYTES,rows,rowStamp,recordId,normalizeRecord,tombstonesFor,mergeRows,mergeStateWithHistory,compactShell,docPayload,recordFromDoc,fingerprint,historyIndex,estimateJsonBytes,stableStringify,fnv1a});
+return Object.freeze({VERSION,DOMAINS,COLLECTIONS,SHELL_LIMITS,TARGET_SHELL_BYTES,rows,rowStamp,recordId,normalizeRecord,tombstonesFor,mergeRows,mergeStateWithHistory,compactShell,docPayload,recordFromDoc,fingerprint,historyIndex,estimateJsonBytes,stableStringify,fnv1a,historyUpdatedAt});
 });
