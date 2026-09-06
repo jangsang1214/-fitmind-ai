@@ -1,5 +1,5 @@
 {
-  "version": "0.11.0-beta.1",
+  "version": "0.11.0-beta.5",
   "entry": "index.html",
   "branch": "main",
   "deployRoot": ".",
@@ -24,8 +24,11 @@
   "scripts": [
     "07_config/firebase-config.js",
     "07_config/garang-services-config.js",
+    "07_config/version.js",
     "02_core/data-schema.js",
     "02_core/sync-durability.js",
+    "02_core/history-persistence-v2.js",
+    "02_core/legacy-migration-v2.js",
     "02_core/privacy-security.js",
     "02_core/memory-intelligence-v1.js",
     "02_core/state-intelligence-v1.js",
@@ -41,6 +44,9 @@
     "06_features/ui/runtime/garang-auth-bootstrap.js",
     "01_app/app.js",
     "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
+    "06_features/ui/runtime/garang-mobile-auth-v1.js",
+    "06_features/ui/runtime/garang-sw-update-v2.js",
+    "06_features/ui/runtime/garang-data-migration-v2.js",
     "06_features/ui/runtime/garang-sync-quiet-ux-v1.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
     "06_features/ui/runtime/garang-brand-runtime-v2.js",
