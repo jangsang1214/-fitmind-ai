@@ -40,7 +40,7 @@ async function fetchRetry(url,options={},attempts=3){
   let authJson={};try{authJson=JSON.parse(authText);}catch{}
   assert.ok(authJson&&typeof authJson==='object','Firebase Auth public project config must return JSON');
 
-  const firestoreUrl=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents/__garang_health__/probe?key=${encodeURIComponent(cfg.apiKey)}`;
+  const firestoreUrl=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents/garang_health_probe/probe?key=${encodeURIComponent(cfg.apiKey)}`;
   const firestoreResponse=await fetchRetry(firestoreUrl,{headers:{accept:'application/json'}});
   const firestoreText=await firestoreResponse.text();
   let firestoreJson={};try{firestoreJson=JSON.parse(firestoreText);}catch{}
