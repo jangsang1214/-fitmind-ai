@@ -1,4 +1,4 @@
-/* GARANG sync durability runtime v2.0
+/* GARANG sync durability runtime v2.1
    Transitional compatibility adapter for legacy app.js persistence.
    Long-term Workout/Meal/Run/Body records live in dedicated Firestore collections;
    users/<uid>/app/state is now a bounded shell. Existing local data is backed up and
@@ -84,19 +84,20 @@ async function commitHistoryOps(db,ops){
 }
 async function persistHistory(db,uid,state){
   if(!state||!uid)return;
-  const previousIndex=readHistoryIndex(uid),nextIndex=History.historyIndex(state),ops=[];
+  const previousIndex=readHistoryIndex(uid),nextIndex=History.historyIndex(state),mergedIndex={},ops=[];
   for(const domain of History.DOMAINS){
     const collection=historyCollection(db,uid,domain);if(!collection)continue;
-    const old=previousIndex[domain]||{},next=nextIndex[domain]||{};
+    const old=previousIndex[domain]||{},next=nextIndex[domain]||{};mergedIndex[domain]={...old,...next};
     for(const row of History.rows(state[domain])){
       const normalized=History.normalizeRecord(domain,row,uid),fingerprint=next[normalized.id];if(old[normalized.id]===fingerprint)continue;
       const ref=collection.doc(encodeURIComponent(normalized.id)),data=History.docPayload(domain,normalized,uid);ops.push({type:'set',ref,data});
     }
+    /* Absence from a local/shell snapshot is never interpreted as deletion. Only an explicit tombstone may delete durable history. */
     const deleted=new Set(History.tombstonesFor(state,domain).map(item=>String(item.id)));
-    for(const id of Object.keys(old))if(!next[id]||deleted.has(id))ops.push({type:'delete',ref:collection.doc(encodeURIComponent(id))});
+    for(const id of deleted){ops.push({type:'delete',ref:collection.doc(encodeURIComponent(id))});delete mergedIndex[domain][id];}
   }
   if(ops.length)await commitHistoryOps(db,ops);
-  writeHistoryIndex(uid,nextIndex);
+  writeHistoryIndex(uid,mergedIndex);
 }
 async function backupMigrationManifest(db,uid,state){
   if(state?.meta?.historyV2?.version===2)return;
@@ -167,5 +168,5 @@ window.addEventListener('online',()=>{document.documentElement.dataset.garangNet
 window.addEventListener('offline',()=>{document.documentElement.dataset.garangNetwork='offline';const uid=currentUid();if(uid)markPending(uid,'offline',{increment:false});});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine!==false){const uid=currentUid();if(uid&&readPending(uid))scheduleRetry(uid,{immediate:true});}});
 setTimeout(bootFirebaseGuards,0);setTimeout(patchFirestore,700);window.addEventListener('load',()=>{patchFirestore();authWatch();},{once:true});
-window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.0',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
+window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.1',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
 })();
