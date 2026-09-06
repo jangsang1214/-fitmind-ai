@@ -53,7 +53,9 @@ async function installBodyBlocker(page){
 }
 
 async function assertSettingsInteractive(page,label){
-  stage(`${label}: wait route`);
+  stage(`${label}: wait route attempt`);
+  await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAttemptAt>0,null,{timeout:3000});
+  stage(`${label}: wait route completion`);
   await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastNavigationAt>0,null,{timeout:3000});
   stage(`${label}: wait save`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
@@ -108,7 +110,7 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.8.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.9.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
