@@ -111,7 +111,12 @@ async function assertSettingsInteractive(page,label){
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
     console.log('browser-settings-touch-regression: PASS');
   }finally{
-    if(browser)await browser.close().catch(()=>{});
-    server.kill('SIGTERM');
+    if(browser){
+      await Promise.race([
+        browser.close().catch(()=>{}),
+        new Promise(resolve=>setTimeout(resolve,4000))
+      ]);
+    }
+    if(server.exitCode===null) server.kill('SIGKILL');
   }
 })().catch(error=>{console.error(error);process.exit(1);});
