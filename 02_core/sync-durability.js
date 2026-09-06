@@ -5,30 +5,29 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='garang-sync-durability-v1';
+const VERSION='garang-sync-durability-v2';
 const USER_KEY_RE=/^garang_user_(.+)_v3$/;
 const DEMO_KEY='garang_demo_state_v3';
 const DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','checkins','aiChat']);
 const CLOUD_LIMITS=Object.freeze({workouts:350,meals:350,body:250,checkins:180,planner:300,actionLog:300,errors:80,runs:200,aiChat:80});
-const TOMBSTONE_TTL_MS=180*24*60*60*1000;
+const TOMBSTONE_TTL_MS=365*24*60*60*1000;
 const jsonParse=JSON.parse.bind(JSON),jsonStringify=JSON.stringify.bind(JSON);
 
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const clone=value=>value===undefined?undefined:jsonParse(jsonStringify(value));
 const iso=value=>{const n=Date.parse(value||0);return Number.isFinite(n)&&n>0?n:0;};
+const dateIso=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)?iso(`${value}T00:00:00.000Z`):0;
 const nowIso=clock=>new Date(typeof clock==='number'?clock:Date.now()).toISOString();
 const error=(code,message=code)=>{const e=new Error(message);e.code=code;return e;};
 const ownerFromKey=key=>{const m=String(key||'').match(USER_KEY_RE);return m?m[1]:null;};
 const isStateKey=key=>String(key||'')===DEMO_KEY||USER_KEY_RE.test(String(key||''));
 const stateKey=uid=>uid?`garang_user_${uid}_v3`:DEMO_KEY;
-const rowStamp=row=>Math.max(iso(row?.updatedAt),iso(row?.createdAt),Number(row?.updatedAtMs)||0,Number(row?.revision)||0);
+const rowStamp=row=>Math.max(iso(row?.updatedAt),iso(row?.createdAt),dateIso(row?.date),Number(row?.updatedAtMs)||0,Number(row?.revision)||0);
 const stateStamp=state=>Math.max(iso(state?.meta?.updatedAt),iso(state?.clientUpdatedAt),Number(state?.updatedAtMs)||0,Number(state?.meta?.syncRevision)||0);
+function checksum(value){let hash=0x811c9dc5;const text=typeof value==='string'?value:jsonStringify(value);for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,0x01000193)>>>0;}return hash.toString(16).padStart(8,'0');}
 
 function rows(value){return Array.isArray(value)?value.filter(object):[];}
-function itemsForDomain(state,domain){
-  if(domain==='memory')return rows(state?.memory?.entries);
-  return rows(state?.[domain]);
-}
+function itemsForDomain(state,domain){if(domain==='memory')return rows(state?.memory?.entries);return rows(state?.[domain]);}
 function tombstoneKey(x){return `${String(x?.domain||'')}::${String(x?.id||'')}`;}
 function normalizeTombstones(input,clock=Date.now()){
   const cutoff=clock-TOMBSTONE_TTL_MS,byKey=new Map();
@@ -42,10 +41,7 @@ function normalizeTombstones(input,clock=Date.now()){
   return [...byKey.values()].sort((a,b)=>iso(a.deletedAt)-iso(b.deletedAt));
 }
 function mergeTombstones(a,b,clock=Date.now()){return normalizeTombstones([...(a||[]),...(b||[])],clock);}
-function deletedBy(tombstones,domain,id,record){
-  const hit=tombstones.find(x=>x.domain===domain&&String(x.id)===String(id));
-  return !!hit&&iso(hit.deletedAt)>=rowStamp(record);
-}
+function deletedBy(tombstones,domain,id,record){const hit=tombstones.find(x=>x.domain===domain&&String(x.id)===String(id));return !!hit&&iso(hit.deletedAt)>=rowStamp(record);}
 function mergeRows(localRows,remoteRows,{preferRemote=false,tombstones=[],domain=''}={}){
   const result=[],positions=new Map();
   const feed=(list,source)=>{
@@ -87,16 +83,8 @@ function withLocalMetadata(previousInput,nextInput,{ownerUid=null,deviceId=null,
   next.meta.syncLastLocalAt=nowIso(clock);
   return next;
 }
-function enforceOwner(state,ownerUid){
-  if(!ownerUid||!object(state))return;
-  const existing=state?.meta?.syncOwnerUid;
-  if(existing&&String(existing)!==String(ownerUid))throw error('SYNC_OWNER_MISMATCH');
-}
-function mergeUnique(a,b){
-  const m=new Map();
-  for(const item of [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])m.set(typeof item==='string'?`s:${item}`:`o:${jsonStringify(item)}`,item);
-  return [...m.values()];
-}
+function enforceOwner(state,ownerUid){if(!ownerUid||!object(state))return;const existing=state?.meta?.syncOwnerUid;if(existing&&String(existing)!==String(ownerUid))throw error('SYNC_OWNER_MISMATCH');}
+function mergeUnique(a,b){const m=new Map();for(const item of [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])m.set(typeof item==='string'?`s:${item}`:`o:${jsonStringify(item)}`,item);return [...m.values()];}
 function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now()}={}){
   const local=object(localInput)?clone(localInput):{},remote=object(remoteInput)?clone(remoteInput):{};
   enforceOwner(local,ownerUid);enforceOwner(remote,ownerUid);
@@ -124,40 +112,27 @@ function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now(
   merged.clientUpdatedAt=merged.meta.updatedAt||merged.clientUpdatedAt||null;
   return merged;
 }
-function newestRows(list,limit){
-  if(!Array.isArray(list)||list.length<=limit)return Array.isArray(list)?list:[];
-  return list.slice().sort((a,b)=>rowStamp(a)-rowStamp(b)).slice(-limit);
-}
+function newestRows(list,limit){if(!Array.isArray(list)||list.length<=limit)return Array.isArray(list)?list:[];return list.slice().sort((a,b)=>rowStamp(a)-rowStamp(b)).slice(-limit);}
 function compactForCloud(input){
   const out=clone(input||{});delete out.syncState;delete out.cloudUpdatedAt;
   for(const [domain,limit] of Object.entries(CLOUD_LIMITS))out[domain]=newestRows(out[domain],limit);
-  if(object(out.memory)){
-    out.memory.entries=newestRows(out.memory.entries,400);
-    out.memory.events=Array.isArray(out.memory.events)?out.memory.events.slice(-300):[];
-  }
+  if(object(out.memory)){out.memory.entries=newestRows(out.memory.entries,400);out.memory.events=Array.isArray(out.memory.events)?out.memory.events.slice(-300):[];}
   if(object(out.analytics))out.analytics.events=newestRows(out.analytics.events,400);
   if(Array.isArray(out.runs))out.runs=out.runs.map(r=>({...r,coords:Array.isArray(r.coords)?r.coords.slice(-250):[]}));
   if(object(out.meta))out.meta.syncTombstones=normalizeTombstones(out.meta.syncTombstones);
   return out;
 }
 function retryDelay(attempt){return Math.min(60000,1200*Math.pow(2,Math.max(0,Math.min(6,Number(attempt)||0))));}
-function counts(state){
-  const result={};for(const d of DOMAINS)result[d]=Array.isArray(state?.[d])?state[d].length:0;
-  result.memory=Array.isArray(state?.memory?.entries)?state.memory.entries.length:0;return result;
-}
-function createExportEnvelope(state,{scope='local',exportedAt=new Date().toISOString()}={}){
-  const payload=clone(state||{});return {format:'GARANG_BACKUP_V1',version:1,exportedAt,scope,manifest:{schemaVersion:Number(payload?.meta?.schemaVersion||payload?.schemaVersion)||null,counts:counts(payload),updatedAt:payload?.meta?.updatedAt||null},payload};
-}
+function counts(state){const result={};for(const d of DOMAINS)result[d]=Array.isArray(state?.[d])?state[d].length:0;result.memory=Array.isArray(state?.memory?.entries)?state.memory.entries.length:0;return result;}
+function createExportEnvelope(state,{scope='local',exportedAt=new Date().toISOString()}={}){const payload=clone(state||{}),payloadJson=jsonStringify(payload);return {format:'GARANG_BACKUP_V2',version:2,exportedAt,scope,checksumAlgorithm:'fnv1a32',payloadChecksum:checksum(payloadJson),manifest:{schemaVersion:Number(payload?.meta?.schemaVersion||payload?.schemaVersion)||null,counts:counts(payload),updatedAt:payload?.meta?.updatedAt||null},payload};}
 function verifyExportEnvelope(envelope){
-  if(!object(envelope)||envelope.format!=='GARANG_BACKUP_V1'||envelope.version!==1||!object(envelope.payload))return false;
-  const expected=envelope.manifest?.counts||{},actual=counts(envelope.payload);
-  return Object.keys(actual).every(k=>Number(expected[k])===actual[k]);
+  if(!object(envelope)||!object(envelope.payload))return false;
+  if(envelope.format==='GARANG_BACKUP_V1'&&envelope.version===1){const expected=envelope.manifest?.counts||{},actual=counts(envelope.payload);return Object.keys(actual).every(k=>Number(expected[k])===actual[k]);}
+  if(envelope.format!=='GARANG_BACKUP_V2'||envelope.version!==2||envelope.checksumAlgorithm!=='fnv1a32')return false;
+  const expected=envelope.manifest?.counts||{},actual=counts(envelope.payload),countsOk=Object.keys(actual).every(k=>Number(expected[k])===actual[k]);
+  return countsOk&&String(envelope.payloadChecksum||'')===checksum(jsonStringify(envelope.payload));
 }
-function fingerprint(state){
-  const s=compactForCloud(state||{});delete s.cloudUpdatedAt;delete s.clientUpdatedAt;
-  if(object(s.meta))for(const key of ['syncLastMergeAt','syncLastLocalAt','syncRevision','syncDeviceId'])delete s.meta[key];
-  return jsonStringify(s);
-}
+function fingerprint(state){const s=compactForCloud(state||{});delete s.cloudUpdatedAt;delete s.clientUpdatedAt;if(object(s.meta))for(const key of ['syncLastMergeAt','syncLastLocalAt','syncRevision','syncDeviceId'])delete s.meta[key];return jsonStringify(s);}
 
-return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,createExportEnvelope,verifyExportEnvelope,fingerprint});
+return Object.freeze({VERSION,DOMAINS,DEMO_KEY,isStateKey,stateKey,ownerFromKey,rowStamp,stateStamp,normalizeTombstones,mergeTombstones,collectNewTombstones,withLocalMetadata,mergeRows,mergeActiveStates,compactForCloud,retryDelay,checksum,createExportEnvelope,verifyExportEnvelope,fingerprint});
 });
