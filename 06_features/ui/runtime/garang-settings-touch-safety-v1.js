@@ -1,7 +1,7 @@
-/* GARANG Settings Touch Safety v1.9
-   Finish the physical iOS/WebKit tap before routing to Settings.
-   Keep GARANG's canonical Settings handler, but isolate its non-standard instant scroll from the render task.
-   Clear stale transient hit layers after Settings renders. */
+/* GARANG Settings Touch Safety v2.0
+   iOS/WebKit can stall when document/body click delegates continue running after the top Settings gear tap.
+   Intercept the gear at the earliest window capture phase, finish the physical click without downstream delegates,
+   then route on a clean frame using GARANG's canonical Settings handler. */
 (() => {
   'use strict';
 
@@ -11,6 +11,7 @@
 
   const canonicalSettingsClick = gear.onclick;
   let handledSettingsNode = null;
+  let lastInterceptAt = 0;
   let lastCleanupAt = 0;
   let lastNavigationAttemptAt = 0;
   let lastNavigationAt = 0;
@@ -59,10 +60,8 @@
     if (typeof canonicalSettingsClick !== 'function') return false;
     lastNavigationAttemptAt = Date.now();
 
-    /* app.js uses window.scrollTo({behavior:'instant'}) at the tail of every go().
-       On physical WebKit/PWA Settings navigation, replacing #main and immediately invoking this
-       non-standard scroll mode can hold the UI task. Suppress only that one scroll call, then
-       reset scroll position through the scrolling element after the render has completed. */
+    /* app.js tails go() with window.scrollTo({behavior:'instant'}).
+       Keep that non-standard WebKit scroll outside the Settings render task only. */
     const nativeScrollTo = window.scrollTo;
     let replacedScroll = false;
     try {
@@ -85,35 +84,71 @@
     return true;
   }
 
-  function deferTopSettingsNavigation() {
-    if (gear.dataset.garangSettingsDeferred === '1') return true;
-    if (typeof canonicalSettingsClick !== 'function') return false;
+  function queueSettingsNavigation() {
+    if (pendingSettingsNav) return false;
+    pendingSettingsNav = true;
 
-    gear.dataset.garangSettingsDeferred = '1';
-    gear.onclick = function deferredSettingsClick() {
-      if (pendingSettingsNav) return;
-      pendingSettingsNav = true;
-
-      setTimeout(() => {
-        pendingSettingsNav = false;
-        navigateSettingsNow();
-      }, 100);
-    };
+    /* Leave the physical click task completely before replacing #main.
+       Two animation frames also let WebKit retire the old hit-test/compositing tree. */
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          pendingSettingsNav = false;
+          deactivateTransientLayers();
+          navigateSettingsNow();
+        });
+      });
+    }, 0);
     return true;
   }
 
-  deferTopSettingsNavigation();
+  function isGearEvent(event) {
+    const target = event?.target;
+    return !!target && (target === gear || gear.contains(target));
+  }
+
+  function interceptGearClick(event) {
+    if (!isGearEvent(event)) return;
+
+    /* This is intentionally on window capture: it runs before document/body delegates.
+       Those delegates were the remaining WebKit stall path after the physical tap settled. */
+    lastInterceptAt = Date.now();
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    disableTransientLayer(document.querySelector('.garang-more-sheet'));
+    queueSettingsNavigation();
+  }
+
+  function installCaptureIsolation() {
+    if (gear.dataset.garangSettingsCapture === '1') return true;
+    if (typeof canonicalSettingsClick !== 'function') return false;
+
+    gear.dataset.garangSettingsCapture = '1';
+    gear.dataset.garangSettingsDeferred = '1';
+
+    /* Fallback for non-DOM click invocation; physical/browser clicks are intercepted at window capture. */
+    gear.onclick = function settingsFallbackClick() {
+      queueSettingsNavigation();
+    };
+
+    window.addEventListener('click', interceptGearClick, true);
+    return true;
+  }
+
+  installCaptureIsolation();
 
   const observer = new MutationObserver(scheduleSettingsCleanup);
   observer.observe(main, {childList:true, subtree:true});
   scheduleSettingsCleanup();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'1.9.0',
+    version:'2.0.0',
     deactivateTransientLayers,
     scheduleSettingsCleanup,
     navigateSettingsNow,
-    deferTopSettingsNavigation,
+    queueSettingsNavigation,
+    installCaptureIsolation,
+    get lastInterceptAt(){ return lastInterceptAt; },
     get lastCleanupAt(){ return lastCleanupAt; },
     get lastNavigationAttemptAt(){ return lastNavigationAttemptAt; },
     get lastNavigationAt(){ return lastNavigationAt; }
