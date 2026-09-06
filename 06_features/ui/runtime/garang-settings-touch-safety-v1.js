@@ -1,6 +1,7 @@
-/* GARANG Settings Touch Safety v1.8
+/* GARANG Settings Touch Safety v1.9
    Finish the physical iOS/WebKit tap before routing to Settings.
-   Route through GARANG's already-bound bottom-nav handler, then clear stale transient hit layers after Settings renders. */
+   Keep GARANG's canonical Settings handler, but isolate its non-standard instant scroll from the render task.
+   Clear stale transient hit layers after Settings renders. */
 (() => {
   'use strict';
 
@@ -8,8 +9,10 @@
   const gear = document.getElementById('settingsTopBtn');
   if (!main || !gear) return;
 
+  const canonicalSettingsClick = gear.onclick;
   let handledSettingsNode = null;
   let lastCleanupAt = 0;
+  let lastNavigationAttemptAt = 0;
   let lastNavigationAt = 0;
   let pendingSettingsNav = false;
 
@@ -53,32 +56,44 @@
   }
 
   function navigateSettingsNow() {
-    const proxy = document.querySelector('#bottomNav button');
-    if (!proxy || typeof proxy.onclick !== 'function') return false;
+    if (typeof canonicalSettingsClick !== 'function') return false;
+    lastNavigationAttemptAt = Date.now();
 
-    const originalPage = proxy.dataset.page;
+    /* app.js uses window.scrollTo({behavior:'instant'}) at the tail of every go().
+       On physical WebKit/PWA Settings navigation, replacing #main and immediately invoking this
+       non-standard scroll mode can hold the UI task. Suppress only that one scroll call, then
+       reset scroll position through the scrolling element after the render has completed. */
+    const nativeScrollTo = window.scrollTo;
+    let replacedScroll = false;
     try {
-      proxy.dataset.page = 'settings';
-      proxy.onclick.call(proxy);
+      try {
+        window.scrollTo = () => {};
+        replacedScroll = true;
+      } catch {}
+      canonicalSettingsClick.call(gear);
       lastNavigationAt = Date.now();
-      return true;
     } finally {
-      proxy.dataset.page = originalPage;
-      /* Direct gear navigation has no matching bottom-nav destination. */
-      proxy.classList.remove('active');
+      if (replacedScroll) {
+        try { window.scrollTo = nativeScrollTo; } catch {}
+      }
     }
+
+    requestAnimationFrame(() => {
+      const scroller = document.scrollingElement || document.documentElement;
+      if (scroller) scroller.scrollTop = 0;
+    });
+    return true;
   }
 
   function deferTopSettingsNavigation() {
     if (gear.dataset.garangSettingsDeferred === '1') return true;
+    if (typeof canonicalSettingsClick !== 'function') return false;
 
     gear.dataset.garangSettingsDeferred = '1';
     gear.onclick = function deferredSettingsClick() {
       if (pendingSettingsNav) return;
       pendingSettingsNav = true;
 
-      /* Keep all page replacement outside the physical tap lifetime.
-         100 ms is still visually immediate while staying comfortably beyond WebKit's touch completion task. */
       setTimeout(() => {
         pendingSettingsNav = false;
         navigateSettingsNow();
@@ -94,12 +109,13 @@
   scheduleSettingsCleanup();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'1.8.0',
+    version:'1.9.0',
     deactivateTransientLayers,
     scheduleSettingsCleanup,
     navigateSettingsNow,
     deferTopSettingsNavigation,
     get lastCleanupAt(){ return lastCleanupAt; },
+    get lastNavigationAttemptAt(){ return lastNavigationAttemptAt; },
     get lastNavigationAt(){ return lastNavigationAt; }
   });
 })();
