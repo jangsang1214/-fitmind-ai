@@ -1,5 +1,5 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v10-20260906`;
+const CACHE=`${CACHE_PREFIX}v11-20260906`;
 
 async function precache(){
   const cache=await caches.open(CACHE);
@@ -9,7 +9,7 @@ async function precache(){
   await cache.put('./',indexResponse.clone());
   const html=await indexResponse.text();
   const assets=[...html.matchAll(/(?:src|href)="(\.\/[^"#]+)"/g)].map(match=>match[1]);
-  const unique=[...new Set(assets.filter(url=>!url.startsWith('./07_config/manifest.webmanifest')||true))];
+  const unique=[...new Set(assets)];
   await Promise.allSettled(unique.map(async url=>{
     const response=await fetch(url,{cache:'reload'});
     if(response.ok)await cache.put(url,response.clone());
@@ -52,5 +52,6 @@ self.addEventListener('fetch',event=>{
     }));
     return;
   }
+  /* Never answer script/style/data requests with index.html. Exact versioned assets only. */
   event.respondWith(networkFirst(event.request).catch(()=>Response.error()));
 });
