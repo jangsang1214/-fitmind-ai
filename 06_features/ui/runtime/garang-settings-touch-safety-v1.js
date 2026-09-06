@@ -1,7 +1,7 @@
-/* GARANG Settings Touch Safety v2.1
-   WebKit can finish the physical gear tap but never service a timer/rAF queued from that click task.
-   Own the gear at window capture, stop downstream click delegates, and complete the canonical Settings route
-   synchronously before WebKit leaves the isolated capture handler. */
+/* GARANG Settings Touch Safety v2.2
+   WebKit must be allowed to finish the physical Settings gear click before #main is replaced.
+   Timer/rAF callbacks can starve after this specific touch sequence, so route work is dispatched through
+   independent message task sources (MessageChannel + window.postMessage) and serviced exactly once. */
 (() => {
   'use strict';
 
@@ -10,13 +10,23 @@
   if (!main || !gear) return;
 
   const canonicalSettingsClick = gear.onclick;
+  const routeChannel = typeof MessageChannel === 'function' ? new MessageChannel() : null;
+  const MESSAGE_TYPE = 'garang:settings-route:v2.2';
+
   let handledSettingsNode = null;
   let lastInterceptAt = 0;
   let lastCleanupAt = 0;
+  let lastDispatchAt = 0;
+  let lastTaskAt = 0;
   let lastNavigationAttemptAt = 0;
   let lastNavigationAt = 0;
   let lastCanonicalStartAt = 0;
   let lastCanonicalReturnAt = 0;
+  let lastTaskSource = '';
+  let dispatchSequence = 0;
+  let serviceSequence = 0;
+  let navigationSequence = 0;
+  let pendingToken = 0;
   let navigating = false;
 
   function disableTransientLayer(el) {
@@ -36,12 +46,10 @@
 
   function deactivateTransientLayers() {
     neutralizeTransientHitLayers();
-
     document.querySelectorAll('.garang-more-sheet').forEach(sheet => sheet.remove());
     document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
       if ('hidden' in el) el.hidden = true;
     });
-
     lastCleanupAt = Date.now();
   }
 
@@ -53,8 +61,6 @@
     }
     if (save === handledSettingsNode) return false;
     handledSettingsNode = save;
-
-    /* Do not depend on rAF/timers here: the bug itself is a WebKit task starvation case. */
     deactivateTransientLayers();
     return true;
   }
@@ -65,8 +71,8 @@
     lastNavigationAttemptAt = Date.now();
     lastCanonicalStartAt = Date.now();
 
-    /* app.js tails go() with window.scrollTo({behavior:'instant'}), which is not a standard
-       Safari behavior value. Suppress only that tail call while keeping the canonical render/bind path. */
+    /* app.js ends go() with window.scrollTo({behavior:'instant'}). Safari does not define
+       "instant" as a ScrollBehavior value, so suppress only that route-tail call. */
     const nativeScrollTo = window.scrollTo;
     let replacedScroll = false;
     try {
@@ -78,6 +84,7 @@
       canonicalSettingsClick.call(gear);
       lastCanonicalReturnAt = Date.now();
       lastNavigationAt = Date.now();
+      navigationSequence += 1;
 
       const scroller = document.scrollingElement || document.documentElement;
       if (scroller) scroller.scrollTop = 0;
@@ -89,6 +96,34 @@
       }
       navigating = false;
     }
+  }
+
+  function serviceQueuedNavigation(token, source) {
+    const n = Number(token) || 0;
+    if (!n || n !== pendingToken || n <= serviceSequence) return false;
+
+    /* Claim the token before rendering so the second message source becomes a harmless no-op. */
+    serviceSequence = n;
+    pendingToken = 0;
+    lastTaskAt = Date.now();
+    lastTaskSource = source;
+    neutralizeTransientHitLayers();
+    return navigateSettingsNow();
+  }
+
+  function queueSettingsNavigation() {
+    if (pendingToken) return pendingToken;
+
+    const token = ++dispatchSequence;
+    pendingToken = token;
+    lastDispatchAt = Date.now();
+
+    /* MessageChannel and postMessage are intentionally both dispatched. They use message task
+       sources rather than the timer/animation queues that stalled in the physical WebKit case.
+       serviceQueuedNavigation() makes the pair exactly-once. */
+    try { routeChannel?.port2.postMessage(token); } catch {}
+    try { window.postMessage({type:MESSAGE_TYPE,token}, '*'); } catch {}
+    return token;
   }
 
   function isGearEvent(event) {
@@ -103,10 +138,10 @@
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    /* Only mutate hit-testing state before the route; avoid removing nodes and waking body
-       childList observers until the Settings DOM has already been rendered. */
+    /* No page render, node removal, timer or rAF in the physical click task. Only retire known
+       stale hit layers and hand the route token to an independent browser task source. */
     neutralizeTransientHitLayers();
-    navigateSettingsNow();
+    queueSettingsNavigation();
   }
 
   function installCaptureIsolation() {
@@ -114,17 +149,26 @@
     if (typeof canonicalSettingsClick !== 'function') return false;
 
     gear.dataset.garangSettingsCapture = '1';
-    gear.dataset.garangSettingsSynchronous = '1';
+    gear.dataset.garangSettingsMessageTask = '1';
 
-    /* Direct onclick invocation fallback. Physical/programmatic click events are intercepted at window capture. */
+    /* Direct onclick fallback for non-event invocation. Browser click events are owned at window capture. */
     gear.onclick = function settingsFallbackClick() {
       neutralizeTransientHitLayers();
-      navigateSettingsNow();
+      queueSettingsNavigation();
     };
 
     window.addEventListener('click', interceptGearClick, true);
     return true;
   }
+
+  if (routeChannel) {
+    routeChannel.port1.onmessage = event => serviceQueuedNavigation(event.data, 'message-channel');
+  }
+  window.addEventListener('message', event => {
+    const data = event?.data;
+    if (!data || data.type !== MESSAGE_TYPE) return;
+    serviceQueuedNavigation(data.token, 'window-post-message');
+  });
 
   installCaptureIsolation();
 
@@ -133,17 +177,26 @@
   scheduleSettingsCleanup();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'2.1.0',
+    version:'2.2.0',
     neutralizeTransientHitLayers,
     deactivateTransientLayers,
     scheduleSettingsCleanup,
     navigateSettingsNow,
+    queueSettingsNavigation,
+    serviceQueuedNavigation,
     installCaptureIsolation,
     get lastInterceptAt(){ return lastInterceptAt; },
     get lastCleanupAt(){ return lastCleanupAt; },
+    get lastDispatchAt(){ return lastDispatchAt; },
+    get lastTaskAt(){ return lastTaskAt; },
+    get lastTaskSource(){ return lastTaskSource; },
     get lastNavigationAttemptAt(){ return lastNavigationAttemptAt; },
     get lastNavigationAt(){ return lastNavigationAt; },
     get lastCanonicalStartAt(){ return lastCanonicalStartAt; },
-    get lastCanonicalReturnAt(){ return lastCanonicalReturnAt; }
+    get lastCanonicalReturnAt(){ return lastCanonicalReturnAt; },
+    get dispatchSequence(){ return dispatchSequence; },
+    get serviceSequence(){ return serviceSequence; },
+    get navigationSequence(){ return navigationSequence; },
+    get pendingToken(){ return pendingToken; }
   });
 })();
