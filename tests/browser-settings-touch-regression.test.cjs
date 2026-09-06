@@ -35,9 +35,25 @@ async function tap(page,selector){
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
 }
 
+async function installBodyBlocker(page){
+  await page.evaluate(()=>{
+    document.querySelector('#settings-test-stale-blocker')?.remove();
+    const blocker=document.createElement('div');
+    blocker.id='settings-test-stale-blocker';
+    blocker.className='modal-backdrop';
+    Object.assign(blocker.style,{
+      position:'fixed',left:'0',right:'0',top:'72px',bottom:'0',
+      zIndex:'12000',display:'block',visibility:'visible',pointerEvents:'auto',background:'transparent'
+    });
+    document.body.appendChild(blocker);
+  });
+}
+
 async function assertSettingsInteractive(page,label){
   stage(`${label}: wait save`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
+  await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.lastCleanupAt>0,null,{timeout:7000});
+  await page.waitForTimeout(40);
   const state=await page.evaluate(()=>{
     const target=document.getElementById('savePreferences');
     const r=target?.getBoundingClientRect();
@@ -87,12 +103,13 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.5.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.6.0',null,{timeout:7000});
 
-    const binding=await page.evaluate(()=>{const b=document.getElementById('settingsTopBtn');return {bound:b?.dataset?.garangSettingsTouchBound||'',onclick:typeof b?.onclick};});
-    assert.equal(binding.bound,'1','top Settings gear must have iOS touch safety bound');
+    const binding=await page.evaluate(()=>({onclick:typeof document.getElementById('settingsTopBtn')?.onclick}));
     assert.equal(binding.onclick,'function','top Settings gear must preserve the canonical click handler');
 
+    // Leave the top bar clear while a stale full-screen-style layer blocks the body below it.
+    await installBodyBlocker(page);
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
     stage('gear first tapped');
@@ -107,6 +124,8 @@ async function assertSettingsInteractive(page,label){
     stage('close more');
     await tap(page,'.garang-more-head button');
     await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
+
+    await installBodyBlocker(page);
     stage('tap gear second');
     await tap(page,'#settingsTopBtn');
     stage('gear second tapped');
