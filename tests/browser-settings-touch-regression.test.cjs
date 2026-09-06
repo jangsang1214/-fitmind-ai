@@ -87,7 +87,7 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.4.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.5.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const button=document.getElementById('settingsTopBtn');
@@ -116,7 +116,6 @@ async function assertSettingsInteractive(page,label){
       sheet.style.backdropFilter='none';
       sheet.style.webkitBackdropFilter='none';
     });
-    // The gear is visually clear but the stale sheet still owns hit testing before cleanup.
     const stale=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
       const r=gear.getBoundingClientRect();
@@ -126,7 +125,6 @@ async function assertSettingsInteractive(page,label){
     assert.equal(stale.sheet,true,'stale utility sheet must own the gear hit point before cleanup');
     assert.equal(stale.gear,false,'gear must be blocked before stale-layer cleanup');
 
-    // Product helper must synchronously release the blocker; physical touchstart calls this same helper.
     await page.evaluate(()=>window.GarangSettingsTouchSafety.deactivateTransientLayers());
     await tap(page,'#settingsTopBtn');
     await assertSettingsInteractive(page,'settings after stale-layer cleanup');
