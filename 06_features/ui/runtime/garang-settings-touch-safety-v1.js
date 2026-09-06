@@ -1,8 +1,14 @@
-/* GARANG Settings Touch Safety v1.5
-   Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation.
-   The canonical Settings click handler is never replaced, delayed, prevented, or re-dispatched. */
+/* GARANG Settings Touch Safety v1.6
+   Never mutate the DOM inside an iOS touch gesture.
+   app.js keeps full ownership of Settings navigation; stale hit blockers are cleared only after Settings renders. */
 (() => {
   'use strict';
+
+  const main = document.getElementById('main');
+  if (!main) return;
+
+  let handledSettingsNode = null;
+  let lastCleanupAt = 0;
 
   function disableTransientLayer(el) {
     if (!el) return;
@@ -11,61 +17,54 @@
   }
 
   function deactivateTransientLayers() {
-    /* Close Coach mobile state first. Do not leave inline !important styles on its persistent backdrop. */
+    /* Close persistent Coach state by class only; do not poison its backdrop for future opens. */
     document.querySelectorAll('.garang-coach-v2.sidebar-open').forEach(root => root.classList.remove('sidebar-open'));
 
-    /* More is disposable DOM; remove it synchronously before the canonical Settings click renders. */
+    /* More sheets are disposable DOM. */
     document.querySelectorAll('.garang-more-sheet').forEach(sheet => {
       disableTransientLayer(sheet);
       sheet.remove();
     });
 
-    /* These layers are transient and may otherwise remain in WebKit's compositor hit-test tree. */
+    /* Modal-style blockers must not survive behind the Settings route. */
     document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
       disableTransientLayer(el);
       if ('hidden' in el) el.hidden = true;
     });
 
     document.body.classList.remove('menu-open');
+    lastCleanupAt = Date.now();
   }
 
-  function bindTopSettings() {
-    const button = document.getElementById('settingsTopBtn');
-    if (!button || button.dataset.garangSettingsTouchBound === '1') return false;
+  function scheduleSettingsCleanup() {
+    const save = main.querySelector('#savePreferences');
+    if (!save) {
+      handledSettingsNode = null;
+      return false;
+    }
+    if (save === handledSettingsNode) return false;
+    handledSettingsNode = save;
 
-    button.dataset.garangSettingsTouchBound = '1';
-
-    /* Physical iOS/PWA input: release stale hit blockers before the browser creates the click.
-       No preventDefault/stopPropagation here; app.js keeps full ownership of navigation. */
-    button.addEventListener('touchstart', deactivateTransientLayers, {passive:true, capture:true});
-    button.addEventListener('pointerdown', deactivateTransientLayers, {passive:true, capture:true});
-
+    /* The originating iOS tap must finish before any compositor-affecting DOM mutation.
+       Clear once on the next frame and once more after WebKit has rebuilt its hit-test tree. */
+    requestAnimationFrame(() => {
+      deactivateTransientLayers();
+      requestAnimationFrame(() => deactivateTransientLayers());
+    });
     return true;
   }
 
-  /* app.js already owns settingsTopBtn.onclick. This runtime only adds pre-click cleanup listeners. */
-  bindTopSettings();
+  /* render() replaces #main contents synchronously. Observe the resulting Settings DOM,
+     rather than intercepting touchstart/pointerdown/click on the gear. */
+  const observer = new MutationObserver(scheduleSettingsCleanup);
+  observer.observe(main, {childList:true, subtree:true});
 
-  /* If a stale composited sheet incorrectly owns hit testing over the gear, capture the first touch
-     at document level, release blockers synchronously, and let the browser continue the same gesture. */
-  document.addEventListener('touchstart', event => {
-    if (!document.querySelector('.garang-more-sheet,.garang-coach-v2.sidebar-open,.modal-backdrop:not([hidden]),.gcp-backdrop:not([hidden]),.gcp-panel:not([hidden])')) return;
-    const touch=event.touches?.[0];
-    const gear=document.getElementById('settingsTopBtn');
-    if (!touch || !gear) return;
-    const r=gear.getBoundingClientRect();
-    if (touch.clientX>=r.left && touch.clientX<=r.right && touch.clientY>=r.top && touch.clientY<=r.bottom) {
-      deactivateTransientLayers();
-    }
-  }, {passive:true, capture:true});
-
-  /* Re-apply if another runtime ever recreates the permanent top-bar button. */
-  const observer = new MutationObserver(() => bindTopSettings());
-  observer.observe(document.body, {childList:true, subtree:true});
+  scheduleSettingsCleanup();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'1.5.0',
+    version:'1.6.0',
     deactivateTransientLayers,
-    bindTopSettings
+    scheduleSettingsCleanup,
+    get lastCleanupAt(){ return lastCleanupAt; }
   });
 })();
