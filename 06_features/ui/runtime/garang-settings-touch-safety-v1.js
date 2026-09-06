@@ -1,238 +1,100 @@
-/* GARANG Settings Touch Safety v2.2
-   WebKit must be allowed to finish the physical Settings gear click before #main is replaced.
-   Timer/rAF callbacks can starve after this specific touch sequence, so route work is dispatched through
-   independent message task sources (MessageChannel + window.postMessage) and serviced exactly once. */
+/* GARANG Settings Touch Safety v3.0
+   Root cause: Settings-specific UI polish can write identical textContent from a MutationObserver.
+   In WebKit that creates a childList feedback loop while Settings owns #main, starving touch handling.
+   Keep the canonical gear -> go('settings') route untouched; make no-op text writes truly idempotent
+   on Settings and clear any stale transient hit layers after the canonical render completes. */
 (() => {
   'use strict';
 
   const main = document.getElementById('main');
   const gear = document.getElementById('settingsTopBtn');
-  if (!main || !gear) return;
-
-  const canonicalSettingsClick = gear.onclick;
-  const routeChannel = typeof MessageChannel === 'function' ? new MessageChannel() : null;
-  const MESSAGE_TYPE = 'garang:settings-route:v2.2';
+  const NativeMutationObserver = window.MutationObserver;
+  if (!main || !gear || typeof NativeMutationObserver !== 'function') return;
 
   let handledSettingsNode = null;
-  let lastInterceptAt = 0;
   let lastCleanupAt = 0;
-  let lastDispatchAt = 0;
-  let lastTaskAt = 0;
-  let lastNavigationAttemptAt = 0;
-  let lastNavigationAt = 0;
-  let lastCanonicalStartAt = 0;
-  let lastCanonicalReturnAt = 0;
-  let lastTaskSource = '';
-  let lastImmediateSettingsPresent = false;
-  let lastImmediateScreen = '';
-  let lastImmediateHead = '';
-  let settingsMutationTrace = [];
-  let dispatchSequence = 0;
-  let serviceSequence = 0;
-  let navigationSequence = 0;
-  let pendingToken = 0;
-  let navigating = false;
+  let sameTextWriteSuppressions = 0;
 
-  function screenSnapshot(reason) {
-    const save = main.querySelector('#savePreferences');
-    const head = main.querySelector('.page-head');
-    const snapshot = {
-      reason,
-      at: Date.now(),
-      hasSave: !!save,
-      screen: main.dataset.garangScreen || '',
-      head: (head?.textContent || '').replace(/\s+/g,' ').trim().slice(0,160),
-      activeNav: document.querySelector('#bottomNav button.active')?.dataset?.page || '',
-      childCount: main.childElementCount,
-      firstClass: main.firstElementChild?.className || '',
-      htmlStart: (main.innerHTML || '').replace(/\s+/g,' ').slice(0,260)
-    };
-    settingsMutationTrace.push(snapshot);
-    settingsMutationTrace = settingsMutationTrace.slice(-12);
-    console.log('[GARANG][settings-touch]', JSON.stringify(snapshot));
-    return snapshot;
+  function isSettingsScreen() {
+    return !!main.querySelector('#savePreferences');
   }
 
-  function disableTransientLayer(el) {
-    if (!el) return;
-    el.style.pointerEvents = 'none';
-    el.setAttribute('aria-hidden','true');
-  }
+  function installIdempotentSettingsTextGuard() {
+    if (window.__garangSettingsTextGuardInstalled) return true;
+    const descriptor = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+    if (!descriptor?.get || !descriptor?.set || descriptor.configurable === false) return false;
 
-  function neutralizeTransientHitLayers() {
-    document.querySelectorAll('.garang-coach-v2.sidebar-open').forEach(root => root.classList.remove('sidebar-open'));
-    document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
-      disableTransientLayer(el);
-      el.style.visibility = 'hidden';
+    const nativeGet = descriptor.get;
+    const nativeSet = descriptor.set;
+    Object.defineProperty(Node.prototype, 'textContent', {
+      configurable: descriptor.configurable,
+      enumerable: descriptor.enumerable,
+      get: nativeGet,
+      set(value) {
+        const next = value == null ? '' : String(value);
+        if (
+          isSettingsScreen() &&
+          this?.nodeType === Node.ELEMENT_NODE &&
+          main.contains(this) &&
+          nativeGet.call(this) === next
+        ) {
+          sameTextWriteSuppressions += 1;
+          return;
+        }
+        return nativeSet.call(this, value);
+      }
     });
-    document.body.classList.remove('menu-open');
+    window.__garangSettingsTextGuardInstalled = true;
+    return true;
   }
 
   function deactivateTransientLayers() {
-    neutralizeTransientHitLayers();
-    document.querySelectorAll('.garang-more-sheet').forEach(sheet => sheet.remove());
-    document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
+    document.querySelectorAll('.garang-coach-v2.sidebar-open').forEach(root => root.classList.remove('sidebar-open'));
+    document.querySelectorAll(
+      '.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel,.g2-sidebar-backdrop'
+    ).forEach(el => {
+      el.style.setProperty('pointer-events', 'none', 'important');
+      el.setAttribute('aria-hidden', 'true');
+      if (el.classList.contains('garang-more-sheet')) {
+        el.remove();
+        return;
+      }
       if ('hidden' in el) el.hidden = true;
+      else el.style.setProperty('visibility', 'hidden', 'important');
     });
+    document.body.classList.remove('menu-open');
     lastCleanupAt = Date.now();
   }
 
-  function scheduleSettingsCleanup() {
+  function settleSettingsScreen() {
     const save = main.querySelector('#savePreferences');
     if (!save) {
       handledSettingsNode = null;
       return false;
     }
     if (save === handledSettingsNode) return false;
+
     handledSettingsNode = save;
+    main.dataset.garangScreen = 'settings';
     deactivateTransientLayers();
     return true;
   }
 
-  function navigateSettingsNow() {
-    if (typeof canonicalSettingsClick !== 'function' || navigating) return false;
-    navigating = true;
-    lastNavigationAttemptAt = Date.now();
-    lastCanonicalStartAt = Date.now();
+  installIdempotentSettingsTextGuard();
 
-    /* app.js ends go() with window.scrollTo({behavior:'instant'}). Safari does not define
-       "instant" as a ScrollBehavior value, so suppress only that route-tail call. */
-    const nativeScrollTo = window.scrollTo;
-    let replacedScroll = false;
-    try {
-      try {
-        window.scrollTo = () => {};
-        replacedScroll = true;
-      } catch {}
-
-      canonicalSettingsClick.call(gear);
-      lastCanonicalReturnAt = Date.now();
-      lastNavigationAt = Date.now();
-      navigationSequence += 1;
-
-      const immediate = screenSnapshot('canonical-return-immediate');
-      lastImmediateSettingsPresent = immediate.hasSave;
-      lastImmediateScreen = immediate.screen;
-      lastImmediateHead = immediate.head;
-
-      const scroller = document.scrollingElement || document.documentElement;
-      if (scroller) scroller.scrollTop = 0;
-      scheduleSettingsCleanup();
-      return true;
-    } finally {
-      if (replacedScroll) {
-        try { window.scrollTo = nativeScrollTo; } catch {}
-      }
-      navigating = false;
-    }
-  }
-
-  function serviceQueuedNavigation(token, source) {
-    const n = Number(token) || 0;
-    if (!n || n !== pendingToken || n <= serviceSequence) return false;
-
-    /* Claim the token before rendering so the second message source becomes a harmless no-op. */
-    serviceSequence = n;
-    pendingToken = 0;
-    lastTaskAt = Date.now();
-    lastTaskSource = source;
-    neutralizeTransientHitLayers();
-    return navigateSettingsNow();
-  }
-
-  function queueSettingsNavigation() {
-    if (pendingToken) return pendingToken;
-
-    const token = ++dispatchSequence;
-    pendingToken = token;
-    lastDispatchAt = Date.now();
-
-    /* MessageChannel and postMessage are intentionally both dispatched. They use message task
-       sources rather than the timer/animation queues that stalled in the physical WebKit case.
-       serviceQueuedNavigation() makes the pair exactly-once. */
-    try { routeChannel?.port2.postMessage(token); } catch {}
-    try { window.postMessage({type:MESSAGE_TYPE,token}, '*'); } catch {}
-    return token;
-  }
-
-  function isGearEvent(event) {
-    const target = event?.target;
-    return !!target && (target === gear || gear.contains(target));
-  }
-
-  function interceptGearClick(event) {
-    if (!isGearEvent(event)) return;
-
-    lastInterceptAt = Date.now();
-    event.preventDefault();
-    event.stopImmediatePropagation();
-
-    /* No page render, node removal, timer or rAF in the physical click task. Only retire known
-       stale hit layers and hand the route token to an independent browser task source. */
-    neutralizeTransientHitLayers();
-    queueSettingsNavigation();
-  }
-
-  function installCaptureIsolation() {
-    if (gear.dataset.garangSettingsCapture === '1') return true;
-    if (typeof canonicalSettingsClick !== 'function') return false;
-
-    gear.dataset.garangSettingsCapture = '1';
-    gear.dataset.garangSettingsMessageTask = '1';
-
-    /* Direct onclick fallback for non-event invocation. Browser click events are owned at window capture. */
-    gear.onclick = function settingsFallbackClick() {
-      neutralizeTransientHitLayers();
-      queueSettingsNavigation();
-    };
-
-    window.addEventListener('click', interceptGearClick, true);
-    return true;
-  }
-
-  if (routeChannel) {
-    routeChannel.port1.onmessage = event => serviceQueuedNavigation(event.data, 'message-channel');
-  }
-  window.addEventListener('message', event => {
-    const data = event?.data;
-    if (!data || data.type !== MESSAGE_TYPE) return;
-    serviceQueuedNavigation(data.token, 'window-post-message');
-  });
-
-  installCaptureIsolation();
-
-  const observer = new MutationObserver(() => {
-    if (lastCanonicalReturnAt || main.querySelector('#savePreferences')) screenSnapshot('main-mutation');
-    scheduleSettingsCleanup();
-  });
-  observer.observe(main, {childList:true, subtree:true});
-  scheduleSettingsCleanup();
+  /* Use the native observer captured before any runtime wrapping. This observer never rewrites #main;
+     it only marks the canonical Settings render and retires stale hit-test blockers once. */
+  const settingsObserver = new NativeMutationObserver(settleSettingsScreen);
+  settingsObserver.observe(main, { childList: true, subtree: true });
+  settleSettingsScreen();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'2.2.0',
-    neutralizeTransientHitLayers,
+    version: '3.0.0',
+    isSettingsScreen,
     deactivateTransientLayers,
-    scheduleSettingsCleanup,
-    navigateSettingsNow,
-    queueSettingsNavigation,
-    serviceQueuedNavigation,
-    installCaptureIsolation,
-    get lastInterceptAt(){ return lastInterceptAt; },
-    get lastCleanupAt(){ return lastCleanupAt; },
-    get lastDispatchAt(){ return lastDispatchAt; },
-    get lastTaskAt(){ return lastTaskAt; },
-    get lastTaskSource(){ return lastTaskSource; },
-    get lastNavigationAttemptAt(){ return lastNavigationAttemptAt; },
-    get lastNavigationAt(){ return lastNavigationAt; },
-    get lastCanonicalStartAt(){ return lastCanonicalStartAt; },
-    get lastCanonicalReturnAt(){ return lastCanonicalReturnAt; },
-    get lastImmediateSettingsPresent(){ return lastImmediateSettingsPresent; },
-    get lastImmediateScreen(){ return lastImmediateScreen; },
-    get lastImmediateHead(){ return lastImmediateHead; },
-    get settingsMutationTrace(){ return settingsMutationTrace.slice(); },
-    get dispatchSequence(){ return dispatchSequence; },
-    get serviceSequence(){ return serviceSequence; },
-    get navigationSequence(){ return navigationSequence; },
-    get pendingToken(){ return pendingToken; }
+    settleSettingsScreen,
+    get canonicalGearIntact() { return typeof gear.onclick === 'function'; },
+    get sameTextWriteSuppressions() { return sameTextWriteSuppressions; },
+    get lastCleanupAt() { return lastCleanupAt; }
   });
 })();
