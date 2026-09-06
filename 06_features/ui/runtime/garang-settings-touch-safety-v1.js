@@ -1,10 +1,11 @@
-/* GARANG Settings Touch Safety v1.2
+/* GARANG Settings Touch Safety v1.3
    Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation.
-   Preserve the canonical app/router handlers and only delay their execution until WebKit settles. */
+   Settings has one canonical entry: the permanent top-bar gear. */
 (() => {
   'use strict';
 
   let navigationPending = false;
+  let lastTouchNavigationAt = 0;
 
   function disableHitTesting(el) {
     if (!el) return;
@@ -32,7 +33,7 @@
     navigationPending = true;
     deactivateTransientLayers();
 
-    /* A removed fixed layer can remain in WebKit's hit-test tree for the current frame.
+    /* A removed fixed/composited layer can remain in WebKit's hit-test tree for the current frame.
        Cross two animation frames before executing the already-bound canonical route. */
     requestAnimationFrame(() => requestAnimationFrame(() => {
       navigationPending = false;
@@ -44,48 +45,43 @@
   function bindTopSettings() {
     const button = document.getElementById('settingsTopBtn');
     if (!button || button.dataset.garangSettingsTouchBound === '1') return false;
-    const original = button.onclick;
-    if (typeof original !== 'function') return false;
+    const canonicalClick = button.onclick;
+    if (typeof canonicalClick !== 'function') return false;
 
     button.dataset.garangSettingsTouchBound = '1';
+
+    /* Physical iOS/PWA taps are owned by touchend so navigation does not depend on WebKit
+       producing a later synthetic click after composited layers have changed. */
+    button.addEventListener('touchend', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      lastTouchNavigationAt = Date.now();
+      afterWebKitSettles(() => canonicalClick.call(button, event));
+    }, {passive:false});
+
+    /* Mouse/keyboard/desktop fallback. Ignore the synthetic click that can follow touchend. */
     button.onclick = function(event) {
+      if (Date.now() - lastTouchNavigationAt < 700) {
+        event?.preventDefault?.();
+        return;
+      }
       event?.preventDefault?.();
-      afterWebKitSettles(() => original.call(button, event));
+      afterWebKitSettles(() => canonicalClick.call(button, event));
     };
     return true;
   }
 
-  function bindSheetSettings(root = document) {
-    const buttons = root.querySelectorAll?.('.garang-more-sheet [data-route="settings"]') || [];
-    buttons.forEach(button => {
-      if (button.dataset.garangSettingsTouchBound === '1') return;
-      const original = button.onclick;
-      if (typeof original !== 'function') return;
-
-      button.dataset.garangSettingsTouchBound = '1';
-      button.onclick = function(event) {
-        event?.preventDefault?.();
-        afterWebKitSettles(() => original.call(button, event));
-      };
-    });
-  }
-
-  /* app.js binds the top Settings handler synchronously before this runtime loads. */
+  /* app.js binds the canonical Settings handler synchronously before this runtime loads. */
   bindTopSettings();
-  bindSheetSettings();
 
-  /* More-sheet controls are created dynamically. MutationObserver runs after Functional Recovery
-     has created the sheet and assigned its canonical onclick handlers. */
-  const observer = new MutationObserver(() => {
-    bindTopSettings();
-    bindSheetSettings();
-  });
+  /* Re-apply only if another runtime replaces/recreates the top-bar button. */
+  const observer = new MutationObserver(() => bindTopSettings());
   observer.observe(document.body, {childList:true, subtree:true});
 
   window.GarangSettingsTouchSafety = Object.freeze({
+    version:'1.3.0',
     deactivateTransientLayers,
     afterWebKitSettles,
-    bindTopSettings,
-    bindSheetSettings
+    bindTopSettings
   });
 })();
