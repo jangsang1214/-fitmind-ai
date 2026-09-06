@@ -1,7 +1,13 @@
-/* GARANG app chrome fix v1.1
-   Shared app chrome + iOS/WebKit-safe scrolling boundaries.
+/* GARANG app chrome fix v1.2
+   Physical iOS/PWA-safe app chrome, hit testing and scrolling boundaries.
    Ordinary screens grow with their content. Coach alone owns a constrained inner workspace.
 */
+#appView:not([hidden]) > .topbar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
 #appView:not([hidden]) #menuBtn.icon-btn{
   display:grid!important;
   place-items:center!important;
@@ -12,35 +18,81 @@
   visibility:visible!important;
   opacity:1!important;
   pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+#appView:not([hidden]) .topbar button,
+#appView:not([hidden]) > .bottom-nav,
+#appView:not([hidden]) > .bottom-nav button{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+#appView:not([hidden]) > .bottom-nav{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
 }
 #authView[hidden],#appView[hidden]{display:none!important;pointer-events:none!important}
 body:before{pointer-events:none!important}
+.garang-more-sheet[hidden],
+.modal-backdrop[hidden],
+.gcp-backdrop[hidden],
+.gcp-panel[hidden],
+.g2-sidebar-backdrop[hidden]{display:none!important;pointer-events:none!important}
 
 /*
   WebKit safety boundary:
-  Some earlier visual layers leave #main with a computed cross-axis overflow of
-  "clip visible". Chromium paints overflowing vertical content, while iOS WebKit
-  can clip that content at the main box/compositing boundary. That produced the
-  hard horizontal cut through the second Today quick-record row on physical iOS.
-
-  Screen Registry writes data-garang-screen after every canonical render, so keep
-  every normal screen content-sized and fully paintable. Coach remains excluded
-  because it intentionally owns a fixed-height conversation viewport.
+  Some visual layers leave #main with a computed cross-axis overflow of "clip visible".
+  Chromium paints overflowing vertical content, while physical iOS WebKit can clip that
+  content at the main/compositing boundary. Keep normal screens content-sized. The
+  :has() fallbacks protect physical iOS even if screen-registry metadata is late.
 */
-#appView:not([hidden]) > #main[data-garang-screen]:not([data-garang-screen="coach"]){
+#appView:not([hidden]) > #main[data-garang-screen]:not([data-garang-screen="coach"]),
+#appView:not([hidden]) > #main:has(.today-body-panel),
+#appView:not([hidden]) > #main:has(#saveWorkoutSession),
+#appView:not([hidden]) > #main:has(#saveBody),
+#appView:not([hidden]) > #main:has(.progress-tabs),
+#appView:not([hidden]) > #main:has(#runStart),
+#appView:not([hidden]) > #main:has(#saveMeal),
+#appView:not([hidden]) > #main:has(#addPlan),
+#appView:not([hidden]) > #main:has(#saveProfile),
+#appView:not([hidden]) > #main:has(#savePreferences),
+#appView:not([hidden]) > #main:has(#saveOnboarding){
   overflow:visible!important;
   overflow-x:visible!important;
   overflow-y:visible!important;
   height:auto!important;
   max-height:none!important;
   contain:none!important;
+  clip-path:none!important;
 }
 
-/* Avoid a WebKit fixed+blur compositing surface sitting above long mobile content. */
+/*
+  viewport-fit=cover exposes the iOS status-bar safe area in Safari/PWA standalone mode.
+  The topbar owns that inset so the hamburger cannot sit underneath the status bar.
+*/
 @media(max-width:799px){
+  #appView:not([hidden]) > .topbar{
+    position:sticky!important;
+    top:0!important;
+    box-sizing:border-box!important;
+    height:calc(56px + env(safe-area-inset-top,0px))!important;
+    min-height:calc(56px + env(safe-area-inset-top,0px))!important;
+    padding-top:env(safe-area-inset-top,0px)!important;
+    padding-right:12px!important;
+    padding-bottom:0!important;
+    padding-left:12px!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:#070807!important;
+    z-index:80!important;
+  }
   #appView:not([hidden]) > .bottom-nav{
     -webkit-backdrop-filter:none!important;
     backdrop-filter:none!important;
     background:#070807!important;
+    z-index:70!important;
+  }
+  #appView:not([hidden]) > #main{
+    min-height:calc(100dvh - 56px - env(safe-area-inset-top,0px))!important;
   }
 }
