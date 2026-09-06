@@ -1,11 +1,11 @@
-/* GARANG Coach Decision UI v1.2
+/* GARANG Coach Decision UI v1.3
    Compact-by-default decision strip for Coach.
    Details remain available on demand and plan changes still flow through the approval gate.
-*/
+   The decision strip owns an explicit grid row so it can never consume the chat's flexible 1fr track. */
 (() => {
 'use strict';
 const main=document.getElementById('main');if(!main)return;
-const VERSION='garang-coach-decision-v1.2';
+const VERSION='garang-coach-decision-v1.3';
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const LABELS={
@@ -16,35 +16,46 @@ function text(pair){return english()?pair?.en:pair?.ko;}
 function ensureStyle(){
  if(document.getElementById('garang-coach-decision-v1-style'))return;
  const style=document.createElement('style');style.id='garang-coach-decision-v1-style';style.textContent=`
-section.garang-decision-card{margin:10px 0 12px!important;padding:0!important;min-height:0!important;height:auto!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:16px!important;background:#0b0d0b!important;display:block!important;box-shadow:none!important}
+section.garang-decision-card{margin:8px 0 10px!important;padding:0!important;min-height:0!important;height:auto!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:14px!important;background:#0b0d0b!important;display:block!important;align-self:start!important;box-shadow:none!important}
 .garang-coach-v2>.garang-decision-card{margin-left:0!important;margin-right:0!important}
-.garang-decision-toggle{width:100%;min-height:56px;margin:0;padding:0 15px;border:0;background:transparent;color:inherit;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;text-align:left;cursor:pointer}
-.garang-decision-kicker{font-size:10px;letter-spacing:.11em;color:#8c918b;white-space:nowrap}
-.garang-decision-mode{justify-self:start;font-size:14px;font-weight:650;color:#efeee9;letter-spacing:-.01em}
-.garang-decision-chevron{width:30px;height:30px;border:1px solid rgba(255,255,255,.12);border-radius:999px;display:grid;place-items:center;color:#a8ada7;font-size:16px;line-height:1;transition:transform .18s ease,background .18s ease}
+.g2-chat-main.garang-has-decision-card{grid-template-rows:auto auto minmax(0,1fr) auto!important}
+.g2-chat-main.garang-has-decision-card>.g2-chat-head{grid-row:1}
+.g2-chat-main.garang-has-decision-card>.garang-decision-card{grid-row:2;align-self:start!important}
+.g2-chat-main.garang-has-decision-card>.g2-chat-scroll{grid-row:3;min-height:0!important}
+.g2-chat-main.garang-has-decision-card>.g2-composer-wrap{grid-row:4}
+.garang-decision-toggle{width:100%;min-height:48px;height:48px;margin:0;padding:0 14px;border:0;background:transparent;color:inherit;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:left;cursor:pointer;touch-action:manipulation}
+.garang-decision-kicker{font-size:9px;letter-spacing:.11em;color:#8c918b;white-space:nowrap}
+.garang-decision-mode{justify-self:start;font-size:13px;font-weight:650;color:#efeee9;letter-spacing:-.01em}
+.garang-decision-chevron{width:28px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:999px;display:grid;place-items:center;color:#a8ada7;font-size:15px;line-height:1;transition:transform .18s ease,background .18s ease}
 .garang-decision-card[data-expanded="true"] .garang-decision-chevron{transform:rotate(180deg);background:rgba(255,255,255,.04)}
-.garang-decision-details{padding:0 15px 14px;border-top:1px solid rgba(255,255,255,.075)}
+.garang-decision-details{padding:0 14px 13px;border-top:1px solid rgba(255,255,255,.075)}
 .garang-decision-details[hidden]{display:none!important}
-.garang-decision-summary{margin:13px 0 10px;font-size:12px;line-height:1.6;color:#b8bbb6;word-break:keep-all}
+.garang-decision-summary{margin:12px 0 9px;font-size:12px;line-height:1.55;color:#b8bbb6;word-break:keep-all}
 .garang-decision-signals{display:flex;gap:6px;flex-wrap:wrap}
-.garang-decision-signals span{font-size:10px;padding:5px 7px;border:1px solid rgba(255,255,255,.09);border-radius:999px;color:#8f958f}
-.garang-decision-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:9px;color:#727873}
+.garang-decision-signals span{font-size:9px;padding:5px 7px;border:1px solid rgba(255,255,255,.09);border-radius:999px;color:#8f958f}
+.garang-decision-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;font-size:9px;color:#727873}
 .garang-decision-action{border:1px solid rgba(88,170,145,.28);background:#0d1b17;color:#b8d8ce;border-radius:9px;padding:8px 10px;font-size:10px;cursor:pointer;white-space:nowrap}
 .garang-decision-action:hover,.garang-decision-action:focus-visible{border-color:rgba(88,170,145,.46);outline:none}
 @media(max-width:800px){
- section.garang-decision-card{margin:8px 0 10px!important;border-radius:14px!important}
- .garang-decision-toggle{min-height:52px;padding:0 13px;grid-template-columns:auto 1fr auto;gap:10px}
- .garang-decision-kicker{font-size:9px}.garang-decision-mode{font-size:13px}.garang-decision-chevron{width:28px;height:28px;font-size:15px}
- .garang-decision-details{padding:0 13px 13px}.garang-decision-foot{align-items:flex-end}.garang-decision-action{padding:8px 9px}
+ section.garang-decision-card{margin:6px 10px 7px!important;border-radius:12px!important}
+ .garang-coach-v2 .g2-chat-main.garang-has-decision-card>.garang-decision-card .garang-decision-toggle{min-height:44px!important;height:44px!important;padding:0 12px!important;gap:9px!important}
+ .garang-decision-kicker{font-size:8px}.garang-decision-mode{font-size:12px}.garang-decision-chevron{width:26px;height:26px;font-size:14px}
+ .garang-decision-details{padding:0 12px 11px}.garang-decision-foot{align-items:flex-end}.garang-decision-action{padding:8px 9px}
 }
 `;document.head.appendChild(style);
 }
+function markDecisionGrid(parent,card){
+ if(!parent)return;
+ document.querySelectorAll('.g2-chat-main.garang-has-decision-card').forEach(el=>{if(el!==parent)el.classList.remove('garang-has-decision-card');});
+ if(parent.classList?.contains('g2-chat-main')&&card?.parentNode===parent)parent.classList.add('garang-has-decision-card');
+}
 function placeCard(root,card,wrap,composer){
  const head=root.querySelector('.g2-chat-head,.coach-app-head');
- if(head?.parentNode){if(head.nextElementSibling!==card)head.parentNode.insertBefore(card,head.nextSibling);return;}
+ if(head?.parentNode){if(head.nextElementSibling!==card)head.parentNode.insertBefore(card,head.nextSibling);markDecisionGrid(head.parentNode,card);return;}
  const thread=root.querySelector('.g2-chat-main,.g2-thread,.coach-thread,#coachChat');
- if(thread?.parentNode){if(thread.previousElementSibling!==card)thread.parentNode.insertBefore(card,thread);return;}
+ if(thread?.parentNode){if(thread.previousElementSibling!==card)thread.parentNode.insertBefore(card,thread);markDecisionGrid(card.closest('.g2-chat-main'),card);return;}
  if(wrap&&composer&&card.parentNode!==wrap)wrap.insertBefore(card,wrap.querySelector('.g4-prompt-strip')||composer);
+ markDecisionGrid(card.closest('.g2-chat-main'),card);
 }
 function setExpanded(card,expanded){
  card.dataset.expanded=expanded?'true':'false';
