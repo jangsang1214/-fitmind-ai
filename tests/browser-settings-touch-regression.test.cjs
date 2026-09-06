@@ -84,7 +84,7 @@ async function assertSettingsInteractive(page,label){
   const proInfo=page.locator('#proInfo');
   await proInfo.waitFor({state:'visible',timeout:7000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset.garangScreen==='settings',null,{timeout:3000});
-  await proInfo.scrollIntoViewIfNeeded();
+  await proInfo.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
   await page.waitForTimeout(60);
 
   const state=await page.evaluate(()=>{
