@@ -51,6 +51,39 @@ async function tap(page,selector,label=selector){
   await heartbeat(page,label);
 }
 
+async function tapVisibleBackdrop(page,selector,label){
+  const loc=page.locator(selector);
+  await loc.waitFor({state:'visible',timeout:7000});
+  const point=await loc.evaluate(el=>{
+    const r=el.getBoundingClientRect();
+    const inset=12;
+    const candidates=[
+      [r.left+inset,r.top+r.height/2],
+      [r.right-inset,r.top+r.height/2],
+      [r.left+r.width/2,r.top+inset],
+      [r.left+r.width/2,r.bottom-inset]
+    ];
+    for(const [x,y] of candidates){
+      if(x<0||y<0||x>innerWidth||y>innerHeight)continue;
+      const hit=document.elementFromPoint(x,y);
+      if(hit&&(hit===el||el.contains(hit)))return {x,y};
+    }
+    for(let y=Math.max(r.top,0)+8;y<Math.min(r.bottom,innerHeight)-8;y+=32){
+      for(let x=Math.max(r.left,0)+8;x<Math.min(r.right,innerWidth)-8;x+=32){
+        const hit=document.elementFromPoint(x,y);
+        if(hit&&(hit===el||el.contains(hit)))return {x,y};
+      }
+    }
+    return null;
+  });
+  assert.ok(point,`${label}: no visible backdrop hit area found`);
+  await Promise.race([
+    page.touchscreen.tap(point.x,point.y),
+    timeout(3500,`${label}: physical tap did not settle`)
+  ]);
+  await heartbeat(page,label);
+}
+
 async function route(page,name){
   await tap(page,`#bottomNav button[data-page="${name}"]`,`route ${name}`);
   await page.waitForFunction(route=>document.querySelector(`#bottomNav button[data-page="${route}"]`)?.classList.contains('active'),name,{timeout:5000});
@@ -122,7 +155,7 @@ async function route(page,name){
     await tap(page,'.g2-head-new','new Coach conversation');
     await tap(page,'.g2-mobile-threads','Coach menu');
     await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
-    await tap(page,'.g2-sidebar-backdrop','Coach menu backdrop');
+    await tapVisibleBackdrop(page,'.g2-sidebar-backdrop','Coach menu backdrop');
     await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
 
     await route(page,'today');
