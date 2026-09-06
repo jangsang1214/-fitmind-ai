@@ -41,3 +41,5 @@ jobs:
         run: node tests/browser-authenticated-boot.test.cjs
       - name: Verify WebKit mobile regression suite
         run: node tests/browser-webkit-regression.test.cjs
+      - name: Verify WebKit Settings touch regression
+        run: node tests/browser-settings-touch-regression.test.cjs
