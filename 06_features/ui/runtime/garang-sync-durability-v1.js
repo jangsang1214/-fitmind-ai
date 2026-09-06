@@ -50,7 +50,6 @@ function historyCollection(db,uid,domain){const name=History.COLLECTIONS[domain]
 function readHistoryIndex(uid){const value=safeParse(readRaw(historyIndexKey(uid)));return value&&typeof value==='object'?value:{};}
 function writeHistoryIndex(uid,index){try{baseSetItem.call(localStorage,historyIndexKey(uid),nativeStringify(index));}catch{}}
 
-/* Preserve local full history and deletion metadata before app.js writes its local state. */
 Storage.prototype.setItem=function(key,value){
   if(this!==localStorage||!Core.isStateKey(key))return baseSetItem.call(this,key,value);
   const previousRaw=readRaw(key),previous=safeParse(previousRaw),parsed=safeParse(String(value));
@@ -92,7 +91,6 @@ async function persistHistory(db,uid,state){
       const normalized=History.normalizeRecord(domain,row,uid),fingerprint=next[normalized.id];if(old[normalized.id]===fingerprint)continue;
       const ref=collection.doc(encodeURIComponent(normalized.id)),data=History.docPayload(domain,normalized,uid);ops.push({type:'set',ref,data});
     }
-    /* Absence from a local/shell snapshot is never interpreted as deletion. Only an explicit tombstone may delete durable history. */
     const deleted=new Set(History.tombstonesFor(state,domain).map(item=>String(item.id)));
     for(const id of deleted){ops.push({type:'delete',ref:collection.doc(encodeURIComponent(id))});delete mergedIndex[domain][id];}
   }
@@ -102,7 +100,7 @@ async function persistHistory(db,uid,state){
 async function backupMigrationManifest(db,uid,state){
   if(state?.meta?.historyV2?.version===2)return;
   try{
-    const manifest={migration:'history-v2',createdAt:new Date().toISOString(),ownerUid:uid,historyManifest:History.compactShell(state)?.meta?.historyV2||null,shell:History.compactShell(state)};
+    const shell=History.compactShell(state),manifest={migration:'history-v2',createdAt:new Date().toISOString(),ownerUid:uid,historyManifest:shell?.meta?.historyV2||null,shell};
     const ref=db.collection('users').doc(uid).collection('recoverySnapshots').doc(`history-v2-${Date.now()}`);if(typeof ref.set==='function')await ref.set(manifest,{merge:false});
   }catch(error){console.warn('[GARANG] cloud recovery manifest deferred',error?.code||error?.message||error);}
 }
@@ -140,11 +138,10 @@ function patchFirestore(){
       const persisted=readUserState(uid),outgoing=mergeSyncMeta(data,persisted,uid),full=Core.mergeActiveStates(persisted||{},outgoing,{ownerUid:uid,clock:Date.now()}),ref=this,firestore=this.firestore||db;
       try{
         await persistHistory(db,uid,full);
-        /* Recovery writes are deliberately outside the transaction callback because Firestore may retry transactions. */
         try{const before=await originalGet.call(ref);if(before?.exists)await backupMigrationManifest(db,uid,safeCloudState(before.data(),uid));}catch(error){console.warn('[GARANG] pre-transaction recovery snapshot deferred',error?.code||error?.message||error);}
         await firestore.runTransaction(async transaction=>{
           const snapshot=await transaction.get(ref),remote=snapshot.exists?safeCloudState(snapshot.data(),uid):null;
-          const merged=Core.mergeActiveStates(full,remote,{ownerUid:uid,clock:Date.now()}),payload=History.compactShell(Core.compactForCloud(merged));
+          const merged=Core.mergeActiveStates(full,remote,{ownerUid:uid,clock:Date.now()}),payload=Core.compactForCloud(History.compactShell(merged));
           payload.meta={...(payload.meta||{}),syncOwnerUid:uid};payload.clientUpdatedAt=payload.meta.updatedAt||outgoing.clientUpdatedAt||new Date().toISOString();payload.cloudUpdatedAt=window.firebase.firestore.FieldValue.serverTimestamp();
           transaction.set(ref,payload,{merge:false});
         });
@@ -157,7 +154,8 @@ function patchFirestore(){
 }
 
 async function exportVerifiedBackup(){
-  const uid=currentUid(),key=uid?Core.stateKey(uid):Core.DEMO_KEY,state=readStateKey(key);if(!state)return toast('내보낼 저장 데이터를 찾지 못했습니다.');
+  const uid=currentUid(),key=uid?Core.stateKey(uid):Core.DEMO_KEY;let state=readStateKey(key);if(!state)return toast('내보낼 저장 데이터를 찾지 못했습니다.');
+  if(uid&&window.firebase?.apps?.length)try{const history=await loadHistory(window.firebase.firestore(),uid);state=History.mergeStateWithHistory(state,history);}catch(error){console.warn('[GARANG] backup history hydration deferred',error);}
   try{if(window.GarangSchema?.validateImport)window.GarangSchema.validateImport(state);}catch(error){console.warn('[GARANG] export validation failed',error);return toast('데이터 검증에 실패해 내보내기를 중단했습니다.');}
   const envelope=Core.createExportEnvelope(state,{scope:uid?'authenticated':'demo'});if(!Core.verifyExportEnvelope(envelope))return toast('백업 무결성 검증에 실패했습니다.');
   const blob=new Blob([nativeStringify(envelope,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=`GARANG_BACKUP_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);toast('체크섬 검증된 GARANG 백업을 내보냈습니다.');
