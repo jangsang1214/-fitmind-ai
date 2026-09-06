@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const Legacy=require('../02_core/legacy-migration-v2.js');
+const current={profile:{name:'Current'},onboarding:{goal:'new'},workouts:[{id:'w1',date:'2026-09-06',name:'Current'}],meals:[],runs:[],body:[],planner:[],checkins:[],aiChat:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]}};
+const old={profile:{name:'Old'},onboarding:{goal:'old'},workouts:[{id:'w1',date:'2026-09-06',name:'Old'},{date:'2026-09-05',name:'Legacy Squat'}],meals:[{date:'2026-09-05',name:'Legacy Meal',items:[{name:'Egg'}]}],runs:[],body:[],planner:[],checkins:[],aiChat:[],memory:{entries:[],facts:['fact'],preferences:[],goals:[],events:[]},analytics:{events:[]}};
+const once=Legacy.mergeState(current,old),twice=Legacy.mergeState(once,old);
+assert.equal(once.profile.name,'Current','current profile must win');
+assert.equal(once.onboarding.goal,'new','current onboarding must win');
+assert.equal(once.workouts.length,2);
+assert.equal(twice.workouts.length,2,'repeated import must not duplicate legacy workouts');
+assert.equal(twice.meals.length,1,'repeated import must not duplicate legacy meals');
+assert.ok(twice.workouts.every(x=>x.id));assert.ok(twice.meals[0].id&&twice.meals[0].items[0].id);
+console.log('legacy-migration-v2: PASS');
