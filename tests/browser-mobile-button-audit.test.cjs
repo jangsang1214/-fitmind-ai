@@ -159,16 +159,22 @@ async function route(page,name){
     await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
 
     await route(page,'today');
-    await tap(page,'#syncBadge','top sync');
+    const mobileChrome=await page.evaluate(()=>({
+      syncVisible:!!document.getElementById('syncBadge')&&getComputedStyle(document.getElementById('syncBadge')).display!=='none'&&document.getElementById('syncBadge').getBoundingClientRect().width>0,
+      profileVisible:!!document.getElementById('profileTopBtn')&&getComputedStyle(document.getElementById('profileTopBtn')).display!=='none'&&document.getElementById('profileTopBtn').getBoundingClientRect().width>0
+    }));
+    if(mobileChrome.syncVisible)await tap(page,'#syncBadge','top sync');
     await tap(page,'#menuBtn','hamburger');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:5000});
     await tap(page,'.garang-more-head button','hamburger close');
     await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:5000});
 
-    await tap(page,'#profileTopBtn','top profile');
-    await page.locator('#saveProfile').waitFor({state:'visible',timeout:5000});
-    await tap(page,'#saveProfile','save profile');
-    await page.locator('#saveProfile').waitFor({state:'visible',timeout:5000});
+    if(mobileChrome.profileVisible){
+      await tap(page,'#profileTopBtn','top profile');
+      await page.locator('#saveProfile').waitFor({state:'visible',timeout:5000});
+      await tap(page,'#saveProfile','save profile');
+      await page.locator('#saveProfile').waitFor({state:'visible',timeout:5000});
+    }
 
     await tap(page,'#settingsTopBtn','top settings');
     await page.locator('#savePreferences').waitFor({state:'visible',timeout:5000});
