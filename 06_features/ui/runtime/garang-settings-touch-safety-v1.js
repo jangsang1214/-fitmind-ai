@@ -1,87 +1,59 @@
-/* GARANG Settings Touch Safety v1.3
+/* GARANG Settings Touch Safety v1.4
    Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation.
-   Settings has one canonical entry: the permanent top-bar gear. */
+   The canonical Settings click handler is never replaced, delayed, prevented, or re-dispatched. */
 (() => {
   'use strict';
 
-  let navigationPending = false;
-  let lastTouchNavigationAt = 0;
-
-  function disableHitTesting(el) {
+  function disableTransientLayer(el) {
     if (!el) return;
-    el.style.setProperty('pointer-events','none','important');
+    el.style.pointerEvents = 'none';
     el.setAttribute('aria-hidden','true');
   }
 
   function deactivateTransientLayers() {
+    /* Close Coach mobile state first. Do not leave inline !important styles on its persistent backdrop. */
     document.querySelectorAll('.garang-coach-v2.sidebar-open').forEach(root => root.classList.remove('sidebar-open'));
 
-    document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel,.g2-sidebar-backdrop').forEach(el => {
-      disableHitTesting(el);
-      if (el.classList.contains('garang-more-sheet')) {
-        el.remove();
-        return;
-      }
-      if (!el.classList.contains('g2-sidebar-backdrop') && 'hidden' in el) el.hidden = true;
+    /* More is disposable DOM; remove it synchronously before the canonical Settings click renders. */
+    document.querySelectorAll('.garang-more-sheet').forEach(sheet => {
+      disableTransientLayer(sheet);
+      sheet.remove();
+    });
+
+    /* These layers are transient and may otherwise remain in WebKit's compositor hit-test tree. */
+    document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
+      disableTransientLayer(el);
+      if ('hidden' in el) el.hidden = true;
     });
 
     document.body.classList.remove('menu-open');
   }
 
-  function afterWebKitSettles(run) {
-    if (navigationPending || typeof run !== 'function') return false;
-    navigationPending = true;
-    deactivateTransientLayers();
-
-    /* A removed fixed/composited layer can remain in WebKit's hit-test tree for the current frame.
-       Cross two animation frames before executing the already-bound canonical route. */
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      navigationPending = false;
-      run();
-    }));
-    return true;
-  }
-
   function bindTopSettings() {
     const button = document.getElementById('settingsTopBtn');
     if (!button || button.dataset.garangSettingsTouchBound === '1') return false;
-    const canonicalClick = button.onclick;
-    if (typeof canonicalClick !== 'function') return false;
 
     button.dataset.garangSettingsTouchBound = '1';
 
-    /* Physical iOS/PWA taps are owned by touchend so navigation does not depend on WebKit
-       producing a later synthetic click after composited layers have changed. */
-    button.addEventListener('touchend', event => {
-      event.preventDefault();
-      event.stopPropagation();
-      lastTouchNavigationAt = Date.now();
-      afterWebKitSettles(() => canonicalClick.call(button, event));
-    }, {passive:false});
+    /* Physical iOS/PWA input: release stale hit blockers before the browser creates the click.
+       No preventDefault/stopPropagation here; app.js keeps full ownership of navigation. */
+    const release = () => deactivateTransientLayers();
+    button.addEventListener('touchstart', release, {passive:true, capture:true});
+    button.addEventListener('pointerdown', release, {passive:true, capture:true});
 
-    /* Mouse/keyboard/desktop fallback. Ignore the synthetic click that can follow touchend. */
-    button.onclick = function(event) {
-      if (Date.now() - lastTouchNavigationAt < 700) {
-        event?.preventDefault?.();
-        return;
-      }
-      event?.preventDefault?.();
-      afterWebKitSettles(() => canonicalClick.call(button, event));
-    };
     return true;
   }
 
-  /* app.js binds the canonical Settings handler synchronously before this runtime loads. */
+  /* app.js already owns settingsTopBtn.onclick. This runtime only adds pre-click cleanup listeners. */
   bindTopSettings();
 
-  /* Re-apply only if another runtime replaces/recreates the top-bar button. */
+  /* Re-apply if another runtime ever recreates the permanent top-bar button. */
   const observer = new MutationObserver(() => bindTopSettings());
   observer.observe(document.body, {childList:true, subtree:true});
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'1.3.0',
+    version:'1.4.0',
     deactivateTransientLayers,
-    afterWebKitSettles,
     bindTopSettings
   });
 })();
