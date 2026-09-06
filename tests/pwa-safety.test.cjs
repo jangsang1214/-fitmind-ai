@@ -6,7 +6,10 @@ assert.match(sw,/key\.startsWith\(CACHE_PREFIX\)/,'must delete only GARANG-owned
 assert.doesNotMatch(sw,/cached\|\|caches\.match\('\.\/index\.html'\)/,'asset requests must never fall back to HTML');
 assert.match(sw,/event\.request\.mode==='navigate'/,'HTML fallback must be navigation-only');
 assert.match(sw,/cache\.match\(event\.request\)|cache\.match\(request\)/);
-assert.match(loader,/app-shell-v10-20260906/);
+const cacheVersion=sw.match(/CACHE=`\$\{CACHE_PREFIX\}(v\d+-\d+)`/)?.[1];
+const loaderVersion=loader.match(/app-shell-(v\d+-\d+)/)?.[1];
+assert.ok(cacheVersion&&loaderVersion,'SW loader/runtime must expose an app-shell version');
+assert.equal(loaderVersion,cacheVersion,'root SW loader and runtime cache must rotate together');
 assert.match(updater,/updateViaCache:'none'/);
 assert.match(updater,/registration\.update\(\)/);
 console.log('pwa-safety: PASS');
