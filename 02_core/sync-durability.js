@@ -5,12 +5,11 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='garang-sync-durability-v2';
+const VERSION='garang-sync-durability-v2.1';
 const USER_KEY_RE=/^garang_user_(.+)_v3$/;
 const DEMO_KEY='garang_demo_state_v3';
 const DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','checkins','aiChat']);
 const CLOUD_LIMITS=Object.freeze({workouts:350,meals:350,body:250,checkins:180,planner:300,actionLog:300,errors:80,runs:200,aiChat:80});
-const TOMBSTONE_TTL_MS=365*24*60*60*1000;
 const jsonParse=JSON.parse.bind(JSON),jsonStringify=JSON.stringify.bind(JSON);
 
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
@@ -29,18 +28,18 @@ function checksum(value){let hash=0x811c9dc5;const text=typeof value==='string'?
 function rows(value){return Array.isArray(value)?value.filter(object):[];}
 function itemsForDomain(state,domain){if(domain==='memory')return rows(state?.memory?.entries);return rows(state?.[domain]);}
 function tombstoneKey(x){return `${String(x?.domain||'')}::${String(x?.id||'')}`;}
-function normalizeTombstones(input,clock=Date.now()){
-  const cutoff=clock-TOMBSTONE_TTL_MS,byKey=new Map();
+function normalizeTombstones(input){
+  const byKey=new Map();
   for(const raw of rows(input)){
     const domain=String(raw.domain||''),id=String(raw.id||''),deletedAt=String(raw.deletedAt||'');
-    if(!domain||!id||!iso(deletedAt)||iso(deletedAt)<cutoff)continue;
+    if(!domain||!id||!iso(deletedAt))continue;
     const item={domain,id,deletedAt,ownerUid:raw.ownerUid?String(raw.ownerUid):null};
     const key=tombstoneKey(item),prev=byKey.get(key);
     if(!prev||iso(item.deletedAt)>iso(prev.deletedAt))byKey.set(key,item);
   }
   return [...byKey.values()].sort((a,b)=>iso(a.deletedAt)-iso(b.deletedAt));
 }
-function mergeTombstones(a,b,clock=Date.now()){return normalizeTombstones([...(a||[]),...(b||[])],clock);}
+function mergeTombstones(a,b){return normalizeTombstones([...(a||[]),...(b||[])]);}
 function deletedBy(tombstones,domain,id,record){const hit=tombstones.find(x=>x.domain===domain&&String(x.id)===String(id));return !!hit&&iso(hit.deletedAt)>=rowStamp(record);}
 function mergeRows(localRows,remoteRows,{preferRemote=false,tombstones=[],domain=''}={}){
   const result=[],positions=new Map();
@@ -74,8 +73,8 @@ function withLocalMetadata(previousInput,nextInput,{ownerUid=null,deviceId=null,
   const prevOwner=previous?.meta?.syncOwnerUid?String(previous.meta.syncOwnerUid):null;
   if(ownerUid&&prevOwner&&prevOwner!==String(ownerUid))throw error('SYNC_OWNER_MISMATCH');
   const newDeletes=collectNewTombstones(previous,next,{ownerUid,clock});
-  next.meta.syncTombstones=mergeTombstones(previous?.meta?.syncTombstones,next.meta.syncTombstones,clock);
-  next.meta.syncTombstones=mergeTombstones(next.meta.syncTombstones,newDeletes,clock);
+  next.meta.syncTombstones=mergeTombstones(previous?.meta?.syncTombstones,next.meta.syncTombstones);
+  next.meta.syncTombstones=mergeTombstones(next.meta.syncTombstones,newDeletes);
   next.meta.syncOwnerUid=ownerUid||existingOwner||prevOwner||null;
   if(deviceId)next.meta.syncDeviceId=String(deviceId);else if(previous?.meta?.syncDeviceId&&!next.meta.syncDeviceId)next.meta.syncDeviceId=previous.meta.syncDeviceId;
   if(previous?.meta?.syncLastMergeAt&&!next.meta.syncLastMergeAt)next.meta.syncLastMergeAt=previous.meta.syncLastMergeAt;
@@ -93,7 +92,7 @@ function mergeActiveStates(localInput,remoteInput,{ownerUid=null,clock=Date.now(
   const older=preferRemote?local:remote,newer=preferRemote?remote:local;
   const merged={...older,...newer};
   merged.meta={...(object(older.meta)?older.meta:{}),...(object(newer.meta)?newer.meta:{})};
-  const tombstones=mergeTombstones(local?.meta?.syncTombstones,remote?.meta?.syncTombstones,clock);
+  const tombstones=mergeTombstones(local?.meta?.syncTombstones,remote?.meta?.syncTombstones);
   for(const domain of DOMAINS)merged[domain]=mergeRows(local[domain],remote[domain],{preferRemote,tombstones,domain});
   merged.memory={...(object(older.memory)?older.memory:{}),...(object(newer.memory)?newer.memory:{})};
   for(const bucket of ['facts','preferences','goals','events'])merged.memory[bucket]=mergeUnique(local?.memory?.[bucket],remote?.memory?.[bucket]);
