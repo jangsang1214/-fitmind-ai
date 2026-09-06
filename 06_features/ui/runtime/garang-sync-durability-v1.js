@@ -1,8 +1,8 @@
-/* GARANG sync durability runtime v2.2
+/* GARANG sync durability runtime v2.3
    Transitional compatibility adapter for legacy app.js persistence.
    Long-term Workout/Meal/Run/Body records live in dedicated Firestore collections;
-   users/<uid>/app/state is now a bounded shell. Existing local data is backed up and
-   migrated before the shell is compacted. Ordinary app taps are never intercepted.
+   users/<uid>/app/state is a bounded shell. Historical records are append-safe unless
+   an explicit deletion marker exists. Ordinary app taps are never intercepted.
 */
 (() => {
 'use strict';
@@ -13,7 +13,7 @@ window.__garangSyncDurabilityRuntime=true;
 
 const nativeParse=JSON.parse.bind(JSON),nativeStringify=JSON.stringify.bind(JSON);
 const baseSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getItem,baseRemoveItem=Storage.prototype.removeItem;
-const DEVICE_KEY='garang_sync_device_v1',PENDING_PREFIX='garang_sync_pending_v1::',BACKUP_PREFIX='garang_sync_backup_v2::',CLOUD_BACKUP_PREFIX='garang_cloud_recovery_backup_v2::',HISTORY_INDEX_PREFIX='garang_history_index_v2::';
+const DEVICE_KEY='garang_sync_device_v1',PENDING_PREFIX='garang_sync_pending_v1::',BACKUP_PREFIX='garang_sync_backup_v2::',LOCAL_ROLLING_PREFIX='garang_state_backup_v3::',CLOUD_BACKUP_PREFIX='garang_cloud_recovery_backup_v2::',CLOUD_ROLLING_PREFIX='garang_cloud_recovery_backup_v3::',HISTORY_INDEX_PREFIX='garang_history_index_v2::',ROLLING_LIMIT=5;
 let activeAuthUid=null,retryTimer=null,firestorePatched=false,authWatching=false;
 
 function uuid(){return globalThis.crypto?.randomUUID?.()||`device_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
@@ -39,7 +39,11 @@ function triggerRetry(uid){if(!uid||uid!==currentUid()||navigator.onLine===false
 function syncError(code,message=code){const error=new Error(message);error.code=code;return error;}
 function statePathUid(ref){const match=String(ref?.path||'').match(/^users\/([^/]+)\/app\/state$/);return match?match[1]:null;}
 function stripCloudFields(value){if(!value||typeof value!=='object')return {};const out={...value};delete out.cloudUpdatedAt;return out;}
-function backupCloudRaw(uid,value){try{const key=`${CLOUD_BACKUP_PREFIX}${uid}`;if(baseGetItem.call(localStorage,key)==null)baseSetItem.call(localStorage,key,nativeStringify(value));}catch{}}
+function stamp(){return new Date().toISOString().replace(/[:.]/g,'-');}
+function localKeys(prefix){const out=[];try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith(prefix))out.push(key);}}catch{}return out.sort();}
+function writeRolling(prefix,raw){try{const keys=localKeys(prefix),latest=keys.at(-1);if(latest&&readRaw(latest)===raw)return;const key=`${prefix}${stamp()}`;baseSetItem.call(localStorage,key,raw);const after=[...keys,key].sort();while(after.length>ROLLING_LIMIT)baseRemoveItem.call(localStorage,after.shift());}catch{}}
+function backupLocalRaw(key,raw){if(!raw)return;try{baseSetItem.call(localStorage,backupKey(key),raw);writeRolling(`${LOCAL_ROLLING_PREFIX}${key}::`,raw);}catch{}}
+function backupCloudRaw(uid,value){try{const raw=nativeStringify(value),key=`${CLOUD_BACKUP_PREFIX}${uid}`;if(baseGetItem.call(localStorage,key)==null)baseSetItem.call(localStorage,key,raw);writeRolling(`${CLOUD_ROLLING_PREFIX}${uid}::`,raw);}catch{}}
 function safeCloudState(value,uid){backupCloudRaw(uid,value);return sanitize(stripCloudFields(value),uid);}
 function mergeSyncMeta(outgoing,persisted,uid){const out=safeCloudState(outgoing,uid);out.meta={...(out.meta||{})};const meta=persisted?.meta||{};for(const key of ['syncOwnerUid','syncDeviceId','syncRevision','syncLastLocalAt','syncLastMergeAt','syncTombstones'])if(meta[key]!==undefined)out.meta[key]=meta[key];if(!out.meta.syncOwnerUid)out.meta.syncOwnerUid=uid;return out;}
 function snapshotWithData(snapshot,data){return {exists:snapshot.exists,id:snapshot.id,ref:snapshot.ref,metadata:snapshot.metadata,data:()=>data,get:field=>data?.[field]};}
@@ -54,12 +58,12 @@ Storage.prototype.setItem=function(key,value){
   if(this!==localStorage||!Core.isStateKey(key))return baseSetItem.call(this,key,value);
   const previousRaw=readRaw(key),previous=safeParse(previousRaw),parsed=safeParse(String(value));
   if(!parsed)return baseSetItem.call(this,key,value);
-  const ownerUid=ownerForKey(key),next=sanitize(parsed,ownerUid),deletes=Core.collectNewTombstones(previous,next,{ownerUid,clock:Date.now()});
+  const ownerUid=ownerForKey(key),next=sanitize(parsed,ownerUid),deletes=Core.collectNewTombstones(previous,next,{ownerUid,clock:Date.now()}),protectedShrink=Core.hasProtectedShrink?.(previous,next)===true;
   let hardened;
   try{hardened=Core.withLocalMetadata(previous,next,{ownerUid,deviceId:DEVICE_ID,clock:Date.now()});}
-  catch(error){if(previousRaw)baseSetItem.call(localStorage,backupKey(key),previousRaw);throw error;}
+  catch(error){if(previousRaw)backupLocalRaw(key,previousRaw);throw error;}
   const mergeChanged=String(previous?.meta?.syncLastMergeAt||'')!==String(hardened?.meta?.syncLastMergeAt||'');
-  if(previousRaw&&(deletes.length||mergeChanged))baseSetItem.call(localStorage,backupKey(key),previousRaw);
+  if(previousRaw&&(deletes.length||mergeChanged||protectedShrink))backupLocalRaw(key,previousRaw);
   return baseSetItem.call(this,key,nativeStringify(hardened));
 };
 
@@ -82,20 +86,35 @@ async function commitHistoryOps(db,ops){
   }
 }
 async function persistHistory(db,uid,state){
-  if(!state||!uid)return;
-  const previousIndex=readHistoryIndex(uid),nextIndex=History.historyIndex(state),mergedIndex={},ops=[];
+  if(!state||!uid)return {};
+  const previousIndex=readHistoryIndex(uid),nextIndex=History.historyIndex(state),mergedIndex={},ops=[],checks=[],preserved=Object.fromEntries(History.DOMAINS.map(domain=>[domain,[]]));
   for(const domain of History.DOMAINS){
     const collection=historyCollection(db,uid,domain);if(!collection)continue;
     const old=previousIndex[domain]||{},next=nextIndex[domain]||{};mergedIndex[domain]={...old,...next};
     for(const row of History.rows(state[domain])){
       const normalized=History.normalizeRecord(domain,row,uid),fingerprint=next[normalized.id];if(old[normalized.id]===fingerprint)continue;
-      const ref=collection.doc(encodeURIComponent(normalized.id)),data=History.docPayload(domain,normalized,uid);ops.push({type:'set',ref,data});
+      const ref=collection.doc(encodeURIComponent(normalized.id)),data=History.docPayload(domain,normalized,uid),needsGuard=old[normalized.id]!==undefined||state?.meta?.historyV2?.version===2;
+      checks.push({domain,normalized,fingerprint,ref,data,needsGuard});
     }
     const deleted=new Set(History.tombstonesFor(state,domain).map(item=>String(item.id)));
     for(const id of deleted){ops.push({type:'delete',ref:collection.doc(encodeURIComponent(id))});delete mergedIndex[domain][id];}
   }
+  for(let offset=0;offset<checks.length;offset+=25){
+    const chunk=checks.slice(offset,offset+25),results=await Promise.all(chunk.map(async item=>{
+      if(!item.needsGuard)return {item,snapshot:null};
+      try{return {item,snapshot:await item.ref.get()};}catch(error){throw syncError(error?.code||'history_guard_failed','Could not verify durable history before write.');}
+    }));
+    for(const {item,snapshot} of results){
+      const remote=snapshot?.exists?History.recordFromDoc(snapshot.data()):null;
+      if(remote&&History.rowStamp(remote)>History.rowStamp(item.normalized)){
+        preserved[item.domain].push(remote);mergedIndex[item.domain][item.normalized.id]=History.fingerprint(item.domain,remote);continue;
+      }
+      ops.push({type:'set',ref:item.ref,data:item.data});
+    }
+  }
   if(ops.length)await commitHistoryOps(db,ops);
   writeHistoryIndex(uid,mergedIndex);
+  return preserved;
 }
 async function backupMigrationManifest(db,uid,state){
   if(state?.meta?.historyV2?.version===2)return;
@@ -135,9 +154,10 @@ function patchFirestore(){
       const uid=statePathUid(this);if(!uid)return originalSet.call(this,data,options);
       const auth=currentUid();if(!auth||auth!==uid){markPending(uid,'stale_account_write');throw syncError('STALE_ACCOUNT_WRITE','Blocked a stale account sync write.');}
       if(navigator.onLine===false){markPending(uid,'offline_write');throw syncError('unavailable','Offline sync deferred.');}
-      const persisted=readUserState(uid),outgoing=mergeSyncMeta(data,persisted,uid),full=Core.mergeActiveStates(persisted||{},outgoing,{ownerUid:uid,clock:Date.now()}),ref=this,firestore=this.firestore||db;
+      const persisted=readUserState(uid),outgoing=mergeSyncMeta(data,persisted,uid),ref=this,firestore=this.firestore||db;
+      let full=Core.mergeActiveStates(persisted||{},outgoing,{ownerUid:uid,clock:Date.now()});
       try{
-        await persistHistory(db,uid,full);
+        const remoteWins=await persistHistory(db,uid,full);full=History.mergeStateWithHistory(full,remoteWins);
         try{const before=await originalGet.call(ref);if(before?.exists)await backupMigrationManifest(db,uid,safeCloudState(before.data(),uid));}catch(error){console.warn('[GARANG] pre-transaction recovery snapshot deferred',error?.code||error?.message||error);}
         await firestore.runTransaction(async transaction=>{
           const snapshot=await transaction.get(ref),remote=snapshot.exists?safeCloudState(snapshot.data(),uid):null;
@@ -167,5 +187,5 @@ window.addEventListener('online',()=>{document.documentElement.dataset.garangNet
 window.addEventListener('offline',()=>{document.documentElement.dataset.garangNetwork='offline';const uid=currentUid();if(uid)markPending(uid,'offline',{increment:false});});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine!==false){const uid=currentUid();if(uid&&readPending(uid))scheduleRetry(uid,{immediate:true});}});
 setTimeout(bootFirebaseGuards,0);setTimeout(patchFirestore,700);window.addEventListener('load',()=>{patchFirestore();authWatch();},{once:true});
-window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.2',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
+window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.3',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
 })();
