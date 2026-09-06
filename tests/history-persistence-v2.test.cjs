@@ -13,7 +13,10 @@ const state={meta:{syncOwnerUid:'u1',updatedAt:'2026-09-06T00:00:00Z'},workouts,
 const shell=History.compactShell(state),shellAgain=History.compactShell(state);
 assert.deepEqual(shellAgain,shell,'same state must produce deterministic shell metadata and never trigger a sync loop by wall-clock time');
 assert.equal(shell.meta.historyV2.counts.workouts,620);assert.equal(shell.meta.historyV2.counts.meals,620);assert.equal(shell.meta.historyV2.counts.runs,210);assert.equal(shell.meta.historyV2.counts.body,300);
-assert.equal(shell.meta.historyV2.updatedAt,'2026-09-06T00:00:00.000Z');
+assert.equal(shell.meta.historyV2.updatedAt,shellAgain.meta.historyV2.updatedAt,'history timestamp must be deterministic');
+assert.ok(Date.parse(shell.meta.historyV2.updatedAt)>=Date.parse(state.meta.updatedAt),'history metadata must represent the newest state/record timestamp');
+const newestRecordDate=Math.max(...[workouts,meals,runs,body].flat().map(row=>History.rowStamp(row)));
+assert.equal(Date.parse(shell.meta.historyV2.updatedAt),newestRecordDate,'history metadata must track the newest record, not wall-clock execution time');
 assert.equal(shell.workouts.length,History.SHELL_LIMITS.workouts);
 assert.equal(shell.meals.length,History.SHELL_LIMITS.meals);
 assert.equal(shell.runs.length,History.SHELL_LIMITS.runs);
