@@ -27,6 +27,27 @@ async function tap(page,selector){
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
 }
 
+async function tapVisibleBackdrop(page){
+  const loc=page.locator('.g2-sidebar-backdrop');
+  await loc.waitFor({state:'visible',timeout:7000});
+  const point=await loc.evaluate(el=>{
+    const r=el.getBoundingClientRect();
+    const minX=Math.max(4,Math.floor(r.left)+4);
+    const maxX=Math.min(window.innerWidth-4,Math.ceil(r.right)-4);
+    const minY=Math.max(4,Math.floor(r.top)+4);
+    const maxY=Math.min(window.innerHeight-70,Math.ceil(r.bottom)-4);
+    for(let x=maxX;x>=minX;x-=12){
+      for(let y=minY;y<=maxY;y+=24){
+        const h=document.elementFromPoint(x,y);
+        if(h&&(h===el||el.contains(h)))return {x,y};
+      }
+    }
+    return null;
+  });
+  assert.ok(point,'.g2-sidebar-backdrop must expose a tappable point outside the open sidebar');
+  await page.touchscreen.tap(point.x,point.y);
+}
+
 async function assertCoachSettles(page){
   await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g2-chat-head'),{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-decision-toggle'),{timeout:10000});
@@ -56,7 +77,7 @@ async function assertCoachSettles(page){
 
   await tap(page,'.g2-mobile-threads');
   await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
-  await tap(page,'.g2-sidebar-backdrop');
+  await tapVisibleBackdrop(page);
   await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
 
   await tap(page,'.g2-head-new');
