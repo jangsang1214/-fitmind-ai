@@ -1,5 +1,6 @@
-/* GARANG Settings Touch Safety v1.0
-   Prevent stale full-screen overlays from owning iOS/WebKit hit testing during utility-screen navigation. */
+/* GARANG Settings Touch Safety v1.1
+   Prevent stale full-screen overlays from owning iOS/WebKit hit testing during Settings navigation
+   without changing timing for unrelated routes. */
 (() => {
   'use strict';
 
@@ -41,7 +42,7 @@
     deactivateTransientLayers();
 
     /* WebKit can retain a removed fixed layer in the hit-test tree for the current frame.
-       Cross two animation frames before mounting the destination screen. */
+       Cross two animation frames before mounting Settings. */
     requestAnimationFrame(() => requestAnimationFrame(() => {
       navigationPending = false;
       navigateViaCanonicalRouter(page);
@@ -57,13 +58,13 @@
       return;
     }
 
-    const routeButton = event.target?.closest?.('.garang-more-sheet [data-route]');
-    if (routeButton) {
-      const route = routeButton.dataset.route;
-      if (!route) return;
+    /* Preserve Functional Recovery's synchronous routing for every other More-sheet route.
+       Only Settings needs the WebKit hit-test settling frame. */
+    const settingsRouteButton = event.target?.closest?.('.garang-more-sheet [data-route="settings"]');
+    if (settingsRouteButton) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      safeNavigate(route);
+      safeNavigate('settings');
     }
   }, true);
 
