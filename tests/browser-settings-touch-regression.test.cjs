@@ -25,6 +25,8 @@ async function waitForServer(){
 async function tap(page,selector){
   const loc=page.locator(selector);
   await loc.waitFor({state:'visible',timeout:7000});
+  await loc.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(30);
   const box=await loc.boundingBox();
   assert.ok(box,`${selector} must have a touch box`);
   const hit=await loc.evaluate(el=>{
@@ -79,8 +81,10 @@ async function assertSettingsSettles(page,label){
 async function assertSettingsInteractive(page,label){
   stage(`${label}: wait settings controls`);
   await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});
-  await page.locator('#proInfo').waitFor({state:'visible',timeout:7000});
+  const proInfo=page.locator('#proInfo');
+  await proInfo.waitFor({state:'visible',timeout:7000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset.garangScreen==='settings',null,{timeout:3000});
+  await proInfo.scrollIntoViewIfNeeded();
   await page.waitForTimeout(60);
 
   const state=await page.evaluate(()=>{
@@ -95,6 +99,9 @@ async function assertSettingsInteractive(page,label){
       .map(el=>el.className||el.id||el.tagName);
     return {
       hit:!!target&&!!hit&&(hit===target||target.contains(hit)),
+      hitOwner:hit?{tag:hit.tagName,id:hit.id||'',className:String(hit.className||''),text:String(hit.textContent||'').trim().slice(0,80)}:null,
+      rect:r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}:null,
+      viewport:{width:innerWidth,height:innerHeight},
       blockers,
       screen:document.getElementById('main')?.dataset.garangScreen||'',
       canonicalGearIntact:window.GarangSettingsTouchSafety?.canonicalGearIntact===true
@@ -103,8 +110,8 @@ async function assertSettingsInteractive(page,label){
 
   assert.equal(state.screen,'settings',`${label}: Settings must own the explicit screen id`);
   assert.equal(state.canonicalGearIntact,true,`${label}: canonical top gear onclick must remain untouched`);
-  assert.equal(state.hit,true,`${label}: Settings control must be hit-testable`);
-  assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain`);
+  assert.equal(state.hit,true,`${label}: Settings control must be hit-testable; diagnostics=${JSON.stringify(state)}`);
+  assert.deepEqual(state.blockers,[],`${label}: no stale full-screen blocker may remain; diagnostics=${JSON.stringify(state)}`);
 
   await assertSettingsSettles(page,label);
   stage(`${label}: tap PRO info`);
