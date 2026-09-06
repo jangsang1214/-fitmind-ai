@@ -1,7 +1,7 @@
-/* GARANG Settings Touch Safety v2.0
-   iOS/WebKit can stall when document/body click delegates continue running after the top Settings gear tap.
-   Intercept the gear at the earliest window capture phase, finish the physical click without downstream delegates,
-   then route on a clean frame using GARANG's canonical Settings handler. */
+/* GARANG Settings Touch Safety v2.1
+   WebKit can finish the physical gear tap but never service a timer/rAF queued from that click task.
+   Own the gear at window capture, stop downstream click delegates, and complete the canonical Settings route
+   synchronously before WebKit leaves the isolated capture handler. */
 (() => {
   'use strict';
 
@@ -15,7 +15,9 @@
   let lastCleanupAt = 0;
   let lastNavigationAttemptAt = 0;
   let lastNavigationAt = 0;
-  let pendingSettingsNav = false;
+  let lastCanonicalStartAt = 0;
+  let lastCanonicalReturnAt = 0;
+  let navigating = false;
 
   function disableTransientLayer(el) {
     if (!el) return;
@@ -23,20 +25,23 @@
     el.setAttribute('aria-hidden','true');
   }
 
-  function deactivateTransientLayers() {
+  function neutralizeTransientHitLayers() {
     document.querySelectorAll('.garang-coach-v2.sidebar-open').forEach(root => root.classList.remove('sidebar-open'));
-
-    document.querySelectorAll('.garang-more-sheet').forEach(sheet => {
-      disableTransientLayer(sheet);
-      sheet.remove();
-    });
-
-    document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
+    document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
       disableTransientLayer(el);
+      el.style.visibility = 'hidden';
+    });
+    document.body.classList.remove('menu-open');
+  }
+
+  function deactivateTransientLayers() {
+    neutralizeTransientHitLayers();
+
+    document.querySelectorAll('.garang-more-sheet').forEach(sheet => sheet.remove());
+    document.querySelectorAll('.modal-backdrop,.gcp-backdrop,.gcp-panel').forEach(el => {
       if ('hidden' in el) el.hidden = true;
     });
 
-    document.body.classList.remove('menu-open');
     lastCleanupAt = Date.now();
   }
 
@@ -49,19 +54,19 @@
     if (save === handledSettingsNode) return false;
     handledSettingsNode = save;
 
-    requestAnimationFrame(() => {
-      deactivateTransientLayers();
-      requestAnimationFrame(() => deactivateTransientLayers());
-    });
+    /* Do not depend on rAF/timers here: the bug itself is a WebKit task starvation case. */
+    deactivateTransientLayers();
     return true;
   }
 
   function navigateSettingsNow() {
-    if (typeof canonicalSettingsClick !== 'function') return false;
+    if (typeof canonicalSettingsClick !== 'function' || navigating) return false;
+    navigating = true;
     lastNavigationAttemptAt = Date.now();
+    lastCanonicalStartAt = Date.now();
 
-    /* app.js tails go() with window.scrollTo({behavior:'instant'}).
-       Keep that non-standard WebKit scroll outside the Settings render task only. */
+    /* app.js tails go() with window.scrollTo({behavior:'instant'}), which is not a standard
+       Safari behavior value. Suppress only that tail call while keeping the canonical render/bind path. */
     const nativeScrollTo = window.scrollTo;
     let replacedScroll = false;
     try {
@@ -69,37 +74,21 @@
         window.scrollTo = () => {};
         replacedScroll = true;
       } catch {}
+
       canonicalSettingsClick.call(gear);
+      lastCanonicalReturnAt = Date.now();
       lastNavigationAt = Date.now();
+
+      const scroller = document.scrollingElement || document.documentElement;
+      if (scroller) scroller.scrollTop = 0;
+      scheduleSettingsCleanup();
+      return true;
     } finally {
       if (replacedScroll) {
         try { window.scrollTo = nativeScrollTo; } catch {}
       }
+      navigating = false;
     }
-
-    requestAnimationFrame(() => {
-      const scroller = document.scrollingElement || document.documentElement;
-      if (scroller) scroller.scrollTop = 0;
-    });
-    return true;
-  }
-
-  function queueSettingsNavigation() {
-    if (pendingSettingsNav) return false;
-    pendingSettingsNav = true;
-
-    /* Leave the physical click task completely before replacing #main.
-       Two animation frames also let WebKit retire the old hit-test/compositing tree. */
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          pendingSettingsNav = false;
-          deactivateTransientLayers();
-          navigateSettingsNow();
-        });
-      });
-    }, 0);
-    return true;
   }
 
   function isGearEvent(event) {
@@ -110,13 +99,14 @@
   function interceptGearClick(event) {
     if (!isGearEvent(event)) return;
 
-    /* This is intentionally on window capture: it runs before document/body delegates.
-       Those delegates were the remaining WebKit stall path after the physical tap settled. */
     lastInterceptAt = Date.now();
     event.preventDefault();
     event.stopImmediatePropagation();
-    disableTransientLayer(document.querySelector('.garang-more-sheet'));
-    queueSettingsNavigation();
+
+    /* Only mutate hit-testing state before the route; avoid removing nodes and waking body
+       childList observers until the Settings DOM has already been rendered. */
+    neutralizeTransientHitLayers();
+    navigateSettingsNow();
   }
 
   function installCaptureIsolation() {
@@ -124,11 +114,12 @@
     if (typeof canonicalSettingsClick !== 'function') return false;
 
     gear.dataset.garangSettingsCapture = '1';
-    gear.dataset.garangSettingsDeferred = '1';
+    gear.dataset.garangSettingsSynchronous = '1';
 
-    /* Fallback for non-DOM click invocation; physical/browser clicks are intercepted at window capture. */
+    /* Direct onclick invocation fallback. Physical/programmatic click events are intercepted at window capture. */
     gear.onclick = function settingsFallbackClick() {
-      queueSettingsNavigation();
+      neutralizeTransientHitLayers();
+      navigateSettingsNow();
     };
 
     window.addEventListener('click', interceptGearClick, true);
@@ -142,15 +133,17 @@
   scheduleSettingsCleanup();
 
   window.GarangSettingsTouchSafety = Object.freeze({
-    version:'2.0.0',
+    version:'2.1.0',
+    neutralizeTransientHitLayers,
     deactivateTransientLayers,
     scheduleSettingsCleanup,
     navigateSettingsNow,
-    queueSettingsNavigation,
     installCaptureIsolation,
     get lastInterceptAt(){ return lastInterceptAt; },
     get lastCleanupAt(){ return lastCleanupAt; },
     get lastNavigationAttemptAt(){ return lastNavigationAttemptAt; },
-    get lastNavigationAt(){ return lastNavigationAt; }
+    get lastNavigationAt(){ return lastNavigationAt; },
+    get lastCanonicalStartAt(){ return lastCanonicalStartAt; },
+    get lastCanonicalReturnAt(){ return lastCanonicalReturnAt; }
   });
 })();
