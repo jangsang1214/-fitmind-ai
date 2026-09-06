@@ -87,20 +87,19 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.3.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.4.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const button=document.getElementById('settingsTopBtn');
       return {
         bound:button?.dataset?.garangSettingsTouchBound||'',
-        onclick:typeof button?.onclick,
-        touchAction:button?getComputedStyle(button).touchAction:''
+        onclick:typeof button?.onclick
       };
     });
     assert.equal(binding.bound,'1','top Settings gear must have iOS touch safety bound');
-    assert.equal(binding.onclick,'function','top Settings gear must preserve a click fallback');
+    assert.equal(binding.onclick,'function','top Settings gear must preserve the canonical click handler');
 
-    // Settings has one canonical route: the permanent top-bar gear.
+    // Canonical top-bar Settings route must still open from a physical WebKit touch.
     await tap(page,'#settingsTopBtn');
     await assertSettingsInteractive(page,'top-bar settings');
 
