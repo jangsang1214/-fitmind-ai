@@ -1,4 +1,4 @@
-/* GARANG state sanitizer v1
+/* GARANG state sanitizer v1.1
    Data-only preboot repair. No DOM events, timers, Firebase hooks or prototype patches.
 */
 (function(root,factory){
@@ -14,6 +14,7 @@
 const DEMO_KEY='garang_demo_state_v3';
 const USER_KEY_RE=/^garang_user_(.+)_v3$/;
 const BACKUP_PREFIX='garang_state_recovery_backup_v1::';
+const INVALID_SUFFIX='::invalid-json';
 const ROW_DOMAINS=['checkins','planner','workouts','meals','runs','body','aiChat','actionLog','errors'];
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -28,6 +29,7 @@ function sanitizeState(input,{ownerUid=null}={}){
   if(ownerUid&&!out.meta.syncOwnerUid)out.meta.syncOwnerUid=String(ownerUid);
   for(const domain of ROW_DOMAINS)out[domain]=rows(out[domain]);
   out.meals=out.meals.map(meal=>({...meal,items:rows(meal.items)}));
+  out.runs=out.runs.map(run=>({...run,coords:Array.isArray(run.coords)?run.coords.filter(point=>Array.isArray(point)&&point.length>=2&&Number.isFinite(Number(point[0]))&&Number.isFinite(Number(point[1]))):[]}));
   out.memory=object(out.memory)?out.memory:{};
   out.memory.entries=rows(out.memory.entries);
   for(const bucket of ['facts','preferences','goals','events'])out.memory[bucket]=Array.isArray(out.memory[bucket])?out.memory[bucket].filter(value=>value!=null):[];
@@ -40,20 +42,25 @@ function sanitizeState(input,{ownerUid=null}={}){
   return out;
 }
 
+function backupRaw(storage,key,raw,suffix=''){
+  if(raw==null)return false;
+  const backup=`${BACKUP_PREFIX}${key}${suffix}`;
+  try{if(storage.getItem(backup)==null)storage.setItem(backup,raw);return true;}catch{return false;}
+}
 function repairLocalStorage(storage){
-  const report={checked:0,repaired:0,invalidJson:0,keys:[]};
+  const report={checked:0,repaired:0,invalidJson:0,backedUp:0,keys:[]};
   if(!storage)return report;
   const keys=[];
   try{for(let i=0;i<storage.length;i++){const key=storage.key(i);if(isStateKey(key))keys.push(key);}}catch{return report;}
   for(const key of keys){
     report.checked++;
     let raw=null,parsed=null;
-    try{raw=storage.getItem(key);parsed=raw?JSON.parse(raw):null;}catch{report.invalidJson++;continue;}
+    try{raw=storage.getItem(key);parsed=raw?JSON.parse(raw):null;}catch{report.invalidJson++;if(backupRaw(storage,key,raw,INVALID_SUFFIX))report.backedUp++;continue;}
     if(!object(parsed))continue;
     const safe=sanitizeState(parsed,{ownerUid:ownerFromKey(key)}),next=JSON.stringify(safe);
     if(next===JSON.stringify(parsed))continue;
     try{
-      if(raw!=null&&!storage.getItem(`${BACKUP_PREFIX}${key}`))storage.setItem(`${BACKUP_PREFIX}${key}`,raw);
+      if(backupRaw(storage,key,raw))report.backedUp++;
       storage.setItem(key,next);
       report.repaired++;report.keys.push(key);
     }catch{}
@@ -61,5 +68,5 @@ function repairLocalStorage(storage){
   return report;
 }
 
-return Object.freeze({VERSION:'garang-state-sanitizer-v1',DEMO_KEY,USER_KEY_RE,BACKUP_PREFIX,ROW_DOMAINS,isStateKey,ownerFromKey,sanitizeState,repairLocalStorage});
+return Object.freeze({VERSION:'garang-state-sanitizer-v1.1',DEMO_KEY,USER_KEY_RE,BACKUP_PREFIX,INVALID_SUFFIX,ROW_DOMAINS,isStateKey,ownerFromKey,sanitizeState,backupRaw,repairLocalStorage});
 });

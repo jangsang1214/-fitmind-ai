@@ -21,6 +21,13 @@ service cloud.firestore {
         && (!('syncOwnerUid' in data.meta) || data.meta.syncOwnerUid == null || data.meta.syncOwnerUid == userId)
       );
     }
+    function validHistory(data, userId, domain) {
+      return data is map
+        && data.ownerUid == userId
+        && data.domain == domain
+        && data.recordId is string
+        && data.record is map;
+    }
     function globalLearningConsented() {
       return signedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
@@ -38,8 +45,30 @@ service cloud.firestore {
         allow delete: if isOwner(userId);
       }
 
+      match /workoutHistory/{recordId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validHistory(request.resource.data, userId, 'workouts');
+      }
+      match /mealHistory/{recordId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validHistory(request.resource.data, userId, 'meals');
+      }
+      match /runHistory/{recordId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validHistory(request.resource.data, userId, 'runs');
+      }
+      match /bodyHistory/{recordId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validHistory(request.resource.data, userId, 'body');
+      }
+      match /recoverySnapshots/{snapshotId} {
+        allow read, create, delete: if isOwner(userId);
+        allow update: if false;
+      }
+
+      /* No broad owner wildcard: every user subcollection must be declared explicitly. */
       match /{document=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if false;
       }
     }
 

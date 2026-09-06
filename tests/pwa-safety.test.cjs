@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),sw=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8'),loader=fs.readFileSync(path.join(root,'sw.js'),'utf8'),updater=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sw-update-v2.js'),'utf8');
+assert.match(sw,/CACHE_PREFIX='garang-app-shell-'/);
+assert.match(sw,/key\.startsWith\(CACHE_PREFIX\)/,'must delete only GARANG-owned caches');
+assert.doesNotMatch(sw,/cached\|\|caches\.match\('\.\/index\.html'\)/,'asset requests must never fall back to HTML');
+assert.match(sw,/event\.request\.mode==='navigate'/,'HTML fallback must be navigation-only');
+assert.match(sw,/cache\.match\(event\.request\)|cache\.match\(request\)/);
+const cacheVersion=sw.match(/CACHE=`\$\{CACHE_PREFIX\}(v\d+-\d+)`/)?.[1];
+const loaderVersion=loader.match(/app-shell-(v\d+-\d+)/)?.[1];
+assert.ok(cacheVersion&&loaderVersion,'SW loader/runtime must expose an app-shell version');
+assert.equal(loaderVersion,cacheVersion,'root SW loader and runtime cache must rotate together');
+assert.match(updater,/updateViaCache:'none'/);
+assert.match(updater,/registration\.update\(\)/);
+console.log('pwa-safety: PASS');

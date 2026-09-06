@@ -31,13 +31,14 @@ test('background cloud sync toast chatter is suppressed while manual sync feedba
  assert.ok(source.includes("toast.classList.remove('show')"));
 });
 
-test('live shell, manifest and PWA cache include the new Coach and sync UX runtimes',()=>{
+test('live shell, manifest and dynamic PWA precache include Coach and sync UX runtimes',()=>{
  const html=read('index.html'),manifest=read('runtime-manifest.json'),sw=read('02_core/sw-runtime.js');
  for(const file of ['garang-sync-quiet-ux-v1.js','garang-coach-avatar-profile-v1.js']){
-  assert.ok(html.includes(file),`index ${file}`);assert.ok(manifest.includes(file),`manifest ${file}`);assert.ok(sw.includes(file),`sw ${file}`);
+  assert.ok(html.includes(file),`index ${file}`);assert.ok(manifest.includes(file),`manifest ${file}`);
  }
- // Cache versions intentionally change as new releases add assets. Test the contract, not an old version label.
- assert.ok(/const CACHE='garang-[^']+';/.test(sw),'PWA cache key');
+ // The service worker now discovers the exact versioned src/href URLs from index.html.
+ assert.ok(sw.includes("html.matchAll(/(?:src|href)"),'dynamic index asset discovery');
+ assert.ok(sw.includes("const CACHE_PREFIX='garang-app-shell-'"),'GARANG-owned cache prefix');
  assert.ok(sw.includes('caches.open(CACHE)'),'PWA cache usage');
 });
 console.log(`${passed} Coach top/sync UX tests passed`);

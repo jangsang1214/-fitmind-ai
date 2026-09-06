@@ -5,15 +5,18 @@ on:
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: garang-release-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
       - name: Test Commercial Core and regressions
         run: npm test
       - name: Validate runtime and build
@@ -22,8 +25,12 @@ jobs:
         run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
       - name: Verify live Firebase public health
         run: node tests/firebase-live-health.test.cjs
-      - name: Install browser smoke dependency
-        run: npm install --no-save --package-lock=false playwright@1.55.0 && npx playwright install chromium
+      - name: Install browser and rules test dependencies
+        run: npm install --no-save --package-lock=false playwright@1.55.0 firebase@10.13.0 @firebase/rules-unit-testing@3.0.3 firebase-tools@13.35.1
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Verify Firestore rules in emulator
+        run: npx firebase emulators:exec --only firestore --project garang-rules-test "node tests/firestore-rules-emulator.test.cjs"
       - name: Verify Firebase CDN fallback
         run: node tests/browser-firebase-fallback.test.cjs
       - name: Verify real browser interactions
@@ -32,3 +39,5 @@ jobs:
         run: node tests/browser-mobile-layout-boundary.test.cjs
       - name: Verify authenticated app boot
         run: node tests/browser-authenticated-boot.test.cjs
+      - name: Verify WebKit mobile regression suite
+        run: node tests/browser-webkit-regression.test.cjs

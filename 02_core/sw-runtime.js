@@ -1,5 +1,57 @@
-const CACHE='garang-firebase-auth-recovery-v9-20260906';
-const SHELL=["./","./index.html","./03_styles/runtime/styles.css","./03_styles/runtime/garang-target-ui.css","./03_styles/runtime/garang-functional-recovery.css","./03_styles/runtime/garang-runtime-final.css","./03_styles/runtime/garang-brand-runtime-v2.css","./03_styles/runtime/garang-coach-agent-v4.css","./03_styles/runtime/garang-polish-v3.css","./03_styles/runtime/garang-font-logo-v1.css","./03_styles/runtime/garang-stability-v1.css","./03_styles/runtime/garang-today-premium-fix.css","./03_styles/runtime/garang-today-v2.css","./03_styles/runtime/garang-workout-library-v2.css","./03_styles/runtime/garang-experience-v3.css","./03_styles/runtime/garang-experience-v4.css","./03_styles/runtime/garang-auth-brand-v1.css","./03_styles/runtime/garang-app-chrome-fix-v1.css","./07_config/firebase-config.js","./07_config/garang-services-config.js","./02_core/data-schema.js","./02_core/sync-durability.js","./02_core/privacy-security.js","./02_core/memory-intelligence-v1.js","./02_core/state-intelligence-v1.js","./02_core/decision-intelligence-v1.js","./02_core/workout-intelligence-v1.js","./services/performance.js","./services/units.js","./06_features/final/agent-contract-v1.js","./06_features/ui/runtime/garang-state-sanitizer-v1.js","./06_features/ui/runtime/garang-sync-durability-v1.js","./06_features/final/agent-state-hook-v1.js","./06_features/ui/runtime/garang-screen-registry-v1.js","./06_features/ui/runtime/garang-auth-bootstrap.js","./01_app/app.js","./06_features/ui/runtime/garang-auth-route-reconcile-v1.js","./06_features/ui/runtime/garang-sync-quiet-ux-v1.js","./06_features/ui/runtime/garang-functional-recovery.js","./06_features/ui/runtime/garang-brand-runtime-v2.js","./06_features/ui/runtime/garang-polish-v3.js","./06_features/ui/runtime/garang-polish-v3-fix.js","./06_features/ui/runtime/garang-coach-home-hotfix.js","./06_features/ui/i18n/translations.js","./06_features/ui/i18n/entities-v1.js","./06_features/ui/i18n/supplement-v2.js","./06_features/ui/i18n/coach-language-v3.js","./06_features/ui/i18n/runtime.js","./06_features/ui/runtime/garang-coach-agent-v4.js","./06_features/ui/runtime/garang-coach-profile-stability-v1.js","./06_features/ui/runtime/garang-coach-decision-v1.js","./06_features/ui/runtime/garang-coach-avatar-profile-v1.js","./06_features/ui/runtime/garang-coach-item4-final.js","./06_features/ui/runtime/garang-privacy-security-v1.js","./06_features/ui/runtime/garang-units-runtime.js","./06_features/ui/runtime/garang-today-premium-fix.js","./06_features/ui/runtime/garang-workout-library-v2.js","./06_features/ui/runtime/garang-experience-v3.js","./06_features/ui/runtime/garang-experience-v4.js","./06_features/ui/runtime/garang-workout-intelligence-ui-v1.js","./06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js","./07_config/manifest.webmanifest","./05_assets/garang-logo-exact.png","./05_assets/garang-app-icon-exact.png","./04_data/knowledge/exercise-db.json","./04_data/knowledge/food-db.json"];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));await self.clients.claim();})());});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{if(response&&response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));}return response;}).catch(()=>caches.match(event.request).then(cached=>cached||caches.match('./index.html'))));});
+const CACHE_PREFIX='garang-app-shell-';
+const CACHE=`${CACHE_PREFIX}v12-20260906`;
+
+async function precache(){
+  const cache=await caches.open(CACHE);
+  const indexResponse=await fetch('./index.html',{cache:'reload'});
+  if(!indexResponse.ok)throw new Error(`index ${indexResponse.status}`);
+  await cache.put('./index.html',indexResponse.clone());
+  await cache.put('./',indexResponse.clone());
+  const html=await indexResponse.text();
+  const assets=[...html.matchAll(/(?:src|href)="(\.\/[^"#]+)"/g)].map(match=>match[1]);
+  const unique=[...new Set(assets)];
+  await Promise.allSettled(unique.map(async url=>{
+    const response=await fetch(url,{cache:'reload'});
+    if(response.ok)await cache.put(url,response.clone());
+  }));
+}
+
+self.addEventListener('install',event=>{
+  event.waitUntil(precache().then(()=>self.skipWaiting()));
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
+
+async function networkFirst(request){
+  const cache=await caches.open(CACHE);
+  try{
+    const response=await fetch(request,{cache:'no-store'});
+    if(response&&response.ok)await cache.put(request,response.clone());
+    return response;
+  }catch(error){
+    const cached=await cache.match(request);
+    if(cached)return cached;
+    throw error;
+  }
+}
+
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url);
+  if(url.origin!==self.location.origin)return;
+  if(event.request.mode==='navigate'){
+    event.respondWith(networkFirst(event.request).catch(async()=>{
+      const cache=await caches.open(CACHE);
+      return (await cache.match('./index.html'))||Response.error();
+    }));
+    return;
+  }
+  /* Never answer script/style/data requests with index.html. Exact versioned assets only. */
+  event.respondWith(networkFirst(event.request).catch(()=>Response.error()));
+});
