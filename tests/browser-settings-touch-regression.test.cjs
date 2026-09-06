@@ -85,22 +85,34 @@ async function assertSettingsInteractive(page,label){
     page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
 
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-    await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
-    await page.waitForFunction(()=>!!window.GarangSettingsTouchSafety,{timeout:7000});
+    await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
+    await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='1.3.0',null,{timeout:7000});
 
-    // Direct top-bar Settings path.
+    const binding=await page.evaluate(()=>{
+      const button=document.getElementById('settingsTopBtn');
+      return {
+        bound:button?.dataset?.garangSettingsTouchBound||'',
+        onclick:typeof button?.onclick,
+        touchAction:button?getComputedStyle(button).touchAction:''
+      };
+    });
+    assert.equal(binding.bound,'1','top Settings gear must have iOS touch safety bound');
+    assert.equal(binding.onclick,'function','top Settings gear must preserve a click fallback');
+
+    // Settings has one canonical route: the permanent top-bar gear.
     await tap(page,'#settingsTopBtn');
     await assertSettingsInteractive(page,'top-bar settings');
 
+    // Return to Today and repeat after opening/closing the full-screen utility sheet.
     await tap(page,'#bottomNav button[data-page="today"]');
-    await page.waitForFunction(()=>document.querySelector('.today-body-panel'));
-
-    // Full-screen More sheet -> Settings path. This is the iOS stale-overlay regression.
+    await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:7000});
-    await tap(page,'.garang-more-sheet [data-route="settings"]');
-    await assertSettingsInteractive(page,'more-sheet settings');
+    await tap(page,'.garang-more-head button');
+    await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:7000});
+    await tap(page,'#settingsTopBtn');
+    await assertSettingsInteractive(page,'settings after utility-sheet close');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
     console.log('browser-settings-touch-regression: PASS');
