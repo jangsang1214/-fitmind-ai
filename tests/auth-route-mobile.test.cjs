@@ -3,6 +3,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'..'),route=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-auth-route-reconcile-v1.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-mobile-auth-v1.js'),'utf8');
 assert.ok(route.includes("screen&&screen!=='modeling'"),'cloud restore must not hijack an already active non-onboarding screen');
 assert.ok(route.includes('document.activeElement'));assert.ok(route.includes('INPUT|TEXTAREA|SELECT'),'focused onboarding input must block automatic route change');
-assert.ok(mobile.includes('signInWithRedirect'));assert.ok(mobile.includes('GoogleAuthProvider'));assert.ok(mobile.includes("OAuthProvider('apple.com')"));assert.ok(mobile.includes('(display-mode: standalone)'));
+assert.ok(mobile.includes('signInWithPopup'),'mobile/PWA social auth must avoid cross-origin redirect flow on modern Safari');
+assert.equal(mobile.includes('signInWithRedirect'),false,'mobile auth must not reintroduce redirect loop risk');
+assert.ok(mobile.includes('GoogleAuthProvider'));assert.ok(mobile.includes("OAuthProvider('apple.com')"));assert.ok(mobile.includes('(display-mode: standalone)'));
 assert.equal(mobile.includes('setInterval('),false);
 console.log('auth-route-mobile: PASS');
