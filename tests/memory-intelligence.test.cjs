@@ -36,8 +36,8 @@ test('browser and server migration and container merge stay deterministic',()=>{
 
 test('AI context returns only the frozen context field allowlist and not raw legacy buckets',()=>{
  const out=Client.prepareMemoryContext({facts:['raw'],entries:[{id:'x',type:'note',key:'k',value:'visible',secret:'hidden'}]},{},{now,budgetChars:1000});
- assert.deepEqual(out.facts,[]);assert.equal(out.meta.legacyBucketCounts.facts,1);
- for(const entry of out.entries){for(const key of Object.keys(entry))assert.ok(contract.contextEntryFields.includes(key),key);assert.equal('secret' in entry,false);assert.equal('ownerUid' in entry,false);}
+ assert.equal(Array.from(out.facts).length,0);assert.equal(out.meta.legacyBucketCounts.facts,1);
+ for(const entry of Array.from(out.entries)){for(const key of Object.keys(entry))assert.ok(contract.contextEntryFields.includes(key),key);assert.equal('secret' in entry,false);assert.equal('ownerUid' in entry,false);}
 });
 
 test('live shell loads Memory Intelligence before Agent State Hook and dynamic PWA precache is active',()=>{
