@@ -11,4 +11,9 @@ assert.ok(runtime.includes("collection('app').doc('state').delete()"),'account d
 assert.ok(runtime.includes('deleteIndexedDbAttachments'),'account deletion must remove owned body attachments');
 assert.equal(runtime.includes("indexedDB.deleteDatabase('garang_media_v1')"),false,'deleting one account must never erase another account\'s IndexedDB attachments');
 assert.ok(runtime.indexOf('exportVerifiedBackup')<runtime.indexOf('await u.delete()'),'verified backup must run before destructive account deletion');
+assert.doesNotMatch(runtime,/\bprompt\s*\(/,'account deletion must never use native prompt in iOS/WebView');
+assert.doesNotMatch(runtime,/\bconfirm\s*\(/,'account deletion must never use native confirm in iOS/WebView');
+assert.match(runtime,/deleteAccountKeyword/,'account deletion must require an inline DELETE keyword');
+assert.match(runtime,/deleteAccountPassword/,'password reauthentication must use an inline password field');
+assert.match(runtime,/DELETE/,'destructive account deletion must keep explicit user confirmation');
 console.log('privacy-security: PASS');
