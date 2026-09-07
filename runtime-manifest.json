@@ -26,6 +26,7 @@
     "07_config/garang-services-config.js",
     "07_config/version.js",
     "02_core/data-schema.js",
+    "02_core/error-system-v1.js",
     "02_core/sync-durability.js",
     "02_core/history-persistence-v2.js",
     "02_core/legacy-migration-v2.js",
@@ -74,6 +75,41 @@
     "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js",
     "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js"
   ],
+  "runtimeContract": {
+    "version": 1,
+    "status": "frozen",
+    "bootOrderAuthoritative": true,
+    "lifecycleEvents": [
+      "garang:screen-rendered",
+      "garang:state-updated",
+      "garang:state-hydrated",
+      "garang:coach-mounted",
+      "garang:coach-message-rendered",
+      "garang:coach-decision-rendered"
+    ],
+    "singleOwners": {
+      "screenRender": "01_app/app.js",
+      "screenIdentity": "06_features/ui/runtime/garang-screen-registry-v1.js",
+      "coachDom": "06_features/ui/runtime/garang-brand-runtime-v2.js",
+      "coachScroll": "06_features/ui/runtime/garang-brand-runtime-v2.js",
+      "recoveryUi": "06_features/ui/runtime/garang-functional-recovery.js",
+      "settingsPrivacy": "06_features/ui/runtime/garang-privacy-security-v1.js",
+      "schema": "02_core/data-schema.js",
+      "errors": "02_core/error-system-v1.js"
+    },
+    "documentWideObserverAllowlist": [
+      "06_features/ui/i18n/entities-v1.js",
+      "06_features/ui/i18n/runtime.js",
+      "06_features/ui/i18n/supplement-v2.js",
+      "06_features/ui/runtime/garang-units-runtime.js"
+    ],
+    "legacyNamedCanonical": [
+      "06_features/ui/runtime/garang-settings-touch-safety-v1.js",
+      "06_features/ui/runtime/garang-coach-home-hotfix.js",
+      "06_features/ui/runtime/garang-coach-profile-stability-v1.js",
+      "06_features/ui/runtime/garang-today-premium-fix.js"
+    ]
+  },
   "data": [
     "04_data/knowledge/exercise-db.json",
     "04_data/knowledge/food-db.json",

@@ -1,0 +1,63 @@
+{
+  "freezeId": "garang-state-v1-schema8-20260908",
+  "status": "frozen",
+  "contractVersion": "garang-state-v1",
+  "schemaVersion": 8,
+  "topLevel": [
+    "contractVersion",
+    "schemaVersion",
+    "profile",
+    "userModel",
+    "workouts",
+    "meals",
+    "runs",
+    "body",
+    "planner",
+    "dailyCheckins",
+    "memory",
+    "aiChats",
+    "scoreHistory",
+    "plan",
+    "language",
+    "settings",
+    "updatedAtMs"
+  ],
+  "collectionDomains": [
+    "workouts",
+    "meals",
+    "runs",
+    "body",
+    "planner",
+    "dailyCheckins",
+    "aiChats",
+    "scoreHistory"
+  ],
+  "memoryBuckets": [
+    "facts",
+    "preferences",
+    "goals",
+    "events",
+    "entries",
+    "deletedIds"
+  ],
+  "compatibilityAliases": {
+    "checkins": "dailyCheckins",
+    "aiChat": "aiChats",
+    "onboarding": "userModel",
+    "plannerCompleted": "done",
+    "plannerSource": "origin",
+    "bodyFatPercent": "bodyFat"
+  },
+  "migrationPolicy": {
+    "idempotent": true,
+    "rejectFutureSchema": true,
+    "rejectForeignContract": true,
+    "transportDropsLocalOnlyFields": true,
+    "unknownCurrentVersionFieldsMaySurviveLocalMigration": true,
+    "rollbackMigration": false
+  },
+  "localStateKeys": {
+    "demo": "garang_demo_state_v3",
+    "userPattern": "garang_user_<uid>_v3"
+  }
+}
