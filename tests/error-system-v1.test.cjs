@@ -35,11 +35,14 @@ assert.throws(()=>Errors.guard('unit-test',()=>{throw Object.assign(new Error('i
 assert.equal(Errors.recent(10).length,2,'guard must report and preserve throw semantics');
 
 const manifest=JSON.parse(read('runtime-manifest.json'));
-const listenerOwners=kind=>manifest.scripts.filter(file=>new RegExp(`addEventListener\\(\\s*['\"]${kind}['\"]`).test(read(file)));
-assert.deepEqual(listenerOwners('error'),['01_app/app.js'],'window error must have exactly one active owner');
-assert.deepEqual(listenerOwners('unhandledrejection'),['01_app/app.js'],'unhandled rejection must have exactly one active owner');
+const globalListenerOwners=kind=>{
+  const pattern=new RegExp(`(?:window|globalThis|root)\\.addEventListener\\(\\s*['\"]${kind}['\"]`);
+  return manifest.scripts.filter(file=>pattern.test(read(file)));
+};
+assert.deepEqual(globalListenerOwners('error'),['01_app/app.js'],'window error must have exactly one active global owner');
+assert.deepEqual(globalListenerOwners('unhandledrejection'),['01_app/app.js'],'unhandled rejection must have exactly one active global owner');
 assert.equal(manifest.runtimeContract.singleOwners.errors,'01_app/app.js','runtime contract must name the same error owner');
-assert.doesNotMatch(read('02_core/error-system-v1.js'),/addEventListener\(\s*['\"](?:error|unhandledrejection)['\"]/, 'error taxonomy must stay side-effect free');
+assert.doesNotMatch(read('02_core/error-system-v1.js'),/(?:window|globalThis|root)\.addEventListener\(\s*['\"](?:error|unhandledrejection)['\"]/, 'error taxonomy must stay side-effect free');
 
 (async()=>{
   await assert.rejects(()=>Errors.guardAsync('async-test',async()=>{throw Object.assign(new Error('offline'),{code:'unavailable'});}),/offline/);
