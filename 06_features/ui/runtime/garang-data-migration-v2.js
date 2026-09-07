@@ -1,16 +1,16 @@
-/* GARANG data recovery runtime v3.2
-   Authenticated recovery scans are explicitly time-sliced for iOS/WebKit.
-   The recovery center opens immediately, remains closable while Firestore is pending,
-   and stale/cancelled scans can never reopen an overlay after the user leaves.
+/* GARANG data recovery runtime v3.3
+   Authenticated recovery scans are explicitly cancellable and time-sliced for iOS/WebKit.
+   In-flight Firestore reads are detached from the UI flow as soon as the user closes recovery.
+   Recovery never locks html/body scrolling or restores focus on touch devices.
    Recovery remains non-destructive until the user confirms the final restore.
 */
 (() => {
 'use strict';
 if(window.__garangDataMigrationV2)return;window.__garangDataMigrationV2=true;
 const Sanitizer=window.GarangStateSanitizer,Core=window.GarangSyncDurability,History=window.GarangHistoryPersistence;
-const LEGACY_KEY='garang_v99_state_v2',RECOVERY_BACKUP_PREFIX='garang_recovery_backup_v3::';
+const VERSION='v3.3',LEGACY_KEY='garang_v99_state_v2',RECOVERY_BACKUP_PREFIX='garang_recovery_backup_v3::';
 const PROTECTED=Object.freeze(['workouts','meals','runs','body']);
-let lastReport=null,observer=null,bindingQueued=false,lastTrigger=null,scanGeneration=0;
+let lastReport=null,observer=null,bindingQueued=false,lastTrigger=null,scanGeneration=0,activeScan=null;
 
 function authUid(){try{return window.firebase?.auth?.().currentUser?.uid||null;}catch{return null;}}
 function activeKey(){const u=authUid();return u?`garang_user_${u}_v3`:'garang_demo_state_v3';}
@@ -23,12 +23,37 @@ function counts(state){const out={};for(const domain of PROTECTED)out[domain]=ro
 function stateStamp(state){const values=[Date.parse(state?.meta?.updatedAt||0)||0,Date.parse(state?.clientUpdatedAt||0)||0,Number(state?.updatedAtMs)||0];for(const domain of PROTECTED)for(const row of rows(state?.[domain]))values.push(History?.rowStamp?History.rowStamp(row):(Date.parse(row?.updatedAt||row?.createdAt||0)||0));return Math.max(0,...values);}
 function candidate(label,type,key,state,owner=null){const safe=sanitize(state,owner);if(!safe)return null;return {label,type,key:key||null,state:safe,counts:counts(safe),stamp:stateStamp(safe)};}
 function toast(message){const el=document.getElementById('toast');if(!el)return;el.textContent=message;el.classList.add('show');clearTimeout(el.__recoveryTimer);el.__recoveryTimer=setTimeout(()=>el.classList.remove('show'),3000);}
+function clearOldRecoveryToast(){const el=document.getElementById('toast');if(!el||!/저장된 기록을 안전하게 확인/.test(String(el.textContent||'')))return;clearTimeout(el.__recoveryTimer);el.classList.remove('show');}
 function stamp(){return new Date().toISOString().replace(/[:.]/g,'-');}
 function keys(){const out=[];try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key)out.push(key);}}catch{}return out;}
 function yieldToUI(){return new Promise(resolve=>setTimeout(resolve,0));}
 function isScanCurrent(id){return id==null||id===scanGeneration;}
 function cancelError(){const error=new Error('GARANG_RECOVERY_SCAN_CANCELLED');error.garangRecoveryCancelled=true;return error;}
 function assertScanCurrent(id){if(!isScanCurrent(id))throw cancelError();}
+function beginScan(){
+  if(activeScan){const previous=activeScan;activeScan=null;previous.cancel();}
+  const id=++scanGeneration;let cancel;
+  const cancelled=new Promise(resolve=>{cancel=resolve;});
+  activeScan={id,cancel,cancelled};
+  return id;
+}
+function finishScan(id){if(activeScan?.id===id)activeScan=null;}
+function cancelActiveScan(){
+  const scan=activeScan;activeScan=null;scanGeneration++;
+  if(scan)scan.cancel();
+}
+function guardedAwait(promise,scanId=null){
+  if(scanId==null)return Promise.resolve(promise);
+  const signal=activeScan?.id===scanId?activeScan:null;
+  if(!signal)return Promise.reject(cancelError());
+  return Promise.race([
+    Promise.resolve(promise).then(value=>{assertScanCurrent(scanId);return value;}),
+    signal.cancelled.then(()=>{throw cancelError();})
+  ]);
+}
+function yieldForScan(scanId=null){return guardedAwait(yieldToUI(),scanId);}
+function canProgrammaticFocus(){try{return !('ontouchstart' in window)&&window.matchMedia?.('(hover:hover) and (pointer:fine)')?.matches===true;}catch{return false;}}
+function focusClose(modal){if(!canProgrammaticFocus())return;requestAnimationFrame(()=>modal?.isConnected&&modal.querySelector('[data-recovery-close]')?.focus({preventScroll:true}));}
 
 function sameAccountBackupKey(key,u){const active=activeKey();if(key===active||key===LEGACY_KEY)return true;if(key.startsWith('garang_sync_backup_v2::'))return key.includes(active);if(key.startsWith('garang_state_backup_v3::'))return key.includes(active);if(key.startsWith('garang_cloud_recovery_backup_v2::')||key.startsWith('garang_cloud_recovery_backup_v3::'))return !!u&&key.includes(u);if(key.startsWith('garang_import_backup_v2::')||key.startsWith('garang_state_recovery_backup_v1::'))return key.includes(active)||key.includes(LEGACY_KEY);if(key.startsWith(RECOVERY_BACKUP_PREFIX))return key.includes(active)|| (!!u&&key.includes(u));return false;}
 function labelForKey(key){if(key===activeKey())return '현재 기기 상태';if(key===LEGACY_KEY)return '구버전 로컬 상태';if(key.startsWith('garang_sync_backup_v2::'))return '동기화 이전 백업';if(key.startsWith('garang_state_backup_v3::'))return '기기 롤링 백업';if(key.startsWith('garang_cloud_recovery_backup_v3::'))return '클라우드 롤링 백업';if(key.startsWith('garang_cloud_recovery_backup_v2::'))return '클라우드 최초 백업';if(key.startsWith('garang_import_backup_v2::'))return '가져오기 이전 백업';if(key.startsWith('garang_state_recovery_backup_v1::'))return '상태 복구 백업';if(key.startsWith(RECOVERY_BACKUP_PREFIX))return '복구 실행 이전 백업';return '로컬 백업';}
@@ -39,7 +64,7 @@ async function localCandidates(u,scanId=null){
     assertScanCurrent(scanId);
     const key=matching[i],hit=candidate(labelForKey(key),'local',key,read(key),key===activeKey()?u:null);
     if(hit)out.push(hit);
-    if(i%3===2)await yieldToUI();
+    if(i%3===2)await yieldForScan(scanId);
   }
   return out.sort((a,b)=>b.stamp-a.stamp);
 }
@@ -66,7 +91,7 @@ async function responsiveMerge(domain,lists,state,u,scanId=null){
       const id=String(row.id||`${domain}:${i}`);
       map.set(id,clone(row)||row);
     }
-    if(i%120===119)await yieldToUI();
+    if(i%120===119)await yieldForScan(scanId);
   }
   const merged=[...map.values()];
   if(History?.rowStamp)merged.sort((a,b)=>History.rowStamp(a)-History.rowStamp(b));
@@ -81,7 +106,7 @@ async function combineHistory(baseInput,candidates,history,u,scanId=null){
     assertScanCurrent(scanId);
     const lists=[rows(out[domain]),...candidates.map(item=>rows(item?.state?.[domain])),rows(history?.[domain])];
     out[domain]=await responsiveMerge(domain,lists,out,u,scanId);
-    await yieldToUI();
+    await yieldForScan(scanId);
   }
   assertScanCurrent(scanId);
   return sanitize(out,u)||out;
@@ -91,7 +116,7 @@ async function docsToRows(docs,mapper,scanId=null){
   for(let i=0;i<list.length;i++){
     assertScanCurrent(scanId);
     const value=mapper(list[i]);if(value)out.push(value);
-    if(i%80===79)await yieldToUI();
+    if(i%80===79)await yieldForScan(scanId);
   }
   return out;
 }
@@ -111,26 +136,26 @@ async function readCloud(u,scanId=null){
   if(!u||!window.firebase?.apps?.length)return result;
   const db=window.firebase.firestore(),user=db.collection('users').doc(u);
   try{
-    const snap=await user.collection('app').doc('state').get();assertScanCurrent(scanId);
+    const snap=await guardedAwait(user.collection('app').doc('state').get(),scanId);
     if(snap?.exists){const c=candidate('클라우드 현재 상태','cloud-state','users/app/state',snap.data(),u);if(c)result.candidates.push(c);}
   }catch(error){if(error?.garangRecoveryCancelled)throw error;result.errors.push(`클라우드 상태: ${error?.code||error?.message||'확인 실패'}`);}
   for(const domain of PROTECTED){
     try{
       const name=History?.COLLECTIONS?.[domain];if(!name)continue;
-      const snap=await user.collection(name).get();assertScanCurrent(scanId);
+      const snap=await guardedAwait(user.collection(name).get(),scanId);
       result.history[domain]=await docsToRows(snap?.docs,doc=>History.recordFromDoc(doc.data()),scanId);
     }catch(error){if(error?.garangRecoveryCancelled)throw error;result.errors.push(`${domain}: ${error?.code||error?.message||'확인 실패'}`);}
-    await yieldToUI();
+    await yieldForScan(scanId);
   }
   try{
-    const snap=await recentSnapshotQuery(user.collection('recoverySnapshots')).get();assertScanCurrent(scanId);
+    const snap=await guardedAwait(recentSnapshotQuery(user.collection('recoverySnapshots')).get(),scanId);
     let docs=Array.isArray(snap?.docs)?snap.docs:[];
     if(docs.length>30)docs=docs.slice(-30);
     for(let i=0;i<docs.length;i++){
       assertScanCurrent(scanId);
       const doc=docs[i],data=doc.data(),state=data?.shell||data?.state||data?.payload||null;
       if(state){const c=candidate('클라우드 복구 스냅샷','cloud-backup',doc.id,state,u);if(c)result.candidates.push(c);}
-      if(i%4===3)await yieldToUI();
+      if(i%4===3)await yieldForScan(scanId);
     }
   }catch(error){if(error?.garangRecoveryCancelled)throw error;result.errors.push(`복구 스냅샷: ${error?.code||error?.message||'확인 실패'}`);}
   return result;
@@ -149,10 +174,10 @@ function countText(c){return `운동 ${c.workouts} · 식단 ${c.meals} · 러�
 function sourceRows(report){const historyCounts={workouts:rows(report.history.workouts).length,meals:rows(report.history.meals).length,runs:rows(report.history.runs).length,body:rows(report.history.body).length};historyCounts.total=PROTECTED.reduce((sum,d)=>sum+historyCounts[d],0);const list=[...report.all];if(historyCounts.total)list.push({label:'클라우드 장기 기록',type:'cloud-history',counts:historyCounts,stamp:0});const unique=[];const seen=new Set();for(const item of list){const key=`${item.type}|${item.key||item.label}|${item.counts.total}`;if(seen.has(key))continue;seen.add(key);unique.push(item);}return unique.sort((a,b)=>(b.counts?.total||0)-(a.counts?.total||0)).slice(0,20);}
 
 function ensureStyle(){
-  if(document.getElementById('garang-data-recovery-v32-style'))return;
+  if(document.getElementById('garang-data-recovery-v33-style'))return;
   document.getElementById('garang-data-recovery-v31-style')?.remove();
-  const style=document.createElement('style');style.id='garang-data-recovery-v32-style';style.textContent=`
-  html.garang-recovery-open,html.garang-recovery-open body{overflow:hidden!important}
+  document.getElementById('garang-data-recovery-v32-style')?.remove();
+  const style=document.createElement('style');style.id='garang-data-recovery-v33-style';style.textContent=`
   .garang-data-recovery-modal{position:fixed;inset:0;z-index:12050;background:rgba(0,0,0,.78);display:grid;place-items:end center;padding:max(12px,env(safe-area-inset-top,0px)) 12px max(12px,env(safe-area-inset-bottom,0px));box-sizing:border-box;overscroll-behavior:contain;touch-action:pan-y;pointer-events:auto}
   .garang-data-recovery-panel{width:min(680px,100%);max-height:calc(100dvh - max(28px,env(safe-area-inset-top,0px)) - max(24px,env(safe-area-inset-bottom,0px)));overflow:auto;-webkit-overflow-scrolling:touch;background:#0b0d0b;border:1px solid #2a2e29;border-radius:18px;padding:16px;color:#ecefe9;box-sizing:border-box;box-shadow:0 20px 80px rgba(0,0,0,.5);touch-action:pan-y;pointer-events:auto}
   .garang-data-recovery-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-16px;z-index:2;background:#0b0d0b;padding:16px 0 10px}.garang-data-recovery-head small{color:#68bca5;letter-spacing:.1em}.garang-data-recovery-head h2{margin:4px 0 0;font-size:19px}
@@ -167,10 +192,13 @@ function ensureStyle(){
   `;document.head.appendChild(style);
 }
 function removeModal({cancelScan=false,restoreFocus=false}={}){
-  if(cancelScan)scanGeneration++;
+  if(cancelScan)cancelActiveScan();
   document.querySelector('.garang-data-recovery-modal')?.remove();
   document.documentElement.classList.remove('garang-recovery-open');
-  if(restoreFocus){const target=lastTrigger;lastTrigger=null;if(target?.isConnected)requestAnimationFrame(()=>target.focus({preventScroll:true}));}
+  if(restoreFocus&&canProgrammaticFocus()){
+    const target=lastTrigger;lastTrigger=null;
+    if(target?.isConnected)requestAnimationFrame(()=>target?.isConnected&&target.focus({preventScroll:true}));
+  }else if(restoreFocus)lastTrigger=null;
 }
 function closeModal(){removeModal({cancelScan:true,restoreFocus:true});}
 function mountModal(html){
@@ -184,7 +212,7 @@ function mountModal(html){
 }
 function renderLoading(){
   const modal=mountModal(`<section class="garang-data-recovery-panel" role="dialog" aria-modal="true" aria-label="GARANG 데이터 복구 센터"><div class="garang-data-recovery-head"><div><small>DATA HEALTH</small><h2>데이터 복구 센터</h2></div><button type="button" class="garang-data-recovery-close" data-recovery-close aria-label="닫기">×</button></div><div class="garang-data-recovery-loading"><b>저장된 기록을 안전하게 확인하고 있습니다.</b><span>기기와 클라우드 기록을 순서대로 확인합니다. 확인 중에도 이 창을 닫을 수 있습니다.</span></div><div class="garang-data-recovery-status" aria-live="polite">원본 데이터는 변경하지 않습니다.</div></section>`);
-  requestAnimationFrame(()=>modal.querySelector('[data-recovery-close]')?.focus({preventScroll:true}));
+  focusClose(modal);
 }
 function resetRestoreButton(button){if(!button?.isConnected||button.disabled)return;button.dataset.confirming='false';button.textContent='누락 기록 안전 복구';const status=button.closest('.garang-data-recovery-panel')?.querySelector('[data-recovery-status]');if(status)status.textContent='';}
 function requestRestore(report,button){
@@ -201,18 +229,21 @@ function renderReport(report){
   modal.querySelector('[data-recovery-rescan]').onclick=()=>openRecoveryCenter({preserveFocus:true});
   modal.querySelector('[data-recovery-export]').onclick=()=>window.GarangSyncDurabilityRuntime?.exportVerifiedBackup?.();
   const restore=modal.querySelector('[data-recovery-restore]');if(recoverable)restore.onclick=()=>requestRestore(report,restore);
-  requestAnimationFrame(()=>modal.querySelector('[data-recovery-close]')?.focus({preventScroll:true}));
+  focusClose(modal);
 }
 async function openRecoveryCenter(options={}){
-  if(!options.preserveFocus)lastTrigger=document.activeElement instanceof HTMLElement?document.activeElement:null;
-  const scanId=++scanGeneration;
+  if(!options.preserveFocus)lastTrigger=typeof HTMLElement!=='undefined'&&document.activeElement instanceof HTMLElement?document.activeElement:null;
+  clearOldRecoveryToast();
+  const scanId=beginScan();
   renderLoading();
-  await yieldToUI();
   try{
+    await yieldForScan(scanId);
     const report=await scanData({scanId});
     if(!isScanCurrent(scanId))return;
+    finishScan(scanId);
     renderReport(report);
   }catch(error){
+    finishScan(scanId);
     if(error?.garangRecoveryCancelled)return;
     console.warn('[GARANG] recovery scan failed',error);
     if(isScanCurrent(scanId)){closeModal();toast('데이터 확인 중 오류가 발생했습니다. 원본은 변경하지 않았습니다.');}
@@ -259,12 +290,12 @@ function bindSettingsButton(){
   const label='데이터 복구 확인',title='기기·클라우드·백업의 기록을 확인하고 누락 기록을 안전하게 병합합니다.';
   if(button.textContent!==label)button.textContent=label;
   if(button.title!==title)button.title=title;
-  if(button.dataset.garangSafeImport==='v3.2')return;
-  button.dataset.garangSafeImport='v3.2';button.onclick=()=>openRecoveryCenter();
+  if(button.dataset.garangSafeImport===VERSION)return;
+  button.dataset.garangSafeImport=VERSION;button.onclick=()=>openRecoveryCenter();
 }
 function queueBinding(){if(bindingQueued)return;bindingQueued=true;requestAnimationFrame(()=>{bindingQueued=false;bindSettingsButton();});}
 function startBinding(){ensureStyle();bindSettingsButton();const main=document.getElementById('main');if(!main||observer)return;observer=new MutationObserver(queueBinding);observer.observe(main,{childList:true,subtree:true});}
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.querySelector('.garang-data-recovery-modal'))closeModal();});
 setTimeout(startBinding,0);window.addEventListener('load',startBinding,{once:true});
-window.GarangDataMigrationV2=Object.freeze({version:'v3.2',importLegacy:openRecoveryCenter,openRecoveryCenter,closeRecoveryCenter:closeModal,scanData,counts,combineHistory,activeKey});
+window.GarangDataMigrationV2=Object.freeze({version:VERSION,importLegacy:openRecoveryCenter,openRecoveryCenter,closeRecoveryCenter:closeModal,scanData,counts,combineHistory,activeKey,get scanActive(){return !!activeScan;},get scanGeneration(){return scanGeneration;}});
 })();
