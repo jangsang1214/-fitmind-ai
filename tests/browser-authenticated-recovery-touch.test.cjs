@@ -16,7 +16,7 @@ async function waitForServer(){
 }
 async function heartbeat(page,label){
   await Promise.race([
-    page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,30)))),
+    page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,40))),
     timeout(1800,`${label}: WebKit main thread stalled`)
   ]);
 }
