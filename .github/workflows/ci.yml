@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify GARANG Intelligence Core v1
+        run: node tests/intelligence-core-v1.test.cjs
       - name: Test Commercial Core and regressions
         run: npm test
       - name: Validate runtime and build
