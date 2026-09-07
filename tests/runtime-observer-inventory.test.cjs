@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 
+/* Release invariant: runtime-manifest UI scripts cannot reintroduce broad DOM polling/repair ownership. */
 const root=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 const uiScripts=manifest.scripts.filter(p=>p.startsWith('06_features/ui/')&&p.endsWith('.js'));
