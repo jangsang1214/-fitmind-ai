@@ -1,7 +1,6 @@
-/* GARANG Today anatomy runtime
-   - FRONT/BACK are real interactive controls.
-   - Only one anatomy side is visible at a time.
-   - Today defaults to FRONT whenever the screen is freshly rendered. */
+/* GARANG Today anatomy runtime v3.1
+   FRONT/BACK remain interactive. Observer-driven DOM writes are idempotent so Today cannot
+   self-trigger a MutationObserver feedback loop on iOS/WebKit. */
 (() => {
   'use strict';
   const main = document.getElementById('main');
@@ -10,6 +9,8 @@
   let scheduled = false;
   let activeView = 'front';
   let activePanel = null;
+  const setText=(el,value)=>{const next=String(value??'');if(el&&el.textContent!==next)el.textContent=next;};
+  const setAttr=(el,name,value)=>{const next=String(value);if(el&&el.getAttribute(name)!==next)el.setAttribute(name,next);};
 
   function setView(panel, side) {
     const wrap = panel.querySelector('.muscle-map-wrap.compact-map');
@@ -17,23 +18,24 @@
     if (!wrap || !map) return;
 
     activeView = side === 'back' ? 'back' : 'front';
-    wrap.dataset.g3View = activeView;
+    if (wrap.dataset.g3View !== activeView) wrap.dataset.g3View = activeView;
 
-    const views = [...map.querySelectorAll('.body-view')];
-    views.forEach((view, index) => {
-      const viewSide = index === 1 ? 'back' : 'front';
-      const visible = viewSide === activeView;
-      view.hidden = !visible;
-      view.setAttribute('aria-hidden', visible ? 'false' : 'true');
-      view.style.setProperty('display', visible ? 'flex' : 'none', 'important');
+    [...map.querySelectorAll('.body-view')].forEach((view, index) => {
+      const visible = (index === 1 ? 'back' : 'front') === activeView;
+      if (view.hidden === visible) view.hidden = !visible;
+      setAttr(view,'aria-hidden', visible ? 'false' : 'true');
+      const wantedDisplay=visible?'flex':'none';
+      if (view.style.getPropertyValue('display')!==wantedDisplay || view.style.getPropertyPriority('display')!=='important') {
+        view.style.setProperty('display', wantedDisplay, 'important');
+      }
       const caption = view.querySelector(':scope > span');
-      if (caption) caption.hidden = true;
+      if (caption && !caption.hidden) caption.hidden = true;
     });
 
     panel.querySelectorAll('[data-today-view]').forEach(button => {
       const selected = button.dataset.todayView === activeView;
       button.classList.toggle('active', selected);
-      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      setAttr(button,'aria-pressed', selected ? 'true' : 'false');
     });
   }
 
@@ -49,7 +51,7 @@
 
     if (key.dataset.garangInteractive !== '1') {
       key.dataset.garangInteractive = '1';
-      key.setAttribute('aria-label', 'Anatomy view');
+      setAttr(key,'aria-label','Anatomy view');
       key.innerHTML = `
         <div class="today-view-switch" role="group" aria-label="Body view">
           <button type="button" data-today-view="front" aria-pressed="true">FRONT</button>
@@ -81,8 +83,7 @@
 
     const label = panel.querySelector('.today-body-label');
     if (label) {
-      const eyebrow = label.querySelector('.eyebrow');
-      if (eyebrow) eyebrow.textContent = document.documentElement.lang === 'en' ? 'FOCUS AREA' : '주요 부위';
+      setText(label.querySelector('.eyebrow'), document.documentElement.lang === 'en' ? 'FOCUS AREA' : '주요 부위');
       label.querySelectorAll('strong').forEach(el => el.remove());
     }
 
