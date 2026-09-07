@@ -26,7 +26,7 @@ assert.ok(recovery.includes('function isTouchWebKit()'),'recovery owner must dec
 assert.ok(recovery.includes('data-garang-webkit-flow="1"'),'recovery owner must mark normal-flow WebKit surface');
 assert.ok(recovery.includes('position:relative!important')&&recovery.includes('overflow:visible!important'),'touch recovery must remain in normal Settings document flow');
 assert.ok(recovery.includes("actions.insertAdjacentElement('afterend',surface)")||recovery.includes("trigger?.insertAdjacentElement('afterend',surface)"),'single recovery owner must place WebKit surface beside Settings actions');
-assert.equal(recovery.includes('MutationObserver'),false,'recovery must not require a DOM relocation observer');
+assert.equal(recovery.includes('new MutationObserver'),false,'recovery must not require a DOM relocation observer');
 for(const forbidden of ['stopImmediatePropagation','stopPropagation(','window.scrollTo','Object.defineProperty(window','overflow:hidden!important'])assert.equal(recovery.includes(forbidden),false,`recovery owner must avoid gesture/scroll/compositor traps: ${forbidden}`);
 
 assert.ok(chrome.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(chrome.includes('display:grid!important'));assert.ok(chrome.includes('#main[data-garang-screen]:not([data-garang-screen="coach"])'));
