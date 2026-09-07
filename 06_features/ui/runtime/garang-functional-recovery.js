@@ -1,6 +1,7 @@
-/* GARANG FUNCTIONAL RECOVERY v1.3
+/* GARANG FUNCTIONAL RECOVERY v1.4
    Keep canonical app.js in control; repair only UI regressions introduced by reference facades.
-   Destructive visible actions use non-blocking in-app confirmation for iOS/WebView safety. */
+   Destructive visible actions use non-blocking in-app confirmation for iOS/WebView safety.
+   Data recovery ownership is delegated to GarangDataMigrationV2 so observers cannot fight over #importLegacy. */
 (() => {
   'use strict';
   const main = document.getElementById('main');
@@ -124,9 +125,22 @@
   function bindGlobalRecovery(){const menu=document.getElementById('menuBtn');if(menu&&menu.dataset.garangRecoveryBound!=='1'){menu.dataset.garangRecoveryBound='1';menu.addEventListener('click',openMore);}}
   function repairDataActions(){
     const exportButton=main.querySelector('#exportData');
-    if(exportButton&&window.GarangSyncDurabilityRuntime?.exportVerifiedBackup&&exportButton.dataset.garangVerifiedExport!=='1'){exportButton.onclick=()=>window.GarangSyncDurabilityRuntime.exportVerifiedBackup();exportButton.dataset.garangVerifiedExport='1';}
-    const importButton=main.querySelector('#importLegacy');
-    if(importButton&&window.GarangDataMigrationV2?.importLegacy&&importButton.dataset.garangSafeImport!=='1'){importButton.onclick=()=>window.GarangDataMigrationV2.importLegacy();importButton.dataset.garangSafeImport='1';}
+    if(exportButton&&window.GarangSyncDurabilityRuntime?.exportVerifiedBackup&&exportButton.dataset.garangVerifiedExport!=='1'){
+      exportButton.onclick=()=>window.GarangSyncDurabilityRuntime.exportVerifiedBackup();
+      exportButton.dataset.garangVerifiedExport='1';
+    }
+
+    const importButton=main.querySelector('#importLegacy'),migration=window.GarangDataMigrationV2;
+    if(!importButton||!migration?.importLegacy)return;
+    const marker=migration.version||'recovery';
+    const label='데이터 복구 확인';
+    const title='기기·클라우드·백업의 기록을 확인하고 누락 기록을 안전하게 병합합니다.';
+    if(importButton.textContent!==label)importButton.textContent=label;
+    if(importButton.title!==title)importButton.title=title;
+    if(importButton.dataset.garangSafeImport!==marker){
+      importButton.onclick=()=>migration.importLegacy();
+      importButton.dataset.garangSafeImport=marker;
+    }
   }
 
   function repair(){killCachedFacades();repairBrandImages();repairCoach();repairWorkout();bindGlobalRecovery();repairDataActions();}
