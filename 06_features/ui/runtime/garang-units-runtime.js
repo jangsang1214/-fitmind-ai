@@ -24,9 +24,19 @@ function convert(source){
  return out;
 }
 function skipped(el){return !!el?.closest?.(skipSelector);}
-function applyText(node){if(!node||node.nodeType!==Node.TEXT_NODE||skipped(node.parentElement))return;const cur=node.nodeValue||'';let rec=textState.get(node);if(!rec||cur!==rec.last)rec={source:cur,last:cur};const next=convert(rec.source);rec.last=next;textState.set(node,rec);if(next!==cur)node.nodeValue=next;}
+function applyText(node){
+ if(!node||node.nodeType!==Node.TEXT_NODE||skipped(node.parentElement))return;
+ const cur=node.nodeValue||'';let rec=textState.get(node);
+ if(!rec||cur!==rec.last)rec={source:cur,last:cur};
+ const next=convert(rec.source);rec.last=next;textState.set(node,rec);if(next!==cur)node.nodeValue=next;
+}
 function applyRoot(root=document){if(root.nodeType===Node.TEXT_NODE){applyText(root);return;}const scope=(root.nodeType===Node.ELEMENT_NODE||root.nodeType===Node.DOCUMENT_NODE)?root:null;if(!scope)return;const w=document.createTreeWalker(scope,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))applyText(n);}
-const observer=new MutationObserver(muts=>{for(const m of muts){if(m.type==='characterData')applyText(m.target);if(m.type==='childList')m.addedNodes.forEach(applyRoot);}});observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+let queued=false;function queue(root=document){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;applyRoot(root);});}
+const observer=new MutationObserver(muts=>{for(const m of muts)if(m.type==='childList')m.addedNodes.forEach(applyRoot);});
+observer.observe(document.documentElement,{subtree:true,childList:true});
+for(const event of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated'])window.addEventListener(event,()=>queue(document));
+window.addEventListener('pageshow',()=>queue(document));
+document.addEventListener('change',event=>{if(event.target?.id==='unitSetting')queue(document);});
 window.GarangUnitsUI={refresh:()=>applyRoot(document),unit};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>applyRoot(document),{once:true});else applyRoot(document);
 })();
