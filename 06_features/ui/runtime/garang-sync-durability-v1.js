@@ -166,6 +166,7 @@ function patchFirestore(){
 
     getOwner.get=async function(...args){
       const uid=statePathUid(this);if(!uid)return originalGet.apply(this,args);
+      if(window.GarangDataMigrationV2?.scanActive===true)return originalGet.apply(this,args);
       const auth=currentUid();if(auth&&auth!==uid)throw syncError('STALE_ACCOUNT_READ','Blocked a stale account sync read.');
       if(navigator.onLine===false){markPending(uid,'offline_read');throw syncError('unavailable','Offline sync deferred.');}
       const snapshot=await originalGet.apply(this,args);if(!snapshot?.exists)return snapshot;
