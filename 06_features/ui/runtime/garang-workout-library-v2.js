@@ -1,8 +1,9 @@
-/* GARANG workout library v2.6
+/* GARANG workout library v2.7
    - Screen identity/header labels are owned by GarangScreens.
    - Workout shows 4 exercises by default, then expands to every matching DB exercise.
    - Adds dedicated name search across the visual exercise library.
    - Workout certification keeps all export functions while presenting one primary action.
+   - Repeated observer-driven polish writes are idempotent to prevent WebKit mutation feedback loops.
    - Existing workout state/data logic remains owned by app.js.
 */
 (() => {
@@ -14,6 +15,30 @@
   let exerciseDBPromise = null;
   let scheduled = false;
   let exerciseSearchQuery = '';
+
+  function setText(node, value) {
+    if (!node) return false;
+    const next = String(value ?? '');
+    if (node.textContent === next) return false;
+    node.textContent = next;
+    return true;
+  }
+
+  function setHTML(node, value) {
+    if (!node) return false;
+    const next = String(value ?? '');
+    if (node.innerHTML === next) return false;
+    node.innerHTML = next;
+    return true;
+  }
+
+  function setPlaceholder(node, value) {
+    if (!node) return false;
+    const next = String(value ?? '');
+    if (node.getAttribute('placeholder') === next) return false;
+    node.setAttribute('placeholder', next);
+    return true;
+  }
 
   const muscleKeyFromLabel = label => {
     const x = String(label || '').toLowerCase();
@@ -69,15 +94,15 @@
     card.classList.add('garang-cert-minimal');
     const eyebrow = card.querySelector('.visual-section-head .eyebrow');
     const heading = card.querySelector('.visual-section-head h3');
-    if (eyebrow) eyebrow.textContent = 'GARANG VERIFIED';
-    if (heading) heading.textContent = ko ? '운동 인증' : 'Workout verification';
+    setText(eyebrow, 'GARANG VERIFIED');
+    setText(heading, ko ? '운동 인증' : 'Workout verification');
     const poster = card.querySelector('.cert-poster-placeholder');
     const posterTitle = poster?.querySelector('strong');
     const posterCopy = poster?.querySelector('span');
-    if (posterTitle) posterTitle.textContent = ko ? '오늘의 기록' : 'Today’s record';
-    if (posterCopy) posterCopy.textContent = ko ? '사진 한 장에 GARANG의 기록을 담습니다.' : 'Turn one photo into a GARANG record.';
+    setText(posterTitle, ko ? '오늘의 기록' : 'Today’s record');
+    setText(posterCopy, ko ? '사진 한 장에 GARANG의 기록을 담습니다.' : 'Turn one photo into a GARANG record.');
     const certButton = card.querySelector('#certWorkout');
-    if (certButton) { certButton.textContent = ko ? '인증 만들기' : 'Create verification'; certButton.classList.add('garang-cert-primary'); }
+    if (certButton) { setText(certButton, ko ? '인증 만들기' : 'Create verification'); certButton.classList.add('garang-cert-primary'); }
     const overlayButton = card.querySelector('#workoutOverlayOnly');
     let options = card.querySelector('.garang-cert-options');
     if (overlayButton && !options) {
@@ -86,20 +111,20 @@
       const body = document.createElement('div'); body.className = 'garang-cert-options-body';
       options.append(summary, body); overlayButton.parentElement?.insertAdjacentElement('afterend', options); body.appendChild(overlayButton);
     }
-    if (options) { const summary = options.querySelector('.garang-cert-options-summary'); if (summary) summary.textContent = ko ? '추가 옵션' : 'More options'; }
-    if (overlayButton) overlayButton.textContent = ko ? '오버레이만 저장' : 'Save overlay only';
+    if (options) { const summary = options.querySelector('.garang-cert-options-summary'); setText(summary, ko ? '추가 옵션' : 'More options'); }
+    setText(overlayButton, ko ? '오버레이만 저장' : 'Save overlay only');
     const certArea = card.querySelector('#workoutCertArea');
-    if (certArea?.classList.contains('empty')) certArea.textContent = ko ? '사진을 선택하면 최근 운동 기록이 자동으로 적용됩니다.' : 'Choose a photo and your latest workout will be applied automatically.';
+    if (certArea?.classList.contains('empty')) setText(certArea, ko ? '사진을 선택하면 최근 운동 기록이 자동으로 적용됩니다.' : 'Choose a photo and your latest workout will be applied automatically.');
     const share = card.querySelector('#certShare');
-    if (share) share.textContent = share.closest('.cert-controls')?.querySelector('.cert-video-note') ? (ko ? '영상 공유' : 'Share video') : (ko ? '저장 / 공유' : 'Save / Share');
+    if (share) setText(share, share.closest('.cert-controls')?.querySelector('.cert-video-note') ? (ko ? '영상 공유' : 'Share video') : (ko ? '저장 / 공유' : 'Save / Share'));
   }
 
   function setCardContent(card, ex, muscleKey) {
     const name = String(ex?.exercise_name || '').trim();
     card.dataset.exercisePick = name; card.classList.remove('selected');
     const strong = card.querySelector('strong'), meta = card.querySelector('span'), figure = card.querySelector('.exercise-figure');
-    if (strong) strong.textContent = name;
-    if (meta) { const met = Number(ex?.met_default); meta.textContent = `${ex?.primary_muscle || '전신'} · ${Number.isFinite(met) ? met.toFixed(1) : '5.0'} MET`; }
+    setText(strong, name);
+    if (meta) { const met = Number(ex?.met_default); setText(meta, `${ex?.primary_muscle || '전신'} · ${Number.isFinite(met) ? met.toFixed(1) : '5.0'} MET`); }
     if (figure) figure.dataset.muscle = muscleKeyFromLabel(ex?.primary_muscle) || muscleKey || 'full';
   }
 
@@ -123,14 +148,14 @@
       let hits = 0;
       cards.forEach(card => { const match = String(card.dataset.exercisePick || '').toLocaleLowerCase().includes(q); card.hidden = !match; if (match) hits++; });
       if (more) more.hidden = true;
-      if (status) status.textContent = document.documentElement.lang === 'en' ? `${hits} matches` : `${hits}개 검색됨`;
+      setText(status, document.documentElement.lang === 'en' ? `${hits} matches` : `${hits}개 검색됨`);
       if (noResults) noResults.hidden = hits > 0;
       return;
     }
     const expanded = more?.querySelector('.garang-library-more-button')?.dataset.expanded === 'true';
     cards.forEach((card, index) => { card.hidden = index >= 4 && !expanded; });
     if (more) more.hidden = false;
-    if (status) status.textContent = document.documentElement.lang === 'en' ? 'Search by exercise name.' : '운동 이름으로 검색하세요.';
+    setText(status, document.documentElement.lang === 'en' ? 'Search by exercise name.' : '운동 이름으로 검색하세요.');
     if (noResults) noResults.hidden = true;
   }
 
@@ -146,11 +171,11 @@
       input.addEventListener('input', () => { exerciseSearchQuery = input.value; applySearchVisibility(library); });
     }
     const ko = document.documentElement.lang !== 'en';
-    wrap.querySelector('label').textContent = ko ? '운동 검색' : 'Exercise search';
-    wrap.querySelector('input').placeholder = ko ? '운동 이름 검색' : 'Search exercises';
+    setText(wrap.querySelector('label'), ko ? '운동 검색' : 'Exercise search');
+    setPlaceholder(wrap.querySelector('input'), ko ? '운동 이름 검색' : 'Search exercises');
     let empty = main.querySelector('.garang-exercise-no-results');
-    if (!empty) { empty = document.createElement('div'); empty.className = 'garang-exercise-no-results'; empty.hidden = true; empty.textContent = ko ? '검색 결과가 없습니다.' : 'No matching exercises.'; library.insertAdjacentElement('afterend', empty); }
-    else empty.textContent = ko ? '검색 결과가 없습니다.' : 'No matching exercises.';
+    if (!empty) { empty = document.createElement('div'); empty.className = 'garang-exercise-no-results'; empty.hidden = true; setText(empty, ko ? '검색 결과가 없습니다.' : 'No matching exercises.'); library.insertAdjacentElement('afterend', empty); }
+    else setText(empty, ko ? '검색 결과가 없습니다.' : 'No matching exercises.');
   }
 
   async function enhanceWorkoutLibrary() {
@@ -186,7 +211,10 @@
       if (extras.length) {
         const moreWrap = document.createElement('div'); moreWrap.className = 'garang-library-more-wrap';
         const button = document.createElement('button'); button.type = 'button'; button.className = 'garang-library-more-button'; button.dataset.expanded = 'false';
-        const updateLabel = () => { const ko = document.documentElement.lang !== 'en', expanded = button.dataset.expanded === 'true'; button.innerHTML = expanded ? `<span>${ko ? '접기' : 'Show less'}</span><b>↑</b>` : `<span>${ko ? '더보기' : 'Show all'} <small>${extras.length}</small></span><b>↓</b>`; };
+        const updateLabel = () => {
+          const ko = document.documentElement.lang !== 'en', expanded = button.dataset.expanded === 'true';
+          setHTML(button, expanded ? `<span>${ko ? '접기' : 'Show less'}</span><b>↑</b>` : `<span>${ko ? '더보기' : 'Show all'} <small>${extras.length}</small></span><b>↓</b>`);
+        };
         updateLabel(); button.addEventListener('click', () => { const expanded = button.dataset.expanded !== 'true'; button.dataset.expanded = String(expanded); library.classList.toggle('garang-library-expanded', expanded); updateLabel(); applySearchVisibility(library); if (!expanded && !exerciseSearchQuery) library.scrollIntoView({ block:'start', behavior:'smooth' }); });
         moreWrap.appendChild(button); library.insertAdjacentElement('afterend', moreWrap);
       }
