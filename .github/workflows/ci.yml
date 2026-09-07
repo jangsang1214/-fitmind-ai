@@ -17,27 +17,63 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify GARANG Intelligence Core v1
+      - name: Verify GARANG Intelligence Core v1 combined
+        continue-on-error: true
         run: node tests/intelligence-core-v1.test.cjs
+      - name: Combined score sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-score-contract
+      - name: Combined missing-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-missing-data
+      - name: Combined future-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-future-data
+      - name: Combined pain sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pain-guardrail
+      - name: Combined completed-plan sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-completed-plan
+      - name: Combined pipeline sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pipeline
+      - name: Combined compact sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-compact-context
       - name: Regression group A - core runtime
+        if: always()
         continue-on-error: true
         run: node tests/core.test.cjs && node tests/schema-contract.test.cjs && node tests/schema-freeze-contract-v1.test.cjs && node tests/error-system-v1.test.cjs && node tests/adapters.test.cjs && node tests/commercial-core.test.cjs && node tests/stability-feature-preservation.test.cjs && node tests/runtime-lifecycle-contract.test.cjs && node tests/runtime-observer-inventory.test.cjs && node tests/runtime-freeze-contract-v1.test.cjs
       - name: Regression group B - agent storage auth
+        if: always()
         continue-on-error: true
         run: node tests/agent-contract.test.cjs && node tests/agent-e2e.test.cjs && node tests/agent-account-pinning.test.cjs && node tests/sync-durability.test.cjs && node tests/state-sanitizer.test.cjs && node tests/history-persistence-v2.test.cjs && node tests/legacy-migration-v2.test.cjs && node tests/pwa-safety.test.cjs && node tests/version-ui-contract.test.cjs && node tests/auth-route-mobile.test.cjs
       - name: Regression group C - data memory decision
+        if: always()
         continue-on-error: true
         run: node tests/data-actions-contract.test.cjs && node tests/data-recovery-v3.test.cjs && node tests/touch-state-recovery-contract.test.cjs && node tests/lifetime-history.test.cjs && node tests/post-login-app-boot.test.cjs && node tests/privacy-security.test.cjs && node tests/security-rules.test.cjs && node tests/memory-intelligence.test.cjs && node tests/memory-benchmark.test.cjs && node tests/state-intelligence.test.cjs && node tests/state-benchmark.test.cjs && node tests/decision-intelligence.test.cjs && node tests/decision-benchmark.test.cjs && node tests/decision-agent-e2e.test.cjs
       - name: Regression group D - intelligence UI smoke
+        if: always()
         continue-on-error: true
         run: node tests/intelligence-core-v1.test.cjs && node tests/demo-feedback-regression.test.cjs && node tests/workout-intelligence-v1.test.cjs && node tests/collapsible-intelligence-ui.test.cjs && node tests/coach-profile-stability.test.cjs && node tests/coach-auth-stability.test.cjs && node tests/coach-decision-compact-ui.test.cjs && node tests/coach-top-sync-ux.test.cjs && node tests/app-e2e-smoke.test.cjs
       - name: Regression group E - backend functions
+        if: always()
         continue-on-error: true
         run: node backend/tests/core.test.cjs && node backend/tests/intelligence-contract.test.cjs && node functions/tests/memory-engine.test.cjs && node functions/tests/agent-context.test.cjs && node functions/tests/account-security.test.cjs
       - name: Regression group F - final contracts
+        if: always()
         continue-on-error: true
         run: node tests/today.test.cjs && node tests/major-update.test.cjs && node tests/i18n-structure.test.cjs && node tests/entity-i18n.test.cjs && node tests/units.test.cjs && node tests/screen-registry.test.cjs
       - name: Test Commercial Core and regressions
+        if: always()
         run: npm test
       - name: Validate runtime and build
         run: npm run build
