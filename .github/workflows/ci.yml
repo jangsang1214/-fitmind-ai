@@ -17,6 +17,34 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Intelligence score contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: score-contract }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence missing-data contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: missing-data }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence future-data contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: future-data }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence pain guardrail
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: pain-guardrail }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence completed-plan contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: completed-plan }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence pipeline contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: pipeline }
+        run: node tests/intelligence-core-v1.test.cjs
+      - name: Intelligence compact-context contract
+        continue-on-error: true
+        env: { GARANG_TEST_CASE: compact-context }
+        run: node tests/intelligence-core-v1.test.cjs
       - name: Verify GARANG Intelligence Core v1
         run: node tests/intelligence-core-v1.test.cjs
       - name: Test Commercial Core and regressions
