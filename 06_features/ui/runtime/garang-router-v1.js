@@ -1,4 +1,4 @@
-/* GARANG canonical feature router v1
+/* GARANG canonical feature router v1.1
    Feature runtimes request navigation here instead of synthesizing DOM click events.
    01_app/app.js remains the screen-render owner; this bridge invokes its already-bound
    handlers directly and owns transient UI cleanup before a route transition.
@@ -6,7 +6,7 @@
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.0.0';
+const VERSION='garang-router-v1.1.0';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
@@ -22,12 +22,20 @@ function valid(route){
   return ['today','coach','workout','body','progress','running','nutrition','planner','memory','profile','settings','onboarding','modeling','log'].includes(r);
 }
 function removeTransient(){
-  const coach=document.querySelector('.garang-coach-v2');
-  coach?.classList.remove('sidebar-open','gcp-open');
-  document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel,.g2-sidebar-backdrop').forEach(el=>{
-    if(el.classList.contains('gcp-backdrop')||el.classList.contains('gcp-panel')){el.hidden=true;return;}
-    if(el.classList.contains('g2-sidebar-backdrop'))return;
-    el.remove();
+  const appMain=main(),liveCoach=appMain?.querySelector('.garang-coach-v2')||null;
+  document.querySelectorAll('.garang-coach-v2').forEach(root=>{
+    root.classList.remove('sidebar-open','gcp-open');
+    if(root!==liveCoach&&!appMain?.contains(root))root.remove();
+  });
+  document.querySelectorAll('.garang-more-sheet,.modal-backdrop').forEach(el=>el.remove());
+  document.querySelectorAll('.gcp-backdrop,.gcp-panel').forEach(el=>{
+    el.hidden=true;
+    el.setAttribute('aria-hidden','true');
+    el.style.setProperty('pointer-events','none','important');
+  });
+  document.querySelectorAll('.g2-sidebar-backdrop').forEach(el=>{
+    const owner=el.closest('.garang-coach-v2');
+    if(!owner)el.remove();
   });
   document.body?.classList.remove('menu-open');
 }
