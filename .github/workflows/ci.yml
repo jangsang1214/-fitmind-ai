@@ -45,8 +45,39 @@ jobs:
         continue-on-error: true
         env: { GARANG_TEST_CASE: compact-context }
         run: node tests/intelligence-core-v1.test.cjs
-      - name: Verify GARANG Intelligence Core v1
+      - name: Verify GARANG Intelligence Core v1 combined
+        continue-on-error: true
         run: node tests/intelligence-core-v1.test.cjs
+      - name: Combined score contract sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-score-contract
+      - name: Combined missing-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-missing-data
+      - name: Combined future-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-future-data
+      - name: Combined pain guardrail sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pain-guardrail
+      - name: Combined completed-plan sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-completed-plan
+      - name: Combined pipeline sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pipeline
+      - name: Combined compact-context sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-compact-context
+      - name: Assert combined intelligence contracts
+        run: '! compgen -G ".garang-intelligence-failure-*" >/dev/null'
       - name: Test Commercial Core and regressions
         run: npm test
       - name: Validate runtime and build
