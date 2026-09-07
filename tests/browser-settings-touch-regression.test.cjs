@@ -13,6 +13,14 @@ const watchdog=setTimeout(()=>{console.error('browser-settings-touch-regression:
 function stage(name){console.log(`settings-touch-stage: ${name}`);}
 const timeout=(ms,label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms));
 
+async function flushRafs(page,count=4){
+  await page.evaluate(n=>new Promise(resolve=>{
+    let left=Math.max(1,Number(n)||1);
+    const next=()=>{left-=1;if(left<=0)resolve();else requestAnimationFrame(next);};
+    requestAnimationFrame(next);
+  }),count);
+}
+
 async function waitForServer(){
   const deadline=Date.now()+15000;
   while(Date.now()<deadline){
@@ -193,21 +201,32 @@ async function route(page,name){
     stage('gear second tapped');
     await assertSettingsInteractive(page,'settings after utility-sheet close');
 
-    /* Reproduce the physical report path: Coach's visible gear delegates to the canonical Settings route. */
+    /* Reproduce the physical report path: Coach's visible gear must call the canonical
+       app route handler directly, without dispatching a nested hidden-gear click event. */
     stage('enter Coach for visible gear path');
     await route(page,'coach');
-    await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g5-settings'),null,{timeout:7000});
+    await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g5-settings')&&document.documentElement.getAttribute('data-garang-coach-shell')==='active',null,{timeout:7000});
+    await flushRafs(page,5);
+    await page.waitForTimeout(100);
     await assertSettingsSettles(page,'pre-coach-settings idle');
+    await page.evaluate(()=>{
+      const gear=document.getElementById('settingsTopBtn');
+      window.__settingsHiddenClickEvents=0;
+      gear?.addEventListener('click',()=>{window.__settingsHiddenClickEvents+=1;});
+    });
     stage('tap Coach visible settings gear');
     await tap(page,'.garang-coach-v2 .g5-settings');
+    assert.equal(await page.evaluate(()=>window.__settingsHiddenClickEvents||0),0,'Coach visible Settings must not dispatch a nested synthetic click on the hidden top gear');
     await assertSettingsInteractive(page,'Coach visible settings gear');
 
     stage('Coach reentry after Settings');
     await route(page,'coach');
     await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g2-chat-head'),null,{timeout:7000});
+    await flushRafs(page,4);
     await tap(page,'.g2-head-new');
     await page.waitForTimeout(80);
     await tap(page,'.garang-coach-v2 .g5-settings');
+    assert.equal(await page.evaluate(()=>window.__settingsHiddenClickEvents||0),0,'Coach Settings after reentry must still avoid synthetic hidden-gear clicks');
     await assertSettingsInteractive(page,'Coach settings after reentry');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
