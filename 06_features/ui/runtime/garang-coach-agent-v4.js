@@ -1,10 +1,8 @@
-/* GARANG Coach Agent v4.4
-   - Persistent bilingual recommended questions above the composer.
+/* GARANG Coach Agent v4.6
+   - Single owner for persistent recommended prompts and Agent proposal cards.
+   - Canonical Korean action prompts keep the local/Agent branch stable while labels localize.
    - Mock Agent Contract E2E: question -> context -> tool proposal -> approval -> write.
-   - Existing local Coach answer remains the visible analysis until a real LLM adapter is connected.
-   - Main/root MutationObservers are single-owner and coalesced so Coach settles on WebKit.
-   - Agent proposals wait for authenticated state hydration instead of marking the message processed too early.
-   - The final prompt runtime owns canonical prompt markup once it has taken over the strip.
+   - Agent proposals wait for authenticated state hydration instead of marking a message processed early.
 */
 (() => {
 'use strict';
@@ -15,11 +13,13 @@ let activeRoot=null,rootQueued=false;
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
-const prompts=()=>english()?[
- {label:'Today’s training',prompt:"Set today's training intensity based on my records."},{label:'Recent workouts',prompt:'Analyze my recent workout records.'},{label:'Today’s nutrition',prompt:"Analyze today's nutrition based on my saved meals."},{label:'Recovery',prompt:'How is my recovery today?'},{label:'Create plan',prompt:'Create a plan for today.'}
-]:[
- {label:'오늘 운동 강도',prompt:'오늘 운동 강도를 내 기록 기준으로 정해줘'},{label:'최근 운동 분석',prompt:'내 최근 운동 기록을 분석해줘'},{label:'오늘 식단 분석',prompt:'오늘 저장된 식단 기록을 분석해줘'},{label:'회복 상태',prompt:'오늘 회복 상태를 알려줘'},{label:'계획 만들기',prompt:'오늘 계획을 만들어줘'}
-];
+const PROMPTS=Object.freeze([
+ {id:'training',koLabel:'오늘 운동 강도',enLabel:"Today's training",koPrompt:'오늘 운동 강도를 내 기록 기준으로 정해줘',enPrompt:"Set today's training intensity based on my records."},
+ {id:'recent',koLabel:'최근 운동 분석',enLabel:'Recent workouts',koPrompt:'내 최근 운동 기록을 분석해줘',enPrompt:'Analyze my recent workout records.'},
+ {id:'nutrition',koLabel:'오늘 식단 분석',enLabel:"Today's nutrition",koPrompt:'오늘 저장된 식단 기록을 분석해줘',enPrompt:"Analyze today's nutrition based on my saved meals."},
+ {id:'recovery',koLabel:'회복 상태',enLabel:'Recovery',koPrompt:'오늘 회복 상태를 알려줘',enPrompt:'How is my recovery today?'},
+ {id:'plan',koLabel:'계획 만들기',enLabel:'Create plan',koPrompt:'오늘 계획을 만들어줘',enPrompt:'Create a plan for today.'}
+]);
 
 function contextFromState(state){const s=state||{};return {profile:clone(s.profile||null),userModel:clone(s.userModel||s.onboarding||null),recent:{workouts:clone((s.workouts||[]).slice(-30)),meals:clone((s.meals||[]).slice(-30)),runs:clone((s.runs||[]).slice(-20)),body:clone((s.body||[]).slice(-20)),planner:clone((s.planner||[]).slice(-30))},memory:{entries:clone((s.memory?.entries||[]).filter(x=>x?.userConfirmed!==false&&(!x?.expiresAt||Date.parse(x.expiresAt)>Date.now())).slice(-40))}};}
 function toolLabel(tool){const ko={createPlan:'계획 생성',updatePlan:'계획 수정',saveMemory:'기억 저장',deleteRecord:'기록 삭제',updateGoal:'목표 변경'},en={createPlan:'Create plan',updatePlan:'Update plan',saveMemory:'Save memory',deleteRecord:'Delete record',updateGoal:'Update goal'};return (english()?en:ko)[tool]||tool;}
@@ -36,8 +36,6 @@ async function processAssistant(messageEl){
  for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}
  const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
  const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;
- /* Authenticated Coach can render its local answer before the account state has finished
-    hydrating. Do not mark that assistant as seen until the bridge is actually ready. */
  if(!Contract||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}
  processingAssistantIds.add(messageId);delete messageEl.dataset.g4AgentPending;
  try{
@@ -53,22 +51,27 @@ async function processAssistant(messageEl){
   messageEl.dataset.g4AgentPending='1';console.warn('[GARANG] Agent E2E layer deferred',error);
  }finally{processingAssistantIds.delete(messageId);}
 }
-function promptSignature(items){return items.map(item=>`${item.label}\u0001${item.prompt}`).join('\u0002');}
-function currentPromptSignature(strip){return [...strip.querySelectorAll('[data-g4-prompt]')].map(button=>`${button.textContent}\u0001${button.dataset.g4Prompt||''}`).join('\u0002');}
-
+function promptSignature(){const isEn=english();return PROMPTS.map(item=>`${item.id}\u0001${isEn?item.enLabel:item.koLabel}\u0001${item.koPrompt}`).join('\u0002');}
+function currentPromptSignature(strip){return strip.dataset.garangPromptSignature||'';}
+function submitPrompt(root,input,prompt){
+ input.value=prompt;input.dispatchEvent(new Event('input',{bubbles:true}));
+ const send=root.querySelector('.g2-send');if(typeof send?.onclick==='function')send.onclick.call(send,{type:'garang-coach-submit',target:send,currentTarget:send,preventDefault(){},stopPropagation(){}});
+}
 function syncPromptStrip(root){
  const composerWrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');if(!composerWrap||!composer||!input)return;
  const legacy=root.querySelector('.g2-empty-chat .g2-prompts');if(legacy?.isConnected)legacy.remove();
  let strip=composerWrap.querySelector('.g4-prompt-strip');
  if(!strip){strip=document.createElement('div');strip.className='g4-prompt-strip';composerWrap.insertBefore(strip,composer);}
+ if(strip.nextElementSibling!==composer)composerWrap.insertBefore(strip,composer);
+ strip.dataset.garangPromptOwner='coach-agent-v4';strip.dataset.garangPersistent='1';
  const placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';
  if(input.placeholder!==placeholder)input.placeholder=placeholder;
  if(input.getAttribute('aria-label')!==placeholder)input.setAttribute('aria-label',placeholder);
- /* garang-coach-item4-final owns canonical prompt markup after it marks the strip persistent.
-    Do not rewrite that same subtree from a second observer. */
- if(strip.dataset.garangPersistent==='1'&&window.GarangCoachItem4Final)return;
- const items=prompts(),wanted=promptSignature(items);
- if(currentPromptSignature(strip)!==wanted){strip.innerHTML=items.map(item=>`<button type="button" data-g4-prompt="${esc(item.prompt)}">${esc(item.label)}</button>`).join('');strip.querySelectorAll('[data-g4-prompt]').forEach(button=>button.onclick=()=>{input.value=button.dataset.g4Prompt||'';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();});}
+ const wanted=promptSignature();if(currentPromptSignature(strip)===wanted)return;
+ const isEn=english();
+ strip.innerHTML=PROMPTS.map(item=>`<button type="button" data-g4-prompt="${esc(isEn?item.enPrompt:item.koPrompt)}" data-garang-canonical-prompt="${esc(item.koPrompt)}" data-garang-prompt-id="${item.id}">${esc(isEn?item.enLabel:item.koLabel)}</button>`).join('');
+ strip.dataset.garangPromptSignature=wanted;
+ strip.querySelectorAll('[data-garang-canonical-prompt]').forEach(button=>{button.onclick=()=>submitPrompt(root,input,button.dataset.garangCanonicalPrompt||'');});
 }
 function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
 function syncRoot(root){if(root!==activeRoot||!root.isConnected)return;syncPromptStrip(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);}
@@ -92,5 +95,6 @@ window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:cloud-state-ready',()=>queueRootSync(activeRoot));
 window.addEventListener('garang:agent-write',()=>queueRootSync(activeRoot));
+window.GarangCoachAgentV4=Object.freeze({version:'garang-coach-agent-v4.6',prompts:PROMPTS});
 syncLifecycleRoot();
 })();
