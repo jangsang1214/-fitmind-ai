@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..');
+class MockStorage{constructor(){this.map=new Map();}get length(){return this.map.size;}key(i){return [...this.map.keys()][i]??null;}getItem(k){return this.map.has(String(k))?this.map.get(String(k)):null;}setItem(k,v){this.map.set(String(k),String(v));}removeItem(k){this.map.delete(String(k));}}
+const localStorage=new MockStorage(),auth={currentUser:{uid:'mock-user'}};
+const context={console,setTimeout,clearTimeout,Storage:MockStorage,localStorage,CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;}},document:{getElementById(){return null;}},crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},dispatchEvent(){},firebase:{auth:()=>auth}};
+context.window=context;context.globalThis=context;vm.createContext(context);
+vm.runInContext(fs.readFileSync(path.join(root,'02_core/memory-intelligence-v1.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'06_features/final/agent-state-hook-v1.js'),'utf8'),context);
+const makeState=(name,owner=null)=>({meta:{schemaVersion:5,updatedAt:name==='STALE DEMO'?'2099-01-01T00:00:00.000Z':'2026-09-07T00:00:00.000Z',...(owner?{syncOwnerUid:owner}:{})},profile:{name,goal:'퍼포먼스 향상'},onboarding:{goal:'퍼포먼스 향상'},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[{id:`w-${name}`,name:'벤치프레스'}],meals:[],runs:[],body:[],checkins:[],memory:{entries:[],deletedIds:[]},actionLog:[]});
+context.stale=makeState('STALE DEMO');context.userState=makeState('SIGNED USER','mock-user');
+vm.runInContext("localStorage.setItem('garang_demo_state_v3',JSON.stringify(stale)); localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(userState));",context);
+const bridge=context.GarangAgentStateBridge;
+assert.equal(bridge.ready(),true);assert.equal(bridge.getStorageKey(),'garang_user_mock-user_v3');assert.equal(bridge.getState().profile.name,'SIGNED USER');
+vm.runInContext("JSON.parse(localStorage.getItem('garang_demo_state_v3')); JSON.stringify(stale);",context);
+assert.equal(bridge.getStorageKey(),'garang_user_mock-user_v3','parsing/stringifying stale demo must not steal authenticated key');assert.equal(bridge.getState().profile.name,'SIGNED USER','stale demo must not steal authenticated Agent state');
+bridge.applyWrite('createPlan',{title:'인증 계정 계획',type:'workout',duration:50});
+const savedUser=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')),savedDemo=JSON.parse(localStorage.getItem('garang_demo_state_v3'));
+assert.ok(savedUser.planner.some(x=>x.title==='인증 계정 계획'));assert.equal(savedDemo.planner.length,0,'Agent write must never leak into stale demo');
+context.otherState=makeState('OTHER USER','other-user');auth.currentUser={uid:'other-user'};vm.runInContext("localStorage.setItem('garang_user_other-user_v3',JSON.stringify(otherState));",context);
+assert.equal(bridge.ready(),true);assert.equal(bridge.getStorageKey(),'garang_user_other-user_v3');assert.equal(bridge.getState().profile.name,'OTHER USER','bridge must rebind when auth identity changes');
+console.log('agent-account-pinning: PASS');
