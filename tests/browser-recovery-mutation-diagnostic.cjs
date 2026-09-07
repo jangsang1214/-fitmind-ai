@@ -15,11 +15,11 @@ source=source.replace(contextNeedle,contextNeedle+moInit);
 
 const armNeedle="stage('before navigation diagnostic');";
 if(!source.includes(armNeedle))throw new Error('diagnostic arm insertion point changed');
-source=source.replace(armNeedle,"await page.evaluate(()=>{window.__garangMutationDiagnostic.armed=true;for(const stat of window.__garangMutationDiagnostic.stats){stat.armed=0;stat.dropped=0;}});"+armNeedle);
+source=source.replace(armNeedle,"await page.evaluate(()=>{window.__garangMutationDiagnostic.armed=true;for(const stat of window.__garangMutationDiagnostic.stats){stat.armed=0;stat.dropped=0;}window.__garangSavedScrollIntoView=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){console.log('[recovery-diag] scrollIntoView suppressed for isolation');};});"+armNeedle);
 
 const reportNeedle="await sleep(300);await heartbeat(page,'second navigation heartbeat after recovery cancel');";
 if(!source.includes(reportNeedle))throw new Error('diagnostic report insertion point changed');
-source=source.replace(reportNeedle,reportNeedle+"const moReport=await page.evaluate(()=>window.__garangMutationDiagnostic.stats.map(({id,total,armed,dropped,stack})=>({id,total,armed,dropped,stack})));console.log('[recovery-mo-report] '+JSON.stringify(moReport));");
+source=source.replace(reportNeedle,reportNeedle+"const moReport=await page.evaluate(()=>{if(window.__garangSavedScrollIntoView){Element.prototype.scrollIntoView=window.__garangSavedScrollIntoView;delete window.__garangSavedScrollIntoView;}return window.__garangMutationDiagnostic.stats.map(({id,total,armed,dropped,stack})=>({id,total,armed,dropped,stack}));});console.log('[recovery-mo-report] '+JSON.stringify(moReport));");
 
 fs.writeFileSync(tempPath,source);
 const child=spawn(process.execPath,[tempPath],{cwd:root,stdio:'inherit'});
