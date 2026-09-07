@@ -13,7 +13,7 @@ const Sanitizer=window.GarangStateSanitizer,Core=window.GarangSyncDurability,His
 const VERSION='v3.4',LEGACY_KEY='garang_v99_state_v2',RECOVERY_BACKUP_PREFIX='garang_recovery_backup_v3::';
 const PROTECTED=Object.freeze(['workouts','meals','runs','body']);
 const CLOUD_PAGE_SIZE=60,PROCESS_YIELD_EVERY=40,MERGE_YIELD_EVERY=60;
-let lastReport=null,observer=null,bindingQueued=false,lastTrigger=null,scanGeneration=0,activeScan=null;
+let lastReport=null,bindingQueued=false,lastTrigger=null,scanGeneration=0,activeScan=null;
 
 function authUid(){try{return window.firebase?.auth?.().currentUser?.uid||null;}catch{return null;}}
 function activeKey(){const u=authUid();return u?`garang_user_${u}_v3`:'garang_demo_state_v3';}
@@ -306,7 +306,10 @@ function bindSettingsButton(){
   button.dataset.garangSafeImport=VERSION;button.onclick=()=>openRecoveryCenter();
 }
 function queueBinding(){if(bindingQueued)return;bindingQueued=true;requestAnimationFrame(()=>{bindingQueued=false;bindSettingsButton();});}
-function startBinding(){ensureStyle();bindSettingsButton();const main=document.getElementById('main');if(!main||observer)return;observer=new MutationObserver(queueBinding);observer.observe(main,{childList:true,subtree:true});}
+function startBinding(){ensureStyle();bindSettingsButton();}
+window.addEventListener('garang:screen-rendered',queueBinding);
+window.addEventListener('garang:state-hydrated',queueBinding);
+window.addEventListener('pageshow',queueBinding);
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.querySelector('.garang-data-recovery-modal'))closeModal();});
 setTimeout(startBinding,0);window.addEventListener('load',startBinding,{once:true});
 window.GarangDataMigrationV2=Object.freeze({version:VERSION,importLegacy:openRecoveryCenter,openRecoveryCenter,closeRecoveryCenter:closeModal,scanData,counts,combineHistory,activeKey,get scanActive(){return !!activeScan;},get scanGeneration(){return scanGeneration;}});

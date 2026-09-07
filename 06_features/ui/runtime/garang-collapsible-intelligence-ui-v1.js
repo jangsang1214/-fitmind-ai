@@ -33,7 +33,11 @@ function decisionCompact(card,head){let compact=head.querySelector('.gci-decisio
 function enhanceDecision(){const card=main.querySelector('.garang-decision-card');if(!card)return;const head=card.querySelector('.garang-decision-head');if(!head)return;card.classList.add('gci-collapsible');const body=wrapAfter(card,head);decisionCompact(card,head);let button=head.querySelector('.gci-toggle');if(!button){button=document.createElement('button');button.type='button';button.className='gci-toggle';button.setAttribute('aria-label',english()?'Toggle Coach decision details':'코치 판단 데이터 상세 열기/닫기');head.appendChild(button);}bindButton(button,card,body,'decision');applyOpen(card,body,button,'decision',readOpen('decision',false));}
 function run(){queued=false;ensureStyle();enhanceDaily();enhanceSets();enhanceDecision();}
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(run));}
-new MutationObserver(schedule).observe(main,{childList:true,subtree:true});
+window.addEventListener('garang:screen-rendered',schedule);
+window.addEventListener('garang:state-updated',schedule);
+window.addEventListener('garang:state-hydrated',schedule);
+window.addEventListener('garang:workout-intelligence-rendered',schedule);
+window.addEventListener('garang:coach-decision-rendered',schedule);
 new MutationObserver(schedule).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:agent-write',schedule);window.addEventListener('garang:agent-proposal-resolved',schedule);
 schedule();
