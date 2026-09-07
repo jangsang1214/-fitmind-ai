@@ -30,9 +30,14 @@ for(const file of bootUi){
 }
 
 assert.deepEqual(findings,[],`broad body/#main UI MutationObserver ownership remains:\n${JSON.stringify(findings,null,2)}`);
+/* These four are translation/unit adapters only. entities/runtime/units write text only when changed;
+   supplement observes child/text additions to preserve canonical option values and does not observe
+   attributes, so its own option value/data writes cannot retrigger itself. */
 assert.deepEqual(documentWide.sort(),[
+  '06_features/ui/i18n/entities-v1.js',
   '06_features/ui/i18n/runtime.js',
+  '06_features/ui/i18n/supplement-v2.js',
   '06_features/ui/runtime/garang-units-runtime.js'
-].sort(),`only translation/unit text adapters may observe the whole document, and their writes must remain idempotent:\n${JSON.stringify(documentWide,null,2)}`);
+].sort(),`only translation/unit adapters may observe the whole document:\n${JSON.stringify(documentWide,null,2)}`);
 assert.deepEqual(coachScrollOwners,['06_features/ui/runtime/garang-brand-runtime-v2.js'],`Coach scrolling must have one canonical JS owner:\n${JSON.stringify(coachScrollOwners,null,2)}`);
 console.log('runtime-observer-inventory: PASS',JSON.stringify({uiRuntimeCount:bootUi.length,broadBodyMain:findings.length,documentWide,coachScrollOwners}));
