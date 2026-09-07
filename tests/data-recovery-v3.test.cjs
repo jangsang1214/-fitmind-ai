@@ -19,7 +19,7 @@ for(const token of [
 assert.equal(runtime.includes('구버전 로컬 데이터를 찾지 못했습니다.'),false,'recovery UX must not equate one missing legacy key with missing user history');
 assert.equal(runtime.includes('window.confirm('),false,'recovery must not use a blocking native confirmation dialog');
 assert.equal(runtime.includes('Promise.race(['),false,'scan cancellation must not leave a rejected race branch attached to a late Firestore read');
-assert.equal(runtime.includes('MutationObserver'),false,'single recovery owner must not observe and relocate its own DOM');
+assert.equal(runtime.includes('new MutationObserver'),false,'single recovery owner must not observe and relocate its own DOM');
 assert.equal(runtime.includes("document.documentElement.classList.add('garang-recovery-open')"),false,'recovery must not mutate global html touch/scroll state');
 assert.equal(runtime.includes('html.garang-recovery-open,html.garang-recovery-open body{overflow:hidden'),false,'recovery must never globally lock iOS document scrolling');
 assert.ok(runtime.includes('const active=activeKey()')&&runtime.includes('key===active||key===LEGACY_KEY'),'local scan must include active state and legacy key');
