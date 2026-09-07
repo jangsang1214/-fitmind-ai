@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
 const contract=JSON.parse(fs.readFileSync(path.join(root,'02_core/schema-contract-v1.json'),'utf8'));
+const memoryContract=JSON.parse(fs.readFileSync(path.join(root,'02_core/memory-contract-v1.json'),'utf8'));
 const ctx=vm.createContext({console,Date,Math,URL,AbortController,setTimeout,clearTimeout});
 vm.runInContext(fs.readFileSync(path.join(root,'02_core/data-schema.js'),'utf8'),ctx);
 const G=ctx.GarangSchema;
@@ -10,6 +11,9 @@ assert.equal(contract.status,'frozen');
 assert.equal(G.CONTRACT_VERSION,contract.contractVersion);
 assert.equal(G.VERSION,contract.schemaVersion);
 assert.deepEqual(Array.from(G.CONTRACT.topLevel),contract.topLevel);
+assert.equal(contract.memoryContract,memoryContract.contractVersion,'state contract must pin the frozen memory sub-contract');
+assert.equal(memoryContract.status,'frozen');
+assert.deepEqual(memoryContract.container.arrayBuckets,contract.memoryBuckets,'state and memory contracts must agree on memory buckets');
 for(const [legacy,canonical] of Object.entries(contract.compatibilityAliases))assert.equal(G.CONTRACT.compatibility[legacy],canonical);
 
 const canonical=G.toTransport({
@@ -33,4 +37,4 @@ assert.equal('meta' in transported,false,'transport must strip local meta contai
 
 for(const key of contract.collectionDomains)assert.ok(Array.isArray(canonical[key]),`${key} must remain an array`);
 for(const key of contract.memoryBuckets)assert.ok(Array.isArray(canonical.memory[key]),`memory.${key} must remain an array`);
-console.log('schema-freeze-contract-v1: PASS',contract.freezeId);
+console.log('schema-freeze-contract-v1: PASS',contract.freezeId,'memory',memoryContract.freezeId);
