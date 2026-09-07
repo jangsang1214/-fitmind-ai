@@ -1,7 +1,8 @@
 /* GARANG canonical feature router v1.1
    Feature runtimes request navigation here instead of synthesizing DOM click events.
    01_app/app.js remains the screen-render owner. The router only closes transient UI
-   before invoking the already-bound canonical screen handlers.
+   before user-driven feature navigation; hydration reconciliation can opt out because
+   it has no transient surface to clean and must stay cheap on WebKit boot.
 */
 (() => {
 'use strict';
@@ -24,12 +25,10 @@ function valid(route){
 function removeTransient(){
   const appMain=main();
   const liveCoach=appMain?.querySelector('.garang-coach-v2')||null;
-
   if(liveCoach){
     liveCoach.classList.remove('sidebar-open','gcp-open');
     liveCoach.querySelectorAll('.gcp-backdrop,.gcp-panel').forEach(el=>{el.hidden=true;});
   }
-
   document.querySelectorAll('.garang-coach-v2').forEach(root=>{
     if(root!==liveCoach&&!appMain?.contains(root))root.remove();
   });
@@ -56,11 +55,11 @@ function viaMenu(route){
   if(target&&callBound(target))return true;
   return false;
 }
-function navigate(route,{source='runtime',force=false}={}){
+function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   const next=normalize(route);if(!valid(next))return false;
   if(!force&&current()===next)return true;
   try{window.dispatchEvent(new CustomEvent('garang:route-requested',{detail:{from:current(),to:next,source}}));}catch{}
-  removeTransient();
+  if(cleanup)removeTransient();
   let ok=callBound(bottomTarget(next))||callBound(directTarget(next));
   if(!ok)ok=viaMenu(next);
   if(ok){
