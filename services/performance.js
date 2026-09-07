@@ -2,6 +2,10 @@
  'use strict';
  const num=x=>Number.isFinite(Number(x))?Number(x):0, cap=x=>Math.round(Math.max(0,Math.min(100,x)));
  function calculate(s,asOf=root.GarangSchema.date()){
+  if(root.GarangPerformanceScore?.compute){
+   const intelligent=root.GarangPerformanceScore.compute(s,{now:new Date(`${asOf}T23:59:59`)}),components=intelligent.components||{},value=key=>components[key]?.score??null;
+   return {exercise:value('workout'),nutrition:value('nutrition'),recovery:value('recovery'),activity:value('activity'),body:value('body'),total:intelligent.score,coverage:Object.values(components).filter(x=>x?.score!=null).length,date:asOf,formulaVersion:intelligent.formulaVersion,confidence:intelligent.confidence,deltas:intelligent.deltas,trend:intelligent.trend,changeReasons:intelligent.changeReasons,missingData:intelligent.missingData,intelligenceVersion:intelligent.engineVersion};
+  }
   const end=new Date(asOf+'T23:59:59').getTime(),start=end-30*86400000;
   const recent=a=>(a||[]).filter(x=>{const d=new Date(x.date+'T12:00:00').getTime();return d>start&&d<=end;});
   const w=recent(s.workouts),m=recent(s.meals),r=recent(s.runs),b=recent(s.body),p=recent(s.planner);
@@ -22,7 +26,8 @@
  function coachSummary(score,language='ko'){
   if(score?.total==null)return language==='en'?'There is not enough recorded data to calculate a Performance Score yet. Log at least one workout, meal, run, body measurement or recovery plan first.':'아직 Performance Score를 계산할 기록이 부족해. 운동·식단·러닝·체성분·회복 계획 중 하나를 먼저 기록해 줘.';
   const value=x=>x??(language==='en'?'no data':'데이터 없음');
-  return language==='en'?`Your current GARANG Performance Score is ${score.total}/100: Exercise ${value(score.exercise)}, Nutrition ${value(score.nutrition)}, Recovery ${value(score.recovery)}, Activity ${value(score.activity)}, Body ${value(score.body)}. Start with one action in your lowest recorded area for the clearest improvement.`:`현재 GARANG Performance Score는 ${score.total}/100이야. 운동 ${value(score.exercise)}, 영양 ${value(score.nutrition)}, 회복 ${value(score.recovery)}, 활동 ${value(score.activity)}, 체성분 ${value(score.body)}로 계산했어. 점수를 올리려면 가장 낮은 기록 영역부터 한 가지 행동을 고르는 게 효율적이야.`;
+  const confidence=Number.isFinite(Number(score.confidence))?(language==='en'?` Confidence ${Math.round(Number(score.confidence)*100)}%.`:` 신뢰도 ${Math.round(Number(score.confidence)*100)}%.`):'';
+  return language==='en'?`Your current GARANG Performance Score is ${score.total}/100: Workout ${value(score.exercise)}, Recovery ${value(score.recovery)}, Nutrition ${value(score.nutrition)}, Activity ${value(score.activity)}, Body ${value(score.body)}.${confidence}`:`현재 GARANG Performance Score는 ${score.total}/100이야. 운동 ${value(score.exercise)}, 회복 ${value(score.recovery)}, 영양 ${value(score.nutrition)}, 활동 ${value(score.activity)}, 체성분 ${value(score.body)}.${confidence}`;
  }
  function workoutInsights(s,exerciseDb=[]){
   const muscleByName=new Map(exerciseDb.map(x=>[String(x.exercise_name||'').trim().toLowerCase(),String(x.primary_muscle||'기타')]));
