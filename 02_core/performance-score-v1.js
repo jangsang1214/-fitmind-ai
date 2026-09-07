@@ -54,7 +54,7 @@ function nutritionComponent(s,end){
  return component(score,confidence,{loggedDays14:loggedDays,proteinTarget:round(proteinTarget,1),averageProtein:round(mean([...byDay.values()].map(x=>x.protein)),1)},reasons);
 }
 function activityComponent(s,userState,end){
- const workouts=rows(s.workouts).filter(x=>inWindow(x,end,14)),runs=rows(s.runs).filter(x=>inWindow(x,end,14)),activeDays=new Set([...workouts,...runs].map(x=>dateOf(x.date))).size,expected=Math.max(4,weeklyFrequency(s)*2),consistency=clamp(activeDays/expected*100),trend=userState?.trends?.consistency?.direction||'stable',trendAdj=trend==='up'?6:trend==='down'?-8:0,score=clamp(consistency+trendAdj),confidence=clamp(Math.min(1,activeDays/6)*.8+(runs.length||workouts.length?.2:0),0,1),reasons=[];
+ const workouts=rows(s.workouts).filter(x=>inWindow(x,end,14)),runs=rows(s.runs).filter(x=>inWindow(x,end,14)),activeDays=new Set([...workouts,...runs].map(x=>dateOf(x.date))).size,expected=Math.max(4,weeklyFrequency(s)*2),consistency=clamp(activeDays/expected*100),trend=userState?.trends?.consistency?.direction||'stable',trendAdj=trend==='up'?6:trend==='down'?-8:0,score=clamp(consistency+trendAdj),confidence=clamp(Math.min(1,activeDays/6)*.8+(activeDays>0?.2:0),0,1),reasons=[];
  if(activeDays<expected*.65)reasons.push('ACTIVITY_CONSISTENCY_LOW');if(trend==='up')reasons.push('ACTIVITY_TREND_UP');if(trend==='down')reasons.push('ACTIVITY_TREND_DOWN');
  return component(score,confidence,{activeDays14:activeDays,expectedActiveDays14:expected,trend},reasons);
 }
