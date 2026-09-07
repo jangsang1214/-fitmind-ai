@@ -1,0 +1,88 @@
+name: GARANG one-time stability codemod
+on:
+  push:
+    branches: [stability-sprint-20260907]
+permissions:
+  contents: write
+jobs:
+  codemod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stability-sprint-20260907
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preserve active Coach DOM across background hydration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          app=Path('01_app/app.js')
+          text=app.read_text()
+          marker='function reconcileAfterHydration(status)'
+          if marker not in text:
+              needle='async function cloudLoadAndMerge(){'
+              helper="""function reconcileAfterHydration(status){
+            /* Background Firebase hydration updates state, not the active interaction tree.
+               Rebuilding #main while Coach is handling a touch detaches the live WebKit targets. */
+            const interactiveCoach=currentPage==='coach'&&$('appView')&&!$('appView').hidden;
+            window.dispatchEvent(new CustomEvent('garang:state-hydrated',{detail:{status,storageKey,page:currentPage}}));
+            if(interactiveCoach){applyLanguageChrome();updateSyncUI();return;}
+            render();
+          }
+          """
+              assert needle in text
+              text=text.replace(needle,helper+needle,1)
+              old="state.syncState='synced';setSync('synced');render();"
+              assert old in text
+              text=text.replace(old,"state.syncState='synced';setSync('synced');reconcileAfterHydration('success');",1)
+              oldcatch="toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');render();"
+              assert oldcatch in text
+              text=text.replace(oldcatch,"toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');",1)
+              app.write_text(text)
+
+          agent=Path('06_features/ui/runtime/garang-coach-agent-v4.js')
+          text=agent.read_text()
+          event="window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));"
+          if event not in text:
+              needle="window.addEventListener('garang:agent-write',queueRootSync);"
+              if needle in text:
+                  text=text.replace(needle,needle+'\n'+event,1)
+              else:
+                  needle="window.addEventListener('online',queueRootSync);"
+                  if needle in text:text=text.replace(needle,needle+'\n'+event,1)
+                  else:
+                      needle="window.addEventListener('online',()=>queueRootSync(activeRoot));"
+                      assert needle in text
+                      text=text.replace(needle,needle+'\n'+event,1)
+              agent.write_text(text)
+
+          decision=Path('06_features/ui/runtime/garang-coach-decision-v1.js')
+          text=decision.read_text()
+          event="window.addEventListener('garang:state-hydrated',queue);"
+          if event not in text:
+              needle="window.addEventListener('garang:agent-write',queue);"
+              assert needle in text
+              text=text.replace(needle,needle+'\n'+event,1)
+              decision.write_text(text)
+
+          index=Path('index.html')
+          text=index.read_text()
+          text=text.replace('./01_app/app.js?v=0.11.0-beta.5-stability2-datav2-iosroot1','./01_app/app.js?v=0.11.0-beta.5-stability3-hydration-continuity')
+          text=text.replace('./06_features/ui/runtime/garang-coach-agent-v4.js?v=4.3.0-stability','./06_features/ui/runtime/garang-coach-agent-v4.js?v=4.3.1-hydration-continuity')
+          text=text.replace('./06_features/ui/runtime/garang-coach-decision-v1.js?v=1.3.0-compact-grid','./06_features/ui/runtime/garang-coach-decision-v1.js?v=1.3.1-hydration-continuity')
+          index.write_text(text)
+          PY
+      - name: Remove one-time codemod workflow
+        run: git rm .github/workflows/stability-codemod.yml
+      - name: Commit structural stabilization
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "garang-stability-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add 01_app/app.js index.html 06_features/ui/runtime/garang-coach-agent-v4.js 06_features/ui/runtime/garang-coach-decision-v1.js .github/workflows/stability-codemod.yml
+          git commit -m "fix(stability): preserve Coach interaction across hydration"
+          git push origin HEAD:stability-sprint-20260907
