@@ -1,7 +1,17 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sanitizer=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-state-sanitizer-v1.js'),'utf8'),sync=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sync-durability-v1.js'),'utf8'),route=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-auth-route-reconcile-v1.js'),'utf8'),recoveryTouch=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-recovery-webkit-gesture-v1.js'),'utf8'),chrome=fs.readFileSync(path.join(root,'03_styles/runtime/garang-app-chrome-fix-v1.css'),'utf8'),polish=fs.readFileSync(path.join(root,'03_styles/runtime/garang-polish-v3.css'),'utf8'),firebaseConfig=fs.readFileSync(path.join(root,'07_config/firebase-config.js'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),swRuntime=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8'),swUpdater=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sw-update-v2.js'),'utf8');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const html=read('index.html');
+const sanitizer=read('06_features/ui/runtime/garang-state-sanitizer-v1.js');
+const sync=read('06_features/ui/runtime/garang-sync-durability-v1.js');
+const route=read('06_features/ui/runtime/garang-auth-route-reconcile-v1.js');
+const recovery=read('06_features/ui/runtime/garang-data-migration-v2.js');
+const chrome=read('03_styles/runtime/garang-app-chrome-fix-v1.css');
+const polish=read('03_styles/runtime/garang-polish-v3.css');
+const firebaseConfig=read('07_config/firebase-config.js');
+const sw=read('sw.js'),swRuntime=read('02_core/sw-runtime.js'),swUpdater=read('06_features/ui/runtime/garang-sw-update-v2.js');
+
 assert.ok(html.indexOf('garang-state-sanitizer-v1.js')<html.indexOf('garang-sync-durability-v1.js'));
 assert.ok(html.indexOf('./01_app/app.js')<html.indexOf('garang-auth-route-reconcile-v1.js'));
 assert.ok(html.includes('garang-app-chrome-fix-v1.css'));
@@ -9,14 +19,18 @@ for(const forbidden of ["addEventListener('click'",'addEventListener("click"','s
 assert.equal(sync.includes('stopImmediatePropagation'),false);assert.ok(sync.includes('safeCloudState(snapshot.data(),uid)'));assert.ok(sync.includes('garang:cloud-state-ready'));assert.ok(sync.includes('History.compactShell'));
 for(const forbidden of ['setInterval(','MutationObserver','stopImmediatePropagation','preventDefault('])assert.equal(route.includes(forbidden),false,`route recovery must not own global interactions: ${forbidden}`);
 assert.ok(route.includes('today.click()'));assert.ok(route.includes('safeToLeaveOnboarding'));
-assert.ok(recoveryTouch.includes("version:'v4.0.0'"));
-assert.ok(recoveryTouch.includes('data-garang-webkit-flow="1"'),'iOS recovery safety must mark the non-composited document-flow surface');
-assert.ok(recoveryTouch.includes('position:relative!important')&&recoveryTouch.includes('overflow:visible!important'),'touch recovery must stay in normal document flow without an independent scroller');
-assert.ok(recoveryTouch.includes("observer.observe(document.body,{childList:true})"),'recovery relocation observer must watch only top-level child insertion');
-assert.ok(recoveryTouch.includes("modal.dataset.garangWebkitFlow='1'"),'relocation must be idempotent before moving the surface');
-assert.ok(recoveryTouch.includes("actions.insertAdjacentElement('afterend',modal)")||recoveryTouch.includes("trigger.insertAdjacentElement('afterend',modal)"),'touch recovery must be placed beside the Settings action');
-for(const forbidden of ['stopImmediatePropagation','preventDefault(','stopPropagation(','window.scrollTo','Object.defineProperty(window','position:fixed!important','overflow:hidden!important'])assert.equal(recoveryTouch.includes(forbidden),false,`recovery touch safety must avoid gesture/scroll/compositor traps: ${forbidden}`);
-assert.ok(chrome.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(chrome.includes('display:grid!important'));assert.ok(chrome.includes('#main[data-garang-screen]:not([data-garang-screen="coach"])'));for(const token of ['overflow:visible!important','overflow-x:visible!important','overflow-y:visible!important','height:auto!important','max-height:none!important'])assert.ok(chrome.includes(token));
+
+assert.equal(html.includes('garang-recovery-webkit-gesture-v1.js'),false,'obsolete WebKit recovery adapter must not boot');
+assert.ok(recovery.includes("const VERSION='v4.0.0'"),'single recovery owner must publish v4');
+assert.ok(recovery.includes('function isTouchWebKit()'),'recovery owner must decide touch WebKit placement itself');
+assert.ok(recovery.includes('data-garang-webkit-flow="1"'),'recovery owner must mark normal-flow WebKit surface');
+assert.ok(recovery.includes('position:relative!important')&&recovery.includes('overflow:visible!important'),'touch recovery must remain in normal Settings document flow');
+assert.ok(recovery.includes("actions.insertAdjacentElement('afterend',surface)")||recovery.includes("trigger?.insertAdjacentElement('afterend',surface)"),'single recovery owner must place WebKit surface beside Settings actions');
+assert.equal(recovery.includes('MutationObserver'),false,'recovery must not require a DOM relocation observer');
+for(const forbidden of ['stopImmediatePropagation','stopPropagation(','window.scrollTo','Object.defineProperty(window','overflow:hidden!important'])assert.equal(recovery.includes(forbidden),false,`recovery owner must avoid gesture/scroll/compositor traps: ${forbidden}`);
+
+assert.ok(chrome.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(chrome.includes('display:grid!important'));assert.ok(chrome.includes('#main[data-garang-screen]:not([data-garang-screen="coach"])'));
+for(const token of ['overflow:visible!important','overflow-x:visible!important','overflow-y:visible!important','height:auto!important','max-height:none!important'])assert.ok(chrome.includes(token));
 assert.ok(chrome.includes('#main:has(.today-body-panel)'),'physical iOS must not depend only on late screen-registry metadata');
 assert.ok(chrome.includes('safe-area-inset-top'),'top chrome must own the iOS safe area');
 assert.ok(chrome.includes('#appView:not([hidden]) > .topbar'),'whole topbar must be explicitly visible and interactive');
