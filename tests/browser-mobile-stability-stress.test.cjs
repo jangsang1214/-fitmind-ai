@@ -22,19 +22,22 @@ async function openMore(page){await tap(page,'#menuBtn','open More');await page.
 async function gotoMoreRoute(page,routeName){await openMore(page);const selector=`.garang-more-sheet [data-route="${routeName}"]`;await tap(page,selector,`More ${routeName}`);await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:5000});await heartbeat(page,`More ${routeName} route`);}
 async function waitForStabilityRuntimes(page,errors){
   try{
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.1.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.4'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       readyState:document.readyState,
       screen:document.getElementById('main')?.dataset.garangScreen||'',
       appVisible:!!document.getElementById('appView')&&!document.getElementById('appView').hidden,
       today:!!document.querySelector('.today-body-panel'),
-      settingsVersion:window.GarangSettingsTouchSafety?.version||null,
+      routerVersion:window.GarangRouter?.version||null,
+      privacyVersion:window.GarangPrivacySecurityRuntime?.version||null,
       nonblockingVersion:window.GarangNonblockingActions?.version||null,
-      settingsScript:[...document.scripts].find(s=>s.src.includes('garang-settings-touch-safety-v1.js'))?.src||null,
+      retiredSettingsVersion:window.GarangSettingsTouchSafety?.version||null,
+      routerScript:[...document.scripts].find(s=>s.src.includes('garang-router-v1.js'))?.src||null,
+      privacyScript:[...document.scripts].find(s=>s.src.includes('garang-privacy-security-v1.js'))?.src||null,
       nonblockingScript:[...document.scripts].find(s=>s.src.includes('garang-nonblocking-actions-v1.js'))?.src||null
     }));
-    throw new Error(`stability runtimes did not initialize: ${JSON.stringify(diagnostics)} pageerrors=${JSON.stringify(errors)} original=${error.message}`);
+    throw new Error(`canonical stability runtimes did not initialize: ${JSON.stringify(diagnostics)} pageerrors=${JSON.stringify(errors)} original=${error.message}`);
   }
 }
 
@@ -61,6 +64,7 @@ async function waitForStabilityRuntimes(page,errors){
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
     stage('runtime readiness');
     await waitForStabilityRuntimes(page,errors);
+    assert.equal(await page.evaluate(()=>window.GarangSettingsTouchSafety?.version||null),null,'retired Settings safety runtime must stay absent');
     assert.equal(await page.evaluate(()=>window.__garangSettingsTextGuardInstalled===true),false,'global Node textContent guard must be absent');
 
     for(let cycle=0;cycle<2;cycle++){

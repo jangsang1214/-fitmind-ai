@@ -19,10 +19,10 @@ assert.ok(src.includes('function focusComposer(runtime)')&&src.includes('if(!isT
 const readyGuard=agent.indexOf("if(!Contract||!Bridge?.ready?.())");
 const seenAfterReady=agent.indexOf('seenAssistantIds.add(messageId)',readyGuard);
 assert.ok(readyGuard>=0&&seenAfterReady>readyGuard,'an assistant must not be marked processed before authenticated Agent state is ready');
-assert.ok(agent.includes('processingAssistantIds'),'Agent proposal generation must deduplicate concurrent MutationObserver retries');
+assert.ok(agent.includes('processingAssistantIds'),'Agent proposal generation must deduplicate concurrent lifecycle retries');
 assert.ok(agent.includes("window.addEventListener('garang:cloud-state-ready'"),'cloud hydration must explicitly retry a pending Coach proposal');
 assert.ok(agent.includes("messageEl.dataset.g4AgentPending='1'"),'unhydrated Agent work must remain retryable');
 assert.ok(html.includes('garang-brand-runtime-v2.js?v=2.2.0-lifecycle'),'shell must publish the authenticated Coach runtime with a fresh cache key');
 assert.ok(html.includes('agent-state-hook-v1.js?v=1.5.0-auth-write-pinned'),'authenticated Agent state pinning must be cache-busted');
-assert.ok(html.includes('garang-coach-agent-v4.js?v=4.5.0-lifecycle'),'hydration-safe Coach Agent must be cache-busted');
+assert.ok(html.includes('garang-coach-agent-v4.js?v=4.7.0'),'canonical hydration-safe Coach Agent must be cache-busted');
 console.log('coach-auth-stability: PASS');
