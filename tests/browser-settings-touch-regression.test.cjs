@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const serveRoot=path.join(root,'dist');
 const port=8771;
 const baseURL=`http://127.0.0.1:${port}`;
-const watchdog=setTimeout(()=>{console.error('browser-settings-touch-regression: WATCHDOG TIMEOUT');process.exit(1);},45000);
+const watchdog=setTimeout(()=>{console.error('browser-settings-touch-regression: WATCHDOG TIMEOUT');process.exit(1);},55000);
 
 function stage(name){console.log(`settings-touch-stage: ${name}`);}
 const timeout=(ms,label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms));
@@ -120,6 +120,11 @@ async function assertSettingsInteractive(page,label){
   stage(`${label}: settings control responded`);
 }
 
+async function route(page,name){
+  await tap(page,`#bottomNav button[data-page="${name}"]`);
+  await page.waitForFunction(n=>document.querySelector(`#bottomNav button[data-page="${n}"]`)?.classList.contains('active'),name,{timeout:5000});
+}
+
 (async()=>{
   const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
   let browser;
@@ -172,7 +177,7 @@ async function assertSettingsInteractive(page,label){
     await assertSettingsInteractive(page,'top-bar settings');
 
     stage('return today');
-    await tap(page,'#bottomNav button[data-page="today"]');
+    await route(page,'today');
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:7000});
 
     stage('open more');
@@ -187,6 +192,23 @@ async function assertSettingsInteractive(page,label){
     await tap(page,'#settingsTopBtn');
     stage('gear second tapped');
     await assertSettingsInteractive(page,'settings after utility-sheet close');
+
+    /* Reproduce the physical report path: Coach's visible gear delegates to the canonical Settings route. */
+    stage('enter Coach for visible gear path');
+    await route(page,'coach');
+    await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g5-settings'),null,{timeout:7000});
+    await assertSettingsSettles(page,'pre-coach-settings idle');
+    stage('tap Coach visible settings gear');
+    await tap(page,'.garang-coach-v2 .g5-settings');
+    await assertSettingsInteractive(page,'Coach visible settings gear');
+
+    stage('Coach reentry after Settings');
+    await route(page,'coach');
+    await page.waitForFunction(()=>document.querySelector('.garang-coach-v2 .g2-chat-head'),null,{timeout:7000});
+    await tap(page,'.g2-head-new');
+    await page.waitForTimeout(80);
+    await tap(page,'.garang-coach-v2 .g5-settings');
+    await assertSettingsInteractive(page,'Coach settings after reentry');
 
     assert.deepEqual(errors,[],`WebKit settings runtime errors:\n${errors.join('\n')}`);
     stage('pass');
