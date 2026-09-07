@@ -98,6 +98,7 @@ async function tap(page,selector,label=selector){
 
     await tap(page,'#settingsTopBtn','settings gear');
     await page.locator('#importLegacy').waitFor({state:'visible',timeout:7000});
+    await page.waitForFunction(()=>document.getElementById('importLegacy')?.textContent?.trim()==='데이터 복구 확인',null,{timeout:2500});
     assert.equal((await page.locator('#importLegacy').innerText()).trim(),'데이터 복구 확인');
 
     await page.evaluate(()=>{window.__mockRecoveryLoadHistory=true;window.__mockRecoveryDelay=2500;});
@@ -126,6 +127,7 @@ async function tap(page,selector,label=selector){
 
     await tap(page,'#settingsTopBtn','settings gear second');
     await page.locator('#importLegacy').waitFor({state:'visible',timeout:7000});
+    await page.waitForFunction(()=>document.getElementById('importLegacy')?.textContent?.trim()==='데이터 복구 확인',null,{timeout:2500});
     await page.evaluate(()=>{window.__mockRecoveryLoadHistory=true;window.__mockRecoveryDelay=15;});
     await tap(page,'#importLegacy','authenticated recovery second open');
     await page.waitForFunction(()=>document.querySelector('.garang-data-recovery-panel')?.innerText?.includes('현재 계정의 기기 저장소'),null,{timeout:7000});
