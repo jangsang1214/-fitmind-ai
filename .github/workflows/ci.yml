@@ -45,3 +45,5 @@ jobs:
         run: node tests/browser-settings-touch-regression.test.cjs
       - name: Verify mobile button health audit
         run: node tests/browser-mobile-button-audit.test.cjs
+      - name: Verify mobile runtime stability stress
+        run: node tests/browser-mobile-stability-stress.test.cjs
