@@ -1,11 +1,6 @@
-/* GARANG experience v4.4
-   - Memory remains fully internal to GARANG's intelligence/data model.
-   - Settings has one canonical entry: the permanent top-bar gear.
-   - Today removes the obsolete duplicate FRONT/BACK tools; only the interactive compact switch remains.
-   - Keeps Nutrition manual entry open after adding a draft item so Save meal stays immediately available.
-   - Adds compact Korean subtitles to the hamburger navigation without replacing primary route labels.
-   - Screen identity and page-header policy are owned by GarangScreens.
-*/
+/* GARANG experience v4.5
+   Keeps the existing product policy while making observer reconciliation idempotent.
+   One body observer owns subtree changes; identical text/HTML state is never rewritten. */
 (() => {
   'use strict';
 
@@ -16,6 +11,7 @@
   let mealEntryScrollY = null;
 
   const isKo = () => document.documentElement.lang !== 'en';
+  const setText=(el,value)=>{const next=String(value??'');if(el&&el.textContent!==next)el.textContent=next;};
   const routeSubtitles = Object.freeze({
     today:'오늘', coach:'코치', log:'기록', workout:'운동', nutrition:'식단', running:'달리기',
     body:'체성분', planner:'계획', progress:'분석', profile:'프로필', onboarding:'모델링'
@@ -63,14 +59,14 @@
         small.className = 'garang-route-subtitle';
         el.appendChild(small);
       }
-      small.textContent = subtitle;
+      setText(small,subtitle);
     });
   }
 
   function keepMealEntryOpen() {
     const save = main.querySelector('#saveMeal');
     const details = save?.closest('details.manual-entry');
-    if (details && !save.disabled) details.open = true;
+    if (details && !save.disabled && !details.open) details.open = true;
     if (mealEntryScrollY !== null && details) {
       const y = mealEntryScrollY;
       mealEntryScrollY = null;
@@ -89,11 +85,11 @@
 
     main.querySelectorAll('.section-title h2').forEach(title => {
       const text = title.textContent.trim();
-      if (text === '계획과 기억' || text.toLowerCase() === 'plan & memory') title.textContent = isKo() ? '계획' : 'Plan';
+      if (text === '계획과 기억' || text.toLowerCase() === 'plan & memory') setText(title,isKo() ? '계획' : 'Plan');
     });
 
     main.querySelectorAll('.plan-choice li').forEach(item => {
-      if (/advanced\s+memory/i.test(item.textContent)) item.textContent = isKo() ? '지속 개인화' : 'Persistent personalization';
+      if (/advanced\s+memory/i.test(item.textContent)) setText(item,isKo() ? '지속 개인화' : 'Persistent personalization');
     });
 
     if (!redirecting && main.querySelector('#saveMemory, .memory-card')) {
@@ -102,7 +98,7 @@
         redirecting = true;
         today.click();
         setTimeout(() => { redirecting = false; }, 0);
-      } else main.replaceChildren();
+      } else if (main.childNodes.length) main.replaceChildren();
     }
   }
 
@@ -121,7 +117,7 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
-  new MutationObserver(schedule).observe(main, { childList:true, subtree:true });
+  /* body already contains #main; a second main observer duplicated every reconciliation. */
   new MutationObserver(schedule).observe(document.body, { childList:true, subtree:true });
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', event => {
