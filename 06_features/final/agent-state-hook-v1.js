@@ -1,9 +1,11 @@
-/* GARANG Agent State Hook v1.4
+/* GARANG Agent State Hook v1.5
    Captures the live application state without changing app.js internals.
    Account safety:
    - authenticated sessions are pinned to garang_user_<uid>_v3
    - stale demo/other-account JSON can never steal the Agent bridge
-   - generic JSON.parse no longer changes the active Agent state
+   - generic JSON.parse never changes the active Agent state
+   - a live object is adopted only when its serialized value is written to the
+     storage key belonging to the current Firebase identity
    - bridge reads rebind immediately when Firebase auth identity changes
 */
 (() => {
@@ -18,6 +20,7 @@ const StateIntelligence=window.GarangStateIntelligence||null;
 const DecisionIntelligence=window.GarangDecisionIntelligence||null;
 let liveState=null;
 let activeKey=null;
+let pendingStateWrite=null;
 let syncTimer=null;
 let lastStampMs=0;
 
@@ -45,31 +48,33 @@ function stateOwnedByCurrentAccount(value){
 }
 function refreshBinding(){
  const wanted=preferredKey();
- if(activeKey!==wanted){activeKey=wanted;liveState=readPreferred();return;}
+ if(activeKey!==wanted){activeKey=wanted;liveState=readPreferred();pendingStateWrite=null;return;}
  if(!liveState){const stored=readPreferred();if(stored)liveState=stored;}
 }
 function captureForCurrentAccount(value){
  if(!isState(value))return value;
- const wanted=preferredKey(),uid=currentAuthUid();
- if(!uid){activeKey=wanted;liveState=value;return value;}
- if(stateOwnedByCurrentAccount(value)){activeKey=wanted;liveState=value;}
+ const uid=currentAuthUid();
+ if(!uid||stateOwnedByCurrentAccount(value)){activeKey=preferredKey();liveState=value;}
  return value;
 }
 
-/* Parsing arbitrary JSON used to let a newer demo/other-account snapshot replace the
-   authenticated Agent context. Parsing is now observational only. Stringification can
-   retain the actual live object, but only when it is owned by the current account. */
+/* Keep the exact object only until its matching localStorage write identifies which
+   account it belongs to. This replaces the old global "last parsed JSON wins" rule. */
 JSON.parse=function(...args){return nativeParse(...args);};
-JSON.stringify=function(value,...args){captureForCurrentAccount(value);return nativeStringify(value,...args);};
+JSON.stringify=function(value,...args){
+ const serialized=nativeStringify(value,...args);
+ if(isState(value))pendingStateWrite={value,serialized,key:preferredKey()};
+ return serialized;
+};
 Storage.prototype.setItem=function(key,value){
  if(this===localStorage&&isStateKey(key)){
-  const wanted=preferredKey(),actual=String(key);
+  const wanted=preferredKey(),actual=String(key),serialized=String(value),pending=pendingStateWrite;
   if(actual===wanted){
    activeKey=actual;
-   if(!liveState||!stateOwnedByCurrentAccount(liveState)){
-    try{const parsed=nativeParse(String(value));if(isState(parsed))liveState=parsed;}catch{}
-   }
+   if(pending&&pending.key===wanted&&pending.serialized===serialized&&isState(pending.value))liveState=pending.value;
+   else{try{const parsed=nativeParse(serialized);if(isState(parsed))liveState=parsed;}catch{}}
   }
+  if(pending&&pending.serialized===serialized)pendingStateWrite=null;
  }
  return nativeSetItem.call(this,key,value);
 };
