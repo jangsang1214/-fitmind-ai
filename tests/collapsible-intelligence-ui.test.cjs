@@ -37,11 +37,18 @@ test('Coach decision data is compact by default but all existing decision conten
   assert.match(runtime,/wrapAfter\(card,head\)/);
 });
 
-test('expanded state is session-scoped and does not mutate GARANG application data',()=>{
+test('expanded state is session-scoped, idempotent and does not mutate GARANG application data',()=>{
   assert.match(runtime,/sessionStorage\.getItem\(STORE_PREFIX\+key\)/);
-  assert.match(runtime,/sessionStorage\.setItem\(STORE_PREFIX\+key/);
+  assert.match(runtime,/sessionStorage\.getItem\(k\)!==next/);
+  assert.match(runtime,/sessionStorage\.setItem\(k,next\)/);
   assert.doesNotMatch(runtime,/localStorage\.setItem/);
   assert.doesNotMatch(runtime,/GarangAgentStateBridge\.applyWrite/);
+});
+
+test('observer-driven writes are guarded against same-value mutation feedback',()=>{
+  assert.match(runtime,/if\(el&&el\.textContent!==next\)el\.textContent=next/);
+  assert.match(runtime,/if\(el&&el\.innerHTML!==next\)el\.innerHTML=next/);
+  assert.match(runtime,/if\(el&&el\.getAttribute\(name\)!==next\)el\.setAttribute\(name,next\)/);
 });
 
 test('collapsible enhancement loads after Workout Intelligence and Coach Decision runtimes',()=>{
