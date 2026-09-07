@@ -74,7 +74,37 @@ jobs:
         run: node tests/today.test.cjs && node tests/major-update.test.cjs && node tests/i18n-structure.test.cjs && node tests/entity-i18n.test.cjs && node tests/units.test.cjs && node tests/screen-registry.test.cjs
       - name: Test Commercial Core and regressions
         if: always()
-        run: npm test
+        run: npm test || touch .garang-npm-test-failed
+      - name: NPM score sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-score-contract
+      - name: NPM missing-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-missing-data
+      - name: NPM future-data sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-future-data
+      - name: NPM pain sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pain-guardrail
+      - name: NPM completed-plan sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-completed-plan
+      - name: NPM pipeline sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-pipeline
+      - name: NPM compact sentinel
+        if: always()
+        continue-on-error: true
+        run: test ! -f .garang-intelligence-failure-compact-context
+      - name: Assert npm regression suite
+        run: test ! -f .garang-npm-test-failed
       - name: Validate runtime and build
         run: npm run build
       - name: Verify build entry
