@@ -44,6 +44,7 @@
     "06_features/ui/runtime/garang-screen-registry-v1.js",
     "06_features/ui/runtime/garang-auth-bootstrap.js",
     "01_app/app.js",
+    "06_features/ui/runtime/garang-router-v1.js",
     "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
     "06_features/ui/runtime/garang-mobile-auth-v1.js",
     "06_features/ui/runtime/garang-sw-update-v2.js",
@@ -51,23 +52,20 @@
     "06_features/ui/runtime/garang-sync-quiet-ux-v1.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
     "06_features/ui/runtime/garang-nonblocking-actions-v1.js",
-    "06_features/ui/runtime/garang-settings-touch-safety-v1.js",
     "06_features/ui/runtime/garang-brand-runtime-v2.js",
     "06_features/ui/runtime/garang-polish-v3.js",
-    "06_features/ui/runtime/garang-coach-home-hotfix.js",
+    "06_features/ui/runtime/garang-coach-shell-v1.js",
     "06_features/ui/i18n/translations.js",
     "06_features/ui/i18n/entities-v1.js",
     "06_features/ui/i18n/supplement-v2.js",
     "06_features/ui/i18n/coach-language-v3.js",
     "06_features/ui/i18n/runtime.js",
     "06_features/ui/runtime/garang-coach-agent-v4.js",
-    "06_features/ui/runtime/garang-coach-profile-stability-v1.js",
+    "06_features/ui/runtime/garang-coach-profile-v2.js",
     "06_features/ui/runtime/garang-coach-decision-v1.js",
-    "06_features/ui/runtime/garang-coach-avatar-profile-v1.js",
-    "06_features/ui/runtime/garang-coach-item4-final.js",
     "06_features/ui/runtime/garang-privacy-security-v1.js",
     "06_features/ui/runtime/garang-units-runtime.js",
-    "06_features/ui/runtime/garang-today-premium-fix.js",
+    "06_features/ui/runtime/garang-today-anatomy-v1.js",
     "06_features/ui/runtime/garang-workout-library-v2.js",
     "06_features/ui/runtime/garang-experience-v3.js",
     "06_features/ui/runtime/garang-experience-v4.js",
@@ -75,7 +73,7 @@
     "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js"
   ],
   "runtimeContract": {
-    "version": 1,
+    "version": 2,
     "status": "frozen",
     "bootOrderAuthoritative": true,
     "lifecycleEvents": [
@@ -84,13 +82,21 @@
       "garang:state-hydrated",
       "garang:coach-mounted",
       "garang:coach-message-rendered",
-      "garang:coach-decision-rendered"
+      "garang:coach-decision-rendered",
+      "garang:route-requested",
+      "garang:route-completed"
     ],
     "singleOwners": {
       "screenRender": "01_app/app.js",
+      "featureRouting": "06_features/ui/runtime/garang-router-v1.js",
       "screenIdentity": "06_features/ui/runtime/garang-screen-registry-v1.js",
       "coachDom": "06_features/ui/runtime/garang-brand-runtime-v2.js",
       "coachScroll": "06_features/ui/runtime/garang-brand-runtime-v2.js",
+      "coachShell": "06_features/ui/runtime/garang-coach-shell-v1.js",
+      "coachPromptsAndProposals": "06_features/ui/runtime/garang-coach-agent-v4.js",
+      "coachDecision": "06_features/ui/runtime/garang-coach-decision-v1.js",
+      "coachProfile": "06_features/ui/runtime/garang-coach-profile-v2.js",
+      "todayAnatomy": "06_features/ui/runtime/garang-today-anatomy-v1.js",
       "dataRecovery": "06_features/ui/runtime/garang-data-migration-v2.js",
       "functionalRecovery": "06_features/ui/runtime/garang-functional-recovery.js",
       "settingsPrivacy": "06_features/ui/runtime/garang-privacy-security-v1.js",
@@ -102,12 +108,6 @@
       "06_features/ui/i18n/runtime.js",
       "06_features/ui/i18n/supplement-v2.js",
       "06_features/ui/runtime/garang-units-runtime.js"
-    ],
-    "legacyNamedCanonical": [
-      "06_features/ui/runtime/garang-settings-touch-safety-v1.js",
-      "06_features/ui/runtime/garang-coach-home-hotfix.js",
-      "06_features/ui/runtime/garang-coach-profile-stability-v1.js",
-      "06_features/ui/runtime/garang-today-premium-fix.js"
     ]
   },
   "data": [
