@@ -24,7 +24,7 @@ async function heartbeat(page,label){
   await Promise.race([
     page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(()=>resolve(true),35)))),
     timeout(2200,`${label}: WebKit main thread stopped responding`)
-  ]);
+  ];
 }
 
 async function center(page,selector){
@@ -157,6 +157,33 @@ async function route(page,name){
     await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
     await tapVisibleBackdrop(page,'.g2-sidebar-backdrop','Coach menu backdrop');
     await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
+
+    await page.evaluate(()=>{
+      window.__garangAuditSyncClicks=[];
+      document.getElementById('syncBadge')?.addEventListener('click',()=>window.__garangAuditSyncClicks.push(performance.now()),true);
+    });
+    await tap(page,'.g2-mobile-threads','Coach menu for sync');
+    await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
+    await tap(page,'[data-g5-action="sync"]','Coach sidebar sync');
+    await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'),null,{timeout:3000});
+    const immediateSyncClicks=await page.evaluate(()=>window.__garangAuditSyncClicks?.length||0);
+    assert.equal(immediateSyncClicks,0,'Coach sync must not start persistence work inside the sidebar touch task');
+    await page.waitForFunction(()=>window.__garangAuditSyncClicks?.length===1,null,{timeout:3000});
+    await page.waitForTimeout(80);
+    await heartbeat(page,'Coach deferred sync');
+    const coachAfterSync=await page.evaluate(()=>{
+      const app=document.getElementById('appView'),root=document.querySelector('.garang-coach-v2'),r=root?.getBoundingClientRect();
+      return {
+        appVisible:!!app&&!app.hidden,
+        coachVisible:!!root&&!!r&&r.width>0&&r.height>0,
+        sidebarOpen:root?.classList.contains('sidebar-open')||false,
+        syncClicks:window.__garangAuditSyncClicks?.length||0
+      };
+    });
+    assert.equal(coachAfterSync.appVisible,true,`Coach sync must not blank the app: ${JSON.stringify(coachAfterSync)}`);
+    assert.equal(coachAfterSync.coachVisible,true,`Coach must remain rendered after sync: ${JSON.stringify(coachAfterSync)}`);
+    assert.equal(coachAfterSync.sidebarOpen,false,`Coach sidebar must stay closed after sync: ${JSON.stringify(coachAfterSync)}`);
+    assert.equal(coachAfterSync.syncClicks,1,`Coach sync must dispatch once: ${JSON.stringify(coachAfterSync)}`);
 
     await route(page,'today');
     const mobileChrome=await page.evaluate(()=>({
