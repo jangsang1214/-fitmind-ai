@@ -19,6 +19,16 @@ jobs:
           node-version: 22
       - name: Apply lifecycle codemod
         run: python3 scripts/stability_runtime_codemod.py
+      - name: Normalize generated regression files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['tests/stability-feature-preservation.test.cjs','tests/runtime-lifecycle-contract.test.cjs']:
+              p=Path(name)
+              text=p.read_text()
+              text=text.replace("\\'use strict\\';", "'use strict';", 1)
+              p.write_text(text)
+          PY
       - name: Verify static feature preservation and build
         run: |
           npm test
