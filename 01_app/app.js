@@ -99,6 +99,14 @@ async function cloudSaveNow(){
   }
 }
 function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');syncTimer=setTimeout(()=>cloudSaveNow(),700);}
+function reconcileAfterHydration(status){
+  /* Background Firebase hydration updates state, not the active interaction tree.
+     Rebuilding #main while Coach is handling a touch detaches the live WebKit targets. */
+  const interactiveCoach=currentPage==='coach'&&$('appView')&&!$('appView').hidden;
+  window.dispatchEvent(new CustomEvent('garang:state-hydrated',{detail:{status,storageKey,page:currentPage}}));
+  if(interactiveCoach){applyLanguageChrome();updateSyncUI();return;}
+  render();
+}
 async function cloudLoadAndMerge(){
   if(!firebaseReady||!currentUser)return;
   setSync('syncing');
@@ -111,8 +119,8 @@ async function cloudLoadAndMerge(){
       if(!readLocal(storageKey)||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
       else await cloudSaveNow();
     }else if(readLocal(storageKey)){await cloudSaveNow();}
-    state.syncState='synced';setSync('synced');render();
-  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');render();}
+    state.syncState='synced';setSync('synced');reconcileAfterHydration('success');
+  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');}
 }
 
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}

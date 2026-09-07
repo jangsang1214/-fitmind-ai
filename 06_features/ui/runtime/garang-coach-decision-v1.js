@@ -78,6 +78,7 @@ function render(){
 }
 let queued=false;function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;ensureStyle();render();});}
 new MutationObserver(queue).observe(main,{childList:true,subtree:true});new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
+window.addEventListener('garang:agent-write',queue);
+window.addEventListener('garang:state-hydrated',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
 queue();
 })();

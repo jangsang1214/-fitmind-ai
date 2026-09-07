@@ -62,6 +62,7 @@ function scan(){
  if(root!==activeRoot)enhance(root);
 }
 mainObserver=new MutationObserver(scan);mainObserver.observe(main,{childList:true,subtree:true});
+window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 scan();
 })();
