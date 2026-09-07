@@ -6,14 +6,15 @@ const redacted=Policy.redact({token:'abc',profile:{email:'x@y.com',goal:'run'},m
 class Store{constructor(){this.map=new Map([['garang_user_u1_v3','{}'],['garang_sync_pending_v1::u1','{}'],['garang_history_index_v2::u1','{}'],['garang_cloud_recovery_backup_v2::u1','{}'],['garang_sync_backup_v2::garang_user_u1_v3','{}'],['garang_user_u2_v3','{}'],['other','1']]);}get length(){return this.map.size;}key(i){return [...this.map.keys()][i]??null;}removeItem(k){this.map.delete(k);}getItem(k){return this.map.get(k)||null;}}
 const store=new Store(),removed=Policy.deleteLocalAccountKeys(store,'u1');assert.ok(removed.includes('garang_user_u1_v3'));assert.ok(!store.map.has('garang_sync_pending_v1::u1'));assert.ok(!store.map.has('garang_history_index_v2::u1'));assert.ok(!store.map.has('garang_cloud_recovery_backup_v2::u1'));assert.ok(!store.map.has('garang_sync_backup_v2::garang_user_u1_v3'));assert.ok(store.map.has('garang_user_u2_v3'));assert.ok(store.map.has('other'));
 const runtime=fs.readFileSync(path.resolve(__dirname,'../06_features/ui/runtime/garang-privacy-security-v1.js'),'utf8');
+const executable=runtime.replace(/\/\*[\s\S]*?\*\//g,'').replace(/(^|\s)\/\/.*$/gm,'$1');
 for(const collection of ['workoutHistory','mealHistory','runHistory','bodyHistory','recoverySnapshots'])assert.ok(runtime.includes(`'${collection}'`),`account deletion must cover ${collection}`);
 assert.ok(runtime.includes("collection('app').doc('state').delete()"),'account deletion must remove canonical state');
 assert.ok(runtime.includes('deleteIndexedDbAttachments'),'account deletion must remove owned body attachments');
 assert.equal(runtime.includes("indexedDB.deleteDatabase('garang_media_v1')"),false,'deleting one account must never erase another account\'s IndexedDB attachments');
 assert.ok(runtime.indexOf('exportVerifiedBackup')<runtime.indexOf('await u.delete()'),'verified backup must run before destructive account deletion');
-assert.doesNotMatch(runtime,/\bprompt\s*\(/,'account deletion must never use native prompt in iOS/WebView');
-assert.doesNotMatch(runtime,/\bconfirm\s*\(/,'account deletion must never use native confirm in iOS/WebView');
-assert.match(runtime,/deleteAccountKeyword/,'account deletion must require an inline DELETE keyword');
+assert.doesNotMatch(executable,/\bprompt\s*\(/,'account deletion must never use native prompt in iOS/WebView');
+assert.doesNotMatch(executable,/\bconfirm\s*\(/,'account deletion must never use native confirm in iOS/WebView');
+assert.match(runtime,/deleteAccountPhrase/,'account deletion must require an inline DELETE keyword');
 assert.match(runtime,/deleteAccountPassword/,'password reauthentication must use an inline password field');
 assert.match(runtime,/DELETE/,'destructive account deletion must keep explicit user confirmation');
 console.log('privacy-security: PASS');
