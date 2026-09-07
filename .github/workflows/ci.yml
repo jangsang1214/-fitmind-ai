@@ -39,6 +39,8 @@ jobs:
         run: node tests/browser-mobile-layout-boundary.test.cjs
       - name: Verify authenticated app boot
         run: node tests/browser-authenticated-boot.test.cjs
+      - name: Verify authenticated recovery touch
+        run: node tests/browser-authenticated-recovery-touch.test.cjs
       - name: Verify WebKit mobile regression suite
         run: node tests/browser-webkit-regression.test.cjs
       - name: Verify WebKit Settings touch regression
