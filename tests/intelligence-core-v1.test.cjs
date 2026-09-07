@@ -1,13 +1,13 @@
 'use strict';
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const Memory=require('../02_core/memory-intelligence-v1.js');
 const State=require('../02_core/state-intelligence-v1.js');
 const Decision=require('../02_core/decision-intelligence-v1.js');
 const Score=require('../02_core/performance-score-v1.js');
 const Planner=require('../02_core/adaptive-planner-v1.js');
 const Core=require('../02_core/intelligence-core-v1.js');
-const selected=String(process.env.GARANG_TEST_CASE||'').trim();let passed=0;
-const test=(id,name,fn)=>{if(selected&&selected!==id)return;fn();passed++;console.log(`PASS ${id} ${name}`);};
+const selected=String(process.env.GARANG_TEST_CASE||'').trim(),failures=[];let passed=0;
+const test=(id,name,fn)=>{if(selected&&selected!==id)return;try{fn();passed++;console.log(`PASS ${id} ${name}`);}catch(error){failures.push(id);fs.writeFileSync(`.garang-intelligence-failure-${id}`,String(error?.stack||error));console.error(`FAIL ${id} ${name}: ${error?.message||error}`);if(selected)throw error;}};
 const testNow=()=>new Date('2026-09-08T12:00:00+09:00');
 const date=delta=>{const d=new Date('2026-09-08T12:00:00Z');d.setUTCDate(d.getUTCDate()+delta);return d.toISOString().slice(0,10);};
 function fixture(){
@@ -58,3 +58,4 @@ test('compact-context','compact intelligence context keeps score decision planne
 
 if(selected&&!passed)throw new Error(`UNKNOWN_GARANG_TEST_CASE:${selected}`);
 console.log(`${passed} unified intelligence tests passed${selected?` (${selected})`:''}`);
+if(failures.length){console.error(`FAILED_INTELLIGENCE_CASES=${failures.join(',')}`);process.exitCode=1;}
