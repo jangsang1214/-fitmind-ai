@@ -1,6 +1,7 @@
-/* GARANG app chrome fix v1.5
+/* GARANG app chrome fix v1.6
    Canonical owner for physical iOS/PWA app-shell geometry, hit testing and scroll boundaries.
    Root-cause rule: ordinary screens use document scrolling; only Coach may own an inner scroller.
+   Touch Coach sidebars open without transform animation so a fast second tap cannot target a moving control.
 */
 #authView:not([hidden]),
 #authView:not([hidden]) .auth-shell,
@@ -47,6 +48,11 @@ body:before{pointer-events:none!important}
   #appView:not([hidden]) > #main{position:relative!important;display:block!important;width:100%!important;box-sizing:border-box!important;margin:calc(56px + env(safe-area-inset-top,0px)) auto 0!important;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;min-height:calc(100dvh - 56px - env(safe-area-inset-top,0px))!important;overflow:visible!important;contain:none!important;transform:none!important;clip-path:none!important;pointer-events:auto!important}
   #appView:not([hidden]) > .bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding-bottom:env(safe-area-inset-bottom,0px)!important;min-height:calc(62px + env(safe-area-inset-bottom,0px))!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:#070807!important;z-index:900!important;transform:none!important;contain:none!important}
   #appView:not([hidden]) > .bottom-nav button{position:relative!important;z-index:1!important;min-height:56px!important}
+
+  /* A transformed touch target can move between pointerdown and click on WebKit. The Coach
+     drawer therefore snaps open/closed; its controls are never moving while the user taps. */
+  html[data-garang-coach-shell="active"] .g2-chat-sidebar{transition:none!important}
+  html[data-garang-coach-shell="active"] .g2-sidebar-backdrop{transition:none!important}
 
   /* Any stale full-screen overlay that is hidden semantically must not intercept touches. */
   [hidden]{pointer-events:none!important}
