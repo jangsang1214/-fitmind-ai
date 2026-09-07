@@ -10,6 +10,7 @@ const app=read('01_app/app.js');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 const agent=read('06_features/final/agent-state-hook-v1.js');
 const coach=read('06_features/ui/runtime/garang-brand-runtime-v2.js');
+const coachAgent=read('06_features/ui/runtime/garang-coach-agent-v4.js');
 const decision=read('06_features/ui/runtime/garang-coach-decision-v1.js');
 const recovery=read('06_features/ui/runtime/garang-data-migration-v2.js');
 const settings=read('06_features/ui/runtime/garang-settings-touch-safety-v1.js');
@@ -40,6 +41,14 @@ for(const token of [
   "function go(page)",
   "function render()"
 ])assert.ok(app.includes(token),`core app behavior contract missing: ${token}`);
+
+/* Hydration may replace state, but it must not replace the live Coach interaction tree. */
+assert.ok(app.includes('function reconcileAfterHydration(status)'),'core app must own hydration/UI reconciliation');
+assert.ok(app.includes("const interactiveCoach=currentPage==='coach'"),'active Coach must be recognized as an interaction-preservation boundary');
+assert.ok(app.includes("garang:state-hydrated"),'core app must publish explicit hydration state changes');
+assert.equal(app.includes("state.syncState='synced';setSync('synced');render();"),false,'cloud hydration must not unconditionally rebuild #main');
+assert.ok(coachAgent.includes("window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));"),'Coach Agent must refresh from hydrated state without replacing its root');
+assert.ok(decision.includes("window.addEventListener('garang:state-hydrated',queue);"),'GARANG Decision must refresh from hydrated state without a page rebuild');
 
 for(const token of ['createPlan','updatePlan','saveMemory','deleteRecord','updateGoal']){
   assert.ok(agent.includes(`case '${token}'`),`Agent write capability must remain: ${token}`);
