@@ -22,7 +22,7 @@ async function openMore(page){await tap(page,'#menuBtn','open More');await page.
 async function gotoMoreRoute(page,routeName){await openMore(page);const selector=`.garang-more-sheet [data-route="${routeName}"]`;await tap(page,selector,`More ${routeName}`);await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:5000});await heartbeat(page,`More ${routeName} route`);}
 async function waitForStabilityRuntimes(page,errors){
   try{
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0'&&window.GarangNonblockingActions?.version==='1.0.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       readyState:document.readyState,
