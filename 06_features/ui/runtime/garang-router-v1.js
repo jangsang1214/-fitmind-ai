@@ -1,7 +1,7 @@
 /* GARANG canonical feature router v1.1
    Feature runtimes request navigation here instead of synthesizing DOM click events.
-   01_app/app.js remains the screen-render owner; this bridge invokes its already-bound
-   handlers directly and owns transient UI cleanup before a route transition.
+   01_app/app.js remains the screen-render owner. The router only closes transient UI
+   before invoking the already-bound canonical screen handlers.
 */
 (() => {
 'use strict';
@@ -22,20 +22,20 @@ function valid(route){
   return ['today','coach','workout','body','progress','running','nutrition','planner','memory','profile','settings','onboarding','modeling','log'].includes(r);
 }
 function removeTransient(){
-  const appMain=main(),liveCoach=appMain?.querySelector('.garang-coach-v2')||null;
+  const appMain=main();
+  const liveCoach=appMain?.querySelector('.garang-coach-v2')||null;
+
+  if(liveCoach){
+    liveCoach.classList.remove('sidebar-open','gcp-open');
+    liveCoach.querySelectorAll('.gcp-backdrop,.gcp-panel').forEach(el=>{el.hidden=true;});
+  }
+
   document.querySelectorAll('.garang-coach-v2').forEach(root=>{
-    root.classList.remove('sidebar-open','gcp-open');
     if(root!==liveCoach&&!appMain?.contains(root))root.remove();
   });
   document.querySelectorAll('.garang-more-sheet,.modal-backdrop').forEach(el=>el.remove());
-  document.querySelectorAll('.gcp-backdrop,.gcp-panel').forEach(el=>{
-    el.hidden=true;
-    el.setAttribute('aria-hidden','true');
-    el.style.setProperty('pointer-events','none','important');
-  });
   document.querySelectorAll('.g2-sidebar-backdrop').forEach(el=>{
-    const owner=el.closest('.garang-coach-v2');
-    if(!owner)el.remove();
+    if(!el.closest('.garang-coach-v2'))el.remove();
   });
   document.body?.classList.remove('menu-open');
 }
