@@ -66,7 +66,9 @@ Storage.prototype.setItem=function(key,value){
   const wanted=preferredKey(),actual=String(key);
   if(actual===wanted){
    activeKey=actual;
-   try{const parsed=nativeParse(String(value));if(isState(parsed))liveState=parsed;}catch{}
+   if(!liveState||!stateOwnedByCurrentAccount(liveState)){
+    try{const parsed=nativeParse(String(value));if(isState(parsed))liveState=parsed;}catch{}
+   }
   }
  }
  return nativeSetItem.call(this,key,value);
