@@ -49,6 +49,10 @@ assert.ok(app.includes("garang:state-hydrated"),'core app must publish explicit 
 assert.equal(app.includes("state.syncState='synced';setSync('synced');render();"),false,'cloud hydration must not unconditionally rebuild #main');
 assert.ok(coachAgent.includes("window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));"),'Coach Agent must refresh from hydrated state without replacing its root');
 assert.ok(decision.includes("window.addEventListener('garang:state-hydrated',queue);"),'GARANG Decision must refresh from hydrated state without a page rebuild');
+const bridgeReadyGuard=coachAgent.indexOf("if(!Contract||!Bridge?.ready?.())return;");
+const assistantSeenMark=coachAgent.indexOf('seenAssistantIds.add(messageId);',bridgeReadyGuard);
+assert.ok(bridgeReadyGuard>=0&&assistantSeenMark>bridgeReadyGuard,'Coach Agent must not consume an assistant message before the authenticated bridge is ready');
+assert.ok(coachAgent.includes('seenAssistantIds.delete(messageId);'),'transient Agent processing failures must remain retryable');
 
 for(const token of ['createPlan','updatePlan','saveMemory','deleteRecord','updateGoal']){
   assert.ok(agent.includes(`case '${token}'`),`Agent write capability must remain: ${token}`);
