@@ -3,6 +3,7 @@
   "status": "frozen",
   "contractVersion": "garang-state-v1",
   "schemaVersion": 8,
+  "memoryContract": "garang-memory-v1",
   "topLevel": [
     "contractVersion",
     "schemaVersion",

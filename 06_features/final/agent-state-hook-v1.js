@@ -1,4 +1,4 @@
-/* GARANG Agent State Hook v1.5
+/* GARANG Agent State Hook v1.6
    Captures the live application state without changing app.js internals.
    Account safety:
    - authenticated sessions are pinned to garang_user_<uid>_v3
@@ -7,6 +7,7 @@
    - a live object is adopted only when its serialized value is written to the
      storage key belonging to the current Firebase identity
    - bridge reads rebind immediately when Firebase auth identity changes
+   - Memory writes/reads inherit the verified account scope and frozen memory contract
 */
 (() => {
 'use strict';
@@ -85,8 +86,25 @@ function persist(tool,args){
 }
 function requireState(){refreshBinding();if(!liveState)throw new Error('AGENT_STATE_NOT_READY');return liveState;}
 function removeById(list,idValue){const index=list.findIndex(row=>String(row?.id)===String(idValue));if(index<0)return false;list.splice(index,1);return true;}
-function ensureMemory(state){state.memory=isObject(state.memory)?state.memory:{};state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];state.memory.deletedIds=Array.isArray(state.memory.deletedIds)?state.memory.deletedIds:[];return state.memory;}
-function intelligentUpsert(state,candidate,stamp){const memory=ensureMemory(state);if(Memory?.upsertMemory){memory.entries=Memory.upsertMemory(memory.entries,{...candidate,updatedAt:stamp,observedAt:candidate.observedAt||stamp,lastSeenAt:stamp},{now:new Date(stamp)});const key=Memory.semanticKey(candidate);return clone(memory.entries.find(row=>row.status==='active'&&Memory.semanticKey(row)===key)||memory.entries.at(-1));}const type=String(candidate.type||'note'),key=String(candidate.key||''),value=String(candidate.value||'');let row=memory.entries.find(item=>String(item?.type||'note')===type&&String(item?.key||'')===key);if(row)Object.assign(row,{value,source:candidate.source||'agent',confidence:Math.max(Number(row.confidence)||0,Number(candidate.confidence)||.95),importance:Math.max(Number(row.importance)||0,Number(candidate.importance)||3),userConfirmed:true,updatedAt:stamp,lastSeenAt:stamp});else{row={id:id('mem'),...candidate,type,key,value,source:candidate.source||'agent',confidence:Number(candidate.confidence)||.95,importance:Math.max(1,Math.min(5,Number(candidate.importance)||3)),evidenceCount:1,userConfirmed:true,createdAt:stamp,updatedAt:stamp,lastSeenAt:stamp,expiresAt:candidate.expiresAt||null};memory.entries.push(row);}return clone(row);}
+function ensureMemory(state){
+ state.memory=isObject(state.memory)?state.memory:{};
+ state.memory.entries=Array.isArray(state.memory.entries)?state.memory.entries:[];
+ state.memory.deletedIds=Array.isArray(state.memory.deletedIds)?state.memory.deletedIds:[];
+ if(Memory?.migrateMemory)state.memory=Memory.migrateMemory(state.memory,{ownerUid:currentAuthUid()});
+ return state.memory;
+}
+function intelligentUpsert(state,candidate,stamp){
+ const memory=ensureMemory(state),ownerUid=currentAuthUid();
+ if(Memory?.upsertMemory){
+  memory.entries=Memory.upsertMemory(memory.entries,{...candidate,ownerUid:candidate.ownerUid||ownerUid||null,updatedAt:stamp,observedAt:candidate.observedAt||stamp,lastSeenAt:stamp},{now:new Date(stamp),deletedIds:memory.deletedIds,ownerUid});
+  const key=Memory.semanticKey(candidate);
+  return clone(memory.entries.find(row=>row.status==='active'&&Memory.semanticKey(row)===key)||memory.entries.at(-1));
+ }
+ const type=String(candidate.type||'note'),key=String(candidate.key||''),value=String(candidate.value||'');let row=memory.entries.find(item=>String(item?.type||'note')===type&&String(item?.key||'')===key);
+ if(row)Object.assign(row,{value,ownerUid:ownerUid||row.ownerUid||null,source:candidate.source||'agent',confidence:Math.max(Number(row.confidence)||0,Number(candidate.confidence)||.95),importance:Math.max(Number(row.importance)||0,Number(candidate.importance)||3),userConfirmed:true,updatedAt:stamp,lastSeenAt:stamp});
+ else{row={id:id('mem'),...candidate,type,key,value,ownerUid:ownerUid||null,source:candidate.source||'agent',confidence:Number(candidate.confidence)||.95,importance:Math.max(1,Math.min(5,Number(candidate.importance)||3)),evidenceCount:1,revision:1,userConfirmed:true,createdAt:stamp,updatedAt:stamp,lastSeenAt:stamp,expiresAt:candidate.expiresAt||null};memory.entries.push(row);}
+ return clone(row);
+}
 
 function applyWrite(tool,args={}){
  const state=requireState(),stamp=now();
@@ -104,7 +122,7 @@ function applyWrite(tool,args={}){
    state.planner.push(row);persist(tool,args);return clone(row);
   }
   case 'updatePlan':{const row=(Array.isArray(state.planner)?state.planner:[]).find(item=>String(item.id)===String(args.id));if(!row)throw new Error('PLAN_NOT_FOUND');for(const key of ['title','date','time','type'])if(args[key]!==undefined)row[key]=String(args[key]);if(args.completed!==undefined)row.completed=!!args.completed;if(args.done!==undefined)row.completed=!!args.done;row.updatedAt=stamp;row.source='ai';row.origin='ai';persist(tool,args);return clone(row);}
-  case 'saveMemory':{const type=String(args.type||'note').trim()||'note',key=String(args.key||'').trim(),value=String(args.value||'').trim();if(!key||!value)throw new Error('INVALID_TOOL_ARGS');const row=intelligentUpsert(state,{id:args.id||id('mem'),memoryClass:args.memoryClass||null,type,key,value,source:'agent',confidence:.95,utility:Number.isFinite(Number(args.utility))?Number(args.utility):.8,importance:Math.max(1,Math.min(5,Number(args.importance)||3)),userConfirmed:true,expiresAt:args.expiresAt||null},stamp);persist(tool,args);return row;}
+  case 'saveMemory':{const type=String(args.type||'note').trim()||'note',key=String(args.key||'').trim(),value=String(args.value||'').trim();if(!key||!value)throw new Error('INVALID_TOOL_ARGS');const row=intelligentUpsert(state,{id:args.id||id('mem'),memoryClass:args.memoryClass||null,type,key,value,source:'agent',confidence:.95,utility:Number.isFinite(Number(args.utility))?Number(args.utility):.8,importance:Math.max(1,Math.min(5,Number(args.importance)||3)),revision:Math.max(1,Number.parseInt(args.revision,10)||1),userConfirmed:true,expiresAt:args.expiresAt||null},stamp);persist(tool,args);return row;}
   case 'deleteRecord':{const domain=String(args.domain||''),target=String(args.id||'');let removed=false;if(domain==='memory'){const memory=ensureMemory(state);removed=removeById(memory.entries,target);if(removed&&!memory.deletedIds.includes(target))memory.deletedIds.push(target);if(memory.deletedIds.length>500)memory.deletedIds.splice(0,memory.deletedIds.length-500);}else if(['workouts','meals','runs','body','planner'].includes(domain)){state[domain]=Array.isArray(state[domain])?state[domain]:[];removed=removeById(state[domain],target);}else throw new Error('INVALID_TOOL_ARGS');if(!removed)throw new Error('RECORD_NOT_FOUND');persist(tool,args);return {domain,id:target,deleted:true};}
   case 'updateGoal':{const goal=String(args.goal||'').trim();if(!goal)throw new Error('INVALID_TOOL_ARGS');state.profile=isObject(state.profile)?state.profile:{};state.profile.goal=goal;state.onboarding=isObject(state.onboarding)?state.onboarding:{};state.onboarding.goal=goal;intelligentUpsert(state,{id:id('mem'),memoryClass:'semantic',type:'goal',key:'primary_goal',value:goal,source:'agent',confidence:.99,utility:1,importance:5,userConfirmed:true},stamp);persist(tool,args);return {goal};}
   default:throw new Error('TOOL_NOT_ALLOWED');
@@ -122,12 +140,12 @@ function stateForIntelligence(){
  return state;
 }
 function userState(){return StateIntelligence?.estimateState?StateIntelligence.estimateState(stateForIntelligence()):null;}
-function memoryContext(query='',options={}){return Memory?.prepareMemoryContext?Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options}):ensureMemory(requireState());}
+function memoryContext(query='',options={}){return Memory?.prepareMemoryContext?Memory.prepareMemoryContext(requireState().memory,requireState(),{query,...options,ownerUid:currentAuthUid()}):ensureMemory(requireState());}
 function decision(){const stateResult=userState();return DecisionIntelligence?.decide?DecisionIntelligence.decide(stateResult,{memoryContext:memoryContext('',{limit:24,budgetChars:6000})}):null;}
 window.GarangAgentStateBridge=Object.freeze({
  ready:()=>{refreshBinding();return !!liveState;},capture:captureForCurrentAccount,getState:()=>clone(requireState()),getLiveState:()=>requireState(),getStorageKey:()=>resolveKey(),
  getMemoryContext:(query='',options={})=>clone(memoryContext(query,options)),
- getMemoryDiagnostics:()=>Memory?.diagnostics?clone(Memory.diagnostics(ensureMemory(requireState()).entries)):null,
+ getMemoryDiagnostics:()=>{const memory=ensureMemory(requireState());return Memory?.diagnostics?clone(Memory.diagnostics(memory.entries,{deletedIds:memory.deletedIds,ownerUid:currentAuthUid()})):null;},
  getUserState:()=>clone(userState()),
  getUserStateContext:()=>StateIntelligence?.compactForContext?clone(StateIntelligence.compactForContext(userState())):clone(userState()),
  getUserStateDiagnostics:()=>StateIntelligence?.diagnostics?clone(StateIntelligence.diagnostics(stateForIntelligence())):null,
