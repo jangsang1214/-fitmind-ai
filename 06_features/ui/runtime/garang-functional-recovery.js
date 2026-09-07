@@ -144,5 +144,12 @@
   }
 
   function repair(){killCachedFacades();repairBrandImages();repairCoach();repairWorkout();bindGlobalRecovery();repairDataActions();}
-  let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;repair();});});observer.observe(main,{childList:true,subtree:true});repair();
+  let queued=false;function scheduleRepair(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;repair();});}
+  window.addEventListener('garang:screen-rendered',scheduleRepair);
+  window.addEventListener('garang:state-updated',scheduleRepair);
+  window.addEventListener('garang:coach-mounted',scheduleRepair);
+  window.addEventListener('garang:coach-message-rendered',scheduleRepair);
+  window.addEventListener('pageshow',scheduleRepair);
+  document.addEventListener('click',event=>{if(event.target.closest('#addWorkout,#clearWorkoutDraft,#saveWorkoutSession,[data-edit-workout],[data-remove-workout],#exportData,#importLegacy'))setTimeout(scheduleRepair,0);},true);
+  repair();
 })();

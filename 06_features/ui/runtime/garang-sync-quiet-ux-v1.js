@@ -1,12 +1,14 @@
-/* GARANG Quiet Sync UX v1.2
+/* GARANG Quiet Sync UX v1.3
    Background retry/load sync should be visible in the sync badge, not as repeated toast noise.
    Manual taps on the sync badge still receive explicit toast feedback.
+   WebKit safety: the toast observer never writes the same class state back into the node it observes.
    Important: this runtime never intercepts application navigation or Coach sidebar clicks. */
 (() => {
 'use strict';
-if(window.__garangSyncQuietUxV12)return;window.__garangSyncQuietUxV12=true;
-const VERSION='garang-sync-quiet-ux-v1.2';
+if(window.__garangSyncQuietUxV13)return;window.__garangSyncQuietUxV13=true;
+const VERSION='garang-sync-quiet-ux-v1.3';
 let manualUntil=0;
+let observerCallbacks=0,hideWrites=0;
 const SYNC_NOISE=[
  '클라우드 동기화를 다시 확인합니다.',
  '동기화가 완료되었습니다.',
@@ -18,8 +20,14 @@ const SYNC_NOISE=[
 ];
 function isSyncNoise(text){const value=String(text||'').trim();return SYNC_NOISE.some(message=>value===message||value.includes(message));}
 function hideBackgroundSyncToast(){
+ observerCallbacks++;
  const toast=document.getElementById('toast');if(!toast||Date.now()<=manualUntil)return;
- if(isSyncNoise(toast.textContent))toast.classList.remove('show');
+ /* MutationObserver observes toast.class. On WebKit, corrective writes must be guarded so
+    the observer cannot become MutationObserver -> same class write -> MutationObserver. */
+ if(isSyncNoise(toast.textContent)&&toast.classList.contains('show')){
+  hideWrites++;
+  toast.classList.remove('show');
+ }
 }
 document.addEventListener('click',event=>{
  const badge=event.target?.closest?.('#syncBadge');if(!badge)return;
@@ -35,5 +43,5 @@ function observeToast(){
 }
 let tries=0;function boot(){if(observeToast())return;if(tries++<20)setTimeout(boot,150);}
 boot();
-window.GarangSyncQuietUX=Object.freeze({version:VERSION});
+window.GarangSyncQuietUX=Object.freeze({version:VERSION,diagnostics:()=>({observerCallbacks,hideWrites,manualUntil})});
 })();

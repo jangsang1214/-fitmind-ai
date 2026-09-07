@@ -74,7 +74,8 @@ function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_V
 function readLocal(key){try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw);}catch(e){console.warn('local load failed',e);return null;}}
 function writeLocal(){try{touch();localStorage.setItem(storageKey,JSON.stringify(state));return true;}catch(e){toast('기기 저장 공간을 확인해 주세요.');captureError('local_save',e);return false;}}
 function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();}
-function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();}
+function emitLifecycle(name,detail={}){try{window.dispatchEvent(new CustomEvent(name,{detail:{page:currentPage,storageKey,...detail}}));}catch{}}
+function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();emitLifecycle('garang:state-updated',{source:opts.source||'app',event:opts.event||'state_saved'});}
 
 function setSync(s,msg){state.syncState=s;const b=$('syncBadge'),l=$('syncLabel');if(b)b.dataset.state=s;if(l)l.textContent=msg||({synced:'동기화됨',syncing:'동기화 중',pending:'동기화 대기',failed:'동기화 확인',local:'로컬 저장'}[s]||'저장');}
 function updateSyncUI(){if(currentUser&&firebaseReady){if(!state.syncState)setSync('pending');else setSync(state.syncState);}else setSync('local','로컬 저장');}
@@ -99,6 +100,13 @@ async function cloudSaveNow(){
   }
 }
 function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');syncTimer=setTimeout(()=>cloudSaveNow(),700);}
+function reconcileAfterHydration(status){
+  /* Background Firebase hydration updates state without replacing an active Coach interaction tree. */
+  const interactiveCoach=currentPage==='coach'&&$('appView')&&!$('appView').hidden;
+  emitLifecycle('garang:state-hydrated',{status});
+  if(interactiveCoach){applyLanguageChrome();updateSyncUI();return;}
+  render();
+}
 async function cloudLoadAndMerge(){
   if(!firebaseReady||!currentUser)return;
   setSync('syncing');
@@ -111,8 +119,8 @@ async function cloudLoadAndMerge(){
       if(!readLocal(storageKey)||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
       else await cloudSaveNow();
     }else if(readLocal(storageKey)){await cloudSaveNow();}
-    state.syncState='synced';setSync('synced');render();
-  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');render();}
+    state.syncState='synced';setSync('synced');reconcileAfterHydration('success');
+  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');}
 }
 
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}
@@ -152,7 +160,7 @@ function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(
 
 function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));}
 function go(page){currentPage=page;render();window.scrollTo({top:0,behavior:'instant'});}
-function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();}
+function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
 
 function todayWorkouts(){return state.workouts.filter(x=>x.date===today());}
 function dayMeals(date=today()){return state.meals.filter(x=>x.date===date);}

@@ -1,6 +1,7 @@
-/* GARANG Nonblocking Actions v1
+/* GARANG Nonblocking Actions v1.1
    Visible destructive/approval actions keep canonical app.js state mutations, but native blocking
-   confirm() UI is replaced with a local two-tap confirmation. No global click interception. */
+   confirm() UI is replaced with a local two-tap confirmation. Binding follows explicit UI lifecycle
+   events instead of watching the entire #main subtree. No global click interception. */
 (() => {
   'use strict';
   const main=document.getElementById('main');
@@ -58,12 +59,16 @@
   }
 
   let queued=false;
-  const observer=new MutationObserver(()=>{
+  function queueScan(){
     if(queued)return;queued=true;
     queueMicrotask(()=>{queued=false;scan();});
-  });
-  observer.observe(main,{childList:true,subtree:true});
+  }
+  window.addEventListener('garang:screen-rendered',queueScan);
+  window.addEventListener('garang:state-updated',queueScan);
+  window.addEventListener('garang:state-hydrated',queueScan);
+  window.addEventListener('garang:agent-write',queueScan);
+  window.addEventListener('pageshow',queueScan);
   scan();
 
-  window.GarangNonblockingActions=Object.freeze({version:'1.0.0',scan});
+  window.GarangNonblockingActions=Object.freeze({version:'1.1.0',scan,queueScan});
 })();

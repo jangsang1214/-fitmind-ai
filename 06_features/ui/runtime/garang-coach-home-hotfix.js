@@ -3,7 +3,8 @@
    Root-cause fixes:
    - reconciliation never observes and retriggers its own DOM writes;
    - a closed mobile sidebar and its controls cannot participate in hit testing;
-   - manual sync closes the sidebar first and starts from a later task without global click interception.
+   - manual sync closes the sidebar first and starts from a later task without global click interception;
+   - Coach Settings invokes the canonical app onclick directly instead of dispatching a nested synthetic click.
 */
 (() => {
   'use strict';
@@ -16,7 +17,6 @@
   const ACTIVE_ATTR = 'data-garang-coach-shell';
   let queued = false;
   let syncing = false;
-  let mainObserver = null;
   let manualSyncTimer = null;
 
   const isKo = () => document.documentElement.lang !== 'en';
@@ -121,6 +121,13 @@
     root?.classList.remove('sidebar-open');
   }
 
+  function invokeCanonicalTopHandler(id) {
+    const target = document.getElementById(id);
+    if (!target || typeof target.onclick !== 'function') return false;
+    target.onclick.call(target);
+    return true;
+  }
+
   function fallbackRoute(route) {
     const pageGo = document.querySelector(`[data-pagego="${route}"]`);
     if (pageGo) {
@@ -134,7 +141,7 @@
     closeSidebar(root);
 
     if (route === 'settings') {
-      document.getElementById('settingsTopBtn')?.click();
+      invokeCanonicalTopHandler('settingsTopBtn');
       return;
     }
     if (route === 'profile') {
@@ -179,8 +186,12 @@
       return;
     }
 
+    if (action === 'settings') {
+      invokeCanonicalTopHandler('settingsTopBtn');
+      return;
+    }
+
     const map = {
-      settings: 'settingsTopBtn',
       profile: 'profileTopBtn',
       logout: 'logoutBtn'
     };
@@ -252,7 +263,10 @@
     setAttr(settings, 'title', isKo() ? '설정' : 'Settings');
     if (settings.dataset.g5Bound !== '1') {
       settings.dataset.g5Bound = '1';
-      settings.addEventListener('click', () => document.getElementById('settingsTopBtn')?.click());
+      settings.addEventListener('click', () => {
+        closeSidebar(root);
+        invokeCanonicalTopHandler('settingsTopBtn');
+      });
     }
 
     setText(head.querySelector('.g2-head-new'), isKo() ? '＋ 새 대화' : '+ New chat');
@@ -269,11 +283,6 @@
     if (details) details.hidden = true;
   }
 
-  function observeMain() {
-    if (!mainObserver) return;
-    mainObserver.observe(main, { childList: true, subtree: true });
-  }
-
   function syncShell() {
     queued = false;
     if (syncing) return;
@@ -284,7 +293,6 @@
       The previous v5 observer watched main/subtree while syncShell() replaced text nodes,
       causing an endless MutationObserver -> RAF -> DOM-write loop on physical iOS.
     */
-    mainObserver?.disconnect();
     try {
       ensureStyle();
       const root = main.querySelector('.garang-coach-v2');
@@ -298,10 +306,8 @@
       }
       ensureCombinedSidebar(root);
       ensureHeader(root);
-      compactDecision(root);
     } finally {
       syncing = false;
-      observeMain();
     }
   }
 
@@ -311,10 +317,9 @@
     requestAnimationFrame(syncShell);
   }
 
-  mainObserver = new MutationObserver(() => {
-    if (!syncing) queueSync();
-  });
-  observeMain();
+  window.addEventListener('garang:screen-rendered', queueSync);
+  window.addEventListener('garang:coach-mounted', queueSync);
+  window.addEventListener('garang:coach-decision-rendered', queueSync);
 
   new MutationObserver(queueSync).observe(document.documentElement, {
     attributes: true,

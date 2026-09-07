@@ -9,6 +9,8 @@
   const main = document.getElementById('main');
   if (!main) return;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const bottomQueued = new WeakSet();
+  const emit = (name,detail={}) => { try{window.dispatchEvent(new CustomEvent(name,{detail}));}catch{} };
   const uid = () => globalThis.crypto?.randomUUID ? crypto.randomUUID() : `g2_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const now = () => new Date().toISOString();
   const num = (v,f=0) => Number.isFinite(Number(v)) ? Number(v) : f;
@@ -170,9 +172,15 @@
   }
 
   function forceBottom(runtime){
-    const scroller=runtime.root.querySelector('.g2-chat-scroll');if(!scroller)return;
-    const jump=()=>{if(scroller.isConnected)scroller.scrollTop=scroller.scrollHeight;};
-    jump();requestAnimationFrame(()=>{jump();requestAnimationFrame(jump);});setTimeout(jump,40);setTimeout(jump,120);setTimeout(jump,260);
+    const scroller=runtime.root.querySelector('.g2-chat-scroll');if(!scroller||bottomQueued.has(scroller))return;
+    bottomQueued.add(scroller);
+    requestAnimationFrame(()=>{
+      if(scroller.isConnected)scroller.scrollTop=scroller.scrollHeight;
+      requestAnimationFrame(()=>{
+        if(scroller.isConnected)scroller.scrollTop=scroller.scrollHeight;
+        bottomQueued.delete(scroller);
+      });
+    });
   }
 
   function renderMessages(runtime){
@@ -183,6 +191,7 @@
     runtime.root.querySelector('.g2-chat-head-copy strong').textContent=thread.title;
     runtime.root.querySelectorAll('[data-g2-prompt]').forEach(b=>b.onclick=()=>{runtime.input.value=b.dataset.g2Prompt||'';sendMessage(runtime);});
     forceBottom(runtime);
+    emit('garang:coach-message-rendered',{root:runtime.root,threadId:thread.id});
   }
 
   function renderThreadList(runtime){
@@ -245,12 +254,13 @@
     runtime.send.onclick=()=>sendMessage(runtime);root.querySelector('.g2-new-chat').onclick=()=>createConversation(runtime);root.querySelector('.g2-head-new').onclick=()=>createConversation(runtime);root.querySelector('.g2-mobile-threads').onclick=()=>root.classList.add('sidebar-open');root.querySelector('.g2-sidebar-backdrop').onclick=()=>root.classList.remove('sidebar-open');
     renderThreadList(runtime);renderMessages(runtime);
     runtime.resizeObserver=new ResizeObserver(()=>forceBottom(runtime));runtime.resizeObserver.observe(root.querySelector('.g2-chat-scroll'));
-    root.dataset.garangCoachV2='1';root.dataset.garangCoachAccount=activeAppRecord().key;setTimeout(()=>forceBottom(runtime),0);
+    root.dataset.garangCoachV2='1';root.dataset.garangCoachAccount=activeAppRecord().key;forceBottom(runtime);emit('garang:coach-mounted',{root});
   }
 
   function repairAll(){replaceBrandMarks(document);renderBodyModels();mountCoach();}
-  let queued=false;
-  const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;repairAll();});});
-  observer.observe(document.body,{childList:true,subtree:true});
+  let repairQueued=false;
+  function scheduleRepair(){if(repairQueued)return;repairQueued=true;requestAnimationFrame(()=>{repairQueued=false;repairAll();});}
+  window.addEventListener('garang:screen-rendered',scheduleRepair);
+  window.addEventListener('pageshow',scheduleRepair);
   repairAll();
 })();

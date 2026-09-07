@@ -10,6 +10,7 @@ const port=8774;
 const baseURL=`http://127.0.0.1:${port}`;
 const watchdog=setTimeout(()=>{console.error('browser-mobile-stability-stress: WATCHDOG TIMEOUT');process.exit(1);},90000);
 const timeout=(ms,label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms));
+const stage=name=>console.log(`mobile-stress-stage: ${name}`);
 
 async function waitForServer(){const end=Date.now()+15000;while(Date.now()<end){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('stability stress server did not start');}
 async function heartbeat(page,label){await Promise.race([page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,40)))),timeout(2200,`${label}: WebKit main thread stalled`)]);}
@@ -19,11 +20,29 @@ async function settle(page,label,limit=12){await page.waitForTimeout(120);const 
 async function assertNoStaleBlocker(page,label){const blockers=await page.evaluate(()=>[...document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.gcp-backdrop,.gcp-panel,.g2-sidebar-backdrop,.g2-chat-sidebar,.garang-data-recovery-modal')].filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();const visible=s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;const active=s.pointerEvents!=='none';if(el.classList.contains('g2-chat-sidebar'))return visible&&active&&!el.closest('.garang-coach-v2')?.classList.contains('sidebar-open');return visible&&active;}).map(el=>({className:String(el.className||''),id:el.id||'',pointer:getComputedStyle(el).pointerEvents})));assert.deepEqual(blockers,[],`${label}: stale hit-test blocker ${JSON.stringify(blockers)}`);}
 async function openMore(page){await tap(page,'#menuBtn','open More');await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:5000});}
 async function gotoMoreRoute(page,routeName){await openMore(page);const selector=`.garang-more-sheet [data-route="${routeName}"]`;await tap(page,selector,`More ${routeName}`);await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:5000});await heartbeat(page,`More ${routeName} route`);}
+async function waitForStabilityRuntimes(page,errors){
+  try{
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
+  }catch(error){
+    const diagnostics=await page.evaluate(()=>({
+      readyState:document.readyState,
+      screen:document.getElementById('main')?.dataset.garangScreen||'',
+      appVisible:!!document.getElementById('appView')&&!document.getElementById('appView').hidden,
+      today:!!document.querySelector('.today-body-panel'),
+      settingsVersion:window.GarangSettingsTouchSafety?.version||null,
+      nonblockingVersion:window.GarangNonblockingActions?.version||null,
+      settingsScript:[...document.scripts].find(s=>s.src.includes('garang-settings-touch-safety-v1.js'))?.src||null,
+      nonblockingScript:[...document.scripts].find(s=>s.src.includes('garang-nonblocking-actions-v1.js'))?.src||null
+    }));
+    throw new Error(`stability runtimes did not initialize: ${JSON.stringify(diagnostics)} pageerrors=${JSON.stringify(errors)} original=${error.message}`);
+  }
+}
 
 (async()=>{
   const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
   let browser;
   try{
+    stage('server');
     await waitForServer();
     browser=await webkit.launch({headless:true});
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
@@ -34,15 +53,18 @@ async function gotoMoreRoute(page,routeName){await openMore(page);const selector
     });
     const page=await context.newPage();
     const errors=[],dialogs=[];
-    page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+    page.on('pageerror',e=>{const message=String(e?.stack||e?.message||e);errors.push(message);console.error(`mobile-stress-pageerror: ${message}`);});
     page.on('dialog',async d=>{dialogs.push(`${d.type()}:${d.message()}`);await d.dismiss().catch(()=>{});});
+    stage('goto');
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0'&&window.GarangNonblockingActions?.version==='1.0.0',null,{timeout:7000});
+    stage('runtime readiness');
+    await waitForStabilityRuntimes(page,errors);
     assert.equal(await page.evaluate(()=>window.__garangSettingsTextGuardInstalled===true),false,'global Node textContent guard must be absent');
 
     for(let cycle=0;cycle<2;cycle++){
+      stage(`cycle ${cycle}: today`);
       await route(page,'today');await settle(page,`today ${cycle}`);await assertNoStaleBlocker(page,`today ${cycle}`);
       const apply=page.locator('[data-action="apply-coach-plan"]');
       if(await apply.count()){
@@ -51,24 +73,29 @@ async function gotoMoreRoute(page,routeName){await openMore(page);const selector
         await tap(page,'[data-action="apply-coach-plan"]',`coach plan apply ${cycle}`);
       }
 
+      stage(`cycle ${cycle}: coach`);
       await route(page,'coach');
       await page.waitForFunction(()=>document.querySelector('.garang-coach-v2'),null,{timeout:7000});
       await tap(page,'.g2-mobile-threads',`coach menu ${cycle}`);
       await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
       await tap(page,'[data-g5-action="sync"]',`coach sync ${cycle}`);
       await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'),null,{timeout:4000});
-      await page.waitForTimeout(320);await heartbeat(page,`coach post sync ${cycle}`);await assertNoStaleBlocker(page,`coach post sync ${cycle}`);await settle(page,`coach ${cycle}`,16);
+      await page.waitForTimeout(320);await heartbeat(page,`coach post sync ${cycle}`);await assertNoStaleBlocker(page,`coach post sync ${cycle}`);await settle(page,`coach ${cycle}`,8);await page.waitForTimeout(650);await settle(page,`coach idle ${cycle}`,4);
 
+      stage(`cycle ${cycle}: core routes`);
       await route(page,'workout');await settle(page,`workout ${cycle}`,16);await assertNoStaleBlocker(page,`workout ${cycle}`);
       await route(page,'body');await settle(page,`body ${cycle}`);
       await route(page,'progress');await settle(page,`progress ${cycle}`);
 
+      stage(`cycle ${cycle}: settings`);
       await route(page,'today');await tap(page,'#settingsTopBtn',`settings ${cycle}`);await page.locator('#savePreferences').waitFor({state:'visible',timeout:7000});await settle(page,`settings ${cycle}`,6);await tap(page,'#proInfo',`settings PRO ${cycle}`);await assertNoStaleBlocker(page,`settings ${cycle}`);
       await route(page,'today');
 
+      stage(`cycle ${cycle}: more`);
       await openMore(page);await tap(page,'.garang-more-head button',`close More ${cycle}`);await page.locator('.garang-more-sheet').waitFor({state:'detached',timeout:5000});await assertNoStaleBlocker(page,`More closed ${cycle}`);await heartbeat(page,`More closed ${cycle}`);
     }
 
+    stage('planner delete');
     await gotoMoreRoute(page,'planner');
     await page.waitForFunction(()=>document.querySelector('[data-plan-delete="stress-plan"]'),null,{timeout:7000});
     await tap(page,'[data-plan-delete="stress-plan"]', 'planner delete arm');
@@ -80,6 +107,7 @@ async function gotoMoreRoute(page,routeName){await openMore(page);const selector
 
     assert.deepEqual(dialogs,[],`stress flow triggered native blocking dialogs: ${dialogs.join(' | ')}`);
     assert.deepEqual(errors,[],`stress flow runtime errors:\n${errors.join('\n')}`);
+    stage('pass');
     console.log('browser-mobile-stability-stress: PASS');
   }finally{
     clearTimeout(watchdog);

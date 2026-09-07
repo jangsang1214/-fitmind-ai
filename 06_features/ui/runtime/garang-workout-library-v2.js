@@ -227,7 +227,9 @@
     scheduled = false; polishPageHeader(); polishWorkoutCertification(); await enhanceWorkoutLibrary(); polishWorkoutCertification();
   }
   function schedule() { if (scheduled) return; scheduled = true; requestAnimationFrame(() => requestAnimationFrame(run)); }
-  new MutationObserver(schedule).observe(main, { childList:true, subtree:true });
+  window.addEventListener('garang:screen-rendered', schedule);
+  window.addEventListener('garang:state-updated', schedule);
+  window.addEventListener('garang:state-hydrated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', e => { if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0); }, true);
   schedule();

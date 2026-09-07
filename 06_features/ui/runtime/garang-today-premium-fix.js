@@ -101,7 +101,9 @@
     requestAnimationFrame(() => requestAnimationFrame(polishToday));
   }
 
-  new MutationObserver(schedule).observe(main, { childList: true, subtree: true });
+  window.addEventListener('garang:screen-rendered', schedule);
+  window.addEventListener('garang:state-updated', schedule);
+  window.addEventListener('pageshow', schedule);
   window.addEventListener('resize', schedule, { passive: true });
   document.addEventListener('click', event => {
     const viewButton = event.target.closest('[data-today-view]');

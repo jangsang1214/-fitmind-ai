@@ -139,25 +139,21 @@
     });
   }
 
-  const scrollLocks=new WeakMap();
-  function bottom(el){el.scrollTop=el.scrollHeight;}
-  function hardBottom(el){
-    bottom(el);requestAnimationFrame(()=>{bottom(el);requestAnimationFrame(()=>bottom(el));});
-    [32,80,160,320,600].forEach(ms=>setTimeout(()=>bottom(el),ms));
-  }
-  function lockCoachLatest(){
-    document.querySelectorAll('.g2-chat-scroll').forEach(scroller=>{
-      if(scrollLocks.has(scroller)){hardBottom(scroller);return;}
-      const mo=new MutationObserver(()=>hardBottom(scroller));mo.observe(scroller,{childList:true,subtree:true,characterData:true});
-      const ro='ResizeObserver'in window?new ResizeObserver(()=>hardBottom(scroller)):null;ro?.observe(scroller);
-      scroller.addEventListener('transitionend',()=>hardBottom(scroller));
-      scrollLocks.set(scroller,{mo,ro});hardBottom(scroller);
+  function repairAnatomyTools(){
+    main.querySelectorAll('.muscle-map-wrap.g3-upgraded').forEach(wrap=>{
+      const prev=wrap.previousElementSibling;
+      if(prev?.classList.contains('g3-anatomy-tools'))wrap.prepend(prev);
+      const tools=wrap.querySelector(':scope > .g3-anatomy-tools');
+      if(!tools){
+        const near=wrap.parentElement?.querySelector('.g3-anatomy-tools');
+        if(near&&near!==wrap)wrap.prepend(near);
+      }
     });
   }
-  window.addEventListener('resize',()=>document.querySelectorAll('.g2-chat-scroll').forEach(hardBottom));
-  window.visualViewport?.addEventListener('resize',()=>document.querySelectorAll('.g2-chat-scroll').forEach(hardBottom));
-  document.addEventListener('focusin',e=>{if(e.target?.closest?.('.g2-composer'))document.querySelectorAll('.g2-chat-scroll').forEach(hardBottom);});
-
-  function polish(){refineMarks(document);upgradeAnatomy();lockCoachLatest();}
-  let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;polish();});});observer.observe(document.body,{childList:true,subtree:true});polish();
+  function polish(){refineMarks(document);upgradeAnatomy();repairAnatomyTools();}
+  let queued=false;
+  function schedulePolish(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;polish();});}
+  window.addEventListener('garang:screen-rendered',schedulePolish);
+  window.addEventListener('pageshow',schedulePolish);
+  schedulePolish();
 })();

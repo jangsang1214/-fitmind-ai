@@ -22,7 +22,7 @@ const exactCopy={
  'GARANG은 저장된 개인 데이터를 근거로 답합니다. 중요한 판단은 직접 확인하세요.':'GARANG answers from your saved personal data. Review important decisions yourself.'
 };
 const exerciseTerms=[
- ['스미스머신','Smith machine'],['체스트프레스','Chest press'],['벤치프레스','Bench press'],['랫풀다운','Lat pulldown'],['숄더프레스','Shoulder press'],['레그프레스','Leg press'],['레그익스텐션','Leg extension'],['레그컬','Leg curl'],['케이블','Cable'],['인클라인','Incline'],['디클라인','Decline'],['덤벨','Dumbbell'],['바벨','Barbell'],['머신','Machine'],['프론트','Front'],['리어','Rear'],['사이드','Lateral'],['해머','Hammer'],['리버스','Reverse'],['원암','One-arm'],['원 레그','Single-leg'],['루마니안','Romanian'],['스모','Sumo'],['데드리프트','Deadlift'],['스쿼트','Squat'],['런지','Lunge'],['로우','Row'],['풀업','Pull-up'],['친업','Chin-up'],['딥스','Dips'],['푸시업','Push-up'],['플라이','Fly'],['프레스','Press'],['컬','Curl'],['익스텐션','Extension'],['레이즈','Raise'],['크런치','Crunch'],['플랭크','Plank'],['브리지','Bridge'],['킥백','Kickback'],['풀오버','Pullover'],['슈러그','Shrug'],['하이','High'],['로우','Low']
+ ['스미스머신','Smith machine'],['체스트프레스','Chest press'],['벤치프레스','Bench press'],['랫풀다운','Lat pulldown'],['숄더프레스','Shoulder press'],['레그프레스','Leg press'],['레그익스텐션','Leg extension'],['레그컬','Leg curl'],['케이블','Cable'],['인클라인','Incline'],['디클라인','Decline'],['덤벨','Dumbbell'],['바벨','Barbell'],['머신','Machine'],['프론트','Front'],['리어','Rear'],['사이드','Lateral'],['해머','Hammer'],['리버스','Reverse'],['원암','One-arm'],['원 레그','Single-leg'],['루마니안','Romanian'],['스모','Sumo'],['데드리프트','Deadlift'],['스쿼트','Squat'],['런지','Lunge'],['로우','Row'],['풀다운','Pulldown'],['풀업','Pull-up'],['친업','Chin-up'],['딥스','Dips'],['푸시업','Push-up'],['플라이','Fly'],['프레스','Press'],['컬','Curl'],['익스텐션','Extension'],['레이즈','Raise'],['크런치','Crunch'],['플랭크','Plank'],['브리지','Bridge'],['킥백','Kickback'],['풀오버','Pullover'],['슈러그','Shrug'],['하이','High'],['로우','Low']
 ];
 const textState=new WeakMap(),attrState=new WeakMap();
 const skipSelector='script,style,noscript,code,pre,textarea,[data-i18n-skip],.gpt-message.user .gpt-text,.memory-value,.meal-visual-copy>strong,.workout-history-row strong,.pr-head strong,.list-item strong';
@@ -85,8 +85,10 @@ function applyRoot(root=document){
  scope.querySelectorAll?.('[placeholder],[aria-label],[title],[alt]').forEach(el=>{for(const a of ['placeholder','aria-label','title','alt'])applyAttr(el,a);});
 }
 let queued=false;function queue(root=document){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;applyRoot(root);});}
-const observer=new MutationObserver(muts=>{let full=false;for(const m of muts){if(m.type==='attributes'&&m.target===document.documentElement&&m.attributeName==='lang'){full=true;continue;}if(m.type==='characterData')applyText(m.target);if(m.type==='childList')m.addedNodes.forEach(n=>applyRoot(n));if(m.type==='attributes')applyAttr(m.target,m.attributeName);}if(full)queue(document);});
-observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['lang','placeholder','aria-label','title','alt']});
+const observer=new MutationObserver(muts=>{let full=false;for(const m of muts){if(m.type==='attributes'&&m.target===document.documentElement&&m.attributeName==='lang'){full=true;continue;}if(m.type==='childList')m.addedNodes.forEach(n=>applyRoot(n));if(m.type==='attributes')applyAttr(m.target,m.attributeName);}if(full)queue(document);});
+observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['lang','placeholder','aria-label','title','alt']});
+for(const event of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated'])window.addEventListener(event,()=>queue(document));
+window.addEventListener('pageshow',()=>queue(document));
 window.confirm=msg=>nativeConfirm(lang()==='en'?translateCore(String(msg)):msg);
 window.alert=msg=>nativeAlert(lang()==='en'?translateCore(String(msg)):msg);
 if(nativePrompt)window.prompt=(msg,def)=>nativePrompt(lang()==='en'?translateCore(String(msg)):msg,def);

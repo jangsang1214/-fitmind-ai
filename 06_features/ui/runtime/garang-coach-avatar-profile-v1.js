@@ -32,7 +32,10 @@ function bind(){
  }
 }
 let queued=false;function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;bind();});}
-new MutationObserver(queue).observe(main,{childList:true,subtree:true});
+window.addEventListener('garang:screen-rendered',queue);
+window.addEventListener('garang:coach-mounted',queue);
+window.addEventListener('garang:coach-message-rendered',queue);
+window.addEventListener('garang:state-hydrated',queue);
 new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 queue();
 window.GarangCoachAvatarProfile=Object.freeze({version:VERSION});

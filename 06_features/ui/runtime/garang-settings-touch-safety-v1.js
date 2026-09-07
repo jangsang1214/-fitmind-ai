@@ -7,7 +7,7 @@
 
   const main = document.getElementById('main');
   const gear = document.getElementById('settingsTopBtn');
-  if (!main || !gear || typeof MutationObserver !== 'function') return;
+  if (!main || !gear) return;
 
   let handledSettingsNode = null;
   let lastCleanupAt = 0;
@@ -50,8 +50,9 @@
     return true;
   }
 
-  const settingsObserver = new MutationObserver(settleSettingsScreen);
-  settingsObserver.observe(main, { childList: true, subtree: true });
+  window.addEventListener('garang:screen-rendered', settleSettingsScreen);
+  window.addEventListener('garang:state-hydrated', settleSettingsScreen);
+  window.addEventListener('pageshow', settleSettingsScreen);
   settleSettingsScreen();
 
   window.GarangSettingsTouchSafety = Object.freeze({
