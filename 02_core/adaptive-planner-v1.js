@@ -5,20 +5,21 @@
  const api=factory(deps);
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.GarangAdaptivePlanner=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function({Decision}){
+})(typeof globalThis!=='undefined'?globalThis:this,function(deps){
 'use strict';
 
+const Decision=deps.Decision;
 const ENGINE_VERSION='adaptive-planner-v1';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const rows=v=>Array.isArray(v)?v.filter(object):[];
-const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
-const round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
+const finite=v=>v!==null&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,finite(v)??0));
+const round=(v,d=2)=>{const n=finite(v);if(n==null)return null;const p=10**d;return Math.round((n+Number.EPSILON)*p)/p;};
 const asDate=now=>{const d=now instanceof Date?now:new Date(now||Date.now());return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 const shiftDate=(date,delta)=>{const d=new Date(`${date}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+delta);return d.toISOString().slice(0,10);};
 const goalText=s=>String(s?.profile?.goal||s?.userModel?.goal||s?.onboarding?.goal||'').toLowerCase();
 const goalClass=s=>{const g=goalText(s);if(/run|marathon|5k|10k|러닝|달리기|마라톤/.test(g))return 'running';if(/fat|cut|lose|다이어트|감량|체지방/.test(g))return 'fat_loss';if(/muscle|gain|bulk|strength|근육|증량|벌크|근력/.test(g))return 'muscle_gain';return 'maintenance';};
-const weeklyFrequency=s=>clamp(Math.round(Number(s?.userModel?.weeklyFrequency||s?.onboarding?.weeklyFrequency||4)),1,7);
-const availableMinutes=s=>{const date=asDate(new Date()),checkins=rows(s.dailyCheckins||s.checkins).filter(x=>String(x.date)===date).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))),v=Number(checkins[0]?.availableMinutes??s?.userModel?.availableMinutes??s?.onboarding?.availableMinutes);return Number.isFinite(v)?clamp(Math.round(v),5,240):null;};
+const weeklyFrequency=s=>clamp(Math.round(finite(s?.userModel?.weeklyFrequency)??finite(s?.onboarding?.weeklyFrequency)??4),1,7);
 const activeMemories=m=>rows(m?.entries).filter(x=>x.status!=='superseded'&&x.status!=='expired'&&x.userConfirmed!==false);
 
 const LABELS=Object.freeze({
@@ -33,32 +34,30 @@ const TEMPLATES=Object.freeze({
 
 function constraints(state,memoryContext,now){
  const date=asDate(now),checkins=rows(state.dailyCheckins||state.checkins).filter(x=>String(x.date)===date).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))),latest=checkins[0]||{},mem=activeMemories(memoryContext),avoid=mem.filter(x=>String(x.type)==='avoidance'||String(x.key).includes('avoid')).map(x=>String(x.value||'')),pref=mem.filter(x=>String(x.type)==='preference'||String(x.memoryClass)==='preference').map(x=>String(x.value||''));
- const minutes=Number(latest.availableMinutes??state?.userModel?.availableMinutes??state?.onboarding?.availableMinutes);
- return {availableMinutes:Number.isFinite(minutes)?clamp(Math.round(minutes),5,240):null,painCaution:latest.painCaution===true,avoidances:avoid.slice(0,8),preferences:pref.slice(0,8),weeklyFrequency:weeklyFrequency(state),goal:goalClass(state)};
+ const minutes=finite(latest.availableMinutes)??finite(state?.userModel?.availableMinutes)??finite(state?.onboarding?.availableMinutes);
+ return {availableMinutes:minutes==null?null:clamp(Math.round(minutes),5,240),painCaution:latest.painCaution===true,avoidances:avoid.slice(0,8),preferences:pref.slice(0,8),weeklyFrequency:weeklyFrequency(state),goal:goalClass(state)};
 }
 function plannedForDate(state,date){return rows(state.planner).filter(x=>String(x.date)===date).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function normalizeType(type){const x=String(type||'').toLowerCase();if(/upper|상체/.test(x))return 'upper';if(/lower|하체/.test(x))return 'lower';if(/full|전신/.test(x))return 'full_body';if(/run|러닝|달리기/.test(x))return 'easy_run';if(/cardio|유산소/.test(x))return 'cardio';if(/recover|회복/.test(x))return 'recovery';if(/rest|휴식/.test(x))return 'rest';if(/strength|근력/.test(x))return 'strength';return 'full_body';}
 function scheduleTypes(goal,frequency){return TEMPLATES[goal]?.[frequency]||TEMPLATES.maintenance[frequency]||TEMPLATES.maintenance[4];}
-function distribute(types){
- const slots=[0,2,4,6,1,3,5],out=[];for(let i=0;i<types.length;i++)out.push({offset:slots[i]??i,type:types[i]});return out.sort((a,b)=>a.offset-b.offset);
-}
+function distribute(types){const slots=[0,2,4,6,1,3,5],out=[];for(let i=0;i<types.length;i++)out.push({offset:slots[i]??i,type:types[i]});return out.sort((a,b)=>a.offset-b.offset);}
 function baselineWeek(state,{now=new Date()}={}){
  const start=asDate(now),frequency=weeklyFrequency(state),types=scheduleTypes(goalClass(state),frequency),training=distribute(types),byOffset=new Map(training.map(x=>[x.offset,x.type])),week=[];
  for(let i=0;i<7;i++){const date=shiftDate(start,i),existing=plannedForDate(state,date),locked=existing.find(x=>x.done===true||x.completed===true||x.locked===true);if(locked){week.push({date,type:normalizeType(locked.type||locked.title),title:String(locked.title||''),source:'existing',locked:true,existingId:locked.id});continue;}const type=byOffset.get(i)||'rest';week.push({date,type,title:LABELS[type]||LABELS.rest,source:'adaptive',locked:false,existingId:existing[0]?.id||null});}
  return week;
 }
 function deriveMode(userState,decision,score,constraint){
- let mode=String(decision?.mode||'maintain');const recovery=score?.components?.recovery?.score;
- if(constraint.painCaution||mode==='caution')return 'caution';if(mode==='collect_data')return 'collect_data';if(Number.isFinite(Number(recovery))&&Number(recovery)<40&&['maintain','progress','goal_focus'].includes(mode))mode='recover';if(Number.isFinite(Number(recovery))&&Number(recovery)<55&&mode==='progress')mode='reduce';return mode;
+ let mode=String(decision?.mode||'maintain');const recovery=finite(score?.components?.recovery?.score);
+ if(constraint.painCaution||mode==='caution')return 'caution';if(mode==='collect_data')return 'collect_data';if(recovery!=null&&recovery<40&&['maintain','progress','goal_focus'].includes(mode))mode='recover';if(recovery!=null&&recovery<55&&mode==='progress')mode='reduce';return mode;
 }
 function scaleForMode(mode){return {caution:{intensity:0,volume:0,duration:.45},collect_data:{intensity:null,volume:null,duration:.8},recover:{intensity:.45,volume:.5,duration:.55},reduce:{intensity:.7,volume:.7,duration:.75},maintain:{intensity:1,volume:1,duration:1},progress:{intensity:1.05,volume:1.05,duration:1},goal_focus:{intensity:.9,volume:.9,duration:1}}[mode]||{intensity:1,volume:1,duration:1};}
-function supportActions(score){const out=[];if(score?.components?.nutrition?.score!=null&&score.components.nutrition.score<60)out.push({type:'nutrition',code:'SUPPORT_NUTRITION',message:{ko:'오늘 식단 기록과 단백질 섭취를 우선 확인하세요.',en:'Prioritize meal logging and protein coverage today.'}});if(score?.components?.recovery?.score!=null&&score.components.recovery.score<55)out.push({type:'recovery',code:'SUPPORT_RECOVERY',message:{ko:'수면과 회복 상태를 오늘 계획의 우선 제약으로 둡니다.',en:'Treat recovery and sleep as primary constraints today.'}});return out.slice(0,3);}
+function supportActions(score){const out=[];if(finite(score?.components?.nutrition?.score)!=null&&score.components.nutrition.score<60)out.push({type:'nutrition',code:'SUPPORT_NUTRITION',message:{ko:'오늘 식단 기록과 단백질 섭취를 우선 확인하세요.',en:'Prioritize meal logging and protein coverage today.'}});if(finite(score?.components?.recovery?.score)!=null&&score.components.recovery.score<55)out.push({type:'recovery',code:'SUPPORT_RECOVERY',message:{ko:'수면과 회복 상태를 오늘 계획의 우선 제약으로 둡니다.',en:'Treat recovery and sleep as primary constraints today.'}});return out.slice(0,3);}
 function recommendToday(stateInput,{now=new Date(),userState={},decision=null,score=null,memoryContext=null}={}){
  const state=object(stateInput)?stateInput:{},date=asDate(now),constraint=constraints(state,memoryContext,now),existing=plannedForDate(state,date),locked=existing.find(x=>x.done===true||x.completed===true||x.locked===true),mode=deriveMode(userState,decision,score,constraint),scale=scaleForMode(mode),week=baselineWeek(state,{now}),base=week[0]||{date,type:'rest',title:LABELS.rest},reasonCodes=[`MODE_${mode.toUpperCase()}`];
- if(constraint.painCaution)reasonCodes.push('PAIN_CAUTION');if(constraint.availableMinutes!=null)reasonCodes.push('TIME_CONSTRAINT');if(score?.components?.recovery?.score!=null&&score.components.recovery.score<55)reasonCodes.push('RECOVERY_SCORE_LOW');
+ if(constraint.painCaution)reasonCodes.push('PAIN_CAUTION');if(constraint.availableMinutes!=null)reasonCodes.push('TIME_CONSTRAINT');if(finite(score?.components?.recovery?.score)!=null&&score.components.recovery.score<55)reasonCodes.push('RECOVERY_SCORE_LOW');
  let type=base.type;if(mode==='caution'||mode==='recover')type='recovery';if(mode==='collect_data'&&existing[0])type=normalizeType(existing[0].type||existing[0].title);if(locked)type=normalizeType(locked.type||locked.title);
- const defaultDuration={recovery:25,rest:0,easy_run:35,quality_run:45,cardio:35,upper:55,lower:55,full_body:50,strength:50}[type]??45,available=constraint.availableMinutes,duration=type==='rest'?0:Math.max(10,Math.round(Math.min(available||defaultDuration,defaultDuration)*scale.duration)),title=LABELS[type]||LABELS.full_body;
- const proposal={date,type,title,duration,intensityScale:scale.intensity,volumeScale:scale.volume,mode,confidence:round(Math.min(Number(decision?.confidence)||0,Number(score?.confidence)||1),2),reasonCodes:[...new Set(reasonCodes.concat(decision?.reasonCodes||[]))].slice(0,10),constraints:constraint,locked:!!locked,existingId:locked?.id||existing[0]?.id||null};
+ const defaultDuration={recovery:25,rest:0,easy_run:35,quality_run:45,cardio:35,upper:55,lower:55,full_body:50,strength:50}[type]??45,available=constraint.availableMinutes,duration=type==='rest'?0:Math.max(10,Math.round(Math.min(available||defaultDuration,defaultDuration)*scale.duration)),title=LABELS[type]||LABELS.full_body,decisionConfidence=finite(decision?.confidence),scoreConfidence=finite(score?.confidence),confidence=decisionConfidence==null?scoreConfidence:scoreConfidence==null?decisionConfidence:Math.min(decisionConfidence,scoreConfidence);
+ const proposal={date,type,title,duration,intensityScale:scale.intensity,volumeScale:scale.volume,mode,confidence:round(confidence??0,2),reasonCodes:[...new Set(reasonCodes.concat(decision?.reasonCodes||[]))].slice(0,10),constraints:constraint,locked:!!locked,existingId:locked?.id||existing[0]?.id||null};
  let actionProposal=null;if(!locked&&mode!=='collect_data'&&type!=='rest')actionProposal={tool:proposal.existingId?'updatePlan':'createPlan',requiresConfirmation:true,args:{...(proposal.existingId?{id:proposal.existingId}:{}),date,title:title.ko,type,duration,intensityScale:scale.intensity,volumeScale:scale.volume,decisionEngineVersion:String(decision?.engineVersion||Decision?.ENGINE_VERSION||''),decisionMode:mode,reasonCodes:proposal.reasonCodes}};
  return {engineVersion:ENGINE_VERSION,asOf:date,mode,confidence:proposal.confidence,today:proposal,supportActions:supportActions(score),actionProposal,guardrails:{requiresConfirmation:true,noSilentMutation:true,preserveCompletedPlans:true,painCautionBlocksIntensity:true,medicalDiagnosis:false}};
 }
