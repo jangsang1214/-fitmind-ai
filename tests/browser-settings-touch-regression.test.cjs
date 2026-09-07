@@ -68,14 +68,14 @@ async function assertSettingsSettles(page,label){
         observer.disconnect();
         resolve({
           childListMutations,
-          suppressions:window.GarangSettingsTouchSafety?.sameTextWriteSuppressions||0
+          prototypePatched:window.__garangSettingsTextGuardInstalled===true
         });
       },500);
     })),
     timeout(2500,`${label}: Settings DOM did not settle`)
   ]);
   assert.ok(result.childListMutations<=3,`${label}: Settings must settle instead of self-triggering MutationObserver writes; childList mutations=${result.childListMutations}`);
-  assert.ok(result.suppressions>=1,`${label}: same-value Settings text write should be suppressed to prove the feedback loop is guarded`);
+  assert.equal(result.prototypePatched,false,`${label}: Settings must not monkeypatch Node.prototype.textContent`);
 }
 
 async function assertSettingsInteractive(page,label){
@@ -150,19 +150,21 @@ async function assertSettingsInteractive(page,label){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.0.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangSettingsTouchSafety?.version==='3.1.0',null,{timeout:7000});
 
     const binding=await page.evaluate(()=>{
       const gear=document.getElementById('settingsTopBtn');
       return {
         onclick:typeof gear?.onclick,
         capture:gear?.dataset?.garangSettingsCapture||'',
-        messageTask:gear?.dataset?.garangSettingsMessageTask||''
+        messageTask:gear?.dataset?.garangSettingsMessageTask||'',
+        prototypePatched:window.__garangSettingsTextGuardInstalled===true
       };
     });
     assert.equal(binding.onclick,'function','top Settings gear must retain the canonical app onclick');
     assert.equal(binding.capture,'','Settings safety must not intercept the canonical gear click');
     assert.equal(binding.messageTask,'','Settings safety must not reroute through a synthetic task');
+    assert.equal(binding.prototypePatched,false,'Settings runtime must not patch Node.prototype.textContent');
 
     stage('tap gear first');
     await tap(page,'#settingsTopBtn');
