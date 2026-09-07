@@ -95,7 +95,7 @@
       "recoveryUi": "06_features/ui/runtime/garang-functional-recovery.js",
       "settingsPrivacy": "06_features/ui/runtime/garang-privacy-security-v1.js",
       "schema": "02_core/data-schema.js",
-      "errors": "02_core/error-system-v1.js"
+      "errors": "01_app/app.js"
     },
     "documentWideObserverAllowlist": [
       "06_features/ui/i18n/entities-v1.js",
