@@ -17,4 +17,7 @@ assert.doesNotMatch(executable,/\bconfirm\s*\(/,'account deletion must never use
 assert.match(runtime,/deleteAccountPhrase/,'account deletion must require an inline DELETE keyword');
 assert.match(runtime,/deleteAccountPassword/,'password reauthentication must use an inline password field');
 assert.match(runtime,/DELETE/,'destructive account deletion must keep explicit user confirmation');
+assert.equal(runtime.includes('new MutationObserver'),false,'privacy settings mount must not own a broad DOM observer');
+assert.ok(runtime.includes("garang:screen-rendered"),'privacy settings mount must follow the app screen lifecycle');
+assert.ok(runtime.includes("garang:state-hydrated"),'privacy settings mount must remain correct after authenticated hydration');
 console.log('privacy-security: PASS');
