@@ -1,8 +1,10 @@
-/* GARANG sync durability runtime v2.3
+/* GARANG sync durability runtime v2.4
    Transitional compatibility adapter for legacy app.js persistence.
    Long-term Workout/Meal/Run/Body records live in dedicated Firestore collections;
    users/<uid>/app/state is a bounded shell. Historical records are append-safe unless
    an explicit deletion marker exists. Ordinary app taps are never intercepted.
+   History hydration is paginated/yielding, and recovery can request the raw shell
+   without recursively invoking the hydration/persistence wrapper.
 */
 (() => {
 'use strict';
@@ -13,8 +15,8 @@ window.__garangSyncDurabilityRuntime=true;
 
 const nativeParse=JSON.parse.bind(JSON),nativeStringify=JSON.stringify.bind(JSON);
 const baseSetItem=Storage.prototype.setItem,baseGetItem=Storage.prototype.getItem,baseRemoveItem=Storage.prototype.removeItem;
-const DEVICE_KEY='garang_sync_device_v1',PENDING_PREFIX='garang_sync_pending_v1::',BACKUP_PREFIX='garang_sync_backup_v2::',LOCAL_ROLLING_PREFIX='garang_state_backup_v3::',CLOUD_BACKUP_PREFIX='garang_cloud_recovery_backup_v2::',CLOUD_ROLLING_PREFIX='garang_cloud_recovery_backup_v3::',HISTORY_INDEX_PREFIX='garang_history_index_v2::',ROLLING_LIMIT=5;
-let activeAuthUid=null,retryTimer=null,firestorePatched=false,authWatching=false;
+const DEVICE_KEY='garang_sync_device_v1',PENDING_PREFIX='garang_sync_pending_v1::',BACKUP_PREFIX='garang_sync_backup_v2::',LOCAL_ROLLING_PREFIX='garang_state_backup_v3::',CLOUD_BACKUP_PREFIX='garang_cloud_recovery_backup_v2::',CLOUD_ROLLING_PREFIX='garang_cloud_recovery_backup_v3::',HISTORY_INDEX_PREFIX='garang_history_index_v2::',ROLLING_LIMIT=5,HISTORY_PAGE_SIZE=60;
+let activeAuthUid=null,retryTimer=null,firestorePatched=false,authWatching=false,rawStateGet=null;
 
 function uuid(){return globalThis.crypto?.randomUUID?.()||`device_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function deviceId(){let value=baseGetItem.call(localStorage,DEVICE_KEY);if(!value){value=uuid();baseSetItem.call(localStorage,DEVICE_KEY,value);}return value;}
@@ -53,6 +55,7 @@ function publishCloudStateReady(uid,before,after){const detail=Object.freeze({ui
 function historyCollection(db,uid,domain){const name=History.COLLECTIONS[domain];return name?db.collection('users').doc(uid).collection(name):null;}
 function readHistoryIndex(uid){const value=safeParse(readRaw(historyIndexKey(uid)));return value&&typeof value==='object'?value:{};}
 function writeHistoryIndex(uid,index){try{baseSetItem.call(localStorage,historyIndexKey(uid),nativeStringify(index));}catch{}}
+function yieldToBrowser(){return new Promise(resolve=>setTimeout(resolve,0));}
 
 Storage.prototype.setItem=function(key,value){
   if(this!==localStorage||!Core.isStateKey(key))return baseSetItem.call(this,key,value);
@@ -67,11 +70,32 @@ Storage.prototype.setItem=function(key,value){
   return baseSetItem.call(this,key,nativeStringify(hardened));
 };
 
+function orderedHistory(collection){
+  try{const id=window.firebase?.firestore?.FieldPath?.documentId?.();if(id&&typeof collection.orderBy==='function')return collection.orderBy(id,'asc');}catch{}
+  return collection;
+}
+async function loadHistoryDomain(collection){
+  const base=orderedHistory(collection);
+  if(typeof base.limit!=='function'||typeof base.startAfter!=='function'){
+    const snapshot=await base.get(),docs=Array.isArray(snapshot?.docs)?snapshot.docs:[];
+    return docs.map(doc=>History.recordFromDoc(doc.data())).filter(Boolean);
+  }
+  const out=[];let cursor=null;
+  for(;;){
+    let query=base;if(cursor)query=query.startAfter(cursor);query=query.limit(HISTORY_PAGE_SIZE);
+    const snapshot=await query.get(),docs=Array.isArray(snapshot?.docs)?snapshot.docs:[];
+    for(let i=0;i<docs.length;i++){const record=History.recordFromDoc(docs[i].data());if(record)out.push(record);if(i%40===39)await yieldToBrowser();}
+    if(docs.length<HISTORY_PAGE_SIZE)break;
+    cursor=docs[docs.length-1];await yieldToBrowser();
+  }
+  return out;
+}
 async function loadHistory(db,uid){
   const result={};
   for(const domain of History.DOMAINS){
     result[domain]=[];const collection=historyCollection(db,uid,domain);if(!collection||typeof collection.get!=='function')continue;
-    try{const snapshot=await collection.get(),docs=Array.isArray(snapshot?.docs)?snapshot.docs:[];result[domain]=docs.map(doc=>History.recordFromDoc(doc.data())).filter(Boolean);}catch(error){console.warn(`[GARANG] history load deferred: ${domain}`,error?.code||error?.message||error);}
+    try{result[domain]=await loadHistoryDomain(collection);}catch(error){console.warn(`[GARANG] history load deferred: ${domain}`,error?.code||error?.message||error);}
+    await yieldToBrowser();
   }
   return result;
 }
@@ -111,6 +135,7 @@ async function persistHistory(db,uid,state){
       }
       ops.push({type:'set',ref:item.ref,data:item.data});
     }
+    await yieldToBrowser();
   }
   if(ops.length)await commitHistoryOps(db,ops);
   writeHistoryIndex(uid,mergedIndex);
@@ -133,6 +158,11 @@ function patchFirestore(){
     const setOwner=methodOwner(probe,'set'),getOwner=methodOwner(probe,'get');if(!setOwner||!getOwner)return false;
     if(setOwner.__garangDurabilityPatched||getOwner.__garangDurabilityPatched){firestorePatched=true;return true;}
     const originalSet=setOwner.set,originalGet=getOwner.get;
+    rawStateGet=async uid=>{
+      const auth=currentUid();if(!uid||!auth||auth!==uid)throw syncError('STALE_ACCOUNT_READ','Blocked a stale account raw state read.');
+      if(navigator.onLine===false)throw syncError('unavailable','Offline raw state read deferred.');
+      const ref=db.collection('users').doc(uid).collection('app').doc('state');return originalGet.call(ref);
+    };
 
     getOwner.get=async function(...args){
       const uid=statePathUid(this);if(!uid)return originalGet.apply(this,args);
@@ -173,6 +203,12 @@ function patchFirestore(){
   }catch(error){console.warn('[GARANG] sync durability patch deferred',error);return false;}
 }
 
+async function rawCloudStateGet(uid=currentUid()){
+  if(!uid)throw syncError('AUTH_REQUIRED','Authenticated raw state read requires a user.');
+  if(!rawStateGet)patchFirestore();
+  if(!rawStateGet)throw syncError('RAW_STATE_READ_UNAVAILABLE','Raw state reader is not ready.');
+  return rawStateGet(uid);
+}
 async function exportVerifiedBackup(){
   const uid=currentUid(),key=uid?Core.stateKey(uid):Core.DEMO_KEY;let state=readStateKey(key);if(!state)return toast('내보낼 저장 데이터를 찾지 못했습니다.');
   if(uid&&window.firebase?.apps?.length)try{const history=await loadHistory(window.firebase.firestore(),uid);state=History.mergeStateWithHistory(state,history);}catch(error){console.warn('[GARANG] backup history hydration deferred',error);}
@@ -187,5 +223,5 @@ window.addEventListener('online',()=>{document.documentElement.dataset.garangNet
 window.addEventListener('offline',()=>{document.documentElement.dataset.garangNetwork='offline';const uid=currentUid();if(uid)markPending(uid,'offline',{increment:false});});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine!==false){const uid=currentUid();if(uid&&readPending(uid))scheduleRetry(uid,{immediate:true});}});
 setTimeout(bootFirebaseGuards,0);setTimeout(patchFirestore,700);window.addEventListener('load',()=>{patchFirestore();authWatch();},{once:true});
-window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.3',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
+window.GarangSyncDurabilityRuntime=Object.freeze({version:'garang-sync-durability-runtime-v2.4',status:()=>({uid:currentUid(),online:navigator.onLine!==false,firestorePatched,pending:currentUid()?readPending(currentUid()):null}),forceSync:()=>{const uid=currentUid();if(uid){markPending(uid,'manual',{increment:false});scheduleRetry(uid,{immediate:true});}},rawCloudStateGet,exportVerifiedBackup,loadHistory:async()=>{const uid=currentUid();return uid&&window.firebase?.apps?.length?loadHistory(window.firebase.firestore(),uid):{};}});
 })();
