@@ -7,19 +7,18 @@
     "03_styles/runtime/styles.css",
     "03_styles/runtime/garang-target-ui.css",
     "03_styles/runtime/garang-functional-recovery.css",
-    "03_styles/runtime/garang-runtime-final.css",
+    "03_styles/runtime/garang-runtime-components-v1.css",
     "03_styles/runtime/garang-brand-runtime-v2.css",
     "03_styles/runtime/garang-coach-agent-v4.css",
     "03_styles/runtime/garang-polish-v3.css",
     "03_styles/runtime/garang-font-logo-v1.css",
-    "03_styles/runtime/garang-stability-v1.css",
-    "03_styles/runtime/garang-today-premium-fix.css",
+    "03_styles/runtime/garang-today-anatomy-v1.css",
     "03_styles/runtime/garang-today-v2.css",
     "03_styles/runtime/garang-workout-library-v2.css",
     "03_styles/runtime/garang-experience-v3.css",
     "03_styles/runtime/garang-experience-v4.css",
     "03_styles/runtime/garang-auth-brand-v1.css",
-    "03_styles/runtime/garang-app-chrome-fix-v1.css"
+    "03_styles/runtime/garang-app-shell-v1.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
