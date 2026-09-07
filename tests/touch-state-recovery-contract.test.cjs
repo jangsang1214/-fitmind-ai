@@ -7,18 +7,19 @@ const sanitizer=read('06_features/ui/runtime/garang-state-sanitizer-v1.js');
 const sync=read('06_features/ui/runtime/garang-sync-durability-v1.js');
 const route=read('06_features/ui/runtime/garang-auth-route-reconcile-v1.js');
 const recovery=read('06_features/ui/runtime/garang-data-migration-v2.js');
-const chrome=read('03_styles/runtime/garang-app-chrome-fix-v1.css');
+const shell=read('03_styles/runtime/garang-app-shell-v1.css');
 const polish=read('03_styles/runtime/garang-polish-v3.css');
 const firebaseConfig=read('07_config/firebase-config.js');
 const sw=read('sw.js'),swRuntime=read('02_core/sw-runtime.js'),swUpdater=read('06_features/ui/runtime/garang-sw-update-v2.js');
 
 assert.ok(html.indexOf('garang-state-sanitizer-v1.js')<html.indexOf('garang-sync-durability-v1.js'));
-assert.ok(html.indexOf('./01_app/app.js')<html.indexOf('garang-auth-route-reconcile-v1.js'));
-assert.ok(html.includes('garang-app-chrome-fix-v1.css'));
+assert.ok(html.indexOf('./01_app/app.js')<html.indexOf('garang-router-v1.js'));
+assert.ok(html.indexOf('garang-router-v1.js')<html.indexOf('garang-auth-route-reconcile-v1.js'));
+assert.ok(html.includes('garang-app-shell-v1.css'));
 for(const forbidden of ["addEventListener('click'",'addEventListener("click"','setInterval(','MutationObserver','firebase.','Storage.prototype'])assert.equal(sanitizer.includes(forbidden),false,`data sanitizer must stay non-interactive: ${forbidden}`);
 assert.equal(sync.includes('stopImmediatePropagation'),false);assert.ok(sync.includes('safeCloudState(snapshot.data(),uid)'));assert.ok(sync.includes('garang:cloud-state-ready'));assert.ok(sync.includes('History.compactShell'));
 for(const forbidden of ['setInterval(','MutationObserver','stopImmediatePropagation','preventDefault('])assert.equal(route.includes(forbidden),false,`route recovery must not own global interactions: ${forbidden}`);
-assert.ok(route.includes('today.click()'));assert.ok(route.includes('safeToLeaveOnboarding'));
+assert.ok(route.includes("router.navigate('today'"));assert.ok(route.includes('safeToLeaveOnboarding'));assert.equal(route.includes('today.click()'),false,'auth reconcile must not transport routes with synthetic click');
 
 assert.equal(html.includes('garang-recovery-webkit-gesture-v1.js'),false,'obsolete WebKit recovery adapter must not boot');
 assert.ok(recovery.includes("const VERSION='v4.0.0'"),'single recovery owner must publish v4');
@@ -29,14 +30,14 @@ assert.ok(recovery.includes("actions.insertAdjacentElement('afterend',surface)")
 assert.equal(recovery.includes('new MutationObserver'),false,'recovery must not require a DOM relocation observer');
 for(const forbidden of ['stopImmediatePropagation','stopPropagation(','window.scrollTo','Object.defineProperty(window','overflow:hidden!important'])assert.equal(recovery.includes(forbidden),false,`recovery owner must avoid gesture/scroll/compositor traps: ${forbidden}`);
 
-assert.ok(chrome.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(chrome.includes('display:grid!important'));assert.ok(chrome.includes('#main[data-garang-screen]:not([data-garang-screen="coach"])'));
-for(const token of ['overflow:visible!important','overflow-x:visible!important','overflow-y:visible!important','height:auto!important','max-height:none!important'])assert.ok(chrome.includes(token));
-assert.ok(chrome.includes('#main:has(.today-body-panel)'),'physical iOS must not depend only on late screen-registry metadata');
-assert.ok(chrome.includes('safe-area-inset-top'),'top chrome must own the iOS safe area');
-assert.ok(chrome.includes('#appView:not([hidden]) > .topbar'),'whole topbar must be explicitly visible and interactive');
-assert.ok(chrome.includes('#appView:not([hidden]) > .bottom-nav button'),'bottom nav hit targets must remain interactive');
-assert.ok(chrome.includes('.garang-more-sheet[hidden]')&&chrome.includes('pointer-events:none!important'),'hidden overlays must not intercept touch');
-assert.ok(chrome.includes('-webkit-backdrop-filter:none!important'));assert.equal(/body:has\(\.garang-coach-v2\) \.bottom-nav\{display:none!important\}/.test(polish),false);
+assert.ok(shell.includes('#appView:not([hidden]) #menuBtn.icon-btn'));assert.ok(shell.includes('display:grid!important'));assert.ok(shell.includes('#main[data-garang-screen]:not([data-garang-screen="coach"])'));
+for(const token of ['overflow:visible!important','overflow-x:visible!important','overflow-y:visible!important','height:auto!important','max-height:none!important'])assert.ok(shell.includes(token));
+assert.ok(shell.includes('#main:has(.today-body-panel)'),'physical iOS must not depend only on late screen-registry metadata');
+assert.ok(shell.includes('safe-area-inset-top'),'top chrome must own the iOS safe area');
+assert.ok(shell.includes('#appView:not([hidden])>.topbar'),'whole topbar must be explicitly visible and interactive');
+assert.ok(shell.includes('#appView:not([hidden])>.bottom-nav button'),'bottom nav hit targets must remain interactive');
+assert.ok(shell.includes('.garang-more-sheet[hidden]')&&shell.includes('pointer-events:none!important'),'hidden overlays must not intercept touch');
+assert.ok(shell.includes('-webkit-backdrop-filter:none!important'));assert.equal(/body:has\(\.garang-coach-v2\) \.bottom-nav\{display:none!important\}/.test(polish),false);
 assert.ok(firebaseConfig.includes('cdn.jsdelivr.net/npm/firebase@'));assert.ok(firebaseConfig.includes("typeof document === 'undefined'"));
-const loaderVersion=sw.match(/app-shell-(v\d+-\d+)/)?.[1],runtimeVersion=swRuntime.match(/CACHE=`\$\{CACHE_PREFIX\}(v\d+-\d+)/)?.[1];assert.ok(loaderVersion&&runtimeVersion);assert.equal(loaderVersion,runtimeVersion,'root and runtime SW versions must match');assert.ok(swRuntime.includes("CACHE_PREFIX='garang-app-shell-'"));assert.ok(swRuntime.includes("event.request.mode==='navigate'"));assert.ok(swUpdater.includes("updateViaCache:'none'"));assert.ok(html.includes('./07_config/firebase-config.js?v=1.1.0'));assert.ok(html.includes('./06_features/ui/runtime/garang-auth-route-reconcile-v1.js?v=1.1.0'));
+const loaderVersion=sw.match(/app-shell-(v\d+-\d+)/)?.[1],runtimeVersion=swRuntime.match(/CACHE=`\$\{CACHE_PREFIX\}(v\d+-\d+)/)?.[1];assert.ok(loaderVersion&&runtimeVersion);assert.equal(loaderVersion,runtimeVersion,'root and runtime SW versions must match');assert.ok(swRuntime.includes("CACHE_PREFIX='garang-app-shell-'"));assert.ok(swRuntime.includes("event.request.mode==='navigate'"));assert.ok(swUpdater.includes("updateViaCache:'none'"));assert.ok(html.includes('./07_config/firebase-config.js?v=1.1.0'));assert.ok(html.includes('./06_features/ui/runtime/garang-auth-route-reconcile-v1.js?v=1.2.0'));
 console.log('touch-state-recovery-contract: PASS');
