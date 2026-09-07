@@ -70,11 +70,11 @@ async function gotoMoreRoute(page,routeName){await openMore(page);const selector
     }
 
     await gotoMoreRoute(page,'planner');
-    await page.waitForFunction(()=>document.querySelector('[data-plan-delete]'),null,{timeout:7000});
-    await tap(page,'[data-plan-delete]', 'planner delete arm');
-    const deleteButton=page.locator('[data-plan-delete]').first();
+    await page.waitForFunction(()=>document.querySelector('[data-plan-delete="stress-plan"]'),null,{timeout:7000});
+    await tap(page,'[data-plan-delete="stress-plan"]', 'planner delete arm');
+    const deleteButton=page.locator('[data-plan-delete="stress-plan"]');
     assert.equal(await deleteButton.getAttribute('data-garang-confirm-armed'),'1','planner delete must use in-app confirmation');
-    await tap(page,'[data-plan-delete]','planner delete confirm');
+    await tap(page,'[data-plan-delete="stress-plan"]','planner delete confirm');
     await heartbeat(page,'planner delete completed');
     await assertNoStaleBlocker(page,'planner after delete');
 
