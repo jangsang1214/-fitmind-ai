@@ -1,4 +1,4 @@
-/* GARANG authenticated route reconciliation v1.2
+/* GARANG authenticated route reconciliation v1.3
    One-shot bridge for the legacy app boot order. It only leaves onboarding when the
    cloud proves onboarding is already complete and the user is not actively editing.
    Navigation is delegated to the canonical GARANG router; no synthetic click is emitted.
@@ -11,6 +11,8 @@ function currentUid(){try{return window.firebase?.auth?.().currentUser?.uid||nul
 function persistedReady(uid){try{const raw=localStorage.getItem(`garang_user_${uid}_v3`);if(!raw)return false;const state=JSON.parse(raw),onboarding=state?.onboarding||{};return !!(onboarding.complete||onboarding.skipped);}catch{return false;}}
 function safeToLeaveOnboarding(){
   const main=document.getElementById('main');if(!main)return false;
+  if(main.querySelector('.garang-coach-v2'))return false;
+  if(document.querySelector('#bottomNav button.active[data-page="coach"]'))return false;
   const screen=main.dataset.garangScreen||'';
   if(screen&&screen!=='modeling')return false;
   const active=document.activeElement;
