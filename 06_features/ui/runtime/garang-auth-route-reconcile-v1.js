@@ -27,7 +27,7 @@ function reconcile(detail){
     if(uid!==detail.uid||!persistedReady(uid)||!safeToLeaveOnboarding()){handled=false;return;}
     const app=document.getElementById('appView'),router=window.GarangRouter;
     if(!app||app.hidden||!router?.navigate){handled=false;return;}
-    const moved=router.navigate('today',{source:'auth-reconcile'});
+    const moved=router.navigate('today',{source:'auth-reconcile',cleanup:false});
     if(!moved){handled=false;return;}
     window.dispatchEvent(new CustomEvent('garang:auth-route-reconciled',{detail:{uid,route:'today'}}));
   },0);
