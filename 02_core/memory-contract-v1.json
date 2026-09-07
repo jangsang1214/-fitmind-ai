@@ -1,0 +1,110 @@
+{
+  "freezeId": "garang-memory-v1-20260908",
+  "status": "frozen",
+  "contractVersion": "garang-memory-v1",
+  "schemaVersion": 1,
+  "policyVersion": "memory-intelligence-v1",
+  "memoryClasses": [
+    "episodic",
+    "semantic",
+    "procedural",
+    "preference",
+    "state"
+  ],
+  "entryStatuses": [
+    "active",
+    "superseded",
+    "expired"
+  ],
+  "container": {
+    "arrayBuckets": [
+      "facts",
+      "preferences",
+      "goals",
+      "events",
+      "entries",
+      "deletedIds"
+    ],
+    "metadataFields": [
+      "contractVersion",
+      "schemaVersion",
+      "policyVersion",
+      "legacyMigrated"
+    ]
+  },
+  "requiredNormalizedEntryFields": [
+    "contractVersion",
+    "schemaVersion",
+    "id",
+    "ownerUid",
+    "memoryClass",
+    "type",
+    "key",
+    "value",
+    "source",
+    "sourceTrust",
+    "importance",
+    "confidence",
+    "utility",
+    "evidenceCount",
+    "userConfirmed",
+    "revision",
+    "createdAt",
+    "updatedAt",
+    "observedAt",
+    "lastSeenAt",
+    "validFrom",
+    "validTo",
+    "expiresAt",
+    "status",
+    "supersededBy",
+    "conflictKey"
+  ],
+  "contextEntryFields": [
+    "id",
+    "memoryClass",
+    "type",
+    "key",
+    "value",
+    "source",
+    "importance",
+    "confidence",
+    "utility",
+    "evidenceCount",
+    "userConfirmed",
+    "revision",
+    "observedAt",
+    "updatedAt",
+    "expiresAt",
+    "status"
+  ],
+  "rules": {
+    "semanticDedupDeterministic": true,
+    "changedValuesPreserveHistory": true,
+    "explicitConfirmationWinsOverNewerInference": true,
+    "tombstonedIdsCannotReenter": true,
+    "ownerMismatchRejectedOnWrite": true,
+    "foreignContractRejected": true,
+    "futureSchemaRejected": true,
+    "migrationIdempotent": true,
+    "defaultAiContextConfirmedActiveOnly": true,
+    "defaultAiContextExcludesLegacyRawBuckets": true,
+    "contextBudgetStrict": true,
+    "rawChatExcluded": true
+  },
+  "retrieval": {
+    "limitMax": 50,
+    "budgetCharsDefault": 6000,
+    "budgetCharsMax": 20000,
+    "signals": [
+      "queryRelevance",
+      "importance",
+      "confidence",
+      "utility",
+      "sourceTrust",
+      "confirmation",
+      "recency",
+      "memoryClassPolicy"
+    ]
+  }
+}
