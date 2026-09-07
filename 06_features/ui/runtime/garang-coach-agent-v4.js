@@ -1,13 +1,16 @@
-/* GARANG Coach Agent v4
+/* GARANG Coach Agent v4.3
    - Persistent bilingual recommended questions above the composer.
    - Mock Agent Contract E2E: question -> context -> tool proposal -> approval -> write.
    - Existing local Coach answer remains the visible analysis until a real LLM adapter is connected.
+   - Main/root MutationObservers are single-owner and coalesced so Coach settles on WebKit.
+   - The final prompt runtime owns canonical prompt markup once it has taken over the strip.
 */
 (() => {
 'use strict';
 
 const main=document.getElementById('main');if(!main)return;
-const sessionsByMessage=new Map(),seenAssistantIds=new Set();let rootObserver=null,activeRoot=null;
+const sessionsByMessage=new Map(),seenAssistantIds=new Set();
+let rootObserver=null,mainObserver=null,activeRoot=null,rootQueued=false;
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
@@ -16,6 +19,7 @@ const prompts=()=>english()?[
 ]:[
  {label:'오늘 운동 강도',prompt:'오늘 운동 강도를 내 기록 기준으로 정해줘'},{label:'최근 운동 분석',prompt:'내 최근 운동 기록을 분석해줘'},{label:'오늘 식단 분석',prompt:'오늘 저장된 식단 기록을 분석해줘'},{label:'회복 상태',prompt:'오늘 회복 상태를 알려줘'},{label:'계획 만들기',prompt:'오늘 계획을 만들어줘'}
 ];
+
 function contextFromState(state){const s=state||{};return {profile:clone(s.profile||null),userModel:clone(s.userModel||s.onboarding||null),recent:{workouts:clone((s.workouts||[]).slice(-30)),meals:clone((s.meals||[]).slice(-30)),runs:clone((s.runs||[]).slice(-20)),body:clone((s.body||[]).slice(-20)),planner:clone((s.planner||[]).slice(-30))},memory:{entries:clone((s.memory?.entries||[]).filter(x=>x?.userConfirmed!==false&&(!x?.expiresAt||Date.parse(x.expiresAt)>Date.now())).slice(-40))}};}
 function toolLabel(tool){const ko={createPlan:'계획 생성',updatePlan:'계획 수정',saveMemory:'기억 저장',deleteRecord:'기록 삭제',updateGoal:'목표 변경'},en={createPlan:'Create plan',updatePlan:'Update plan',saveMemory:'Save memory',deleteRecord:'Delete record',updateGoal:'Update goal'};return (english()?en:ko)[tool]||tool;}
 function proposalSummary(proposal){const a=proposal.args||{};if(proposal.tool==='createPlan')return a.title||'';if(proposal.tool==='updatePlan')return `${a.id||''}${a.title?` · ${a.title}`:''}`;if(proposal.tool==='saveMemory')return `${a.key||''}${a.value?` · ${a.value}`:''}`;if(proposal.tool==='deleteRecord')return `${a.domain||''} · ${a.id||''}`;if(proposal.tool==='updateGoal')return a.goal||'';return JSON.stringify(a);}
@@ -23,9 +27,41 @@ function renderProposalCard(messageEl,entry){const body=messageEl.querySelector(
 function resolveProposal(messageEl,entry,approved){if(entry.status&&entry.status!=='pending')return;try{const result=entry.session.confirm(entry.proposal.id,approved);entry.status=result.proposal.status;entry.result=result.result;renderProposalCard(messageEl,entry);window.dispatchEvent(new CustomEvent('garang:agent-proposal-resolved',{detail:{id:entry.proposal.id,tool:entry.proposal.tool,status:entry.status}}));}catch(error){entry.status='expired';entry.error=String(error?.message||error);renderProposalCard(messageEl,entry);}}
 function attachStoredProposals(messageEl,messageId){const entries=sessionsByMessage.get(messageId);if(!entries)return false;entries.forEach(entry=>renderProposalCard(messageEl,entry));return true;}
 async function processAssistant(messageEl){if(messageEl.dataset.thinking==='1')return;const messageId=messageEl.dataset.messageId||'';if(!messageId)return;if(attachStoredProposals(messageEl,messageId))return;if(seenAssistantIds.has(messageId))return;seenAssistantIds.add(messageId);const siblings=[...messageEl.parentElement.children],index=siblings.indexOf(messageEl);let userEl=null;for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;if(!Contract||!Bridge?.ready?.())return;try{const state=Bridge.getState(),context=contextFromState(state);if(Bridge.getMemoryContext)context.memory=Bridge.getMemoryContext(text,{limit:24,budgetChars:6000});if(Bridge.getUserStateContext)context.userState=Bridge.getUserStateContext();if(Bridge.getDecisionContext)context.decision=Bridge.getDecisionContext();const session=Contract.createSession({getState:()=>Bridge.getState(),applyWrite:(tool,args)=>Bridge.applyWrite(tool,args)}),result=await session.run({message:text,context,language:english()?'en':'ko'},{adapter:Contract.createMockAdapter()});const entries=result.proposals.map(proposal=>({session,proposal,status:'pending',reads:result.reads.length}));if(entries.length){sessionsByMessage.set(messageId,entries);entries.forEach(entry=>renderProposalCard(messageEl,entry));}messageEl.dataset.g4AgentProcessed='1';}catch(error){console.warn('[GARANG] Agent E2E layer skipped',error);}}
-function promptSignature(items){return items.map(item=>`${item.label}\u0001${item.prompt}`).join('\u0002');}function currentPromptSignature(strip){return [...strip.querySelectorAll('[data-g4-prompt]')].map(button=>`${button.textContent}\u0001${button.dataset.g4Prompt||''}`).join('\u0002');}
-function syncPromptStrip(root){const composerWrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');if(!composerWrap||!composer||!input)return;root.querySelector('.g2-empty-chat .g2-prompts')?.remove();let strip=composerWrap.querySelector('.g4-prompt-strip');if(!strip){strip=document.createElement('div');strip.className='g4-prompt-strip';composerWrap.insertBefore(strip,composer);}const items=prompts(),wanted=promptSignature(items);if(currentPromptSignature(strip)!==wanted){strip.innerHTML=items.map(item=>`<button type="button" data-g4-prompt="${esc(item.prompt)}">${esc(item.label)}</button>`).join('');strip.querySelectorAll('[data-g4-prompt]').forEach(button=>button.onclick=()=>{input.value=button.dataset.g4Prompt||'';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();});}const placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';if(input.placeholder!==placeholder)input.placeholder=placeholder;if(input.getAttribute('aria-label')!==placeholder)input.setAttribute('aria-label',placeholder);}
+function promptSignature(items){return items.map(item=>`${item.label}\u0001${item.prompt}`).join('\u0002');}
+function currentPromptSignature(strip){return [...strip.querySelectorAll('[data-g4-prompt]')].map(button=>`${button.textContent}\u0001${button.dataset.g4Prompt||''}`).join('\u0002');}
+
+function syncPromptStrip(root){
+ const composerWrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');if(!composerWrap||!composer||!input)return;
+ const legacy=root.querySelector('.g2-empty-chat .g2-prompts');if(legacy?.isConnected)legacy.remove();
+ let strip=composerWrap.querySelector('.g4-prompt-strip');
+ if(!strip){strip=document.createElement('div');strip.className='g4-prompt-strip';composerWrap.insertBefore(strip,composer);}
+ const placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';
+ if(input.placeholder!==placeholder)input.placeholder=placeholder;
+ if(input.getAttribute('aria-label')!==placeholder)input.setAttribute('aria-label',placeholder);
+ /* garang-coach-item4-final owns canonical prompt markup after it marks the strip persistent.
+    Do not rewrite that same subtree from a second observer. */
+ if(strip.dataset.garangPersistent==='1'&&window.GarangCoachItem4Final)return;
+ const items=prompts(),wanted=promptSignature(items);
+ if(currentPromptSignature(strip)!==wanted){strip.innerHTML=items.map(item=>`<button type="button" data-g4-prompt="${esc(item.prompt)}">${esc(item.label)}</button>`).join('');strip.querySelectorAll('[data-g4-prompt]').forEach(button=>button.onclick=()=>{input.value=button.dataset.g4Prompt||'';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();});}
+}
 function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
-function enhance(root){if(activeRoot===root){syncPromptStrip(root);syncProposalLanguage(root);return;}activeRoot=root;root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>seenAssistantIds.add(message.dataset.messageId));syncPromptStrip(root);rootObserver?.disconnect();rootObserver=new MutationObserver(()=>{syncPromptStrip(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);});rootObserver.observe(root,{childList:true,subtree:true});}
-function scan(){const root=main.querySelector('.garang-coach-v2');if(root)enhance(root);}new MutationObserver(scan).observe(main,{childList:true,subtree:true});new MutationObserver(()=>{if(activeRoot){syncPromptStrip(activeRoot);syncProposalLanguage(activeRoot);}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});scan();
+function syncRoot(root){if(root!==activeRoot||!root.isConnected)return;syncPromptStrip(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);}
+function queueRootSync(root=activeRoot){if(!root||root!==activeRoot||rootQueued)return;rootQueued=true;requestAnimationFrame(()=>{rootQueued=false;syncRoot(root);});}
+function enhance(root){
+ if(activeRoot===root)return;
+ rootObserver?.disconnect();rootObserver=null;rootQueued=false;activeRoot=root;
+ root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>seenAssistantIds.add(message.dataset.messageId));
+ syncPromptStrip(root);
+ rootObserver=new MutationObserver(()=>queueRootSync(root));
+ rootObserver.observe(root,{childList:true,subtree:true});
+ queueRootSync(root);
+}
+function scan(){
+ const root=main.querySelector('.garang-coach-v2');
+ if(!root){if(activeRoot&&!activeRoot.isConnected){rootObserver?.disconnect();rootObserver=null;activeRoot=null;rootQueued=false;}return;}
+ if(root!==activeRoot)enhance(root);
+}
+mainObserver=new MutationObserver(scan);mainObserver.observe(main,{childList:true,subtree:true});
+new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+scan();
 })();
