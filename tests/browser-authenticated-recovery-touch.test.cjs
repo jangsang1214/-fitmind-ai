@@ -93,7 +93,7 @@ async function tap(page,selector,label=selector){
     stage('goto');
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.2',null,{timeout:8000});
+    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.3',null,{timeout:8000});
     await heartbeat(page,'authenticated boot settled');
 
     await tap(page,'#settingsTopBtn','settings gear');
@@ -104,17 +104,24 @@ async function tap(page,selector,label=selector){
     await tap(page,'#importLegacy','authenticated recovery open');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'visible',timeout:900});
     assert.match(await page.locator('.garang-data-recovery-loading').innerText(),/저장된 기록을 안전하게 확인/);
+    assert.equal(await page.evaluate(()=>window.GarangDataMigrationV2.scanActive),true,'authenticated scan must be active while cloud history is pending');
+    assert.equal(await page.evaluate(()=>/저장된 기록을 안전하게 확인/.test(document.getElementById('toast')?.textContent||'')&&document.getElementById('toast')?.classList.contains('show')),false,'recovery loading must use the closable panel, never the legacy toast');
     await heartbeat(page,'recovery loading remains responsive');
 
     await tap(page,'.garang-data-recovery-close','close pending recovery');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'detached',timeout:1200});
+    assert.equal(await page.evaluate(()=>window.GarangDataMigrationV2.scanActive),false,'closing recovery must detach the UI scan immediately');
     await page.evaluate(()=>{window.__mockRecoveryLoadHistory=false;window.__mockRecoveryDelay=0;});
     await heartbeat(page,'after recovery cancel before navigation');
     await tap(page,'#bottomNav button[data-page="today"]','touch after recovery cancel');
     await page.waitForFunction(()=>document.querySelector('#bottomNav button[data-page="today"]')?.classList.contains('active'),null,{timeout:3000});
+    await heartbeat(page,'first navigation heartbeat after recovery cancel');
+    await page.waitForTimeout(250);
+    await heartbeat(page,'second navigation heartbeat after recovery cancel');
 
     await page.waitForTimeout(2800);
     assert.equal(await page.locator('.garang-data-recovery-modal').count(),0,'cancelled scan must not reopen a stale modal');
+    assert.equal(await page.evaluate(()=>window.GarangDataMigrationV2.scanActive),false,'cancelled Firestore read must stay detached after it eventually settles');
     await heartbeat(page,'post-cancel heartbeat');
 
     await tap(page,'#settingsTopBtn','settings gear second');
