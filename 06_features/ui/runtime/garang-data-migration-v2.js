@@ -1,15 +1,18 @@
-/* GARANG data recovery runtime v3.3
-   Authenticated recovery scans are explicitly cancellable and time-sliced for iOS/WebKit.
-   In-flight Firestore reads are detached from the UI flow as soon as the user closes recovery.
-   Recovery never locks html/body scrolling or restores focus on touch devices.
-   Recovery remains non-destructive until the user confirms the final restore.
+/* GARANG data recovery runtime v3.4
+   iOS/WebKit recovery safety rules:
+   - cancellation is generation based; no rejected Promise.race branch survives a closed UI
+   - Firestore history is read in bounded pages instead of materializing an entire account at once
+   - CPU-heavy normalization yields frequently so touch/scroll/navigation stay responsive
+   - recovery owns only its modal; it never locks html/body or restores focus on touch devices
+   - recovery remains non-destructive until the user confirms the final restore
 */
 (() => {
 'use strict';
 if(window.__garangDataMigrationV2)return;window.__garangDataMigrationV2=true;
 const Sanitizer=window.GarangStateSanitizer,Core=window.GarangSyncDurability,History=window.GarangHistoryPersistence;
-const VERSION='v3.3',LEGACY_KEY='garang_v99_state_v2',RECOVERY_BACKUP_PREFIX='garang_recovery_backup_v3::';
+const VERSION='v3.4',LEGACY_KEY='garang_v99_state_v2',RECOVERY_BACKUP_PREFIX='garang_recovery_backup_v3::';
 const PROTECTED=Object.freeze(['workouts','meals','runs','body']);
+const CLOUD_PAGE_SIZE=60,PROCESS_YIELD_EVERY=40,MERGE_YIELD_EVERY=60;
 let lastReport=null,observer=null,bindingQueued=false,lastTrigger=null,scanGeneration=0,activeScan=null;
 
 function authUid(){try{return window.firebase?.auth?.().currentUser?.uid||null;}catch{return null;}}
@@ -31,25 +34,20 @@ function isScanCurrent(id){return id==null||id===scanGeneration;}
 function cancelError(){const error=new Error('GARANG_RECOVERY_SCAN_CANCELLED');error.garangRecoveryCancelled=true;return error;}
 function assertScanCurrent(id){if(!isScanCurrent(id))throw cancelError();}
 function beginScan(){
-  if(activeScan){const previous=activeScan;activeScan=null;previous.cancel();}
-  const id=++scanGeneration;let cancel;
-  const cancelled=new Promise(resolve=>{cancel=resolve;});
-  activeScan={id,cancel,cancelled};
+  activeScan=null;
+  const id=++scanGeneration;
+  activeScan={id};
   return id;
 }
 function finishScan(id){if(activeScan?.id===id)activeScan=null;}
-function cancelActiveScan(){
-  const scan=activeScan;activeScan=null;scanGeneration++;
-  if(scan)scan.cancel();
-}
+function cancelActiveScan(){activeScan=null;scanGeneration++;}
 function guardedAwait(promise,scanId=null){
   if(scanId==null)return Promise.resolve(promise);
-  const signal=activeScan?.id===scanId?activeScan:null;
-  if(!signal)return Promise.reject(cancelError());
-  return Promise.race([
-    Promise.resolve(promise).then(value=>{assertScanCurrent(scanId);return value;}),
-    signal.cancelled.then(()=>{throw cancelError();})
-  ]);
+  if(activeScan?.id!==scanId)return Promise.reject(cancelError());
+  return Promise.resolve(promise).then(
+    value=>{assertScanCurrent(scanId);return value;},
+    error=>{assertScanCurrent(scanId);throw error;}
+  );
 }
 function yieldForScan(scanId=null){return guardedAwait(yieldToUI(),scanId);}
 function canProgrammaticFocus(){try{return !('ontouchstart' in window)&&window.matchMedia?.('(hover:hover) and (pointer:fine)')?.matches===true;}catch{return false;}}
@@ -64,7 +62,7 @@ async function localCandidates(u,scanId=null){
     assertScanCurrent(scanId);
     const key=matching[i],hit=candidate(labelForKey(key),'local',key,read(key),key===activeKey()?u:null);
     if(hit)out.push(hit);
-    if(i%3===2)await yieldForScan(scanId);
+    if(i%2===1)await yieldForScan(scanId);
   }
   return out.sort((a,b)=>b.stamp-a.stamp);
 }
@@ -91,7 +89,7 @@ async function responsiveMerge(domain,lists,state,u,scanId=null){
       const id=String(row.id||`${domain}:${i}`);
       map.set(id,clone(row)||row);
     }
-    if(i%120===119)await yieldForScan(scanId);
+    if(i%MERGE_YIELD_EVERY===MERGE_YIELD_EVERY-1)await yieldForScan(scanId);
   }
   const merged=[...map.values()];
   if(History?.rowStamp)merged.sort((a,b)=>History.rowStamp(a)-History.rowStamp(b));
@@ -116,20 +114,40 @@ async function docsToRows(docs,mapper,scanId=null){
   for(let i=0;i<list.length;i++){
     assertScanCurrent(scanId);
     const value=mapper(list[i]);if(value)out.push(value);
-    if(i%80===79)await yieldForScan(scanId);
+    if(i%PROCESS_YIELD_EVERY===PROCESS_YIELD_EVERY-1)await yieldForScan(scanId);
+  }
+  return out;
+}
+function orderedCollection(collection,direction='asc'){
+  try{
+    const documentId=window.firebase?.firestore?.FieldPath?.documentId?.();
+    if(documentId&&typeof collection.orderBy==='function')return collection.orderBy(documentId,direction);
+  }catch{}
+  return collection;
+}
+async function readHistoryCollection(collection,scanId=null){
+  const base=orderedCollection(collection,'asc');
+  if(typeof base.limit!=='function'||typeof base.startAfter!=='function'){
+    const snap=await guardedAwait(base.get(),scanId);
+    return docsToRows(snap?.docs,doc=>History.recordFromDoc(doc.data()),scanId);
+  }
+  const out=[];let cursor=null;
+  for(;;){
+    assertScanCurrent(scanId);
+    let query=base;
+    if(cursor)query=query.startAfter(cursor);
+    query=query.limit(CLOUD_PAGE_SIZE);
+    const snap=await guardedAwait(query.get(),scanId),docs=Array.isArray(snap?.docs)?snap.docs:[];
+    out.push(...await docsToRows(docs,doc=>History.recordFromDoc(doc.data()),scanId));
+    if(docs.length<CLOUD_PAGE_SIZE)break;
+    cursor=docs[docs.length-1];
+    await yieldForScan(scanId);
   }
   return out;
 }
 function recentSnapshotQuery(collection){
-  try{
-    const documentId=window.firebase?.firestore?.FieldPath?.documentId?.();
-    if(documentId&&typeof collection.orderBy==='function'){
-      const ordered=collection.orderBy(documentId,'desc');
-      return typeof ordered.limit==='function'?ordered.limit(30):ordered;
-    }
-    if(typeof collection.limit==='function')return collection.limit(30);
-  }catch{}
-  return collection;
+  const ordered=orderedCollection(collection,'desc');
+  try{return typeof ordered.limit==='function'?ordered.limit(30):ordered;}catch{return collection;}
 }
 async function readCloud(u,scanId=null){
   const result={candidates:[],history:Object.fromEntries(PROTECTED.map(d=>[d,[]])),errors:[]};
@@ -142,15 +160,14 @@ async function readCloud(u,scanId=null){
   for(const domain of PROTECTED){
     try{
       const name=History?.COLLECTIONS?.[domain];if(!name)continue;
-      const snap=await guardedAwait(user.collection(name).get(),scanId);
-      result.history[domain]=await docsToRows(snap?.docs,doc=>History.recordFromDoc(doc.data()),scanId);
+      result.history[domain]=await readHistoryCollection(user.collection(name),scanId);
     }catch(error){if(error?.garangRecoveryCancelled)throw error;result.errors.push(`${domain}: ${error?.code||error?.message||'확인 실패'}`);}
     await yieldForScan(scanId);
   }
   try{
     const snap=await guardedAwait(recentSnapshotQuery(user.collection('recoverySnapshots')).get(),scanId);
     let docs=Array.isArray(snap?.docs)?snap.docs:[];
-    if(docs.length>30)docs=docs.slice(-30);
+    if(docs.length>30)docs=docs.slice(0,30);
     for(let i=0;i<docs.length;i++){
       assertScanCurrent(scanId);
       const doc=docs[i],data=doc.data(),state=data?.shell||data?.state||data?.payload||null;
@@ -169,15 +186,14 @@ async function scanData(options={}){
   const current=candidate('현재 상태','current',activeKey(),read(activeKey()),u)?.state||sanitize(primary,u)||{};
   return {uid:u,activeKey:activeKey(),local,cloudCandidates:cloud.candidates,history:cloud.history,errors:cloud.errors,all,current,recovered,currentCounts:counts(current),recoveredCounts:counts(recovered),scannedAt:new Date().toISOString()};
 }
-function esc(value){return String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function esc(value){return String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));}
 function countText(c){return `운동 ${c.workouts} · 식단 ${c.meals} · 러닝 ${c.runs} · 신체 ${c.body}`;}
 function sourceRows(report){const historyCounts={workouts:rows(report.history.workouts).length,meals:rows(report.history.meals).length,runs:rows(report.history.runs).length,body:rows(report.history.body).length};historyCounts.total=PROTECTED.reduce((sum,d)=>sum+historyCounts[d],0);const list=[...report.all];if(historyCounts.total)list.push({label:'클라우드 장기 기록',type:'cloud-history',counts:historyCounts,stamp:0});const unique=[];const seen=new Set();for(const item of list){const key=`${item.type}|${item.key||item.label}|${item.counts.total}`;if(seen.has(key))continue;seen.add(key);unique.push(item);}return unique.sort((a,b)=>(b.counts?.total||0)-(a.counts?.total||0)).slice(0,20);}
 
 function ensureStyle(){
-  if(document.getElementById('garang-data-recovery-v33-style'))return;
-  document.getElementById('garang-data-recovery-v31-style')?.remove();
-  document.getElementById('garang-data-recovery-v32-style')?.remove();
-  const style=document.createElement('style');style.id='garang-data-recovery-v33-style';style.textContent=`
+  if(document.getElementById('garang-data-recovery-v34-style'))return;
+  document.getElementById('garang-data-recovery-v31-style')?.remove();document.getElementById('garang-data-recovery-v32-style')?.remove();document.getElementById('garang-data-recovery-v33-style')?.remove();
+  const style=document.createElement('style');style.id='garang-data-recovery-v34-style';style.textContent=`
   .garang-data-recovery-modal{position:fixed;inset:0;z-index:12050;background:rgba(0,0,0,.78);display:grid;place-items:end center;padding:max(12px,env(safe-area-inset-top,0px)) 12px max(12px,env(safe-area-inset-bottom,0px));box-sizing:border-box;overscroll-behavior:contain;touch-action:pan-y;pointer-events:auto}
   .garang-data-recovery-panel{width:min(680px,100%);max-height:calc(100dvh - max(28px,env(safe-area-inset-top,0px)) - max(24px,env(safe-area-inset-bottom,0px)));overflow:auto;-webkit-overflow-scrolling:touch;background:#0b0d0b;border:1px solid #2a2e29;border-radius:18px;padding:16px;color:#ecefe9;box-sizing:border-box;box-shadow:0 20px 80px rgba(0,0,0,.5);touch-action:pan-y;pointer-events:auto}
   .garang-data-recovery-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-16px;z-index:2;background:#0b0d0b;padding:16px 0 10px}.garang-data-recovery-head small{color:#68bca5;letter-spacing:.1em}.garang-data-recovery-head h2{margin:4px 0 0;font-size:19px}
@@ -193,8 +209,8 @@ function ensureStyle(){
 }
 function removeModal({cancelScan=false,restoreFocus=false}={}){
   if(cancelScan)cancelActiveScan();
-  document.querySelector('.garang-data-recovery-modal')?.remove();
-  document.documentElement.classList.remove('garang-recovery-open');
+  const modal=document.querySelector('.garang-data-recovery-modal');
+  if(modal){modal.style.setProperty('pointer-events','none','important');modal.setAttribute('aria-hidden','true');modal.remove();}
   if(restoreFocus&&canProgrammaticFocus()){
     const target=lastTrigger;lastTrigger=null;
     if(target?.isConnected)requestAnimationFrame(()=>target?.isConnected&&target.focus({preventScroll:true}));
@@ -202,16 +218,14 @@ function removeModal({cancelScan=false,restoreFocus=false}={}){
 }
 function closeModal(){removeModal({cancelScan:true,restoreFocus:true});}
 function mountModal(html){
-  removeModal();
-  ensureStyle();
-  const modal=document.createElement('div');modal.className='garang-data-recovery-modal';modal.innerHTML=html;
-  document.documentElement.classList.add('garang-recovery-open');document.body.appendChild(modal);
+  removeModal();ensureStyle();
+  const modal=document.createElement('div');modal.className='garang-data-recovery-modal';modal.innerHTML=html;document.body.appendChild(modal);
   modal.querySelector('[data-recovery-close]')?.addEventListener('click',closeModal);
   modal.addEventListener('click',event=>{if(event.target===modal)closeModal();});
   return modal;
 }
 function renderLoading(){
-  const modal=mountModal(`<section class="garang-data-recovery-panel" role="dialog" aria-modal="true" aria-label="GARANG 데이터 복구 센터"><div class="garang-data-recovery-head"><div><small>DATA HEALTH</small><h2>데이터 복구 센터</h2></div><button type="button" class="garang-data-recovery-close" data-recovery-close aria-label="닫기">×</button></div><div class="garang-data-recovery-loading"><b>저장된 기록을 안전하게 확인하고 있습니다.</b><span>기기와 클라우드 기록을 순서대로 확인합니다. 확인 중에도 이 창을 닫을 수 있습니다.</span></div><div class="garang-data-recovery-status" aria-live="polite">원본 데이터는 변경하지 않습니다.</div></section>`);
+  const modal=mountModal(`<section class="garang-data-recovery-panel" role="dialog" aria-modal="true" aria-label="GARANG 데이터 복구 센터"><div class="garang-data-recovery-head"><div><small>DATA HEALTH</small><h2>데이터 복구 센터</h2></div><button type="button" class="garang-data-recovery-close" data-recovery-close aria-label="닫기">×</button></div><div class="garang-data-recovery-loading"><b>저장된 기록을 안전하게 확인하고 있습니다.</b><span>기기와 클라우드 기록을 작은 단위로 순서대로 확인합니다. 확인 중에도 이 창을 닫을 수 있습니다.</span></div><div class="garang-data-recovery-status" aria-live="polite">원본 데이터는 변경하지 않습니다.</div></section>`);
   focusClose(modal);
 }
 function resetRestoreButton(button){if(!button?.isConnected||button.disabled)return;button.dataset.confirming='false';button.textContent='누락 기록 안전 복구';const status=button.closest('.garang-data-recovery-panel')?.querySelector('[data-recovery-status]');if(status)status.textContent='';}
@@ -234,14 +248,12 @@ function renderReport(report){
 async function openRecoveryCenter(options={}){
   if(!options.preserveFocus)lastTrigger=typeof HTMLElement!=='undefined'&&document.activeElement instanceof HTMLElement?document.activeElement:null;
   clearOldRecoveryToast();
-  const scanId=beginScan();
-  renderLoading();
+  const scanId=beginScan();renderLoading();
   try{
     await yieldForScan(scanId);
     const report=await scanData({scanId});
     if(!isScanCurrent(scanId))return;
-    finishScan(scanId);
-    renderReport(report);
+    finishScan(scanId);renderReport(report);
   }catch(error){
     finishScan(scanId);
     if(error?.garangRecoveryCancelled)return;
