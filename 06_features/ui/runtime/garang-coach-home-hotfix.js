@@ -1,19 +1,23 @@
-/* GARANG Coach Shell v5.1
+/* GARANG Coach Shell v5.2
    Single-owner mobile Coach shell.
-   Root-cause fix: shell reconciliation must never observe and retrigger its own DOM writes.
+   Root-cause fixes:
+   - reconciliation never observes and retriggers its own DOM writes;
+   - a closed mobile sidebar and its controls cannot participate in hit testing;
+   - manual sync closes the sidebar first and starts from a later task without global click interception.
 */
 (() => {
   'use strict';
 
   const main = document.getElementById('main');
-  if (!main || window.__garangCoachShellV51) return;
-  window.__garangCoachShellV51 = true;
+  if (!main || window.__garangCoachShellV52) return;
+  window.__garangCoachShellV52 = true;
 
-  const STYLE_ID = 'garang-coach-shell-v5-style';
+  const STYLE_ID = 'garang-coach-shell-v52-style';
   const ACTIVE_ATTR = 'data-garang-coach-shell';
   let queued = false;
   let syncing = false;
   let mainObserver = null;
+  let manualSyncTimer = null;
 
   const isKo = () => document.documentElement.lang !== 'en';
   const ROUTES = [
@@ -96,7 +100,15 @@
         html[${ACTIVE_ATTR}="active"] .g2-chat-scroll{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior-y:contain!important;pointer-events:auto!important}
         html[${ACTIVE_ATTR}="active"] .g2-composer-wrap{position:relative!important;z-index:25!important;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px))!important;pointer-events:auto!important}
 
-        html[${ACTIVE_ATTR}="active"] .g2-chat-sidebar{z-index:11020!important;padding-top:max(14px,env(safe-area-inset-top,0px))!important;pointer-events:auto!important}
+        html[${ACTIVE_ATTR}="active"] .g2-chat-sidebar{z-index:11020!important;padding-top:max(14px,env(safe-area-inset-top,0px))!important}
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2:not(.sidebar-open) .g2-chat-sidebar,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2:not(.sidebar-open) .g2-chat-sidebar button,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2:not(.sidebar-open) .g2-chat-sidebar a,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2:not(.sidebar-open) .g2-chat-sidebar [role="button"]{pointer-events:none!important}
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2.sidebar-open .g2-chat-sidebar,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2.sidebar-open .g2-chat-sidebar button,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2.sidebar-open .g2-chat-sidebar a,
+        html[${ACTIVE_ATTR}="active"] .garang-coach-v2.sidebar-open .g2-chat-sidebar [role="button"]{pointer-events:auto!important}
         html[${ACTIVE_ATTR}="active"] .g2-sidebar-backdrop{z-index:11010!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
         html[${ACTIVE_ATTR}="active"] .garang-coach-v2.sidebar-open .g2-sidebar-backdrop{visibility:visible!important;opacity:1!important;pointer-events:auto!important}
         html[${ACTIVE_ATTR}="active"] #appView:not([hidden]) > .bottom-nav{z-index:900!important;pointer-events:auto!important}
@@ -151,10 +163,25 @@
 
   function runAccountAction(action, root) {
     closeSidebar(root);
+
+    if (action === 'sync') {
+      if (manualSyncTimer) {
+        clearTimeout(manualSyncTimer);
+        manualSyncTimer = null;
+      }
+      const button = root?.querySelector('.g5-app-action[data-g5-action="sync"]');
+      button?.setAttribute('aria-busy', 'true');
+      manualSyncTimer = setTimeout(() => {
+        manualSyncTimer = null;
+        button?.removeAttribute('aria-busy');
+        document.getElementById('syncBadge')?.click();
+      }, 220);
+      return;
+    }
+
     const map = {
       settings: 'settingsTopBtn',
       profile: 'profileTopBtn',
-      sync: 'syncBadge',
       logout: 'logoutBtn'
     };
     document.getElementById(map[action] || '')?.click();
