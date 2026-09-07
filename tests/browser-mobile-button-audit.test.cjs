@@ -24,7 +24,7 @@ async function heartbeat(page,label){
   await Promise.race([
     page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(()=>resolve(true),35)))),
     timeout(2200,`${label}: WebKit main thread stopped responding`)
-  ];
+  ]);
 }
 
 async function center(page,selector){
