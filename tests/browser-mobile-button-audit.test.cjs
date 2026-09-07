@@ -125,7 +125,7 @@ async function route(page,name){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.1',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.4',null,{timeout:7000});
     await heartbeat(page,'initial boot');
 
     for(const name of ['coach','workout','body','progress','today'])await route(page,name);
@@ -220,10 +220,18 @@ async function route(page,name){
     await modal.waitFor({state:'visible',timeout:7000});
     const recoveryLayout=await page.evaluate(()=>{
       const overlay=document.querySelector('.garang-data-recovery-modal'),panel=document.querySelector('.garang-data-recovery-panel'),r=panel?.getBoundingClientRect();
-      return {open:document.documentElement.classList.contains('garang-recovery-open'),height:r?.height||0,top:r?.top||0,bottom:r?.bottom||0,viewport:innerHeight,overlayPointer:overlay?getComputedStyle(overlay).pointerEvents:''};
+      return {
+        open:!!overlay&&!!panel,
+        height:r?.height||0,top:r?.top||0,bottom:r?.bottom||0,viewport:innerHeight,
+        overlayPointer:overlay?getComputedStyle(overlay).pointerEvents:'',
+        htmlRecoveryClass:document.documentElement.classList.contains('garang-recovery-open'),
+        bodyRecoveryClass:document.body.classList.contains('garang-recovery-open')
+      };
     });
-    assert.equal(recoveryLayout.open,true,`recovery modal must own an explicit open state: ${JSON.stringify(recoveryLayout)}`);
+    assert.equal(recoveryLayout.open,true,`recovery modal must be visible: ${JSON.stringify(recoveryLayout)}`);
     assert.equal(recoveryLayout.overlayPointer,'auto');
+    assert.equal(recoveryLayout.htmlRecoveryClass,false,'recovery must not lock the root element');
+    assert.equal(recoveryLayout.bodyRecoveryClass,false,'recovery must not lock the body element');
     assert.ok(recoveryLayout.height>120&&recoveryLayout.height<=recoveryLayout.viewport-20,`recovery panel must fit the iPhone viewport: ${JSON.stringify(recoveryLayout)}`);
     await heartbeat(page,'recovery modal open');
 
@@ -242,7 +250,7 @@ async function route(page,name){
     assert.deepEqual(dialogs,[],`button audit must not trigger blocking browser dialogs: ${dialogs.join(' | ')}`);
     await tap(page,'[data-recovery-close]','recovery close');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'detached',timeout:5000});
-    assert.equal(await page.evaluate(()=>document.documentElement.classList.contains('garang-recovery-open')),false,'closing recovery must fully release page scroll state');
+    assert.equal(await page.evaluate(()=>window.GarangDataMigrationV2?.scanActive===false),true,'closing recovery must leave no active scan');
     await heartbeat(page,'recovery close');
 
     await tap(page,'#settingsLogout','settings logout');
