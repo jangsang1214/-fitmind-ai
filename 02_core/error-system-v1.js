@@ -1,13 +1,11 @@
 /* GARANG Error System v1
-   Canonical error taxonomy and normalization boundary.
-   This module does not change existing feature UX; it classifies, deduplicates and publishes
-   errors so every feature can converge on one stable contract without leaking internals.
+   Pure error taxonomy/normalization library.
+   Global browser error events are owned only by 01_app/app.js.
 */
 (function(root,factory){
   const api=factory(root);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.GarangErrors=api;
-  if(typeof window!=='undefined'&&root===window)api.installGlobalHandlers();
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
 'use strict';
 
@@ -40,7 +38,6 @@ const USER_MESSAGE=Object.freeze({
 const RETRYABLE=Object.freeze({validation:false,auth:false,network:true,firestore:true,persistence:false,migration:false,agent:true,ui:true,runtime:true,unknown:true});
 const recentErrors=[];
 const dedupe=new Map();
-let installed=false,globalCleanup=null;
 
 const text=value=>String(value??'');
 const lower=value=>text(value).toLowerCase();
@@ -90,14 +87,6 @@ function recent(limit=20){return recentErrors.slice(-Math.max(0,Math.min(100,Num
 function clear(){recentErrors.length=0;dedupe.clear();}
 function guard(source,fn,context={}){try{return fn();}catch(error){report(error,{...context,source});throw error;}}
 async function guardAsync(source,fn,context={}){try{return await fn();}catch(error){report(error,{...context,source});throw error;}}
-function installGlobalHandlers(){
-  if(installed||!root?.addEventListener)return globalCleanup||(()=>{});
-  const onError=event=>report(event?.error||event?.message||'window error',{source:'window.error',feature:'runtime'});
-  const onReject=event=>report(event?.reason||'unhandled rejection',{source:'window.unhandledrejection',feature:'runtime'});
-  root.addEventListener('error',onError);root.addEventListener('unhandledrejection',onReject);installed=true;
-  globalCleanup=()=>{try{root.removeEventListener('error',onError);root.removeEventListener('unhandledrejection',onReject);}catch{}installed=false;globalCleanup=null;};
-  return globalCleanup;
-}
 
-return Object.freeze({VERSION,CATEGORY,STABLE_CODE,RETRYABLE,classify,userMessage,normalizeError,report,capture:report,recent,clear,guard,guardAsync,installGlobalHandlers});
+return Object.freeze({VERSION,CATEGORY,STABLE_CODE,RETRYABLE,classify,userMessage,normalizeError,report,capture:report,recent,clear,guard,guardAsync});
 });

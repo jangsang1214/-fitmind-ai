@@ -1,8 +1,13 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const Errors=require('../02_core/error-system-v1.js');
+const root=path.resolve(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 
 assert.equal(Errors.VERSION,'garang-error-v1');
+assert.equal(Errors.installGlobalHandlers,undefined,'error library must never own browser-global handlers');
 assert.equal(Errors.classify(Object.assign(new Error('bad'),{code:'INVALID_CONTRACT'})),Errors.CATEGORY.VALIDATION);
 assert.equal(Errors.classify(Object.assign(new Error('future'),{code:'FUTURE_SCHEMA'})),Errors.CATEGORY.MIGRATION);
 assert.equal(Errors.classify(Object.assign(new Error('offline'),{code:'unavailable'}),{feature:'sync'}),Errors.CATEGORY.NETWORK);
@@ -28,6 +33,16 @@ assert.equal(Errors.recent(10).length,1,'duplicate errors must not create a stor
 
 assert.throws(()=>Errors.guard('unit-test',()=>{throw Object.assign(new Error('invalid'),{code:'INVALID_DATA'});}),/invalid/);
 assert.equal(Errors.recent(10).length,2,'guard must report and preserve throw semantics');
+
+const manifest=JSON.parse(read('runtime-manifest.json'));
+const globalListenerOwners=kind=>{
+  const pattern=new RegExp(`(?:window|globalThis|root)\\.addEventListener\\(\\s*['\"]${kind}['\"]`);
+  return manifest.scripts.filter(file=>pattern.test(read(file)));
+};
+assert.deepEqual(globalListenerOwners('error'),['01_app/app.js'],'window error must have exactly one active global owner');
+assert.deepEqual(globalListenerOwners('unhandledrejection'),['01_app/app.js'],'unhandled rejection must have exactly one active global owner');
+assert.equal(manifest.runtimeContract.singleOwners.errors,'01_app/app.js','runtime contract must name the same error owner');
+assert.doesNotMatch(read('02_core/error-system-v1.js'),/(?:window|globalThis|root)\.addEventListener\(\s*['\"](?:error|unhandledrejection)['\"]/, 'error taxonomy must stay side-effect free');
 
 (async()=>{
   await assert.rejects(()=>Errors.guardAsync('async-test',async()=>{throw Object.assign(new Error('offline'),{code:'unavailable'});}),/offline/);
