@@ -7,6 +7,7 @@ const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8776,baseURL=`http://127.0.0.1:${port}`;
 const watchdog=setTimeout(()=>{console.error('browser-authenticated-recovery-touch: WATCHDOG TIMEOUT');process.exit(1);},60000);
 const timeout=(ms,label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms));
+const stage=name=>console.log(`authenticated-recovery-stage: ${name}`);
 
 async function waitForServer(){
   const deadline=Date.now()+15000;
@@ -20,6 +21,7 @@ async function heartbeat(page,label){
   ]);
 }
 async function tap(page,selector,label=selector){
+  stage(`tap ${label}`);
   const loc=page.locator(selector);
   await loc.waitFor({state:'visible',timeout:7000});
   await loc.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
@@ -29,12 +31,14 @@ async function tap(page,selector,label=selector){
   assert.equal(owns,true,`${label}: does not own hit point`);
   await Promise.race([page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2),timeout(3000,`${label}: physical tap did not settle`)]);
   await heartbeat(page,label);
+  stage(`tap ${label} settled`);
 }
 
 (async()=>{
   const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
   let browser;
   try{
+    stage('server');
     await waitForServer();
     browser=await webkit.launch({headless:true});
     const context=await browser.newContext({
@@ -45,6 +49,7 @@ async function tap(page,selector,label=selector){
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
       window.__mockRecoveryDelay=0;
+      window.__mockRecoveryLoadHistory=false;
       const remote={
         meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00.000Z',syncOwnerUid:'mock-user'},
         profile:{name:'Recovery User',goal:'퍼포먼스 향상',weight:70},
@@ -68,10 +73,11 @@ async function tap(page,selector,label=selector){
         limit(){return this;}
         async get(){
           if(this.path==='users/mock-user/app')return {docs:[]};
-          if(this.path.includes('History')||this.path.endsWith('recoverySnapshots'))await delay();
+          const recoveryLoad=window.__mockRecoveryLoadHistory===true;
+          if(recoveryLoad&&(this.path.includes('History')||this.path.endsWith('recoverySnapshots')))await delay();
           const docs=[];
-          if(this.path.endsWith('workoutHistory'))for(let i=0;i<120;i++)docs.push({id:`wh-${i}`,data:()=>({record:{id:`wh-${i}`,date:'2026-09-06',name:'벤치프레스',weight:60,reps:8,sets:3,updatedAt:'2026-09-06T00:00:00Z'}})});
-          if(this.path.endsWith('recoverySnapshots'))for(let i=0;i<8;i++)docs.push({id:`snap-${i}`,data:()=>({shell:structuredClone(remote)})});
+          if(recoveryLoad&&this.path.endsWith('workoutHistory'))for(let i=0;i<120;i++)docs.push({id:`wh-${i}`,data:()=>({record:{id:`wh-${i}`,date:'2026-09-06',name:'벤치프레스',weight:60,reps:8,sets:3,updatedAt:'2026-09-06T00:00:00Z'}})});
+          if(recoveryLoad&&this.path.endsWith('recoverySnapshots'))for(let i=0;i<8;i++)docs.push({id:`snap-${i}`,data:()=>({shell:structuredClone(remote)})});
           return {docs};
         }
       }
@@ -84,15 +90,17 @@ async function tap(page,selector,label=selector){
 
     const page=await context.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+    stage('goto');
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.2',null,{timeout:8000});
+    await heartbeat(page,'authenticated boot settled');
 
     await tap(page,'#settingsTopBtn','settings gear');
     await page.locator('#importLegacy').waitFor({state:'visible',timeout:7000});
     assert.equal((await page.locator('#importLegacy').innerText()).trim(),'데이터 복구 확인');
 
-    await page.evaluate(()=>{window.__mockRecoveryDelay=2500;});
+    await page.evaluate(()=>{window.__mockRecoveryLoadHistory=true;window.__mockRecoveryDelay=2500;});
     await tap(page,'#importLegacy','authenticated recovery open');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'visible',timeout:900});
     assert.match(await page.locator('.garang-data-recovery-loading').innerText(),/저장된 기록을 안전하게 확인/);
@@ -100,6 +108,8 @@ async function tap(page,selector,label=selector){
 
     await tap(page,'.garang-data-recovery-close','close pending recovery');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'detached',timeout:1200});
+    await page.evaluate(()=>{window.__mockRecoveryLoadHistory=false;window.__mockRecoveryDelay=0;});
+    await heartbeat(page,'after recovery cancel before navigation');
     await tap(page,'#bottomNav button[data-page="today"]','touch after recovery cancel');
     await page.waitForFunction(()=>document.querySelector('#bottomNav button[data-page="today"]')?.classList.contains('active'),null,{timeout:3000});
 
@@ -109,14 +119,17 @@ async function tap(page,selector,label=selector){
 
     await tap(page,'#settingsTopBtn','settings gear second');
     await page.locator('#importLegacy').waitFor({state:'visible',timeout:7000});
-    await page.evaluate(()=>{window.__mockRecoveryDelay=15;});
+    await page.evaluate(()=>{window.__mockRecoveryLoadHistory=true;window.__mockRecoveryDelay=15;});
     await tap(page,'#importLegacy','authenticated recovery second open');
     await page.waitForFunction(()=>document.querySelector('.garang-data-recovery-panel')?.innerText?.includes('현재 계정의 기기 저장소'),null,{timeout:7000});
     await heartbeat(page,'recovery report responsive');
     await tap(page,'.garang-data-recovery-close','close recovery report');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'detached',timeout:1500});
+    await page.evaluate(()=>{window.__mockRecoveryLoadHistory=false;window.__mockRecoveryDelay=0;});
+    await heartbeat(page,'final recovery close');
 
     assert.deepEqual(errors,[],`authenticated recovery runtime errors:\n${errors.join('\n')}`);
+    stage('pass');
     console.log('browser-authenticated-recovery-touch: PASS');
   }finally{
     clearTimeout(watchdog);
