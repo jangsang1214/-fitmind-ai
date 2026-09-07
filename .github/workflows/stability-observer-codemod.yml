@@ -1,0 +1,33 @@
+name: GARANG observer lifecycle codemod
+on:
+  push:
+    branches:
+      - stability-runtime-freeze-20260907
+permissions:
+  contents: write
+jobs:
+  codemod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stability-runtime-freeze-20260907
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Convert remaining broad UI observers
+        run: python3 scripts/stability_observer_codemod.py
+      - name: Verify observer inventory and feature contracts
+        run: |
+          npm test
+          npm run build
+      - name: Commit lifecycle conversion
+        run: |
+          git rm .github/workflows/stability-observer-codemod.yml scripts/stability_observer_codemod.py
+          git config user.name "garang-stability-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(stability): remove remaining broad UI observers"
+          git push origin HEAD:stability-runtime-freeze-20260907
