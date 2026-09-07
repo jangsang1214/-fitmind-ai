@@ -48,16 +48,9 @@ jobs:
           text=agent.read_text()
           event="window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));"
           if event not in text:
-              needle="window.addEventListener('garang:agent-write',queueRootSync);"
-              if needle in text:
-                  text=text.replace(needle,needle+'\n'+event,1)
-              else:
-                  needle="window.addEventListener('online',queueRootSync);"
-                  if needle in text:text=text.replace(needle,needle+'\n'+event,1)
-                  else:
-                      needle="window.addEventListener('online',()=>queueRootSync(activeRoot));"
-                      assert needle in text
-                      text=text.replace(needle,needle+'\n'+event,1)
+              needle='mainObserver=new MutationObserver(scan);mainObserver.observe(main,{childList:true,subtree:true});'
+              assert needle in text
+              text=text.replace(needle,needle+'\n'+event,1)
               agent.write_text(text)
 
           decision=Path('06_features/ui/runtime/garang-coach-decision-v1.js')
