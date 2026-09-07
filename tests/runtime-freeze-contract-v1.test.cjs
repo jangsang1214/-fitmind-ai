@@ -18,8 +18,9 @@ assert.equal(localStyles.some(p=>/(^|\/)archive\//i.test(p)),false,'archive styl
 for(const [capability,owner] of Object.entries(contract.singleOwners||{}))assert.ok(localScripts.includes(owner),`${capability} owner must be an active script: ${owner}`);
 assert.equal(new Set(Object.keys(contract.singleOwners||{})).size,Object.keys(contract.singleOwners||{}).length);
 assert.equal(new Set(contract.lifecycleEvents||[]).size,(contract.lifecycleEvents||[]).length,'lifecycle events must be unique');
-const riskyScriptName=/(?:^|\/)[^/]*(?:hotfix|(?:^|-)fix(?:-|\.)|safety|stability|final)[^/]*\.js$/i;
-assert.deepEqual(localScripts.filter(p=>riskyScriptName.test(p)),[],'active runtime scripts must use canonical owner names, not hotfix/fix/safety/stability/final overlays');
+const riskyName=/(?:^|\/)[^/]*(?:hotfix|(?:^|-)fix(?:-|\.)|safety|stability|final)[^/]*\.(?:js|css)$/i;
+assert.deepEqual(localScripts.filter(p=>riskyName.test(p)),[],'active runtime scripts must use canonical owner names, not hotfix/fix/safety/stability/final overlays');
+assert.deepEqual(localStyles.filter(p=>riskyName.test(p)),[],'active runtime styles must use canonical owner names, not hotfix/fix/safety/stability/final overlays');
 assert.equal(Object.hasOwn(contract,'legacyNamedCanonical'),false,'legacy owner-name escape hatch is forbidden');
 const broad=[],docWide=[];
 for(const file of localScripts.filter(p=>p.startsWith('06_features/ui/')&&p.endsWith('.js'))){const src=read(file).replace(/\s+/g,' ');if(/\.observe\(\s*document\.body\s*,\s*\{[^}]*subtree\s*:\s*true/i.test(src)||/\.observe\(\s*(?:main|document\.getElementById\(['\"]main['\"]\))\s*,\s*\{[^}]*subtree\s*:\s*true/i.test(src))broad.push(file);if(/\.observe\(\s*document\.documentElement\s*,\s*\{[^}]*subtree\s*:\s*true/i.test(src))docWide.push(file);}
