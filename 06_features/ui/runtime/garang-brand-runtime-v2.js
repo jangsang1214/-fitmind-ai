@@ -1,7 +1,8 @@
-/* GARANG BRAND RUNTIME v2
+/* GARANG BRAND RUNTIME v2.1
    - exact GARANG mark uses the user-approved PNG asset
    - workout body model rendered from interactive SVG code
-   - ChatGPT-like multi-thread Coach with stable latest-message scrolling
+   - ChatGPT-like multi-thread Coach with authenticated account-pinned context
+   - iOS-safe nonblocking thread actions and stable plan prompt flow
 */
 (() => {
   'use strict';
@@ -12,6 +13,7 @@
   const now = () => new Date().toISOString();
   const num = (v,f=0) => Number.isFinite(Number(v)) ? Number(v) : f;
   const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
+  const isTouchLike = () => { try{return ('ontouchstart' in window)||(Number(navigator.maxTouchPoints)||0)>0||window.matchMedia?.('(pointer:coarse)')?.matches===true;}catch{return false;} };
 
   function markPNG(className='garang-code-mark') {
     return `<img class="${className} garang-exact-logo" src="./05_assets/garang-logo-exact.png?v=exact-png-20260904" alt="GARANG" draggable="false">`;
@@ -79,16 +81,29 @@
     });
   }
 
-  function activeAppRecord() {
-    const candidates=[];
+  function currentAuthUid(){
+    try{return String(window.firebase?.auth?.().currentUser?.uid||'').trim()||null;}catch{return null;}
+  }
+  function readAppRecord(key){
     try{
-      for(let i=0;i<localStorage.length;i++){
-        const key=localStorage.key(i);if(!key||(!key.startsWith('garang_user_')&&!key.startsWith('garang_demo_state')))continue;
-        const value=JSON.parse(localStorage.getItem(key)||'null');if(value&&typeof value==='object')candidates.push({key,state:value});
+      const value=JSON.parse(localStorage.getItem(key)||'null');
+      return {key,state:value&&typeof value==='object'?value:{}};
+    }catch{return {key,state:{}};}
+  }
+  function activeAppRecord() {
+    const authUid=currentAuthUid();
+    if(authUid)return readAppRecord(`garang_user_${authUid}_v3`);
+    return readAppRecord('garang_demo_state_v3');
+  }
+  function coachAppState(){
+    try{
+      const bridge=window.GarangAgentStateBridge;
+      if(bridge?.ready?.()){
+        const live=bridge.getState?.();
+        if(live&&typeof live==='object')return live;
       }
     }catch{}
-    candidates.sort((a,b)=>String(b.state?.meta?.updatedAt||'').localeCompare(String(a.state?.meta?.updatedAt||'')));
-    return candidates[0]||{key:'garang_demo_state_v3',state:{}};
+    return activeAppRecord().state||{};
   }
 
   function threadStoreKey(){return `garang_coach_threads_v2::${activeAppRecord().key}`;}
@@ -104,7 +119,7 @@
         return {key,data:parsed};
       }
     }catch{}
-    const app=activeAppRecord().state||{};
+    const app=coachAppState();
     const legacy=Array.isArray(app.aiChat)?app.aiChat.map(cleanMessage).filter(m=>m.text.trim()):[];
     const t=newThread(legacy.find(m=>m.role==='user')?.text?.slice(0,32)||'GARANG Coach');t.messages=legacy;t.updatedAt=legacy.at(-1)?.at||now();
     const data={version:2,activeId:t.id,threads:[t]};localStorage.setItem(key,JSON.stringify(data));return {key,data};
@@ -114,7 +129,7 @@
   function fmtDate(iso){try{const d=new Date(iso);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}catch{return '';}}
 
   function buildContext(){
-    const s=activeAppRecord().state||{};
+    const s=coachAppState();
     const date=new Date().toISOString().slice(0,10);
     const meals=(Array.isArray(s.meals)?s.meals:[]).filter(x=>x.date===date);
     const mealTotals=meals.reduce((a,x)=>({kcal:a.kcal+num(x.kcal),protein:a.protein+num(x.protein),carbs:a.carbs+num(x.carbs),fat:a.fat+num(x.fat)}),{kcal:0,protein:0,carbs:0,fat:0});
@@ -124,8 +139,9 @@
   }
 
   function localCoachAnswer(q){
-    const s=activeAppRecord().state||{},ctx=buildContext(),lower=q.toLowerCase();
+    const s=coachAppState(),ctx=buildContext(),lower=q.toLowerCase();
     const weight=num(s.profile?.weight,67),proteinTarget=Math.round(weight*1.6),t=ctx.today.mealTotals;
+    if(/plan|schedule|계획|플래너/.test(lower))return '현재 기록과 GARANG 판단을 바탕으로 오늘 계획 제안을 준비했습니다. 아래 행동 제안을 확인하고 승인하면 Planner에 저장됩니다.';
     if(/식단|단백질|영양|먹/.test(lower)){const gap=Math.max(0,proteinTarget-t.protein);return `오늘 기록 기준으로 ${Math.round(t.kcal)} kcal, 단백질 ${Math.round(t.protein)}g입니다.\n목표 단백질을 약 ${proteinTarget}g으로 보면 ${Math.round(gap)}g 정도 남아 있습니다.\n\n지금은 실제 저장된 식단 기록만 사용해 판단했습니다.`;}
     if(/최근|기록|운동/.test(lower)){const w=(s.workouts||[]),last=w.at(-1);return `현재 저장된 운동 기록은 ${w.length}개입니다.${last?`\n최근 기록: ${last.name||'운동'} ${num(last.weight)}kg × ${num(last.reps)} × ${num(last.sets)}세트.`:''}\n\n수면·근육통·최근 훈련량이 함께 있으면 오늘 강도를 더 정확히 조정할 수 있습니다.`;}
     if(/회복|상태|수면|오늘/.test(lower)){const c=ctx.today.checkin;if(!c)return '오늘 체크인이 아직 없습니다. 수면, 에너지, 스트레스, 근육통을 저장하면 GARANG이 오늘 훈련 강도를 실제 기록에 맞춰 판단할 수 있습니다.';const readiness=clamp(Math.round((num(c.sleep,7)/8*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100);return `오늘 회복 지표는 약 ${readiness}/100입니다.\n수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${num(c.energy)}/5 · 스트레스 ${num(c.stress)}/5 · 근육통 ${num(c.soreness)}/5를 반영했습니다.\n\n${readiness<50?'고강도보다는 회복 또는 볼륨을 낮춘 세션을 권합니다.':readiness<70?'평소보다 약간 보수적인 강도가 적절합니다.':'현재 기록상 정상 훈련을 진행할 수 있는 범위입니다.'}`;}
@@ -155,7 +171,7 @@
 
   function forceBottom(runtime){
     const scroller=runtime.root.querySelector('.g2-chat-scroll');if(!scroller)return;
-    const jump=()=>{scroller.scrollTop=scroller.scrollHeight;};
+    const jump=()=>{if(scroller.isConnected)scroller.scrollTop=scroller.scrollHeight;};
     jump();requestAnimationFrame(()=>{jump();requestAnimationFrame(jump);});setTimeout(jump,40);setTimeout(jump,120);setTimeout(jump,260);
   }
 
@@ -175,18 +191,32 @@
     runtime.root.querySelectorAll('[data-thread-menu]').forEach(b=>b.onclick=e=>openThreadMenu(runtime,b.dataset.threadMenu,e.currentTarget));
   }
 
+  function focusComposer(runtime){if(!isTouchLike()&&runtime?.input?.isConnected)runtime.input.focus();}
   function createConversation(runtime){
-    const t=newThread();runtime.data.threads.unshift(t);runtime.data.activeId=t.id;saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);runtime.input.value='';runtime.input.focus();runtime.root.classList.remove('sidebar-open');
+    const t=newThread();runtime.data.threads.unshift(t);runtime.data.activeId=t.id;saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);runtime.input.value='';focusComposer(runtime);runtime.root.classList.remove('sidebar-open');
   }
 
   function openThreadMenu(runtime,id,anchor){
     document.querySelector('.g2-thread-popover')?.remove();
     const t=runtime.data.threads.find(x=>x.id===id);if(!t)return;
-    const pop=document.createElement('div');pop.className='g2-thread-popover';pop.innerHTML='<button type="button" data-act="rename">이름 변경</button><button type="button" class="danger" data-act="delete">삭제</button>';document.body.appendChild(pop);
-    const r=anchor.getBoundingClientRect();pop.style.left=`${Math.min(window.innerWidth-140,Math.max(8,r.left-92))}px`;pop.style.top=`${Math.min(window.innerHeight-82,r.bottom+4)}px`;
-    pop.querySelector('[data-act="rename"]').onclick=()=>{const name=window.prompt('대화 이름',t.title);if(name?.trim()){t.title=name.trim().slice(0,60);t.updatedAt=now();saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);}pop.remove();};
-    pop.querySelector('[data-act="delete"]').onclick=()=>{if(!window.confirm('이 대화를 삭제할까요?'))return;runtime.data.threads=runtime.data.threads.filter(x=>x.id!==id);if(!runtime.data.threads.length)runtime.data.threads=[newThread()];if(runtime.data.activeId===id)runtime.data.activeId=runtime.data.threads[0].id;saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);pop.remove();};
-    const close=e=>{if(!pop.contains(e.target)&&e.target!==anchor){pop.remove();document.removeEventListener('pointerdown',close,true);}};setTimeout(()=>document.addEventListener('pointerdown',close,true),0);
+    const pop=document.createElement('div');pop.className='g2-thread-popover';document.body.appendChild(pop);
+    const place=()=>{const r=anchor.getBoundingClientRect();pop.style.left=`${Math.min(window.innerWidth-168,Math.max(8,r.left-120))}px`;pop.style.top=`${Math.min(window.innerHeight-132,r.bottom+4)}px`;};
+    let closeListener=null;
+    const teardown=()=>{if(closeListener)document.removeEventListener('pointerdown',closeListener);closeListener=null;pop.remove();};
+    const installOutsideClose=()=>{closeListener=e=>{if(!pop.contains(e.target)&&e.target!==anchor)teardown();};setTimeout(()=>{if(pop.isConnected&&closeListener)document.addEventListener('pointerdown',closeListener);},0);};
+    const showActions=()=>{
+      pop.innerHTML='<button type="button" data-act="rename">이름 변경</button><button type="button" class="danger" data-act="delete">삭제</button>';place();
+      pop.querySelector('[data-act="rename"]').onclick=()=>{
+        pop.innerHTML=`<div data-g2-rename-panel><input data-g2-rename-input type="text" maxlength="60" value="${esc(t.title)}" aria-label="대화 이름" style="width:100%;box-sizing:border-box;margin:0 0 8px;padding:9px 10px;border-radius:9px"><div style="display:flex;gap:6px"><button type="button" data-act="rename-cancel">취소</button><button type="button" data-act="rename-save">저장</button></div></div>`;place();
+        const input=pop.querySelector('[data-g2-rename-input]');
+        pop.querySelector('[data-act="rename-cancel"]').onclick=()=>showActions();
+        pop.querySelector('[data-act="rename-save"]').onclick=()=>{const name=String(input.value||'').trim();if(name){t.title=name.slice(0,60);t.updatedAt=now();saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);}teardown();};
+        input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();pop.querySelector('[data-act="rename-save"]')?.click();}else if(e.key==='Escape'){e.preventDefault();showActions();}};
+        if(!isTouchLike())input.focus();
+      };
+      pop.querySelector('[data-act="delete"]').onclick=e=>{const button=e.currentTarget;if(button.dataset.confirming!=='1'){button.dataset.confirming='1';button.textContent='한 번 더 눌러 삭제';return;}runtime.data.threads=runtime.data.threads.filter(x=>x.id!==id);if(!runtime.data.threads.length)runtime.data.threads=[newThread()];if(runtime.data.activeId===id)runtime.data.activeId=runtime.data.threads[0].id;saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);teardown();};
+    };
+    showActions();installOutsideClose();
   }
 
   async function sendMessage(runtime){
@@ -195,7 +225,10 @@
     const m={id:uid(),role:'user',text,at:now(),local:false};thread.messages.push(m);thread.updatedAt=m.at;if(thread.title==='새 대화')thread.title=text.replace(/\s+/g,' ').slice(0,34)+(text.length>34?'…':'');runtime.input.value='';runtime.input.style.height='auto';saveThreadStore(runtime);renderThreadList(runtime);renderMessages(runtime);
     runtime.sending=true;runtime.send.disabled=true;
     const scroller=runtime.root.querySelector('.g2-chat-scroll');const thinking=document.createElement('article');thinking.className='g2-message assistant';thinking.dataset.thinking='1';thinking.innerHTML=`<div class="g2-message-avatar">${markPNG()}</div><div class="g2-message-body"><div class="g2-thinking"><i></i><i></i><i></i></div></div>`;scroller.appendChild(thinking);forceBottom(runtime);
-    const result=await getCoachAnswer(text,thread);thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);runtime.input.focus();forceBottom(runtime);
+    let result;
+    try{result=await getCoachAnswer(text,thread);}catch{result={text:localCoachAnswer(text),local:true};}
+    if(!runtime.root.isConnected)return;
+    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
   }
 
   function mountCoach(){
@@ -212,7 +245,7 @@
     runtime.send.onclick=()=>sendMessage(runtime);root.querySelector('.g2-new-chat').onclick=()=>createConversation(runtime);root.querySelector('.g2-head-new').onclick=()=>createConversation(runtime);root.querySelector('.g2-mobile-threads').onclick=()=>root.classList.add('sidebar-open');root.querySelector('.g2-sidebar-backdrop').onclick=()=>root.classList.remove('sidebar-open');
     renderThreadList(runtime);renderMessages(runtime);
     runtime.resizeObserver=new ResizeObserver(()=>forceBottom(runtime));runtime.resizeObserver.observe(root.querySelector('.g2-chat-scroll'));
-    root.dataset.garangCoachV2='1';setTimeout(()=>forceBottom(runtime),0);
+    root.dataset.garangCoachV2='1';root.dataset.garangCoachAccount=activeAppRecord().key;setTimeout(()=>forceBottom(runtime),0);
   }
 
   function repairAll(){replaceBrandMarks(document);renderBodyModels();mountCoach();}
