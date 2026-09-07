@@ -1,6 +1,7 @@
-/* GARANG authenticated route reconciliation v1.1
+/* GARANG authenticated route reconciliation v1.2
    One-shot bridge for the legacy app boot order. It only leaves onboarding when the
    cloud proves onboarding is already complete and the user is not actively editing.
+   Navigation is delegated to the canonical GARANG router; no synthetic click is emitted.
 */
 (() => {
 'use strict';
@@ -22,9 +23,11 @@ function reconcile(detail){
   setTimeout(()=>{
     const uid=currentUid();
     if(uid!==detail.uid||!persistedReady(uid)||!safeToLeaveOnboarding()){handled=false;return;}
-    const app=document.getElementById('appView'),today=document.querySelector('#bottomNav [data-page="today"]');
-    if(!app||app.hidden||!today){handled=false;return;}
-    today.click();window.dispatchEvent(new CustomEvent('garang:auth-route-reconciled',{detail:{uid,route:'today'}}));
+    const app=document.getElementById('appView'),router=window.GarangRouter;
+    if(!app||app.hidden||!router?.navigate){handled=false;return;}
+    const moved=router.navigate('today',{source:'auth-reconcile'});
+    if(!moved){handled=false;return;}
+    window.dispatchEvent(new CustomEvent('garang:auth-route-reconciled',{detail:{uid,route:'today'}}));
   },0);
 }
 window.addEventListener('garang:cloud-state-ready',event=>reconcile(event.detail));
