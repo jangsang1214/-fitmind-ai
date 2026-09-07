@@ -1,8 +1,9 @@
-/* GARANG experience v3
+/* GARANG experience v3.1
    - Simplifies workout set recording without removing native data bindings.
    - Keeps Settings in one canonical top-bar route.
    - Hides manual Memory UI while preserving and enriching stored memory.
    - Adds Coach thread "학습시키기 / Learn" and injects learned conversations into future Coach context.
+   - All observer-driven DOM writes are idempotent to prevent WebKit feedback loops.
 */
 (() => {
   'use strict';
@@ -13,13 +14,15 @@
   const now = () => new Date().toISOString();
   const uid = () => globalThis.crypto?.randomUUID ? crypto.randomUUID() : `gx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const isKo = () => document.documentElement.lang !== 'en';
+  const setText = (el, value) => { const next = String(value ?? ''); if (el && el.textContent !== next) el.textContent = next; };
+  const setAttr = (el, name, value) => { const next = String(value); if (el && el.getAttribute(name) !== next) el.setAttribute(name, next); };
   let scheduled = false;
   let memoryTimer = null;
 
   function toast(message) {
     const el = document.getElementById('toast');
     if (!el) return;
-    el.textContent = message;
+    setText(el, message);
     el.classList.add('show');
     clearTimeout(el._garangTimer);
     el._garangTimer = setTimeout(() => el.classList.remove('show'), 1800);
@@ -42,35 +45,34 @@
         settings: isKo() ? 'SETTING / 설정' : 'SETTING',
         modeling: isKo() ? 'MODELING / 모델링' : 'MODELING'
       };
-      if (labels[screen]) eyebrow.textContent = labels[screen];
+      if (labels[screen]) setText(eyebrow, labels[screen]);
     }
 
-    const modelEyebrow = main.querySelector('.profile-model-card .eyebrow');
-    if (modelEyebrow) modelEyebrow.textContent = isKo() ? 'MODELING / 모델링' : 'MODELING';
-    const modelButton = main.querySelector('.profile-model-card [data-pagego="onboarding"]');
-    if (modelButton) modelButton.textContent = isKo() ? '모델링 수정' : 'Edit modeling';
+    setText(main.querySelector('.profile-model-card .eyebrow'), isKo() ? 'MODELING / 모델링' : 'MODELING');
+    setText(main.querySelector('.profile-model-card [data-pagego="onboarding"]'), isKo() ? '모델링 수정' : 'Edit modeling');
   }
 
   function hideRedundantRoutes() {
     /* Settings has one canonical entry: the top-bar gear. */
     document.querySelectorAll('[data-pagego="settings"], [data-page="settings"]').forEach(el => {
-      el.hidden = true;
+      if (!el.hidden) el.hidden = true;
       el.classList.add('garang-route-hidden');
-      el.setAttribute('aria-hidden', 'true');
-      el.tabIndex = -1;
+      setAttr(el, 'aria-hidden', 'true');
+      if (el.tabIndex !== -1) el.tabIndex = -1;
     });
 
     /* Memory is intentionally invisible. It remains a background intelligence layer. */
     document.querySelectorAll('[data-pagego="memory"], [data-page="memory"]').forEach(el => {
-      el.hidden = true;
+      if (!el.hidden) el.hidden = true;
       el.classList.add('garang-route-hidden');
-      el.setAttribute('aria-hidden', 'true');
-      el.tabIndex = -1;
+      setAttr(el, 'aria-hidden', 'true');
+      if (el.tabIndex !== -1) el.tabIndex = -1;
     });
 
     main.querySelectorAll('.section-title h2').forEach(h => {
-      if (h.textContent.trim() === '계획과 기억') h.textContent = isKo() ? '계획' : 'Plan';
-      if (h.textContent.trim().toLowerCase() === 'plan & memory') h.textContent = 'Plan';
+      const text = h.textContent.trim();
+      if (text === '계획과 기억') setText(h, isKo() ? '계획' : 'Plan');
+      if (text.toLowerCase() === 'plan & memory') setText(h, 'Plan');
     });
   }
 
@@ -93,15 +95,13 @@
     card.classList.add('garang-set-minimal');
     const ko = isKo();
 
-    const eyebrow = card.querySelector('.visual-section-head .eyebrow');
-    const heading = card.querySelector('.visual-section-head h3');
+    setText(card.querySelector('.visual-section-head .eyebrow'), 'SESSION');
+    setText(card.querySelector('.visual-section-head h3'), ko ? '세트 기록' : 'Set record');
     const pill = card.querySelector('.visual-section-head .pill');
-    if (eyebrow) eyebrow.textContent = 'SESSION';
-    if (heading) heading.textContent = ko ? '세트 기록' : 'Set record';
     if (pill) {
       const count = main.querySelectorAll('#workoutDraftArea .list-item').length;
-      pill.textContent = ko ? `${count} 기록` : `${count} records`;
-      pill.hidden = count === 0;
+      setText(pill, ko ? `${count} 기록` : `${count} records`);
+      if (pill.hidden !== (count === 0)) pill.hidden = count === 0;
     }
 
     const fields = card.querySelector('.workout-fields');
@@ -125,24 +125,23 @@
 
       const clear = card.querySelector('#clearWorkoutDraft');
       if (clear) {
-        clear.textContent = ko ? '기록 초기화' : 'Clear records';
+        setText(clear, ko ? '기록 초기화' : 'Clear records');
         clear.classList.add('garang-set-clear');
         built.body.appendChild(clear);
       }
     } else {
-      const summary = options.querySelector('summary');
-      if (summary) summary.textContent = ko ? '세부 설정' : 'Details';
+      setText(options.querySelector('summary'), ko ? '세부 설정' : 'Details');
     }
 
     const add = card.querySelector('#addWorkout');
     if (add) {
-      add.textContent = ko ? '기록 추가' : 'Add record';
+      setText(add, ko ? '기록 추가' : 'Add record');
       add.classList.add('garang-set-primary');
     }
 
     const save = card.querySelector('#saveWorkoutSession');
     if (save) {
-      save.textContent = ko ? '운동 저장' : 'Save workout';
+      setText(save, ko ? '운동 저장' : 'Save workout');
       save.classList.toggle('garang-set-save-ready', !save.disabled);
     }
 
@@ -295,7 +294,6 @@
     const title = String(thread.title || 'Coach conversation').slice(0, 80);
     const learnedAt = now();
 
-    /* Keep a dedicated learning store so ordinary app saves cannot accidentally erase a learned chat. */
     try {
       saveCoachLearning(rec.key, {
         threadId: thread.id,
@@ -308,7 +306,6 @@
       return toast(isKo() ? '학습 저장에 실패했습니다.' : 'Could not save learning.');
     }
 
-    /* Mirror it into Memory as a user-confirmed high-importance insight. */
     const entries = ensureMemoryShape(rec.state);
     const memoryKey = `coach_thread:${thread.id}`;
     upsertMemory(entries, {
@@ -326,7 +323,7 @@
     try { localStorage.setItem(rec.key, JSON.stringify(rec.state)); }
     catch (error) { console.warn('[GARANG] coach memory mirror failed', error); }
 
-    button.textContent = isKo() ? '학습 완료 ✓' : 'Learned ✓';
+    setText(button, isKo() ? '학습 완료 ✓' : 'Learned ✓');
     button.disabled = true;
     toast(isKo() ? '이 대화를 GARANG이 학습했습니다.' : 'GARANG learned from this conversation.');
     setTimeout(() => popover?.remove(), 500);
