@@ -1,15 +1,16 @@
-/* GARANG Coach Agent v4.3
+/* GARANG Coach Agent v4.4
    - Persistent bilingual recommended questions above the composer.
    - Mock Agent Contract E2E: question -> context -> tool proposal -> approval -> write.
    - Existing local Coach answer remains the visible analysis until a real LLM adapter is connected.
    - Main/root MutationObservers are single-owner and coalesced so Coach settles on WebKit.
+   - Agent proposals wait for authenticated state hydration instead of marking the message processed too early.
    - The final prompt runtime owns canonical prompt markup once it has taken over the strip.
 */
 (() => {
 'use strict';
 
 const main=document.getElementById('main');if(!main)return;
-const sessionsByMessage=new Map(),seenAssistantIds=new Set();
+const sessionsByMessage=new Map(),seenAssistantIds=new Set(),processingAssistantIds=new Set();
 let rootObserver=null,mainObserver=null,activeRoot=null,rootQueued=false;
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
@@ -26,7 +27,32 @@ function proposalSummary(proposal){const a=proposal.args||{};if(proposal.tool===
 function renderProposalCard(messageEl,entry){const body=messageEl.querySelector('.g2-message-body');if(!body)return;let wrap=body.querySelector('.g4-agent-proposals');if(!wrap){wrap=document.createElement('div');wrap.className='g4-agent-proposals';body.appendChild(wrap);}const {proposal}=entry;let card=wrap.querySelector(`[data-g4-proposal="${CSS.escape(proposal.id)}"]`);if(!card){card=document.createElement('section');card.className='g4-agent-proposal';card.dataset.g4Proposal=proposal.id;wrap.appendChild(card);}const status=entry.status||proposal.status||'pending',pending=status==='pending',renderKey=`${english()?'en':'ko'}:${status}:${proposal.tool}:${proposalSummary(proposal)}`;if(card.dataset.renderKey===renderKey)return;card.dataset.status=status;card.dataset.renderKey=renderKey;card.innerHTML=`<div class="g4-proposal-head"><span>${english()?'ACTION PROPOSAL':'행동 제안'}</span><b>${esc(toolLabel(proposal.tool))}</b></div><p>${esc(proposalSummary(proposal))}</p><div class="g4-proposal-state">${pending?(english()?'Nothing changes until you approve this action.':'승인하기 전에는 아무것도 변경되지 않습니다.'):(status==='confirmed'?(english()?'Approved and applied.':'승인되어 적용되었습니다.'):(status==='rejected'?(english()?'Rejected. No data was changed.':'거절되었습니다. 데이터는 변경되지 않았습니다.'):(english()?'This proposal is no longer active.':'이 제안은 더 이상 활성 상태가 아닙니다.')))}</div>${pending?`<div class="g4-proposal-actions"><button type="button" data-g4-reject>${english()?'Reject':'거절'}</button><button type="button" class="approve" data-g4-approve>${english()?'Approve':'승인'}</button></div>`:''}`;if(pending){card.querySelector('[data-g4-reject]').onclick=()=>resolveProposal(messageEl,entry,false);card.querySelector('[data-g4-approve]').onclick=()=>resolveProposal(messageEl,entry,true);}}
 function resolveProposal(messageEl,entry,approved){if(entry.status&&entry.status!=='pending')return;try{const result=entry.session.confirm(entry.proposal.id,approved);entry.status=result.proposal.status;entry.result=result.result;renderProposalCard(messageEl,entry);window.dispatchEvent(new CustomEvent('garang:agent-proposal-resolved',{detail:{id:entry.proposal.id,tool:entry.proposal.tool,status:entry.status}}));}catch(error){entry.status='expired';entry.error=String(error?.message||error);renderProposalCard(messageEl,entry);}}
 function attachStoredProposals(messageEl,messageId){const entries=sessionsByMessage.get(messageId);if(!entries)return false;entries.forEach(entry=>renderProposalCard(messageEl,entry));return true;}
-async function processAssistant(messageEl){if(messageEl.dataset.thinking==='1')return;const messageId=messageEl.dataset.messageId||'';if(!messageId)return;if(attachStoredProposals(messageEl,messageId))return;if(seenAssistantIds.has(messageId))return;seenAssistantIds.add(messageId);const siblings=[...messageEl.parentElement.children],index=siblings.indexOf(messageEl);let userEl=null;for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;if(!Contract||!Bridge?.ready?.())return;try{const state=Bridge.getState(),context=contextFromState(state);if(Bridge.getMemoryContext)context.memory=Bridge.getMemoryContext(text,{limit:24,budgetChars:6000});if(Bridge.getUserStateContext)context.userState=Bridge.getUserStateContext();if(Bridge.getDecisionContext)context.decision=Bridge.getDecisionContext();const session=Contract.createSession({getState:()=>Bridge.getState(),applyWrite:(tool,args)=>Bridge.applyWrite(tool,args)}),result=await session.run({message:text,context,language:english()?'en':'ko'},{adapter:Contract.createMockAdapter()});const entries=result.proposals.map(proposal=>({session,proposal,status:'pending',reads:result.reads.length}));if(entries.length){sessionsByMessage.set(messageId,entries);entries.forEach(entry=>renderProposalCard(messageEl,entry));}messageEl.dataset.g4AgentProcessed='1';}catch(error){console.warn('[GARANG] Agent E2E layer skipped',error);}}
+async function processAssistant(messageEl){
+ if(messageEl.dataset.thinking==='1')return;
+ const messageId=messageEl.dataset.messageId||'';if(!messageId)return;
+ if(attachStoredProposals(messageEl,messageId))return;
+ if(seenAssistantIds.has(messageId)||processingAssistantIds.has(messageId))return;
+ const siblings=[...messageEl.parentElement.children],index=siblings.indexOf(messageEl);let userEl=null;
+ for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}
+ const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
+ const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;
+ /* Authenticated Coach can render its local answer before the account state has finished
+    hydrating. Do not mark that assistant as seen until the bridge is actually ready. */
+ if(!Contract||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}
+ processingAssistantIds.add(messageId);delete messageEl.dataset.g4AgentPending;
+ try{
+  const state=Bridge.getState(),context=contextFromState(state);
+  if(Bridge.getMemoryContext)context.memory=Bridge.getMemoryContext(text,{limit:24,budgetChars:6000});
+  if(Bridge.getUserStateContext)context.userState=Bridge.getUserStateContext();
+  if(Bridge.getDecisionContext)context.decision=Bridge.getDecisionContext();
+  const session=Contract.createSession({getState:()=>Bridge.getState(),applyWrite:(tool,args)=>Bridge.applyWrite(tool,args)}),result=await session.run({message:text,context,language:english()?'en':'ko'},{adapter:Contract.createMockAdapter()});
+  const entries=result.proposals.map(proposal=>({session,proposal,status:'pending',reads:result.reads.length}));
+  if(entries.length){sessionsByMessage.set(messageId,entries);entries.forEach(entry=>renderProposalCard(messageEl,entry));}
+  seenAssistantIds.add(messageId);messageEl.dataset.g4AgentProcessed='1';
+ }catch(error){
+  messageEl.dataset.g4AgentPending='1';console.warn('[GARANG] Agent E2E layer deferred',error);
+ }finally{processingAssistantIds.delete(messageId);}
+}
 function promptSignature(items){return items.map(item=>`${item.label}\u0001${item.prompt}`).join('\u0002');}
 function currentPromptSignature(strip){return [...strip.querySelectorAll('[data-g4-prompt]')].map(button=>`${button.textContent}\u0001${button.dataset.g4Prompt||''}`).join('\u0002');}
 
@@ -63,5 +89,9 @@ function scan(){
 }
 mainObserver=new MutationObserver(scan);mainObserver.observe(main,{childList:true,subtree:true});
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+/* Cloud hydration can make the Agent bridge ready without mutating the Coach subtree.
+   Explicitly retry any pending assistant once authenticated state is available. */
+window.addEventListener('garang:cloud-state-ready',()=>queueRootSync(activeRoot));
+window.addEventListener('garang:agent-write',()=>queueRootSync(activeRoot));
 scan();
 })();
