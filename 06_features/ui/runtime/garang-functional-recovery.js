@@ -1,5 +1,6 @@
-/* GARANG FUNCTIONAL RECOVERY v1.2
-   Keep canonical app.js in control; repair only UI regressions introduced by reference facades. */
+/* GARANG FUNCTIONAL RECOVERY v1.3
+   Keep canonical app.js in control; repair only UI regressions introduced by reference facades.
+   Destructive visible actions use non-blocking in-app confirmation for iOS/WebView safety. */
 (() => {
   'use strict';
   const main = document.getElementById('main');
@@ -7,6 +8,7 @@
   const EXACT_MARK = './garang-mark.svg?v=approved-exact-20260903';
   const SESSION_KEY = 'garang_live_workout_session_v1';
   let sessionTimer = null;
+  let cancelConfirmTimer = null;
 
   function killCachedFacades() {
     document.querySelectorAll('.grx-facade,.grx-anatomy,.grx-reference-anatomy,.workout-reference-image,[data-reference-bitmap="anatomy"]').forEach(el => el.remove());
@@ -33,7 +35,7 @@
       img?.addEventListener('error', () => { avatar.innerHTML = '<span class="garang-avatar-word">GARANG</span>'; }, {once:true});
     });
     document.querySelectorAll('.coach-app-shell img').forEach(img => {
-      if (/garang-mark|brand|logo/i.test(img.getAttribute('src') || '')) img.src = EXACT_MARK;
+      if (/garang-mark|brand|logo/i.test(img.getAttribute('src') || '') && img.getAttribute('src') !== EXACT_MARK) img.src = EXACT_MARK;
     });
   }
 
@@ -47,7 +49,9 @@
       map.querySelectorAll('.muscle-zone').forEach(zone => {
         const key = muscleKeyFromZone(zone);
         if (!key) return;
-        zone.setAttribute('role','button');zone.setAttribute('tabindex','0');zone.setAttribute('aria-label',`${key} 운동 필터`);
+        if (zone.getAttribute('role') !== 'button') zone.setAttribute('role','button');
+        if (zone.getAttribute('tabindex') !== '0') zone.setAttribute('tabindex','0');
+        const label=`${key} 운동 필터`;if(zone.getAttribute('aria-label')!==label)zone.setAttribute('aria-label',label);
         if (zone.dataset.garangModelBound === '1') return;
         zone.dataset.garangModelBound = '1';
         const activate = () => { const pick = main.querySelector(`[data-muscle-pick="${key}"]`); if (pick) pick.click(); };
@@ -66,12 +70,36 @@
   function readLiveSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
   function writeLiveSession(value) { if (value) sessionStorage.setItem(SESSION_KEY, JSON.stringify(value)); else sessionStorage.removeItem(SESSION_KEY); }
   function formatElapsed(ms) { const total=Math.max(0,Math.floor(ms/1000)),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;return h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-  function updateLiveSessionBar() { const bar=main.querySelector('.garang-live-session');if(!bar)return;const live=readLiveSession();if(!live){bar.remove();clearInterval(sessionTimer);sessionTimer=null;return;}const time=bar.querySelector('[data-live-elapsed]');if(time)time.textContent=formatElapsed(Date.now()-live.startedAt); }
+  function updateLiveSessionBar() { const bar=main.querySelector('.garang-live-session');if(!bar)return;const live=readLiveSession();if(!live){bar.remove();clearInterval(sessionTimer);sessionTimer=null;clearTimeout(cancelConfirmTimer);cancelConfirmTimer=null;return;}const time=bar.querySelector('[data-live-elapsed]');const next=formatElapsed(Date.now()-live.startedAt);if(time&&time.textContent!==next)time.textContent=next; }
   function startLiveSession(builder) { let live=readLiveSession();if(!live){live={startedAt:Date.now()};writeLiveSession(live);}ensureLiveSessionBar(builder);builder.scrollIntoView({behavior:'smooth',block:'start'});requestAnimationFrame(()=>main.querySelector('#wName')?.focus()); }
+  function bindLiveCancel(button){
+    if(!button||button.dataset.garangCancelBound==='1')return;
+    button.dataset.garangCancelBound='1';
+    button.onclick=()=>{
+      if(button.dataset.confirming!=='1'){
+        button.dataset.confirming='1';
+        button.textContent='한 번 더 누르면 종료';
+        clearTimeout(cancelConfirmTimer);
+        cancelConfirmTimer=setTimeout(()=>{
+          if(!button.isConnected)return;
+          button.dataset.confirming='0';
+          button.textContent='종료';
+        },4000);
+        return;
+      }
+      clearTimeout(cancelConfirmTimer);cancelConfirmTimer=null;
+      writeLiveSession(null);
+      updateLiveSessionBar();
+    };
+  }
   function ensureLiveSessionBar(builder) {
-    if (!readLiveSession() || main.querySelector('.garang-live-session')) return;
-    const bar=document.createElement('section');bar.className='garang-live-session';bar.innerHTML=`<div><small>ACTIVE SESSION</small><strong data-live-elapsed>00:00</strong><span>종목을 추가하고 세션 저장을 누르면 실제 기록에 저장됩니다.</span></div><button type="button" data-live-cancel>종료</button>`;
-    builder.parentNode.insertBefore(bar,builder);bar.querySelector('[data-live-cancel]').onclick=()=>{if(window.confirm('현재 진행 표시를 종료할까요? 추가한 운동 초안은 유지됩니다.')){writeLiveSession(null);updateLiveSessionBar();}};
+    if (!readLiveSession()) return;
+    let bar=main.querySelector('.garang-live-session');
+    if(!bar){
+      bar=document.createElement('section');bar.className='garang-live-session';bar.innerHTML=`<div><small>ACTIVE SESSION</small><strong data-live-elapsed>00:00</strong><span>종목을 추가하고 세션 저장을 누르면 실제 기록에 저장됩니다.</span></div><button type="button" data-live-cancel>종료</button>`;
+      builder.parentNode.insertBefore(bar,builder);
+    }
+    bindLiveCancel(bar.querySelector('[data-live-cancel]'));
     updateLiveSessionBar();if(!sessionTimer)sessionTimer=setInterval(updateLiveSessionBar,1000);
   }
 
@@ -96,9 +124,9 @@
   function bindGlobalRecovery(){const menu=document.getElementById('menuBtn');if(menu&&menu.dataset.garangRecoveryBound!=='1'){menu.dataset.garangRecoveryBound='1';menu.addEventListener('click',openMore);}}
   function repairDataActions(){
     const exportButton=main.querySelector('#exportData');
-    if(exportButton&&window.GarangSyncDurabilityRuntime?.exportVerifiedBackup){exportButton.onclick=()=>window.GarangSyncDurabilityRuntime.exportVerifiedBackup();exportButton.dataset.garangVerifiedExport='1';}
+    if(exportButton&&window.GarangSyncDurabilityRuntime?.exportVerifiedBackup&&exportButton.dataset.garangVerifiedExport!=='1'){exportButton.onclick=()=>window.GarangSyncDurabilityRuntime.exportVerifiedBackup();exportButton.dataset.garangVerifiedExport='1';}
     const importButton=main.querySelector('#importLegacy');
-    if(importButton&&window.GarangDataMigrationV2?.importLegacy){importButton.onclick=()=>window.GarangDataMigrationV2.importLegacy();importButton.dataset.garangSafeImport='1';}
+    if(importButton&&window.GarangDataMigrationV2?.importLegacy&&importButton.dataset.garangSafeImport!=='1'){importButton.onclick=()=>window.GarangDataMigrationV2.importLegacy();importButton.dataset.garangSafeImport='1';}
   }
 
   function repair(){killCachedFacades();repairBrandImages();repairCoach();repairWorkout();bindGlobalRecovery();repairDataActions();}
