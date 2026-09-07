@@ -3,9 +3,13 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'..'),sync=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-sync-durability-v1.js'),'utf8'),recovery=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-functional-recovery.js'),'utf8'),migration=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-data-migration-v2.js'),'utf8');
 assert.equal(/document\.addEventListener\(['"]click['"]/.test(sync),false,'sync persistence must not install a global export click handler');
 assert.ok(recovery.includes('exportButton.onclick=()=>window.GarangSyncDurabilityRuntime.exportVerifiedBackup()'));
-assert.ok(recovery.includes('importButton.onclick=()=>window.GarangDataMigrationV2.importLegacy()'));
+assert.ok(recovery.includes('migration=window.GarangDataMigrationV2'),'functional recovery must delegate the import action to the migration runtime');
+assert.ok(recovery.includes("const marker=migration.version||'recovery'"),'both recovery observers must share one ownership marker');
+assert.ok(recovery.includes('importButton.onclick=()=>migration.importLegacy()'));
+assert.ok(recovery.includes("const label='데이터 복구 확인'"),'fallback repair must publish the same recovery label as the migration runtime');
 assert.ok(migration.includes('BACKUP_PREFIX'));assert.ok(migration.includes('location.reload()'));
 assert.ok(migration.includes('scanGeneration'),'authenticated recovery must cancel stale scans');
+assert.ok(migration.includes('guardedAwait'),'cancelled recovery must detach pending Firestore reads from the UI flow');
 assert.ok(migration.includes('yieldToUI'),'authenticated recovery must yield during expensive scan/merge work');
 assert.equal(migration.includes('setInterval('),false);
 console.log('data-actions-contract: PASS');
