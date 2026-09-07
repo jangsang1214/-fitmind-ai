@@ -3,7 +3,8 @@
    Root-cause fixes:
    - reconciliation never observes and retriggers its own DOM writes;
    - a closed mobile sidebar and its controls cannot participate in hit testing;
-   - manual sync closes the sidebar first and starts from a later task without global click interception.
+   - manual sync closes the sidebar first and starts from a later task without global click interception;
+   - Coach Settings invokes the canonical app onclick directly instead of dispatching a nested synthetic click.
 */
 (() => {
   'use strict';
@@ -120,6 +121,13 @@
     root?.classList.remove('sidebar-open');
   }
 
+  function invokeCanonicalTopHandler(id) {
+    const target = document.getElementById(id);
+    if (!target || typeof target.onclick !== 'function') return false;
+    target.onclick.call(target);
+    return true;
+  }
+
   function fallbackRoute(route) {
     const pageGo = document.querySelector(`[data-pagego="${route}"]`);
     if (pageGo) {
@@ -133,7 +141,7 @@
     closeSidebar(root);
 
     if (route === 'settings') {
-      document.getElementById('settingsTopBtn')?.click();
+      invokeCanonicalTopHandler('settingsTopBtn');
       return;
     }
     if (route === 'profile') {
@@ -178,8 +186,12 @@
       return;
     }
 
+    if (action === 'settings') {
+      invokeCanonicalTopHandler('settingsTopBtn');
+      return;
+    }
+
     const map = {
-      settings: 'settingsTopBtn',
       profile: 'profileTopBtn',
       logout: 'logoutBtn'
     };
@@ -251,7 +263,10 @@
     setAttr(settings, 'title', isKo() ? '설정' : 'Settings');
     if (settings.dataset.g5Bound !== '1') {
       settings.dataset.g5Bound = '1';
-      settings.addEventListener('click', () => document.getElementById('settingsTopBtn')?.click());
+      settings.addEventListener('click', () => {
+        closeSidebar(root);
+        invokeCanonicalTopHandler('settingsTopBtn');
+      });
     }
 
     setText(head.querySelector('.g2-head-new'), isKo() ? '＋ 새 대화' : '+ New chat');
