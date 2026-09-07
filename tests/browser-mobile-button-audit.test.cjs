@@ -125,7 +125,7 @@ async function route(page,name){
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});
-    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v3.4',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v4.0.0',null,{timeout:7000});
     await heartbeat(page,'initial boot');
 
     for(const name of ['coach','workout','body','progress','today'])await route(page,name);
@@ -224,16 +224,20 @@ async function route(page,name){
         open:!!overlay&&!!panel,
         height:r?.height||0,top:r?.top||0,bottom:r?.bottom||0,viewport:innerHeight,
         overlayPointer:overlay?getComputedStyle(overlay).pointerEvents:'',
+        webkitFlow:overlay?.dataset?.garangWebkitFlow||'',
+        insideMain:!!overlay&&document.getElementById('main')?.contains(overlay),
         htmlRecoveryClass:document.documentElement.classList.contains('garang-recovery-open'),
         bodyRecoveryClass:document.body.classList.contains('garang-recovery-open')
       };
     });
-    assert.equal(recoveryLayout.open,true,`recovery modal must be visible: ${JSON.stringify(recoveryLayout)}`);
+    assert.equal(recoveryLayout.open,true,`recovery surface must be visible: ${JSON.stringify(recoveryLayout)}`);
     assert.equal(recoveryLayout.overlayPointer,'auto');
+    assert.equal(recoveryLayout.webkitFlow,'1','iPhone recovery must use the canonical Settings document-flow surface');
+    assert.equal(recoveryLayout.insideMain,true,'iPhone recovery must not create a second body-level compositor owner');
     assert.equal(recoveryLayout.htmlRecoveryClass,false,'recovery must not lock the root element');
     assert.equal(recoveryLayout.bodyRecoveryClass,false,'recovery must not lock the body element');
-    assert.ok(recoveryLayout.height>120&&recoveryLayout.height<=recoveryLayout.viewport-20,`recovery panel must fit the iPhone viewport: ${JSON.stringify(recoveryLayout)}`);
-    await heartbeat(page,'recovery modal open');
+    assert.ok(recoveryLayout.height>120,`recovery panel must render usable content: ${JSON.stringify(recoveryLayout)}`);
+    await heartbeat(page,'recovery surface open');
 
     await tap(page,'[data-recovery-rescan]','recovery rescan');
     await page.locator('.garang-data-recovery-modal').waitFor({state:'visible',timeout:7000});
