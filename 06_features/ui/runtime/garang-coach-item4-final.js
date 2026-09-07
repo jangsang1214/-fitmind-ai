@@ -124,7 +124,10 @@ let queued=false;
 function repair(){queued=false;const root=main.querySelector('.garang-coach-v2');if(!root)return;ensureStyle();ensurePersistentPrompts(root);repairMessageLanguage(root);root.dataset.garangItem4Final=VERSION;}
 function queueRepair(){if(queued)return;queued=true;requestAnimationFrame(repair);}
 
-new MutationObserver(queueRepair).observe(main,{childList:true,subtree:true,characterData:true});
+window.addEventListener('garang:screen-rendered',queueRepair);
+window.addEventListener('garang:coach-mounted',queueRepair);
+window.addEventListener('garang:coach-message-rendered',queueRepair);
+window.addEventListener('garang:state-hydrated',queueRepair);
 new MutationObserver(queueRepair).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:agent-proposal-resolved',queueRepair);
 window.GarangCoachItem4Final=Object.freeze({version:VERSION,prompts:PROMPTS,translateCoachText:translateKnownCoachText});

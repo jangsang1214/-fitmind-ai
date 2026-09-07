@@ -404,12 +404,14 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
-  new MutationObserver(schedule).observe(main, { childList: true, subtree: true });
+  window.addEventListener('garang:screen-rendered', schedule);
+  window.addEventListener('garang:state-updated', schedule);
+  window.addEventListener('garang:coach-mounted', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   document.addEventListener('click', event => {
     const threadMenu = event.target.closest('[data-thread-menu]');
     if (threadMenu) setTimeout(() => injectCoachLearning(threadMenu.dataset.threadMenu), 0);
-    if (event.target.closest('[data-page],[data-pagego]')) setTimeout(schedule, 0);
+    if (event.target.closest('[data-page],[data-pagego],#addWorkout,#clearWorkoutDraft,#saveWorkoutSession,[data-edit-workout],[data-remove-workout],#saveProfile,#savePreferences,#saveOnboarding')) setTimeout(schedule, 0);
   }, true);
 
   patchCoachFetch();

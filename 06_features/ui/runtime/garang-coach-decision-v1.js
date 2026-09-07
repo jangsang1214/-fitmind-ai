@@ -75,9 +75,10 @@ function render(){
  card.innerHTML=`<button type="button" class="garang-decision-toggle" aria-expanded="${wasExpanded?'true':'false'}"><span class="garang-decision-kicker">${isEn?'GARANG DECISION':'GARANG 판단'}</span><b class="garang-decision-mode">${esc(text(mode))}</b><span class="garang-decision-chevron" aria-hidden="true">⌄</span></button><div class="garang-decision-details" ${wasExpanded?'':'hidden'}>${summary?`<p class="garang-decision-summary">${esc(summary)}</p>`:''}<div class="garang-decision-signals"><span>${text(SIGNAL.readinessBand)} · ${esc(signals.readinessBand||'unknown')}</span><span>${text(SIGNAL.fatigueBand)} · ${esc(signals.fatigueBand||'unknown')}</span><span>${text(SIGNAL.loadBand)} · ${esc(signals.loadBand||'unknown')}</span></div><div class="garang-decision-foot"><span>${isEn?'Confidence':'판단 신뢰도'} ${confidence}% · ${isEn?'No silent changes':'자동 변경 없음'}</span>${canPlan?`<button type="button" class="garang-decision-action">${isEn?'Propose this plan':'계획 제안'}</button>`:''}</div></div>`;
  const toggle=card.querySelector('.garang-decision-toggle');if(toggle)toggle.onclick=()=>setExpanded(card,card.dataset.expanded!=='true');
  const button=card.querySelector('.garang-decision-action');if(button)button.onclick=()=>{input.value='오늘 계획을 만들어줘';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();};
+ try{window.dispatchEvent(new CustomEvent('garang:coach-decision-rendered',{detail:{card,root}}));}catch{}
 }
 let queued=false;function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;ensureStyle();render();});}
-new MutationObserver(queue).observe(main,{childList:true,subtree:true});new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
+window.addEventListener('garang:screen-rendered',queue);window.addEventListener('garang:coach-mounted',queue);new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+window.addEventListener('garang:state-hydrated',queue);window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
 queue();
 })();

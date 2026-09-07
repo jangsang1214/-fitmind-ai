@@ -110,7 +110,10 @@ function bindProfile(){const root=main.querySelector('.garang-coach-v2');if(!roo
 function humanizeDecisionCard(){const card=main.querySelector('.garang-decision-card');if(!card)return;card.querySelectorAll('.garang-decision-signals span').forEach(el=>{const raw=String(el.textContent||'');const parts=raw.split('·');if(parts.length<2)return;const label=parts.shift().trim(),value=parts.join('·').trim();const mapped=bandLabel(value);if(mapped!==value)el.textContent=`${label} · ${mapped}`;});}
 let queued=false;function run(){queued=false;ensureStyle();bindProfile();humanizeDecisionCard();}
 function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(run));}
-new MutationObserver(queue).observe(main,{childList:true,subtree:true});
+window.addEventListener('garang:screen-rendered',queue);
+window.addEventListener('garang:coach-mounted',queue);
+window.addEventListener('garang:coach-decision-rendered',queue);
+window.addEventListener('garang:state-hydrated',queue);
 new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('garang:sync-durable',()=>{queue();window.dispatchEvent(new CustomEvent('garang:decision-stable-refresh'));});
 document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;const root=main.querySelector('.garang-coach-v2');if(root?.classList.contains('gcp-open'))closePanel(root);});

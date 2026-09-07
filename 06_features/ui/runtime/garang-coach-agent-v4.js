@@ -11,7 +11,7 @@
 
 const main=document.getElementById('main');if(!main)return;
 const sessionsByMessage=new Map(),seenAssistantIds=new Set(),processingAssistantIds=new Set();
-let rootObserver=null,mainObserver=null,activeRoot=null,rootQueued=false;
+let activeRoot=null,rootQueued=false;
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
@@ -73,25 +73,24 @@ function syncPromptStrip(root){
 function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
 function syncRoot(root){if(root!==activeRoot||!root.isConnected)return;syncPromptStrip(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);}
 function queueRootSync(root=activeRoot){if(!root||root!==activeRoot||rootQueued)return;rootQueued=true;requestAnimationFrame(()=>{rootQueued=false;syncRoot(root);});}
-function enhance(root){
- if(activeRoot===root)return;
- rootObserver?.disconnect();rootObserver=null;rootQueued=false;activeRoot=root;
+function activateRoot(root){
+ if(!root||!root.isConnected)return;
+ if(activeRoot===root){queueRootSync(root);return;}
+ activeRoot=root;rootQueued=false;
  root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>seenAssistantIds.add(message.dataset.messageId));
- syncPromptStrip(root);
- rootObserver=new MutationObserver(()=>queueRootSync(root));
- rootObserver.observe(root,{childList:true,subtree:true});
- queueRootSync(root);
+ syncPromptStrip(root);queueRootSync(root);
 }
-function scan(){
+function syncLifecycleRoot(){
  const root=main.querySelector('.garang-coach-v2');
- if(!root){if(activeRoot&&!activeRoot.isConnected){rootObserver?.disconnect();rootObserver=null;activeRoot=null;rootQueued=false;}return;}
- if(root!==activeRoot)enhance(root);
+ if(!root){if(activeRoot&&!activeRoot.isConnected){activeRoot=null;rootQueued=false;}return;}
+ activateRoot(root);
 }
-mainObserver=new MutationObserver(scan);mainObserver.observe(main,{childList:true,subtree:true});
+window.addEventListener('garang:screen-rendered',syncLifecycleRoot);
+window.addEventListener('garang:coach-mounted',syncLifecycleRoot);
+window.addEventListener('garang:coach-message-rendered',()=>queueRootSync(activeRoot));
+window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-/* Cloud hydration can make the Agent bridge ready without mutating the Coach subtree.
-   Explicitly retry any pending assistant once authenticated state is available. */
 window.addEventListener('garang:cloud-state-ready',()=>queueRootSync(activeRoot));
 window.addEventListener('garang:agent-write',()=>queueRootSync(activeRoot));
-scan();
+syncLifecycleRoot();
 })();

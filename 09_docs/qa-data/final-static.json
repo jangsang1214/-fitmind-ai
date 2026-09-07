@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-09-03T18:56:24.369Z",
+  "timestamp": "2026-09-07T15:15:24.399Z",
   "status": "PASS",
   "counts": {
-    "javascript": 111,
+    "javascript": 207,
     "json": 33,
     "jsonl": 6,
-    "activeAssets": 31
+    "activeAssets": 75
   },
   "failures": [],
   "scope": "Categorized runtime, JS/JSON syntax, active entry assets, shell IDs, i18n wiring, no loose root runtime duplicates."

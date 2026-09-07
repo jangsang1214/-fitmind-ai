@@ -117,12 +117,13 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
-  /* body already contains #main; a second main observer duplicated every reconciliation. */
-  new MutationObserver(schedule).observe(document.body, { childList:true, subtree:true });
+  /* Screen/state lifecycle replaces broad body reconciliation. */
+  window.addEventListener('garang:screen-rendered', schedule);
+  window.addEventListener('garang:state-updated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
-    if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood')) setTimeout(schedule, 0);
+    if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
   }, true);
 
   schedule();

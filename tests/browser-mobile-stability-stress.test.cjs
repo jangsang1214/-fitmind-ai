@@ -57,7 +57,7 @@ async function gotoMoreRoute(page,routeName){await openMore(page);const selector
       await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'));
       await tap(page,'[data-g5-action="sync"]',`coach sync ${cycle}`);
       await page.waitForFunction(()=>!document.querySelector('.garang-coach-v2')?.classList.contains('sidebar-open'),null,{timeout:4000});
-      await page.waitForTimeout(320);await heartbeat(page,`coach post sync ${cycle}`);await assertNoStaleBlocker(page,`coach post sync ${cycle}`);await settle(page,`coach ${cycle}`,16);
+      await page.waitForTimeout(320);await heartbeat(page,`coach post sync ${cycle}`);await assertNoStaleBlocker(page,`coach post sync ${cycle}`);await settle(page,`coach ${cycle}`,8);await page.waitForTimeout(650);await settle(page,`coach idle ${cycle}`,4);
 
       await route(page,'workout');await settle(page,`workout ${cycle}`,16);await assertNoStaleBlocker(page,`workout ${cycle}`);
       await route(page,'body');await settle(page,`body ${cycle}`);

@@ -16,7 +16,6 @@
   const ACTIVE_ATTR = 'data-garang-coach-shell';
   let queued = false;
   let syncing = false;
-  let mainObserver = null;
   let manualSyncTimer = null;
 
   const isKo = () => document.documentElement.lang !== 'en';
@@ -269,11 +268,6 @@
     if (details) details.hidden = true;
   }
 
-  function observeMain() {
-    if (!mainObserver) return;
-    mainObserver.observe(main, { childList: true, subtree: true });
-  }
-
   function syncShell() {
     queued = false;
     if (syncing) return;
@@ -284,7 +278,6 @@
       The previous v5 observer watched main/subtree while syncShell() replaced text nodes,
       causing an endless MutationObserver -> RAF -> DOM-write loop on physical iOS.
     */
-    mainObserver?.disconnect();
     try {
       ensureStyle();
       const root = main.querySelector('.garang-coach-v2');
@@ -298,10 +291,8 @@
       }
       ensureCombinedSidebar(root);
       ensureHeader(root);
-      compactDecision(root);
     } finally {
       syncing = false;
-      observeMain();
     }
   }
 
@@ -311,10 +302,9 @@
     requestAnimationFrame(syncShell);
   }
 
-  mainObserver = new MutationObserver(() => {
-    if (!syncing) queueSync();
-  });
-  observeMain();
+  window.addEventListener('garang:screen-rendered', queueSync);
+  window.addEventListener('garang:coach-mounted', queueSync);
+  window.addEventListener('garang:coach-decision-rendered', queueSync);
 
   new MutationObserver(queueSync).observe(document.documentElement, {
     attributes: true,
