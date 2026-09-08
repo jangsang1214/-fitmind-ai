@@ -1,12 +1,12 @@
-/* GARANG canonical feature router v1.2
+/* GARANG canonical feature router v1.3
    Feature runtimes request navigation here instead of synthesizing menu interactions.
-   01_app/app.js remains the screen-render owner. Native app-bound route buttons are
-   the stable bridge for direct feature navigation; transient UI is cleaned first.
+   01_app/app.js remains the screen-render owner. One hidden app-bound bridge delegates
+   non-primary routes to app.js without duplicating route buttons or reopening More.
 */
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.2.0';
+const VERSION='garang-router-v1.3.0';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
@@ -42,18 +42,26 @@ function callBound(target){
   target.onclick.call(target,{type:'garang-route',target,currentTarget:target,preventDefault(){},stopPropagation(){}});
   return true;
 }
-function bottomTarget(route){return document.querySelector(`#bottomNav button[data-page="${CSS.escape(route)}"]`);}
+function bottomTarget(route){return document.querySelector(`#bottomNav button[data-garang-primary-nav="1"][data-page="${CSS.escape(route)}"]`);}
 function directTarget(route){
   if(route==='settings')return document.getElementById('settingsTopBtn');
   if(route==='profile')return document.getElementById('profileTopBtn');
-  return document.querySelector(`[data-pagego="${CSS.escape(route)}"]`);
+  return null;
+}
+function callAppBridge(route){
+  const bridge=document.querySelector('#bottomNav button[data-garang-route-bridge="1"]');
+  if(!bridge||typeof bridge.onclick!=='function')return false;
+  const previous=bridge.dataset.page;
+  bridge.dataset.page=route;
+  try{return callBound(bridge);}finally{bridge.dataset.page=previous||'__bridge';}
 }
 function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   const next=normalize(route);if(!valid(next))return false;
   if(!force&&current()===next)return true;
   try{window.dispatchEvent(new CustomEvent('garang:route-requested',{detail:{from:current(),to:next,source}}));}catch{}
   if(cleanup)removeTransient();
-  const ok=callBound(bottomTarget(next))||callBound(directTarget(next));
+  let ok=callBound(bottomTarget(next))||callBound(directTarget(next));
+  if(!ok)ok=callAppBridge(next);
   if(!ok)return false;
   try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
   return true;
