@@ -62,7 +62,8 @@ function list(state,domain){return domain==='memory'?state.memory.entries:state[
 function setList(state,domain,value){if(domain==='memory')state.memory.entries=value;else state[domain]=value;}
 function validateDomain(domain){const value=clean(domain);fail(DOMAINS.includes(value),'INVALID_ACTION_DOMAIN',`Unsupported action domain: ${value||'(empty)'}`);return value;}
 function validateOperation(operation){const value=clean(operation);fail(OPERATIONS.includes(value),'INVALID_ACTION_OPERATION');return value;}
-function positiveOrZero(value,key){const n=numeric(value);if(n!==null)fail(n>=0,'INVALID_RECORD',`${key} must be non-negative.`);return n;}
+function positiveOrZero(value,key,code='INVALID_RECORD'){const n=numeric(value);fail(n!==null&&n>=0,code,`${key} must be non-negative.`);return n;}
+function normalizeNonnegative(target,keys,code='INVALID_RECORD'){for(const key of keys)if(target[key]!==undefined&&target[key]!==null)target[key]=positiveOrZero(target[key],key,code);return target;}
 function normalizeRecord(domain,input,{ownerUid=null,clock=Date.now(),idFactory=defaultId}={}){
   fail(object(input),'INVALID_RECORD');
   const at=instant(clock).toISOString(),row=clone(input);
@@ -72,22 +73,23 @@ function normalizeRecord(domain,input,{ownerUid=null,clock=Date.now(),idFactory=
   row.revision=Math.max(1,Math.floor(numeric(row.revision)||1));
   if(ownerUid)row.ownerUid=String(ownerUid);
   if(domain==='workouts'){
-    fail(clean(row.name),'INVALID_RECORD','Workout name is required.');
-    for(const key of ['sets','reps','weight','rpe','duration','body','met','kcal','volume'])if(row[key]!==undefined)positiveOrZero(row[key],key);
+    row.name=clean(row.name);fail(row.name,'INVALID_RECORD','Workout name is required.');
+    normalizeNonnegative(row,['sets','reps','weight','rpe','duration','body','met','kcal','volume']);
+    if(row.rpe!==undefined)fail(row.rpe<=10,'INVALID_RECORD','rpe must be at most 10.');
   }else if(domain==='meals'){
-    row.items=rows(row.items).map(item=>clone(item));
-    fail(clean(row.name)||row.items.length>0,'INVALID_RECORD','Meal name or items are required.');
-    for(const key of ['grams','kcal','protein','carbs','fat'])if(row[key]!==undefined)positiveOrZero(row[key],key);
+    row.items=rows(row.items).map(item=>clone(item));row.name=clean(row.name);
+    fail(row.name||row.items.length>0,'INVALID_RECORD','Meal name or items are required.');
+    normalizeNonnegative(row,['grams','kcal','protein','carbs','fat']);
   }else if(domain==='runs'){
-    for(const key of ['distance','duration','kcal'])if(row[key]!==undefined)positiveOrZero(row[key],key);
+    normalizeNonnegative(row,['distance','duration','kcal']);
     row.coords=Array.isArray(row.coords)?clone(row.coords):[];
   }else if(domain==='body'){
     const weight=numeric(row.weight??row.bodyWeight);
     fail(weight!==null&&weight>0,'INVALID_RECORD','Body weight must be positive.');
     row.weight=weight;
-    for(const key of ['muscle','fatPercent','bodyFat','fatMass','leanMass','bmi','bmr'])if(row[key]!==undefined&&row[key]!==null)positiveOrZero(row[key],key);
+    normalizeNonnegative(row,['muscle','fatPercent','bodyFat','fatMass','leanMass','bmi','bmr']);
   }else if(domain==='planner'){
-    fail(clean(row.title),'INVALID_RECORD','Plan title is required.');
+    row.title=clean(row.title);fail(row.title,'INVALID_RECORD','Plan title is required.');
     if(row.duration!==undefined){const duration=numeric(row.duration);fail(duration!==null&&duration>=5&&duration<=240,'INVALID_RECORD','Plan duration is invalid.');row.duration=Math.round(duration);}
     for(const key of ['intensityScale','volumeScale'])if(row[key]!==undefined){const n=numeric(row[key]);fail(n!==null&&n>=.3&&n<=1.3,'INVALID_RECORD',`${key} is invalid.`);row[key]=n;}
     row.completed=row.completed===true||row.done===true;
@@ -106,19 +108,34 @@ function sanitizePatch(domain,input){
   fail(object(input)&&Object.keys(input).length>0,'INVALID_PATCH');
   const patch=clone(input);
   for(const key of ['id','ownerUid','createdAt'])delete patch[key];
-  if(domain==='planner'){
+  if(domain==='workouts'){
+    if(patch.name!==undefined){patch.name=clean(patch.name);fail(patch.name,'INVALID_PATCH','Workout name is required.');}
+    normalizeNonnegative(patch,['sets','reps','weight','rpe','duration','body','met','kcal','volume'],'INVALID_PATCH');
+    if(patch.rpe!==undefined)fail(patch.rpe<=10,'INVALID_PATCH','rpe must be at most 10.');
+  }else if(domain==='meals'){
+    if(patch.name!==undefined)patch.name=clean(patch.name);
+    if(patch.items!==undefined){fail(Array.isArray(patch.items),'INVALID_PATCH','Meal items must be an array.');patch.items=patch.items.filter(object).map(clone);}
+    normalizeNonnegative(patch,['grams','kcal','protein','carbs','fat'],'INVALID_PATCH');
+  }else if(domain==='runs'){
+    normalizeNonnegative(patch,['distance','duration','kcal'],'INVALID_PATCH');
+    if(patch.coords!==undefined){fail(Array.isArray(patch.coords),'INVALID_PATCH','Run coords must be an array.');patch.coords=clone(patch.coords);}
+  }else if(domain==='body'){
+    if(patch.weight!==undefined){const n=numeric(patch.weight);fail(n!==null&&n>0,'INVALID_PATCH','Body weight must be positive.');patch.weight=n;}
+    normalizeNonnegative(patch,['muscle','fatPercent','bodyFat','fatMass','leanMass','bmi','bmr'],'INVALID_PATCH');
+  }else if(domain==='planner'){
+    if(patch.title!==undefined){patch.title=clean(patch.title);fail(patch.title,'INVALID_PATCH','Plan title is required.');}
     if(patch.duration!==undefined){const n=numeric(patch.duration);fail(n!==null&&n>=5&&n<=240,'INVALID_PATCH');patch.duration=Math.round(n);}
     for(const key of ['intensityScale','volumeScale'])if(patch[key]!==undefined){const n=numeric(patch[key]);fail(n!==null&&n>=.3&&n<=1.3,'INVALID_PATCH');patch[key]=n;}
     if(patch.done!==undefined&&patch.completed===undefined)patch.completed=!!patch.done;
     delete patch.done;
-  }
-  if(domain==='memory'){
-    if(patch.key!==undefined)patch.key=clean(patch.key);
-    if(patch.value!==undefined||patch.text!==undefined)patch.value=clean(patch.value??patch.text);
+  }else if(domain==='memory'){
+    if(patch.key!==undefined){patch.key=clean(patch.key);fail(patch.key,'INVALID_PATCH','Memory key is required.');}
+    if(patch.value!==undefined||patch.text!==undefined){patch.value=clean(patch.value??patch.text);fail(patch.value,'INVALID_PATCH','Memory value is required.');}
     delete patch.text;
     if(patch.importance!==undefined)patch.importance=clamp(Math.round(numeric(patch.importance)||3),1,5);
+    if(patch.confidence!==undefined){const n=numeric(patch.confidence);fail(n!==null&&n>=0&&n<=1,'INVALID_PATCH','Memory confidence is invalid.');patch.confidence=n;}
   }
-  if(domain==='body'&&patch.weight!==undefined){const n=numeric(patch.weight);fail(n!==null&&n>0,'INVALID_PATCH');patch.weight=n;}
+  fail(Object.keys(patch).length>0,'INVALID_PATCH','Patch contains no mutable fields.');
   return patch;
 }
 function makeTombstone(domain,id,{ownerUid=null,clock=Date.now(),sync=null}={}){
