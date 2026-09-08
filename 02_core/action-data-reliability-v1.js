@@ -129,8 +129,12 @@ function mergeTombstone(state,tombstone){
   const key=`${tombstone.domain}::${tombstone.id}`,map=new Map(state.meta.syncTombstones.map(item=>[`${item.domain}::${item.id}`,item]));
   map.set(key,tombstone);state.meta.syncTombstones=[...map.values()].slice(-TOMBSTONE_LIMIT);
 }
+function clearDeleteMarkers(state,domain,id){
+  state.meta.syncTombstones=state.meta.syncTombstones.filter(item=>!(String(item?.domain)===domain&&String(item?.id)===String(id)));
+  if(domain==='memory')state.memory.deletedIds=state.memory.deletedIds.filter(value=>String(value)!==String(id));
+}
 function receiptKey(action){return clean(action.idempotencyKey)||null;}
-function actionFingerprint(action){return fingerprint({operation:action.operation,domain:action.domain,id:action.id||null,record:action.record||null,patch:action.patch||null,expectedRevision:action.expectedRevision??null,semanticUpsert:action.semanticUpsert===true});}
+function actionFingerprint(action){return fingerprint({operation:action.operation,domain:action.domain,id:action.id||null,record:action.record||null,patch:action.patch||null,expectedRevision:action.expectedRevision??null,semanticUpsert:action.semanticUpsert===true,restore:action.restore===true});}
 function existingReceipt(state,key){return key?state.meta.actionReceipts.find(item=>String(item?.key)===key)||null:null;}
 function compactResult(result){
   if(!object(result))return clone(result);
@@ -168,7 +172,7 @@ function applyMutation(stateInput,actionInput,options={}){
     if(domain==='memory'&&action.semanticUpsert===true)created=semanticMemoryCreate(state,action.record||{}, {ownerUid,clock:()=>new Date(at),memory:options.memory,idFactory:options.idFactory||defaultId});
     else{
       created=normalizeRecord(domain,action.record||{}, {ownerUid,clock:()=>new Date(at),idFactory:options.idFactory||defaultId});
-      fail(!current.some(row=>String(row?.id)===created.id),'RECORD_ALREADY_EXISTS');current.push(created);setList(state,domain,current);
+      fail(!current.some(row=>String(row?.id)===created.id),'RECORD_ALREADY_EXISTS');if(action.restore===true)clearDeleteMarkers(state,domain,created.id);current.push(created);setList(state,domain,current);
     }
     targetId=created.id;result=clone(created);inverse={operation:'delete',domain,id:targetId};
   }else if(operation==='update'){
@@ -197,7 +201,8 @@ function updateGoal(stateInput,args={},options={}){
   const result={goal},receipt=appendReceipt(state,{key,fingerprint:fp,operation:'update',domain:'goal',targetId:'primary_goal',result,at});return {state,result,receipt:clone(receipt),duplicate:false,inverse:previous?{tool:'updateGoal',args:{goal:previous}}:null};
 }
 function executeTool(state,tool,args={},options={}){
-  const name=clean(tool),base={ownerUid:options.ownerUid||null,clock:options.clock,idFactory:options.idFactory,memory:options.memory,sync:options.sync,userConfirmed:options.userConfirmed===true};
+  fail(options.userConfirmed===true,'CONFIRMATION_REQUIRED','Tool writes can execute only after explicit confirmation.');
+  const name=clean(tool),base={ownerUid:options.ownerUid||null,clock:options.clock,idFactory:options.idFactory,memory:options.memory,sync:options.sync,userConfirmed:true};
   const idempotencyKey=clean(options.idempotencyKey||options.callId||args.idempotencyKey)||null;
   if(name==='createRecord')return applyMutation(state,{operation:'create',domain:args.domain,record:args.record,idempotencyKey,source:'agent',semanticUpsert:args.domain==='memory',userConfirmed:true},base);
   if(name==='updateRecord')return applyMutation(state,{operation:'update',domain:args.domain,id:args.id,patch:args.patch,expectedRevision:args.expectedRevision,idempotencyKey,source:'agent',userConfirmed:true},base);
