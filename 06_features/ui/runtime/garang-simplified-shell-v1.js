@@ -182,3 +182,15 @@
   });
   reconcile();
 })();
+
+/* Subordinate product-loop module. It is intentionally loaded by the Simplified Shell
+   so the frozen authoritative boot order and existing single-owner contract stay unchanged. */
+(() => {
+  'use strict';
+  if (window.GarangCoreLoopV1 || document.querySelector('script[data-garang-core-loop-v1]')) return;
+  const script=document.createElement('script');
+  script.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.0';
+  script.dataset.garangCoreLoopV1='1';
+  script.async=false;
+  document.head.appendChild(script);
+})();
