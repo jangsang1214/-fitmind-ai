@@ -1,6 +1,6 @@
-/* GARANG Screen Registry v1.1
+/* GARANG Screen Registry v1.2
    Single source of truth for screen identity, bilingual eyebrow labels and compact-title policy.
-   All DOM writes are idempotent so observer-driven callers cannot create mutation feedback loops. */
+   All DOM writes are idempotent so lifecycle-driven callers cannot create mutation feedback loops. */
 (function(root){
   'use strict';
 
@@ -57,5 +57,16 @@
     return key;
   }
 
-  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.1.0'});
+  function reconcile(doc=root.document){
+    const main=doc?.getElementById?.('main')||doc?.querySelector?.('main.main')||null;
+    return applyHeader(main,doc);
+  }
+
+  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.0'});
+
+  /* app.js owns rendering and emits this after each screen tree is complete. Screen Registry owns identity. */
+  if(typeof root.addEventListener==='function'&&root.document){
+    root.addEventListener('garang:screen-rendered',()=>reconcile(root.document));
+    root.addEventListener('garang:route-completed',()=>reconcile(root.document));
+  }
 })(typeof window==='undefined'?globalThis:window);
