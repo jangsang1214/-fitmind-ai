@@ -19,7 +19,7 @@ test('plan execution core boots before its UI and matches runtime manifest',()=>
   assert.ok(index.includes('garang-plan-execution-v1.css'));
 });
 
-test('preview layer stays read-only over the frozen state bridge',()=>{
+test('plan execution stays read-only over the frozen state bridge',()=>{
   assert.match(ui,/GarangAgentStateBridge/);assert.match(ui,/Bridge\.getState\(\)/);
   assert.doesNotMatch(ui,/Bridge\.getLiveState\(/);assert.doesNotMatch(ui,/Bridge\.applyWrite\(/);
   assert.doesNotMatch(ui,/localStorage\./);assert.doesNotMatch(ui,/sessionStorage\./);
@@ -32,13 +32,22 @@ test('planner and progress are enhanced without taking screen ownership',()=>{
   assert.equal(manifest.runtimeContract.singleOwners.featureRouting,'06_features/ui/runtime/garang-router-v1.js');
 });
 
-test('execution and goal alignment remain visibly separate',()=>{
-  assert.match(ui,/ring\(day\.plan\.rate,c\.plan\)/);assert.match(ui,/ring\(day\.goalAlignment,c\.goal\)/);
-  assert.match(ui,/calorieTarget/);assert.match(ui,/protein/);
+test('default planner UI is deliberately minimal and hides deep analytics',()=>{
+  assert.match(ui,/gx-hero/);assert.match(ui,/gx-timeline/);assert.match(ui,/gx-summary-row/);assert.match(ui,/gx-insight/);
+  assert.match(ui,/data-gx-details/);assert.match(ui,/dropletIcon\('\+'\)/);assert.match(ui,/role="dialog"/);
+  assert.doesNotMatch(ui,/gx-score-pair/);assert.doesNotMatch(ui,/gx-ring/);assert.doesNotMatch(ui,/gx-status-row/);assert.doesNotMatch(ui,/gx-week-grid/);
+  assert.match(css,/\.gx-drop-button/);assert.match(css,/\.gx-detail-sheet/);assert.match(css,/\.gx-summary-row/);
 });
 
-test('mobile execution UI keeps narrow layouts bounded',()=>{
-  assert.match(css,/@media\(max-width:360px\)/);assert.match(css,/minmax\(0,1fr\)/);assert.match(css,/overflow-x:auto/);
+test('deep goal evidence remains available behind the droplet detail control',()=>{
+  assert.match(ui,/goalAlignment/);assert.match(ui,/calorieTarget/);assert.match(ui,/proteinTarget/);assert.match(ui,/confidence/);
+  assert.match(ui,/4주 누적|4-week accumulation/);assert.match(ui,/planItems/);assert.match(ui,/accumulationRows/);
+  assert.match(ui,/aria-expanded="false"/);assert.match(ui,/Escape/);
+});
+
+test('mobile execution UI stays bounded and bottom sheet is safe-area aware',()=>{
+  assert.match(css,/@media\(max-width:360px\)/);assert.match(css,/minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-bottom/);
+  assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open/);
 });
 
 console.log(`${tests.length} plan execution UI tests passed`);
