@@ -51,7 +51,9 @@ function state(){
     assert.equal(await drop.getAttribute('aria-expanded'),'true');
     const detail=await sheet.innerText();
     assert.match(detail,/계획 수행 근거/);assert.match(detail,/목표 적합도/);assert.match(detail,/판단 신뢰도/);assert.match(detail,/2,270 kcal/);assert.match(detail,/118g/);assert.match(detail,/실제 기록으로 수행 확인/);assert.match(detail,/4주 누적/);
-    const bodyOverflow=await page.evaluate(()=>getComputedStyle(document.body).overflow);assert.equal(bodyOverflow,'hidden','detail sheet must lock body scrolling');
+    const bodyLock=await page.evaluate(()=>{const style=getComputedStyle(document.body);return {classLocked:document.body.classList.contains('gx-sheet-open'),overflow:style.overflow,overflowY:style.overflowY};});
+    assert.equal(bodyLock.classLocked,true,'detail sheet must mark body as scroll locked');
+    assert.equal(bodyLock.overflowY,'hidden',`detail sheet must lock vertical body scrolling: ${JSON.stringify(bodyLock)}`);
     await page.keyboard.press('Escape');await sheet.waitFor({state:'hidden',timeout:3000});assert.equal(await drop.getAttribute('aria-expanded'),'false');
 
     const yesterday=localDate(-1),dayButton=section.locator(`[data-gx-date="${yesterday}"]`);assert.equal(await dayButton.getAttribute('aria-selected'),'true','yesterday with activity should be selected by default');
