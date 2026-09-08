@@ -5,7 +5,7 @@
   'use strict';
   if (window.GarangSimplifiedShell) return;
 
-  const VERSION = '1.1.0';
+  const VERSION = '1.1.1';
   const RECORD_ROUTES = Object.freeze([
     { route:'workout', ko:'운동', en:'Workout', koMeta:'세트 · 인증', enMeta:'Sets · verification' },
     { route:'nutrition', ko:'식단', en:'Nutrition', koMeta:'사진 · 직접 입력', enMeta:'Photo · manual entry' },
@@ -100,16 +100,21 @@
   function showRouteError() {
     const toast = document.getElementById('toast');
     if (!toast) return;
-    text(toast,isKo()?'기록 화면을 열지 못했습니다.':'Could not open the record screen.');
+    text(toast,isKo()?'화면을 열지 못했습니다.':'Could not open the screen.');
     toast.classList.add('show');
     setTimeout(()=>toast.classList.remove('show'),1800);
   }
 
+  function navigateCanonical(route, source) {
+    let ok = false;
+    try { ok = window.GarangRouter?.navigate?.(route,{source,force:true}) === true; } catch {}
+    if (!ok) showRouteError();
+    return ok;
+  }
+
   function navigateRecord(route) {
     closeRecordSheet({restoreFocus:false});
-    let ok = false;
-    try { ok = window.GarangRouter?.navigate?.(route,{source:'simplified-shell-record',force:true}) === true; } catch {}
-    if (!ok) showRouteError();
+    navigateCanonical(route,'simplified-shell-record');
   }
 
   function recordRows() {
@@ -158,6 +163,18 @@
       openRecordSheet(record);
       return;
     }
+
+    const moreRoute = event.target.closest?.('.garang-more-sheet [data-route],.garang-more-sheet [data-pagego]');
+    if (moreRoute && !moreRoute.hidden && moreRoute.getAttribute('aria-hidden') !== 'true') {
+      const route = String(moreRoute.dataset.route || moreRoute.dataset.pagego || '').trim().toLowerCase();
+      if (route && !DUPLICATE_MENU_ROUTES.includes(route)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        navigateCanonical(route,'simplified-shell-more');
+        return;
+      }
+    }
+
     if (event.target.closest?.('#menuBtn')) {
       setTimeout(hideDuplicateMenuRoutes,0);
       requestAnimationFrame(()=>requestAnimationFrame(hideDuplicateMenuRoutes));
