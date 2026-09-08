@@ -27,6 +27,8 @@ assert.doesNotMatch(runtime,/localStorage\.|firebase\.|firestore|saveState\(|sta
 assert.match(router,/VERSION='garang-router-v1\.2\.0'/,'canonical router must use the direct-route bridge version');
 assert.doesNotMatch(router,/function viaMenu\(|ok=viaMenu/,'Router must not reopen More as a hidden navigation dependency');
 assert.match(router,/bottomTarget\(next\)/,'Router must prefer app-bound native route targets');
+assert.match(router,/route==='settings'[\s\S]*settingsTopBtn/,'Settings must use its existing native top control instead of a duplicate hidden bridge');
+assert.match(router,/route==='profile'[\s\S]*profileTopBtn/,'Profile must use its existing native top control instead of a duplicate hidden bridge');
 assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose four primary axes');
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridges must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
@@ -37,6 +39,7 @@ const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
 assert.deepEqual(primary,['today','log','coach','progress'],'only Today, Record, Coach and Accumulation may be visible first-level navigation');
 const bridges=[...nav.matchAll(/<button(?=[^>]*data-garang-route-bridge="1")(?=[^>]*data-page="([^"]+)")(?=[^>]*hidden)[^>]*>/g)].map(x=>x[1]);
-assert.deepEqual(bridges,['workout','nutrition','running','body','planner','memory','profile','settings','onboarding'],'all non-primary app screens must retain hidden native route bridges');
+assert.deepEqual(bridges,['workout','nutrition','running','body','planner','memory','onboarding'],'only routes without an existing native control should retain hidden bridges');
+assert.doesNotMatch(nav,/data-garang-route-bridge="1"[^>]*data-page="(?:profile|settings)"|data-page="(?:profile|settings)"[^>]*data-garang-route-bridge="1"/,'Profile and Settings must not duplicate their native top controls');
 assert.doesNotMatch(nav,/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="(?:workout|nutrition|running|body)")/,'record sub-routes must not return to first-level navigation');
 console.log('simplified-shell-v1 contract: PASS');
