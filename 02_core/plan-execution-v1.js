@@ -9,30 +9,23 @@ const ENGINE_VERSION='plan-execution-v1';
 const TARGET_VERSION='garang-goal-target-v1';
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
 const list=value=>Array.isArray(value)?value:[];
-const finite=value=>{const n=Number(value);return Number.isFinite(n)?n:null;};
+const finite=value=>{if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;};
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const round=(n,d=0)=>{const p=10**d;return Math.round(n*p)/p;};
 const dateRe=/^\d{4}-\d{2}-\d{2}$/;
 
 function dateParts(value){
-  const s=String(value||'').slice(0,10);
-  if(!dateRe.test(s))return null;
-  const [y,m,d]=s.split('-').map(Number);
-  const x=new Date(Date.UTC(y,m-1,d));
+  const s=String(value||'').slice(0,10);if(!dateRe.test(s))return null;
+  const [y,m,d]=s.split('-').map(Number),x=new Date(Date.UTC(y,m-1,d));
   if(x.getUTCFullYear()!==y||x.getUTCMonth()!==m-1||x.getUTCDate()!==d)return null;
   return {s,y,m,d,ms:x.getTime()};
 }
 function dateAdd(value,delta){
-  const p=dateParts(value);if(!p)return null;
-  const x=new Date(p.ms+Number(delta||0)*86400000);
+  const p=dateParts(value);if(!p)return null;const x=new Date(p.ms+Number(delta||0)*86400000);
   return `${x.getUTCFullYear()}-${String(x.getUTCMonth()+1).padStart(2,'0')}-${String(x.getUTCDate()).padStart(2,'0')}`;
 }
-function todayUtc(){const x=new Date();return `${x.getUTCFullYear()}-${String(x.getUTCMonth()+1).padStart(2,'0')}-${String(x.getUTCDate()).padStart(2,'0')}`;}
+function todayLocal(){const x=new Date();return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
 function sameDate(row,date){return String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)===date;}
-function onOrBefore(row,date){
-  const a=dateParts(String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)),b=dateParts(date);
-  return !!a&&!!b&&a.ms<=b.ms;
-}
 function goalClass(state){
   const raw=String(state?.profile?.goal||state?.onboarding?.goal||'').toLowerCase();
   if(/근육|muscle|bulk|hypertrophy/.test(raw))return 'muscle_gain';
@@ -42,156 +35,72 @@ function goalClass(state){
   return 'maintenance';
 }
 function goalLabel(goal,lang='ko'){
-  const labels={
-    ko:{muscle_gain:'근육 증가',fat_loss:'체지방 감소',running_performance:'러닝 퍼포먼스',performance:'퍼포먼스 향상',maintenance:'유지·건강'},
-    en:{muscle_gain:'Muscle gain',fat_loss:'Fat loss',running_performance:'Running performance',performance:'Performance',maintenance:'Maintenance'}
-  };
+  const labels={ko:{muscle_gain:'근육 증가',fat_loss:'체지방 감소',running_performance:'러닝 퍼포먼스',performance:'퍼포먼스 향상',maintenance:'유지·건강'},en:{muscle_gain:'Muscle gain',fat_loss:'Fat loss',running_performance:'Running performance',performance:'Performance',maintenance:'Maintenance'}};
   return (labels[lang]||labels.ko)[goal]||goal;
 }
 function profileSex(state){
   const raw=String(state?.profile?.gender||state?.profile?.sex||state?.onboarding?.gender||state?.onboarding?.sex||'').toLowerCase();
-  if(/female|woman|여성|여자/.test(raw))return 'female';
-  if(/male|man|남성|남자/.test(raw))return 'male';
-  return null;
+  if(/female|woman|여성|여자/.test(raw))return 'female';if(/male|man|남성|남자/.test(raw))return 'male';return null;
+}
+function latestWeight(state,date){
+  const rows=list(state?.body).filter(row=>{const p=dateParts(String(row?.date||'').slice(0,10)),end=dateParts(date);return p&&end&&p.ms<=end.ms&&finite(row?.weight)>0;}).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  return finite(rows.at(-1)?.weight)||finite(state?.profile?.weight);
 }
 function activeDays(state,endDate,days=14){
-  const end=dateParts(endDate);if(!end)return 0;
-  const start=end.ms-(Math.max(1,days)-1)*86400000;
-  const dates=new Set();
-  for(const row of [...list(state?.workouts),...list(state?.runs)]){
-    const p=dateParts(String(row?.date||'').slice(0,10));
-    if(p&&p.ms>=start&&p.ms<=end.ms)dates.add(p.s);
-  }
+  const end=dateParts(endDate);if(!end)return 0;const start=end.ms-(Math.max(1,days)-1)*86400000,dates=new Set();
+  for(const row of [...list(state?.workouts),...list(state?.runs)]){const p=dateParts(String(row?.date||'').slice(0,10));if(p&&p.ms>=start&&p.ms<=end.ms)dates.add(p.s);}
   return dates.size;
 }
-function activityFactor(days14){
-  if(days14<=1)return 1.2;
-  if(days14<=4)return 1.35;
-  if(days14<=7)return 1.5;
-  if(days14<=10)return 1.6;
-  return 1.7;
-}
-function estimateTargets(state,date=todayUtc()){
-  const goal=goalClass(state),weight=finite(state?.profile?.weight),height=finite(state?.profile?.height),age=finite(state?.profile?.age),sex=profileSex(state);
-  const reasons=[];
+function activityFactor(days14){if(days14<=1)return 1.2;if(days14<=4)return 1.35;if(days14<=7)return 1.5;if(days14<=10)return 1.6;return 1.7;}
+function estimateTargets(state,date=todayLocal()){
+  const goal=goalClass(state),weight=latestWeight(state,date),height=finite(state?.profile?.height),age=finite(state?.profile?.age),sex=profileSex(state),reasons=[];
   const proteinTarget=weight&&weight>0?Math.round(weight*1.6):null;
-  if(!(weight>0))reasons.push('MISSING_WEIGHT');
-  if(!(height>0))reasons.push('MISSING_HEIGHT');
-  if(!(age>0))reasons.push('MISSING_AGE');
-  if(!sex)reasons.push('MISSING_SEX');
-  if(age!==null&&age<18)reasons.push('AGE_REQUIRES_CLINICAL_TARGET');
-  let bmr=null,tdee=null,calorieTarget=null,factor=null,adjustment=0;
-  const adult=age!==null&&age>=18;
+  if(!(weight>0))reasons.push('MISSING_WEIGHT');if(!(height>0))reasons.push('MISSING_HEIGHT');if(!(age>0))reasons.push('MISSING_AGE');if(!sex)reasons.push('MISSING_SEX');if(age!==null&&age<18)reasons.push('AGE_REQUIRES_CLINICAL_TARGET');
+  let bmr=null,tdee=null,calorieTarget=null,factor=null,adjustment=0;const adult=age!==null&&age>=18;
   if(weight>0&&height>0&&adult&&sex){
-    bmr=10*weight+6.25*height-5*age+(sex==='female'?-161:5);
-    factor=activityFactor(activeDays(state,date,14));
-    tdee=bmr*factor;
-    adjustment=goal==='muscle_gain'?250:goal==='fat_loss'?-350:(goal==='running_performance'||goal==='performance'?150:0);
-    calorieTarget=tdee+adjustment;
-    if(goal==='fat_loss')calorieTarget=Math.max(calorieTarget,bmr*1.1);
-    calorieTarget=Math.round(calorieTarget/10)*10;
+    bmr=10*weight+6.25*height-5*age+(sex==='female'?-161:5);factor=activityFactor(activeDays(state,date,14));tdee=bmr*factor;
+    adjustment=goal==='muscle_gain'?250:goal==='fat_loss'?-350:(goal==='running_performance'||goal==='performance'?150:0);calorieTarget=tdee+adjustment;
+    if(goal==='fat_loss')calorieTarget=Math.max(calorieTarget,bmr*1.1);calorieTarget=Math.round(calorieTarget/10)*10;
   }
-  const confidence=calorieTarget?clamp(0.65+(activeDays(state,date,14)>=4?0.15:0)+(state?.profile?.goal||state?.onboarding?.goal?0.1:0),0,0.9):clamp(0.25+(proteinTarget?0.15:0),0,0.45);
-  return {
-    version:TARGET_VERSION,date,goal,goalLabel:goalLabel(goal),calorieTarget,proteinTarget,
-    bmr:bmr===null?null:Math.round(bmr),tdee:tdee===null?null:Math.round(tdee),activityFactor:factor,goalAdjustment:calorieTarget?adjustment:null,
-    confidence:round(confidence,2),estimateOnly:true,medicalTarget:false,reasons:[...new Set(reasons)]
-  };
+  const confidence=calorieTarget?clamp(.65+(activeDays(state,date,14)>=4?.15:0)+(state?.profile?.goal||state?.onboarding?.goal?.1:0),0,.9):clamp(.25+(proteinTarget?.15:0),0,.45);
+  return {version:TARGET_VERSION,date,goal,goalLabel:goalLabel(goal),calorieTarget,proteinTarget,bmr:bmr===null?null:Math.round(bmr),tdee:tdee===null?null:Math.round(tdee),activityFactor:factor,goalAdjustment:calorieTarget?adjustment:null,confidence:round(confidence,2),estimateOnly:true,medicalTarget:false,reasons:[...new Set(reasons)]};
 }
-function mealTotals(state,date){
-  return list(state?.meals).filter(row=>sameDate(row,date)).reduce((a,row)=>({
-    meals:a.meals+1,kcal:a.kcal+(finite(row?.kcal)||0),protein:a.protein+(finite(row?.protein)||0),carbs:a.carbs+(finite(row?.carbs??row?.carbohydrate)||0),fat:a.fat+(finite(row?.fat)||0)
-  }),{meals:0,kcal:0,protein:0,carbs:0,fat:0});
-}
+function mealTotals(state,date){return list(state?.meals).filter(row=>sameDate(row,date)).reduce((a,row)=>({meals:a.meals+1,kcal:a.kcal+(finite(row?.kcal)||0),protein:a.protein+(finite(row?.protein)||0),carbs:a.carbs+(finite(row?.carbs??row?.carbohydrate)||0),fat:a.fat+(finite(row?.fat)||0)}),{meals:0,kcal:0,protein:0,carbs:0,fat:0});}
 function workoutEvidence(state,date){
-  const rows=list(state?.workouts).filter(row=>sameDate(row,date));
-  const keys=new Set(rows.map(row=>String(row?.sessionId||row?.session_id||row?.workoutId||row?.workout_id||'')).filter(Boolean));
-  const sessions=keys.size|| (rows.length?1:0);
-  const duration=rows.reduce((sum,row)=>sum+(finite(row?.duration)||0),0);
-  const volume=rows.reduce((sum,row)=>sum+(finite(row?.volume)||0),0);
-  const names=[...new Set(rows.map(row=>String(row?.name||row?.title||'').trim()).filter(Boolean))];
+  const rows=list(state?.workouts).filter(row=>sameDate(row,date)),keys=new Set(rows.map(row=>String(row?.sessionId||row?.session_id||row?.workoutId||row?.workout_id||'')).filter(Boolean));
+  const sessions=keys.size||(rows.length?1:0),duration=rows.reduce((s,row)=>s+(finite(row?.duration)||0),0),volume=rows.reduce((s,row)=>s+(finite(row?.volume)||0),0),names=[...new Set(rows.map(row=>String(row?.name||row?.title||'').trim()).filter(Boolean))];
   return {rows:rows.length,sessions,duration:round(duration,1),volume:Math.round(volume),names:names.slice(0,8)};
 }
-function runningEvidence(state,date){
-  const rows=list(state?.runs).filter(row=>sameDate(row,date));
-  return {sessions:rows.length,distance:round(rows.reduce((s,row)=>s+(finite(row?.distance)||0),0),2),duration:round(rows.reduce((s,row)=>s+(finite(row?.duration)||0),0),1)};
-}
-function checkinEvidence(state,date){
-  const rows=[...list(state?.dailyCheckins),...list(state?.checkins)].filter(row=>sameDate(row,date));
-  const row=rows.at(-1)||null;
-  return {count:row?1:0,row:row?clone(row):null};
-}
-function planType(value){
-  const raw=String(value||'').toLowerCase();
-  if(/run|running|러닝/.test(raw))return 'running';
-  if(/meal|nutrition|식단|영양/.test(raw))return 'nutrition';
-  if(/recover|recovery|sleep|회복|수면/.test(raw))return 'recovery';
-  if(/rest|휴식/.test(raw))return 'rest';
-  if(/workout|strength|exercise|운동|근력/.test(raw))return 'workout';
-  return 'other';
-}
+function runningEvidence(state,date){const rows=list(state?.runs).filter(row=>sameDate(row,date));return {sessions:rows.length,distance:round(rows.reduce((s,row)=>s+(finite(row?.distance)||0),0),2),duration:round(rows.reduce((s,row)=>s+(finite(row?.duration)||0),0),1)};}
+function checkinEvidence(state,date){const rows=[...list(state?.dailyCheckins),...list(state?.checkins)].filter(row=>sameDate(row,date)),row=rows.at(-1)||null;return {count:row?1:0,row:row?clone(row):null};}
+function planType(value){const raw=String(value||'').toLowerCase();if(/run|running|러닝/.test(raw))return 'running';if(/meal|nutrition|식단|영양/.test(raw))return 'nutrition';if(/recover|recovery|sleep|회복|수면/.test(raw))return 'recovery';if(/rest|휴식/.test(raw))return 'rest';if(/workout|strength|exercise|운동|근력/.test(raw))return 'workout';return 'other';}
 function resolvePlans(state,date,evidence){
   const rows=list(state?.planner).filter(row=>sameDate(row,date)).slice().sort((a,b)=>`${a?.time||'99:99'}|${a?.id||''}`.localeCompare(`${b?.time||'99:99'}|${b?.id||''}`));
-  const pools={workout:evidence.workout.sessions,running:evidence.running.sessions,nutrition:evidence.meals.meals?1:0,recovery:evidence.checkin.count,rest:0,other:0};
-  let explicit=0,derived=0;
-  const items=rows.map(row=>{
-    const type=planType(row?.type||row?.category),isExplicit=row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';
-    let isDerived=false;
-    if(isExplicit)explicit++;
-    else if((pools[type]||0)>0){isDerived=true;pools[type]-=1;derived++;}
-    return {id:String(row?.id||''),date,type,time:String(row?.time||''),title:String(row?.title||row?.name||'Plan'),source:String(row?.source||row?.origin||'user'),explicitCompleted:isExplicit,derivedCompleted:isDerived,executed:isExplicit||isDerived,evidence:isExplicit?'PLANNER_COMPLETED':(isDerived?'ACTUAL_RECORD_MATCH':'NONE')};
-  });
-  const executed=explicit+derived;
-  return {planned:items.length,executed,explicitCompleted:explicit,derivedCompleted:derived,rate:items.length?Math.round(executed/items.length*100):null,items};
+  const pools={workout:evidence.workout.sessions,running:evidence.running.sessions,nutrition:evidence.meals.meals?1:0,recovery:evidence.checkin.count,rest:0,other:0};let explicit=0,derived=0;
+  const items=rows.map(row=>{const type=planType(row?.type||row?.category),isExplicit=row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';let isDerived=false;if(isExplicit)explicit++;else if((pools[type]||0)>0){isDerived=true;pools[type]-=1;derived++;}return {id:String(row?.id||''),date,type,time:String(row?.time||''),title:String(row?.title||row?.name||'Plan'),source:String(row?.source||row?.origin||'user'),explicitCompleted:isExplicit,derivedCompleted:isDerived,executed:isExplicit||isDerived,evidence:isExplicit?'PLANNER_COMPLETED':(isDerived?'ACTUAL_RECORD_MATCH':'NONE')};});
+  const executed=explicit+derived;return {planned:items.length,executed,explicitCompleted:explicit,derivedCompleted:derived,rate:items.length?Math.round(executed/items.length*100):null,items};
 }
 function nutritionStatus(actual,target,goal){
-  if(!(target>0))return {ratio:null,percent:null,status:'unknown'};
-  if(!(actual>0))return {ratio:0,percent:0,status:'not_logged'};
-  const ratio=actual/target,percent=Math.round(ratio*100);
-  let low=0.9,high=1.1;
-  if(goal==='muscle_gain'||goal==='performance'||goal==='running_performance'){low=.9;high=1.15;}
-  if(goal==='fat_loss'){low=.85;high=1.1;}
-  const status=ratio<low?(goal==='fat_loss'?'too_low':'insufficient'):(ratio>high?'above_target':'on_target');
-  return {ratio:round(ratio,3),percent,status};
+  if(!(target>0))return {ratio:null,percent:null,status:'unknown'};if(!(actual>0))return {ratio:0,percent:0,status:'not_logged'};
+  const ratio=actual/target,percent=Math.round(ratio*100);let low=.9,high=1.1;if(goal==='muscle_gain'||goal==='performance'||goal==='running_performance'){low=.9;high=1.15;}if(goal==='fat_loss'){low=.85;high=1.1;}
+  return {ratio:round(ratio,3),percent,status:ratio<low?(goal==='fat_loss'?'too_low':'insufficient'):(ratio>high?'above_target':'on_target')};
 }
-function daily(state,date=todayUtc()){
-  const safe=state&&typeof state==='object'?state:{};
-  const targetDate=dateParts(date)?.s||todayUtc();
-  const evidence={workout:workoutEvidence(safe,targetDate),running:runningEvidence(safe,targetDate),meals:mealTotals(safe,targetDate),checkin:checkinEvidence(safe,targetDate)};
-  const targets=estimateTargets(safe,targetDate),plans=resolvePlans(safe,targetDate,evidence);
-  const calories=nutritionStatus(evidence.meals.kcal,targets.calorieTarget,targets.goal);
+function daily(state,date=todayLocal()){
+  const safe=state&&typeof state==='object'?state:{},targetDate=dateParts(date)?.s||todayLocal(),evidence={workout:workoutEvidence(safe,targetDate),running:runningEvidence(safe,targetDate),meals:mealTotals(safe,targetDate),checkin:checkinEvidence(safe,targetDate)},targets=estimateTargets(safe,targetDate),plans=resolvePlans(safe,targetDate,evidence),calories=nutritionStatus(evidence.meals.kcal,targets.calorieTarget,targets.goal);
   const protein=targets.proteinTarget?{actual:Math.round(evidence.meals.protein),target:targets.proteinTarget,percent:Math.round(evidence.meals.protein/targets.proteinTarget*100),status:evidence.meals.meals?(evidence.meals.protein>=targets.proteinTarget*.9?'on_target':'insufficient'):'not_logged'}:{actual:Math.round(evidence.meals.protein),target:null,percent:null,status:'unknown'};
-  const available=[plans.rate,calories.percent===null?null:clamp(calories.percent,0,100),protein.percent===null?null:clamp(protein.percent,0,100)].filter(v=>v!==null);
-  const goalAlignment=available.length?Math.round(available.reduce((a,b)=>a+b,0)/available.length):null;
-  const confidence=round(clamp((plans.planned?0.45:0.2)+(evidence.meals.meals?0.2:0)+(targets.calorieTarget?0.2:0)+(evidence.checkin.count?0.1:0)+(evidence.workout.sessions||evidence.running.sessions?0.05:0),0.15,1),2);
-  const reasons=[];
-  if(plans.derivedCompleted)reasons.push('ACTUAL_RECORDS_MATCHED_TO_PLAN');
-  if(plans.planned&&!plans.executed)reasons.push('PLANS_NOT_EXECUTED_YET');
-  if(evidence.meals.meals&&targets.calorieTarget)reasons.push(`CALORIE_${String(calories.status).toUpperCase()}`);
-  if(!targets.calorieTarget)reasons.push('CALORIE_TARGET_UNKNOWN');
+  const available=[plans.rate,calories.percent===null?null:clamp(calories.percent,0,100),protein.percent===null?null:clamp(protein.percent,0,100)].filter(v=>v!==null),goalAlignment=available.length?Math.round(available.reduce((a,b)=>a+b,0)/available.length):null;
+  const confidence=round(clamp((plans.planned?.45:.2)+(evidence.meals.meals?.2:0)+(targets.calorieTarget?.2:0)+(evidence.checkin.count?.1:0)+(evidence.workout.sessions||evidence.running.sessions?.05:0),.15,1),2),reasons=[];
+  if(plans.derivedCompleted)reasons.push('ACTUAL_RECORDS_MATCHED_TO_PLAN');if(plans.planned&&!plans.executed)reasons.push('PLANS_NOT_EXECUTED_YET');if(evidence.meals.meals&&targets.calorieTarget)reasons.push(`CALORIE_${String(calories.status).toUpperCase()}`);if(!targets.calorieTarget)reasons.push('CALORIE_TARGET_UNKNOWN');
   return {engineVersion:ENGINE_VERSION,date:targetDate,goal:targets.goal,targets,plan:plans,evidence,nutrition:{...evidence.meals,calories,protein},goalAlignment,confidence,reasons};
 }
 function range(state,options={}){
-  const days=clamp(Math.round(finite(options.days)||7),1,90),end=dateParts(options.endDate)?.s||todayUtc();
-  const rows=[];for(let i=days-1;i>=0;i--)rows.push(daily(state,dateAdd(end,-i)));
-  const planned=rows.reduce((s,r)=>s+r.plan.planned,0),executed=rows.reduce((s,r)=>s+r.plan.executed,0);
-  const calorieDays=rows.filter(r=>r.nutrition.meals&&r.targets.calorieTarget),proteinDays=rows.filter(r=>r.nutrition.meals&&r.targets.proteinTarget);
-  const calorieOnTarget=calorieDays.filter(r=>r.nutrition.calories.status==='on_target').length;
-  const proteinOnTarget=proteinDays.filter(r=>r.nutrition.protein.status==='on_target').length;
-  const workoutDays=rows.filter(r=>r.evidence.workout.sessions).length,runDays=rows.filter(r=>r.evidence.running.sessions).length;
+  const days=clamp(Math.round(finite(options.days)||7),1,90),end=dateParts(options.endDate)?.s||todayLocal(),rows=[];for(let i=days-1;i>=0;i--)rows.push(daily(state,dateAdd(end,-i)));
+  const planned=rows.reduce((s,r)=>s+r.plan.planned,0),executed=rows.reduce((s,r)=>s+r.plan.executed,0),calorieDays=rows.filter(r=>r.nutrition.meals&&r.targets.calorieTarget),proteinDays=rows.filter(r=>r.nutrition.meals&&r.targets.proteinTarget),calorieOnTarget=calorieDays.filter(r=>r.nutrition.calories.status==='on_target').length,proteinOnTarget=proteinDays.filter(r=>r.nutrition.protein.status==='on_target').length,workoutDays=rows.filter(r=>r.evidence.workout.sessions).length,runDays=rows.filter(r=>r.evidence.running.sessions).length;
   let streak=0;for(let i=rows.length-1;i>=0;i--){const rate=rows[i].plan.rate;if(rate!==null&&rate>=80)streak++;else if(rate!==null)break;}
   return {engineVersion:ENGINE_VERSION,startDate:rows[0]?.date||end,endDate:end,days,executionRate:planned?Math.round(executed/planned*100):null,planned,executed,workoutDays,runDays,calorieOnTargetDays:calorieOnTarget,calorieLoggedDays:calorieDays.length,proteinOnTargetDays:proteinOnTarget,proteinLoggedDays:proteinDays.length,currentExecutionStreak:streak,rows};
 }
-function accumulation(state,options={}){
-  const weeks=clamp(Math.round(finite(options.weeks)||4),1,12),end=dateParts(options.endDate)?.s||todayUtc(),series=[];
-  for(let i=weeks-1;i>=0;i--){const weekEnd=dateAdd(end,-i*7),summary=range(state,{endDate:weekEnd,days:7});series.push({startDate:summary.startDate,endDate:summary.endDate,executionRate:summary.executionRate,planned:summary.planned,executed:summary.executed,workoutDays:summary.workoutDays,calorieOnTargetDays:summary.calorieOnTargetDays,proteinOnTargetDays:summary.proteinOnTargetDays});}
-  const comparable=series.filter(x=>x.executionRate!==null),trend=comparable.length>=2?comparable.at(-1).executionRate-comparable[0].executionRate:null;
-  return {engineVersion:ENGINE_VERSION,weeks,endDate:end,trend,series};
-}
-function compactForContext(state,options={}){
-  const week=range(state,{endDate:options.endDate,days:7}),today=daily(state,options.endDate||todayUtc());
-  return {engineVersion:ENGINE_VERSION,date:today.date,goal:today.goal,executionRate7d:week.executionRate,planned7d:week.planned,executed7d:week.executed,calorieOnTargetDays7d:week.calorieOnTargetDays,proteinOnTargetDays7d:week.proteinOnTargetDays,currentExecutionStreak:week.currentExecutionStreak,today:{planRate:today.plan.rate,goalAlignment:today.goalAlignment,calorieStatus:today.nutrition.calories.status,proteinStatus:today.nutrition.protein.status,confidence:today.confidence}};
-}
+function accumulation(state,options={}){const weeks=clamp(Math.round(finite(options.weeks)||4),1,12),end=dateParts(options.endDate)?.s||todayLocal(),series=[];for(let i=weeks-1;i>=0;i--){const weekEnd=dateAdd(end,-i*7),s=range(state,{endDate:weekEnd,days:7});series.push({startDate:s.startDate,endDate:s.endDate,executionRate:s.executionRate,planned:s.planned,executed:s.executed,workoutDays:s.workoutDays,calorieOnTargetDays:s.calorieOnTargetDays,proteinOnTargetDays:s.proteinOnTargetDays});}const comparable=series.filter(x=>x.executionRate!==null),trend=comparable.length>=2?comparable.at(-1).executionRate-comparable[0].executionRate:null;return {engineVersion:ENGINE_VERSION,weeks,endDate:end,trend,series};}
+function compactForContext(state,options={}){const end=options.endDate||todayLocal(),week=range(state,{endDate:end,days:7}),day=daily(state,end);return {engineVersion:ENGINE_VERSION,date:day.date,goal:day.goal,executionRate7d:week.executionRate,planned7d:week.planned,executed7d:week.executed,calorieOnTargetDays7d:week.calorieOnTargetDays,proteinOnTargetDays7d:week.proteinOnTargetDays,currentExecutionStreak:week.currentExecutionStreak,today:{planRate:day.plan.rate,goalAlignment:day.goalAlignment,calorieStatus:day.nutrition.calories.status,proteinStatus:day.nutrition.protein.status,confidence:day.confidence}};}
 
 return Object.freeze({ENGINE_VERSION,TARGET_VERSION,goalClass,goalLabel,estimateTargets,daily,range,accumulation,compactForContext,dateAdd});
 });
