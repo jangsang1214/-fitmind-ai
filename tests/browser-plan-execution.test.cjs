@@ -34,19 +34,30 @@ function state(){
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
     await page.locator('#menuBtn').click();
     const planner=page.locator('.garang-more-sheet [data-route="planner"]');await planner.waitFor({state:'visible',timeout:5000});await planner.click();
-    await page.locator('#garangPlanExecution').waitFor({state:'visible',timeout:7000});
-    const text=await page.locator('#garangPlanExecution').innerText();
-    assert.match(text,/계획 수행/);assert.match(text,/이번 주/);assert.match(text,/칼로리/);assert.match(text,/단백질/);assert.match(text,/4주 누적/);
-    const yesterday=localDate(-1);
-    const dayButton=page.locator(`[data-gx-date="${yesterday}"]`);await dayButton.click();
-    const detail=await page.locator('[data-gx-detail]').innerText();
-    assert.match(detail,/근육 증가/);assert.match(detail,/벤치프레스/);assert.match(detail,/2,270/);assert.match(detail,/실제 기록으로 수행 확인/);
-    const rings=await page.locator('.gx-score-pair .gx-ring strong').allTextContents();
-    assert.equal(rings[0],'100%','explicit + workout evidence should execute both plans');
-    assert.ok(rings[1].endsWith('%'),'goal alignment must be separate and numeric when targets are known');
+    const section=page.locator('#garangPlanExecution');await section.waitFor({state:'visible',timeout:7000});
+
+    const summary=await section.innerText();
+    assert.match(summary,/누적\./);assert.match(summary,/이번 주|계획한 흐름/);assert.match(summary,/벤치프레스/);assert.match(summary,/2,270 kcal/);assert.match(summary,/118g/);assert.match(summary,/수면 7\.5h/);assert.match(summary,/GARANG INSIGHT/);
+    assert.doesNotMatch(summary,/판단 신뢰도/,'deep confidence must stay hidden in the default summary');
+    assert.doesNotMatch(summary,/4주 누적/,'4-week analytics must stay behind the detail control');
+    assert.equal(await page.locator('.gx-score-pair').count(),0,'legacy circular score pair must not return');
+    assert.equal(await page.locator('.gx-ring').count(),0,'legacy circular gauges must not return');
+
+    const drop=section.locator('[data-gx-details]');
+    const dropBox=await drop.boundingBox();assert.ok(dropBox&&dropBox.width>=40&&dropBox.height>=44,'droplet detail control must keep a touch-safe hit target');
+    assert.equal(await drop.getAttribute('aria-expanded'),'false');
+    await drop.click();
+    const sheet=section.locator('[data-gx-sheet]');await sheet.waitFor({state:'visible',timeout:3000});
+    assert.equal(await drop.getAttribute('aria-expanded'),'true');
+    const detail=await sheet.innerText();
+    assert.match(detail,/계획 수행 근거/);assert.match(detail,/목표 적합도/);assert.match(detail,/판단 신뢰도/);assert.match(detail,/2,270 kcal/);assert.match(detail,/118g/);assert.match(detail,/실제 기록으로 수행 확인/);assert.match(detail,/4주 누적/);
+    const bodyOverflow=await page.evaluate(()=>getComputedStyle(document.body).overflow);assert.equal(bodyOverflow,'hidden','detail sheet must lock body scrolling');
+    await page.keyboard.press('Escape');await sheet.waitFor({state:'hidden',timeout:3000});assert.equal(await drop.getAttribute('aria-expanded'),'false');
+
+    const yesterday=localDate(-1),dayButton=section.locator(`[data-gx-date="${yesterday}"]`);assert.equal(await dayButton.getAttribute('aria-selected'),'true','yesterday with activity should be selected by default');
     const bodyWidth=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert.ok(bodyWidth.scroll<=bodyWidth.client+1,`execution preview must not cause page overflow: ${JSON.stringify(bodyWidth)}`);
     assert.deepEqual(errors,[],`plan execution browser errors:\n${errors.join('\n')}`);
-    await context.close();console.log('browser-plan-execution WebKit mobile preview: PASS');
+    await context.close();console.log('browser-plan-execution minimal+droplet WebKit mobile: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
