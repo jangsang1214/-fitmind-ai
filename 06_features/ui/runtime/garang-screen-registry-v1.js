@@ -1,4 +1,4 @@
-/* GARANG Screen Registry v1.2
+/* GARANG Screen Registry v1.2.1
    Single source of truth for screen identity, bilingual eyebrow labels and compact-title policy.
    All DOM writes are idempotent so lifecycle-driven callers cannot create mutation feedback loops. */
 (function(root){
@@ -13,12 +13,13 @@
     running: Object.freeze({key:'running',labelKo:'RUNNING / 러닝',labelEn:'RUNNING',compactTitle:true,selectors:['#runStart','#runStop'],patterns:[/\brunning\b|log\s*\/\s*running|러닝/i]}),
     nutrition: Object.freeze({key:'nutrition',labelKo:'NUTRITION / 식단',labelEn:'NUTRITION',compactTitle:true,selectors:['#saveMeal','#foodSearch','#pickMealScan'],patterns:[/\bnutrition\b|식단/i]}),
     planner: Object.freeze({key:'planner',labelKo:'PLANNER / 실행',labelEn:'PLANNER',compactTitle:false,selectors:['#addPlan'],patterns:[/\bplanner\b|plan\s*\/\s*계획|계획 추가/i]}),
+    memory: Object.freeze({key:'memory',labelKo:'MEMORY / 장기 기억',labelEn:'MEMORY',compactTitle:false,selectors:['#saveMemory'],patterns:[/\bmemory\b|장기 기억|기억 중인 내용/i]}),
     profile: Object.freeze({key:'profile',labelKo:'PROFILE / 프로필',labelEn:'PROFILE',compactTitle:true,selectors:['#saveProfile'],patterns:[/\bprofile\b|프로필/i]}),
     settings: Object.freeze({key:'settings',labelKo:'SETTING / 설정',labelEn:'SETTING',compactTitle:true,selectors:['#savePreferences'],patterns:[/\bsettings?\b|설정/i]}),
     modeling: Object.freeze({key:'modeling',labelKo:'MODELING / 모델링',labelEn:'MODELING',compactTitle:true,selectors:['#saveOnboarding'],patterns:[/\bmodeling\b|사용자 모델|garang이 먼저 알아야 할 것|\bstart\b/i]})
   });
 
-  const DETECTION_ORDER=Object.freeze(['planner','settings','profile','modeling','running','nutrition','body','workout','progress','coach','today']);
+  const DETECTION_ORDER=Object.freeze(['planner','memory','settings','profile','modeling','running','nutrition','body','workout','progress','coach','today']);
   const definition=key=>key&&SCREENS[key]?SCREENS[key]:null;
   const label=(key,lang='ko')=>{const def=definition(key);return def?(lang==='en'?def.labelEn:def.labelKo):'';};
 
@@ -62,7 +63,7 @@
     return applyHeader(main,doc);
   }
 
-  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.0'});
+  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.1'});
 
   /* app.js owns rendering and emits this after each screen tree is complete. Screen Registry owns identity. */
   if(typeof root.addEventListener==='function'&&root.document){
