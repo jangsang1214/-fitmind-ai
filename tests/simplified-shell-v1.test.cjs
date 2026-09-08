@@ -10,6 +10,9 @@ const router=read('06_features/ui/runtime/garang-router-v1.js');
 const registry=read('06_features/ui/runtime/garang-screen-registry-v1.js');
 const runtime=read('06_features/ui/runtime/garang-simplified-shell-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
+const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
+const coreCss=read('03_styles/runtime/garang-core-loop-v1.css');
+const Core=require('../06_features/ui/runtime/garang-core-loop-v1.js');
 
 assert.match(app,/function logPage\(\)/,'legacy LOG page must remain for route compatibility');
 assert.match(app,/function workoutPage\(/,'Workout route must remain');
@@ -36,6 +39,8 @@ assert.match(router,/route==='profile'[\s\S]*profileTopBtn/,'Profile must use it
 assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose four primary axes');
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
+assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
+assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.0/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
 assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.1/,'Screen Registry cache key must ship the Memory identity fix');
 assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.0/,'simplified shell stylesheet must boot at the current version');
 assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.0/,'simplified shell runtime must boot at the current version');
@@ -46,4 +51,14 @@ assert.deepEqual(primary,['today','log','coach','progress'],'only Today, Record,
 const bridges=[...nav.matchAll(/<button(?=[^>]*data-garang-route-bridge="1")(?=[^>]*data-page="([^"]+)")(?=[^>]*hidden)[^>]*>/g)].map(x=>x[1]);
 assert.deepEqual(bridges,['__bridge'],'all non-primary features must share one inert hidden app bridge');
 assert.doesNotMatch(nav,/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="(?:workout|nutrition|running|body)")/,'record sub-routes must not return to first-level navigation');
+
+for(const forbidden of ['localStorage.setItem','firebase.firestore','applyWrite('])assert.equal(coreSource.includes(forbidden),false,`Core Loop must stay write-free: ${forbidden}`);
+assert.match(coreSource,/g2-composer textarea/,'Coach actions must use the existing canonical composer');
+assert.match(coreSource,/GarangRouter\?\.navigate/,'Record reuse must use the canonical Router');
+assert.match(coreCss,/gcl-accum/,'Accumulation UI must have a dedicated restrained layout');
+const sample={planner:[{date:'2026-09-09',completed:true},{date:'2026-09-09',completed:false}],workouts:[{date:'2026-09-08',name:'Squat',sets:3,reps:5,weight:80}],meals:[{date:'2026-09-08',name:'Meal',items:[{name:'Chicken',grams:150,kcal:250,protein:40}]}],runs:[{date:'2026-09-08',distance:5,duration:30}],body:[{date:'2026-08-20',weight:70},{date:'2026-09-08',weight:69.2}],checkins:[{date:'2026-09-08'}]};
+assert.equal(Core.deriveToday(sample,{date:'2026-09-09'}).completion,50);
+assert.deepEqual(Core.deriveRecent(sample).map(x=>x.route),['workout','nutrition','running','body']);
+assert.equal(Core.deriveAccumulation(sample,{date:'2026-09-09',days:30}).bodyDelta,-0.8);
+assert.ok(Core.deriveCoachActions(sample,{date:'2026-09-09'}).length>=2);
 console.log('simplified-shell-v1 contract: PASS');
