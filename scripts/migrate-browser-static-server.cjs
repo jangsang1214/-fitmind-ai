@@ -4,7 +4,7 @@ const path=require('node:path');
 
 const root=path.resolve(__dirname,'..');
 const tests=path.join(root,'tests');
-const files=fs.readdirSync(tests).filter(name=>/^browser.*\.cjs$/.test(name));
+const files=fs.readdirSync(tests).filter(name=>/^browser.*\.cjs$/.test(name)&&name!=='browser-server-portability.test.cjs');
 const pattern=/spawn\(\s*['"]python3['"]\s*,\s*\[\s*['"]-m['"]\s*,\s*['"]http\.server['"]\s*,\s*String\(port\)\s*,\s*['"]--bind['"]\s*,\s*['"]127\.0\.0\.1['"]\s*\]\s*,\s*\{\s*cwd\s*:\s*serveRoot\s*,\s*stdio\s*:\s*['"]ignore['"]\s*\}\s*\)/g;
 const helper="const {startStaticServer}=require('./helpers/static-server.cjs');\n";
 let changed=0;
