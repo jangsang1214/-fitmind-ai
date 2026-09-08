@@ -33,7 +33,16 @@
    cannot suppress the commercial focus state. */
 #appView :where(button,input,select,textarea,a,[tabindex]):focus-visible,
 #authView :where(button,input,select,textarea,a,[tabindex]):focus-visible{
-  outline:2px solid var(--garang-focus);
+  outline:2px solid var(--garang-focus)!important;
+  outline-offset:2px;
+  box-shadow:var(--garang-focus-ring);
+}
+/* Mobile/WebKit may focus a form field from a hardware keyboard without matching :focus-visible.
+   Form controls therefore retain the same visible ring on :focus; pointer users still receive a
+   deliberate field-focus state rather than an invisible active control. */
+#appView :where(input,select,textarea):focus,
+#authView :where(input,select,textarea):focus{
+  outline:2px solid var(--garang-focus)!important;
   outline-offset:2px;
   box-shadow:var(--garang-focus-ring);
 }
