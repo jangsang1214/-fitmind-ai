@@ -37,6 +37,7 @@ test('default planner UI is deliberately minimal and hides deep analytics',()=>{
   assert.match(ui,/data-gx-details/);assert.match(ui,/dropletIcon\('\+'\)/);assert.match(ui,/role="dialog"/);
   assert.doesNotMatch(ui,/gx-score-pair/);assert.doesNotMatch(ui,/gx-ring/);assert.doesNotMatch(ui,/gx-status-row/);assert.doesNotMatch(ui,/gx-week-grid/);
   assert.match(css,/\.gx-drop-button/);assert.match(css,/\.gx-detail-sheet/);assert.match(css,/\.gx-summary-row/);
+  assert.match(css,/#main\[data-garang-screen="planner"\]>\.page-head h1\{display:none\}/,'Planner keeps the small kicker but must not render the large page title');
 });
 
 test('deep goal evidence remains available behind the droplet detail control',()=>{
