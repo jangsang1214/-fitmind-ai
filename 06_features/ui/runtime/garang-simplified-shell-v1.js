@@ -137,6 +137,7 @@
       if (event.target === backdrop) closeRecordSheet();
     });
     syncActiveNavigation();
+    try { window.dispatchEvent(new CustomEvent('garang:record-sheet-opened',{detail:{source:'simplified-shell'}})); } catch {}
     requestAnimationFrame(()=>backdrop.querySelector('[data-garang-record-route]')?.focus({preventScroll:true}));
   }
 
