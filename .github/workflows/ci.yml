@@ -89,6 +89,10 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install locked CI dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build browser test bundle
+        run: npm run build
+      - name: Verify browser build entry
+        run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
       - name: Cache Playwright browsers
         id: playwright-cache
         uses: actions/cache@v4
@@ -106,7 +110,7 @@ jobs:
         run: node tests/browser-interaction.test.cjs
       - name: Verify mobile layout boundary
         run: node tests/browser-mobile-layout-boundary.test.cjs
-      - name: Verify plan execution preview
+      - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify authenticated app boot
         run: node tests/browser-authenticated-boot.test.cjs
