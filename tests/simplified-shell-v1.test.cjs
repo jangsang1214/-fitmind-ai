@@ -44,8 +44,8 @@ assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet mus
 assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
 assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.0/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
 assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.1/,'Screen Registry cache key must ship the Memory identity fix');
-assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.0/,'simplified shell stylesheet must boot at the current version');
-assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.[01]/,'simplified shell runtime must remain booted with an explicit cache key');
+assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.1/,'Simplified Shell stylesheet cache key must ship the current product loop');
+assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.1/,'Simplified Shell runtime cache key must ship canonical More routing');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
