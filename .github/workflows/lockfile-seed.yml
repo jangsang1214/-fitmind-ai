@@ -18,7 +18,22 @@ jobs:
       - name: Generate deterministic npm lockfile
         run: npm install --package-lock-only --ignore-scripts
       - name: Validate lockfile contract
-        run: node -e "const p=require('./package-lock.json');const d=p.packages?.['']?.devDependencies||{};for(const [k,v] of Object.entries({'playwright':'1.55.0','firebase':'10.13.0','firebase-tools':'13.35.1','@firebase/rules-unit-testing':'3.0.3'})){if(d[k]!==v)throw new Error(k+' lock mismatch: '+d[k]);}if(p.lockfileVersion!==3)throw new Error('expected lockfileVersion 3');console.log('lockfile seed: PASS');"
+        run: |
+          node - <<'NODE'
+          const p=require('./package-lock.json');
+          const d=p.packages?.['']?.devDependencies||{};
+          const expected={
+            playwright:'1.55.0',
+            firebase:'10.13.0',
+            'firebase-tools':'13.35.1',
+            '@firebase/rules-unit-testing':'3.0.3'
+          };
+          for(const [k,v] of Object.entries(expected)){
+            if(d[k]!==v)throw new Error(`${k} lock mismatch: ${d[k]}`);
+          }
+          if(p.lockfileVersion!==3)throw new Error(`expected lockfileVersion 3, got ${p.lockfileVersion}`);
+          console.log('lockfile seed PASS');
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: garang-package-lock
