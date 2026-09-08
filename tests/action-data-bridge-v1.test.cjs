@@ -35,7 +35,9 @@ test('unconfirmed bridge writes are rejected',()=>{assert.throws(()=>bridge.appl
 
 test('legacy Agent State Bridge facade routes writes into the new reliability core',()=>{compat.applyWrite('createPlan',{title:'Recovery',duration:30},{userConfirmed:true,callId:'legacy-plan'});assert.equal(state.planner.length,1);assert.ok(state.meta.actionReceipts.some(x=>x.key==='legacy-plan'));});
 
+test('legacy two-argument callbacks can consume only a live confirmation scope',()=>{context.__GARANG_AGENT_CONFIRMED_WRITE_V2__={userConfirmed:true,callId:'scoped-plan',idempotencyKey:'scoped-plan'};try{compat.applyWrite('createPlan',{title:'Scoped recovery',duration:25});}finally{delete context.__GARANG_AGENT_CONFIRMED_WRITE_V2__;}assert.equal(state.planner.some(x=>x.title==='Scoped recovery'),true);assert.ok(state.meta.actionReceipts.some(x=>x.key==='scoped-plan'));assert.throws(()=>compat.applyWrite('createPlan',{title:'No scope',duration:25}),code('CONFIRMATION_REQUIRED'));});
+
 test('local persistence failure rolls the live object back atomically',()=>{const before=JSON.stringify(state);localStorage.failNext=true;assert.throws(()=>bridge.applyWrite('createRecord',{domain:'body',record:{id:'b-fail',weight:70}},{userConfirmed:true,callId:'body-fail'}),/quota/);assert.equal(JSON.stringify(state),before);assert.equal(JSON.parse(localStorage.getItem('garang_demo_state_v3')).body.some(x=>x.id==='b-fail'),false);});
 
-test('bridge diagnostics expose durable receipts and tombstones',()=>{const report=bridge.getDiagnostics();assert.equal(report.contractVersion,'garang-data-action-v1');assert.ok(report.receipts>=4);assert.ok(report.tombstones>=1);});
+test('bridge diagnostics expose durable receipts and tombstones',()=>{const report=bridge.getDiagnostics();assert.equal(report.contractVersion,'garang-data-action-v1');assert.ok(report.receipts>=5);assert.ok(report.tombstones>=1);});
 console.log(`${passed} action data bridge tests passed`);
