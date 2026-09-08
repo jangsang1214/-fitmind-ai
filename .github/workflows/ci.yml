@@ -41,6 +41,8 @@ jobs:
         run: node tests/browser-interaction.test.cjs
       - name: Verify mobile layout boundary
         run: node tests/browser-mobile-layout-boundary.test.cjs
+      - name: Verify plan execution preview
+        run: node tests/browser-plan-execution.test.cjs
       - name: Verify authenticated app boot
         run: node tests/browser-authenticated-boot.test.cjs
       - name: Verify authenticated Coach plan flow
