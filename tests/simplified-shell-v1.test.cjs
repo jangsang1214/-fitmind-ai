@@ -7,6 +7,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const html=read('index.html');
 const app=read('01_app/app.js');
 const router=read('06_features/ui/runtime/garang-router-v1.js');
+const registry=read('06_features/ui/runtime/garang-screen-registry-v1.js');
 const runtime=read('06_features/ui/runtime/garang-simplified-shell-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
 
@@ -19,6 +20,8 @@ assert.match(app,/function plannerPage\(/,'Planner route must remain');
 assert.match(app,/function memoryPage\(/,'Memory route must remain');
 assert.match(app,/function profilePage\(/,'Profile route must remain');
 assert.match(app,/function settingsPage\(/,'Settings route must remain');
+assert.match(registry,/memory:\s*Object\.freeze\(\{key:'memory'[\s\S]*selectors:\['#saveMemory'\]/,'Memory must remain a first-class screen identity');
+assert.match(registry,/version:'1\.2\.1'/,'Screen Registry version must include the Memory identity fix');
 assert.match(runtime,/RECORD_ROUTES[\s\S]*workout[\s\S]*nutrition[\s\S]*running[\s\S]*body/,'Record surface must preserve all four existing record routes');
 assert.match(runtime,/quick-visual-grid/,'Today quick-record duplicate must be internalized by the shell');
 assert.match(runtime,/DUPLICATE_MENU_ROUTES/,'duplicate first-level menu routes must be internalized');
@@ -33,6 +36,7 @@ assert.match(router,/route==='profile'[\s\S]*profileTopBtn/,'Profile must use it
 assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose four primary axes');
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
+assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.1/,'Screen Registry cache key must ship the Memory identity fix');
 assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.0/,'simplified shell stylesheet must boot at the current version');
 assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.0/,'simplified shell runtime must boot at the current version');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
