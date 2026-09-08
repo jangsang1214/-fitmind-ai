@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8766,baseURL=`http://127.0.0.1:${port}`;
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,200));}throw new Error('built GARANG auth test server did not start');}
@@ -37,7 +36,22 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     assert.equal(saved.workouts.length,1);assert.equal(saved.meals.length,1);assert.equal(saved.meals[0].items.length,1);assert.equal(saved.checkins.length,1);
     assert.ok(saved.memory&&Array.isArray(saved.memory.entries));assert.ok(saved.analytics&&Array.isArray(saved.analytics.events));
     await page.locator('[data-today-view="back"]').click();await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
-    for(const route of ['today','coach','workout','body','progress']){await page.locator(`#bottomNav button[data-page="${route}"]`).click();await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);assert.ok((await page.locator('#main').innerText()).trim().length>0,`${route} must render after authenticated boot`);}
+
+    for(const route of ['today','coach','progress']){
+      await page.locator(`#bottomNav [data-garang-primary-nav="1"][data-page="${route}"]`).click();
+      await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
+      assert.ok((await page.locator('#main').innerText()).trim().length>0,`${route} must render after authenticated boot`);
+    }
+
+    const preservedRoutes=[['workout','#saveWorkoutSession'],['body','#saveBody']];
+    for(const [route,selector] of preservedRoutes){
+      const moved=await page.evaluate(r=>window.GarangRouter?.navigate?.(r,{source:'authenticated-boot-test',force:true}),route);
+      assert.equal(moved,true,`${route} must remain routable after authenticated boot`);
+      await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
+      assert.equal(await page.locator(selector).count(),1,`${route} capability must remain rendered after authenticated boot`);
+      assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${route} must belong to the Record primary axis`);
+    }
+
     assert.deepEqual(pageErrors,[],`authenticated browser runtime errors:\n${pageErrors.join('\n')}`);console.log('browser-authenticated malformed-cloud boot: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});

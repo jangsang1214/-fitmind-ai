@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {webkit}=require('playwright');
 
 const root=path.resolve(__dirname,'..');
@@ -47,8 +46,16 @@ async function tap(page,selector,label=selector){
   await heartbeat(page,label);
 }
 async function route(page,name){
-  await tap(page,`#bottomNav button[data-page="${name}"]`,`route ${name}`);
-  await page.waitForFunction(n=>document.querySelector(`#bottomNav button[data-page="${n}"]`)?.classList.contains('active'),name,{timeout:5000});
+  await tap(page,`#bottomNav [data-garang-primary-nav="1"][data-page="${name}"]`,`route ${name}`);
+  await page.waitForFunction(n=>document.getElementById('main')?.dataset?.garangScreen===n,name,{timeout:5000});
+}
+async function tapRecordRoute(page,name,label=`Record ${name}`){
+  await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="log"]',`${label} open`);
+  const sheet=page.locator('[data-garang-record-sheet="1"]');
+  await sheet.waitFor({state:'visible',timeout:3000});
+  await tap(page,`[data-garang-record-sheet="1"] [data-garang-record-route="${name}"]`,label);
+  await page.waitForFunction(n=>document.getElementById('main')?.dataset?.garangScreen===n,name,{timeout:5000});
+  assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${name} must stay grouped under Record`);
 }
 async function settle(page,label,limit=12){
   await page.waitForTimeout(120);
@@ -87,7 +94,7 @@ async function gotoMoreRoute(page,routeName){
 }
 async function waitForStabilityRuntimes(page,errors){
   try{
-    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.1.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.4'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.4'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       readyState:document.readyState,
@@ -173,8 +180,8 @@ async function waitForStabilityRuntimes(page,errors){
       await settle(page,`coach idle ${cycle}`,4);
 
       stage(`cycle ${cycle}: core routes`);
-      await route(page,'workout');await settle(page,`workout ${cycle}`,16);await assertNoStaleBlocker(page,`workout ${cycle}`);
-      await route(page,'body');await settle(page,`body ${cycle}`);
+      await tapRecordRoute(page,'workout',`workout ${cycle}`);await settle(page,`workout ${cycle}`,16);await assertNoStaleBlocker(page,`workout ${cycle}`);
+      await tapRecordRoute(page,'body',`body ${cycle}`);await settle(page,`body ${cycle}`);
       await route(page,'progress');await settle(page,`progress ${cycle}`);
 
       stage(`cycle ${cycle}: settings`);

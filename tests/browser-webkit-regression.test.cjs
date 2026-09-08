@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8768,baseURL=`http://127.0.0.1:${port}`;
 
@@ -26,6 +25,15 @@ async function tap(page,selector){
   });
   assert.equal(hit,true,`${selector} must own hit point`);
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+}
+
+async function tapRecordRoute(page,route){
+  await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="log"]');
+  const sheet=page.locator('[data-garang-record-sheet="1"]');
+  await sheet.waitFor({state:'visible',timeout:3000});
+  await tap(page,`[data-garang-record-sheet="1"] [data-garang-record-route="${route}"]`);
+  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,route,{timeout:5000});
+  assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${route} must remain owned by Record`);
 }
 
 async function tapVisibleBackdrop(page){
@@ -96,7 +104,7 @@ async function assertCoachSettles(page){
   await page.waitForTimeout(80);
 
   const hitState=await page.evaluate(()=>{
-    const selectors=['.g2-mobile-threads','.g2-head-new','.garang-decision-toggle','#bottomNav button[data-page="today"]'];
+    const selectors=['.g2-mobile-threads','.g2-head-new','.garang-decision-toggle','#bottomNav [data-garang-primary-nav="1"][data-page="today"]'];
     return selectors.map(selector=>{
       const el=document.querySelector(selector);
       if(!el)return {selector,hit:false};
@@ -143,19 +151,23 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
 
     const layout=await page.evaluate(()=>{
-      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),
-        tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),hit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;
+      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),
+        tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),rr=record?.getBoundingClientRect(),menuHit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null,recordHit=rr?document.elementFromPoint(rr.left+rr.width/2,rr.top+rr.height/2):null;
       return {
         x:s.overflowX,y:s.overflowY,max:s.maxHeight,
-        cards:[...document.querySelectorAll('.quick-visual')].map(x=>x.getBoundingClientRect().height),
+        quickHidden:!!document.querySelector('.quick-visual-grid')&&getComputedStyle(document.querySelector('.quick-visual-grid')).display==='none',
+        primaryCount:document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]').length,
         top:{top:tr?.top,bottom:tr?.bottom,height:tr?.height},
-        menu:{display:menu?getComputedStyle(menu).display:'none',height:mr?.height,hit:!!hit&&(hit===menu||menu?.contains(hit))}
+        menu:{display:menu?getComputedStyle(menu).display:'none',height:mr?.height,hit:!!menuHit&&(menuHit===menu||menu?.contains(menuHit))},
+        record:{height:rr?.height||0,hit:!!recordHit&&(recordHit===record||record?.contains(recordHit))}
       };
     });
     assert.equal(layout.x,'visible');
     assert.equal(layout.y,'visible');
     assert.equal(layout.max,'none');
-    assert.ok(layout.cards.length>=4&&layout.cards.every(h=>h>40));
+    assert.equal(layout.quickHidden,true,'Today duplicate quick-record grid must stay internalized on WebKit');
+    assert.equal(layout.primaryCount,4,'WebKit must expose exactly four primary navigation axes');
+    assert.ok(layout.record.height>=44&&layout.record.hit,'Record must replace the hidden quick cards as a real touch target');
     assert.ok(layout.top.height>=50&&layout.top.bottom>0,'physical-iOS topbar must remain on screen');
     assert.notEqual(layout.menu.display,'none');
     assert.ok(layout.menu.height>=30&&layout.menu.hit,'hamburger must own its hit point');
@@ -164,38 +176,43 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
     await tap(page,'[data-today-view="front"]');
 
-    await page.locator('.quick-visual').first().scrollIntoViewIfNeeded();
+    await page.evaluate(()=>window.scrollTo({top:Math.max(0,document.documentElement.scrollHeight-window.innerHeight),behavior:'auto'}));
     await page.waitForTimeout(80);
     const scrolled=await page.evaluate(()=>{
-      const top=document.querySelector('.topbar')?.getBoundingClientRect(),menu=document.getElementById('menuBtn'),mr=menu?.getBoundingClientRect(),
-        quick=document.querySelector('.quick-visual'),qr=quick?.getBoundingClientRect(),
-        qh=qr?document.elementFromPoint(qr.left+qr.width/2,qr.top+Math.min(qr.height/2,30)):null,
-        mh=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null;
+      const top=document.querySelector('.topbar')?.getBoundingClientRect(),menu=document.getElementById('menuBtn'),mr=menu?.getBoundingClientRect(),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),rr=record?.getBoundingClientRect(),
+        mh=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null,rh=rr?document.elementFromPoint(rr.left+rr.width/2,rr.top+rr.height/2):null;
       return {
         topVisible:!!top&&top.bottom>0&&top.top>=-1,
         menuHit:!!mh&&(mh===menu||menu?.contains(mh)),
-        quickHeight:qr?.height||0,
-        quickHit:!!qh&&(qh===quick||quick?.contains(qh)),
+        recordHit:!!rh&&(rh===record||record?.contains(rh)),
         scrollY:window.scrollY
       };
     });
     assert.ok(scrolled.scrollY>0,'test must exercise the long Today scroll seen on physical iPhone');
     assert.ok(scrolled.topVisible,'sticky topbar must survive Today scroll');
     assert.ok(scrolled.menuHit,'hamburger must stay tappable after Today scroll');
-    assert.ok(scrolled.quickHeight>40&&scrolled.quickHit,'quick-record content must remain painted and hit-testable after scroll');
+    assert.ok(scrolled.recordHit,'Record must stay tappable after Today scroll');
 
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible'});
-    await tap(page,'.garang-more-sheet [data-route="running"]');
+    assert.equal(await page.locator('.garang-more-sheet [data-route="running"]').isHidden(),true,'duplicate Running entry must stay hidden from More');
+    await tap(page,'.garang-more-sheet [data-route="planner"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
 
-    await tap(page,'#bottomNav button[data-page="coach"]');
-    await page.waitForFunction(()=>document.querySelector('#bottomNav button[data-page="coach"]')?.classList.contains('active'));
+    await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="coach"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
     await assertCoachSettles(page);
 
-    for(const route of ['today','workout','body','progress','coach','today']){
-      await tap(page,`#bottomNav button[data-page="${route}"]`);
-      await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);
-    }
+    await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
+    await tapRecordRoute(page,'workout');
+    await tapRecordRoute(page,'body');
+    await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
+    await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="coach"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
+    await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
 
     assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);
     console.log('browser-webkit-regression: PASS');

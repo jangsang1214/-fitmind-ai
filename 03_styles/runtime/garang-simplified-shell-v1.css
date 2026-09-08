@@ -1,0 +1,30 @@
+/* GARANG Simplified Shell v1 */
+#appView:not([hidden])>#bottomNav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"]{min-width:0!important}
+#appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"] b{font-size:11px;letter-spacing:.01em;white-space:nowrap}
+#appView:not([hidden])>#bottomNav [data-garang-route-bridge="1"]{display:none!important}
+.garang-record-entry-internalized[hidden],.garang-shell-route-internalized[hidden]{display:none!important}
+body.garang-record-open{overflow-y:hidden!important}
+.garang-record-backdrop{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.58);display:flex;align-items:flex-end;justify-content:center;padding:0;box-sizing:border-box;touch-action:none}
+.garang-record-sheet{width:100%;max-width:560px;max-height:min(78dvh,720px);overflow-y:auto;box-sizing:border-box;background:#080908;border-top:1px solid rgba(242,239,233,.13);padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.garang-record-sheet header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+.garang-record-sheet header span{display:block;color:rgba(242,239,233,.48);font-size:10px;font-weight:700;letter-spacing:.14em}
+.garang-record-sheet h2{margin:6px 0 0;color:#f2efe9;font-family:"Cormorant Garamond","Iowan Old Style",Georgia,serif;font-size:34px;font-weight:500;line-height:1}
+.garang-record-close{display:grid;place-items:center;width:44px;height:44px;min-width:44px;margin:-6px -8px 0 0;padding:0;border:0;background:transparent;color:rgba(242,239,233,.72);font-size:25px;line-height:1;touch-action:manipulation}
+.garang-record-routes{border-top:1px solid rgba(242,239,233,.11)}
+.garang-record-route{display:flex;width:100%;min-height:68px;align-items:center;justify-content:space-between;gap:20px;padding:13px 2px;border:0;border-bottom:1px solid rgba(242,239,233,.11);background:transparent;color:#f2efe9;text-align:left;touch-action:manipulation}
+.garang-record-route>span{display:grid;gap:4px}
+.garang-record-route strong{font-size:15px;font-weight:600}
+.garang-record-route small{color:rgba(242,239,233,.46);font-size:11px;font-weight:500}
+.garang-record-route>b{color:rgba(242,239,233,.42);font-size:18px;font-weight:400}
+.garang-record-route:active,.garang-record-route:focus-visible{background:rgba(79,174,146,.06);outline:none}
+.garang-record-sheet>p{margin:16px 0 0;color:rgba(242,239,233,.36);font-size:11px;line-height:1.5}
+@media(min-width:800px){
+ .garang-record-backdrop{align-items:stretch;justify-content:flex-end;padding:72px 20px 20px}
+ .garang-record-sheet{width:360px;max-width:360px;max-height:none;border:1px solid rgba(242,239,233,.12);border-radius:14px;padding:24px;box-shadow:0 22px 60px rgba(0,0,0,.34)}
+}
+@media(max-width:430px){
+ #appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"] b{font-size:10px}
+ .garang-record-sheet{padding-left:18px;padding-right:18px}
+ .garang-record-sheet h2{font-size:32px}
+}

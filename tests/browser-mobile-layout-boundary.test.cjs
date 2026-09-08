@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {chromium}=require('playwright');
 
 const root=path.resolve(__dirname,'..');
@@ -47,22 +46,38 @@ async function waitForServer(){
     async function snapshot(label){
       const value=await page.evaluate(()=>{
         const main=document.getElementById('main'),style=getComputedStyle(main),nav=document.getElementById('bottomNav'),navStyle=getComputedStyle(nav);
-        const cards=[...document.querySelectorAll('.quick-visual')].map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height};});
-        return {screen:main.dataset.garangScreen,overflow:style.overflow,overflowX:style.overflowX,overflowY:style.overflowY,maxHeight:style.maxHeight,contain:style.contain,cards,navBackdrop:navStyle.backdropFilter||navStyle.webkitBackdropFilter||'none'};
+        const grid=document.querySelector('.quick-visual-grid');
+        const cards=[...document.querySelectorAll('.quick-visual')].map(el=>({hidden:el.closest('.quick-visual-grid')?.hidden??false}));
+        const record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]');
+        const recordBox=record?.getBoundingClientRect();
+        const visiblePrimary=[...document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]')].filter(el=>getComputedStyle(el).display!=='none');
+        const visibleBridges=[...document.querySelectorAll('#bottomNav [data-garang-route-bridge="1"]')].filter(el=>getComputedStyle(el).display!=='none');
+        return {
+          screen:main.dataset.garangScreen,
+          overflow:style.overflow,overflowX:style.overflowX,overflowY:style.overflowY,maxHeight:style.maxHeight,contain:style.contain,
+          cards,quickGridHidden:grid?.hidden??null,
+          recordBox:recordBox?{width:recordBox.width,height:recordBox.height}:null,
+          visiblePrimary:visiblePrimary.length,visibleBridges:visibleBridges.length,
+          navBackdrop:navStyle.backdropFilter||navStyle.webkitBackdropFilter||'none'
+        };
       });
       assert.equal(value.screen,'today',`${label}: expected Today screen`);
       assert.equal(value.overflowX,'visible',`${label}: iOS-safe main overflow-x must stay visible: ${JSON.stringify(value)}`);
       assert.equal(value.overflowY,'visible',`${label}: main overflow-y must stay visible: ${JSON.stringify(value)}`);
       assert.equal(value.maxHeight,'none',`${label}: ordinary screen must not inherit a fixed max-height`);
-      assert.ok(value.cards.length>=4,`${label}: all four quick-record cards must exist`);
-      assert.ok(value.cards.every(card=>card.height>40),`${label}: quick-record cards must have real paint boxes`);
+      assert.equal(value.cards.length,4,`${label}: all four legacy quick-record capabilities must remain in DOM`);
+      assert.equal(value.quickGridHidden,true,`${label}: duplicate Today quick-record surface must remain internalized`);
+      assert.ok(value.cards.every(card=>card.hidden),`${label}: Today record cards must not paint while Record is the canonical entry point`);
+      assert.equal(value.visiblePrimary,4,`${label}: exactly four primary nav items must be visible`);
+      assert.equal(value.visibleBridges,0,`${label}: internal route bridges must never paint`);
+      assert.ok(value.recordBox&&value.recordBox.width>40&&value.recordBox.height>=44,`${label}: Record must provide a real mobile touch target: ${JSON.stringify(value.recordBox)}`);
       assert.ok(!value.navBackdrop||value.navBackdrop==='none',`${label}: mobile fixed nav must not create a blur compositor: ${value.navBackdrop}`);
     }
 
     await snapshot('initial Today');
-    await page.locator('#bottomNav button[data-page="coach"]').click();
+    await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="coach"]').click();
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:7000});
-    await page.locator('#bottomNav button[data-page="today"]').click();
+    await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="today"]').click();
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:7000});
     await page.waitForFunction(()=>document.querySelectorAll('.quick-visual').length>=4,{timeout:7000});
     await snapshot('Coach -> Today');

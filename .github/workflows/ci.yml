@@ -105,6 +105,8 @@ jobs:
         run: node tests/browser-mobile-layout-boundary.test.cjs
       - name: Verify Today action flow
         run: node tests/browser-today-action-flow.test.cjs
+      - name: Verify Simplified Shell WebKit
+        run: node tests/browser-simplified-shell.test.cjs
       - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify authenticated app boot
