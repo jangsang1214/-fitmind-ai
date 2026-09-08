@@ -62,7 +62,8 @@ function estimateTargets(state,date=todayLocal()){
     adjustment=goal==='muscle_gain'?250:goal==='fat_loss'?-350:(goal==='running_performance'||goal==='performance'?150:0);calorieTarget=tdee+adjustment;
     if(goal==='fat_loss')calorieTarget=Math.max(calorieTarget,bmr*1.1);calorieTarget=Math.round(calorieTarget/10)*10;
   }
-  const confidence=calorieTarget?clamp(.65+(activeDays(state,date,14)>=4?.15:0)+(state?.profile?.goal||state?.onboarding?.goal?.1:0),0,.9):clamp(.25+(proteinTarget?.15:0),0,.45);
+  const hasGoal=!!(state?.profile?.goal||state?.onboarding?.goal);
+  const confidence=calorieTarget?clamp(0.65+(activeDays(state,date,14)>=4?0.15:0)+(hasGoal?0.1:0),0,0.9):clamp(0.25+(proteinTarget?0.15:0),0,0.45);
   return {version:TARGET_VERSION,date,goal,goalLabel:goalLabel(goal),calorieTarget,proteinTarget,bmr:bmr===null?null:Math.round(bmr),tdee:tdee===null?null:Math.round(tdee),activityFactor:factor,goalAdjustment:calorieTarget?adjustment:null,confidence:round(confidence,2),estimateOnly:true,medicalTarget:false,reasons:[...new Set(reasons)]};
 }
 function mealTotals(state,date){return list(state?.meals).filter(row=>sameDate(row,date)).reduce((a,row)=>({meals:a.meals+1,kcal:a.kcal+(finite(row?.kcal)||0),protein:a.protein+(finite(row?.protein)||0),carbs:a.carbs+(finite(row?.carbs??row?.carbohydrate)||0),fat:a.fat+(finite(row?.fat)||0)}),{meals:0,kcal:0,protein:0,carbs:0,fat:0});}
@@ -82,14 +83,15 @@ function resolvePlans(state,date,evidence){
 }
 function nutritionStatus(actual,target,goal){
   if(!(target>0))return {ratio:null,percent:null,status:'unknown'};if(!(actual>0))return {ratio:0,percent:0,status:'not_logged'};
-  const ratio=actual/target,percent=Math.round(ratio*100);let low=.9,high=1.1;if(goal==='muscle_gain'||goal==='performance'||goal==='running_performance'){low=.9;high=1.15;}if(goal==='fat_loss'){low=.85;high=1.1;}
+  const ratio=actual/target,percent=Math.round(ratio*100);let low=0.9,high=1.1;if(goal==='muscle_gain'||goal==='performance'||goal==='running_performance'){low=0.9;high=1.15;}if(goal==='fat_loss'){low=0.85;high=1.1;}
   return {ratio:round(ratio,3),percent,status:ratio<low?(goal==='fat_loss'?'too_low':'insufficient'):(ratio>high?'above_target':'on_target')};
 }
 function daily(state,date=todayLocal()){
   const safe=state&&typeof state==='object'?state:{},targetDate=dateParts(date)?.s||todayLocal(),evidence={workout:workoutEvidence(safe,targetDate),running:runningEvidence(safe,targetDate),meals:mealTotals(safe,targetDate),checkin:checkinEvidence(safe,targetDate)},targets=estimateTargets(safe,targetDate),plans=resolvePlans(safe,targetDate,evidence),calories=nutritionStatus(evidence.meals.kcal,targets.calorieTarget,targets.goal);
-  const protein=targets.proteinTarget?{actual:Math.round(evidence.meals.protein),target:targets.proteinTarget,percent:Math.round(evidence.meals.protein/targets.proteinTarget*100),status:evidence.meals.meals?(evidence.meals.protein>=targets.proteinTarget*.9?'on_target':'insufficient'):'not_logged'}:{actual:Math.round(evidence.meals.protein),target:null,percent:null,status:'unknown'};
+  const protein=targets.proteinTarget?{actual:Math.round(evidence.meals.protein),target:targets.proteinTarget,percent:Math.round(evidence.meals.protein/targets.proteinTarget*100),status:evidence.meals.meals?(evidence.meals.protein>=targets.proteinTarget*0.9?'on_target':'insufficient'):'not_logged'}:{actual:Math.round(evidence.meals.protein),target:null,percent:null,status:'unknown'};
   const available=[plans.rate,calories.percent===null?null:clamp(calories.percent,0,100),protein.percent===null?null:clamp(protein.percent,0,100)].filter(v=>v!==null),goalAlignment=available.length?Math.round(available.reduce((a,b)=>a+b,0)/available.length):null;
-  const confidence=round(clamp((plans.planned?.45:.2)+(evidence.meals.meals?.2:0)+(targets.calorieTarget?.2:0)+(evidence.checkin.count?.1:0)+(evidence.workout.sessions||evidence.running.sessions?.05:0),.15,1),2),reasons=[];
+  const hasActivity=!!(evidence.workout.sessions||evidence.running.sessions);
+  const confidence=round(clamp((plans.planned?0.45:0.2)+(evidence.meals.meals?0.2:0)+(targets.calorieTarget?0.2:0)+(evidence.checkin.count?0.1:0)+(hasActivity?0.05:0),0.15,1),2),reasons=[];
   if(plans.derivedCompleted)reasons.push('ACTUAL_RECORDS_MATCHED_TO_PLAN');if(plans.planned&&!plans.executed)reasons.push('PLANS_NOT_EXECUTED_YET');if(evidence.meals.meals&&targets.calorieTarget)reasons.push(`CALORIE_${String(calories.status).toUpperCase()}`);if(!targets.calorieTarget)reasons.push('CALORIE_TARGET_UNKNOWN');
   return {engineVersion:ENGINE_VERSION,date:targetDate,goal:targets.goal,targets,plan:plans,evidence,nutrition:{...evidence.meals,calories,protein},goalAlignment,confidence,reasons};
 }
