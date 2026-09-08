@@ -17,6 +17,7 @@
     "03_styles/runtime/garang-workout-library-v2.css",
     "03_styles/runtime/garang-experience-v3.css",
     "03_styles/runtime/garang-experience-v4.css",
+    "03_styles/runtime/garang-plan-execution-v1.css",
     "03_styles/runtime/garang-auth-brand-v1.css",
     "03_styles/runtime/garang-app-shell-v1.css"
   ],
@@ -37,6 +38,7 @@
     "02_core/performance-score-v1.js",
     "02_core/adaptive-planner-v1.js",
     "02_core/intelligence-core-v1.js",
+    "02_core/plan-execution-v1.js",
     "02_core/workout-intelligence-v1.js",
     "services/performance.js",
     "services/units.js",
@@ -75,6 +77,7 @@
     "06_features/ui/runtime/garang-workout-library-v2.js",
     "06_features/ui/runtime/garang-experience-v3.js",
     "06_features/ui/runtime/garang-experience-v4.js",
+    "06_features/ui/runtime/garang-plan-execution-ui-v1.js",
     "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js",
     "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js"
   ],
