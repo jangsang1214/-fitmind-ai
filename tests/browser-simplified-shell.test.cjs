@@ -13,6 +13,13 @@ async function openRecordRoute(page,route){
   await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
   assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: Record navigation must not reopen legacy More`);
 }
+async function routeWithRouter(page,route,selector){
+  const ok=await page.evaluate(r=>window.GarangRouter?.navigate?.(r,{source:'simplified-shell-test',force:true}),route);
+  assert.equal(ok,true,`${route}: canonical Router must retain direct navigation`);
+  await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
+  assert.equal(await page.locator(selector).count(),1,`${route}: existing screen capability must remain reachable`);
+  assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: direct route must not create legacy More`);
+}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
@@ -25,8 +32,10 @@ async function openRecordRoute(page,route){
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary navigation items may remain');
   const navPages=await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(navPages,['today','log','coach','progress']);
   const labels=await nav.locator('b').allTextContents();assert.deepEqual(labels,['Today','Record','Coach','누적.']);
-  const bridges=page.locator('#bottomNav [data-garang-route-bridge="1"]');assert.equal(await bridges.count(),9,'all preserved non-primary app routes need native hidden bridges');
+  const bridges=page.locator('#bottomNav [data-garang-route-bridge="1"]');assert.equal(await bridges.count(),7,'only preserved routes without an existing native control need hidden bridges');
+  const bridgeRoutes=await bridges.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(bridgeRoutes,['workout','nutrition','running','body','planner','memory','onboarding']);
   assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'internal route bridges must stay invisible and non-interactive');
+  assert.equal(await page.locator('#bottomNav [data-garang-route-bridge="1"][data-page="profile"],#bottomNav [data-garang-route-bridge="1"][data-page="settings"]').count(),0,'Profile and Settings must reuse their native top controls, not duplicate hidden bridges');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
 
@@ -44,10 +53,10 @@ async function openRecordRoute(page,route){
   await openRecordRoute(page,'running');assert.equal(await page.locator('#runStart').count(),1,'existing Running feature must remain reachable from another record screen');
   await openRecordRoute(page,'body');assert.equal(await page.locator('#saveBody').count(),1,'existing Body feature must remain reachable from another record screen');
 
-  const plannerOk=await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'simplified-shell-test',force:true}));assert.equal(plannerOk,true,'Planner must remain directly routable without More');
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
-  assert.equal(await page.locator('#addPlan').count(),1,'existing Planner feature must remain reachable');
-  assert.equal(await page.locator('.garang-more-sheet').count(),0,'Planner direct route must not create legacy More');
+  await routeWithRouter(page,'planner','#addPlan');
+  await routeWithRouter(page,'memory','#saveMemory');
+  await routeWithRouter(page,'profile','#saveProfile');
+  await routeWithRouter(page,'settings','#savePreferences');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="coach"]').click();
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
