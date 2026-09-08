@@ -49,7 +49,9 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.ok(await firstSheet.locator('[data-gcl-reuse]').count()>=4,'Record must expose reusable recent values without auto-saving them');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today','opening Record must not navigate to the legacy LOG page');
   const lock=await page.evaluate(()=>getComputedStyle(document.body).overflowY);assert.equal(lock,'hidden','Record sheet must lock background vertical scrolling');
-  await firstSheet.locator('[data-gcl-reuse="0"]').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await page.waitForFunction(()=>document.getElementById('wName')?.value==='스쿼트',{timeout:3000});
+  await firstSheet.locator('[data-gcl-reuse="0"]').click();
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});
+  await page.waitForFunction(()=>document.getElementById('wName')?.value==='스쿼트'&&document.getElementById('wWeight')?.value==='82.5'&&document.getElementById('wSets')?.value==='4',{timeout:3000});
   assert.equal(await page.locator('#wWeight').inputValue(),'82.5','recent workout reuse must prefill existing Workout form');
   assert.equal(await page.locator('#wSets').inputValue(),'4','recent workout reuse must keep sets');
   assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page','Record nav must own workout sub-route');
