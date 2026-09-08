@@ -29,6 +29,16 @@ test('all six data domains support create update delete through one boundary',()
  assert.ok(state.memory.deletedIds.includes('mem1'));
 });
 
+test('create and update share the same numeric validation rules',()=>{
+ let state=Action.applyMutation(base(),{operation:'create',domain:'workouts',record:{id:'w-valid',name:'Squat',weight:'100',rpe:'8'},userConfirmed:true},opts).state;
+ assert.equal(state.workouts[0].weight,100);assert.equal(state.workouts[0].rpe,8);
+ assert.throws(()=>Action.applyMutation(state,{operation:'update',domain:'workouts',id:'w-valid',patch:{weight:-1},userConfirmed:true},opts),code('INVALID_PATCH'));
+ state=Action.applyMutation(state,{operation:'create',domain:'meals',record:{id:'m-valid',name:'Lunch',kcal:600},userConfirmed:true},opts).state;
+ assert.throws(()=>Action.applyMutation(state,{operation:'update',domain:'meals',id:'m-valid',patch:{kcal:-20},userConfirmed:true},opts),code('INVALID_PATCH'));
+ state=Action.applyMutation(state,{operation:'create',domain:'runs',record:{id:'r-valid',distance:5,duration:30},userConfirmed:true},opts).state;
+ assert.throws(()=>Action.applyMutation(state,{operation:'update',domain:'runs',id:'r-valid',patch:{distance:-5},userConfirmed:true},opts),code('INVALID_PATCH'));
+});
+
 test('confirmed writes are idempotent by proposal/call id',()=>{
  const args={domain:'workouts',record:{id:'w-idem',name:'Bench',sets:3,reps:8,weight:80}};
  const first=Action.executeTool(base(),'createRecord',args,{...opts,idempotencyKey:'proposal-1'});
