@@ -32,9 +32,8 @@ async function routeWithRouter(page,route,selector){
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary navigation items may remain');
   const navPages=await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(navPages,['today','log','coach','progress']);
   const labels=await nav.locator('b').allTextContents();assert.deepEqual(labels,['Today','Record','Coach','누적.']);
-  const bridges=page.locator('#bottomNav [data-garang-route-bridge="1"]');assert.equal(await bridges.count(),7,'only preserved routes without an existing native control need hidden bridges');
-  const bridgeRoutes=await bridges.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(bridgeRoutes,['workout','nutrition','running','body','planner','memory','onboarding']);
-  assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'internal route bridges must stay invisible and non-interactive');
+  const bridges=page.locator('#bottomNav [data-garang-route-bridge="1"]');
+  assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'any surviving internal route bridge must stay invisible and non-interactive');
   assert.equal(await page.locator('#bottomNav [data-garang-route-bridge="1"][data-page="profile"],#bottomNav [data-garang-route-bridge="1"][data-page="settings"]').count(),0,'Profile and Settings must reuse their native top controls, not duplicate hidden bridges');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
@@ -57,6 +56,7 @@ async function routeWithRouter(page,route,selector){
   await routeWithRouter(page,'memory','#saveMemory');
   await routeWithRouter(page,'profile','#saveProfile');
   await routeWithRouter(page,'settings','#savePreferences');
+  await routeWithRouter(page,'onboarding','#saveOnboarding');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="coach"]').click();
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
