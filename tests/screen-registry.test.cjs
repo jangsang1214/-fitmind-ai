@@ -30,10 +30,14 @@ function fakeDoc(active='today',lang='ko'){
   };
 }
 
+assert.equal(GarangScreens.version,'1.2.1');
 assert.equal(GarangScreens.label('planner','ko'),'PLANNER / 실행');
 assert.equal(GarangScreens.label('planner','en'),'PLANNER');
+assert.equal(GarangScreens.label('memory','ko'),'MEMORY / 장기 기억');
+assert.equal(GarangScreens.label('memory','en'),'MEMORY');
 assert.equal(GarangScreens.isCompact('profile'),true);
 assert.equal(GarangScreens.isCompact('planner'),false);
+assert.equal(GarangScreens.isCompact('memory'),false);
 
 {
   const main=fakeMain({selectors:['#addPlan'],eyebrow:'TODAY / 오늘',title:'Planner'});
@@ -42,6 +46,15 @@ assert.equal(GarangScreens.isCompact('planner'),false);
   assert.equal(main._eyebrow.textContent,'PLANNER / 실행');
   assert.equal(main._title.hidden,false);
   assert.equal(main.dataset.garangScreen,'planner');
+}
+
+{
+  const main=fakeMain({selectors:['#saveMemory'],eyebrow:'MEMORY / 장기 기억',title:'Memory V2'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'memory','Memory must have a first-class screen identity');
+  GarangScreens.applyHeader(main,fakeDoc('today','ko'));
+  assert.equal(main._eyebrow.textContent,'MEMORY / 장기 기억');
+  assert.equal(main._title.hidden,false);
+  assert.equal(main.dataset.garangScreen,'memory');
 }
 
 {
@@ -69,6 +82,7 @@ assert.equal(GarangScreens.isCompact('planner'),false);
   GarangScreens.applyHeader(main,fakeDoc('today','ko'));
   assert.equal(main._eyebrow.textContent,'MODELING / 모델링');
   assert.equal(main._title.hidden,true,'User Model oversized title must stay hidden');
+  assert.equal(main.dataset.garangScreen,'modeling','Onboarding route must retain the canonical Modeling screen identity');
 }
 
 {
