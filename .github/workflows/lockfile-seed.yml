@@ -1,0 +1,27 @@
+name: GARANG lockfile seed
+on:
+  pull_request:
+    paths:
+      - package.json
+      - .github/workflows/lockfile-seed.yml
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate deterministic npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Validate lockfile contract
+        run: node -e "const p=require('./package-lock.json');const d=p.packages?.['']?.devDependencies||{};for(const [k,v] of Object.entries({'playwright':'1.55.0','firebase':'10.13.0','firebase-tools':'13.35.1','@firebase/rules-unit-testing':'3.0.3'})){if(d[k]!==v)throw new Error(k+' lock mismatch: '+d[k]);}if(p.lockfileVersion!==3)throw new Error('expected lockfileVersion 3');console.log('lockfile seed: PASS');"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: garang-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+          retention-days: 1
