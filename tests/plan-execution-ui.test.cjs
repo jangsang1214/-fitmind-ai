@@ -47,7 +47,7 @@ test('deep goal evidence remains available behind the droplet detail control',()
 
 test('mobile execution UI stays bounded and bottom sheet is safe-area aware',()=>{
   assert.match(css,/@media\(max-width:360px\)/);assert.match(css,/minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-bottom/);
-  assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open/);
+  assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open\{[^}]*overflow-y:hidden!important/);
 });
 
 console.log(`${tests.length} plan execution UI tests passed`);
