@@ -48,11 +48,19 @@ function updateRecord(domain,id,patch,meta={}){return applyWrite('updateRecord',
 function deleteRecord(domain,id,meta={}){return applyWrite('deleteRecord',{domain,id},meta);}
 function diagnostics(){const state=requireReady();return clone(Core.diagnostics(state));}
 
-window.GarangActionDataBridge=Object.freeze({
+const PublicBridge=Object.freeze({
   version:'garang-action-data-bridge-v1',
   contractVersion:Core?.ACTION_CONTRACT_VERSION||null,
   ready:()=>!!Core&&!!Base?.ready?.(),
   applyWrite,createRecord,updateRecord,deleteRecord,
   getDiagnostics:diagnostics
 });
+window.GarangActionDataBridge=PublicBridge;
+
+/* Backward-compatible Agent State Bridge facade.
+   Read ownership stays with the frozen v1 bridge, but every write now enters the
+   reliability core. Existing Coach code therefore upgrades without another UI owner. */
+if(Base&&Core){
+  window.GarangAgentStateBridge=Object.freeze({...Base,applyWrite:(tool,args,meta)=>PublicBridge.applyWrite(tool,args,meta),getActionDataDiagnostics:diagnostics});
+}
 })();
