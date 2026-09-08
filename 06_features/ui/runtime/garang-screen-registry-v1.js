@@ -12,7 +12,7 @@
     progress: Object.freeze({key:'progress',labelKo:'PROGRESS / 흐름',labelEn:'PROGRESS',compactTitle:true,selectors:['.progress-tabs'],patterns:[/\bprogress\b|진행 상황|흐름/i]}),
     running: Object.freeze({key:'running',labelKo:'RUNNING / 러닝',labelEn:'RUNNING',compactTitle:true,selectors:['#runStart','#runStop'],patterns:[/\brunning\b|log\s*\/\s*running|러닝/i]}),
     nutrition: Object.freeze({key:'nutrition',labelKo:'NUTRITION / 식단',labelEn:'NUTRITION',compactTitle:true,selectors:['#saveMeal','#foodSearch','#pickMealScan'],patterns:[/\bnutrition\b|식단/i]}),
-    planner: Object.freeze({key:'planner',labelKo:'PLAN / 계획',labelEn:'PLAN',compactTitle:false,selectors:['#addPlan'],patterns:[/\bplanner\b|plan\s*\/\s*계획|계획 추가/i]}),
+    planner: Object.freeze({key:'planner',labelKo:'PLANNER / 실행',labelEn:'PLANNER',compactTitle:false,selectors:['#addPlan'],patterns:[/\bplanner\b|plan\s*\/\s*계획|계획 추가/i]}),
     profile: Object.freeze({key:'profile',labelKo:'PROFILE / 프로필',labelEn:'PROFILE',compactTitle:true,selectors:['#saveProfile'],patterns:[/\bprofile\b|프로필/i]}),
     settings: Object.freeze({key:'settings',labelKo:'SETTING / 설정',labelEn:'SETTING',compactTitle:true,selectors:['#savePreferences'],patterns:[/\bsettings?\b|설정/i]}),
     modeling: Object.freeze({key:'modeling',labelKo:'MODELING / 모델링',labelEn:'MODELING',compactTitle:true,selectors:['#saveOnboarding'],patterns:[/\bmodeling\b|사용자 모델|garang이 먼저 알아야 할 것|\bstart\b/i]})
