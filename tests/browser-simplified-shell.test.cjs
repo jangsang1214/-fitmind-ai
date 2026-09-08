@@ -13,10 +13,10 @@ async function openRecordRoute(page,route){
   await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
   assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: Record navigation must not reopen legacy More`);
 }
-async function routeWithRouter(page,route,selector){
+async function routeWithRouter(page,route,selector,screen=route){
   const ok=await page.evaluate(r=>window.GarangRouter?.navigate?.(r,{source:'simplified-shell-test',force:true}),route);
   assert.equal(ok,true,`${route}: canonical Router must retain direct navigation`);
-  await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
+  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:5000});
   assert.equal(await page.locator(selector).count(),1,`${route}: existing screen capability must remain reachable`);
   assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: direct route must not create legacy More`);
 }
@@ -28,7 +28,7 @@ async function routeWithRouter(page,route,selector){
   await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},demoState());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangSimplifiedShell?.version==='1.1.0'&&window.GarangRouter?.version==='garang-router-v1.3.0',{timeout:7000});
+  await page.waitForFunction(()=>window.GarangSimplifiedShell?.version==='1.1.0'&&window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangScreens?.version==='1.2.1',{timeout:7000});
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary navigation items may remain');
   const navPages=await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(navPages,['today','log','coach','progress']);
   const labels=await nav.locator('b').allTextContents();assert.deepEqual(labels,['Today','Record','Coach','누적.']);
@@ -56,7 +56,7 @@ async function routeWithRouter(page,route,selector){
   await routeWithRouter(page,'memory','#saveMemory');
   await routeWithRouter(page,'profile','#saveProfile');
   await routeWithRouter(page,'settings','#savePreferences');
-  await routeWithRouter(page,'onboarding','#saveOnboarding');
+  await routeWithRouter(page,'onboarding','#saveOnboarding','modeling');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="coach"]').click();
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
