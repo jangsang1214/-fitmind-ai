@@ -5,7 +5,7 @@
   'use strict';
   if (window.GarangSimplifiedShell) return;
 
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
   const RECORD_ROUTES = Object.freeze([
     { route:'workout', ko:'운동', en:'Workout', koMeta:'세트 · 인증', enMeta:'Sets · verification' },
     { route:'nutrition', ko:'식단', en:'Nutrition', koMeta:'사진 · 직접 입력', enMeta:'Photo · manual entry' },
@@ -16,6 +16,7 @@
   const DUPLICATE_MENU_ROUTES = Object.freeze(['today','coach','log','workout','nutrition','running','body','progress']);
   const main = () => document.getElementById('main');
   const nav = () => document.getElementById('bottomNav');
+  const primaryButtons = () => nav()?.querySelectorAll('[data-garang-primary-nav="1"]') || [];
   const isKo = () => document.documentElement.lang !== 'en';
   let sheet = null;
   let previousFocus = null;
@@ -40,11 +41,10 @@
   }
 
   function labelNavigation() {
-    const ko = isKo();
-    const labels = ko
+    const labels = isKo()
       ? { today:'Today', log:'Record', coach:'Coach', progress:'누적.' }
       : { today:'Today', log:'Record', coach:'Coach', progress:'Accumulation' };
-    nav()?.querySelectorAll('button[data-page]').forEach(button => {
+    primaryButtons().forEach(button => {
       const label = button.querySelector('b');
       if (label && labels[button.dataset.page]) text(label, labels[button.dataset.page]);
     });
@@ -52,7 +52,7 @@
 
   function syncActiveNavigation() {
     const active = sheet ? 'log' : navGroup();
-    nav()?.querySelectorAll('button[data-page]').forEach(button => {
+    primaryButtons().forEach(button => {
       const selected = !!active && button.dataset.page === active;
       button.classList.toggle('active', selected);
       if (selected) button.setAttribute('aria-current','page');
@@ -67,17 +67,17 @@
     if (!grid) return;
     grid.hidden = true;
     grid.classList.add('garang-record-entry-internalized');
-    const headings = [...appMain.querySelectorAll('.section-title')];
-    const heading = headings.find(node => /빠른\s*기록|quick\s*record/i.test(node.textContent || ''));
-    if (heading) {
-      heading.hidden = true;
-      heading.classList.add('garang-record-entry-internalized');
-    }
+    const heading = [...appMain.querySelectorAll('.section-title')]
+      .find(node => /빠른\s*기록|quick\s*record/i.test(node.textContent || ''));
+    if (!heading) return;
+    heading.hidden = true;
+    heading.classList.add('garang-record-entry-internalized');
   }
 
   function hideDuplicateMenuRoutes() {
-    const selector = DUPLICATE_MENU_ROUTES.map(route => `.garang-more-sheet [data-route="${route}"],.garang-more-sheet [data-pagego="${route}"]`).join(',');
-    if (!selector) return;
+    const selector = DUPLICATE_MENU_ROUTES
+      .map(route => `.garang-more-sheet [data-route="${route}"],.garang-more-sheet [data-pagego="${route}"]`)
+      .join(',');
     document.querySelectorAll(selector).forEach(el => {
       el.hidden = true;
       el.setAttribute('aria-hidden','true');
@@ -97,25 +97,19 @@
     syncActiveNavigation();
   }
 
+  function showRouteError() {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    text(toast,isKo()?'기록 화면을 열지 못했습니다.':'Could not open the record screen.');
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'),1800);
+  }
+
   function navigateRecord(route) {
     closeRecordSheet({restoreFocus:false});
     let ok = false;
     try { ok = window.GarangRouter?.navigate?.(route,{source:'simplified-shell-record',force:true}) === true; } catch {}
-    if (!ok) {
-      const direct = document.querySelector(`[data-pagego="${CSS.escape(route)}"]`);
-      if (direct && typeof direct.onclick === 'function') {
-        direct.onclick.call(direct,{type:'garang-shell-route',target:direct,currentTarget:direct,preventDefault(){},stopPropagation(){}});
-        ok = true;
-      }
-    }
-    if (!ok) {
-      const toast = document.getElementById('toast');
-      if (toast) {
-        text(toast,isKo()?'기록 화면을 열지 못했습니다.':'Could not open the record screen.');
-        toast.classList.add('show');
-        setTimeout(()=>toast.classList.remove('show'),1800);
-      }
-    }
+    if (!ok) showRouteError();
   }
 
   function recordRows() {
@@ -156,7 +150,7 @@
   }
 
   document.addEventListener('click', event => {
-    const record = event.target.closest?.('#bottomNav button[data-page="log"]');
+    const record = event.target.closest?.('#bottomNav [data-garang-primary-nav="1"][data-page="log"]');
     if (record) {
       event.preventDefault();
       event.stopImmediatePropagation();
