@@ -1,0 +1,47 @@
+/* GARANG Today Action Flow v1 — minimal next-action layer. */
+.gtf{position:relative;margin:0 0 18px;padding:18px 0 16px;border-top:1px solid rgba(242,239,233,.08);border-bottom:1px solid rgba(242,239,233,.08);background:transparent;color:#f2efe9}
+.gtf-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;font:600 9px/1.2 Inter,"Noto Sans KR",system-ui,sans-serif;letter-spacing:.14em;color:rgba(242,239,233,.44)}
+.gtf-topline strong{font-weight:600;color:#69ab97;letter-spacing:.08em}
+.gtf-main{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:18px;align-items:start}
+.gtf-copy{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start;min-width:0}
+.gtf-progress{font-family:"Cormorant Garamond","Iowan Old Style",Georgia,serif;font-size:clamp(48px,7vw,72px);font-weight:500;line-height:.88;letter-spacing:-.04em;color:#f2efe9;white-space:nowrap}
+.gtf-copy h2{margin:1px 0 7px;font-family:"Noto Sans KR",Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif;font-size:clamp(19px,2.4vw,27px);font-weight:500;line-height:1.34;letter-spacing:-.035em;color:#f2efe9;word-break:keep-all}
+.gtf-copy p{max-width:620px;margin:0;font:400 13px/1.7 Inter,"Noto Sans KR",system-ui,sans-serif;color:rgba(242,239,233,.56);word-break:keep-all}
+.gtf-drop{appearance:none;position:relative;width:42px;height:42px;padding:0;border:0;background:transparent;cursor:pointer;display:grid;place-items:center;isolation:isolate}
+.gtf-drop:before{content:"";position:absolute;width:27px;height:27px;border:1px solid rgba(242,239,233,.22);border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:rgba(10,12,11,.82);transition:border-color .16s ease,background .16s ease,transform .16s ease;z-index:-1}
+.gtf-drop span{display:block;font:400 17px/1 Inter,system-ui,sans-serif;color:rgba(242,239,233,.72);transform:translateY(-1px)}
+.gtf-drop:hover:before,.gtf-drop[aria-expanded="true"]:before{border-color:rgba(105,171,151,.58);background:rgba(41,83,71,.26)}
+.gtf-drop:active:before{transform:rotate(-45deg) scale(.94)}
+.gtf-drop:focus-visible{outline:1px solid rgba(105,171,151,.82);outline-offset:2px;border-radius:12px}
+.gtf-action{display:flex;justify-content:flex-end;margin-top:14px}
+.gtf-next{appearance:none;display:inline-flex;align-items:center;gap:9px;min-height:38px;padding:0 0 0 14px;border:0;border-left:1px solid rgba(242,239,233,.12);background:transparent;color:rgba(242,239,233,.78);font:500 12px/1 Inter,"Noto Sans KR",system-ui,sans-serif;cursor:pointer;transition:color .16s ease,border-color .16s ease}
+.gtf-next span{font-size:18px;color:#69ab97;transform:translateY(-1px)}
+.gtf-next:hover{color:#f2efe9;border-left-color:rgba(105,171,151,.5)}
+.gtf-next:focus-visible{outline:1px solid rgba(105,171,151,.8);outline-offset:3px}
+.gtf-detail{margin-top:18px;border-top:1px solid rgba(242,239,233,.08)}
+.gtf-detail[hidden]{display:none!important}
+.gtf-row{display:grid;grid-template-columns:minmax(70px,.55fr) minmax(0,1fr) 12px;gap:16px;align-items:center;min-height:48px;border-bottom:1px solid rgba(242,239,233,.065);font-family:Inter,"Noto Sans KR",system-ui,sans-serif}
+.gtf-row>span{font-size:11px;font-weight:500;letter-spacing:.05em;color:rgba(242,239,233,.42)}
+.gtf-row>strong{font-size:13px;font-weight:500;text-align:right;color:rgba(242,239,233,.8)}
+.gtf-row>i{width:5px;height:5px;border-radius:50%;justify-self:end;background:rgba(242,239,233,.18)}
+.gtf-row[data-state="done"]>i{background:#69ab97}
+.gtf-row[data-state="pending"]>i{background:#a56c56}
+.gtf-insight{display:grid;grid-template-columns:72px 1fr;gap:14px;padding-top:15px}
+.gtf-insight span{font:600 8px/1.2 Inter,system-ui,sans-serif;letter-spacing:.15em;color:#69ab97}
+.gtf-insight p{margin:0;font:400 12px/1.65 Inter,"Noto Sans KR",system-ui,sans-serif;color:rgba(242,239,233,.54);word-break:keep-all}
+@media(max-width:799px){
+ .gtf{margin-bottom:14px;padding:15px 0 14px}
+ .gtf-topline{margin-bottom:12px}
+ .gtf-main{grid-template-columns:minmax(0,1fr) 44px;gap:10px}
+ .gtf-copy{grid-template-columns:1fr;gap:8px}
+ .gtf-progress{font-size:51px}
+ .gtf-copy h2{font-size:20px;line-height:1.38;margin:0 0 5px}
+ .gtf-copy p{font-size:12px;line-height:1.65;padding-right:4px}
+ .gtf-action{margin-top:11px}
+ .gtf-next{min-height:44px}
+ .gtf-detail{margin-top:14px}
+ .gtf-row{min-height:47px;grid-template-columns:70px minmax(0,1fr) 10px;gap:10px}
+ .gtf-row>strong{font-size:12px}
+ .gtf-insight{grid-template-columns:62px 1fr;gap:10px}
+}
+@media(max-width:390px){.gtf-progress{font-size:47px}.gtf-copy h2{font-size:19px}.gtf-topline{font-size:8px}.gtf-row{grid-template-columns:62px minmax(0,1fr) 8px}}
