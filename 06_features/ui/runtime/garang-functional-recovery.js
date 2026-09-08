@@ -117,10 +117,16 @@
     ensureLiveSessionBar(builder);makeModelInteractive();
   }
 
-  function navigateAny(page) { const proxy=document.querySelector('#bottomNav button');if(!proxy)return;const old=proxy.dataset.page;proxy.dataset.page=page;proxy.click();proxy.dataset.page=old; }
+  function navigateAny(page) {
+    try {
+      return window.GarangRouter?.navigate?.(page,{source:'functional-recovery-more',force:true}) === true;
+    } catch {
+      return false;
+    }
+  }
   function openMore() {
     document.querySelector('.garang-more-sheet')?.remove();const sheet=document.createElement('div');sheet.className='garang-more-sheet';sheet.innerHTML=`<section class="garang-more-panel" role="dialog" aria-modal="true" aria-label="GARANG 전체 기능"><div class="garang-more-head"><strong>GARANG</strong><button type="button" aria-label="닫기">×</button></div><div class="garang-more-grid"><button data-route="running">Running<small>GPS · pace · records</small></button><button data-route="nutrition">Nutrition<small>Meal Scan · macros · meals</small></button><button data-route="planner">Planner<small>plans · AI suggestions</small></button><button data-route="memory">Memory<small>long-term context</small></button><button data-route="progress">Progress<small>analytics · weekly review</small></button><button data-route="profile">Profile<small>body · goals</small></button><button data-route="settings">Settings<small>sync · plan · data</small></button><button data-route="log">All Logs<small>workout · food · run · body</small></button><button data-route="onboarding">User Model<small>goal · preference</small></button></div></section>`;
-    document.body.appendChild(sheet);sheet.querySelector('.garang-more-head button').onclick=()=>sheet.remove();sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.remove();});sheet.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{const route=b.dataset.route;sheet.remove();navigateAny(route);});
+    document.body.appendChild(sheet);sheet.querySelector('.garang-more-head button').onclick=()=>sheet.remove();sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.remove();});sheet.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{const route=b.dataset.route;sheet.remove();if(!navigateAny(route)){const toast=document.getElementById('toast');if(toast){toast.textContent='화면을 열지 못했습니다.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}}});
   }
   function bindGlobalRecovery(){const menu=document.getElementById('menuBtn');if(menu&&menu.dataset.garangRecoveryBound!=='1'){menu.dataset.garangRecoveryBound='1';menu.addEventListener('click',openMore);}}
   function repairDataActions(){
