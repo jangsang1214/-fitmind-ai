@@ -1,13 +1,12 @@
-/* GARANG canonical feature router v1.1
-   Feature runtimes request navigation here instead of synthesizing DOM click events.
-   01_app/app.js remains the screen-render owner. The router only closes transient UI
-   before user-driven feature navigation; hydration reconciliation can opt out because
-   it has no transient surface to clean and must stay cheap on WebKit boot.
+/* GARANG canonical feature router v1.2
+   Feature runtimes request navigation here instead of synthesizing menu interactions.
+   01_app/app.js remains the screen-render owner. Native app-bound route buttons are
+   the stable bridge for direct feature navigation; transient UI is cleaned first.
 */
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.1.0';
+const VERSION='garang-router-v1.2.0';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
@@ -49,24 +48,15 @@ function directTarget(route){
   if(route==='profile')return document.getElementById('profileTopBtn');
   return document.querySelector(`[data-pagego="${CSS.escape(route)}"]`);
 }
-function viaMenu(route){
-  const menu=document.getElementById('menuBtn');if(!callBound(menu))return false;
-  const target=document.querySelector(`.garang-more-sheet [data-route="${CSS.escape(route)}"],.garang-more-sheet [data-pagego="${CSS.escape(route)}"]`);
-  if(target&&callBound(target))return true;
-  return false;
-}
 function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   const next=normalize(route);if(!valid(next))return false;
   if(!force&&current()===next)return true;
   try{window.dispatchEvent(new CustomEvent('garang:route-requested',{detail:{from:current(),to:next,source}}));}catch{}
   if(cleanup)removeTransient();
-  let ok=callBound(bottomTarget(next))||callBound(directTarget(next));
-  if(!ok)ok=viaMenu(next);
-  if(ok){
-    try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
-    return true;
-  }
-  return false;
+  const ok=callBound(bottomTarget(next))||callBound(directTarget(next));
+  if(!ok)return false;
+  try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
+  return true;
 }
 window.GarangRouter=Object.freeze({version:VERSION,navigate,current,cleanup:removeTransient});
 })();
