@@ -13,7 +13,13 @@ const agent=read('06_features/ui/runtime/garang-coach-agent-v4.js');
 const decision=read('06_features/ui/runtime/garang-coach-decision-v1.js');
 const profile=read('06_features/ui/runtime/garang-coach-profile-v2.js');
 const recovery=read('06_features/ui/runtime/garang-data-migration-v2.js');
-for(const route of ['today','coach','workout','body','progress'])assert.ok(html.includes(`data-page="${route}"`),`bottom route missing ${route}`);
+const simplified=read('06_features/ui/runtime/garang-simplified-shell-v1.js');
+const bottomNav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
+for(const route of ['today','log','coach','progress'])assert.ok(bottomNav.includes(`data-page="${route}"`),`primary route missing ${route}`);
+for(const route of ['workout','nutrition','running','body']){
+  assert.ok(app.includes(`${route}:`)||app.includes(`function ${route}Page`),`feature implementation missing ${route}`);
+  assert.ok(simplified.includes(`route:'${route}'`),`Record route missing ${route}`);
+}
 for(const id of ['menuBtn','syncBadge','settingsTopBtn','profileTopBtn','logoutBtn','main','bottomNav','mediaPicker','mealScanPicker','bodyScanPicker'])assert.ok(html.includes(`id="${id}"`),`global capability missing ${id}`);
 for(const token of ["$('settingsTopBtn').onclick=()=>go('settings')","$('profileTopBtn').onclick=()=>go('profile')","function cloudLoadAndMerge()","function saveState(","function go(page)","function render()"])assert.ok(app.includes(token),`core behavior missing ${token}`);
 for(const token of ['createPlan','updatePlan','saveMemory','deleteRecord','updateGoal'])assert.ok(agentState.includes(`case '${token}'`),`Agent write capability missing ${token}`);
@@ -24,7 +30,7 @@ assert.ok(router.includes('window.GarangRouter'),'canonical router capability mi
 assert.ok(shell.includes('g5-app-nav'),'Coach shell capability missing');
 assert.ok(agent.includes('data-garang-prompt-id'),'canonical Coach prompt capability missing');
 assert.ok(profile.includes('gcp-profile-trigger'),'Coach profile capability missing');
-for(const required of ['06_features/ui/runtime/garang-router-v1.js','06_features/ui/runtime/garang-brand-runtime-v2.js','06_features/ui/runtime/garang-polish-v3.js','06_features/ui/runtime/garang-coach-shell-v1.js','06_features/ui/runtime/garang-coach-agent-v4.js','06_features/ui/runtime/garang-coach-decision-v1.js','06_features/ui/runtime/garang-coach-profile-v2.js','06_features/ui/runtime/garang-today-anatomy-v1.js','06_features/ui/runtime/garang-experience-v3.js','06_features/ui/runtime/garang-experience-v4.js'])assert.ok(manifest.scripts.includes(required),`runtime capability missing ${required}`);
+for(const required of ['06_features/ui/runtime/garang-router-v1.js','06_features/ui/runtime/garang-brand-runtime-v2.js','06_features/ui/runtime/garang-polish-v3.js','06_features/ui/runtime/garang-coach-shell-v1.js','06_features/ui/runtime/garang-coach-agent-v4.js','06_features/ui/runtime/garang-coach-decision-v1.js','06_features/ui/runtime/garang-coach-profile-v2.js','06_features/ui/runtime/garang-today-anatomy-v1.js','06_features/ui/runtime/garang-experience-v3.js','06_features/ui/runtime/garang-experience-v4.js','06_features/ui/runtime/garang-simplified-shell-v1.js'])assert.ok(manifest.scripts.includes(required),`runtime capability missing ${required}`);
 const retired=['06_features/ui/runtime/garang-settings-touch-safety-v1.js','06_features/ui/runtime/garang-coach-home-hotfix.js','06_features/ui/runtime/garang-coach-profile-stability-v1.js','06_features/ui/runtime/garang-coach-avatar-profile-v1.js','06_features/ui/runtime/garang-coach-item4-final.js','06_features/ui/runtime/garang-today-premium-fix.js','06_features/ui/runtime/garang-polish-v3-fix.js'];
 for(const file of retired){assert.equal(manifest.scripts.includes(file),false,`retired overlay must not boot: ${file}`);assert.equal(fs.existsSync(path.join(root,file)),false,`retired overlay file must be removed: ${file}`);}
 assert.equal(Object.hasOwn(manifest.runtimeContract,'legacyNamedCanonical'),false,'legacyNamedCanonical escape hatch must be removed');
