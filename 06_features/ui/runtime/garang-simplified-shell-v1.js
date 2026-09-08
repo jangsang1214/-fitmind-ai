@@ -125,6 +125,7 @@
 
   function openRecordSheet(trigger) {
     if (sheet) return closeRecordSheet();
+    try { window.GarangRouter?.cleanup?.(); } catch {}
     previousFocus = trigger || document.activeElement;
     const ko = isKo();
     const backdrop = document.createElement('div');
