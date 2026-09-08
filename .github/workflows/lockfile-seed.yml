@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 22
       - name: Generate deterministic npm lockfile
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Validate lockfile contract
         run: |
           node - <<'NODE'
