@@ -172,6 +172,7 @@
   });
   window.addEventListener('garang:screen-rendered', reconcile);
   window.addEventListener('garang:route-completed', reconcile);
+  window.addEventListener('garang:route-requested', () => { if (sheet) closeRecordSheet({restoreFocus:false}); });
   window.addEventListener('pageshow', reconcile);
 
   window.GarangSimplifiedShell = Object.freeze({
