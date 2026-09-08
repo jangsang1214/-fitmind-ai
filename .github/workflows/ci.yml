@@ -19,6 +19,8 @@ jobs:
           node-version: 22
       - name: Verify GARANG Intelligence Core v1
         run: node tests/intelligence-core-v1.test.cjs
+      - name: Verify GARANG Action & Data Reliability v1
+        run: node tests/agent-contract-v2.test.cjs && node tests/action-data-reliability-v1.test.cjs && node tests/action-data-bridge-v1.test.cjs
       - name: Test Commercial Core and regressions
         run: npm test
       - name: Validate runtime and build
