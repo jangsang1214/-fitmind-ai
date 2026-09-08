@@ -1,4 +1,5 @@
 'use strict';
+const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
@@ -59,7 +60,7 @@ async function assertTodayNotClipped(page,label){
 }
 
 (async()=>{
-  const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});let browser;
+  const server=startStaticServer(serveRoot,port);let browser;
   try{
     await waitForServer();browser=await chromium.launch({headless:true});
     for(const mode of [{name:'desktop',viewport:{width:1280,height:900},touch:false},{name:'mobile',viewport:{width:390,height:844},touch:true}]){

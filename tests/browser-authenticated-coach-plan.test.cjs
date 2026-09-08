@@ -1,4 +1,5 @@
 'use strict';
+const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
@@ -14,7 +15,7 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
 async function coachState(page){return page.evaluate(()=>{const root=document.querySelector('.garang-coach-v2'),active=document.querySelector('#bottomNav button.active')?.dataset.page||null,r=root?.getBoundingClientRect();const planMessage=[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>String(el.textContent||'').includes('오늘 계획을 만들어줘'));return {active,coach:!!root&&!!r&&r.width>0&&r.height>0,screen:document.getElementById('main')?.dataset.garangScreen||'',prompts:document.querySelectorAll('[data-garang-prompt-id]').length,proposal:!!document.querySelector('.g4-agent-proposal'),planMessage,threadKeys:Object.keys(localStorage).filter(k=>k.startsWith('garang_coach_threads_v2::')).sort()};});}
 
 (async()=>{
- const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});let browser;
+ const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
   await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked */'}));

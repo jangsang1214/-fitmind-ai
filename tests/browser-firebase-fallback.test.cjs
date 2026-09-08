@@ -1,4 +1,5 @@
 'use strict';
+const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
@@ -19,7 +20,7 @@ async function waitForServer(){
 }
 
 (async()=>{
-  const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});
+  const server=startStaticServer(serveRoot,port);
   let browser;
   try{
     await waitForServer();
