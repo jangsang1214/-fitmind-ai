@@ -23,8 +23,14 @@ test('commercial experience layer remains active before the physical app-shell o
 
 test('keyboard focus has one visible design-system ring',()=>{
   assert.match(css,/:where\(button,input,select,textarea,a,\[tabindex\]\):focus-visible/);
-  assert.match(css,/outline:2px solid var\(--garang-focus\)/);
+  assert.match(css,/outline:2px solid var\(--garang-focus\)!important/);
   assert.match(css,/--garang-focus:#baa16f/);
+});
+
+test('WebKit form focus fallback cannot be suppressed by legacy outline reset',()=>{
+  assert.match(css,/#appView :where\(input,select,textarea\):focus/);
+  assert.match(css,/#authView :where\(input,select,textarea\):focus/);
+  assert.match(css,/outline:2px solid var\(--garang-focus\)!important/);
 });
 
 test('disabled and busy controls expose deterministic interaction states',()=>{
