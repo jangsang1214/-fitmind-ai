@@ -36,6 +36,12 @@ function state(){
     const planner=page.locator('.garang-more-sheet [data-route="planner"]');await planner.waitFor({state:'visible',timeout:5000});await planner.click();
     const section=page.locator('#garangPlanExecution');await section.waitFor({state:'visible',timeout:7000});
 
+    const plannerHead=await page.evaluate(()=>{const head=document.querySelector('#main > .page-head');const title=head?.querySelector('h1'),kicker=head?.querySelector('.eyebrow');return {screen:document.getElementById('main')?.dataset?.garangScreen||'',title: title?.textContent?.trim()||'',titleDisplay:title?getComputedStyle(title).display:'missing',kicker:kicker?.textContent?.trim()||''};});
+    assert.equal(plannerHead.screen,'planner','Planner must keep the canonical screen identity');
+    assert.equal(plannerHead.title,'Planner','legacy page title may remain in markup for owner compatibility');
+    assert.equal(plannerHead.titleDisplay,'none','large Planner page title must stay visually removed');
+    assert.match(plannerHead.kicker,/PLANNER/,'small Planner kicker must remain visible');
+
     const summary=await section.innerText();
     assert.match(summary,/누적\./);assert.match(summary,/이번 주|계획한 흐름/);assert.match(summary,/벤치프레스/);assert.match(summary,/2,270 kcal/);assert.match(summary,/118g/);assert.match(summary,/수면 7\.5h/);assert.match(summary,/GARANG INSIGHT/);
     assert.doesNotMatch(summary,/판단 신뢰도/,'deep confidence must stay hidden in the default summary');
