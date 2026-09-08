@@ -39,6 +39,8 @@ jobs:
           if(p.lockfileVersion!==3)throw new Error(`expected lockfileVersion 3, got ${p.lockfileVersion}`);
           console.log('locked dependency contract: PASS');
           NODE
+      - name: Verify browser test server portability
+        run: node tests/browser-server-portability.test.cjs
       - name: Verify production dependency security
         run: timeout 90s npm audit --omit=dev --audit-level=high
       - name: Report dev tooling audit
