@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {webkit}=require('playwright');
 
 const root=path.resolve(__dirname,'..');
@@ -86,8 +85,17 @@ async function tapVisibleBackdrop(page,selector,label){
 }
 
 async function route(page,name){
-  await tap(page,`#bottomNav button[data-page="${name}"]`,`route ${name}`);
-  await page.waitForFunction(route=>document.querySelector(`#bottomNav button[data-page="${route}"]`)?.classList.contains('active'),name,{timeout:5000});
+  await tap(page,`#bottomNav [data-garang-primary-nav="1"][data-page="${name}"]`,`route ${name}`);
+  await page.waitForFunction(route=>document.getElementById('main')?.dataset?.garangScreen===route,name,{timeout:5000});
+}
+
+async function tapRecordRoute(page,name,label=`Record ${name}`){
+  await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="log"]',`${label} open`);
+  const sheet=page.locator('[data-garang-record-sheet="1"]');
+  await sheet.waitFor({state:'visible',timeout:3000});
+  await tap(page,`[data-garang-record-sheet="1"] [data-garang-record-route="${name}"]`,label);
+  await page.waitForFunction(route=>document.getElementById('main')?.dataset?.garangScreen===route,name,{timeout:5000});
+  assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${name} must remain grouped under Record`);
 }
 
 (async()=>{
@@ -129,7 +137,11 @@ async function route(page,name){
     await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v4.0.0',null,{timeout:7000});
     await heartbeat(page,'initial boot');
 
-    for(const name of ['coach','workout','body','progress','today'])await route(page,name);
+    await route(page,'coach');
+    await tapRecordRoute(page,'workout','audit workout');
+    await tapRecordRoute(page,'body','audit body');
+    await route(page,'progress');
+    await route(page,'today');
 
     await route(page,'coach');
     await page.waitForFunction(()=>document.querySelector('.garang-decision-card')&&document.querySelector('.g2-chat-scroll'),null,{timeout:10000});
