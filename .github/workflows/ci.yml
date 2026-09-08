@@ -80,6 +80,10 @@ jobs:
     needs: core
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -93,17 +97,6 @@ jobs:
         run: npm run build
       - name: Verify browser build entry
         run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-1.55.0
-      - name: Install Playwright system dependencies
-        run: npx playwright install-deps chromium webkit
-      - name: Install Chromium and WebKit
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium webkit
       - name: Verify Firebase CDN fallback
         run: node tests/browser-firebase-fallback.test.cjs
       - name: Verify real browser interactions
