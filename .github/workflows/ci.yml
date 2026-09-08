@@ -9,14 +9,55 @@ concurrency:
   group: garang-release-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify:
+  core:
+    name: core-build-rules
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked CI dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify locked dependency contract
+        run: |
+          node - <<'NODE'
+          const p=require('./package-lock.json');
+          const d=p.packages?.['']?.devDependencies||{};
+          const expected={
+            playwright:'1.55.0',
+            firebase:'10.13.0',
+            'firebase-tools':'13.35.1',
+            '@firebase/rules-unit-testing':'3.0.3'
+          };
+          for(const [k,v] of Object.entries(expected)){
+            if(d[k]!==v)throw new Error(`${k} lock mismatch: ${d[k]}`);
+          }
+          if(p.lockfileVersion!==3)throw new Error(`expected lockfileVersion 3, got ${p.lockfileVersion}`);
+          console.log('locked dependency contract: PASS');
+          NODE
+      - name: Verify production dependency security
+        run: timeout 90s npm audit --omit=dev --audit-level=high
+      - name: Report dev tooling audit
+        run: |
+          set +e
+          timeout 90s npm audit --audit-level=low --json > dev-audit.json
+          audit_code=$?
+          set -e
+          node - <<'NODE'
+          const fs=require('node:fs');
+          try{
+            const report=JSON.parse(fs.readFileSync('dev-audit.json','utf8'));
+            const v=report.metadata?.vulnerabilities||{};
+            console.log(`dev/tooling audit: total=${v.total??'n/a'} critical=${v.critical??'n/a'} high=${v.high??'n/a'} moderate=${v.moderate??'n/a'} low=${v.low??'n/a'}`);
+          }catch{
+            console.log('dev/tooling audit report unavailable; tooling audit remains non-blocking');
+          }
+          NODE
+          echo "dev tooling audit exit code: ${audit_code} (informational only)"
       - name: Verify GARANG Intelligence Core v1
         run: node tests/intelligence-core-v1.test.cjs
       - name: Verify GARANG Action & Data Reliability v1
@@ -29,12 +70,34 @@ jobs:
         run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
       - name: Verify live Firebase public health
         run: node tests/firebase-live-health.test.cjs
-      - name: Install browser and rules test dependencies
-        run: npm install --no-save --package-lock=false playwright@1.55.0 firebase@10.13.0 @firebase/rules-unit-testing@3.0.3 firebase-tools@13.35.1
-      - name: Install Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
       - name: Verify Firestore rules in emulator
         run: npx firebase emulators:exec --only firestore --project garang-rules-test "node tests/firestore-rules-emulator.test.cjs"
+
+  browser:
+    name: browser-webkit
+    needs: core
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked CI dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-1.55.0
+      - name: Install Playwright system dependencies
+        run: npx playwright install-deps chromium webkit
+      - name: Install Chromium and WebKit
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium webkit
       - name: Verify Firebase CDN fallback
         run: node tests/browser-firebase-fallback.test.cjs
       - name: Verify real browser interactions
@@ -59,3 +122,20 @@ jobs:
         run: node tests/browser-mobile-button-audit.test.cjs
       - name: Verify mobile runtime stability stress
         run: node tests/browser-mobile-stability-stress.test.cjs
+
+  verify:
+    name: verify
+    if: always()
+    needs: [core, browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all release jobs
+        env:
+          CORE_RESULT: ${{ needs.core.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+        run: |
+          echo "core=${CORE_RESULT} browser=${BROWSER_RESULT}"
+          test "${CORE_RESULT}" = "success"
+          test "${BROWSER_RESULT}" = "success"
+          echo "GARANG release gate: PASS"
