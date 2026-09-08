@@ -30,8 +30,8 @@ function fakeDoc(active='today',lang='ko'){
   };
 }
 
-assert.equal(GarangScreens.label('planner','ko'),'PLAN / 계획');
-assert.equal(GarangScreens.label('planner','en'),'PLAN');
+assert.equal(GarangScreens.label('planner','ko'),'PLANNER / 실행');
+assert.equal(GarangScreens.label('planner','en'),'PLANNER');
 assert.equal(GarangScreens.isCompact('profile'),true);
 assert.equal(GarangScreens.isCompact('planner'),false);
 
@@ -39,14 +39,26 @@ assert.equal(GarangScreens.isCompact('planner'),false);
   const main=fakeMain({selectors:['#addPlan'],eyebrow:'TODAY / 오늘',title:'Planner'});
   assert.equal(GarangScreens.detect(main,fakeDoc('today')),'planner','Planner must beat stale Today bottom-nav state');
   GarangScreens.applyHeader(main,fakeDoc('today','ko'));
-  assert.equal(main._eyebrow.textContent,'PLAN / 계획');
+  assert.equal(main._eyebrow.textContent,'PLANNER / 실행');
   assert.equal(main._title.hidden,false);
   assert.equal(main.dataset.garangScreen,'planner');
 }
 
 {
+  const main=fakeMain({selectors:['#addPlan'],eyebrow:'TODAY / 오늘',title:'Planner'});
+  const doc={
+    documentElement:{lang:'ko'},
+    getElementById(id){return id==='main'?main:null;},
+    querySelector(sel){return sel==='#bottomNav button.active'?{dataset:{page:'today'}}:null;}
+  };
+  assert.equal(GarangScreens.reconcile(doc),'planner','render lifecycle reconciliation must replace stale Today identity');
+  assert.equal(main.dataset.garangScreen,'planner');
+  assert.equal(main._eyebrow.textContent,'PLANNER / 실행');
+}
+
+{
   const main=fakeMain({selectors:['#saveProfile'],eyebrow:'PROFILE',title:'프로필'});
-  GarangScreens.applyHeader(main,fakeDoc('today','ko'));
+  assert.equal(GarangScreens.applyHeader(main,fakeDoc('today','ko')),'profile');
   assert.equal(main._eyebrow.textContent,'PROFILE / 프로필');
   assert.equal(main._title.hidden,true,'Profile oversized title must stay hidden');
   assert.equal(main.classList.contains('garang-primary-title-hidden'),true);

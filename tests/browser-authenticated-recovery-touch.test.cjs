@@ -1,4 +1,5 @@
 'use strict';
+const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
@@ -14,7 +15,7 @@ async function evalResponsive(page,fn,label){return Promise.race([page.evaluate(
 async function heartbeat(page,label){await Promise.race([page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,40))),timeout(1800,`${label}: WebKit main thread stalled`)]);}
 async function tap(page,selector,label=selector){stage(`tap ${label}`);const loc=page.locator(selector);await loc.waitFor({state:'visible',timeout:7000});await loc.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));await page.waitForTimeout(35);const box=await loc.boundingBox();assert.ok(box,`${label}: no touch box`);const owns=await loc.evaluate(el=>{const r=el.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!h&&(h===el||el.contains(h));});assert.equal(owns,true,`${label}: does not own hit point`);await Promise.race([page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2),timeout(3000,`${label}: physical tap did not settle`)]);stage(`tap ${label} physical settled`);await heartbeat(page,label);stage(`tap ${label} settled`);}
 (async()=>{
- const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1'],{cwd:serveRoot,stdio:'ignore'});let browser;
+ const server=startStaticServer(serveRoot,port);let browser;
  try{
   stage('server');await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
   await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked */'}));

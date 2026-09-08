@@ -1,6 +1,7 @@
 /* GARANG Plan Execution & Accumulation v1 — minimal summary / deep detail */
 .gx-panel{font-family:var(--g2-ui,Inter,Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif);color:var(--g2-ivory,#f2efe9)}
 .gx-panel [hidden]{display:none!important}
+#main[data-garang-screen="planner"]>.page-head h1{display:none}
 .gx-minimal{margin:12px 0 24px;padding:24px 2px 8px;background:transparent;border:0;min-width:0}
 .gx-hero{display:grid;grid-template-columns:minmax(0,1fr) 52px;align-items:start;gap:20px;padding:0 2px 22px}
 .gx-hero .eyebrow,.gx-progress-line .eyebrow{display:block;margin-bottom:8px;color:var(--g2-muted,#7c807b);font-size:8px;letter-spacing:.18em;text-transform:uppercase}
