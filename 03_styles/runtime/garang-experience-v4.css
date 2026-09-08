@@ -1,4 +1,11 @@
-/* GARANG experience v4.4 */
+/* GARANG experience v4.5 — commercial interaction finish */
+:root{
+  --garang-focus:#baa16f;
+  --garang-focus-ring:0 0 0 3px rgba(186,161,111,.18);
+  --garang-touch-min:44px;
+  --garang-disabled-opacity:.46;
+}
+
 .garang-single-route{
   grid-template-columns:1fr!important;
 }
@@ -19,4 +26,67 @@
   display:none!important;
   visibility:hidden!important;
   pointer-events:none!important;
+}
+
+/* Commercial interaction contract: keyboard users always get one visible, non-layout-shifting focus ring. */
+:where(button,input,select,textarea,a,[tabindex]):focus-visible{
+  outline:2px solid var(--garang-focus);
+  outline-offset:2px;
+  box-shadow:var(--garang-focus-ring);
+}
+.g3-body-model .g3-muscle:focus-visible{
+  outline:2px solid var(--garang-focus)!important;
+  outline-offset:2px;
+}
+
+/* Busy/disabled controls must look and behave unavailable instead of appearing to accept input. */
+:where(button,input,select,textarea):disabled,
+:where(button,[role="button"])[aria-disabled="true"]{
+  opacity:var(--garang-disabled-opacity)!important;
+  cursor:not-allowed!important;
+  pointer-events:none!important;
+}
+:where(button,[role="button"])[aria-busy="true"]{
+  cursor:progress!important;
+}
+
+/* Keep interactions deliberate on touch devices and prevent accidental double-tap zoom on controls. */
+:where(button,[role="button"],a,input,select,textarea){
+  -webkit-tap-highlight-color:rgba(186,161,111,.12);
+}
+:where(button,[role="button"],a){touch-action:manipulation}
+
+/* Long user-generated content may never force a horizontal viewport overflow. */
+:where(.card,.list-item,.coach-answer,.g2-message-text,.g4-agent-proposal,p,li){
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+/* iOS Safari zooms focused form fields below 16px; keep mobile entry stable without changing desktop density. */
+@media(max-width:799px){
+  :where(input:not([type="range"]),select,textarea){font-size:16px!important}
+}
+
+/* Primary commercial actions meet a coarse-pointer touch target without inflating compact desktop controls. */
+@media(pointer:coarse){
+  :where(.primary,.ghost,.social,.text-btn,.g4-proposal-actions button,#saveWorkoutSession,#saveMeal,#saveBody,#addPlan,#saveProfile,#savePreferences){
+    min-height:var(--garang-touch-min);
+  }
+}
+
+/* Respect OS motion preferences across legacy and current animation layers. */
+@media(prefers-reduced-motion:reduce){
+  html:focus-within{scroll-behavior:auto!important}
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+/* Higher-contrast users get clearer boundaries while preserving GARANG's dark palette. */
+@media(prefers-contrast:more){
+  :root{--line:#4b4740;--line2:#656057;--muted:#b4ada4}
+  :where(.card,.list-item,input,select,textarea,button){border-color:var(--line2)}
 }
