@@ -9,10 +9,11 @@ const Base=BrowserBase||(typeof module==='object'&&module.exports?require('./age
 if(!Base)throw new Error('GARANG_AGENT_CONTRACT_V1_REQUIRED');
 const CONTRACT_VERSION=Base.CONTRACT_VERSION;
 const ACTION_LAYER_VERSION='garang-agent-action-v2';
+const CONFIRMATION_SCOPE_KEY='__GARANG_AGENT_CONFIRMED_WRITE_V2__';
 const CRUD_DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','memory']);
 const READ_TOOLS=Object.freeze([...Base.READ_TOOLS]);
 const WRITE_TOOLS=Object.freeze([...Base.WRITE_TOOLS,'createRecord','updateRecord']);
-const WRITE_SET=new Set(WRITE_TOOLS),READ_SET=new Set(READ_TOOLS),ALL_TOOLS=new Set([...READ_TOOLS,...WRITE_TOOLS]),DOMAIN_SET=new Set(CRUD_DOMAINS);
+const READ_SET=new Set(READ_TOOLS),ALL_TOOLS=new Set([...READ_TOOLS,...WRITE_TOOLS]),DOMAIN_SET=new Set(CRUD_DOMAINS);
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const clone=value=>value===undefined?undefined:(typeof structuredClone==='function'?structuredClone(value):JSON.parse(JSON.stringify(value)));
 const clean=value=>String(value??'').trim();
@@ -56,6 +57,15 @@ function validateResponse(raw,request,{idFactory=defaultId}={}){
 }
 function createMockAdapter(options){return Base.createMockAdapter(options);}
 function readFromState(tool,state){return Base.readFromState(tool,state);}
+function withConfirmedWriteScope(meta,run){
+  const previous=root[CONFIRMATION_SCOPE_KEY],scope=Object.freeze({...clone(meta),userConfirmed:true});
+  root[CONFIRMATION_SCOPE_KEY]=scope;
+  try{return run();}
+  finally{
+    if(previous===undefined)delete root[CONFIRMATION_SCOPE_KEY];
+    else root[CONFIRMATION_SCOPE_KEY]=previous;
+  }
+}
 function createSession({getState=()=>({}),readTool=null,applyWrite=()=>null,idFactory=defaultId,clock=defaultClock}={}){
   const proposals=new Map(),audit=[];
   const read=(tool,args)=>{assert(READ_SET.has(tool),'TOOL_NOT_ALLOWED');const result=typeof readTool==='function'?readTool(tool,clone(args||{})):readFromState(tool,getState());return clone(result);};
@@ -72,12 +82,15 @@ function createSession({getState=()=>({}),readTool=null,applyWrite=()=>null,idFa
     },
     confirm(proposalId,approved){
       const proposal=proposals.get(proposalId);assert(proposal,'PROPOSAL_NOT_FOUND');assert(proposal.status==='pending','PROPOSAL_ALREADY_RESOLVED');proposal.status=approved?'confirmed':'rejected';proposal.resolvedAt=clock().toISOString();let result=null;
-      if(approved)result=applyWrite(proposal.tool,clone(proposal.args),{callId:proposal.id,idempotencyKey:proposal.id,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)});
+      if(approved){
+        const meta={callId:proposal.id,idempotencyKey:proposal.id,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)};
+        result=withConfirmedWriteScope(meta,()=>applyWrite(proposal.tool,clone(proposal.args),meta));
+      }
       audit.push({event:proposal.status==='confirmed'?'write_confirmed':'write_rejected',callId:proposal.id,tool:proposal.tool,at:proposal.resolvedAt});return {proposal:clone(proposal),result:clone(result)};
     },
     getProposal(id){const proposal=proposals.get(id);return proposal?clone(proposal):null;}
   });
 }
 
-return Object.freeze({CONTRACT_VERSION,ACTION_LAYER_VERSION,CRUD_DOMAINS,READ_TOOLS,WRITE_TOOLS,AgentContractError:Base.AgentContractError,createRequest,validateResponse,normalizeToolCall,createMockAdapter,createSession,readFromState});
+return Object.freeze({CONTRACT_VERSION,ACTION_LAYER_VERSION,CONFIRMATION_SCOPE_KEY,CRUD_DOMAINS,READ_TOOLS,WRITE_TOOLS,AgentContractError:Base.AgentContractError,createRequest,validateResponse,normalizeToolCall,createMockAdapter,createSession,readFromState});
 });
