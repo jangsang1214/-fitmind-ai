@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {chromium}=require('playwright');
 
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8765,baseURL=`http://127.0.0.1:${port}`;
@@ -23,40 +22,36 @@ async function tap(page,locator,touch,label='target'){
       screen:document.getElementById('main')?.dataset?.garangScreen||'',
       mainText:(document.getElementById('main')?.innerText||'').slice(0,180),
       bottomNav:{hidden:document.getElementById('bottomNav')?.hidden??null,display:document.getElementById('bottomNav')?getComputedStyle(document.getElementById('bottomNav')).display:null,html:document.getElementById('bottomNav')?.innerHTML||''},
-      sheet:{exists:!!document.querySelector('.garang-more-sheet'),display:document.querySelector('.garang-more-sheet')?getComputedStyle(document.querySelector('.garang-more-sheet')).display:null}
+      menu:{exists:!!document.querySelector('.garang-more-sheet'),display:document.querySelector('.garang-more-sheet')?getComputedStyle(document.querySelector('.garang-more-sheet')).display:null},
+      record:{exists:!!document.querySelector('[data-garang-record-sheet]'),display:document.querySelector('[data-garang-record-sheet]')?getComputedStyle(document.querySelector('[data-garang-record-sheet]')).display:null}
     }));
     throw new Error(`${label} has no touch box: ${JSON.stringify(diagnostic)}`);
   }
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
 }
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
-async function assertTodayNotClipped(page,label){
+async function assertTodayStable(page,label){
   const diagnostic=await page.evaluate(()=>{
-    const main=document.getElementById('main'),mainStyle=main?getComputedStyle(main):null;
-    const clipping=[];
-    const cards=[...document.querySelectorAll('.quick-visual')].map((card,index)=>{
-      const r=card.getBoundingClientRect();let p=card.parentElement;
-      while(p&&p!==document.body){
-        const cs=getComputedStyle(p),pr=p.getBoundingClientRect(),overflow=`${cs.overflow} ${cs.overflowY} ${cs.overflowX}`;
-        if(/hidden|clip/.test(overflow)&&(r.bottom>pr.bottom+1||r.top<pr.top-1))clipping.push({card:index,ancestor:p.id||p.className||p.tagName,overflow,cardBottom:Math.round(r.bottom),ancestorBottom:Math.round(pr.bottom)});
-        p=p.parentElement;
-      }
-      return {index,top:Math.round(r.top),bottom:Math.round(r.bottom),height:Math.round(r.height),text:(card.innerText||'').slice(0,50)};
-    });
+    const main=document.getElementById('main'),grid=main?.querySelector('.quick-visual-grid')||null;
     const fixed=[...document.querySelectorAll('body *')].map(el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();return {el,cs,r};})
       .filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.position==='fixed'&&x.r.width>=innerWidth*.75&&x.r.height>=120)
       .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:String(x.el.className||''),top:Math.round(x.r.top),bottom:Math.round(x.r.bottom),height:Math.round(x.r.height),z:x.cs.zIndex,pointer:x.cs.pointerEvents,opacity:x.cs.opacity,background:x.cs.backgroundColor}));
-    return {
-      viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',
-      main:{overflow:mainStyle?.overflow||'',overflowY:mainStyle?.overflowY||'',height:mainStyle?.height||'',minHeight:mainStyle?.minHeight||'',clientHeight:main?.clientHeight||0,scrollHeight:main?.scrollHeight||0},
-      cards,clipping,fixed
-    };
+    return {viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',quickGrid:{exists:!!grid,hidden:grid?.hidden??null,count:grid?.querySelectorAll('.quick-visual').length||0},fixed};
   });
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
-  assert.ok(diagnostic.cards.length>=4,`${label}: Today quick record must render four cards: ${JSON.stringify(diagnostic)}`);
-  assert.equal(diagnostic.clipping.length,0,`${label}: Today cards are clipped by an overflow ancestor: ${JSON.stringify(diagnostic)}`);
-  const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<diagnostic.viewportHeight);
+  assert.equal(diagnostic.quickGrid.exists,true,`${label}: legacy quick-record capability must remain in DOM: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.quickGrid.count,4,`${label}: all four legacy record capabilities must remain: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.quickGrid.hidden,true,`${label}: duplicate Today quick-record grid must be internalized: ${JSON.stringify(diagnostic)}`);
+  const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.cls).includes('garang-record-backdrop')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<diagnostic.viewportHeight);
   assert.equal(suspicious.length,0,`${label}: unexpected fixed layer can cover Today content: ${JSON.stringify(diagnostic)}`);
+}
+async function openRecordRoute(page,route,touch,label){
+  const record=page.locator('#bottomNav button[data-page="log"]');
+  await tap(page,record,touch,`${label}: Record`);
+  const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:3000});
+  const target=sheet.locator(`[data-garang-record-route="${route}"]`);await tap(page,target,touch,`${label}: ${route}`);
+  await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
+  assert.equal(await page.locator('#bottomNav button[data-page="log"]').getAttribute('aria-current'),'page',`${label}: Record must own ${route}`);
 }
 
 (async()=>{
@@ -78,10 +73,11 @@ async function assertTodayNotClipped(page,label){
       assert.equal(repaired.meals.length,1);assert.equal(repaired.meals[0].items.length,1);assert.equal(repaired.checkins.length,1);
       assert.ok(repaired.memory&&Array.isArray(repaired.memory.entries));assert.ok(repaired.analytics&&Array.isArray(repaired.analytics.events));
 
-      if(mode.touch)await assertTodayNotClipped(page,'mobile initial Today');
+      await assertTodayStable(page,`${mode.name} initial Today`);
 
       const menu=page.locator('#menuBtn');await menu.waitFor({state:'visible',timeout:5000});await assertOwnsPoint(page,'#menuBtn');
       await assertOwnsPoint(page,'#bottomNav button[data-page="coach"]');
+      await assertOwnsPoint(page,'#bottomNav button[data-page="log"]');
       await assertOwnsPoint(page,'[data-today-view="back"]');
 
       const back=page.locator('[data-today-view="back"]'),front=page.locator('[data-today-view="front"]');
@@ -89,17 +85,24 @@ async function assertTodayNotClipped(page,label){
       await tap(page,front,mode.touch,`${mode.name}: today front`);await page.waitForFunction(()=>document.querySelector('[data-today-view="front"]')?.classList.contains('active'));
 
       await tap(page,menu,mode.touch,`${mode.name}: hamburger`);await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
-      const running=page.locator('.garang-more-sheet [data-route="running"]');await tap(page,running,mode.touch,`${mode.name}: running menu item`);await page.waitForFunction(()=>/러닝|RUNNING/i.test(document.getElementById('main')?.innerText||''));
+      await page.waitForTimeout(50);
+      for(const route of ['workout','nutrition','running','body'])assert.equal(await page.locator(`.garang-more-sheet [data-route="${route}"]:visible`).count(),0,`${mode.name}: ${route} must not duplicate Record in More`);
+      await page.evaluate(()=>window.GarangRouter?.cleanup?.());
+      assert.equal(await page.locator('.garang-more-sheet').count(),0,`${mode.name}: transient More sheet must close cleanly`);
 
-      for(const route of ['today','coach','today','workout','body','progress']){
+      await openRecordRoute(page,'running',mode.touch,mode.name);assert.equal(await page.locator('#runStart').count(),1,`${mode.name}: Running feature must remain reachable`);
+      await openRecordRoute(page,'workout',mode.touch,mode.name);assert.equal(await page.locator('#saveWorkoutSession').count(),1,`${mode.name}: Workout feature must remain reachable`);
+      await openRecordRoute(page,'body',mode.touch,mode.name);assert.equal(await page.locator('#saveBody').count(),1,`${mode.name}: Body feature must remain reachable`);
+
+      for(const route of ['today','coach','today','progress']){
         const button=page.locator(`#bottomNav button[data-page="${route}"]`);await tap(page,button,mode.touch,`${mode.name}: bottom nav ${route}`);
         await page.waitForFunction(r=>document.querySelector(`#bottomNav button[data-page="${r}"]`)?.classList.contains('active'),route);
         assert.ok((await page.locator('#main').innerText()).trim().length>0,`${mode.name}: ${route} must render`);
-        if(mode.touch&&route==='today')await assertTodayNotClipped(page,'mobile returned Today');
+        if(route==='today')await assertTodayStable(page,`${mode.name} returned Today`);
       }
       assert.deepEqual(pageErrors,[],`${mode.name} browser runtime errors:\n${pageErrors.join('\n')}`);
       await context.close();
     }
-    console.log('browser-interaction desktop+mobile malformed-state+layout: PASS');
+    console.log('browser-interaction desktop+mobile malformed-state+simplified-routing: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
