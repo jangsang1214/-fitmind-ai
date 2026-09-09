@@ -40,7 +40,7 @@ test('default planner UI is deliberately minimal and hides deep analytics',()=>{
   assert.match(css,/#main\[data-garang-screen="planner"\]>\.page-head h1\{display:none\}/,'Planner keeps the small kicker but must not render the large page title');
 });
 
-test('deep goal evidence remains available behind the droplet detail control',()=>{
+test('goal-fit feature follows the premium accumulation hierarchy',()=>{\n  assert.ok(ui.indexOf('gcl-accum-metrics')<ui.indexOf('goalHtml'));\n});\n\ntest('deep goal evidence remains available behind the droplet detail control',()=>{
   assert.match(ui,/goalAlignment/);assert.match(ui,/calorieTarget/);assert.match(ui,/proteinTarget/);assert.match(ui,/confidence/);
   assert.match(ui,/4주 누적|4-week accumulation/);assert.match(ui,/planItems/);assert.match(ui,/accumulationRows/);
   assert.match(ui,/aria-expanded="false"/);assert.match(ui,/Escape/);
