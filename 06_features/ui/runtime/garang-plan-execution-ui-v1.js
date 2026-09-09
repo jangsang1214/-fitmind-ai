@@ -222,7 +222,7 @@
     if(first){event.preventDefault();event.stopImmediatePropagation();afterRoute('log',()=>window.GarangSimplifiedShell?.openRecordSheet?.(doc.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]')));return;}
     const openPlanner=event.target.closest?.('[data-gx-open-planner]');
     if(openPlanner){event.preventDefault();event.stopImmediatePropagation();afterRoute('planner',()=>doc.querySelector('#garangPlanExecution [data-gx-details]')?.click());}
-    const planEntry=event.target.closest?.('[data-golden-path="planner-entry"],[data-gtf-route="planner"]');
+    const planEntry=event.target.closest?.('[data-golden-path="planner-entry"]');
     if(planEntry){event.preventDefault();event.stopImmediatePropagation();afterRoute('planner',()=>doc.querySelector('#garangPlanExecution [data-gx-details]')?.click());}
   },true);
   window.addEventListener('garang:screen-rendered',event=>inject(event?.detail?.screen));

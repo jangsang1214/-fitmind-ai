@@ -65,6 +65,8 @@ test('first-record CTA uses the canonical route and opens the real Record sheet'
 test('Planner composer is moved into the droplet and the duplicate Agent Write card is hidden',()=>{
   assert.match(ui,/function movePlannerComposer\(panel,main\)/);assert.match(ui,/slot=panel\.querySelector\('\[data-gx-plan-slot\]'\)/);
   assert.match(ui,/agent\.hidden=true/);assert.match(ui,/restorePlannerComposer/);
+  assert.match(ui,/\[data-golden-path="planner-entry"\]/);
+  assert.doesNotMatch(ui,/\[data-golden-path="planner-entry"\],\[data-gtf-route="planner"\]/,'the existing Today route must not auto-open a blocking Planner sheet');
   assert.match(css,/\.gx-plan-slot \.card\{margin:0;padding:0;background:transparent;border:0;box-shadow:none\}/);
   assert.match(css,/\.gx-plan-slot input,\.gx-plan-slot select,\.gx-plan-slot textarea\{display:block;width:100%/);
 });
