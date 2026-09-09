@@ -194,3 +194,13 @@
   .cert-entry-card.garang-cert-minimal .premium-placeholder{padding:12px 0 14px}
   .cert-entry-card.garang-cert-minimal #certWorkout.garang-cert-primary{min-height:44px}
 }
+
+/* Per-set workout input stays compact and mobile-safe. */
+.set-detail-toolbar{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(242,239,233,.08)}
+.set-detail-toolbar span{min-width:0;color:#7c807b;font-size:9px;line-height:1.4}
+.workout-set-details{display:grid;gap:7px;margin-top:9px;padding:10px;border:1px solid rgba(242,239,233,.08);border-radius:10px;background:rgba(255,255,255,.018)}
+.workout-set-row{display:grid;grid-template-columns:42px repeat(3,minmax(0,1fr));align-items:end;gap:7px}
+.workout-set-row>b{padding-bottom:9px;color:#4fae92;font-size:9px;letter-spacing:.08em}
+.workout-set-row label{min-width:0;color:#8d928d;font-size:8px}
+.workout-set-row input{display:block;box-sizing:border-box;width:100%;min-width:0;margin-top:4px;padding:8px 7px;border:1px solid rgba(242,239,233,.12);border-radius:7px;background:#0b0d0c;color:#f2efe9;font:inherit;font-size:12px}
+@media(max-width:520px){.set-detail-toolbar{align-items:flex-start}.set-detail-toolbar span{font-size:8px}.workout-set-row{grid-template-columns:35px repeat(3,minmax(0,1fr));gap:5px}.workout-set-row input{padding:8px 5px;font-size:11px}}

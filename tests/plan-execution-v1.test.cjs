@@ -1,8 +1,9 @@
 'use strict';
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const Core=require('../02_core/plan-execution-v1.js');
 const Goal=require('../02_core/goal-alignment-v1.js');
 const Loop=require('../06_features/ui/runtime/garang-core-loop-v1.js');
+const appSource=fs.readFileSync(path.join(__dirname,'../01_app/app.js'),'utf8');
 
 const tests=[];
 function test(name,fn){fn();tests.push(name);console.log(`PASS ${name}`);}
@@ -131,4 +132,10 @@ test('planner completion alone never creates a recording streak',()=>{
   assert.match(result.headline,/첫 기록|one record/i);
 });
 
+test('workout entry preserves per-set details while keeping legacy aggregates',()=>{
+  assert.ok(appSource.includes('workoutSetDetailsOpen'),'workout entry must have an explicit per-set disclosure state');
+  assert.ok(appSource.includes('data-set-weight')&&appSource.includes('data-set-reps')&&appSource.includes('data-set-rpe'),'per-set weight, reps and RPE inputs must exist');
+  assert.ok(appSource.includes('setDetails:details'),'saved workout drafts must retain per-set detail rows');
+  assert.ok(appSource.includes('details.reduce((sum,row)=>sum+(row.reps*row.weight),0)'),'per-set volume must be calculated from each row');
+});
 console.log(`${tests.length} plan execution tests passed`);
