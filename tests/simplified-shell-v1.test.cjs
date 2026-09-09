@@ -63,7 +63,7 @@ assert.match(coreSource,/GarangRouter\?\.navigate/,'Record reuse must use the ca
 assert.match(coreCss,/gcl-accum/,'Accumulation UI must have a dedicated restrained layout');
 assert.match(coreCss,/grid-template-rows:auto auto auto minmax\(0,1fr\) auto/,'Coach action row must sit between the decision and message stream');
 assert.match(coreCss,/gcl-coach-actions\{grid-row:3/,'Coach actions must occupy the dedicated next-action row');
-assert.match(coreSource,/최근 \\$\\{streak\\}일 연속 기록이 이어졌습니다/,'Accumulation streak must explain consecutive recording days');
+assert.match(coreSource,/최근 \$\{streak\}일 연속 기록이 이어졌습니다/,'Accumulation streak must explain consecutive recording days');
 const sample={planner:[{date:'2026-09-09',completed:true},{date:'2026-09-09',completed:false}],workouts:[{date:'2026-09-08',name:'Squat',sets:3,reps:5,weight:80}],meals:[{date:'2026-09-08',name:'Meal',items:[{name:'Chicken',grams:150,kcal:250,protein:40}]}],runs:[{date:'2026-09-08',distance:5,duration:30}],body:[{date:'2026-08-20',weight:70},{date:'2026-09-08',weight:69.2}],checkins:[{date:'2026-09-08'}]};
 assert.equal(Core.deriveToday(sample,{date:'2026-09-09'}).completion,50);
 assert.deepEqual(Core.deriveRecent(sample).map(x=>x.route),['workout','nutrition','running','body']);
