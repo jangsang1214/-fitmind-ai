@@ -131,6 +131,7 @@ function mount(root){
   }
   function enhanceAccumulation(snapshot){
     if(main.dataset.garangScreen!=='progress')return;
+    if(main.querySelector('#garangPlanExecution')){main.querySelector('#garangAccumulationOverview')?.remove();return;}
     const model=deriveAccumulation(snapshot,{lang:lang(),days:30}),goal=root.GarangGoalAlignment?.summarize?.(snapshot,{days:30,endDate:model.end}),current=main.querySelector('#garangAccumulationOverview'),empty=!model.hasRecords&&!model.planRate;
     main.querySelectorAll('.progress-tabs,#garangAccumulationSummary,#garangPlanExecution').forEach(node=>{if(empty)node.hidden=true;else node.hidden=false;});
     if(empty){main.querySelectorAll(':scope > *').forEach(node=>{if(!node.matches('.page-head,#garangAccumulationOverview'))node.hidden=true;});}
