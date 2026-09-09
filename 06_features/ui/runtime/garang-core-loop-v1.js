@@ -126,7 +126,7 @@ function mount(root){
     if(main.dataset.garangScreen!=='coach')return;
     const coachRoot=main.querySelector('.garang-coach-v2');if(!coachRoot)return;
     const actions=deriveCoachActions(snapshot,{lang:lang()});let host=coachRoot.querySelector('[data-gcl-coach-actions]');
-    if(!host){host=doc.createElement('div');host.className='gcl-context-actions';host.dataset.gclCoachActions='1';const decision=coachRoot.querySelector('.garang-decision-card');if(decision)decision.appendChild(host);else coachRoot.querySelector('.g2-composer-wrap')?.insertAdjacentElement('beforebegin',host);}
+    if(!host){host=doc.createElement('div');host.className='gcl-context-actions';host.dataset.gclCoachActions='1';const decision=coachRoot.querySelector('.garang-decision-card'),target=decision?.querySelector('.garang-decision-details')||decision;if(target)target.appendChild(host);else coachRoot.querySelector('.g2-composer-wrap')?.insertAdjacentElement('beforebegin',host);}
     host.innerHTML=`<div class="gcl-context-label">${lang()==='en'?'NEXT':'다음 행동'}</div><div>${actions.map((a,i)=>`<button type="button" data-gcl-coach="${i}">${esc(a.label)}</button>`).join('')}</div>`;host._gclActions=actions;
   }
   function enhanceAccumulation(snapshot){
