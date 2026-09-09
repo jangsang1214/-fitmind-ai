@@ -84,7 +84,7 @@
     return [
       {label:c.workout,value:workoutRecorded?workoutValue:'—',recorded:workoutRecorded},
       {label:c.nutrition,value:mealRecorded?(calorieRecorded?metricText(day.nutrition.kcal,true,'kcal',lang):c.recorded):'—',recorded:mealRecorded},
-      {label:c.protein,value:proteinRecorded?metricText(day.nutrition.protein,true,'g',lang):(mealRecorded?c.missing:'—'),recorded:proteinRecorded},
+      {label:c.protein,value:proteinRecorded?metricText(day.nutrition.protein?.actual,true,'g',lang):(mealRecorded?c.missing:'—'),recorded:proteinRecorded},
       {label:c.recovery,value:checkinRecorded?`${c.sleep} ${sleepValue(day,lang)}`:'—',recorded:checkinRecorded}
     ];
   }
@@ -136,7 +136,7 @@
       <div class="gx-sheet-handle" aria-hidden="true"></div>
       <div class="gx-sheet-head"><div><span>${esc(dayLabel(date,lang))}</span><h3 id="gxDetailTitle">${esc(c.planEvidence)}</h3></div><button type="button" class="gx-drop-button gx-drop-close" data-gx-close aria-label="${esc(c.close)}">${dropletIcon('−')}</button></div>
       ${goalDetails(goal,c,lang)}
-      <section class="gx-detail-section gx-record-section"><div class="gx-detail-subhead">${esc(c.actual)} · ${esc(c.signals)}</div><div class="gx-detail-pairs"><div><span>${esc(c.calories)}</span><strong>${esc(metricText(day.nutrition.kcal,calorieObserved,'kcal',lang))}</strong><small>${esc(c.target)} ${calorieTarget===null?'—':`${Math.round(calorieTarget).toLocaleString()} kcal`}</small></div><div><span>${esc(c.protein)}</span><strong>${esc(metricText(day.nutrition.protein,proteinObserved,'g',lang))}</strong><small>${esc(c.target)} ${proteinTarget===null?'—':`${Math.round(proteinTarget)}g`}</small></div><div><span>${esc(c.recovery)}</span><strong>${esc(day.evidence.checkin.count?sleepValue(day,lang):c.missing)}</strong><small>${esc(day.evidence.checkin.count?c.recorded:c.missing)}</small></div></div></section>
+      <section class="gx-detail-section gx-record-section"><div class="gx-detail-subhead">${esc(c.actual)} · ${esc(c.signals)}</div><div class="gx-detail-pairs"><div><span>${esc(c.calories)}</span><strong>${esc(metricText(day.nutrition.kcal,calorieObserved,'kcal',lang))}</strong><small>${esc(c.target)} ${calorieTarget===null?'—':`${Math.round(calorieTarget).toLocaleString()} kcal`}</small></div><div><span>${esc(c.protein)}</span><strong>${esc(metricText(day.nutrition.protein?.actual,proteinObserved,'g',lang))}</strong><small>${esc(c.target)} ${proteinTarget===null?'—':`${Math.round(proteinTarget)}g`}</small></div><div><span>${esc(c.recovery)}</span><strong>${esc(day.evidence.checkin.count?sleepValue(day,lang):c.missing)}</strong><small>${esc(day.evidence.checkin.count?c.recorded:c.missing)}</small></div></div></section>
       ${!calorieTarget?`<p class="gx-detail-note">${esc(c.targetUnknown)}</p>`:`<p class="gx-detail-note">${esc(c.estimate)}</p>`}
       <section class="gx-detail-section gx-plan-section"><div class="gx-detail-subhead">${esc(c.planner)} · ${esc(planSummary)}</div>${planItems(day,c)}${planSlot}</section>
       ${!hasAny?`<button type="button" class="gx-first-record" data-gcl-first-record="1">${esc(c.firstRecord)}</button>`:''}
