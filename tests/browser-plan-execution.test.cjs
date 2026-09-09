@@ -44,7 +44,7 @@ function state(){
     assert.match(plannerHead.kicker,/PLANNER/,'small Planner kicker must remain visible');
 
     const summary=await section.innerText();
-    assert.match(summary,/누적\./);assert.match(summary,/이번 주|계획한 흐름/);assert.match(summary,/벤치프레스/);assert.match(summary,/2,270 kcal/);assert.match(summary,/118g/);assert.match(summary,/수면 7\.5h/);assert.match(summary,/GARANG INSIGHT/);
+    assert.match(summary,/계획 실행/);assert.doesNotMatch(summary,/누적\./,'Planner must not expose the accumulation surface label');assert.match(summary,/이번 주|계획한 흐름/);assert.match(summary,/벤치프레스/);assert.match(summary,/2,270 kcal/);assert.match(summary,/118g/);assert.match(summary,/수면 7\.5h/);assert.match(summary,/GARANG INSIGHT/);
     assert.doesNotMatch(summary,/판단 신뢰도/,'deep confidence must stay hidden in the default summary');
     assert.doesNotMatch(summary,/4주 누적/,'4-week analytics must stay behind the detail control');
     assert.equal(await page.locator('.gx-score-pair').count(),0,'legacy circular score pair must not return');
