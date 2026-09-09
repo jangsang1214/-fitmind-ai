@@ -153,7 +153,7 @@ function inject(screen){
   if(currentScreen==='planner'){
     const panel=buildPlanner(s),anchor=main.querySelector('.grid.grid-2');if(anchor)main.insertBefore(panel,anchor);else main.appendChild(panel);
   }else if(currentScreen==='progress'){
-    const panel=buildPlanner(s);main.querySelectorAll(':scope > *').forEach(node=>{node.hidden=true;});main.appendChild(panel);
+    const panel=buildPlanner(s);panel.id='garangAccumulationOverview';panel.dataset.gxPlannerShell='1';main.querySelectorAll(':scope > *').forEach(node=>{node.hidden=true;});main.appendChild(panel);
   }
 }
 window.addEventListener('garang:screen-rendered',event=>inject(event?.detail?.screen));
