@@ -6,6 +6,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const runtime=read('06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js');
 const index=read('index.html');
 const workoutUI=read('06_features/ui/runtime/garang-workout-intelligence-ui-v1.js');
+const app=read('01_app/app.js');
 const decisionUI=read('06_features/ui/runtime/garang-coach-decision-v1.js');
 
 const tests=[];
@@ -20,8 +21,10 @@ test('Daily Workout becomes compact by default and can expand/collapse again',()
   assert.match(runtime,/더보기/);
 });
 
-test('set-by-set entry keeps native reversible details behavior with visible plus/minus state',()=>{
-  assert.match(workoutUI,/garang-set-builder/);
+test('set-by-set entry has one canonical app owner with reversible details behavior',()=>{
+  assert.match(app,/workoutSetDetailsOpen/);
+  assert.match(app,/data-set-weight/);
+  assert.doesNotMatch(workoutUI,/garang-set-builder|data-garang-set-row/,'Workout Intelligence must not create a duplicate set builder');
   assert.match(runtime,/enhanceSets/);
   assert.match(runtime,/details\.open=readOpen\('sets',false\)/);
   assert.match(runtime,/details\.open\?'−':'\+'/);

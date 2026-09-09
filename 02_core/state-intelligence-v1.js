@@ -30,8 +30,11 @@ function linearTrend(points){
  const direction=relative==null?'unknown':relative>8?'up':relative<-8?'down':'stable';return {slope:round(slope,3),relativeChangePct:round(relative,1),direction,count:valid.length};
 }
 function latestByDate(list){return rows(list).filter(x=>isoDate(x.date)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0]||null;}
+function workoutSetRows(workout){return rows(workout?.setDetails||workout?.setsDetail);}
+function workoutVolume(workout){const details=workoutSetRows(workout);if(details.length)return details.reduce((sum,row)=>sum+Math.max(0,num(row?.weight??row?.w)||0)*Math.max(0,num(row?.reps??row?.r)||0),0);const stored=num(workout?.volume);if(stored!==null&&stored>=0)return stored;return Math.max(0,num(workout?.sets)||0)*Math.max(0,num(workout?.reps)||0)*Math.max(0,num(workout?.weight)||0);}
+function workoutRpes(workout){const details=workoutSetRows(workout);if(details.length){const values=details.map(row=>num(row?.rpe));if(values.some(value=>value!==null&&value>0))return values.filter(value=>value!==null&&value>0);}const value=num(workout?.rpe);return value!==null&&value>0?[value]:[];}
 function workoutSessions(state){
- const map=new Map();for(const w of rows(state.workouts)){const date=isoDate(w.date);if(!date)continue;const key=`${date}:${String(w.sessionId||w.id||'session')}`;if(!map.has(key))map.set(key,{date,id:key,duration:0,rpes:[],volume:0});const s=map.get(key),duration=num(w.duration),rpe=num(w.rpe),volume=num(w.volume);s.duration=Math.max(s.duration,duration||0);if(rpe!==null&&rpe>0)s.rpes.push(rpe);s.volume+=volume!==null?Math.max(0,volume):Math.max(0,(num(w.sets)||0)*(num(w.reps)||0)*(num(w.weight)||0));}
+ const map=new Map();for(const w of rows(state.workouts)){const date=isoDate(w.date);if(!date)continue;const key=`${date}:${String(w.sessionId||w.id||'session')}`;if(!map.has(key))map.set(key,{date,id:key,duration:0,rpes:[],volume:0});const s=map.get(key),duration=num(w.duration);s.duration=Math.max(s.duration,duration||0);s.rpes.push(...workoutRpes(w));s.volume+=workoutVolume(w);}
  return [...map.values()].map(s=>{const rpe=mean(s.rpes)||5,duration=s.duration||45;return {...s,rpe:round(rpe,1),load:round(duration*clamp(rpe,1,10),1)};});
 }
 function buildDailyFeatures(stateInput,{now=new Date(),days=56}={}){
@@ -104,5 +107,5 @@ function estimateState(stateInput,{now=new Date()}={}){
 }
 function compactForContext(stateResult){if(!object(stateResult))return null;return {engineVersion:stateResult.engineVersion,asOf:stateResult.asOf,confidence:stateResult.confidence,coverage:stateResult.coverage,readiness:stateResult.readiness,fatigue:stateResult.fatigue,load:stateResult.load,trends:stateResult.trends,patterns:rows(stateResult.patterns).slice(0,8),goalAlignment:stateResult.goalAlignment};}
 function diagnostics(stateInput,{now=new Date()}={}){const s=estimateState(stateInput,{now});return {engineVersion:s.engineVersion,asOf:s.asOf,confidence:s.confidence,coverage:s.coverage,patternCount:s.patterns.length,readinessBand:s.readiness.band,fatigueBand:s.fatigue.band,loadBand:s.load.band,goalBand:s.goalAlignment.band};}
-return Object.freeze({ENGINE_VERSION,buildDailyFeatures,linearTrend,estimateState,compactForContext,diagnostics});
+return Object.freeze({ENGINE_VERSION,buildDailyFeatures,linearTrend,estimateState,compactForContext,diagnostics,workoutVolume});
 });

@@ -65,6 +65,8 @@ test('first-record CTA uses the canonical route and opens the real Record sheet'
 test('Planner composer is moved into the droplet and the duplicate Agent Write card is hidden',()=>{
   assert.match(ui,/function movePlannerComposer\(panel,main\)/);assert.match(ui,/slot=panel\.querySelector\('\[data-gx-plan-slot\]'\)/);
   assert.match(ui,/agent\.hidden=true/);assert.match(ui,/restorePlannerComposer/);
+  assert.match(ui,/\[data-golden-path="planner-entry"\]/);
+  assert.doesNotMatch(ui,/\[data-golden-path="planner-entry"\],\[data-gtf-route="planner"\]/,'the existing Today route must not auto-open a blocking Planner sheet');
   assert.match(css,/\.gx-plan-slot \.card\{margin:0;padding:0;background:transparent;border:0;box-shadow:none\}/);
   assert.match(css,/\.gx-plan-slot input,\.gx-plan-slot select,\.gx-plan-slot textarea\{display:block;width:100%/);
 });
@@ -90,8 +92,8 @@ test('planner week strip is ordered Monday through Sunday',()=>{
 
 test('cache keys identify the truth-surface release',()=>{
   assert.match(index,/garang-plan-execution-v1\.css\?v=1\.1\.0-truth-surface/);
-  assert.match(index,/garang-plan-execution-ui-v1\.js\?v=1\.1\.0-truth-surface/);
-  assert.match(index,/garang-core-loop-v1\.js\?v=1\.1\.1-no-duplicate-accumulation/);
+  assert.match(index,/garang-plan-execution-ui-v1\.js\?v=1\.1\.1-golden-path/);
+  assert.match(index,/garang-core-loop-v1\.js\?v=1\.1\.2-quiet-actions/);
 });
 
 console.log(`${tests.length} plan execution UI tests passed`);

@@ -64,20 +64,24 @@ function readiness(state,{now=new Date()}={}){
  if(score<80)return {score,band:'ready',targetRPE:7.5,volumeScale:.95,checkin:c,reasons};
  return {score,band:'high',targetRPE:8,volumeScale:1,checkin:c,reasons};
 }
+function setDetails(record){return rows(record?.setDetails||record?.setsDetail);}
 function setDetailVolume(record){
- const details=rows(record?.setDetails||record?.setsDetail);
+ const details=setDetails(record);
  if(!details.length)return null;
  return details.reduce((sum,s)=>sum+Math.max(0,num(s.weight))*Math.max(0,num(s.reps)),0);
 }
-function recordVolume(record){const stored=num(record?.volume,NaN);if(Number.isFinite(stored)&&stored>=0)return stored;const detail=setDetailVolume(record);if(detail!==null)return detail;return Math.max(0,num(record?.weight))*Math.max(0,num(record?.reps))*Math.max(1,num(record?.sets,1));}
+function recordVolume(record){const detail=setDetailVolume(record);if(detail!==null)return detail;const stored=num(record?.volume,NaN);if(Number.isFinite(stored)&&stored>=0)return stored;return Math.max(0,num(record?.weight))*Math.max(0,num(record?.reps))*Math.max(1,num(record?.sets,1));}
 function analyzeMuscleLoad(state,exerciseDb=[],{now=new Date(),days=7}={}){
  const asOf=localDate(now),start=shiftDate(asOf,-Math.max(0,days-1)),lookup=exerciseLookup(exerciseDb),groups=new Map();
  rows(state?.workouts).forEach((w,index)=>{
   const date=dateOnly(w.date);if(!date||!inRange(date,start,asOf))return;
   const ref=lookup.get(String(w.name||'').trim().toLowerCase()),key=muscleKey(w.primaryMuscle||ref?.primary_muscle),label=String(w.primaryMuscle||ref?.primary_muscle||muscleLabel(key));
   if(!groups.has(key))groups.set(key,{key,label,records:0,sets:0,volume:0,rpeWeighted:0,rpeWeight:0,sessions:new Set(),latestDate:'',effort:0});
-  const g=groups.get(key),sets=Math.max(1,num(w.sets,1)),rpe=clamp(num(w.rpe,7),1,10),volume=recordVolume(w);
-  g.records++;g.sets+=sets;g.volume+=volume;g.rpeWeighted+=rpe*sets;g.rpeWeight+=sets;g.effort+=sets*rpe;g.sessions.add(w.sessionId||w.id||`${date}:${index}`);if(date>g.latestDate)g.latestDate=date;
+  const g=groups.get(key),details=setDetails(w),fallbackRpe=clamp(num(w.rpe,7),1,10),sets=details.length||Math.max(1,num(w.sets,1)),volume=recordVolume(w);
+  g.records++;g.sets+=sets;g.volume+=volume;
+  if(details.length){details.forEach(detail=>{const rpe=clamp(num(detail.rpe,fallbackRpe),1,10);g.rpeWeighted+=rpe;g.rpeWeight++;g.effort+=rpe;});}
+  else{g.rpeWeighted+=fallbackRpe*sets;g.rpeWeight+=sets;g.effort+=sets*fallbackRpe;}
+  g.sessions.add(w.sessionId||w.id||`${date}:${index}`);if(date>g.latestDate)g.latestDate=date;
  });
  return [...groups.values()].map(g=>{const avgRPE=round(g.rpeWeighted/Math.max(1,g.rpeWeight),1);return {key:g.key,label:g.label,records:g.records,sets:g.sets,volume:Math.round(g.volume),avgRPE,sessionCount:g.sessions.size,latestDate:g.latestDate,effort:round(g.effort,1),intensity:avgRPE>=8.5?'high':avgRPE>=7.5?'moderate_high':avgRPE>=6?'moderate':'light'};}).sort((a,b)=>b.effort-a.effort||b.latestDate.localeCompare(a.latestDate));
 }
@@ -145,5 +149,5 @@ function answerCoach(state,exerciseDb,q,{now=new Date(),language='ko'}={}){
  }
  return '';
 }
-return Object.freeze({ENGINE_VERSION,muscleKey,muscleLabel,normalizedCheckin,readiness,analyzeMuscleLoad,generateWorkoutPlan,classifyCoachIntent,answerCoach});
+return Object.freeze({ENGINE_VERSION,muscleKey,muscleLabel,normalizedCheckin,readiness,setDetailVolume,recordVolume,analyzeMuscleLoad,generateWorkoutPlan,classifyCoachIntent,answerCoach});
 });

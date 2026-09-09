@@ -34,6 +34,11 @@ test('workout insights group body parts and expose weight, e1RM and volume PRs',
  assert.equal(x.byMuscle.length,2);assert.equal(x.byMuscle.find(g=>g.name==='가슴').records[0].id,'b2');
  assert.equal(x.topWeight.name,'스쿼트');assert.equal(x.topVolume.volume,3000);assert.equal(x.exercises.find(e=>e.name==='벤치').maxEstimated1RM.weight,100);
 });
+test('workout insights use each set for mixed-load records',()=>{
+ const state=GarangSchema.migrate({workouts:[{id:'mixed',name:'벤치',date:'2026-09-01',sets:3,reps:8,weight:60,volume:9999,setDetails:[{set:1,weight:40,reps:10},{set:2,weight:60,reps:8},{set:3,weight:80,reps:6}]}]});
+ const x=GarangPerformance.workoutInsights(state,[{exercise_name:'벤치',primary_muscle:'가슴'}]),record=x.records[0];
+ assert.equal(record.weight,80);assert.equal(record.sets,3);assert.equal(record.volume,1360);assert.equal(record.estimated1RM,96);assert.equal(x.topVolume.volume,1360);
+});
 test('running insights separate distance-weighted average, fastest and longest records',()=>{
  const state=GarangSchema.migrate({runs:[{id:'r1',date:'2026-08-30',distance:5,duration:30,pace:6},{id:'r2',date:'2026-09-01',distance:10,duration:55,pace:5.5}]});
  const x=GarangPerformance.runningInsights(state);assert.equal(x.count,2);assert.equal(x.totalDistance,15);assert.equal(x.averagePace,85/15);assert.equal(x.fastest.id,'r2');assert.equal(x.longest.id,'r2');assert.equal(GarangPerformance.formatPace(x.averagePace),'5:40');

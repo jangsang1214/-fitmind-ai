@@ -118,7 +118,7 @@
   }
   function planItems(day,c){
     if(!day.plan.items.length)return `<div class="gx-detail-empty">${esc(c.noPlan)}</div>`;
-    return `<div class="gx-detail-plan-list">${day.plan.items.map(item=>`<div class="gx-detail-plan-row"><span>${item.executed?'✓':'○'}</span><div><strong>${esc(item.title)}</strong><small>${esc(item.explicitCompleted?c.explicit:(item.derivedCompleted?c.actualMatch:c.notDone))}</small></div></div>`).join('')}</div>`;
+    return `<div class="gx-detail-plan-list">${day.plan.items.map(item=>`<div class="gx-detail-plan-row"><span>${item.executed?'✓':'○'}</span><div><strong>${esc(item.title)}</strong><small>${esc(item.explicitCompleted?c.explicit:(item.derivedCompleted?c.actualMatch:c.notDone))}${item.goalLabel?` · ${esc(item.goalLabel)}`:''}</small></div></div>`).join('')}</div>`;
   }
   function accumulationRows(acc,lang){
     const c=copy(lang);
@@ -157,11 +157,11 @@
     if(restoreFocus)button.focus({preventScroll:true});
   }
   function buildPlanner(state){
-    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday();
+    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),goalLabel=String(goal?.goalLabel||'').trim();
     if(!selectedDate)selectedDate=defaultSelected(state);
     const week=weekSummary(state,today);
     const section=doc.createElement('section');section.id='garangPlanExecution';section.className='gx-panel gx-minimal';section.dataset.gxSurface='plan-execution';
-    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.planner)}</span><strong>${pct(week.executionRate)}</strong><p>${esc(c.planFlow)}</p></div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'plan')}${summaryView(state,selectedDate,lang,'planner')}${detailSheet(state,selectedDate,lang,'planner')}`;
+    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.planner)}</span><strong>${pct(week.executionRate)}</strong><p>${esc(c.planFlow)}</p>${goalLabel?`<small class="gx-hero-context">${esc(lang==='en'?`Goal · ${goalLabel}`:`목표 · ${goalLabel}`)}</small>`:''}</div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'plan')}${summaryView(state,selectedDate,lang,'planner')}${detailSheet(state,selectedDate,lang,'planner')}`;
     section.addEventListener('click',event=>{
       const dayButton=event.target.closest('[data-gx-date]');
       if(dayButton){selectedDate=dayButton.dataset.gxDate;restorePlannerComposer(section);const fresh=buildPlanner(state);section.replaceWith(fresh);movePlannerComposer(fresh,doc.getElementById('main'));return;}
@@ -193,7 +193,7 @@
     if(!panel||!main)return;
     const slot=panel.querySelector('[data-gx-plan-slot]'),card=main.querySelector('#addPlan')?.closest('.card'),grid=card?.parentElement;
     if(!slot||!card||!grid)return;
-    panel._gxPlannerComposer=card;panel._gxPlannerGrid=grid;card.classList.add('gx-embedded-plan-card');slot.appendChild(card);
+    panel._gxPlannerComposer=card;panel._gxPlannerGrid=grid;card.dataset.gxPlanComposer='1';card.classList.add('gx-embedded-plan-card');slot.appendChild(card);
     const agent=[...grid.querySelectorAll(':scope > .card')].find(node=>/Agent Write/i.test(node.textContent||''));
     if(agent){agent.hidden=true;agent.dataset.gxInternalAgentWrite='1';}
   }
@@ -222,6 +222,8 @@
     if(first){event.preventDefault();event.stopImmediatePropagation();afterRoute('log',()=>window.GarangSimplifiedShell?.openRecordSheet?.(doc.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]')));return;}
     const openPlanner=event.target.closest?.('[data-gx-open-planner]');
     if(openPlanner){event.preventDefault();event.stopImmediatePropagation();afterRoute('planner',()=>doc.querySelector('#garangPlanExecution [data-gx-details]')?.click());}
+    const planEntry=event.target.closest?.('[data-golden-path="planner-entry"]');
+    if(planEntry){event.preventDefault();event.stopImmediatePropagation();afterRoute('planner',()=>doc.querySelector('#garangPlanExecution [data-gx-details]')?.click());}
   },true);
   window.addEventListener('garang:screen-rendered',event=>inject(event?.detail?.screen));
   window.addEventListener('garang:state-updated',()=>inject(currentScreen));
