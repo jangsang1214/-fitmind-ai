@@ -33,6 +33,16 @@ function defaultSelected(state){
   if(yesterday&&hasActivity(state,yesterday))return yesterday;
   return today;
 }
+function mondayOf(date){
+  const [y,m,d]=date.split('-').map(Number),x=new Date(y,m-1,d);
+  const offset=(x.getDay()+6)%7;
+  x.setDate(x.getDate()-offset);
+  return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+}
+function calendarWeekRows(state,endDate){
+  const monday=mondayOf(endDate);
+  return Array.from({length:7},(_,index)=>Core.daily(state,Core.dateAdd(monday,index)));
+}
 function sleepValue(day,lang){
   const row=day.evidence.checkin.row||{},sleep=Number(row.sleep??row.sleepHours??row.sleep_hours);
   if(!Number.isFinite(sleep)||sleep<=0)return day.evidence.checkin.count?(lang==='en'?'Recorded':'기록됨'):'—';
@@ -113,7 +123,7 @@ function closeSheet(section,restoreFocus=true){
 function buildPlanner(state){
   const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday();
   if(!selectedDate)selectedDate=defaultSelected(state);
-  const week=Core.range(state,{endDate:today,days:7});
+  const week={...Core.range(state,{endDate:today,days:7}),rows:calendarWeekRows(state,today)};
   const section=document.createElement('section');section.id='garangPlanExecution';section.className='gx-panel gx-minimal';
   section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.eyebrow)}</span><strong>${pct(week.executionRate)}</strong><p>${esc(c.flow)}</p></div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang)}${summaryView(state,selectedDate,lang)}${detailSheet(state,selectedDate,lang)}`;
   section.addEventListener('click',event=>{
