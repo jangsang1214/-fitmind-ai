@@ -21,7 +21,8 @@
     "03_styles/runtime/garang-plan-execution-v1.css",
     "03_styles/runtime/garang-auth-brand-v1.css",
     "03_styles/runtime/garang-simplified-shell-v1.css",
-    "03_styles/runtime/garang-app-shell-v1.css"
+    "03_styles/runtime/garang-app-shell-v1.css",
+    "03_styles/runtime/garang-coach-quiet-surface-v1.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
@@ -85,7 +86,8 @@
     "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js",
     "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js",
     "06_features/ui/runtime/garang-core-loop-v1.js",
-    "06_features/ui/runtime/garang-workout-flow-v1.js"
+    "06_features/ui/runtime/garang-workout-flow-v1.js",
+    "06_features/ui/runtime/garang-coach-quiet-surface-v1.js"
   ],
   "runtimeContract": {
     "version": 2,

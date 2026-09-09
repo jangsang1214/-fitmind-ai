@@ -71,6 +71,43 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.ok(await page.locator('.garang-coach-v2,.coach-app-shell').count()>=1,'existing Coach feature must remain reachable');
   await page.locator('[data-gcl-coach-actions]').waitFor({state:'visible',timeout:7000});
   assert.ok(await page.locator('[data-gcl-coach]').count()>=2,'Coach must expose contextual actions while preserving approval ownership');
+  const quietCoach=await page.evaluate(()=>{
+    const root=document.querySelector('.garang-coach-v2');
+    const strip=root?.querySelector('.g4-prompt-strip');
+    const legacy=[...(strip?.children||[])].filter(el=>el.matches?.('[data-garang-prompt-id]'));
+    const visibleLegacy=legacy.filter(el=>getComputedStyle(el).display!=='none').length;
+    const actions=[...(root?.querySelectorAll('[data-gcl-coach]')||[])];
+    const more=root?.querySelector('[data-garang-coach-more]');
+    const empty=root?.querySelector('.g2-empty-chat');
+    const mark=empty?.querySelector('.gcs-empty-mark');
+    const buttons=[...(strip?.querySelectorAll('button')||[])];
+    return {
+      marked:root?.dataset.garangCoachQuietSurface||'',
+      role:strip?.getAttribute('role')||'',
+      visibleLegacy,
+      actionCount:actions.length,
+      moreDisplay:more?getComputedStyle(more).display:'none',
+      moreVisible:!!more&&more.getBoundingClientRect().width>0&&more.getBoundingClientRect().height>0,
+      overflowX:strip?getComputedStyle(strip).overflowX:'',
+      maxButtonHeight:buttons.reduce((max,button)=>Math.max(max,button.getBoundingClientRect().height),0),
+      hasEmpty:!!empty,
+      emptyMarkDisplay:mark?getComputedStyle(mark).display:'none'
+    };
+  });
+  assert.equal(quietCoach.marked,'garang-coach-quiet-surface-v1.0.0','Coach must use the quiet presentation layer');
+  assert.equal(quietCoach.role,'group','Coach quick actions must be one grouped surface');
+  assert.equal(quietCoach.visibleLegacy,0,'legacy prompt pills must stay behind the Coach disclosure by default');
+  assert.ok(quietCoach.actionCount>=2,'contextual Coach actions must remain visible');
+  assert.notEqual(quietCoach.moreDisplay,'none','existing Coach prompts must remain discoverable through More');
+  assert.equal(quietCoach.moreVisible,true,'Coach More disclosure must expose a real touch box');
+  assert.equal(quietCoach.overflowX,'auto','Coach actions must use a horizontal mobile surface');
+  assert.ok(quietCoach.maxButtonHeight<=42,'Coach action pills must not become oversized vertical controls: '+JSON.stringify(quietCoach));
+  if(quietCoach.hasEmpty)assert.equal(quietCoach.emptyMarkDisplay,'none','empty Coach branding must stay compact');
+  await page.locator('[data-garang-coach-more]').click();
+  await page.waitForFunction(()=>document.querySelector('.g4-prompt-strip')?.classList.contains('gcs-show-legacy'),{timeout:2000});
+  assert.ok(await page.locator('.g4-prompt-strip > [data-garang-prompt-id]:visible').count()>=5,'existing Coach prompts must remain reachable after disclosure');
+  await page.locator('[data-garang-coach-more]').click();
+  await page.waitForFunction(()=>!document.querySelector('.g4-prompt-strip')?.classList.contains('gcs-show-legacy'),{timeout:2000});
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="progress"]').click();
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
