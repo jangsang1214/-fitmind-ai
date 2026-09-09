@@ -17,5 +17,6 @@ assert.ok(runtime.includes("input.value='오늘 계획을 만들어줘'"),'plan 
 assert.equal(runtime.includes('>+</'),false,'ambiguous plus-only decision action must not return');
 assert.ok(coreLoop.includes("promptStrip=coachRoot.querySelector('.g4-prompt-strip')"),'contextual Coach actions must live inside the existing Coach prompt surface');
 assert.equal(coreLoop.includes('gcl-context-label'),false,'standalone action label must not be exposed in Coach');
+assert.ok(coreLoop.includes('overflow-x:hidden!important')&&coreLoop.includes('writing-mode:horizontal-tb!important'),'Coach surface must prevent mobile clipping and vertical action pills');
 assert.ok(html.includes('garang-coach-decision-v1.js?v=1.4.0-lifecycle'),'index must bust the old Coach decision asset cache');
 console.log('coach-decision-compact-ui: PASS');
