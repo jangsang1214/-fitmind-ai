@@ -87,6 +87,7 @@ async function routeWithRouter(page,route,selector,screen=route){
       visibleLegacy,
       actionCount:actions.length,
       moreDisplay:more?getComputedStyle(more).display:'none',
+      moreVisible:!!more&&more.getBoundingClientRect().width>0&&more.getBoundingClientRect().height>0,
       overflowX:strip?getComputedStyle(strip).overflowX:'',
       maxButtonHeight:buttons.reduce((max,button)=>Math.max(max,button.getBoundingClientRect().height),0),
       hasEmpty:!!empty,
@@ -97,7 +98,8 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(quietCoach.role,'group','Coach quick actions must be one grouped surface');
   assert.equal(quietCoach.visibleLegacy,0,'legacy prompt pills must stay behind the Coach disclosure by default');
   assert.ok(quietCoach.actionCount>=2,'contextual Coach actions must remain visible');
-  assert.equal(quietCoach.moreDisplay,'inline-flex','existing Coach prompts must remain discoverable through More');
+  assert.notEqual(quietCoach.moreDisplay,'none','existing Coach prompts must remain discoverable through More');
+  assert.equal(quietCoach.moreVisible,true,'Coach More disclosure must expose a real touch box');
   assert.equal(quietCoach.overflowX,'auto','Coach actions must use a horizontal mobile surface');
   assert.ok(quietCoach.maxButtonHeight<=42,'Coach action pills must not become oversized vertical controls: '+JSON.stringify(quietCoach));
   if(quietCoach.hasEmpty)assert.equal(quietCoach.emptyMarkDisplay,'none','empty Coach branding must stay compact');
