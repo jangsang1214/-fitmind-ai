@@ -107,10 +107,7 @@
   function repairWorkout() {
     const hero=main.querySelector('.workout-hero-v2'),builder=main.querySelector('.workout-builder-v2');if(!hero||!builder)return;
     hero.querySelectorAll('img,picture,canvas').forEach(el=>el.remove());document.querySelectorAll('.grx-anatomy,.workout-reference-image').forEach(el=>el.remove());main.querySelectorAll('.gx-screen-tabs,.gx-workout-start,.gx-workout-summary').forEach(el=>el.remove());delete main.dataset.gxWorkoutTab;
-    if(!main.querySelector('.garang-workout-tabs')){
-      const tabs=document.createElement('nav');tabs.className='garang-workout-tabs';tabs.setAttribute('aria-label','Workout sections');tabs.innerHTML='<button type="button" class="active">Overview</button><button type="button">Exercises</button><button type="button">Log</button>';
-      const buttons=tabs.querySelectorAll('button');buttons[0].onclick=()=>scrollToTarget('.workout-hero-v2',buttons[0]);buttons[1].onclick=()=>scrollToTarget('.exercise-visual-library',buttons[1]);buttons[2].onclick=()=>scrollToTarget('.workout-builder-v2',buttons[2]);hero.parentNode.insertBefore(tabs,hero);
-    }
+    main.querySelectorAll('.garang-workout-tabs').forEach(el=>el.remove());
     if(!main.querySelector('.garang-session-start')){const start=document.createElement('button');start.type='button';start.className='garang-session-start';start.textContent=readLiveSession()?'진행 중인 세션 계속':'세션 기록 시작';start.onclick=()=>startLiveSession(builder);hero.insertAdjacentElement('afterend',start);}
     [builder,main.querySelector('#addWorkout'),main.querySelector('#clearWorkoutDraft'),main.querySelector('#saveWorkoutSession')].filter(Boolean).forEach(el=>{el.style.setProperty('display',el.tagName==='BUTTON'?'flex':'block','important');el.style.setProperty('visibility','visible','important');el.style.setProperty('opacity','1','important');});
     const save=main.querySelector('#saveWorkoutSession');if(save&&save.dataset.garangRecoveryBound!=='1'){save.dataset.garangRecoveryBound='1';save.addEventListener('click',()=>{if(main.querySelectorAll('[data-remove-workout]').length>0)setTimeout(()=>{writeLiveSession(null);clearInterval(sessionTimer);sessionTimer=null;},100);},true);}
