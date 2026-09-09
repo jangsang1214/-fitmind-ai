@@ -51,4 +51,11 @@ test('mobile execution UI stays bounded and bottom sheet is safe-area aware',()=
   assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open\{[^}]*overflow-y:hidden!important/);
 });
 
+test('planner week strip is ordered Monday through Sunday',()=>{
+  assert.match(ui,/function mondayOf\(date\)/);
+  assert.match(ui,/function calendarWeekRows\(state,endDate\)/);
+  assert.match(ui,/Array\.from\(\{length:7\},\(_,index\)=>Core\.daily\(state,Core\.dateAdd\(monday,index\)\)\)/);
+  assert.match(ui,/rows:calendarWeekRows\(state,today\)/);
+});
+
 console.log(`${tests.length} plan execution UI tests passed`);
