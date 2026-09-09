@@ -26,7 +26,8 @@ assert.match(app,/function memoryPage\(/,'Memory route must remain');
 assert.match(app,/function profilePage\(/,'Profile route must remain');
 assert.match(app,/function settingsPage\(/,'Settings route must remain');
 assert.match(registry,/memory:\s*Object\.freeze\(\{key:'memory'[\s\S]*selectors:\['#saveMemory'\]/,'Memory must remain a first-class screen identity');
-assert.match(registry,/version:'1\.2\.1'/,'Screen Registry version must include the Memory identity fix');
+assert.match(registry,/log:\s*Object\.freeze\(\{key:'log'[^\n]*selectors:\['\.visual-log-grid'\]/,'Record must remain a first-class screen identity');
+assert.match(registry,/version:'1\.2\.2'/,'Screen Registry version must include the Record identity fix');
 assert.match(runtime,/const VERSION = '1\.1\.1'/,'Simplified Shell runtime version must advance with canonical More routing');
 assert.match(runtime,/RECORD_ROUTES[\s\S]*workout[\s\S]*nutrition[\s\S]*running[\s\S]*body/,'Record surface must preserve all four existing record routes');
 assert.match(runtime,/quick-visual-grid/,'Today quick-record duplicate must be internalized by the shell');
@@ -49,7 +50,7 @@ assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'int
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
 assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css\?v=1\.0\.1'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
 assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.1/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
-assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.1/,'Screen Registry cache key must ship the Memory identity fix');
+assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.2/,'Screen Registry cache key must ship the Record identity fix');
 assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.2/,'Simplified Shell stylesheet cache key must ship the current product loop');
 assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.2/,'Simplified Shell runtime cache key must ship canonical More routing');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');

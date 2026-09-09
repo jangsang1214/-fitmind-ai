@@ -1,4 +1,4 @@
-/* GARANG Screen Registry v1.2.1
+/* GARANG Screen Registry v1.2.2
    Single source of truth for screen identity, bilingual eyebrow labels and compact-title policy.
    All DOM writes are idempotent so lifecycle-driven callers cannot create mutation feedback loops. */
 (function(root){
@@ -7,6 +7,7 @@
   const SCREENS = Object.freeze({
     today: Object.freeze({key:'today',labelKo:'TODAY / 오늘',labelEn:'TODAY',compactTitle:true,selectors:['.today-body-panel'],patterns:[/\btoday\b|오늘/i]}),
     coach: Object.freeze({key:'coach',labelKo:'COACH / 코치',labelEn:'COACH',compactTitle:false,selectors:['#coachInput'],patterns:[/\bcoach\b|코치/i]}),
+    log: Object.freeze({key:'log',labelKo:'RECORD / 기록',labelEn:'RECORD',compactTitle:true,selectors:['.visual-log-grid'],patterns:[/\blog\b|record|기록/i]}),
     workout: Object.freeze({key:'workout',labelKo:'WORKOUT / 운동',labelEn:'WORKOUT',compactTitle:true,selectors:['#saveWorkoutSession','#wName'],patterns:[/\bworkout\b|log\s*\/\s*workout|운동/i]}),
     body: Object.freeze({key:'body',labelKo:'BODY / 체성분',labelEn:'BODY',compactTitle:true,selectors:['#saveBody'],patterns:[/body intelligence|log\s*\/\s*body|체성분/i]}),
     progress: Object.freeze({key:'progress',labelKo:'PROGRESS / 흐름',labelEn:'PROGRESS',compactTitle:true,selectors:['.progress-tabs'],patterns:[/\bprogress\b|진행 상황|흐름/i]}),
@@ -19,7 +20,7 @@
     modeling: Object.freeze({key:'modeling',labelKo:'MODELING / 모델링',labelEn:'MODELING',compactTitle:true,selectors:['#saveOnboarding'],patterns:[/\bmodeling\b|사용자 모델|garang이 먼저 알아야 할 것|\bstart\b/i]})
   });
 
-  const DETECTION_ORDER=Object.freeze(['planner','memory','settings','profile','modeling','running','nutrition','body','workout','progress','coach','today']);
+  const DETECTION_ORDER=Object.freeze(['planner','memory','settings','profile','modeling','running','nutrition','body','workout','log','progress','coach','today']);
   const definition=key=>key&&SCREENS[key]?SCREENS[key]:null;
   const label=(key,lang='ko')=>{const def=definition(key);return def?(lang==='en'?def.labelEn:def.labelKo):'';};
 
@@ -63,7 +64,7 @@
     return applyHeader(main,doc);
   }
 
-  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.1'});
+  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.2'});
 
   /* app.js owns rendering and emits this after each screen tree is complete. Screen Registry owns identity. */
   if(typeof root.addEventListener==='function'&&root.document){
