@@ -75,7 +75,7 @@ test('accumulation route reuses the premium Planner shell and keeps first record
   assert.match(ui,/const panel=buildPlanner\(s\)/);
   assert.match(ui,/data-gcl-first-record/);
   assert.match(ui,/Add your first record|첫 기록 남기기/);
-  assert.match(coreLoop,/if\(main\.querySelector\('#garangPlanExecution'\)\)/);
+  assert.match(coreLoop,/main\.querySelector\('#garangPlanExecution,\[data-gx-planner-shell="1"\]'\)/);
 });
 
 test('planner week strip is ordered Monday through Sunday',()=>{
