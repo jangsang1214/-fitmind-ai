@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const Core=require('../02_core/plan-execution-v1.js');
+const Goal=require('../02_core/goal-alignment-v1.js');
 
 const tests=[];
 function test(name,fn){fn();tests.push(name);console.log(`PASS ${name}`);}
@@ -97,6 +98,19 @@ test('core never mutates source state',()=>{
   const s=base();s.planner=[{id:'p1',date:'2026-09-08',type:'workout',title:'Lift'}];s.workouts=[{id:'w1',sessionId:'s1',date:'2026-09-08',name:'Lift'}];
   const before=JSON.stringify(s);Core.daily(s,'2026-09-08');Core.range(s,{endDate:'2026-09-08'});Core.accumulation(s,{endDate:'2026-09-08'});
   assert.equal(JSON.stringify(s),before);
+});
+
+test('goal alignment is domain-based and does not invent scores from empty data',()=>{
+  const s=base();
+  const empty=Goal.summarize(s,{days:30,endDate:'2026-09-08'});
+  assert.equal(empty.overall,null);
+  assert.ok(empty.domains.every(x=>x.score===null));
+  s.workouts=[{id:'w1',date:'2026-09-08',sessionId:'s1',name:'Lift'}];
+  s.meals=[{id:'m1',date:'2026-09-08',protein:120,kcal:2300}];
+  const measured=Goal.summarize(s,{days:30,endDate:'2026-09-08'});
+  assert.equal(measured.status,'measured');
+  assert.ok(measured.domains.find(x=>x.id==='training').score!==null);
+  assert.equal(measured.domains.find(x=>x.id==='recovery').score,null);
 });
 
 console.log(`${tests.length} plan execution tests passed`);
