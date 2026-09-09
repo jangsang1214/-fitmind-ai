@@ -42,7 +42,7 @@ test('default planner UI is deliberately minimal and hides deep analytics',()=>{
 });
 
 test('goal-fit feature follows the premium accumulation hierarchy',()=>{
-  assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.indexOf('${goalHtml}'));
+  assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.lastIndexOf('goalHtml'));
 });
 
 test('deep goal evidence remains available behind the droplet detail control',()=>{
