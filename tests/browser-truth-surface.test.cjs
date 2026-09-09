@@ -42,8 +42,8 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
     assert.equal(await page.locator('.grid.grid-2 .card').filter({hasText:'Agent Write'}).isVisible(),false,'duplicate Agent Write panel must stay out of the visible Planner surface');
     await planner.locator('[data-gx-details]').click();
     await planner.locator('[data-gx-sheet]').waitFor({state:'visible',timeout:3000});
-    const fields=await page.evaluate(()=>['planDate','planTime','planType','planTitle','addPlan'].map(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {id,width:r?.width||0,right:r?.right||0};}));
-    assert.ok(fields.every(field=>field.width>0&&field.right<=document.documentElement.clientWidth+1),'moved Planner fields must remain inside the mobile viewport: '+JSON.stringify(fields));
+    const fields=await page.evaluate(()=>({clientWidth:document.documentElement.clientWidth,fields:['planDate','planTime','planType','planTitle','addPlan'].map(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {id,width:r?.width||0,right:r?.right||0};})}));
+    assert.ok(fields.fields.every(field=>field.width>0&&field.right<=fields.clientWidth+1),'moved Planner fields must remain inside the mobile viewport: '+JSON.stringify(fields));
     await page.locator('#planTitle').fill('저녁 상체 45분');await page.locator('#addPlan').click();
     await page.waitForFunction(()=>document.getElementById('main')?.innerText.includes('저녁 상체 45분'),{timeout:7000});
     assert.equal(await page.locator('#garangPlanExecution').count(),1,'saving a plan must not create a second summary layer');
