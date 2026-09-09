@@ -7,6 +7,7 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const index=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 const ui=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
+const coreLoop=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const css=read('03_styles/runtime/garang-plan-execution-v1.css');
 const tests=[];
 const test=(name,fn)=>{fn();tests.push(name);console.log(`PASS ${name}`);};
@@ -38,6 +39,10 @@ test('default planner UI is deliberately minimal and hides deep analytics',()=>{
   assert.doesNotMatch(ui,/gx-score-pair/);assert.doesNotMatch(ui,/gx-ring/);assert.doesNotMatch(ui,/gx-status-row/);assert.doesNotMatch(ui,/gx-week-grid/);
   assert.match(css,/\.gx-drop-button/);assert.match(css,/\.gx-detail-sheet/);assert.match(css,/\.gx-summary-row/);
   assert.match(css,/#main\[data-garang-screen="planner"\]>\.page-head h1\{display:none\}/,'Planner keeps the small kicker but must not render the large page title');
+});
+
+test('goal-fit feature follows the premium accumulation hierarchy',()=>{
+  assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.lastIndexOf('goalHtml'));
 });
 
 test('deep goal evidence remains available behind the droplet detail control',()=>{
