@@ -20,7 +20,7 @@ input[data-derived]{background:#1b2220;color:#d9ff45;border-style:dashed;cursor:
 /* Keep every form control inside its card on browsers with intrinsic date/time widths. */
 :where(.auth-card,.card,form,.form-grid,.field,label,.select-shell,.planner-filter-actions,.chat-composer){min-width:0;max-width:100%}
 :where(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea){display:block;box-sizing:border-box;inline-size:100%;width:100%;min-inline-size:0;min-width:0;max-inline-size:100%;max-width:100%}
-:where(input[type=date],input[type=time]){inline-size:100%!important;width:100%!important;min-inline-size:0!important;min-width:0!important;max-inline-size:100%!important;max-width:100%!important}
+:where(input[type=date],input[type=time]){display:block!important;box-sizing:border-box!important;inline-size:100%!important;width:100%!important;min-inline-size:0!important;min-width:0!important;max-inline-size:100%!important;max-width:100%!important;-webkit-appearance:none;appearance:none}
 :where(input[type=date],input[type=time])::-webkit-date-and-time-value{min-width:0;text-align:left}
 .form-grid{inline-size:100%;width:100%;max-width:100%}.field{inline-size:100%;width:100%;max-width:100%;overflow:visible}
 @media(max-width:430px){.planner-filter-actions{grid-template-columns:1fr}.planner-filter-actions>button{width:100%}}
