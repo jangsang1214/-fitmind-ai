@@ -207,6 +207,12 @@
 (() => {
   'use strict';
   if (window.GarangCoreLoopV1 || document.querySelector('script[data-garang-core-loop-v1]')) return;
+  const goal=document.createElement('script');
+  goal.src='./02_core/goal-alignment-v1.js?v=1.0.0';
+  goal.dataset.garangGoalAlignmentV1='1';
+  goal.async=false;
+  goal.onload=()=>{try{window.dispatchEvent(new CustomEvent('garang:goal-alignment-ready'));}catch{}};
+  document.head.appendChild(goal);
   const script=document.createElement('script');
   script.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.1';
   script.dataset.garangCoreLoopV1='1';
