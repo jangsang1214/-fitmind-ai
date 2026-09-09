@@ -36,11 +36,11 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-  await tap(page,'#bottomNav button[data-page="coach"]','open Coach');await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')&&document.querySelector('[data-garang-prompt-id="plan"]'),null,{timeout:10000});
+  await tap(page,'#bottomNav button[data-page="coach"]','open Coach');await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')&&document.querySelector('.gcl-context-actions [data-gcl-coach="0"]'),null,{timeout:10000});
   let before=await coachState(page);assert.equal(before.active,'coach',`Coach must own route before plan tap: ${JSON.stringify(before)}`);assert.equal(before.coach,true);
   assert.ok(before.threadKeys.includes('garang_coach_threads_v2::garang_user_mock-user_v3'),`authenticated Coach must pin its thread store to the signed-in account even before cloud hydration: ${JSON.stringify(before)}`);
   assert.equal(before.threadKeys.some(k=>k.endsWith('garang_demo_state_v3')),false,`authenticated Coach must never bind to a stale demo record: ${JSON.stringify(before)}`);
-  await tap(page,'[data-garang-prompt-id="plan"]','Create plan prompt');
+  await tap(page,'.gcl-context-actions [data-gcl-coach="0"]','Create plan prompt');
   await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>el.textContent.includes('오늘 계획을 만들어줘')),null,{timeout:5000});
   for(let i=0;i<12;i++){await sleep(250);await heartbeat(page,`plan settle ${i}`);const state=await coachState(page);assert.equal(state.active,'coach',`plan prompt must not leave Coach at sample ${i}: ${JSON.stringify(state)}`);assert.equal(state.coach,true,`Coach root disappeared at sample ${i}: ${JSON.stringify(state)}`);assert.ok(state.planMessage||state.proposal,`cloud hydration must not reset the active Coach conversation at sample ${i}: ${JSON.stringify(state)}`);}
   await page.waitForFunction(()=>document.querySelector('.g4-agent-proposal'),null,{timeout:7000});
