@@ -113,4 +113,21 @@ test('goal alignment is domain-based and does not invent scores from empty data'
   assert.equal(measured.domains.find(x=>x.id==='recovery').score,null);
 });
 
+test('goal alignment scales training expectation to the selected period',()=>{
+  const s=base();
+  s.onboarding.weeklyFrequency=4;
+  s.workouts=[{id:'w1',date:'2026-09-08',sessionId:'s1',name:'Lift'}];
+  const result=Goal.summarize(s,{days:30,endDate:'2026-09-08'});
+  assert.equal(result.domains.find(x=>x.id==='training').score,6);
+});
+
+test('planner completion alone never creates a recording streak',()=>{
+  const s=base();
+  s.planner=[{id:'p1',date:'2026-09-08',type:'workout',title:'Lift',completed:true},{id:'p2',date:'2026-09-07',type:'workout',title:'Lift',completed:true}];
+  const result=Core.accumulation(s,{endDate:'2026-09-08',days:30});
+  assert.equal(result.streak,0);
+  assert.equal(result.hasRecords,false);
+  assert.match(result.headline,/첫 기록|one record/i);
+});
+
 console.log(`${tests.length} plan execution tests passed`);
