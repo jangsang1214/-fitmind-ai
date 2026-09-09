@@ -59,10 +59,10 @@ function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   const next=normalize(route);if(!valid(next))return false;
   if(!force&&current()===next)return true;
   try{window.dispatchEvent(new CustomEvent('garang:route-requested',{detail:{from:current(),to:next,source}}));}catch{}
-  if(cleanup)removeTransient();
   let ok=callBound(bottomTarget(next))||callBound(directTarget(next));
   if(!ok)ok=callAppBridge(next);
   if(!ok)return false;
+  if(cleanup)removeTransient();
   try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
   return true;
 }

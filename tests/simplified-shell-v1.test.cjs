@@ -33,6 +33,8 @@ assert.match(runtime,/DUPLICATE_MENU_ROUTES/,'duplicate first-level menu routes 
 assert.match(runtime,/garang-more-sheet \[data-route\][\s\S]*simplified-shell-more/,'visible More routes must be delegated through the canonical Router');
 assert.doesNotMatch(runtime,/document\.querySelector\(`\[data-pagego=/,'Record shell must not bypass the canonical Router with a DOM fallback');
 assert.match(recovery,/function navigateAny\(page\)[\s\S]*GarangRouter\?\.navigate/,'More menu must use the canonical Router for every non-primary route');
+assert.match(recovery,/const route=b\.dataset\.route;if\(!navigateAny\(route\)\)[\s\S]*else\{sheet\.remove\(\);\}/,'More route must navigate before the WebKit-sensitive sheet removal');
+assert.match(router,/let ok=callBound\(bottomTarget\(next\)\)[\s\S]*if\(cleanup\)removeTransient\(\);/,'Router must render the requested screen before removing the active More sheet');
 assert.doesNotMatch(recovery,/proxy\.dataset\.page=page|proxy\.click\(\)/,'functional recovery must not synthesize navigation through a Bottom Nav proxy');
 assert.doesNotMatch(runtime,/localStorage\.|firebase\.|firestore|saveState\(|state\.[a-zA-Z]+\s*=/,'simplified shell must not write user data');
 assert.match(router,/VERSION='garang-router-v1\.3\.0'/,'canonical router must use the single app-bridge version');
