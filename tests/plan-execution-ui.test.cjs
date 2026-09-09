@@ -49,7 +49,7 @@ test('goal-fit feature follows the premium accumulation hierarchy',()=>{
 test('empty accumulation first-record CTA delegates through the canonical router',()=>{
   assert.match(coreLoop,/data-gcl-first-record/);
   assert.match(coreLoop,/accumulation-first-record/);
-  assert.match(coreLoop,/GarangRouter\\?\\.navigate\\?\\.\\('log'/);
+  assert.match(coreLoop,/GarangRouter\?\.navigate\?\.\('log'/);
 });
 
 test('planner premium shell keeps goal fit compact inside droplet details',()=>{
