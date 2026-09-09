@@ -107,6 +107,7 @@
       "screenRender": "01_app/app.js",
       "featureRouting": "06_features/ui/runtime/garang-router-v1.js",
       "screenIdentity": "06_features/ui/runtime/garang-screen-registry-v1.js",
+      "accumulationSurface": "06_features/ui/runtime/garang-plan-execution-ui-v1.js",
       "coachDom": "06_features/ui/runtime/garang-brand-runtime-v2.js",
       "coachScroll": "06_features/ui/runtime/garang-brand-runtime-v2.js",
       "coachShell": "06_features/ui/runtime/garang-coach-shell-v1.js",
