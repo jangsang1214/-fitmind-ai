@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const Core=require('../02_core/plan-execution-v1.js');
 const Goal=require('../02_core/goal-alignment-v1.js');
+const Loop=require('../06_features/ui/runtime/garang-core-loop-v1.js');
 
 const tests=[];
 function test(name,fn){fn();tests.push(name);console.log(`PASS ${name}`);}
@@ -124,7 +125,7 @@ test('goal alignment scales training expectation to the selected period',()=>{
 test('planner completion alone never creates a recording streak',()=>{
   const s=base();
   s.planner=[{id:'p1',date:'2026-09-08',type:'workout',title:'Lift',completed:true},{id:'p2',date:'2026-09-07',type:'workout',title:'Lift',completed:true}];
-  const result=Core.accumulation(s,{endDate:'2026-09-08',days:30});
+  const result=Loop.deriveAccumulation(s,{endDate:'2026-09-08',days:30});
   assert.equal(result.streak,0);
   assert.equal(result.hasRecords,false);
   assert.match(result.headline,/첫 기록|one record/i);
