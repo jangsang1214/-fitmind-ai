@@ -46,6 +46,12 @@ test('goal-fit feature follows the premium accumulation hierarchy',()=>{
   assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.lastIndexOf('goalHtml'));
 });
 
+test('empty accumulation first-record CTA delegates through the canonical router',()=>{
+  assert.match(coreLoop,/data-gcl-first-record/);
+  assert.match(coreLoop,/accumulation-first-record/);
+  assert.match(coreLoop,/GarangRouter\\?\\.navigate\\?\\.\\('log'/);
+});
+
 test('planner premium shell keeps goal fit compact inside droplet details',()=>{
   assert.match(planner,/GarangGoalAlignment/);
   assert.match(planner,/gx-detail-goal-fit/);
