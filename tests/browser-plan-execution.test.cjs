@@ -57,7 +57,7 @@ function state(){
     const sheet=section.locator('[data-gx-sheet]');await sheet.waitFor({state:'visible',timeout:3000});
     assert.equal(await drop.getAttribute('aria-expanded'),'true');
     const detail=await sheet.innerText();
-    assert.match(detail,/수행 근거/);assert.match(detail,/계획 실행/);assert.match(detail,/목표 적합도/);assert.match(detail,/판단 신뢰도/);assert.match(detail,/2,270 kcal/);assert.match(detail,/118\s*g/);assert.match(detail,/실제 기록으로 수행 확인/);assert.match(detail,/4주 누적/);
+    assert.match(detail,/수행 근거/);assert.match(detail,/계획 실행/);assert.match(detail,/목표 적합도/);assert.match(detail,/판단 신뢰도/);assert.match(detail,/2,270 kcal/);assert.match(detail,/118\s*g/);assert.match(detail,/실제 기록으로 수행 확인/);assert.match(detail,/4주 계획 실행/);
     const bodyLock=await page.evaluate(()=>{const style=getComputedStyle(document.body);return {classLocked:document.body.classList.contains('gx-sheet-open'),overflow:style.overflow,overflowY:style.overflowY};});
     assert.equal(bodyLock.classLocked,true,'detail sheet must mark body as scroll locked');
     assert.equal(bodyLock.overflowY,'hidden',`detail sheet must lock vertical body scrolling: ${JSON.stringify(bodyLock)}`);
