@@ -12,6 +12,7 @@ const runtime=read('06_features/ui/runtime/garang-simplified-shell-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
 const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const coreCss=read('03_styles/runtime/garang-core-loop-v1.css');
+const recovery=read('06_features/ui/runtime/garang-functional-recovery.js');
 const Core=require('../06_features/ui/runtime/garang-core-loop-v1.js');
 
 assert.match(app,/function logPage\(\)/,'legacy LOG page must remain for route compatibility');
@@ -31,6 +32,8 @@ assert.match(runtime,/quick-visual-grid/,'Today quick-record duplicate must be i
 assert.match(runtime,/DUPLICATE_MENU_ROUTES/,'duplicate first-level menu routes must be internalized');
 assert.match(runtime,/garang-more-sheet \[data-route\][\s\S]*simplified-shell-more/,'visible More routes must be delegated through the canonical Router');
 assert.doesNotMatch(runtime,/document\.querySelector\(`\[data-pagego=/,'Record shell must not bypass the canonical Router with a DOM fallback');
+assert.match(recovery,/function navigateAny\(page\)[\s\S]*GarangRouter\?\.navigate/,'More menu must use the canonical Router for every non-primary route');
+assert.doesNotMatch(recovery,/proxy\.dataset\.page=page|proxy\.click\(\)/,'functional recovery must not synthesize navigation through a Bottom Nav proxy');
 assert.doesNotMatch(runtime,/localStorage\.|firebase\.|firestore|saveState\(|state\.[a-zA-Z]+\s*=/,'simplified shell must not write user data');
 assert.match(router,/VERSION='garang-router-v1\.3\.0'/,'canonical router must use the single app-bridge version');
 assert.doesNotMatch(router,/function viaMenu\(|ok=viaMenu/,'Router must not reopen More as a hidden navigation dependency');
