@@ -82,6 +82,25 @@ test('goal-aware nutrition adequacy distinguishes insufficient and on target int
   assert.equal(Core.daily(s,'2026-09-08').nutrition.calories.status,'on_target');
 });
 
+test('nutrition keeps missing values separate from an observed zero',()=>{
+  const s=base();
+  const empty=Core.daily(s,'2026-09-08');
+  assert.equal(empty.nutrition.calories.actual,0);
+  assert.equal(empty.nutrition.calories.percent,null);
+  assert.equal(empty.nutrition.calories.hasEvidence,false);
+  assert.equal(empty.nutrition.protein.percent,null);
+  assert.equal(empty.goalAlignment,null);
+  s.meals=[{id:'m-zero',date:'2026-09-08',kcal:0,protein:0}];
+  const zero=Core.daily(s,'2026-09-08');
+  assert.equal(zero.nutrition.calories.actual,0);
+  assert.equal(zero.nutrition.calories.percent,0);
+  assert.equal(zero.nutrition.calories.hasEvidence,true);
+  assert.equal(zero.nutrition.protein.actual,0);
+  assert.equal(zero.nutrition.protein.percent,0);
+  assert.equal(zero.nutrition.protein.hasEvidence,true);
+  assert.equal(zero.goalAlignment,0);
+});
+
 test('seven-day range reports execution, nutrition hits and streak',()=>{
   const s=base();
   for(let i=0;i<3;i++){
@@ -94,6 +113,17 @@ test('seven-day range reports execution, nutrition hits and streak',()=>{
   const r=Core.range(s,{endDate:'2026-09-08',days:7});
   assert.equal(r.planned,3);assert.equal(r.executed,3);assert.equal(r.executionRate,100);
   assert.equal(r.calorieOnTargetDays,3);assert.equal(r.proteinOnTargetDays,3);assert.equal(r.currentExecutionStreak,3);
+});
+
+test('recording streak is separate from plan execution streak',()=>{
+  const s=base();
+  s.planner=[{id:'p1',date:'2026-09-08',type:'workout',title:'Lift',completed:false}];
+  s.meals=[{id:'m1',date:'2026-09-06',kcal:0,protein:0},{id:'m2',date:'2026-09-07',kcal:0,protein:0},{id:'m3',date:'2026-09-08',kcal:0,protein:0}];
+  const r=Core.range(s,{endDate:'2026-09-08',days:3});
+  assert.equal(r.executionRate,0);
+  assert.equal(r.currentExecutionStreak,0);
+  assert.equal(r.recordDays,3);
+  assert.equal(r.recordStreak,3);
 });
 
 test('core never mutates source state',()=>{
@@ -113,6 +143,19 @@ test('goal alignment is domain-based and does not invent scores from empty data'
   assert.equal(measured.status,'measured');
   assert.ok(measured.domains.find(x=>x.id==='training').score!==null);
   assert.equal(measured.domains.find(x=>x.id==='recovery').score,null);
+});
+
+test('goal alignment treats zero as measured and exposes missing domains',()=>{
+  const s=base();
+  s.meals=[{id:'m-zero',date:'2026-09-08',protein:0,kcal:0}];
+  const result=Goal.summarize(s,{days:30,endDate:'2026-09-08'});
+  const nutrition=result.domains.find(x=>x.id==='nutrition');
+  assert.equal(nutrition.score,0);
+  assert.equal(nutrition.status,'measured');
+  assert.ok(result.missingDomains.includes('recovery'));
+  assert.ok(result.missingDomains.includes('body'));
+  assert.equal(result.measuredDomainCount,1);
+  assert.equal(result.overall,null);
 });
 
 test('goal alignment scales training expectation to the selected period',()=>{

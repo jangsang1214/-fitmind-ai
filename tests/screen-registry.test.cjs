@@ -30,7 +30,7 @@ function fakeDoc(active='today',lang='ko'){
   };
 }
 
-assert.equal(GarangScreens.version,'1.2.1');
+assert.equal(GarangScreens.version,'1.2.2');
 assert.equal(GarangScreens.label('planner','ko'),'PLANNER / 실행');
 assert.equal(GarangScreens.label('planner','en'),'PLANNER');
 assert.equal(GarangScreens.label('memory','ko'),'MEMORY / 장기 기억');
@@ -38,6 +38,15 @@ assert.equal(GarangScreens.label('memory','en'),'MEMORY');
 assert.equal(GarangScreens.isCompact('profile'),true);
 assert.equal(GarangScreens.isCompact('planner'),false);
 assert.equal(GarangScreens.isCompact('memory'),false);
+
+{
+  const main=fakeMain({selectors:['.visual-log-grid'],eyebrow:'LOG',title:'기록'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'log','Record must have a first-class screen identity for first-record routing');
+  GarangScreens.applyHeader(main,fakeDoc('today','ko'));
+  assert.equal(main._eyebrow.textContent,'RECORD / 기록');
+  assert.equal(main._title.hidden,true,'Record overview keeps the compact title policy');
+  assert.equal(main.dataset.garangScreen,'log');
+}
 
 {
   const main=fakeMain({selectors:['#addPlan'],eyebrow:'TODAY / 오늘',title:'Planner'});

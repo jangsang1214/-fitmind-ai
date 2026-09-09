@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-09-07T15:22:26.522Z",
+  "timestamp": "2026-09-09T09:44:53.936Z",
   "status": "PASS",
   "counts": {
-    "javascript": 208,
-    "json": 33,
+    "javascript": 232,
+    "json": 36,
     "jsonl": 6,
-    "activeAssets": 75
+    "activeAssets": 90
   },
   "failures": [],
-  "scope": "Categorized runtime, JS/JSON syntax, active entry assets, shell IDs, i18n wiring, no loose root runtime duplicates."
+  "scope": "Frozen runtime boot order and ownership v2, schema/error core contracts, JS/JSON syntax, active entry assets, shell IDs, i18n wiring, canonical owner names, no loose root duplicates or retired core runtimes."
 }
