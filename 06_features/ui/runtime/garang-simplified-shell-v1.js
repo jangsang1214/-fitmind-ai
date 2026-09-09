@@ -208,7 +208,7 @@
   'use strict';
   if (window.GarangCoreLoopV1 || document.querySelector('script[data-garang-core-loop-v1]')) return;
   const script=document.createElement('script');
-  script.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.0';
+  script.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.1';
   script.dataset.garangCoreLoopV1='1';
   script.async=false;
   document.head.appendChild(script);

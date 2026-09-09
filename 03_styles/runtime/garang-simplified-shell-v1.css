@@ -1,4 +1,4 @@
-@import url('./garang-core-loop-v1.css');
+@import url('./garang-core-loop-v1.css?v=1.0.1');
 /* GARANG Simplified Shell v1 */
 #appView:not([hidden])>#bottomNav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 #appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"]{min-width:0!important}

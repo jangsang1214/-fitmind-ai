@@ -44,11 +44,11 @@ assert.match(router,/route==='profile'[\s\S]*profileTopBtn/,'Profile must use it
 assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose four primary axes');
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
-assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
-assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.0/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
+assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css\?v=1\.0\.1'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
+assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.1/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
 assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.1/,'Screen Registry cache key must ship the Memory identity fix');
-assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.1/,'Simplified Shell stylesheet cache key must ship the current product loop');
-assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.1/,'Simplified Shell runtime cache key must ship canonical More routing');
+assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.2/,'Simplified Shell stylesheet cache key must ship the current product loop');
+assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.2/,'Simplified Shell runtime cache key must ship canonical More routing');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
@@ -61,6 +61,9 @@ for(const forbidden of ['localStorage.setItem','firebase.firestore','applyWrite(
 assert.match(coreSource,/g2-composer textarea/,'Coach actions must use the existing canonical composer');
 assert.match(coreSource,/GarangRouter\?\.navigate/,'Record reuse must use the canonical Router');
 assert.match(coreCss,/gcl-accum/,'Accumulation UI must have a dedicated restrained layout');
+assert.match(coreCss,/grid-template-rows:auto auto auto minmax\(0,1fr\) auto/,'Coach action row must sit between the decision and message stream');
+assert.match(coreCss,/gcl-coach-actions\{grid-row:3/,'Coach actions must occupy the dedicated next-action row');
+assert.match(coreSource,/최근 \$\{streak\}일 연속 기록이 이어졌습니다/,'Accumulation streak must explain consecutive recording days');
 const sample={planner:[{date:'2026-09-09',completed:true},{date:'2026-09-09',completed:false}],workouts:[{date:'2026-09-08',name:'Squat',sets:3,reps:5,weight:80}],meals:[{date:'2026-09-08',name:'Meal',items:[{name:'Chicken',grams:150,kcal:250,protein:40}]}],runs:[{date:'2026-09-08',distance:5,duration:30}],body:[{date:'2026-08-20',weight:70},{date:'2026-09-08',weight:69.2}],checkins:[{date:'2026-09-08'}]};
 assert.equal(Core.deriveToday(sample,{date:'2026-09-09'}).completion,50);
 assert.deepEqual(Core.deriveRecent(sample).map(x=>x.route),['workout','nutrition','running','body']);

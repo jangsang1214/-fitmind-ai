@@ -77,7 +77,7 @@ function deriveAccumulation(state,options={}){
   const completed=plans.filter(completedPlan).length,planRate=plans.length?Math.round(completed/plans.length*100):null,activeDays=new Set([...workouts,...runs].map(rowDate).filter(Boolean)).size,recordDays=[...recordDates(safe)].filter(date=>{const diff=daysBetween(date,end);return diff>=0&&diff<days;}).length,delta=bodyDelta(safe,end,days),streak=currentStreak(safe,end),rhythm=sevenDayRhythm(safe,end);
   const totalDistance=Math.round(runs.reduce((sum,r)=>sum+(finite(r?.distance)||0),0)*10)/10,proteinRows=meals.map(m=>finite(m?.protein)).filter(v=>v!==null),avgProtein=proteinRows.length?Math.round(proteinRows.reduce((a,b)=>a+b,0)/proteinRows.length):null;
   let headline=lang==='en'?`${recordDays} recorded days in the last ${days}.`:`최근 ${days}일 중 ${recordDays}일이 기록됐습니다.`,support=lang==='en'?'Consistency matters more than isolated best numbers.':'최고 기록 하나보다 이어진 기록의 밀도를 먼저 봅니다.';
-  if(streak>=3){headline=lang==='en'?`${streak}-day accumulation is continuing.`:`${streak}일 연속 누적이 이어지고 있습니다.`;support=lang==='en'?'Keep the next action small enough to continue.':'다음 행동도 이어갈 수 있을 만큼 작게 유지하세요.';}
+  if(streak>=3){headline=lang==='en'?`${streak}-day accumulation is continuing.`:`최근 ${streak}일 연속 기록이 이어졌습니다.`;support=lang==='en'?'This counts days with at least one workout, run, meal, body or recovery check-in record.':'운동·러닝·식단·체성분·회복 체크인 중 하나 이상을 매일 기록한 날을 계산한 수치입니다.';}
   return {days,end,lang,workouts:workouts.length,runs:runs.length,meals:meals.length,activeDays,recordDays,planRate,totalDistance,avgProtein,bodyDelta:delta,streak,rhythm,headline,support};
 }
 function setInput(doc,id,value){const el=doc.getElementById(id);if(!el||value===null||value===undefined||value==='')return false;el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;}
@@ -89,6 +89,10 @@ function prefill(root,kind,payload){
   return kind==='start-running';
 }
 function mount(root){
+  function ensureCoachActionLayoutStyle(){
+    if(doc.getElementById('garang-core-loop-action-layout-style'))return;
+    const style=doc.createElement('style');style.id='garang-core-loop-action-layout-style';style.textContent='.g2-chat-main.garang-has-decision-card{grid-template-rows:auto auto auto minmax(0,1fr) auto!important}.g2-chat-main.garang-has-decision-card>.gcl-coach-actions{grid-row:3!important}.g2-chat-main.garang-has-decision-card>.g2-chat-scroll{grid-row:4!important}.g2-chat-main.garang-has-decision-card>.g2-composer-wrap{grid-row:5!important}';doc.head.appendChild(style);
+  }
   const doc=root.document,main=doc?.getElementById?.('main');if(!main||root.__garangCoreLoopV1)return false;root.__garangCoreLoopV1=true;let scheduled=false,pendingPrefill=null;
   const state=()=>{try{const b=root.GarangAgentStateBridge;return b?.ready?.()?b.getState():null;}catch{return null;}};
   const lang=()=>doc.documentElement.lang==='en'?'en':'ko';
@@ -120,7 +124,7 @@ function mount(root){
     if(current)current.outerHTML=html;else main.querySelector('.progress-tabs')?.insertAdjacentHTML('afterend',html);
   }
   function render(){
-    scheduled=false;const snapshot=state();if(!snapshot)return;
+    scheduled=false;ensureCoachActionLayoutStyle();const snapshot=state();if(!snapshot)return;
     enhanceToday(snapshot);enhanceCoach(snapshot);enhanceAccumulation(snapshot);enhanceRecord(snapshot);
     if(pendingPrefill&&main.dataset.garangScreen===pendingPrefill.route){const item=pendingPrefill;pendingPrefill=null;root.requestAnimationFrame(()=>prefill(root,item.kind,item.payload));}
   }
