@@ -59,7 +59,7 @@ function renderNav(shell){
   if(!nav){
     nav=document.createElement('nav');
     nav.className='gws-nav';
-    nav.dataset.garangWorkoutNav='1';
+    nav.setAttribute('data-garang-workout-nav','1');
     nav.setAttribute('aria-label','운동 기록 흐름');
   }
   nav.innerHTML=SURFACES.map(item=>'<button type="button" class="gws-step '+(state.active===item.id?'active':'')+'" data-gws-step="'+item.id+'">'+item.en+'<em>'+item.ko+'</em></button>').join('');
