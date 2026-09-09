@@ -46,6 +46,12 @@ test('goal-fit feature follows the premium accumulation hierarchy',()=>{
   assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.lastIndexOf('goalHtml'));
 });
 
+test('empty accumulation first-record CTA delegates through the canonical router',()=>{
+  assert.match(coreLoop,/data-gcl-first-record/);
+  assert.match(coreLoop,/accumulation-first-record/);
+  assert.match(coreLoop,/GarangRouter\?\.navigate\?\.\('log'/);
+});
+
 test('planner premium shell keeps goal fit compact inside droplet details',()=>{
   assert.match(planner,/GarangGoalAlignment/);
   assert.match(planner,/gx-detail-goal-fit/);
@@ -62,6 +68,14 @@ test('deep goal evidence remains available behind the droplet detail control',()
 test('mobile execution UI stays bounded and bottom sheet is safe-area aware',()=>{
   assert.match(css,/@media\(max-width:360px\)/);assert.match(css,/minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-bottom/);
   assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open\{[^}]*overflow-y:hidden!important/);
+});
+
+test('accumulation route reuses the premium Planner shell and keeps first record inside the droplet',()=>{
+  assert.match(ui,/currentScreen==='progress'/);
+  assert.match(ui,/const panel=buildPlanner\(s\)/);
+  assert.match(ui,/data-gcl-first-record/);
+  assert.match(ui,/Add your first record|첫 기록 남기기/);
+  assert.match(coreLoop,/main\.querySelector\('#garangPlanExecution,\[data-gx-planner-shell="1"\]'\)/);
 });
 
 test('planner week strip is ordered Monday through Sunday',()=>{
