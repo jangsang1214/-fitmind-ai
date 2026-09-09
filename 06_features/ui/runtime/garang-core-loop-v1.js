@@ -89,6 +89,10 @@ function prefill(root,kind,payload){
   return kind==='start-running';
 }
 function mount(root){
+  function ensureCoachActionLayoutStyle(){
+    if(doc.getElementById('garang-core-loop-action-layout-style'))return;
+    const style=doc.createElement('style');style.id='garang-core-loop-action-layout-style';style.textContent='.g2-chat-main.garang-has-decision-card{grid-template-rows:auto auto auto minmax(0,1fr) auto!important}.g2-chat-main.garang-has-decision-card>.gcl-coach-actions{grid-row:3!important}.g2-chat-main.garang-has-decision-card>.g2-chat-scroll{grid-row:4!important}.g2-chat-main.garang-has-decision-card>.g2-composer-wrap{grid-row:5!important}';doc.head.appendChild(style);
+  }
   const doc=root.document,main=doc?.getElementById?.('main');if(!main||root.__garangCoreLoopV1)return false;root.__garangCoreLoopV1=true;let scheduled=false,pendingPrefill=null;
   const state=()=>{try{const b=root.GarangAgentStateBridge;return b?.ready?.()?b.getState():null;}catch{return null;}};
   const lang=()=>doc.documentElement.lang==='en'?'en':'ko';
@@ -120,7 +124,7 @@ function mount(root){
     if(current)current.outerHTML=html;else main.querySelector('.progress-tabs')?.insertAdjacentHTML('afterend',html);
   }
   function render(){
-    scheduled=false;const snapshot=state();if(!snapshot)return;
+    scheduled=false;ensureCoachActionLayoutStyle();const snapshot=state();if(!snapshot)return;
     enhanceToday(snapshot);enhanceCoach(snapshot);enhanceAccumulation(snapshot);enhanceRecord(snapshot);
     if(pendingPrefill&&main.dataset.garangScreen===pendingPrefill.route){const item=pendingPrefill;pendingPrefill=null;root.requestAnimationFrame(()=>prefill(root,item.kind,item.payload));}
   }
@@ -135,5 +139,5 @@ function mount(root){
   doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);
   schedule();return true;
 }
-return Object.freeze({version:'garang-core-loop-v1.0.1',localDate,deriveToday,deriveRecent,deriveCoachActions,deriveAccumulation,prefill,mount});
+return Object.freeze({version:'garang-core-loop-v1.0.0',localDate,deriveToday,deriveRecent,deriveCoachActions,deriveAccumulation,prefill,mount});
 });
