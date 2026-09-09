@@ -91,13 +91,14 @@ function accumulationRows(acc,lang){
   return `<div class="gx-detail-weeks">${acc.series.map((week,index)=>`<div><span>${lang==='en'?`W${index+1}`:`${index+1}주`}</span><i><b style="width:${Math.max(0,Math.min(100,week.executionRate??0))}%"></b></i><strong>${pct(week.executionRate)}</strong></div>`).join('')}</div>`;
 }
 function detailSheet(state,date,lang){
-  const c=copy(lang),day=Core.daily(state,date),acc=Core.accumulation(state,{endDate:localToday(),weeks:4});
+  const c=copy(lang),day=Core.daily(state,date),acc=Core.accumulation(state,{endDate:localToday(),weeks:4}),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:localToday()}),goalRows=goal?.domains?.map(domain=>`<div><span>${esc(domain.label)}</span><strong>${domain.score===null?'—':`${domain.score}%`}</strong></div>`).join('')||'';
   const calorieActual=Math.round(day.nutrition.kcal||0),calorieTarget=day.targets.calorieTarget?Math.round(day.targets.calorieTarget):null;
   const proteinActual=Math.round(day.nutrition.protein.actual||0),proteinTarget=day.nutrition.protein.target;
   return `<div class="gx-sheet-backdrop" data-gx-close hidden></div><section class="gx-detail-sheet" data-gx-sheet hidden role="dialog" aria-modal="true" aria-labelledby="gxDetailTitle">
     <div class="gx-sheet-handle" aria-hidden="true"></div>
     <div class="gx-sheet-head"><div><span>${esc(dayLabel(date,lang))}</span><h3 id="gxDetailTitle">${esc(c.planEvidence)}</h3></div><button type="button" class="gx-drop-button gx-drop-close" data-gx-close aria-label="${esc(c.close)}">${dropletIcon('−')}</button></div>
     <div class="gx-detail-pairs">
+    ${goal?`<div class="gx-detail-goal-fit"><div class="gx-detail-subhead">${esc(c.goalAlignment)}</div><strong>${goal.overall===null?'—':`${goal.overall}%`}</strong><small>${esc(goal.goalLabel||'목표 기준')} · 최근 30일</small><div>${goalRows}</div></div>`:''}
       <div><span>${esc(c.calories)}</span><strong>${calorieActual.toLocaleString()} kcal</strong><small>${esc(c.target)} ${calorieTarget?`${calorieTarget.toLocaleString()} kcal`:'—'}</small></div>
       <div><span>${esc(c.protein)}</span><strong>${proteinActual}g</strong><small>${esc(c.target)} ${proteinTarget?`${proteinTarget}g`:'—'}</small></div>
       <div><span>${esc(c.goalAlignment)}</span><strong>${pct(day.goalAlignment)}</strong><small>${esc(c.confidence)} ${Math.round(day.confidence*100)}%</small></div>
