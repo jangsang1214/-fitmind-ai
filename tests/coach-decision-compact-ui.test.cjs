@@ -19,4 +19,6 @@ assert.ok(coreLoop.includes("promptStrip=coachRoot.querySelector('.g4-prompt-str
 assert.equal(coreLoop.includes('gcl-context-label'),false,'standalone action label must not be exposed in Coach');
 assert.ok(coreLoop.includes('overflow-x:hidden!important')&&coreLoop.includes('writing-mode:horizontal-tb!important'),'Coach surface must prevent mobile clipping and vertical action pills');
 assert.ok(html.includes('garang-coach-decision-v1.js?v=1.4.0-lifecycle'),'index must bust the old Coach decision asset cache');
+assert.ok(html.includes('garang-core-loop-v1.js?v=1.0.1-mobile'),'core loop runtime must be loaded by the production shell');
+assert.ok(html.includes('garang-workout-flow-v1.js?v=1.0.0-cycle'),'three-surface workout flow must be loaded by the production shell');
 console.log('coach-decision-compact-ui: PASS');
