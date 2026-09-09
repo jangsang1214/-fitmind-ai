@@ -58,6 +58,12 @@ async function routeWithRouter(page,route,selector,screen=route){
   const workoutSurfaces=page.locator('.gws-panel[data-garang-workout-surface]');
   assert.equal(await workoutSurfaces.count(),3,'Workout must be split into exactly three structural surfaces');
   assert.equal(await page.locator('.gws-nav').count(),1,'Workout must expose one canonical surface navigation');
+  assert.equal(await page.locator('.garang-workout-tabs').count(),0,'legacy featureless workout tabs must not remain visible');
+  assert.equal(await page.locator('.gws-nav').evaluate(nav=>nav.nextElementSibling?.matches('.gws-panel[data-garang-workout-surface="overview"]')),true,'canonical navigation must sit above the functional panels');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"] .workout-visual-hero').count(),1,'Overview must contain the existing workout overview feature');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"] .exercise-visual-library').count(),1,'Exercises must contain the existing exercise feature');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"] .workout-builder').count(),1,'Log must contain the existing logging feature');
+  assert.equal(await page.locator('#wName').count(),1,'Workout logging inputs must not be duplicated across layers');
   assert.equal(await page.locator('.gwf-nav').count(),0,'legacy overlay navigation must not remain beside the canonical surface navigation');
   assert.deepEqual(await workoutSurfaces.evaluateAll(nodes=>nodes.map(node=>node.dataset.garangWorkoutSurface)),['overview','exercise','log'],'Workout surfaces must have stable overview/exercise/log identities');
   assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),true,'Overview must be the initial visible surface');
