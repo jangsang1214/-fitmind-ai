@@ -8,6 +8,7 @@ const index=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 const ui=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
 const coreLoop=read('06_features/ui/runtime/garang-core-loop-v1.js');
+const planner=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
 const css=read('03_styles/runtime/garang-plan-execution-v1.css');
 const tests=[];
 const test=(name,fn)=>{fn();tests.push(name);console.log(`PASS ${name}`);};
@@ -43,6 +44,13 @@ test('default planner UI is deliberately minimal and hides deep analytics',()=>{
 
 test('goal-fit feature follows the premium accumulation hierarchy',()=>{
   assert.ok(coreLoop.indexOf('gcl-accum-metrics')<coreLoop.lastIndexOf('goalHtml'));
+});
+
+test('planner premium shell keeps goal fit compact inside droplet details',()=>{
+  assert.match(planner,/GarangGoalAlignment/);
+  assert.match(planner,/gx-detail-goal-fit/);
+  assert.match(planner,/goalRows/);
+  assert.doesNotMatch(planner,/ACT \/ 행동/);
 });
 
 test('deep goal evidence remains available behind the droplet detail control',()=>{
