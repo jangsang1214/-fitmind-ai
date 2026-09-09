@@ -55,7 +55,7 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(await page.locator('#wWeight').inputValue(),'82.5','recent workout reuse must prefill existing Workout form');
   assert.equal(await page.locator('#wSets').inputValue(),'4','recent workout reuse must keep sets');
   assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page','Record nav must own workout sub-route');
-  const workoutSurfaces=page.locator('[data-garang-workout-surface]');
+  const workoutSurfaces=page.locator('.gws-panel[data-garang-workout-surface]');
   assert.equal(await workoutSurfaces.count(),3,'Workout must be split into exactly three structural surfaces');
   assert.equal(await page.locator('.gws-nav').count(),1,'Workout must expose one canonical surface navigation');
   assert.equal(await page.locator('.gwf-nav').count(),0,'legacy overlay navigation must not remain beside the canonical surface navigation');
