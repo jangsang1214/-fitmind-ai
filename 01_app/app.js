@@ -177,8 +177,8 @@ function performanceScore(){
   const mealDays=[...new Set(sevenM.map(x=>x.date))];const proteinScores=mealDays.map(d=>clamp(totalsMeals(d).protein/Math.max(1,proteinTarget())*100,0,100));const nutrition=proteinScores.length?Math.round(sum(proteinScores,x=>x)/proteinScores.length):null;
   const readiness=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
   const body=state.body.length>=2?75:state.body.length?65:null;
-  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null);const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(c?1:0);
-  if(!dataCount)return {total:null,components:{Consistency:null,Nutrition:null,Recovery:null,Body:null},reasons:['기록이 쌓이면 GARANG Score가 생성됩니다.']};
+  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null);const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(c?1:0),evidenceDomains=[sevenW.length||sevenR.length,sevenM.length,c,state.body.length].filter(Boolean).length;
+  if(!dataCount||evidenceDomains<2)return {total:null,components:{Consistency:null,Nutrition:null,Recovery:null,Body:null},reasons:['두 개 이상의 기록 영역이 쌓이면 GARANG Score를 판단합니다.']};
   const total=Math.round(sum(vals,x=>x)/vals.length);const reasons=[];
   if(readiness!==null&&readiness<60)reasons.push('오늘 회복 상태가 전체 점수를 낮추고 있습니다.');
   if(consistency<60)reasons.push('최근 7일 운동 일관성을 높일 여지가 있습니다.');
