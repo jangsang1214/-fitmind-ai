@@ -55,6 +55,27 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(await page.locator('#wWeight').inputValue(),'82.5','recent workout reuse must prefill existing Workout form');
   assert.equal(await page.locator('#wSets').inputValue(),'4','recent workout reuse must keep sets');
   assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page','Record nav must own workout sub-route');
+  const workoutSurfaces=page.locator('[data-garang-workout-surface]');
+  assert.equal(await workoutSurfaces.count(),3,'Workout must be split into exactly three structural surfaces');
+  assert.equal(await page.locator('.gws-nav').count(),1,'Workout must expose one canonical surface navigation');
+  assert.equal(await page.locator('.gwf-nav').count(),0,'legacy overlay navigation must not remain beside the canonical surface navigation');
+  assert.deepEqual(await workoutSurfaces.evaluateAll(nodes=>nodes.map(node=>node.dataset.garangWorkoutSurface)),['overview','exercise','log'],'Workout surfaces must have stable overview/exercise/log identities');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),true,'Overview must be the initial visible surface');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"]').isVisible(),false,'Exercise must stay hidden until selected');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"]').isVisible(),false,'Log must stay hidden until selected');
+  await page.locator('[data-gws-step="exercise"]').click();
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='exercise',{timeout:2000});
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"]').isVisible(),true,'Exercise surface must open in place');
+  assert.equal(await page.locator('.exercise-visual-library').isVisible(),true,'Exercise library must belong to the Exercise surface');
+  assert.equal(await page.locator('.workout-builder').isVisible(),false,'Log builder must not remain on the Exercise surface');
+  await page.locator('[data-gws-step="log"]').click();
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='log',{timeout:2000});
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"]').isVisible(),true,'Log surface must open in place');
+  assert.equal(await page.locator('#addWorkout').isVisible(),true,'Existing workout add action must remain on the Log surface');
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),false,'Overview must not be duplicated below Log');
+  await page.locator('[data-gws-next="overview"]').click();
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='overview',{timeout:2000});
+  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),true,'Workout flow must cycle back to Overview');
 
   await openRecordRoute(page,'nutrition');assert.equal(await page.locator('#saveMeal').count(),1,'existing Nutrition feature must remain reachable from another record screen');
   await openRecordRoute(page,'running');assert.equal(await page.locator('#runStart').count(),1,'existing Running feature must remain reachable from another record screen');
