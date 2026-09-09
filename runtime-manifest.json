@@ -83,7 +83,9 @@
     "06_features/ui/runtime/garang-simplified-shell-v1.js",
     "06_features/ui/runtime/garang-plan-execution-ui-v1.js",
     "06_features/ui/runtime/garang-workout-intelligence-ui-v1.js",
-    "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js"
+    "06_features/ui/runtime/garang-collapsible-intelligence-ui-v1.js",
+    "06_features/ui/runtime/garang-core-loop-v1.js",
+    "06_features/ui/runtime/garang-workout-flow-v1.js"
   ],
   "runtimeContract": {
     "version": 2,
