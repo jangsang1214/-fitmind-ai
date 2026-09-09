@@ -70,6 +70,14 @@ test('mobile execution UI stays bounded and bottom sheet is safe-area aware',()=
   assert.match(css,/max-height:82svh/);assert.match(css,/body\.gx-sheet-open\{[^}]*overflow-y:hidden!important/);
 });
 
+test('accumulation route reuses the premium Planner shell and keeps first record inside the droplet',()=>{
+  assert.match(ui,/currentScreen==='progress'/);
+  assert.match(ui,/const panel=buildPlanner\(s\)/);
+  assert.match(ui,/data-gcl-first-record/);
+  assert.match(ui,/Add your first record|첫 기록 남기기/);
+  assert.match(coreLoop,/if\(main\.querySelector\('#garangPlanExecution'\)\)/);
+});
+
 test('planner week strip is ordered Monday through Sunday',()=>{
   assert.match(ui,/function mondayOf\(date\)/);
   assert.match(ui,/function calendarWeekRows\(state,endDate\)/);
