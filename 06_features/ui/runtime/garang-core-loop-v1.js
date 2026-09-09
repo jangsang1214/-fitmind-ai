@@ -20,16 +20,27 @@ function inRange(row,end,days){const date=rowDate(row);if(!date)return false;con
 function checkins(state){return list(state?.dailyCheckins).length?list(state.dailyCheckins):list(state?.checkins);}
 function completedPlan(row){return row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';}
 function recordDates(state){return new Set([...list(state?.workouts),...list(state?.runs),...list(state?.meals),...list(state?.body),...checkins(state)].map(rowDate).filter(Boolean));}
-function currentStreak(state,end=localDate()){
-  const dates=recordDates(state);let streak=0;
+function datesStreak(dates,end=localDate()){
+  const safeDates=dates instanceof Set?dates:new Set(dates||[]);let streak=0;
   for(let i=0;i<365;i++){
     const d=new Date(`${end}T12:00:00`);d.setDate(d.getDate()-i);
     const date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if(dates.has(date))streak++;
+    if(safeDates.has(date))streak++;
     else if(i===0)continue;
     else break;
   }
   return streak;
+}
+function currentStreak(state,end=localDate()){return datesStreak(recordDates(state),end);}
+function planStreak(state,end=localDate()){return datesStreak(new Set(list(state?.planner).filter(completedPlan).map(rowDate).filter(Boolean)),end);}
+function streakEvidence(state,end,streak){
+  if(!streak)return [];
+  const sources={운동:list(state?.workouts),러닝:list(state?.runs),식단:list(state?.meals),체성분:list(state?.body),회복:checkins(state)};
+  return Array.from({length:streak},(_,index)=>{
+    const d=new Date(`${end}T12:00:00`);d.setDate(d.getDate()-(streak-index-1));
+    const date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return {date,domains:Object.entries(sources).filter(([,rows])=>rows.some(row=>rowDate(row)===date)).map(([name])=>name)};
+  });
 }
 function sevenDayRhythm(state,end=localDate()){
   const dates=recordDates(state);
@@ -74,8 +85,8 @@ function bodyDelta(state,end,days){const rows=list(state?.body).filter(r=>inRang
 function deriveAccumulation(state,options={}){
   const safe=state&&typeof state==='object'?state:{},end=String(options.date||localDate()).slice(0,10),days=Math.max(7,Number(options.days)||30),lang=options.lang==='en'?'en':'ko';
   const workouts=list(safe.workouts).filter(r=>inRange(r,end,days)),runs=list(safe.runs).filter(r=>inRange(r,end,days)),meals=list(safe.meals).filter(r=>inRange(r,end,days)),plans=list(safe.planner).filter(r=>inRange(r,end,days));
-  const completed=plans.filter(completedPlan).length,planRate=plans.length?Math.round(completed/plans.length*100):null,activeDays=new Set([...workouts,...runs].map(rowDate).filter(Boolean)).size,recordDays=[...recordDates(safe)].filter(date=>{const diff=daysBetween(date,end);return diff>=0&&diff<days;}).length,delta=bodyDelta(safe,end,days),streak=currentStreak(safe,end),rhythm=sevenDayRhythm(safe,end);
-  const totalDistance=Math.round(runs.reduce((sum,r)=>sum+(finite(r?.distance)||0),0)*10)/10,proteinRows=meals.map(m=>finite(m?.protein)).filter(v=>v!==null),avgProtein=proteinRows.length?Math.round(proteinRows.reduce((a,b)=>a+b,0)/proteinRows.length):null;
+  const completed=plans.filter(completedPlan).length,planRate=plans.length?Math.round(completed/plans.length*100):null,activeDays=new Set([...workouts,...runs].map(rowDate).filter(Boolean)).size,recordDays=[...recordDates(safe)].filter(date=>{const diff=daysBetween(date,end);return diff>=0&&diff<days;}).length,delta=bodyDelta(safe,end,days),recordStreak=currentStreak(safe,end),completedPlanStreak=planStreak(safe,end),evidence=streakEvidence(safe,end,recordStreak),rhythm=sevenDayRhythm(safe,end);
+  const totalDistance=Math.round(runs.reduce((sum,r)=>sum+(finite(r?.distance)||0),0)*10)/10,proteinRows=meals.map(m=>finite(m?.protein)).filter(v=>v!==null),avgProtein=proteinRows.length?Math.round(proteinRows.reduce((a,b)=>a+b,0)/proteinRows.length):null,streak=recordStreak;
   let headline=lang==='en'?`${recordDays} recorded days in the last ${days}.`:`최근 ${days}일 중 ${recordDays}일이 기록됐습니다.`,support=lang==='en'?'Consistency matters more than isolated best numbers.':'최고 기록 하나보다 이어진 기록의 밀도를 먼저 봅니다.';
   if(streak>=3){headline=lang==='en'?`${streak}-day accumulation is continuing.`:`최근 ${streak}일 연속 기록이 이어졌습니다.`;support=lang==='en'?'This counts days with at least one workout, run, meal, body or recovery check-in record.':'운동·러닝·식단·체성분·회복 체크인 중 하나 이상을 매일 기록한 날을 계산한 수치입니다.';}
   return {days,end,lang,workouts:workouts.length,runs:runs.length,meals:meals.length,activeDays,recordDays,planRate,totalDistance,avgProtein,bodyDelta:delta,streak,rhythm,headline,support};
@@ -119,8 +130,11 @@ function mount(root){
   }
   function enhanceAccumulation(snapshot){
     if(main.dataset.garangScreen!=='progress')return;
-    const model=deriveAccumulation(snapshot,{lang:lang(),days:30}),current=main.querySelector('#garangAccumulationOverview'),delta=model.bodyDelta===null?'—':`${model.bodyDelta>0?'+':''}${model.bodyDelta} kg`,plan=model.planRate===null?'—':`${model.planRate}%`;
-    const html=`<section id="garangAccumulationOverview" class="gcl-accum"><div class="gcl-accum-copy"><span>${model.lang==='en'?'30 DAY ACCUMULATION':'30 DAY / 누적.'}</span><h2>${esc(model.headline)}</h2><p>${esc(model.support)}</p>${rhythmMarkup(model.rhythm)}</div><div class="gcl-accum-metrics"><div><strong>${model.activeDays}</strong><span>${model.lang==='en'?'active days':'운동 일수'}</span></div><div><strong>${plan}</strong><span>${model.lang==='en'?'plan rate':'계획 수행'}</span></div><div><strong>${model.totalDistance}</strong><span>${model.lang==='en'?'run km':'러닝 km'}</span></div><div><strong>${delta}</strong><span>${model.lang==='en'?'body change':'체중 변화'}</span></div></div></section>`;
+    const model=deriveAccumulation(snapshot,{lang:lang(),days:30}),current=main.querySelector('#garangAccumulationOverview'),empty=!model.hasRecords&&!model.planRate;
+    main.querySelectorAll('.progress-tabs,#garangAccumulationSummary,#garangPlanExecution').forEach(node=>{if(empty)node.hidden=true;else node.hidden=false;});
+    if(empty){main.querySelectorAll(':scope > *').forEach(node=>{if(!node.matches('.page-head,#garangAccumulationOverview'))node.hidden=true;});}
+    const delta=model.bodyDelta===null?'—':`${model.bodyDelta>0?'+':''}${model.bodyDelta} kg`,plan=model.planRate===null?'—':`${model.planRate}%`,evidence=model.streakEvidence.filter(row=>row.domains.length).map(row=>`<li><time>${row.date.slice(5).replace('-','/')}</time><span>${row.domains.join(' · ')}</span></li>`).join('');
+    const html=empty?`<section id="garangAccumulationOverview" class="gcl-accum gcl-accum-empty" data-gcl-empty="1"><div class="gcl-accum-copy"><span>${model.lang==='en'?'ACCUMULATION':'누적.'}</span><h2>${esc(model.headline)}</h2><p>${esc(model.support)}</p><button type="button" data-pagego="log">${model.lang==='en'?'Add your first record':'첫 기록 남기기'}</button></div></section>`:`<section id="garangAccumulationOverview" class="gcl-accum" data-gcl-streak-kind="recording"><div class="gcl-accum-copy"><span>${model.lang==='en'?'30 DAY ACCUMULATION':'30 DAY / 누적.'}</span><h2>${esc(model.headline)}</h2><p>${esc(model.support)}</p>${model.streakEvidence.length?`<ul class="gcl-streak-evidence" aria-label="기록 연속일 근거">${evidence}</ul>`:''}${rhythmMarkup(model.rhythm)}</div><div class="gcl-accum-metrics"><div><strong>${model.activeDays}</strong><span>${model.lang==='en'?'active days':'운동 일수'}</span></div><div><strong>${plan}</strong><span>${model.lang==='en'?'plan rate':'계획 수행'}</span></div><div><strong>${model.totalDistance}</strong><span>${model.lang==='en'?'run km':'러닝 km'}</span></div><div><strong>${delta}</strong><span>${model.lang==='en'?'body change':'체중 변화'}</span></div></div></section>`;
     if(current)current.outerHTML=html;else main.querySelector('.progress-tabs')?.insertAdjacentHTML('afterend',html);
   }
   function render(){
