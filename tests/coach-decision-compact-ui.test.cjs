@@ -15,7 +15,7 @@ assert.ok(runtime.includes('garang-has-decision-card')&&runtime.includes('grid-t
 assert.ok(runtime.includes("card.dataset.expanded='false'"),'new decision cards must start collapsed');
 assert.ok(runtime.includes("input.value='오늘 계획을 만들어줘'"),'plan proposal action must remain wired through the existing Coach flow');
 assert.equal(runtime.includes('>+</'),false,'ambiguous plus-only decision action must not return');
-assert.ok(coreLoop.includes("const details=coachRoot.querySelector('.garang-decision-details')"),'contextual Coach actions must live inside the decision details');
+assert.ok(coreLoop.includes("const decision=coachRoot.querySelector('.garang-decision-card')"),'contextual Coach actions must live inside the decision card');
 assert.equal(coreLoop.includes('gcl-context-label'),false,'standalone action label must not be exposed in Coach');
 assert.ok(html.includes('garang-coach-decision-v1.js?v=1.4.0-lifecycle'),'index must bust the old Coach decision asset cache');
 console.log('coach-decision-compact-ui: PASS');
