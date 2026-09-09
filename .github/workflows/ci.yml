@@ -111,6 +111,8 @@ jobs:
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify truth surface and first-record flow
         run: node tests/browser-truth-surface.test.cjs
+      - name: Verify Golden Path integration
+        run: node tests/browser-golden-path.test.cjs
       - name: Verify authenticated app boot
         run: node tests/browser-authenticated-boot.test.cjs
       - name: Verify authenticated Coach plan flow

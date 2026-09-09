@@ -54,6 +54,16 @@ test('explicit completion and actual records both count as execution',()=>{
   assert.equal(d.plan.items[1].evidence,'ACTUAL_RECORD_MATCH');
 });
 
+test('workout execution evidence honors per-set volume instead of a stale aggregate',()=>{
+  const s=base();
+  s.planner=[{id:'p1',date:'2026-09-08',type:'workout',title:'Mixed load'}];
+  s.workouts=[{id:'w1',sessionId:'s1',date:'2026-09-08',name:'Bench',sets:3,reps:8,weight:60,volume:9999,setDetails:[{set:1,weight:40,reps:10},{set:2,weight:60,reps:8},{set:3,weight:80,reps:6}]}];
+  const day=Core.daily(s,'2026-09-08');
+  assert.equal(Core.workoutVolume(s.workouts[0]),1360);
+  assert.equal(day.evidence.workout.volume,1360);
+  assert.equal(day.plan.executed,1);
+});
+
 test('one workout session cannot satisfy two uncompleted workout plans',()=>{
   const s=base();
   s.planner=[
@@ -180,5 +190,7 @@ test('workout entry preserves per-set details while keeping legacy aggregates',(
   assert.ok(appSource.includes('data-set-weight')&&appSource.includes('data-set-reps')&&appSource.includes('data-set-rpe'),'per-set weight, reps and RPE inputs must exist');
   assert.ok(appSource.includes('setDetails:details'),'saved workout drafts must retain per-set detail rows');
   assert.ok(appSource.includes('details.reduce((sum,row)=>sum+(row.reps*row.weight),0)'),'per-set volume must be calculated from each row');
+  assert.ok(appSource.includes('details.map(row=>calcEstimated1RM(row.weight,row.reps))'),'per-set estimated 1RM must use each row independently');
+  assert.ok(appSource.includes('goalLabel:currentGoalLabel()'),'manual plans must retain the goal context used when they were created');
 });
 console.log(`${tests.length} plan execution tests passed`);

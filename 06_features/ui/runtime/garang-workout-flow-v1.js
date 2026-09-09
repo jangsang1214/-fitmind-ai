@@ -100,9 +100,11 @@ function apply(shell){
   if(main)main.dataset.garangWorkoutSurface=state.active;
 }
 function findWorkoutAnalysis(main){
+  const section=direct(main,'.record-insights');
+  if(section)return {section};
   const title=[...main.children].find(node=>node.matches('.section-title')&&/운동 분석|workout insights/i.test(node.textContent||''));
   const empty=title?.nextElementSibling?.matches('.card.empty')?title.nextElementSibling:null;
-  return {title,empty};
+  return {title,empty,section:null};
 }
 function mount(){
   const main=document.getElementById('main');
@@ -141,6 +143,7 @@ function mount(){
   move(hero,overview);
   move(history,overview);
   move(insights,overview);
+  move(analysis.section,overview);
   move(analysis.title,overview);
   move(analysis.empty,overview);
   move(title,exercise);

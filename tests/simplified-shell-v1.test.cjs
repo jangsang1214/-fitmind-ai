@@ -74,7 +74,9 @@ assert.match(planSurface,/GarangGoalAlignment/,'Accumulation must use determinis
 assert.match(coreSource,/gcl-context-actions/,'Coach actions must be embedded as contextual next actions');
 assert.doesNotMatch(coreSource,/ACT \/ 행동/,'Coach must not render a standalone ACT section');
 const workoutUi=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-workout-intelligence-ui-v1.js'),'utf8');
-assert.match(workoutUi,/details\.open=true/,'Set-by-set entry must be visible by default');
+assert.match(app,/workoutSetDetailsOpen/,'Set-by-set entry must have one canonical app owner');
+assert.match(app,/data-set-weight/,'Canonical Log surface must retain per-set weight input');
+assert.doesNotMatch(workoutUi,/garang-set-builder|data-garang-set-row/,'Workout intelligence runtime must not inject a duplicate set builder');
 const sample={planner:[{date:'2026-09-09',completed:true},{date:'2026-09-09',completed:false}],workouts:[{date:'2026-09-08',name:'Squat',sets:3,reps:5,weight:80}],meals:[{date:'2026-09-08',name:'Meal',items:[{name:'Chicken',grams:150,kcal:250,protein:40}]}],runs:[{date:'2026-09-08',distance:5,duration:30}],body:[{date:'2026-08-20',weight:70},{date:'2026-09-08',weight:69.2}],checkins:[{date:'2026-09-08'}]};
 assert.equal(Core.deriveToday(sample,{date:'2026-09-09'}).completion,50);
 assert.deepEqual(Core.deriveRecent(sample).map(x=>x.route),['workout','nutrition','running','body']);

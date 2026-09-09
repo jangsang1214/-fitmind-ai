@@ -40,6 +40,11 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   let before=await coachState(page);assert.equal(before.active,'coach',`Coach must own route before plan tap: ${JSON.stringify(before)}`);assert.equal(before.coach,true);
   assert.ok(before.threadKeys.includes('garang_coach_threads_v2::garang_user_mock-user_v3'),`authenticated Coach must pin its thread store to the signed-in account even before cloud hydration: ${JSON.stringify(before)}`);
   assert.equal(before.threadKeys.some(k=>k.endsWith('garang_demo_state_v3')),false,`authenticated Coach must never bind to a stale demo record: ${JSON.stringify(before)}`);
+  assert.equal(await page.locator('.gcl-context-actions [data-gcl-actions-toggle]').count(),1,'authenticated Coach must expose one quiet next-action disclosure');
+  assert.equal(await page.locator('.gcl-context-actions [data-gcl-actions-panel]').isHidden(),true,'authenticated Coach actions must start closed');
+  await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach next action');
+  await page.locator('.gcl-context-actions [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});
+  assert.ok(await page.locator('.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach]:visible').count()>=2,'authenticated Coach actions must remain usable after disclosure');
   await tap(page,'.gcl-context-actions [data-gcl-coach="0"]','Create plan prompt');
   await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>el.textContent.includes('내 저장 기록을 기준으로 오늘 실행할 계획을 만들어주고')),null,{timeout:5000});
   for(let i=0;i<12;i++){await sleep(250);await heartbeat(page,`plan settle ${i}`);const state=await coachState(page);assert.equal(state.active,'coach',`plan prompt must not leave Coach at sample ${i}: ${JSON.stringify(state)}`);assert.equal(state.coach,true,`Coach root disappeared at sample ${i}: ${JSON.stringify(state)}`);assert.ok(state.planMessage||state.proposal,`cloud hydration must not reset the active Coach conversation at sample ${i}: ${JSON.stringify(state)}`);}

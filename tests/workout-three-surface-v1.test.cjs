@@ -17,6 +17,7 @@ assert.ok(flow.includes('removeLegacyChrome(main)'), 'Workout flow must remove d
 assert.ok(flow.includes('move(hero,overview)'), 'Workout overview must own the visual workout summary');
 assert.ok(flow.includes('move(library,exercise)'), 'Workout Exercise surface must own the exercise library');
 assert.ok(flow.includes('move(builder,log)'), 'Workout Log surface must own the workout builder');
+assert.ok(flow.includes('move(analysis.section,overview)'), 'Workout overview must own the populated insights surface');
 assert.ok(flow.includes('move(analysis.title,overview)'), 'Workout overview must retain the empty-state analysis content');
 assert.ok(flow.includes('data-gws-next'), 'Workout surfaces must provide a circular next action');
 assert.equal(flow.includes('new MutationObserver'),false,'Workout structural flow must not add a broad observer');

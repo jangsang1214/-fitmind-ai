@@ -98,6 +98,8 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.ok(await page.locator('.garang-coach-v2,.coach-app-shell').count()>=1,'existing Coach feature must remain reachable');
   await page.locator('[data-gcl-coach-actions]').waitFor({state:'visible',timeout:7000});
   assert.ok(await page.locator('[data-gcl-coach]').count()>=2,'Coach must expose contextual actions while preserving approval ownership');
+  assert.equal(await page.locator('[data-gcl-actions-toggle]').count(),1,'Coach actions must have one quiet disclosure control');
+  assert.equal(await page.locator('[data-gcl-actions-panel]').isHidden(),true,'Coach action details must stay behind the quiet disclosure by default');
   const quietCoach=await page.evaluate(()=>{
     const root=document.querySelector('.garang-coach-v2');
     const strip=root?.querySelector('.g4-prompt-strip');
@@ -113,6 +115,8 @@ async function routeWithRouter(page,route,selector,screen=route){
       role:strip?.getAttribute('role')||'',
       visibleLegacy,
       actionCount:actions.length,
+      visibleActionCount:actions.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).display!=='none'}).length,
+      actionPanelHidden:root?.querySelector('[data-gcl-actions-panel]')?.hidden??true,
       moreDisplay:more?getComputedStyle(more).display:'none',
       moreVisible:!!more&&more.getBoundingClientRect().width>0&&more.getBoundingClientRect().height>0,
       overflowX:strip?getComputedStyle(strip).overflowX:'',
@@ -124,12 +128,17 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(quietCoach.marked,'garang-coach-quiet-surface-v1.0.0','Coach must use the quiet presentation layer');
   assert.equal(quietCoach.role,'group','Coach quick actions must be one grouped surface');
   assert.equal(quietCoach.visibleLegacy,0,'legacy prompt pills must stay behind the Coach disclosure by default');
-  assert.ok(quietCoach.actionCount>=2,'contextual Coach actions must remain visible');
+  assert.ok(quietCoach.actionCount>=2,'contextual Coach actions must remain available behind the quiet disclosure');
+  assert.equal(quietCoach.visibleActionCount,0,'contextual Coach action pills must not dominate the default Coach surface');
+  assert.equal(quietCoach.actionPanelHidden,true,'contextual Coach action panel must start closed');
   assert.notEqual(quietCoach.moreDisplay,'none','existing Coach prompts must remain discoverable through More');
   assert.equal(quietCoach.moreVisible,true,'Coach More disclosure must expose a real touch box');
   assert.equal(quietCoach.overflowX,'auto','Coach actions must use a horizontal mobile surface');
   assert.ok(quietCoach.maxButtonHeight<=42,'Coach action pills must not become oversized vertical controls: '+JSON.stringify(quietCoach));
   if(quietCoach.hasEmpty)assert.equal(quietCoach.emptyMarkDisplay,'none','empty Coach branding must stay compact');
+  await page.locator('[data-gcl-actions-toggle]').click();
+  await page.locator('[data-gcl-actions-panel]').waitFor({state:'visible',timeout:2000});
+  assert.ok(await page.locator('[data-gcl-actions-panel] [data-gcl-coach]:visible').count()>=2,'contextual Coach actions must remain usable after disclosure');
   await page.locator('[data-garang-coach-more]').click();
   await page.waitForFunction(()=>document.querySelector('.g4-prompt-strip')?.classList.contains('gcs-show-legacy'),{timeout:2000});
   assert.ok(await page.locator('.g4-prompt-strip > [data-garang-prompt-id]:visible').count()>=5,'existing Coach prompts must remain reachable after disclosure');
