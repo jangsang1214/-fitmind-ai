@@ -152,7 +152,7 @@ function mount(root){
     const coach=event.target.closest?.('[data-gcl-coach]');
     if(coach){const host=coach.closest('[data-gcl-coach-actions]'),action=host?._gclActions?.[Number(coach.dataset.gclCoach)];if(!action)return;event.preventDefault();const input=main.querySelector('.g2-composer textarea'),send=main.querySelector('.g2-send');if(input&&send){input.value=action.prompt;input.dispatchEvent(new Event('input',{bubbles:true}));send.click();}return;}
   },true);
-  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:agent-proposal-resolved','garang:record-sheet-opened'])root.addEventListener(name,schedule);
+  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:agent-proposal-resolved','garang:record-sheet-opened','garang:goal-alignment-ready'])root.addEventListener(name,schedule);
   doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);
   schedule();return true;
 }
