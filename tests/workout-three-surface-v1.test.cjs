@@ -1,0 +1,21 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const flow=read('06_features/ui/runtime/garang-workout-flow-v1.js');
+const html=read('index.html');
+const manifest=JSON.parse(read('runtime-manifest.json'));
+
+assert.ok(flow.includes("VERSION='garang-workout-flow-v1.1.0-surfaces'"),'Workout flow must expose a canonical structural version');
+assert.ok(flow.includes('data-garang-workout-surface'), 'Workout flow must create named structural surfaces');
+assert.ok(flow.includes("{id:'overview'")&&flow.includes("{id:'exercise'")&&flow.includes("{id:'log'"),'Workout flow must preserve the three-surface order');
+assert.ok(flow.includes("main.dataset.garangWorkoutSurface=state.active"),'Workout flow must expose the active surface identity');
+assert.ok(flow.includes('removeOldChrome(main)'), 'Workout flow must remove duplicate legacy navigation chrome');
+assert.ok(flow.includes('move(hero,overview)'), 'Workout overview must own the visual workout summary');
+assert.ok(flow.includes('move(library,exercise)'), 'Workout Exercise surface must own the exercise library');
+assert.ok(flow.includes('move(builder,log)'), 'Workout Log surface must own the workout builder');
+assert.ok(flow.includes('data-gws-next'), 'Workout surfaces must provide a circular next action');
+assert.equal(flow.includes('new MutationObserver'),false,'Workout structural flow must not add a broad observer');
+assert.ok(html.includes('garang-workout-flow-v1.js?v=1.1.0-surfaces'),'index must load the structural Workout flow version');
+assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-flow-v1.js'),'runtime manifest must retain the canonical Workout flow');
+console.log('workout-three-surface-v1: PASS');
