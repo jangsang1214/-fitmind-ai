@@ -8,7 +8,7 @@ const manifest=JSON.parse(read('runtime-manifest.json'));
 
 assert.ok(flow.includes("VERSION='garang-workout-flow-v1.1.0-surfaces'"),'Workout flow must expose a canonical structural version');
 assert.ok(flow.includes('data-garang-workout-surface'), 'Workout flow must create named structural surfaces');
-assert.ok(flow.includes("['overview','exercise','log']"),'Workout flow must preserve the three-surface order');
+assert.ok(flow.includes("{id:'overview'")&&flow.includes("{id:'exercise'")&&flow.includes("{id:'log'"),'Workout flow must preserve the three-surface order');
 assert.ok(flow.includes("main.dataset.garangWorkoutSurface=state.active"),'Workout flow must expose the active surface identity');
 assert.ok(flow.includes('removeOldChrome(main)'), 'Workout flow must remove duplicate legacy navigation chrome');
 assert.ok(flow.includes('move(hero,overview)'), 'Workout overview must own the visual workout summary');
