@@ -208,8 +208,9 @@
   'use strict';
   if (window.GarangCoreLoopV1 || document.querySelector('script[data-garang-core-loop-v1]')) return;
   const script=document.createElement('script');
-  script.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.1';
-  script.dataset.garangCoreLoopV1='1';
+  script.src='./02_core/goal-alignment-v1.js?v=1.0.0';
+  script.dataset.garangGoalAlignmentV1='1';
   script.async=false;
+  script.onload=()=>{const loop=document.createElement('script');loop.src='./06_features/ui/runtime/garang-core-loop-v1.js?v=1.0.1';loop.dataset.garangCoreLoopV1='1';loop.async=false;document.head.appendChild(loop);};
   document.head.appendChild(script);
 })();
