@@ -1,4 +1,4 @@
-/* GARANG Nonblocking Actions v1.2
+/* GARANG Nonblocking Actions v1.1
    Visible destructive/approval actions keep canonical app.js state mutations, but native blocking
    confirm() UI is replaced with a local two-tap confirmation. Binding follows explicit UI lifecycle
    events instead of watching the entire #main subtree. No global click interception.
@@ -112,5 +112,5 @@
   window.addEventListener('pageshow',queueScan);
   scan();queueScan();
 
-  window.GarangNonblockingActions=Object.freeze({version:'1.2.0',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.1.0',scan,queueScan,promoteTodayCheckin});
 })();
