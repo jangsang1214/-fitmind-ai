@@ -35,8 +35,13 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
     assert.equal(await page.locator('.garang-more-sheet').count(),0,'first record must not reopen the legacy More menu');
 
     await route(page,'planner');
+    const draft=page.locator('[data-garang-daily-plan-draft="1"]');await draft.waitFor({state:'visible',timeout:7000});
+    assert.equal(await page.locator('#garangPlanExecution').count(),1,'canonical Planner evidence must remain in the DOM behind an editable daily draft');
+    assert.equal(await page.locator('#garangPlanExecution').isVisible(),false,'daily draft must own Planner until it is confirmed or dismissed');
+    await draft.locator('[data-gdp-dismiss]').click();
+    await draft.waitFor({state:'detached',timeout:3000});
     const planner=page.locator('#garangPlanExecution');await planner.waitFor({state:'visible',timeout:7000});
-    assert.equal(await page.locator('#garangPlanExecution').count(),1,'there must be one canonical Planner surface');
+    assert.equal(await page.locator('#garangPlanExecution').count(),1,'there must be one canonical Planner surface after draft dismissal');
     assert.equal(await page.locator('[data-gx-plan-slot] #addPlan').count(),1,'the existing Planner form must move into the droplet detail');
     assert.equal(await page.locator('.grid.grid-2 .card').filter({hasText:'Agent Write'}).count(),1,'Agent Write capability remains in the DOM for compatibility');
     assert.equal(await page.locator('.grid.grid-2 .card').filter({hasText:'Agent Write'}).isVisible(),false,'duplicate Agent Write panel must stay out of the visible Planner surface');
