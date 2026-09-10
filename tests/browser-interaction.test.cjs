@@ -16,6 +16,9 @@ const dirtyState=()=>({
 });
 async function tap(page,locator,touch,label='target'){
   if(!touch){await locator.click();return;}
+  await locator.waitFor({state:'visible',timeout:5000});
+  await locator.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
+  await page.waitForTimeout(24);
   const box=await locator.boundingBox();
   if(!box){
     const diagnostic=await page.evaluate(()=>({
@@ -27,6 +30,8 @@ async function tap(page,locator,touch,label='target'){
     }));
     throw new Error(`${label} has no touch box: ${JSON.stringify(diagnostic)}`);
   }
+  const ownsPoint=await locator.evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});
+  assert.equal(ownsPoint,true,`${label} must own its physical touch point`);
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
 }
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
@@ -45,11 +50,29 @@ async function assertTodayStable(page,label){
   const suspicious=diagnostic.fixed.filter(x=>!String(x.cls).includes('garang-more-sheet')&&!String(x.cls).includes('garang-record-backdrop')&&!String(x.id).includes('bottomNav')&&x.bottom>0&&x.top<diagnostic.viewportHeight);
   assert.equal(suspicious.length,0,`${label}: unexpected fixed layer can cover Today content: ${JSON.stringify(diagnostic)}`);
 }
+async function armRouteCompletion(page,route){
+  await page.evaluate(r=>{
+    window.__garangBrowserInteractionRoute=null;
+    const previous=window.__garangBrowserInteractionRouteListener;
+    if(previous)window.removeEventListener('garang:route-completed',previous);
+    const onDone=event=>{
+      if(event?.detail?.route!==r)return;
+      window.__garangBrowserInteractionRoute={route:r,detail:event.detail};
+      window.removeEventListener('garang:route-completed',onDone);
+      window.__garangBrowserInteractionRouteListener=null;
+    };
+    window.__garangBrowserInteractionRouteListener=onDone;
+    window.addEventListener('garang:route-completed',onDone);
+  },route);
+}
 async function openRecordRoute(page,route,touch,label){
   const record=page.locator('#bottomNav button[data-page="log"]');
   await tap(page,record,touch,`${label}: Record`);
   const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:3000});
-  const target=sheet.locator(`[data-garang-record-route="${route}"]`);await tap(page,target,touch,`${label}: ${route}`);
+  const target=sheet.locator(`[data-garang-record-route="${route}"]`);
+  await armRouteCompletion(page,route);
+  await tap(page,target,touch,`${label}: ${route}`);
+  await page.waitForFunction(r=>window.__garangBrowserInteractionRoute?.route===r,route,{timeout:5000});
   await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
   assert.equal(await page.locator('#bottomNav button[data-page="log"]').getAttribute('aria-current'),'page',`${label}: Record must own ${route}`);
 }
