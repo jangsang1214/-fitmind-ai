@@ -73,7 +73,7 @@ function normalizeState(){
 function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_VERSION;}
 function readLocal(key){try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw);}catch(e){console.warn('local load failed',e);return null;}}
 function writeLocal(){try{touch();localStorage.setItem(storageKey,JSON.stringify(state));return true;}catch(e){toast('기기 저장 공간을 확인해 주세요.');captureError('local_save',e);return false;}}
-function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();}
+function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
 function emitLifecycle(name,detail={}){try{window.dispatchEvent(new CustomEvent(name,{detail:{page:currentPage,storageKey,...detail}}));}catch{}}
 function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();emitLifecycle('garang:state-updated',{source:opts.source||'app',event:opts.event||'state_saved'});}
 
@@ -161,7 +161,7 @@ function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(
 function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));}
 function recordScreenView(page,from){trackEvent('screen_viewed',{screen:page,from:from||null,date:today()},true);if(firebaseReady&&currentUser)queueCloudSync();}
 function go(page){const previous=currentPage;currentPage=page;recordScreenView(page,previous);render();window.scrollTo({top:0,behavior:'instant'});}
-function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
+function render(){try{const bridge=window.GarangAgentStateBridge;if(bridge?.ready?.()){const live=bridge.getLiveState?.();if(live&&live!==state)state=live;}}catch{}document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
 
 function todayWorkouts(){return state.workouts.filter(x=>x.date===today());}
 function dayMeals(date=today()){return state.meals.filter(x=>x.date===date);}
