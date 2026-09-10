@@ -68,7 +68,8 @@ async function noHorizontalOverflow(page,label){
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
     await page.waitForFunction(()=>window.GarangGoldenPath&&window.GarangRouter&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:7000});
 
-    assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'onboarding','a new local user must start in onboarding');
+    assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'modeling','a new local user must start in the canonical Modeling identity');
+    await page.locator('#saveOnboarding').waitFor({state:'visible',timeout:3000});
     await page.locator('#oGoal').selectOption({label:'근육 증가'});
     await page.locator('#oExperience').selectOption('beginner');
     await page.locator('#oFrequency').fill('4');await page.locator('#oMinutes').fill('45');
