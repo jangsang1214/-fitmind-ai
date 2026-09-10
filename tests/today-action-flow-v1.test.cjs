@@ -38,6 +38,6 @@ function model(state){return Flow.deriveModel(state,{date,lang:'ko',PlanExecutio
  assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)/,'Today flow must not write storage');
  assert.doesNotMatch(source,/applyWrite\s*\(/,'Today flow must not bypass existing confirmed write paths');
  assert.doesNotMatch(source,/MutationObserver/,'Today flow must remain lifecycle-driven');
- assert.match(source,/data-gtf-c/,'C direction must explicitly own the Today visual mode');
+ assert.match(source,/dataset\.gtfC/,'C direction must explicitly own the Today visual mode');
 }
 console.log('today-action-flow-v1 C-direction: PASS');
