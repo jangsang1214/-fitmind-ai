@@ -29,18 +29,22 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     });
     const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e?.stack||e?.message||e)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:10000});await page.waitForFunction(()=>document.getElementById('main')?.innerText?.trim().length>0,{timeout:10000});
-    await page.locator('[data-today-view="front"]').waitFor({state:'visible',timeout:7000});await page.locator('[data-today-view="back"]').waitFor({state:'visible',timeout:7000});await page.locator('#menuBtn').waitFor({state:'visible',timeout:5000});
+    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});await page.locator('#menuBtn').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('#authView').isHidden(),true);assert.equal(await page.locator('#appView').isVisible(),true);
+    assert.equal(await page.locator('#main').getAttribute('data-gtf-c'),'1','authenticated boot must land on C-direction Today');
+    assert.equal(await page.locator('.today-body-panel').count(),1,'legacy anatomy capability must remain available');
+    assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'authenticated boot must not promote the body model to hero');
+    assert.equal(await page.locator('[data-today-view="front"]:visible').count(),0);assert.equal(await page.locator('[data-today-view="back"]:visible').count(),0);
     const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null'));
     assert.ok(saved&&saved.profile?.name==='Authenticated Regression','authenticated state must persist');
     assert.equal(saved.workouts.length,1);assert.equal(saved.meals.length,1);assert.equal(saved.meals[0].items.length,1);assert.equal(saved.checkins.length,1);
     assert.ok(saved.memory&&Array.isArray(saved.memory.entries));assert.ok(saved.analytics&&Array.isArray(saved.analytics.events));
-    await page.locator('[data-today-view="back"]').click();await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
 
     for(const route of ['today','coach','progress']){
       await page.locator(`#bottomNav [data-garang-primary-nav="1"][data-page="${route}"]`).click();
       await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
       assert.ok((await page.locator('#main').innerText()).trim().length>0,`${route} must render after authenticated boot`);
+      if(route==='today'){await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'Today round-trip must preserve C direction');}
     }
 
     const preservedRoutes=[['workout','#saveWorkoutSession'],['body','#saveBody']];
@@ -52,6 +56,6 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
       assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${route} must belong to the Record primary axis`);
     }
 
-    assert.deepEqual(pageErrors,[],`authenticated browser runtime errors:\n${pageErrors.join('\n')}`);console.log('browser-authenticated malformed-cloud boot: PASS');
+    assert.deepEqual(pageErrors,[],`authenticated browser runtime errors:\n${pageErrors.join('\n')}`);console.log('browser-authenticated malformed-cloud boot + C-direction Today: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
