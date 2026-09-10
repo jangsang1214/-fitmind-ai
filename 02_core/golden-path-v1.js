@@ -22,6 +22,7 @@ const localDate=()=>{
 const dateOfRow=row=>[row?.date,row?.day,row?.performedAt,row?.performed_on,row?.createdAt,row?.created_at].map(dateOnly).find(Boolean)||null;
 const eventDate=event=>dateOnly(event?.props?.date)||dateOnly(event?.date)||dateOnly(event?.at);
 const goalLabel=state=>clean(state?.profile?.goal||state?.onboarding?.goal)||'퍼포먼스 향상';
+const goalClass=state=>{const raw=goalLabel(state).toLowerCase();if(/근육|muscle|bulk|hypertrophy/.test(raw))return'muscle_gain';if(/체지방|체중 감소|감량|fat.?loss|weight.?loss|cut/.test(raw))return'fat_loss';if(/러닝|running|run/.test(raw))return'running_performance';if(/퍼포먼스|performance|strength|기록 향상/.test(raw))return'performance';return'maintenance';};
 const shiftDate=(date,offset)=>{const [year,month,day]=date.split('-').map(Number),value=new Date(Date.UTC(year,month-1,day+offset));return `${value.getUTCFullYear()}-${String(value.getUTCMonth()+1).padStart(2,'0')}-${String(value.getUTCDate()).padStart(2,'0')}`;};
 function latestRecoveryDate(state,today){
   return [...list(state?.dailyCheckins),...list(state?.checkins)].map(dateOfRow).filter(date=>date&&date<=today).sort().at(-1)||null;
@@ -95,7 +96,7 @@ function execution(state,today){
   const items=rows.map(({row,date})=>{
     const type=planType(row?.type||row?.category),explicit=row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';
     const derived=!explicit&&type!=='rest'&&type!=='other'&&claim(date,type,row);
-    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalLabel:clean(row?.goalLabel||row?.goal),executed:explicit||derived,explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
+    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalClass:clean(row?.goalClass)||goalClass(state),goalLabel:clean(row?.goalLabel||row?.goal),executed:explicit||derived,explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
   });
   const executed=items.filter(row=>row.executed).length;
   return {planned:items.length,executed,allExecuted:items.length>0&&executed===items.length,hasExecution:executed>0,items,nextPlan:items.find(row=>!row.executed)||items[0]||null};
@@ -124,6 +125,7 @@ function derive(state,options={}){
   return {
     version:VERSION,
     today,
+    goalClass:goalClass(safe),
     goalLabel:goalLabel(safe),
     recoveryDate,
     recoveryReady,
@@ -141,5 +143,5 @@ function derive(state,options={}){
   };
 }
 
-return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,meaningfulRecords,coachEvidence,execution,derive});
+return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,goalClass,meaningfulRecords,coachEvidence,execution,derive});
 });

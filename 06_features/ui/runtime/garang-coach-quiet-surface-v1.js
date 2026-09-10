@@ -40,6 +40,7 @@ function ensureRuntimeOverrides(){
     '.garang-coach-v2 .gcs-prompt-more{display:inline-flex!important;flex:0 0 auto!important;min-width:0!important;min-height:30px!important;height:30px!important;box-sizing:border-box!important}',
     '.garang-coach-v2 .gcs-prompt-more[hidden]{display:none!important}',
     '.garang-coach-v2 .gcl-context-label,.garang-coach-v2 [data-gcl-context-label],.garang-coach-v2 .gcl-action-label,.garang-coach-v2 [data-gcl-action-label]{display:none!important}',
+    '.garang-coach-v2 .gcs-legacy-action-surface{display:none!important}',
     '@media(max-width:800px){.garang-coach-v2 .g2-empty-chat[data-garang-quiet-empty="1"]{padding:14px 0 6px!important}.garang-coach-v2 .g2-empty-chat[data-garang-quiet-empty="1"] .g2-empty-inner h2{font-size:18px!important}}'
   ].join('');
   document.head.appendChild(style);
@@ -113,6 +114,12 @@ function hideActionLabels(root){
         label.setAttribute('aria-hidden','true');
       }
     });
+  });
+  const canonical=Array.from(root.querySelectorAll('[data-gcl-coach-actions]'));
+  canonical.slice(1).forEach(host=>{
+    host.hidden=true;
+    host.setAttribute('aria-hidden','true');
+    host.classList.add('gcs-duplicate-action-surface');
   });
 }
 

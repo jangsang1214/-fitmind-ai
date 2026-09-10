@@ -110,8 +110,9 @@
 
     let options = card.querySelector('.garang-set-options');
     if (!options) {
-      const built = makeDetails('garang-set-options', ko ? '세부 설정' : 'Details');
+      const built = makeDetails('garang-set-options', ko ? '세트 설정' : 'Set settings');
       options = built.details;
+      options.dataset.garangSetOptions = '1';
       fields.insertAdjacentElement('afterend', options);
 
       const oneRm = card.querySelector('.one-rm-panel');
@@ -130,7 +131,27 @@
         built.body.appendChild(clear);
       }
     } else {
-      setText(options.querySelector('summary'), ko ? '세부 설정' : 'Details');
+      setText(options.querySelector('summary'), ko ? '세트 설정' : 'Set settings');
+    }
+
+    const optionsBody = options.querySelector('.garang-set-options-body');
+    const setToolbar = card.querySelector('.set-detail-toolbar');
+    const setDetails = card.querySelector('#workoutSetDetails');
+    if (optionsBody) {
+      if (setToolbar && setToolbar.parentElement !== optionsBody) optionsBody.appendChild(setToolbar);
+      if (setDetails && setDetails.parentElement !== optionsBody) optionsBody.appendChild(setDetails);
+    }
+    if (options.dataset.garangSetBridgeBound !== '1') {
+      options.dataset.garangSetBridgeBound = '1';
+      const syncSetDetails = () => {
+        const host = card.querySelector('#workoutSetDetails');
+        const toggle = card.querySelector('#toggleSetDetails');
+        if (host) host.hidden = !options.open;
+        if (toggle) toggle.setAttribute('aria-expanded', options.open ? 'true' : 'false');
+        try { window.dispatchEvent(new CustomEvent('garang:set-options-toggled', { detail: { open: options.open } })); } catch {}
+      };
+      options.addEventListener('toggle', syncSetDetails);
+      syncSetDetails();
     }
 
     const add = card.querySelector('#addWorkout');

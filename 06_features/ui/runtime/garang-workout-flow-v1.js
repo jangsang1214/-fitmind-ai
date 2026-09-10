@@ -1,5 +1,5 @@
-/* GARANG Workout Flow v1.2
-   One visible structural workout surface:
+/* GARANG Workout Flow v1.3
+   One visible functional workout page at a time:
    Overview -> Exercise -> Log -> Overview.
    Existing app.js markup and handlers remain the feature owners.
 */
@@ -8,7 +8,7 @@
 if(!root||root.__garangWorkoutFlowV1)return;
 root.__garangWorkoutFlowV1=true;
 
-const VERSION='garang-workout-flow-v1.2.0-single-surface';
+const VERSION='garang-workout-flow-v1.3.0-paged';
 const state={active:'overview'};
 const SURFACES=[
   {id:'overview',en:'Overview',ko:'개요'},
@@ -26,7 +26,9 @@ function ensureStyle(){
   const style=document.createElement('style');
   style.id='garang-workout-flow-v1-style';
   style.textContent=[
-    '.gws-shell{display:block;width:100%;min-width:0}',
+    '.gws-shell,.gws-panel{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}',
+    '.gws-panel>*{min-width:0;max-width:100%;box-sizing:border-box}',
+    '.gws-panel input,.gws-panel select,.gws-panel textarea{max-width:100%;box-sizing:border-box}',
     '.gws-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;margin:0 0 22px;border-bottom:1px solid rgba(242,239,233,.12);overflow:visible}',
     '.gws-step{position:relative;min-width:0;min-height:52px;padding:13px 8px 11px;border:0;border-radius:0;background:transparent;color:#777d77;font:500 11px/1 var(--g2-ui,system-ui);letter-spacing:.03em;white-space:nowrap;cursor:pointer}',
     '.gws-step::after{content:"";position:absolute;left:50%;bottom:-1px;width:0;height:2px;background:#4fae92;transform:translateX(-50%);transition:width .2s ease}',
@@ -47,6 +49,7 @@ function panel(shell,id){
   const node=document.createElement('section');
   node.className='gws-panel';
   node.dataset.garangWorkoutSurface=id;
+  node.dataset.garangWorkoutPage='1';
   node.setAttribute('aria-label',id);
   shell.appendChild(node);
   return node;
@@ -94,6 +97,8 @@ function apply(shell){
     const on=node.dataset.garangWorkoutSurface===state.active;
     node.hidden=!on;
     node.setAttribute('aria-hidden',on?'false':'true');
+    node.dataset.garangWorkoutAttached=on?'1':'0';
+    node.setAttribute('data-garang-workout-attached',on?'1':'0');
   });
   renderNext(shell);
   const main=shell.parentElement;

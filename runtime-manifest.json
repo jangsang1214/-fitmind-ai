@@ -23,6 +23,7 @@
     "03_styles/runtime/garang-auth-brand-v1.css",
     "03_styles/runtime/garang-simplified-shell-v1.css",
     "03_styles/runtime/garang-app-shell-v1.css",
+    "03_styles/runtime/garang-nutrition-recommendation-v1.css",
     "03_styles/runtime/garang-coach-quiet-surface-v1.css"
   ],
   "scripts": [
@@ -43,6 +44,7 @@
     "02_core/adaptive-planner-v1.js",
     "02_core/intelligence-core-v1.js",
     "02_core/plan-execution-v1.js",
+    "02_core/nutrition-recommendation-v1.js",
     "02_core/golden-path-v1.js",
     "02_core/workout-intelligence-v1.js",
     "services/performance.js",
@@ -90,6 +92,7 @@
     "06_features/ui/runtime/garang-core-loop-v1.js",
     "06_features/ui/runtime/garang-workout-flow-v1.js",
     "06_features/ui/runtime/garang-golden-path-v1.js",
+    "06_features/ui/runtime/garang-nutrition-recommendation-v1.js",
     "06_features/ui/runtime/garang-coach-quiet-surface-v1.js"
   ],
   "runtimeContract": {

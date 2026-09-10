@@ -58,7 +58,7 @@ function emptyPlanState(){
 
     await route(page,'workout');
     await page.locator('[data-gws-step="log"]').click();
-    await page.locator('#toggleSetDetails').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});
+    await page.locator('.garang-set-options > summary').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});
     const setValues=[[40,10,6],[60,8,7],[80,6,9]];
     for(let index=0;index<setValues.length;index++){
       const row=page.locator('#workoutSetDetails [data-set-row]').nth(index),[weight,reps,rpe]=setValues[index];
