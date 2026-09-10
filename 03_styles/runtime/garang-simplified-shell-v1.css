@@ -81,7 +81,7 @@ body.garang-record-open{overflow-y:hidden!important}
 #main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm{gap:4px!important;justify-content:flex-end!important}
 #main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm i{width:5px!important;height:5px!important;outline-offset:1px!important}
 
-/* GARANG Decision stays visible, but as a quiet secondary read beneath Today Flow. */
+/* GARANG Decision stays visible, with anatomy reduced to a quiet interactive focus preview. */
 #main[data-garang-screen="today"]>.today-hero.visual-today-hero{
   display:block!important;
   min-height:0!important;
@@ -95,7 +95,47 @@ body.garang-record-open{overflow-y:hidden!important}
   box-shadow:none!important;
   overflow:visible!important;
 }
-#main[data-garang-screen="today"]>.today-hero .today-body-panel{display:none!important}
+#main[data-garang-screen="today"]>.today-hero .today-body-panel{
+  display:grid!important;
+  grid-template-rows:28px 1fr!important;
+  min-height:122px!important;
+  height:122px!important;
+  margin:0 0 12px!important;
+  padding:0!important;
+  border:1px solid rgba(242,239,233,.065)!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.01)!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+#main[data-garang-screen="today"]>.today-hero .today-body-label{
+  min-height:28px!important;
+  height:28px!important;
+  padding:8px 10px 0!important;
+}
+#main[data-garang-screen="today"]>.today-hero .today-body-label .eyebrow{font-size:7px!important;letter-spacing:.12em!important;opacity:.58!important}
+#main[data-garang-screen="today"]>.today-hero .today-body-panel .compact-map,
+#main[data-garang-screen="today"]>.today-hero .today-body-panel .compact-map.garang-today-anatomy-premium{
+  height:94px!important;
+  max-height:94px!important;
+  padding:0 6px 5px!important;
+}
+#main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view{height:88px!important}
+#main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view svg,
+#main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view svg.g3-body-model{
+  height:84px!important;
+  max-height:84px!important;
+  max-width:68px!important;
+  transform:none!important;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.28))!important;
+}
+#main[data-garang-screen="today"]>.today-hero .today-anatomy-key{top:2px!important;right:5px!important}
+#main[data-garang-screen="today"]>.today-hero .today-view-switch{background:rgba(7,9,8,.64)!important;box-shadow:none!important}
+#main[data-garang-screen="today"]>.today-hero .today-view-switch button{
+  min-width:44px!important;
+  height:25px!important;
+  padding:0 8px!important;
+}
 #main[data-garang-screen="today"]>.today-hero .today-decision-panel{
   display:grid!important;
   gap:9px!important;
@@ -255,6 +295,12 @@ html[lang="ko"] #main[data-garang-screen="today"]>.today-hero .today-decision-pa
  #main[data-garang-screen="today"]>#garangCoreToday.gcl-today{grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important}
  #main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm{display:none!important}
  #main[data-garang-screen="today"]>.today-hero.visual-today-hero{margin-bottom:14px!important;padding:11px 0 12px!important}
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel{height:112px!important;min-height:112px!important;margin-bottom:10px!important}
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel .compact-map,
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel .compact-map.garang-today-anatomy-premium{height:84px!important;max-height:84px!important}
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view{height:78px!important}
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view svg,
+ #main[data-garang-screen="today"]>.today-hero .today-body-panel .body-view svg.g3-body-model{height:74px!important;max-height:74px!important;max-width:62px!important}
  #main[data-garang-screen="today"]>.today-hero .today-score-line{grid-template-columns:50px minmax(0,1fr)!important;gap:11px!important}
  #main[data-garang-screen="today"]>.today-hero .score-orb{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
  #main[data-garang-screen="today"]>.today-hero .score-orb strong{font-size:21px!important}
