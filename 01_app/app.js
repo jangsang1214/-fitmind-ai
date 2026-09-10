@@ -30,7 +30,9 @@ let state = EMPTY();
 let db = {exercise:[],food:[]};
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
-let storageKey=DEMO_KEY, syncTimer=null, syncRetry=0;
+let storageKey=DEMO_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
+window.GarangCloudHydrationReady=true;
+function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
 let workoutDraft=[], mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false;
 let workoutMuscleFilter='all', workoutSelectedExercise='';
 let currentCert={workout:null,running:null};
@@ -73,7 +75,7 @@ function normalizeState(){
 function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_VERSION;}
 function readLocal(key){try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw);}catch(e){console.warn('local load failed',e);return null;}}
 function writeLocal(){try{touch();localStorage.setItem(storageKey,JSON.stringify(state));return true;}catch(e){toast('기기 저장 공간을 확인해 주세요.');captureError('local_save',e);return false;}}
-function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
+function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();if(currentUser?.uid&&!state.meta.syncOwnerUid)state.meta.syncOwnerUid=currentUser.uid;try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
 function emitLifecycle(name,detail={}){try{window.dispatchEvent(new CustomEvent(name,{detail:{page:currentPage,storageKey,...detail}}));}catch{}}
 function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();emitLifecycle('garang:state-updated',{source:opts.source||'app',event:opts.event||'state_saved'});}
 
@@ -89,6 +91,8 @@ function cloudPayload(){
 }
 async function cloudSaveNow(){
   if(!firebaseReady||!currentUser)return false;
+  if(!cloudHydrated){cloudSyncPending=true;return false;}
+  cloudSyncPending=false;
   setSync('syncing');
   try{
     const payload=cloudPayload();payload.cloudUpdatedAt=firebase.firestore.FieldValue.serverTimestamp();payload.clientUpdatedAt=state.meta.updatedAt;
@@ -99,7 +103,7 @@ async function cloudSaveNow(){
     if(syncRetry<3)setTimeout(()=>cloudSaveNow(),1200*Math.pow(2,syncRetry-1));return false;
   }
 }
-function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');syncTimer=setTimeout(()=>cloudSaveNow(),700);}
+function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');cloudSyncPending=true;if(!firebaseReady||!currentUser||!cloudHydrated)return;syncTimer=setTimeout(()=>{cloudSyncPending=false;cloudSaveNow();},700);}
 function reconcileAfterHydration(status){
   /* Background Firebase hydration updates state without replacing an active Coach interaction tree. */
   const interactiveCoach=currentPage==='coach'&&$('appView')&&!$('appView').hidden;
@@ -109,22 +113,31 @@ function reconcileAfterHydration(status){
 }
 async function cloudLoadAndMerge(){
   if(!firebaseReady||!currentUser)return;
-  setSync('syncing');
+  setCloudHydrationReady(false);setSync('syncing');
   try{
     let doc=await cloudRef().get();let remote=doc.exists?doc.data():null;
     if(!remote){const legacy=await firebase.firestore().collection('users').doc(currentUser.uid).get();if(legacy.exists&&legacy.data()?.profile)remote=legacy.data();}
+    let shouldSaveLocal=false;
     if(remote){
+      const local=readLocal(storageKey);
       const localUpdated=dateMs((state.meta?.updatedAt||'').slice(0,10))||new Date(state.meta?.updatedAt||0).getTime();
       const remoteUpdated=new Date(remote.clientUpdatedAt||remote.meta?.updatedAt||0).getTime();
-      if(!readLocal(storageKey)||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
-      else await cloudSaveNow();
-    }else if(readLocal(storageKey)){await cloudSaveNow();}
+      if(!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
+      else shouldSaveLocal=true;
+    }else if(readLocal(storageKey))shouldSaveLocal=true;
+    cloudSyncPending=false;
+    setCloudHydrationReady(true);
+    if(shouldSaveLocal)await cloudSaveNow();
     state.syncState='synced';setSync('synced');reconcileAfterHydration('success');
-  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');}
+  }catch(e){
+    cloudSyncPending=false;setCloudHydrationReady(true);state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');
+  }
 }
 
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}
 function trackEvent(name,props={},persist=true){try{state.analytics.events.push({id:uid(),name,props,at:isoNow()});if(state.analytics.events.length>500)state.analytics.events=state.analytics.events.slice(-500);if(persist)writeLocal();if(SERVICES.analyticsEndpoint)fetch(SERVICES.analyticsEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,props,at:isoNow(),userId:currentUser?.uid||null})}).catch(()=>{});}catch{}}
+function syncStateFromAgent(){try{const bridge=window.GarangAgentStateBridge;if(!bridge?.ready?.())return;const live=bridge.getLiveState?.();if(live)state=live;}catch{}}
+window.addEventListener('garang:agent-write',syncStateFromAgent);
 window.addEventListener('error',e=>captureError('frontend_error',e.error||e.message));window.addEventListener('unhandledrejection',e=>captureError('unhandled_rejection',e.reason));
 
 async function loadJSON(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path} ${r.status}`);return r.json();}
@@ -137,11 +150,11 @@ function initFirebase(){
     if(!firebase.apps.length)firebase.initializeApp(cfg);firebaseReady=!!firebase.apps.length;
     if(firebaseReady)firebase.auth().onAuthStateChanged(u=>{
       currentUser=u;
-      if(u){storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
-      else if(localStorage.getItem('garang_demo')==='1'){storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}
-      else showAuth();
+      if(u){setCloudHydrationReady(false);cloudSyncPending=false;storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{setCloudHydrationReady(true);captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
+      else if(localStorage.getItem('garang_demo')==='1'){setCloudHydrationReady(true);storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}
+      else{setCloudHydrationReady(true);showAuth();}
     });
-  }catch(e){firebaseReady=false;captureError('firebase_init',e);}
+  }catch(e){firebaseReady=false;setCloudHydrationReady(true);captureError('firebase_init',e);}
 }
 function showAuth(){$('authView').hidden=false;$('appView').hidden=true;}
 function showApp(){$('authView').hidden=true;$('appView').hidden=false;$('planBadge').textContent=state.plan;applyLanguageChrome();updateSyncUI();if(!state.onboarding.complete&&!state.onboarding.skipped)currentPage='onboarding';render();}
@@ -156,12 +169,12 @@ async function emailAuth(signup){if(!firebaseReady)return toast('Firebase 설정
 async function socialAuth(kind){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');await firebase.auth().signInWithPopup(p);}catch(e){toast(firebaseError(e));}}
 async function resetPassword(){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');const email=$('loginEmail').value.trim();if(!email)return toast('이메일을 먼저 입력해 주세요.');try{await firebase.auth().sendPasswordResetEmail(email);toast('재설정 메일을 보냈습니다.');}catch(e){toast(firebaseError(e));}}
 function firebaseError(e){const c=e?.code||'';const map={'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.','auth/email-already-in-use':'이미 사용 중인 이메일입니다.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/popup-closed-by-user':'로그인이 취소되었습니다.','auth/operation-not-allowed':'Firebase Console에서 로그인 방식을 활성화해 주세요.','auth/unauthorized-domain':'Firebase 승인 도메인을 확인해 주세요.','auth/popup-blocked':'브라우저 팝업을 허용해 주세요.','permission-denied':'Firestore 권한 규칙을 확인해 주세요.'};return map[c]||e?.message||'인증 중 오류가 발생했습니다.';}
-function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});localStorage.removeItem('garang_demo');currentUser=null;storageKey=DEMO_KEY;showAuth();}
+function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});clearTimeout(syncTimer);cloudSyncPending=false;setCloudHydrationReady(true);localStorage.removeItem('garang_demo');currentUser=null;storageKey=DEMO_KEY;showAuth();}
 
 function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));}
 function recordScreenView(page,from){trackEvent('screen_viewed',{screen:page,from:from||null,date:today()},true);if(firebaseReady&&currentUser)queueCloudSync();}
 function go(page){const previous=currentPage;currentPage=page;recordScreenView(page,previous);render();window.scrollTo({top:0,behavior:'instant'});}
-function render(){try{const bridge=window.GarangAgentStateBridge;if(bridge?.ready?.()){const live=bridge.getLiveState?.();if(live&&live!==state)state=live;}}catch{}document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
+function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
 
 function todayWorkouts(){return state.workouts.filter(x=>x.date===today());}
 function dayMeals(date=today()){return state.meals.filter(x=>x.date===date);}
