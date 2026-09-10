@@ -2,6 +2,8 @@
 .gx-panel{font-family:var(--g2-ui,Inter,Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif);color:var(--g2-ivory,#f2efe9)}
 .gx-panel [hidden]{display:none!important}
 #main[data-garang-screen="planner"]>.page-head h1{display:none}
+/* While GARANG's editable daily draft is active, it owns Planner. The legacy execution/evidence surface returns after confirm or dismiss. */
+#main[data-garang-screen="planner"]:has(>[data-garang-daily-plan-draft="1"])>#garangPlanExecution{display:none!important}
 .gx-minimal{margin:12px 0 24px;padding:24px 2px 8px;background:transparent;border:0;min-width:0}
 .gx-hero{display:grid;grid-template-columns:minmax(0,1fr) 52px;align-items:start;gap:20px;padding:0 2px 22px}
 .gx-hero .eyebrow,.gx-progress-line .eyebrow{display:block;margin-bottom:8px;color:var(--g2-muted,#7c807b);font-size:8px;letter-spacing:.18em;text-transform:uppercase}
@@ -9,7 +11,7 @@
 .gx-hero p{margin:11px 0 0;color:var(--g2-muted2,#a5a59f);font-size:12px;line-height:1.6;word-break:keep-all}
 .gx-drop-button{width:44px;height:48px;padding:0;border:0;background:transparent;color:var(--g2-jade,#4fae92);display:grid;place-items:center;border-radius:10px;cursor:pointer}
 .gx-drop-button svg{width:32px;height:40px;overflow:visible}.gx-drop-button path{fill:transparent;stroke:currentColor;stroke-width:1.25;vector-effect:non-scaling-stroke}.gx-drop-button text{fill:var(--g2-ivory,#f2efe9);font:300 22px/1 var(--g2-ui,system-ui)}
-.gx-drop-button:hover{background:rgba(79,174,146,.05)}.gx-drop-button:focus-visible{outline:1px solid rgba(79,174,146,.72);outline-offset:3px}
+.gx-drop-button:hover{background:rgba(79,174,146,.05)}.gx-drop-button:focus-visible{outline:1px solid rgba(79,174,146,.72);outline-offset:3px;border-radius:8px}
 
 .gx-timeline{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:start;margin:0 2px 26px;padding-top:1px;min-width:0}
 .gx-timeline:before{content:"";position:absolute;left:7%;right:7%;top:10px;height:1px;background:rgba(242,239,233,.12)}
