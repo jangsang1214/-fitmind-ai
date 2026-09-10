@@ -20,5 +20,5 @@ assert.equal(coreLoop.includes('gcl-context-label'),false,'standalone action lab
 assert.ok(coreLoop.includes('overflow-x:hidden!important')&&coreLoop.includes('writing-mode:horizontal-tb!important'),'Coach surface must prevent mobile clipping and vertical action pills');
 assert.ok(html.includes('garang-coach-decision-v1.js?v=1.4.0-lifecycle'),'index must bust the old Coach decision asset cache');
 assert.ok(html.includes('garang-core-loop-v1.js?v=1.1.2-quiet-actions'),'core loop runtime must load the current single-surface release');
-assert.ok(html.includes('garang-workout-flow-v1.js?v=1.2.0-single-surface'),'three-surface workout flow must be loaded by the production shell');
+assert.ok(html.includes('garang-workout-flow-v1.js?v=1.3.0-paged'),'three-surface workout flow must be loaded by the production shell');
 console.log('coach-decision-compact-ui: PASS');

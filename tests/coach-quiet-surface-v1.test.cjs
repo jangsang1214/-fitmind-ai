@@ -12,6 +12,8 @@ assert.ok(runtime.includes('gcs-quiet-strip'),'quiet runtime must mark one share
 assert.ok(runtime.includes('gcs-prompt-more'),'existing prompts must remain available through a disclosure');
 assert.ok(runtime.includes('gcs-empty-mark'),'large empty-state branding must be presentation-only');
 assert.ok(runtime.includes('data-gcl-coach-actions'),'contextual actions must remain connected to the existing action host');
+assert.ok(runtime.includes('gcs-legacy-action-surface'),'legacy standalone action surfaces must be hidden');
+assert.ok(runtime.includes('gcs-duplicate-action-surface'),'duplicate contextual action surfaces must be hidden');
 assert.ok(runtime.includes('garang:coach-message-rendered'),'quiet surface must resync after Coach message rerenders');
 assert.equal(runtime.includes('new MutationObserver'),false,'quiet presentation runtime must not add a broad observer');
 assert.ok(styles.includes('.g4-prompt-strip.gcs-quiet-strip'),'quiet CSS must own the compact horizontal surface');

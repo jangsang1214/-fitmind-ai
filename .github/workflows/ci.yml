@@ -109,6 +109,8 @@ jobs:
         run: node tests/browser-simplified-shell.test.cjs
       - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
+      - name: Verify Nutrition recommendation flow
+        run: node tests/browser-nutrition-recommendation.test.cjs
       - name: Verify truth surface and first-record flow
         run: node tests/browser-truth-surface.test.cjs
       - name: Verify Golden Path integration

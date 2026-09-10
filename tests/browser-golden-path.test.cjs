@@ -58,7 +58,9 @@ function emptyPlanState(){
 
     await route(page,'workout');
     await page.locator('[data-gws-step="log"]').click();
-    await page.locator('#toggleSetDetails').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});
+    await page.locator('.garang-set-options > summary').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});
+    assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"] > *').count(),0,'inactive Overview contents must be detached, not merely hidden');
+    assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"] > *').count(),0,'inactive Exercises contents must be detached, not merely hidden');
     const setValues=[[40,10,6],[60,8,7],[80,6,9]];
     for(let index=0;index<setValues.length;index++){
       const row=page.locator('#workoutSetDetails [data-set-row]').nth(index),[weight,reps,rpe]=setValues[index];
