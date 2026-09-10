@@ -94,8 +94,8 @@
     "06_features/ui/runtime/garang-workout-flow-v1.js",
     "06_features/ui/runtime/garang-golden-path-v1.js",
     "06_features/ui/runtime/garang-nutrition-recommendation-v1.js",
-    "06_features/ui/runtime/garang-coach-quiet-surface-v1.js",
-    "06_features/ui/runtime/garang-today-quiet-surface-v1.js"
+    "06_features/ui/runtime/garang-today-quiet-surface-v1.js",
+    "06_features/ui/runtime/garang-coach-quiet-surface-v1.js"
   ],
   "runtimeContract": {
     "version": 2,
