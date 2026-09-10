@@ -25,8 +25,61 @@ body.garang-record-open{overflow-y:hidden!important}
    Product rule: Today answers one question first — what should I do next?
    Existing data/actions remain in the DOM or their canonical routes; duplicated dashboard surfaces are only demoted here. */
 #main[data-garang-screen="today"]>.page-head [data-pagego="settings"]{display:none!important}
-#main[data-garang-screen="today"]>#garangCoreToday,
 #main[data-garang-screen="today"]>.today-snapshot{display:none!important}
+
+/* Keep the streak feature, but turn the old second hero into a quiet accumulation line. */
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:0!important;
+  margin:-3px 0 12px!important;
+  padding:7px 0 10px!important;
+  border-bottom:1px solid rgba(242,239,233,.065)!important;
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today>div>span,
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today p{display:none!important}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today strong{
+  display:block!important;
+  margin:0!important;
+  font-family:"Noto Sans KR",Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  line-height:1.35!important;
+  letter-spacing:-.02em!important;
+  color:rgba(242,239,233,.42)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today aside{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  min-width:0!important;
+  text-align:right!important;
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today aside>b{
+  display:block!important;
+  margin:0!important;
+  font-family:"Cormorant Garamond","Iowan Old Style",Georgia,serif!important;
+  font-size:18px!important;
+  font-weight:500!important;
+  line-height:1!important;
+  color:rgba(242,239,233,.72)!important;
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today aside>small{
+  display:block!important;
+  margin:0!important;
+  font-size:8px!important;
+  line-height:1!important;
+  color:rgba(242,239,233,.36)!important;
+  white-space:nowrap!important;
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm{gap:4px!important;justify-content:flex-end!important}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm i{width:5px!important;height:5px!important;outline-offset:1px!important}
 
 /* GARANG Decision stays visible, but as a quiet secondary read beneath Today Flow. */
 #main[data-garang-screen="today"]>.today-hero.visual-today-hero{
@@ -108,7 +161,7 @@ html[lang="ko"] #main[data-garang-screen="today"]>.today-hero .today-decision-pa
 #main[data-garang-screen="today"]>.today-hero .hero-actions button{
   min-height:36px!important;
   height:36px!important;
-  padding:0 11px!important;
+  padding:0 0 0 11px!important;
   border:0!important;
   border-left:1px solid rgba(242,239,233,.1)!important;
   border-radius:0!important;
@@ -199,6 +252,8 @@ html[lang="ko"] #main[data-garang-screen="today"]>.today-hero .today-decision-pa
  #appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"] b{font-size:10px}
  .garang-record-sheet{padding-left:18px;padding-right:18px}
  .garang-record-sheet h2{font-size:32px}
+ #main[data-garang-screen="today"]>#garangCoreToday.gcl-today{grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important}
+ #main[data-garang-screen="today"]>#garangCoreToday.gcl-today .gcl-rhythm{display:none!important}
  #main[data-garang-screen="today"]>.today-hero.visual-today-hero{margin-bottom:14px!important;padding:11px 0 12px!important}
  #main[data-garang-screen="today"]>.today-hero .today-score-line{grid-template-columns:50px minmax(0,1fr)!important;gap:11px!important}
  #main[data-garang-screen="today"]>.today-hero .score-orb{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
