@@ -154,12 +154,12 @@ async function waitForStabilityRuntimes(page,errors){
       await settle(page,`today ${cycle}`);
       await assertNoStaleBlocker(page,`today ${cycle}`);
 
-      // Today can legitimately render both a primary apply CTA and an empty-state create CTA
-      // with the same data-action. The stress path must exercise the actual primary apply CTA,
-      // not rely on an ambiguous global data-action selector.
-      const applySelector='button.primary[data-action="apply-coach-plan"]';
-      const apply=page.locator(applySelector);
-      if(await apply.count()){
+      // The simplified Today shell intentionally keeps the legacy Coach-plan CTA in the DOM
+      // as an action owner while hiding it visually. Stress only physically taps a CTA when
+      // that CTA is actually visible and therefore part of the current interaction contract.
+      const applySelector='button.primary[data-action="apply-coach-plan"]:visible';
+      const apply=page.locator(applySelector).first();
+      if(await page.locator(applySelector).count()){
         await tap(page,applySelector,`coach plan arm ${cycle}`);
         assert.equal(await apply.getAttribute('data-garang-confirm-armed'),'1','coach plan must use in-app confirmation');
         await tap(page,applySelector,`coach plan apply ${cycle}`);
