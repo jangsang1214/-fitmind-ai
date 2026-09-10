@@ -36,6 +36,7 @@ async function tap(page,locator,touch,label='target'){
 }
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
 async function assertTodayStable(page,label){
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gtfC==='1'&&!!document.querySelector('#garangTodayFlow'),null,{timeout:5000});
   const diagnostic=await page.evaluate(()=>{
     const main=document.getElementById('main'),grid=main?.querySelector('.quick-visual-grid')||null,hero=main?.querySelector('.visual-today-hero')||null,flow=main?.querySelector('#garangTodayFlow')||null;
     const fixed=[...document.querySelectorAll('body *')].map(el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();return {el,cs,r};})
