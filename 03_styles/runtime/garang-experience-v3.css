@@ -98,6 +98,7 @@
   box-shadow:none;
 }
 .garang-set-options-body .field{margin:0}
+.garang-set-options-body .field.compact-secondary{display:grid}
 .garang-set-options-body .field label{
   color:rgba(242,238,231,.42);
   font-size:9px;
