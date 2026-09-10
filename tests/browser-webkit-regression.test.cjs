@@ -148,13 +148,15 @@ async function assertCoachSettles(page){
 
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
+    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:10000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
 
     const layout=await page.evaluate(()=>{
-      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),
+      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),hero=document.querySelector('.visual-today-hero'),flow=document.querySelector('#garangTodayFlow'),
         tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),rr=record?.getBoundingClientRect(),menuHit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null,recordHit=rr?document.elementFromPoint(rr.left+rr.width/2,rr.top+rr.height/2):null;
       return {
         x:s.overflowX,y:s.overflowY,max:s.maxHeight,
+        cMode:main?.dataset?.gtfC||'',flowVisible:!!flow&&getComputedStyle(flow).display!=='none',bodyHeroHidden:!!hero&&getComputedStyle(hero).display==='none',
         quickHidden:!!document.querySelector('.quick-visual-grid')&&getComputedStyle(document.querySelector('.quick-visual-grid')).display==='none',
         primaryCount:document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]').length,
         top:{top:tr?.top,bottom:tr?.bottom,height:tr?.height},
@@ -165,16 +167,17 @@ async function assertCoachSettles(page){
     assert.equal(layout.x,'visible');
     assert.equal(layout.y,'visible');
     assert.equal(layout.max,'none');
+    assert.equal(layout.cMode,'1','WebKit Today must use C direction');
+    assert.equal(layout.flowVisible,true,'decision-first C surface must be visible');
+    assert.equal(layout.bodyHeroHidden,true,'body anatomy must not be the default WebKit hero');
     assert.equal(layout.quickHidden,true,'Today duplicate quick-record grid must stay internalized on WebKit');
     assert.equal(layout.primaryCount,4,'WebKit must expose exactly four primary navigation axes');
     assert.ok(layout.record.height>=44&&layout.record.hit,'Record must replace the hidden quick cards as a real touch target');
     assert.ok(layout.top.height>=50&&layout.top.bottom>0,'physical-iOS topbar must remain on screen');
     assert.notEqual(layout.menu.display,'none');
     assert.ok(layout.menu.height>=30&&layout.menu.hit,'hamburger must own its hit point');
-
-    await tap(page,'[data-today-view="back"]');
-    await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
-    await tap(page,'[data-today-view="front"]');
+    assert.equal(await page.locator('[data-today-view="front"]:visible').count(),0,'FRONT control must stay internalized unless body evidence is relevant');
+    assert.equal(await page.locator('[data-today-view="back"]:visible').count(),0,'BACK control must stay internalized unless body evidence is relevant');
 
     await page.evaluate(()=>window.scrollTo({top:Math.max(0,document.documentElement.scrollHeight-window.innerHeight),behavior:'auto'}));
     await page.waitForTimeout(80);
@@ -205,6 +208,8 @@ async function assertCoachSettles(page){
 
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
+    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
     await tapRecordRoute(page,'body');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
@@ -213,9 +218,11 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
+    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'final Today return must stay decision-first');
 
     assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);
-    console.log('browser-webkit-regression: PASS');
+    console.log('browser-webkit-regression C-direction: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
