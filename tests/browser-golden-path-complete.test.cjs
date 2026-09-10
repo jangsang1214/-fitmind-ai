@@ -46,7 +46,13 @@ async function route(page,screen){
   await heartbeat(page,'route '+screen);
 }
 async function waitForStep(page,step){
-  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});
+  try{
+    await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});
+  }catch(error){
+    const diagnostic=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen,gpStep:document.getElementById('main')?.dataset?.gpStep,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()}),planner:window.GarangAgentStateBridge?.getState?.()?.planner,workouts:window.GarangAgentStateBridge?.getState?.()?.workouts,events:window.GarangAgentStateBridge?.getState?.()?.analytics?.events?.slice(-8)}));
+    error.message+='\nGolden Path diagnostic: '+JSON.stringify(diagnostic);
+    throw error;
+  }
   await page.locator('[data-golden-path-surface][data-gp-step="'+step+'"]').waitFor({state:'visible',timeout:3000});
 }
 async function storedState(page){
