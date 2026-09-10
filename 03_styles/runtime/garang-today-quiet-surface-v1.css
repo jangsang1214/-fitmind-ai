@@ -1,0 +1,37 @@
+/* GARANG Today: one quiet surface, progressive detail. */
+.garang-quiet-today #garangQuietToday { width: 100%; max-width: 1080px; margin: 0 auto; }
+.garang-quiet-today .gq-focus { border-bottom: 1px solid var(--line, #202522); padding: 0 0 18px; }
+.garang-quiet-today .gq-focus > #garangTodayFlow,
+.garang-quiet-today .gq-focus > #garangCoreToday,
+.garang-quiet-today .gq-focus > [data-golden-path-surface] { margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.garang-quiet-today .gq-focus > #garangTodayFlow { padding-top: 4px; }
+.garang-quiet-today .gq-focus > #garangCoreToday { padding-top: 10px; padding-bottom: 10px; }
+.garang-quiet-today .gq-focus > [data-golden-path-surface] { padding: 10px 0 0; }
+.garang-quiet-today .gq-evidence { padding: 18px 0 8px; }
+.garang-quiet-today .gq-evidence > .visual-today-hero { margin: 0; border: 0; background: transparent; box-shadow: none; }
+.garang-quiet-today .gq-details-host { margin-top: 4px; }
+.garang-quiet-today .gq-details { border-top: 1px solid var(--line, #202522); padding: 0; }
+.garang-quiet-today .gq-details:last-child { border-bottom: 1px solid var(--line, #202522); }
+.garang-quiet-today .gq-details summary { min-height: 52px; display: flex; align-items: center; gap: 12px; list-style: none; cursor: pointer; }
+.garang-quiet-today .gq-details summary::-webkit-details-marker { display: none; }
+.garang-quiet-today .gq-summary-title { color: var(--text, #eee); font-size: 1rem; }
+.garang-quiet-today .gq-summary-hint { flex: 1; color: var(--muted, #8d9490); font-size: .8rem; }
+.garang-quiet-today .gq-summary-mark { color: var(--jade, #55c9a7); font-size: 1.35rem; line-height: 1; transition: transform .18s ease; }
+.garang-quiet-today .gq-details[open] .gq-summary-mark { transform: rotate(45deg); }
+.garang-quiet-today .gq-detail-body { padding: 0 0 18px; }
+.garang-quiet-today .gq-detail-body > .section-title { margin: 0 0 8px; }
+.garang-quiet-today .gq-detail-body > .card,
+.garang-quiet-today .gq-detail-body > .today-snapshot { border-radius: 0; box-shadow: none; }
+.garang-quiet-today .gq-detail-body > .status-visual-card,
+.garang-quiet-today .gq-detail-body > .today-plan-card { margin: 0; }
+.garang-quiet-today .gq-detail-body > .garang-daily-workout { margin-top: 12px; }
+.garang-quiet-today .gq-focus .gp-next { min-height: 0; }
+@media (max-width: 600px) {
+  .garang-quiet-today .gq-focus { padding-bottom: 12px; }
+  .garang-quiet-today .gq-evidence { padding: 12px 0 4px; }
+  .garang-quiet-today .gq-evidence .today-body-panel { min-height: 190px; }
+  .garang-quiet-today .gq-evidence .today-decision-panel { padding-top: 12px; }
+  .garang-quiet-today .gq-details summary { min-height: 50px; }
+  .garang-quiet-today .gq-summary-hint { font-size: .72rem; }
+  .garang-quiet-today .gq-detail-body > .today-snapshot { gap: 0; }
+}
