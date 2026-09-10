@@ -95,16 +95,6 @@ function apply(shell){
   renderNav(shell);
   shell.querySelectorAll(':scope > .gws-panel').forEach(node=>{
     const on=node.dataset.garangWorkoutSurface===state.active;
-    if(on){
-      if(node._garangWorkoutDetached){
-        node.appendChild(node._garangWorkoutDetached);
-        node._garangWorkoutDetached=null;
-      }
-    }else if(!node._garangWorkoutDetached){
-      const fragment=document.createDocumentFragment();
-      while(node.firstChild)fragment.appendChild(node.firstChild);
-      node._garangWorkoutDetached=fragment;
-    }
     node.hidden=!on;
     node.setAttribute('aria-hidden',on?'false':'true');
     node.dataset.garangWorkoutAttached=on?'1':'0';

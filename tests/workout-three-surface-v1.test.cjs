@@ -20,7 +20,7 @@ assert.ok(flow.includes('move(builder,log)'), 'Workout Log surface must own the 
 assert.ok(flow.includes('move(analysis.section,overview)'), 'Workout overview must own the populated insights surface');
 assert.ok(flow.includes('move(analysis.title,overview)'), 'Workout overview must retain the empty-state analysis content');
 assert.ok(flow.includes('data-gws-next'), 'Workout surfaces must provide a circular next action');
-assert.ok(flow.includes('_garangWorkoutDetached')&&flow.includes('DocumentFragment'),'inactive workout pages must detach their functional contents');
+assert.ok(flow.includes('node.hidden=!on'),'inactive workout pages must stay hidden while preserving the existing feature nodes');
 assert.ok(flow.includes('data-garang-workout-attached'),'Workout pages must expose which functional page is attached');
 assert.equal(flow.includes('new MutationObserver'),false,'Workout structural flow must not add a broad observer');
 assert.ok(html.includes('garang-workout-flow-v1.js?v=1.3.0-paged'),'index must load the paged Workout flow version');
