@@ -18,19 +18,22 @@ function state(){const d=date();return {meta:{schemaVersion:5,updatedAt:new Date
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:7000});
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  const text=await flow.innerText();assert.match(text,/50%/);assert.match(text,/계획 1개가 남았습니다/);assert.match(text,/상체 50분/);
-  assert.equal(await page.locator('.today-body-panel').count(),1,'existing Today anatomy must remain');
+  assert.equal(await page.locator('#main').getAttribute('data-gtf-c'),'1','C direction must own Today');
+  const text=await flow.innerText();assert.match(text,/PLAN 50% · 1 \/ 2/);assert.match(text,/계획 이어가기/);assert.match(text,/상체 50분/);
+  assert.equal(await flow.getAttribute('data-body-evidence'),'0','normal soreness must not promote body evidence');
+  assert.equal(await page.locator('.today-body-panel').count(),1,'existing Today anatomy must remain for rollback/evidence');
+  assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'body anatomy must not be the default Today hero');
   assert.equal(await page.locator('.today-snapshot').count(),1,'existing Today snapshot must remain');
   assert.ok(await page.locator('button.primary[data-action="apply-coach-plan"]').count()>=1,'existing apply-plan action must remain');
   assert.ok(await page.locator('[data-pagego="coach"]').count()>=1,'existing Coach analysis route must remain');
   assert.ok(await page.locator('[data-action="open-checkin"]').count()>=1,'existing check-in action must remain');
-  const drop=flow.locator('[data-gtf-details]'),box=await drop.boundingBox();assert.ok(box&&box.width>=40&&box.height>=40,'droplet detail control must remain touchable');assert.equal(await drop.getAttribute('aria-expanded'),'false');
+  const drop=flow.locator('[data-gtf-details]'),box=await drop.boundingBox();assert.ok(box&&box.width>=40&&box.height>=40,'decision detail control must remain touchable');assert.equal(await drop.getAttribute('aria-expanded'),'false');
   assert.equal(await flow.locator('[data-gtf-detail]').isHidden(),true);await drop.click();assert.equal(await drop.getAttribute('aria-expanded'),'true');
-  const detail=await flow.locator('[data-gtf-detail]').innerText();assert.match(detail,/계획\s*1 \/ 2/);assert.match(detail,/운동\s*기록 없음/);assert.match(detail,/2,200 kcal · 120g/);assert.match(detail,/수면 7\.5h/);assert.doesNotMatch(detail,/신뢰도|confidence/i);
+  const detail=await flow.locator('[data-gtf-detail]').innerText();assert.match(detail,/계획\s*1 \/ 2/);assert.match(detail,/운동\s*기록 없음/);assert.match(detail,/2,200 kcal · 120g/);assert.match(detail,/수면 7\.5h/);assert.doesNotMatch(detail,/신뢰도|confidence/i);assert.equal(await flow.locator('.gtf-body-hint').count(),0,'body evidence copy must stay absent when soreness is not decision evidence');assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'expanding reasons alone must not reveal the body model');
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today action flow must not overflow mobile viewport: ${JSON.stringify(width)}`);
   const next=flow.locator('[data-gtf-route="planner"]');await next.click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});assert.equal(await page.locator('#addPlan').count(),1,'next action must use the existing Planner flow');
-  await page.locator('#bottomNav [data-page="today"]').click();await flow.waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('.today-body-panel').count(),1,'Today anatomy must survive route round-trip');
+  await page.locator('#bottomNav [data-page="today"]').click();await flow.waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('.today-body-panel').count(),1,'Today anatomy must survive route round-trip');assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'route round-trip must return to the no-body C hero');
   assert.deepEqual(errors,[],`Today action flow browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-today-action-flow WebKit mobile: PASS');
+  await context.close();console.log('browser-today-action-flow C-direction WebKit mobile: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
