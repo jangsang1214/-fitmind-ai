@@ -85,6 +85,7 @@ async function noHorizontalOverflow(page,label){
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:7000});
     await tap(page,'[data-gws-step="log"]','open workout Log');
     await page.locator('#addWorkout').waitFor({state:'visible',timeout:5000});
+    await tap(page,'.garang-set-options > summary','open workout details');
     await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wSets').fill('3');await page.locator('#wReps').fill('8');
     await page.locator('#wWeight').fill('40');await page.locator('#wRpe').fill('7');await page.locator('#wDuration').fill('30');
     await tap(page,'#addWorkout','add first workout');await page.locator('[data-remove-workout="0"]').waitFor({state:'visible',timeout:4000});
@@ -127,6 +128,7 @@ async function noHorizontalOverflow(page,label){
     await tap(page,'[data-gp-action="execute"]','open planned execution record');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:7000});
     await tap(page,'[data-gws-step="log"]','open execution Log');
+    await tap(page,'.garang-set-options > summary','open execution details');
     await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wSets').fill('3');await page.locator('#wReps').fill('8');await page.locator('#wWeight').fill('42.5');await page.locator('#wRpe').fill('7');await page.locator('#wDuration').fill('30');
     await tap(page,'#addWorkout','add executed workout');await tap(page,'#saveWorkoutSession','save executed workout');
     await page.waitForFunction(()=>window.GarangAgentStateBridge?.getState?.()?.workouts?.length===2,null,{timeout:7000});
