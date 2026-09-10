@@ -35,26 +35,35 @@ function emptyPlanState(){
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-    await page.waitForFunction(()=>window.GarangGoalAlignment&&window.GarangRouter,null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangGoalAlignment&&window.GarangRouter&&window.GarangDailyPlanV1,null,{timeout:7000});
 
     const today=localDate(),monday=mondayOf(today);
     const emptyPlan=page.locator('[data-golden-path="planner-entry"]');await emptyPlan.waitFor({state:'visible',timeout:7000});
     await emptyPlan.click();
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:7000});
+
+    /* The canonical Golden Path now starts from GARANG's prepared three-track draft, not an empty manual form. */
+    const dailyDraft=page.locator('[data-garang-daily-plan-draft="1"]');await dailyDraft.waitFor({state:'visible',timeout:7000});await page.waitForTimeout(250);
+    assert.equal(await dailyDraft.count(),1,'Today plan entry must expose one editable GARANG daily draft');
+    assert.equal(await page.locator('#garangPlanExecution').count(),1,'the canonical Planner execution surface must remain in the DOM');
+    assert.equal(await page.locator('#garangPlanExecution').isVisible(),false,'legacy Planner evidence must stay quiet while the daily draft owns the screen');
+    assert.match(await dailyDraft.innerText(),/운동 · 회복 · 식단/,'daily planning must cover all three coaching domains');
+    assert.match(await dailyDraft.innerText(),/근육 증가/,'daily draft must show the active model goal as context');
+    for(const domain of ['training','recovery','nutrition'])assert.equal(await dailyDraft.locator(`[data-gdp-domain="${domain}"]`).count(),1,domain+' must have one daily track');
+    const training=dailyDraft.locator('[data-gdp-domain="training"]');await training.locator('[data-gdp-title]').fill('저녁 상체 세션');await training.locator('[data-gdp-time]').fill('19:00');await training.locator('[data-gdp-duration]').fill('45');
+    await dailyDraft.locator('[data-gdp-confirm]').click();
+    await page.waitForFunction(date=>{const state=window.GarangAgentStateBridge?.getState?.();const rows=state?.planner?.filter(row=>row.date===date&&row.origin==='garang-daily-plan')||[];return rows.length===3&&rows.some(row=>row.title==='저녁 상체 세션');},today,{timeout:7000});
+
     const planner=page.locator('#garangPlanExecution');await planner.waitFor({state:'visible',timeout:7000});
-    assert.equal(await page.locator('#garangPlanExecution').count(),1,'Today plan entry must produce one canonical Planner surface');
-    assert.equal(await page.locator('#garangPlanExecution [data-gx-sheet]').isVisible(),true,'Today plan entry must open the Planner droplet detail');
-    assert.equal(await page.locator('[data-gx-plan-slot] #addPlan').count(),1,'Planner form must be placed inside the opened droplet');
-    assert.match(await planner.innerText(),/목표 · 근육 증가/,'Planner must show the active model goal as context');
+    assert.equal(await page.locator('#garangPlanExecution').count(),1,'confirming the draft must return to one canonical Planner surface');
+    assert.match(await planner.innerText(),/목표 · 근육 증가/,'Planner must retain the active model goal as context');
     const timeline=await planner.locator('[data-gx-date]').evaluateAll(nodes=>nodes.map(node=>node.dataset.gxDate));
     assert.deepEqual(timeline,Array.from({length:7},(_,index)=>addDays(monday,index)),'Planner week must run Monday through Sunday');
-    const plannerFields=await page.evaluate(()=>{const width=document.documentElement.clientWidth;return ['planDate','planTime','planType','planTitle','addPlan'].map(id=>{const rect=document.getElementById(id)?.getBoundingClientRect();return {id,width:rect?.width||0,right:rect?.right||0,viewport:width};});});
-    assert.ok(plannerFields.every(field=>field.width>0&&field.right<=field.viewport+1),'Planner fields must stay inside the mobile viewport: '+JSON.stringify(plannerFields));
-    await page.locator('#planTitle').fill('저녁 상체 세션');await page.locator('#addPlan').click();
-    await page.waitForFunction(()=>{const state=window.GarangAgentStateBridge?.getState?.();return state?.planner?.some(row=>row.title==='저녁 상체 세션');},null,{timeout:7000});
-    let state=await storedState(page);const savedPlan=state.planner.find(row=>row.title==='저녁 상체 세션');
-    assert.equal(savedPlan.goalLabel,'근육 증가','a saved plan must retain the current model goal');
-    assert.equal(await page.locator('#garangPlanExecution').count(),1,'saving a plan must not create a duplicate Planner layer');
+    let state=await storedState(page);const dailyRows=state.planner.filter(row=>row.date===today&&row.origin==='garang-daily-plan'),savedPlan=dailyRows.find(row=>row.title==='저녁 상체 세션');
+    assert.equal(dailyRows.length,3,'confirming the draft must create training, recovery and nutrition plans');
+    assert.deepEqual(dailyRows.map(row=>row.domain),['training','recovery','nutrition']);
+    assert.equal(savedPlan.goalLabel,'근육 증가','a confirmed training plan must retain the current model goal');
+    assert.equal(savedPlan.completed,false,'confirmation alone must never count as execution');
 
     await route(page,'workout');
     await page.locator('[data-gws-step="log"]').click();
