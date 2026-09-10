@@ -84,7 +84,8 @@ async function processAssistant(messageEl){
  for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}
  const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
  const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;
- if(!Contract||!cloudReady()||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}
+ if(!cloudReady()){messageEl.dataset.g4AgentPending='1';return;}
+ if(!Contract||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}
  processingAssistantIds.add(messageId);delete messageEl.dataset.g4AgentPending;
  try{
   const state=Bridge.getState(),context=contextFromState(state);

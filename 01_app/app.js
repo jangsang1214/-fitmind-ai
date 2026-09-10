@@ -75,7 +75,7 @@ function normalizeState(){
 function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_VERSION;}
 function readLocal(key){try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw);}catch(e){console.warn('local load failed',e);return null;}}
 function writeLocal(){try{touch();localStorage.setItem(storageKey,JSON.stringify(state));return true;}catch(e){toast('기기 저장 공간을 확인해 주세요.');captureError('local_save',e);return false;}}
-function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();if(currentUser?.uid&&!state.meta.syncOwnerUid)state.meta.syncOwnerUid=currentUser.uid;try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
+function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
 function emitLifecycle(name,detail={}){try{window.dispatchEvent(new CustomEvent(name,{detail:{page:currentPage,storageKey,...detail}}));}catch{}}
 function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();emitLifecycle('garang:state-updated',{source:opts.source||'app',event:opts.event||'state_saved'});}
 
@@ -126,6 +126,8 @@ async function cloudLoadAndMerge(){
       else shouldSaveLocal=true;
     }else if(readLocal(storageKey))shouldSaveLocal=true;
     cloudSyncPending=false;
+    if(currentUser?.uid&&!state.meta.syncOwnerUid)state.meta.syncOwnerUid=currentUser.uid;
+    try{window.GarangAgentStateBridge?.capture?.(state);}catch{}
     setCloudHydrationReady(true);
     if(shouldSaveLocal)await cloudSaveNow();
     state.syncState='synced';setSync('synced');reconcileAfterHydration('success');
