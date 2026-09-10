@@ -34,21 +34,14 @@ function readIntelligence(safe,date,options){
   return {userState,decision,performance};
 }
 const MODE_COPY={
-  ko:{
-    collect_data:'오늘의 방향부터 정리하세요.',caution:'오늘은 몸의 신호를 먼저 확인하세요.',recover:'오늘은 회복을 우선하세요.',reduce:'오늘은 강도를 조금 낮추세요.',maintain:'오늘은 계획한 강도를 유지하세요.',progress:'오늘은 조금 더 나아가도 좋습니다.',goal_focus:'오늘은 목표에 맞는 한 가지에 집중하세요.'
-  },
-  en:{
-    collect_data:'Set today’s direction first.',caution:'Check your body signals first today.',recover:'Prioritize recovery today.',reduce:'Ease the intensity a little today.',maintain:'Keep the planned intensity today.',progress:'You can progress a little today.',goal_focus:'Focus on one action aligned with your goal.'
-  }
+  ko:{collect_data:'오늘의 방향부터 정리하세요.',caution:'오늘은 몸의 신호를 먼저 확인하세요.',recover:'오늘은 회복을 우선하세요.',reduce:'오늘은 강도를 조금 낮추세요.',maintain:'오늘은 계획한 강도를 유지하세요.',progress:'오늘은 조금 더 나아가도 좋습니다.',goal_focus:'오늘은 목표에 맞는 한 가지에 집중하세요.'},
+  en:{collect_data:'Set today’s direction first.',caution:'Check your body signals first today.',recover:'Prioritize recovery today.',reduce:'Ease the intensity a little today.',maintain:'Keep the planned intensity today.',progress:'You can progress a little today.',goal_focus:'Focus on one action aligned with your goal.'}
 };
 const REASON_COPY={
   ko:{SHORT_SLEEP:'수면이 평소보다 짧습니다.',LOW_ENERGY:'에너지 신호가 낮습니다.',HIGH_SORENESS:'근육 피로가 높게 남아 있습니다.',HIGH_STRESS:'스트레스 신호가 높습니다.',LOAD_SPIKE:'최근 훈련 부하가 빠르게 올랐습니다.',FATIGUE_ELEVATED:'최근 피로 신호가 높습니다.',CHECKIN_STABLE:'회복 체크인이 안정적입니다.',LOAD_DROP:'최근 훈련 부하가 낮아졌습니다.',GOAL_LOW:'최근 행동과 목표의 정렬이 낮습니다.',GOAL_MIXED:'최근 행동과 목표의 정렬이 고르지 않습니다.'},
   en:{SHORT_SLEEP:'Sleep is shorter than usual.',LOW_ENERGY:'Energy is running low.',HIGH_SORENESS:'Muscle fatigue remains elevated.',HIGH_STRESS:'Stress is elevated.',LOAD_SPIKE:'Recent training load rose quickly.',FATIGUE_ELEVATED:'Recent fatigue signals are elevated.',CHECKIN_STABLE:'Recovery check-in looks stable.',LOAD_DROP:'Recent training load has eased.',GOAL_LOW:'Recent actions are weakly aligned with your goal.',GOAL_MIXED:'Recent actions are inconsistently aligned with your goal.'}
 };
-function humanReasons(decision,lang){
-  const table=REASON_COPY[lang],codes=list(decision?.reasonCodes).filter(code=>!String(code).startsWith('MODE_'));
-  return [...new Set(codes.map(code=>table?.[code]).filter(Boolean))].slice(0,3);
-}
+function humanReasons(decision,lang){const table=REASON_COPY[lang],codes=list(decision?.reasonCodes).filter(code=>!String(code).startsWith('MODE_'));return [...new Set(codes.map(code=>table?.[code]).filter(Boolean))].slice(0,3);}
 function deriveModel(state,options={}){
   const safe=state&&typeof state==='object'?state:{},lang=options.lang==='en'?'en':'ko',date=String(options.date||todayLocal()).slice(0,10),engine=options.PlanExecution||null;
   let day;try{day=engine?.daily?engine.daily(safe,date):fallbackDaily(safe,date);}catch{day=fallbackDaily(safe,date);}
@@ -63,33 +56,22 @@ function deriveModel(state,options={}){
   const progress=planned?Math.round(executed/planned*100):null,goalLabel=String(day?.targets?.goalLabel||'').trim();
   const intel=readIntelligence(safe,date,options),mode=String(intel.decision?.mode||'collect_data'),reasons=humanReasons(intel.decision,lang);
   const recoveryScore=finite(intel.performance?.components?.recovery?.score),overallScore=finite(intel.performance?.score),memoryCount=list(safe?.memory?.entries).filter(row=>row?.status!=='superseded'&&row?.status!=='expired'&&row?.userConfirmed!==false).length;
-  const decisionLine=intel.decision&&MODE_COPY[lang]?.[mode]?MODE_COPY[lang][mode]:headline;
-  const decisionReason=reasons[0]||String(intel.decision?.summary?.[lang]||support);
-  const stateLabel=recoveryScore!==null?(lang==='en'?'RECOVERY':'RECOVERY'):overallScore!==null?'GARANG':(lang==='en'?'PLAN':'PLAN');
-  const stateValue=recoveryScore!==null?Math.round(recoveryScore):overallScore!==null?Math.round(overallScore):(progress===null?'—':progress);
-  const stateUnit=(recoveryScore!==null||overallScore!==null||progress!==null)?'/100':'';
-  const detailReasons=reasons.length?reasons:[support];
-  return {
-    version:'garang-today-action-flow-v1',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),
-    decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,
-    rows:[
-      {key:'plan',label:lang==='en'?'Plan':'계획',value:planned?`${executed} / ${planned}`:(lang==='en'?'Not set':'미설정'),state:planned?(remaining?'pending':'done'):'neutral'},
-      {key:'activity',label:lang==='en'?'Activity':'운동',value:workouts+runs?`${workouts+runs} session${workouts+runs===1?'':'s'}`:(lang==='en'?'No record':'기록 없음'),state:workouts+runs?'done':'neutral'},
-      {key:'nutrition',label:lang==='en'?'Nutrition':'영양',value:meals?`${formatInt(kcal)} kcal · ${Math.round(protein)}g`:(lang==='en'?'No record':'기록 없음'),state:meals?'done':'neutral'},
-      {key:'recovery',label:lang==='en'?'Recovery':'회복',value:sleep!==null?(lang==='en'?`Sleep ${sleep}h`:`수면 ${sleep}h`):(energy!==null?(lang==='en'?`Energy ${energy}/5`:`에너지 ${energy}/5`):(lang==='en'?'Check-in needed':'체크인 필요')),state:checkin?'done':'neutral'},
-      {key:'score',label:'GARANG',value:overallScore!==null?`${Math.round(overallScore)} / 100`:(lang==='en'?'Building signal':'신호 누적 중'),state:overallScore!==null?'done':'neutral'},
-      {key:'memory',label:lang==='en'?'Memory':'기억',value:memoryCount?(lang==='en'?`${memoryCount} active signals`:`활성 신호 ${memoryCount}개`):(lang==='en'?'Building context':'맥락 누적 중'),state:memoryCount?'done':'neutral'}
-    ],
-    goalLabel,proteinTarget:proteinTarget===null?null:Math.round(proteinTarget)
-  };
+  const decisionLine=intel.decision&&MODE_COPY[lang]?.[mode]?MODE_COPY[lang][mode]:headline,decisionReason=reasons[0]||String(intel.decision?.summary?.[lang]||support);
+  const stateLabel=recoveryScore!==null?'RECOVERY':overallScore!==null?'GARANG':'PLAN',stateValue=recoveryScore!==null?Math.round(recoveryScore):overallScore!==null?Math.round(overallScore):(progress===null?'—':progress),stateUnit=(recoveryScore!==null||overallScore!==null||progress!==null)?'/100':'',detailReasons=reasons.length?reasons:[support];
+  return {version:'garang-today-action-flow-v1',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,rows:[
+    {key:'plan',label:lang==='en'?'Plan':'계획',value:planned?`${executed} / ${planned}`:(lang==='en'?'Not set':'미설정'),state:planned?(remaining?'pending':'done'):'neutral'},
+    {key:'activity',label:lang==='en'?'Activity':'운동',value:workouts+runs?`${workouts+runs} session${workouts+runs===1?'':'s'}`:(lang==='en'?'No record':'기록 없음'),state:workouts+runs?'done':'neutral'},
+    {key:'nutrition',label:lang==='en'?'Nutrition':'영양',value:meals?`${formatInt(kcal)} kcal · ${Math.round(protein)}g`:(lang==='en'?'No record':'기록 없음'),state:meals?'done':'neutral'},
+    {key:'recovery',label:lang==='en'?'Recovery':'회복',value:sleep!==null?(lang==='en'?`Sleep ${sleep}h`:`수면 ${sleep}h`):(energy!==null?(lang==='en'?`Energy ${energy}/5`:`에너지 ${energy}/5`):(lang==='en'?'Check-in needed':'체크인 필요')),state:checkin?'done':'neutral'},
+    {key:'score',label:'GARANG',value:overallScore!==null?`${Math.round(overallScore)} / 100`:(lang==='en'?'Building signal':'신호 누적 중'),state:overallScore!==null?'done':'neutral'},
+    {key:'memory',label:lang==='en'?'Memory':'기억',value:memoryCount?(lang==='en'?`${memoryCount} active signals`:`활성 신호 ${memoryCount}개`):(lang==='en'?'Building context':'맥락 누적 중'),state:memoryCount?'done':'neutral'}
+  ],goalLabel,proteinTarget:proteinTarget===null?null:Math.round(proteinTarget)};
 }
 function markup(model,expanded=false){
-  const detailId='garangTodayFlowDetail',progress=model.progress===null?'—':`${model.progress}%`,summary=model.planned?`${model.executed} / ${model.planned}`:'—';
-  const actionAttrs=model.route?`data-gtf-route="${esc(model.route)}"`:`data-gtf-action="${esc(model.action||'')}"`;
-  const dateLabel=String(model.date||'').slice(5).replace('-','.');
+  const detailId='garangTodayFlowDetail',progress=model.progress===null?'—':`${model.progress}%`,summary=model.planned?`${model.executed} / ${model.planned}`:'—',actionAttrs=model.route?`data-gtf-route="${esc(model.route)}"`:`data-gtf-action="${esc(model.action||'')}"`,dateLabel=String(model.date||'').slice(5).replace('-','.');
   return `<section id="garangTodayFlow" class="gtf gtf-luxury" data-version="${model.version}" data-decision-mode="${esc(model.mode)}" aria-label="${model.lang==='en'?'Today decision':'오늘의 판단'}">
     <div class="gtf-state" aria-label="${model.lang==='en'?'Current state':'현재 상태'}"><div><span>STATE · ${esc(dateLabel)}</span><strong>${esc(model.stateLabel)}</strong></div><p><b>${esc(model.stateValue)}</b><small>${esc(model.stateUnit)}</small></p></div>
-    <div class="gtf-context"><span>${esc(model.headline)}</span><strong>${model.lang==='en'?'PLAN':'PLAN'} ${esc(progress)} · ${esc(summary)}</strong></div>
+    <div class="gtf-context"><span>${esc(model.headline)} · ${esc(model.support)}</span><strong>PLAN ${esc(progress)} · ${esc(summary)}</strong></div>
     <div class="gtf-decision"><span>GARANG DECISION</span><h2>${esc(model.decisionLine)}</h2><p>${esc(model.decisionReason)}</p></div>
     <div class="gtf-action"><button type="button" class="gtf-next" ${actionAttrs}>${esc(model.cta)}<span aria-hidden="true">→</span></button></div>
     <button type="button" class="gtf-disclosure" data-gtf-details aria-expanded="${expanded?'true':'false'}" aria-controls="${detailId}"><span>${model.lang==='en'?'Why this decision?':'왜 이런 판단인가?'}</span><b aria-hidden="true">${expanded?'−':'+'}</b></button>
@@ -97,28 +79,13 @@ function markup(model,expanded=false){
   </section>`;
 }
 function mount(root){
-  const doc=root.document,main=doc?.getElementById?.('main');if(!main||root.__garangTodayActionFlowV1)return false;root.__garangTodayActionFlowV1=true;
-  let scheduled=false,expanded=false;
+  const doc=root.document,main=doc?.getElementById?.('main');if(!main||root.__garangTodayActionFlowV1)return false;root.__garangTodayActionFlowV1=true;let scheduled=false,expanded=false;
   function state(){try{const bridge=root.GarangAgentStateBridge;return bridge?.ready?.()?bridge.getState():null;}catch{return null;}}
   function isToday(){return !!main.querySelector('.today-body-panel')&&(main.dataset.garangScreen==='today'||/TODAY|오늘/i.test(main.querySelector('.page-head')?.textContent||''));}
-  function render(){
-    scheduled=false;const current=main.querySelector('#garangTodayFlow');
-    if(!isToday()){if(current)current.remove();expanded=false;return;}
-    const snapshot=state();if(!snapshot)return;
-    const model=deriveModel(snapshot,{lang:doc.documentElement.lang==='en'?'en':'ko',PlanExecution:root.GarangPlanExecution,StateIntelligence:root.GarangStateIntelligence,DecisionIntelligence:root.GarangDecisionIntelligence,PerformanceScore:root.GarangPerformanceScore,date:todayLocal()});
-    const host=doc.createElement('div');host.innerHTML=markup(model,expanded);const next=host.firstElementChild;if(!next)return;
-    if(current)current.replaceWith(next);else{const head=main.querySelector(':scope > .page-head');if(head)head.insertAdjacentElement('afterend',next);else main.prepend(next);}
-  }
+  function render(){scheduled=false;const current=main.querySelector('#garangTodayFlow');if(!isToday()){if(current)current.remove();expanded=false;return;}const snapshot=state();if(!snapshot)return;const model=deriveModel(snapshot,{lang:doc.documentElement.lang==='en'?'en':'ko',PlanExecution:root.GarangPlanExecution,StateIntelligence:root.GarangStateIntelligence,DecisionIntelligence:root.GarangDecisionIntelligence,PerformanceScore:root.GarangPerformanceScore,date:todayLocal()});const host=doc.createElement('div');host.innerHTML=markup(model,expanded);const next=host.firstElementChild;if(!next)return;if(current)current.replaceWith(next);else{const head=main.querySelector(':scope > .page-head');if(head)head.insertAdjacentElement('afterend',next);else main.prepend(next);}}
   function schedule(){if(scheduled)return;scheduled=true;root.requestAnimationFrame(()=>root.requestAnimationFrame(render));}
-  doc.addEventListener('click',event=>{
-    const drop=event.target.closest?.('[data-gtf-details]');if(drop&&main.contains(drop)){event.preventDefault();expanded=!expanded;const detail=main.querySelector('[data-gtf-detail]');if(detail)detail.hidden=!expanded;drop.setAttribute('aria-expanded',expanded?'true':'false');const symbol=drop.querySelector('b');if(symbol)symbol.textContent=expanded?'−':'+';return;}
-    const routeButton=event.target.closest?.('[data-gtf-route]');if(routeButton&&main.contains(routeButton)){event.preventDefault();root.GarangRouter?.navigate?.(routeButton.dataset.gtfRoute,{source:'today-action-flow'});return;}
-    const actionButton=event.target.closest?.('[data-gtf-action="open-checkin"]');if(actionButton&&main.contains(actionButton)){event.preventDefault();main.querySelector('[data-action="open-checkin"]')?.click();}
-  },true);
-  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed'])root.addEventListener(name,schedule);
-  doc.documentElement.addEventListener('garang:language-changed',schedule);
-  root.addEventListener('pageshow',schedule);
-  schedule();return true;
+  doc.addEventListener('click',event=>{const drop=event.target.closest?.('[data-gtf-details]');if(drop&&main.contains(drop)){event.preventDefault();expanded=!expanded;const detail=main.querySelector('[data-gtf-detail]');if(detail)detail.hidden=!expanded;drop.setAttribute('aria-expanded',expanded?'true':'false');const symbol=drop.querySelector('b');if(symbol)symbol.textContent=expanded?'−':'+';return;}const routeButton=event.target.closest?.('[data-gtf-route]');if(routeButton&&main.contains(routeButton)){event.preventDefault();root.GarangRouter?.navigate?.(routeButton.dataset.gtfRoute,{source:'today-action-flow'});return;}const actionButton=event.target.closest?.('[data-gtf-action="open-checkin"]');if(actionButton&&main.contains(actionButton)){event.preventDefault();main.querySelector('[data-action="open-checkin"]')?.click();}},true);
+  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed'])root.addEventListener(name,schedule);doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);schedule();return true;
 }
 return Object.freeze({version:'garang-today-action-flow-v1.0.0',deriveModel,markup,mount,todayLocal});
 });
