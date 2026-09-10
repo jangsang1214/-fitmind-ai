@@ -37,13 +37,18 @@ async function tap(page,locator,touch,label='target'){
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
 async function assertTodayStable(page,label){
   const diagnostic=await page.evaluate(()=>{
-    const main=document.getElementById('main'),grid=main?.querySelector('.quick-visual-grid')||null;
+    const main=document.getElementById('main'),grid=main?.querySelector('.quick-visual-grid')||null,hero=main?.querySelector('.visual-today-hero')||null,flow=main?.querySelector('#garangTodayFlow')||null;
     const fixed=[...document.querySelectorAll('body *')].map(el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();return {el,cs,r};})
       .filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.position==='fixed'&&x.r.width>=innerWidth*.75&&x.r.height>=120)
       .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:String(x.el.className||''),top:Math.round(x.r.top),bottom:Math.round(x.r.bottom),height:Math.round(x.r.height),z:x.cs.zIndex,pointer:x.cs.pointerEvents,opacity:x.cs.opacity,background:x.cs.backgroundColor}));
-    return {viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',quickGrid:{exists:!!grid,hidden:grid?.hidden??null,count:grid?.querySelectorAll('.quick-visual').length||0},fixed};
+    return {viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',cMode:main?.dataset?.gtfC||'',flowVisible:!!flow&&getComputedStyle(flow).display!=='none',signal:!!flow?.querySelector('.gtf-signal'),legacyHeroDisplay:hero?getComputedStyle(hero).display:null,bodyControlCount:main?.querySelectorAll('[data-today-view]').length||0,quickGrid:{exists:!!grid,hidden:grid?.hidden??null,count:grid?.querySelectorAll('.quick-visual').length||0},fixed};
   });
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.cMode,'1',`${label}: C direction must own Today: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.flowVisible,true,`${label}: decision-first flow must be visible: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.signal,true,`${label}: data-driven signal field must be present: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.legacyHeroDisplay,'none',`${label}: legacy body hero must stay visually internalized by default: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.bodyControlCount,2,`${label}: body evidence controls must remain in DOM for rollback/evidence use: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.quickGrid.exists,true,`${label}: legacy quick-record capability must remain in DOM: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.quickGrid.count,4,`${label}: all four legacy record capabilities must remain: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.quickGrid.hidden,true,`${label}: duplicate Today quick-record grid must be internalized: ${JSON.stringify(diagnostic)}`);
@@ -88,8 +93,7 @@ async function openRecordRoute(page,route,touch,label){
       await page.goto(`${baseURL}/?mode=${mode.name}`,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
       await page.waitForFunction(()=>document.getElementById('main')?.innerText?.trim().length>0,{timeout:10000});
-      await page.locator('[data-today-view="front"]').waitFor({state:'visible',timeout:7000});
-      await page.locator('[data-today-view="back"]').waitFor({state:'visible',timeout:7000});
+      await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});
 
       const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
       assert.equal(repaired.workouts.length,1,`${mode.name}: malformed workouts must be removed`);
@@ -101,11 +105,9 @@ async function openRecordRoute(page,route,touch,label){
       const menu=page.locator('#menuBtn');await menu.waitFor({state:'visible',timeout:5000});await assertOwnsPoint(page,'#menuBtn');
       await assertOwnsPoint(page,'#bottomNav button[data-page="coach"]');
       await assertOwnsPoint(page,'#bottomNav button[data-page="log"]');
-      await assertOwnsPoint(page,'[data-today-view="back"]');
-
-      const back=page.locator('[data-today-view="back"]'),front=page.locator('[data-today-view="front"]');
-      await tap(page,back,mode.touch,`${mode.name}: today back`);await page.waitForFunction(()=>document.querySelector('[data-today-view="back"]')?.classList.contains('active'));
-      await tap(page,front,mode.touch,`${mode.name}: today front`);await page.waitForFunction(()=>document.querySelector('[data-today-view="front"]')?.classList.contains('active'));
+      await assertOwnsPoint(page,'.gtf-next');
+      assert.equal(await page.locator('[data-today-view="front"]:visible').count(),0,`${mode.name}: body controls must not be visible in default Today hero`);
+      assert.equal(await page.locator('[data-today-view="back"]:visible').count(),0,`${mode.name}: body controls must not be visible in default Today hero`);
 
       await tap(page,menu,mode.touch,`${mode.name}: hamburger`);await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
       await page.waitForTimeout(50);
@@ -126,6 +128,6 @@ async function openRecordRoute(page,route,touch,label){
       assert.deepEqual(pageErrors,[],`${mode.name} browser runtime errors:\n${pageErrors.join('\n')}`);
       await context.close();
     }
-    console.log('browser-interaction desktop+mobile malformed-state+simplified-routing: PASS');
+    console.log('browser-interaction desktop+mobile malformed-state+simplified-routing+C-direction: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
