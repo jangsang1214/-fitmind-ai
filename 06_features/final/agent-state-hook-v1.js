@@ -113,6 +113,7 @@ function applyWrite(tool,args={}){
    state.planner=Array.isArray(state.planner)?state.planner:[];
    const row={id:id('plan'),date:String(args.date||today()),time:String(args.time||''),type:String(args.type||'custom'),title:String(args.title||'').trim(),source:'ai',origin:'ai',status:'confirmed',completed:false,createdAt:stamp,updatedAt:stamp};
    if(!row.title)throw new Error('INVALID_TOOL_ARGS');
+   const goal=String(state.profile?.goal||state.onboarding?.goal||'').trim();if(goal)row.goalLabel=goal;
    if(Number.isFinite(Number(args.duration)))row.duration=Math.max(5,Math.min(240,Math.round(Number(args.duration))));
    if(Number.isFinite(Number(args.intensityScale)))row.intensityScale=Math.max(.3,Math.min(1.3,Number(args.intensityScale)));
    if(Number.isFinite(Number(args.volumeScale)))row.volumeScale=Math.max(.3,Math.min(1.3,Number(args.volumeScale)));

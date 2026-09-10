@@ -1,0 +1,10 @@
+/* GARANG Golden Path: one quiet next-step surface, never a second dashboard. */
+.gp-next{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;box-sizing:border-box;width:100%;min-width:0;margin:14px 0 24px;padding:14px 2px 16px;border-top:1px solid rgba(242,239,233,.1);border-bottom:1px solid rgba(242,239,233,.1)}
+.gp-next-copy{min-width:0;flex:1 1 auto}
+.gp-next-eyebrow{display:block;color:#4fae92;font-size:8px;line-height:1.2;letter-spacing:.18em}
+.gp-next strong{display:block;max-width:100%;margin-top:6px;color:#ece9e2;font:400 22px/1.18 var(--g2-display,"Cormorant Garamond",Georgia,serif);letter-spacing:-.01em;overflow-wrap:anywhere}
+.gp-next p{margin:7px 0 0;max-width:560px;color:#8c918b;font:400 11px/1.5 var(--g2-ui,system-ui,sans-serif);overflow-wrap:anywhere}
+.gp-next-action{flex:0 0 auto;box-sizing:border-box;min-width:0;min-height:36px;padding:10px 14px;border:1px solid rgba(79,174,146,.42);border-radius:999px;background:transparent;color:#e9e7e1;font:500 10px/1.2 var(--g2-ui,system-ui,sans-serif);white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.gp-next-action:hover,.gp-next-action:focus-visible{border-color:#4fae92;background:rgba(79,174,146,.08);outline:2px solid rgba(79,174,146,.3);outline-offset:2px}
+@media(max-width:560px){.gp-next{align-items:flex-start;flex-direction:column;gap:11px;margin-top:12px;margin-bottom:20px;padding:13px 0 15px}.gp-next strong{font-size:20px}.gp-next-action{width:auto;max-width:100%;padding-inline:13px}}
+@media(max-width:360px){.gp-next strong{font-size:18px}.gp-next p{font-size:10px}.gp-next-action{font-size:9px;padding-inline:11px}}

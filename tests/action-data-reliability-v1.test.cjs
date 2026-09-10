@@ -79,6 +79,12 @@ test('goal update uses the same receipt and memory durability boundary',()=>{
  const out=Action.executeTool(base(),'updateGoal',{goal:'Run faster'},{...opts,idempotencyKey:'goal-1'});assert.equal(out.state.profile.goal,'Run faster');assert.equal(out.state.onboarding.goal,'Run faster');assert.ok(out.state.memory.entries.some(x=>x.key==='primary_goal'&&x.value==='Run faster'));assert.ok(out.state.meta.actionReceipts.some(x=>x.key==='goal-1'));
 });
 
+test('AI-created plans retain the active model goal through the action bridge',()=>{
+ const state=base();state.profile.goal='근육 증가';state.onboarding.goal='근육 증가';
+ const out=Action.executeTool(state,'createPlan',{title:'상체 세션',type:'workout'},{...opts,idempotencyKey:'goal-linked-plan'});
+ assert.equal(out.state.planner[0].goalLabel,'근육 증가');
+});
+
 test('rollback restores an updated record without mutating the prior snapshot',()=>{
  const initial=base(),created=Action.applyMutation(initial,{operation:'create',domain:'body',record:{id:'b-roll',weight:70},userConfirmed:true},opts),updated=Action.applyMutation(created.state,{operation:'update',domain:'body',id:'b-roll',patch:{weight:69},userConfirmed:true},opts);
  const rolled=Action.rollback(updated.state,updated.inverse,{...opts,idempotencyKey:'rollback-1'});assert.equal(rolled.state.body[0].weight,70);assert.equal(initial.body.length,0);

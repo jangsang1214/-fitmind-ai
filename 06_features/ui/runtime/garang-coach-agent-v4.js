@@ -21,6 +21,7 @@ const PROMPTS=Object.freeze([
  {id:'plan',koLabel:'계획 만들기',enLabel:'Create plan',koPrompt:'오늘 계획을 만들어줘',enPrompt:'Create a plan for today.'}
 ]);
 const promptByKo=new Map(PROMPTS.map(item=>[item.koPrompt,item]));
+function cloudReady(){try{if(window.firebase?.auth?.().currentUser)return window.GarangCloudHydrationReady!==false;}catch{}return true;}
 
 function translateExercise(name){try{return window.GarangEntityI18n?.translateExercise?.(name)||name;}catch{return name;}}
 function translateKnownCoachText(source){
@@ -83,6 +84,7 @@ async function processAssistant(messageEl){
  for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}
  const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
  const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;
+ if(!cloudReady()){messageEl.dataset.g4AgentPending='1';return;}
  if(!Contract||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}
  processingAssistantIds.add(messageId);delete messageEl.dataset.g4AgentPending;
  try{

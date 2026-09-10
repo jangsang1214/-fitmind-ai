@@ -30,7 +30,9 @@ let state = EMPTY();
 let db = {exercise:[],food:[]};
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
-let storageKey=DEMO_KEY, syncTimer=null, syncRetry=0;
+let storageKey=DEMO_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
+window.GarangCloudHydrationReady=true;
+function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
 let workoutDraft=[], mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false;
 let workoutMuscleFilter='all', workoutSelectedExercise='';
 let currentCert={workout:null,running:null};
@@ -73,7 +75,7 @@ function normalizeState(){
 function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_VERSION;}
 function readLocal(key){try{const raw=localStorage.getItem(key);if(!raw)return null;return JSON.parse(raw);}catch(e){console.warn('local load failed',e);return null;}}
 function writeLocal(){try{touch();localStorage.setItem(storageKey,JSON.stringify(state));return true;}catch(e){toast('기기 저장 공간을 확인해 주세요.');captureError('local_save',e);return false;}}
-function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();}
+function loadLocal(key){const x=readLocal(key);state=x?{...EMPTY(),...x}:EMPTY();normalizeState();try{window.GarangAgentStateBridge?.capture?.(state);}catch{} }
 function emitLifecycle(name,detail={}){try{window.dispatchEvent(new CustomEvent(name,{detail:{page:currentPage,storageKey,...detail}}));}catch{}}
 function saveState(opts={}){writeLocal();trackEvent(opts.event||'state_saved',{source:opts.source||'app'},false);if(firebaseReady&&currentUser)queueCloudSync();updateSyncUI();emitLifecycle('garang:state-updated',{source:opts.source||'app',event:opts.event||'state_saved'});}
 
@@ -89,6 +91,8 @@ function cloudPayload(){
 }
 async function cloudSaveNow(){
   if(!firebaseReady||!currentUser)return false;
+  if(!cloudHydrated){cloudSyncPending=true;return false;}
+  cloudSyncPending=false;
   setSync('syncing');
   try{
     const payload=cloudPayload();payload.cloudUpdatedAt=firebase.firestore.FieldValue.serverTimestamp();payload.clientUpdatedAt=state.meta.updatedAt;
@@ -99,7 +103,7 @@ async function cloudSaveNow(){
     if(syncRetry<3)setTimeout(()=>cloudSaveNow(),1200*Math.pow(2,syncRetry-1));return false;
   }
 }
-function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');syncTimer=setTimeout(()=>cloudSaveNow(),700);}
+function queueCloudSync(){clearTimeout(syncTimer);state.syncState='pending';setSync('pending');cloudSyncPending=true;if(!firebaseReady||!currentUser||!cloudHydrated)return;syncTimer=setTimeout(()=>{cloudSyncPending=false;cloudSaveNow();},700);}
 function reconcileAfterHydration(status){
   /* Background Firebase hydration updates state without replacing an active Coach interaction tree. */
   const interactiveCoach=currentPage==='coach'&&$('appView')&&!$('appView').hidden;
@@ -109,22 +113,33 @@ function reconcileAfterHydration(status){
 }
 async function cloudLoadAndMerge(){
   if(!firebaseReady||!currentUser)return;
-  setSync('syncing');
+  setCloudHydrationReady(false);setSync('syncing');
   try{
     let doc=await cloudRef().get();let remote=doc.exists?doc.data():null;
     if(!remote){const legacy=await firebase.firestore().collection('users').doc(currentUser.uid).get();if(legacy.exists&&legacy.data()?.profile)remote=legacy.data();}
+    let shouldSaveLocal=false;
     if(remote){
+      const local=readLocal(storageKey);
       const localUpdated=dateMs((state.meta?.updatedAt||'').slice(0,10))||new Date(state.meta?.updatedAt||0).getTime();
       const remoteUpdated=new Date(remote.clientUpdatedAt||remote.meta?.updatedAt||0).getTime();
-      if(!readLocal(storageKey)||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
-      else await cloudSaveNow();
-    }else if(readLocal(storageKey)){await cloudSaveNow();}
+      if(!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
+      else shouldSaveLocal=true;
+    }else if(readLocal(storageKey))shouldSaveLocal=true;
+    cloudSyncPending=false;
+    if(currentUser?.uid&&!state.meta.syncOwnerUid)state.meta.syncOwnerUid=currentUser.uid;
+    try{window.GarangAgentStateBridge?.capture?.(state);}catch{}
+    setCloudHydrationReady(true);
+    if(shouldSaveLocal)await cloudSaveNow();
     state.syncState='synced';setSync('synced');reconcileAfterHydration('success');
-  }catch(e){state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');}
+  }catch(e){
+    cloudSyncPending=false;setCloudHydrationReady(true);state.syncState='failed';captureError('cloud_load',e);setSync('failed','동기화 확인');toast('클라우드 연결을 확인 중입니다. 기록은 기기에 안전하게 저장됩니다.');reconcileAfterHydration('error');
+  }
 }
 
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}
 function trackEvent(name,props={},persist=true){try{state.analytics.events.push({id:uid(),name,props,at:isoNow()});if(state.analytics.events.length>500)state.analytics.events=state.analytics.events.slice(-500);if(persist)writeLocal();if(SERVICES.analyticsEndpoint)fetch(SERVICES.analyticsEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,props,at:isoNow(),userId:currentUser?.uid||null})}).catch(()=>{});}catch{}}
+function syncStateFromAgent(){try{const bridge=window.GarangAgentStateBridge;if(!bridge?.ready?.())return;const live=bridge.getLiveState?.();if(live)state=live;}catch{}}
+window.addEventListener('garang:agent-write',syncStateFromAgent);
 window.addEventListener('error',e=>captureError('frontend_error',e.error||e.message));window.addEventListener('unhandledrejection',e=>captureError('unhandled_rejection',e.reason));
 
 async function loadJSON(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path} ${r.status}`);return r.json();}
@@ -137,11 +152,11 @@ function initFirebase(){
     if(!firebase.apps.length)firebase.initializeApp(cfg);firebaseReady=!!firebase.apps.length;
     if(firebaseReady)firebase.auth().onAuthStateChanged(u=>{
       currentUser=u;
-      if(u){storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
-      else if(localStorage.getItem('garang_demo')==='1'){storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}
-      else showAuth();
+      if(u){setCloudHydrationReady(false);cloudSyncPending=false;storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{setCloudHydrationReady(true);captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
+      else if(localStorage.getItem('garang_demo')==='1'){setCloudHydrationReady(true);storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}
+      else{setCloudHydrationReady(true);showAuth();}
     });
-  }catch(e){firebaseReady=false;captureError('firebase_init',e);}
+  }catch(e){firebaseReady=false;setCloudHydrationReady(true);captureError('firebase_init',e);}
 }
 function showAuth(){$('authView').hidden=false;$('appView').hidden=true;}
 function showApp(){$('authView').hidden=true;$('appView').hidden=false;$('planBadge').textContent=state.plan;applyLanguageChrome();updateSyncUI();if(!state.onboarding.complete&&!state.onboarding.skipped)currentPage='onboarding';render();}
@@ -156,10 +171,11 @@ async function emailAuth(signup){if(!firebaseReady)return toast('Firebase 설정
 async function socialAuth(kind){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');await firebase.auth().signInWithPopup(p);}catch(e){toast(firebaseError(e));}}
 async function resetPassword(){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');const email=$('loginEmail').value.trim();if(!email)return toast('이메일을 먼저 입력해 주세요.');try{await firebase.auth().sendPasswordResetEmail(email);toast('재설정 메일을 보냈습니다.');}catch(e){toast(firebaseError(e));}}
 function firebaseError(e){const c=e?.code||'';const map={'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.','auth/email-already-in-use':'이미 사용 중인 이메일입니다.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/popup-closed-by-user':'로그인이 취소되었습니다.','auth/operation-not-allowed':'Firebase Console에서 로그인 방식을 활성화해 주세요.','auth/unauthorized-domain':'Firebase 승인 도메인을 확인해 주세요.','auth/popup-blocked':'브라우저 팝업을 허용해 주세요.','permission-denied':'Firestore 권한 규칙을 확인해 주세요.'};return map[c]||e?.message||'인증 중 오류가 발생했습니다.';}
-function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});localStorage.removeItem('garang_demo');currentUser=null;storageKey=DEMO_KEY;showAuth();}
+function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});clearTimeout(syncTimer);cloudSyncPending=false;setCloudHydrationReady(true);localStorage.removeItem('garang_demo');currentUser=null;storageKey=DEMO_KEY;showAuth();}
 
 function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));}
-function go(page){currentPage=page;render();window.scrollTo({top:0,behavior:'instant'});}
+function recordScreenView(page,from){trackEvent('screen_viewed',{screen:page,from:from||null,date:today()},true);if(firebaseReady&&currentUser)queueCloudSync();}
+function go(page){const previous=currentPage;currentPage=page;recordScreenView(page,previous);render();window.scrollTo({top:0,behavior:'instant'});}
 function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));const m=$('main');const fn=pages[currentPage]||pages.today;m.innerHTML=fn();bindPage();applyLanguageChrome();updateSyncUI();emitLifecycle('garang:screen-rendered',{screen:currentPage});}
 
 function todayWorkouts(){return state.workouts.filter(x=>x.date===today());}
@@ -479,7 +495,7 @@ function bindWorkout(){
   document.querySelectorAll('[data-remove-workout]').forEach(b=>b.onclick=()=>{workoutDraft.splice(num(b.dataset.removeWorkout),1);render();});document.querySelectorAll('[data-edit-workout]').forEach(b=>b.onclick=()=>editWorkout(num(b.dataset.editWorkout)));
 }
 function editWorkout(i){const x=workoutDraft[i];if(!x)return;$('wName').value=x.name;$('wSets').value=x.sets;$('wReps').value=x.reps;$('wWeight').value=shownWeight(x.weight,1);$('wRpe').value=x.rpe;$('wDuration').value=x.duration;$('wBody').value=shownWeight(x.body,1);workoutSetDraft=Array.isArray(x.setDetails)?x.setDetails.map(row=>({...row})):[];workoutSetDetailsOpen=workoutSetDraft.length>0;workoutDraft.splice(i,1);toast('수정 후 다시 세션에 추가해 주세요.');render();}
-function saveWorkoutSession(){if(!workoutDraft.length)return toast('운동을 먼저 추가해 주세요.');const sessionId=uid();workoutDraft.forEach(x=>state.workouts.push({...x,date:today(),sessionId}));state.memory.events.push({type:'workout_session',date:today(),text:`${workoutDraft.length}종목`});workoutDraft=[];saveState({event:'workout_saved',source:'workout'});toast('운동 세션을 저장했습니다.');render();}
+function saveWorkoutSession(){if(!workoutDraft.length)return toast('운동을 먼저 추가해 주세요.');const sessionId=uid(),stamp=isoNow();workoutDraft.forEach(x=>state.workouts.push({...x,date:today(),sessionId,createdAt:stamp,updatedAt:stamp}));state.memory.events.push({type:'workout_session',date:today(),text:`${workoutDraft.length}종목`});workoutDraft=[];saveState({event:'workout_saved',source:'workout'});toast('운동 세션을 저장했습니다.');render();}
 
 function findFood(q){q=String(q||'').trim().toLowerCase();if(!q)return null;return db.food.find(x=>String(x.name||'').toLowerCase()===q)||db.food.find(x=>(x.aliases||[]).some(a=>String(a).toLowerCase()===q))||db.food.find(x=>String(x.name||'').toLowerCase().includes(q));}
 function foodItem(name,grams){const f=findFood(name);if(!f)return null;const g=Math.max(1,num(grams,100)),ratio=g/num(f.basis_g,100);return {id:uid(),name:f.name,grams:g,kcal:num(f.kcal)*ratio,protein:num(f.protein)*ratio,carbs:num(f.carbs)*ratio,fat:num(f.fat)*ratio};}
@@ -491,7 +507,7 @@ function bindNutrition(){
 }
 function addMealDraft(){const name=$('foodSearch').value.trim();if(!name)return toast('음식을 입력해 주세요.');const f=findFood(name),g=Math.max(1,num($('foodGram').value,100));const x=f?foodItem(f.name,g):{id:uid(),name,grams:g,kcal:num($('foodKcal').value),protein:num($('foodProtein').value),carbs:num($('foodCarb').value),fat:num($('foodFat').value)};if(!f&&!x.kcal&&!x.protein&&!x.carbs&&!x.fat)return toast('영양성분을 입력하거나 DB에서 불러와 주세요.');mealDraft.push(x);toast(`${x.name} 추가`);render();}
 function editMeal(i){const x=mealDraft[i];if(!x)return;$('foodSearch').value=x.name;$('foodGram').value=x.grams;$('foodKcal').value=Math.round(x.kcal);$('foodProtein').value=x.protein.toFixed(1);$('foodCarb').value=x.carbs.toFixed(1);$('foodFat').value=x.fat.toFixed(1);mealDraft.splice(i,1);toast('수정 후 다시 추가해 주세요.');}
-function saveMealGroup(){if(!mealDraft.length)return toast('음식을 먼저 추가해 주세요.');const totals=mealDraft.reduce((a,x)=>({kcal:a.kcal+x.kcal,protein:a.protein+x.protein,carbs:a.carbs+x.carbs,fat:a.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0});const meal={id:uid(),date:today(),name:mealDraft.map(x=>x.name).slice(0,2).join(' + ')+(mealDraft.length>2?` 외 ${mealDraft.length-2}종`:''),items:mealDraft.map(x=>({...x})),...totals};state.meals.push(meal);state.memory.events.push({type:'meal',date:today(),text:`${meal.items.length}종 · ${Math.round(meal.kcal)} kcal`});mealDraft=[];saveState({event:'meal_saved',source:'nutrition'});toast('식사를 저장했습니다.');render();}
+function saveMealGroup(){if(!mealDraft.length)return toast('음식을 먼저 추가해 주세요.');const totals=mealDraft.reduce((a,x)=>({kcal:a.kcal+x.kcal,protein:a.protein+x.protein,carbs:a.carbs+x.carbs,fat:a.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0}),stamp=isoNow();const meal={id:uid(),date:today(),name:mealDraft.map(x=>x.name).slice(0,2).join(' + ')+(mealDraft.length>2?` 외 ${mealDraft.length-2}종`:''),items:mealDraft.map(x=>({...x})),...totals,createdAt:stamp,updatedAt:stamp};state.meals.push(meal);state.memory.events.push({type:'meal',date:today(),text:`${meal.items.length}종 · ${Math.round(meal.kcal)} kcal`});mealDraft=[];saveState({event:'meal_saved',source:'nutrition'});toast('식사를 저장했습니다.');render();}
 async function analyzeMealScan(){if(!mealScanDraft?.file)return toast('먼저 음식 사진을 선택해 주세요.');mealScanDraft.manualName=$('scanFoodName').value.trim();mealScanDraft.grams=Math.max(1,num($('scanFoodGram').value,100));if(SERVICES.mealScanEndpoint){try{toast('사진을 분석 중입니다.');const fd=new FormData();fd.append('image',mealScanDraft.file);fd.append('userId',currentUser?.uid||'demo');const r=await fetch(SERVICES.mealScanEndpoint,{method:'POST',body:fd});if(!r.ok)throw new Error(`Meal Scan ${r.status}`);const data=await r.json();if(!Array.isArray(data.items)||!data.items.length)throw new Error('Meal Scan response has no items');mealScanDraft.items=data.items.map(i=>({id:uid(),name:String(i.name||'음식'),grams:num(i.grams,100),kcal:num(i.kcal),protein:num(i.protein),carbs:num(i.carbs),fat:num(i.fat)}));trackEvent('meal_scan_draft_created',{provider:'vision'});render();return;}catch(e){captureError('meal_scan',e);toast('Vision 분석에 실패했습니다. 임의 결과를 만들지 않습니다.');return;}}
   if(!mealScanDraft.manualName)return toast('Vision API 미연결 상태입니다. 음식명을 입력하면 DB 기반 초안을 만들 수 있습니다.');const x=foodItem(mealScanDraft.manualName,mealScanDraft.grams);if(!x)return toast('Food DB에서 해당 음식을 찾지 못했습니다. 직접 입력을 사용해 주세요.');mealScanDraft.items=[x];trackEvent('meal_scan_draft_created',{provider:'local_db'});render();}
 
@@ -499,12 +515,12 @@ function bindRunning(){$('runStart').onclick=startRun;$('runStop').onclick=stopR
 function startRun(){if(runState)return toast('이미 러닝 중입니다.');if(!navigator.geolocation)return toast('이 기기에서는 GPS를 사용할 수 없습니다.');runState={started:Date.now(),distance:0,coords:[],watchId:null};$('gpsStatus').textContent='GPS 연결 중…';runState.watchId=navigator.geolocation.watchPosition(pos=>{const p=pos.coords;runState.coords.push([p.latitude,p.longitude,pos.timestamp]);if(runState.coords.length>1){const a=runState.coords.at(-2),b=runState.coords.at(-1);runState.distance+=haversine(a[0],a[1],b[0],b[1]);}updateRoute();updateRunUI();$('gpsStatus').textContent=`GPS 연결 · 정확도 ${Math.round(p.accuracy)}m`;},()=>{$('gpsStatus').textContent='GPS 권한 또는 신호를 확인해 주세요.';},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});runTimer=setInterval(updateRunUI,1000);trackEvent('run_started');}
 function updateRunUI(){if(!runState)return;const sec=Math.floor((Date.now()-runState.started)/1000),min=Math.floor(sec/60),s=String(sec%60).padStart(2,'0');if($('runDistance'))$('runDistance').textContent=Number(shownDistance(runState.distance,2)||0).toFixed(2);if($('runTime'))$('runTime').textContent=`${String(min).padStart(2,'0')}:${s}`;if($('runPace'))$('runPace').textContent=runState.distance>0?Number(shownPace(sec/60/runState.distance,2)).toFixed(2):'—';}
 function updateRoute(){const line=$('routeLine');if(!line||!runState?.coords.length)return;const pts=runState.coords;if(pts.length<2){line.setAttribute('points','50,50');return;}const lats=pts.map(p=>p[0]),lons=pts.map(p=>p[1]),minLat=Math.min(...lats),maxLat=Math.max(...lats),minLon=Math.min(...lons),maxLon=Math.max(...lons),dLat=maxLat-minLat||1e-6,dLon=maxLon-minLon||1e-6;line.setAttribute('points',pts.map(p=>`${8+84*(p[1]-minLon)/dLon},${92-84*(p[0]-minLat)/dLat}`).join(' '));}
-function stopRun(){if(!runState)return toast('진행 중인 러닝이 없습니다.');if(runState.watchId!=null)navigator.geolocation.clearWatch(runState.watchId);clearInterval(runTimer);const sec=Math.max(1,Math.floor((Date.now()-runState.started)/1000)),duration=sec/60,d=runState.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036);state.runs.push({id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:runState.coords});runState=null;saveState({event:'run_saved',source:'running'});toast('러닝을 저장했습니다.');render();}
+function stopRun(){if(!runState)return toast('진행 중인 러닝이 없습니다.');if(runState.watchId!=null)navigator.geolocation.clearWatch(runState.watchId);clearInterval(runTimer);const sec=Math.max(1,Math.floor((Date.now()-runState.started)/1000)),duration=sec/60,d=runState.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036),stamp=isoNow();state.runs.push({id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:runState.coords,createdAt:stamp,updatedAt:stamp});runState=null;saveState({event:'run_saved',source:'running'});toast('러닝을 저장했습니다.');render();}
 function haversine(a,b,c,d){const R=6371,rad=Math.PI/180,da=(c-a)*rad,db=(d-b)*rad,x=Math.sin(da/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin(db/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 
 function updateBodyDerivedPreview(){const box=$('bodyDerived');if(!box)return;const d=bodyDerived(metricWeight($('bWeight')?.value),metricLength($('bHeight')?.value)||state.profile?.height,$('bFatPct')?.value);box.innerHTML=`<div><span>체지방량</span><b>${d.fatMass?Number(shownWeight(d.fatMass,1)).toFixed(1):'—'} ${weightUnit()}</b></div><div><span>제지방량</span><b>${d.leanMass?Number(shownWeight(d.leanMass,1)).toFixed(1):'—'} ${weightUnit()}</b></div><div><span>BMI</span><b>${d.bmi?d.bmi.toFixed(1):'—'}</b></div><div><span>BMR</span><b>${d.bmr||'—'} kcal</b></div>`;}
 function bindBody(){$('saveBody').onclick=saveBody;['bWeight','bHeight','bFatPct'].forEach(id=>$(id)?.addEventListener('input',updateBodyDerivedPreview));document.querySelectorAll('[data-body-range]').forEach(b=>b.onclick=()=>{bodyRangeDays=num(b.dataset.bodyRange);render();});document.querySelectorAll('[data-body-metric]').forEach(b=>b.onclick=()=>{bodyTrendMetric=b.dataset.bodyMetric;render();});$('exportBodyImage')?.addEventListener('click',exportBodyImage);$('exportBodyCSV')?.addEventListener('click',exportBodyCSV);$('pickBodyAttachment')?.addEventListener('click',()=>pickBodyAttachment());document.querySelectorAll('[data-body-attachment]').forEach(b=>b.onclick=()=>downloadBodyAttachment(b.dataset.bodyAttachment));updateBodyDerivedPreview();}
-async function saveBody(){const weight=metricWeight($('bWeight').value),height=metricLength($('bHeight').value)||state.profile?.height,fatPct=num($('bFatPct').value),muscle=metricWeight($('bMuscle').value);if(!weight||!height)return toast('체중과 키를 입력해 주세요.');const d=bodyDerived(weight,height,fatPct),attachmentId=bodyAttachmentDraft?uid():null;if(bodyAttachmentDraft&&attachmentId){try{await storeBodyAttachment(attachmentId,bodyAttachmentDraft.file);}catch(e){captureError('body_attachment_save',e);return toast('인바디 첨부 파일 저장에 실패했습니다.');}}state.body.push({id:uid(),date:$('bDate').value||today(),weight:Number(weight.toFixed(1)),muscle:muscle?Number(muscle.toFixed(1)):null,fatPercent:fatPct?Number(fatPct.toFixed(1)):null,fatMass:d.fatMass?Number(d.fatMass.toFixed(1)):null,leanMass:d.leanMass?Number(d.leanMass.toFixed(1)):null,bmi:d.bmi?Number(d.bmi.toFixed(1)):null,bmr:d.bmr||null,attachmentId,attachmentName:bodyAttachmentDraft?.name||null,source:'manual',userConfirmed:true});state.profile={...(state.profile||{}),weight,height};bodyAttachmentDraft=null;saveState({event:'inbody_saved',source:'body'});toast('체성분을 저장했습니다.');render();}
+async function saveBody(){const weight=metricWeight($('bWeight').value),height=metricLength($('bHeight').value)||state.profile?.height,fatPct=num($('bFatPct').value),muscle=metricWeight($('bMuscle').value);if(!weight||!height)return toast('체중과 키를 입력해 주세요.');const d=bodyDerived(weight,height,fatPct),attachmentId=bodyAttachmentDraft?uid():null;if(bodyAttachmentDraft&&attachmentId){try{await storeBodyAttachment(attachmentId,bodyAttachmentDraft.file);}catch(e){captureError('body_attachment_save',e);return toast('인바디 첨부 파일 저장에 실패했습니다.');}}const stamp=isoNow();state.body.push({id:uid(),date:$('bDate').value||today(),weight:Number(weight.toFixed(1)),muscle:muscle?Number(muscle.toFixed(1)):null,fatPercent:fatPct?Number(fatPct.toFixed(1)):null,fatMass:d.fatMass?Number(d.fatMass.toFixed(1)):null,leanMass:d.leanMass?Number(d.leanMass.toFixed(1)):null,bmi:d.bmi?Number(d.bmi.toFixed(1)):null,bmr:d.bmr||null,attachmentId,attachmentName:bodyAttachmentDraft?.name||null,source:'manual',userConfirmed:true,createdAt:stamp,updatedAt:stamp});state.profile={...(state.profile||{}),weight,height};bodyAttachmentDraft=null;saveState({event:'inbody_saved',source:'body'});toast('체성분을 저장했습니다.');render();}
 function openMediaDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('garang_media_v1',1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('bodyReports'))db.createObjectStore('bodyReports');};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 async function storeBodyAttachment(id,file){const db=await openMediaDB();await new Promise((resolve,reject)=>{const tx=db.transaction('bodyReports','readwrite');tx.objectStore('bodyReports').put(file,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}
 async function readBodyAttachment(id){const db=await openMediaDB();const file=await new Promise((resolve,reject)=>{const tx=db.transaction('bodyReports','readonly'),r=tx.objectStore('bodyReports').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});db.close();return file;}

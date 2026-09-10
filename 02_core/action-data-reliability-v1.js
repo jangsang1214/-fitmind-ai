@@ -224,7 +224,12 @@ function executeTool(state,tool,args={},options={}){
   if(name==='createRecord')return applyMutation(state,{operation:'create',domain:args.domain,record:args.record,idempotencyKey,source:'agent',semanticUpsert:args.domain==='memory',userConfirmed:true},base);
   if(name==='updateRecord')return applyMutation(state,{operation:'update',domain:args.domain,id:args.id,patch:args.patch,expectedRevision:args.expectedRevision,idempotencyKey,source:'agent',userConfirmed:true},base);
   if(name==='deleteRecord')return applyMutation(state,{operation:'delete',domain:args.domain,id:args.id,idempotencyKey,source:'agent',userConfirmed:true},base);
-  if(name==='createPlan')return applyMutation(state,{operation:'create',domain:'planner',record:{...clone(args),source:'ai',origin:'ai',status:'confirmed',completed:false},idempotencyKey,source:'agent',userConfirmed:true},base);
+  if(name==='createPlan'){
+    const record={...clone(args),source:'ai',origin:'ai',status:'confirmed',completed:false};
+    const goalLabel=clean(state.profile?.goal||state.onboarding?.goal);
+    if(goalLabel&&!clean(record.goalLabel))record.goalLabel=goalLabel;
+    return applyMutation(state,{operation:'create',domain:'planner',record,idempotencyKey,source:'agent',userConfirmed:true},base);
+  }
   if(name==='updatePlan'){const patch=clone(args);delete patch.id;delete patch.idempotencyKey;patch.source='ai';patch.origin='ai';return applyMutation(state,{operation:'update',domain:'planner',id:args.id,patch,expectedRevision:args.expectedRevision,idempotencyKey,source:'agent',userConfirmed:true},base);}
   if(name==='saveMemory')return applyMutation(state,{operation:'create',domain:'memory',record:{...clone(args),source:'agent',confidence:args.confidence??.95,userConfirmed:true},semanticUpsert:true,idempotencyKey,source:'agent',userConfirmed:true},base);
   if(name==='updateGoal')return updateGoal(state,args,{...base,idempotencyKey});
