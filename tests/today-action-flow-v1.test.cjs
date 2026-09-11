@@ -10,12 +10,16 @@ function base(){return {meta:{schemaVersion:5},profile:{age:27,height:174,weight
 function model(state){return Flow.deriveModel(state,{date,lang:'ko',PlanExecution});}
 {
  const state=base(),before=JSON.stringify(state),m=model(state);
- assert.equal(m.route,'planner');assert.equal(m.action,null);assert.match(m.headline,/방향/);assert.equal(JSON.stringify(state),before,'Today flow must be read-only');
- assert.equal(m.bodyEvidence,false);assert.equal(m.signalScore,0);
+ assert.equal(Flow.version,'garang-today-action-flow-v1.2.0');assert.equal(m.route,'planner');assert.equal(m.action,null);assert.match(m.headline,/방향/);assert.equal(JSON.stringify(state),before,'Today flow must be read-only');
+ assert.equal(m.bodyEvidence,false);assert.equal(m.signalScore,0);assert.equal(m.tracks.length,3);assert.deepEqual(m.tracks.map(x=>x.domain),['training','recovery','nutrition']);assert.ok(m.tracks.every(x=>x.state==='empty'));
+ const html=Flow.markup(m,false);assert.equal((html.match(/class="gtf-track"/g)||[]).length,3,'Today must expose one visual rail with three tracks');assert.match(html,/class="gtf-signal"/);assert.match(html,/class="gtf-track-visual"/);
 }
 {
- const state=base();state.planner=[{id:'p1',date,type:'workout',title:'상체 50분',completed:false},{id:'p2',date,type:'nutrition',title:'식단',completed:true}];
- const m=model(state);assert.equal(m.planned,2);assert.equal(m.executed,1);assert.equal(m.remaining,1);assert.equal(m.route,'planner');assert.match(m.support,/상체 50분/);assert.equal(m.progress,50);assert.equal(m.signalScore,50);
+ const state=base();state.planner=[{id:'p1',date,type:'workout',domain:'training',title:'상체 50분',completed:false},{id:'p2',date,type:'nutrition',domain:'nutrition',title:'식단',completed:true}];
+ const m=model(state);assert.equal(m.planned,2);assert.equal(m.executed,1);assert.equal(m.remaining,1);assert.equal(m.route,'planner');assert.match(m.support,/상체 50분/);assert.equal(m.progress,50);assert.equal(m.signalScore,50);assert.equal(m.tracks.find(x=>x.domain==='training').value,'0%');assert.equal(m.tracks.find(x=>x.domain==='nutrition').value,'100%');
+}
+{
+ const state=base();state.meta.dailyPlanDrafts={[date]:{date,status:'draft',items:[{domain:'training',type:'workout'},{domain:'recovery',type:'recovery'},{domain:'nutrition',type:'nutrition'}]}};const m=model(state);assert.deepEqual(m.tracks.map(x=>x.state),['draft','draft','draft']);assert.ok(m.tracks.every(x=>x.value==='준비'));
 }
 {
  const state=base();state.planner=[{id:'p1',date,type:'workout',title:'상체',completed:true}];
@@ -35,9 +39,6 @@ function model(state){return Flow.deriveModel(state,{date,lang:'ko',PlanExecutio
 }
 {
  const source=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-today-action-flow-v1.js'),'utf8');
- assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)/,'Today flow must not write storage');
- assert.doesNotMatch(source,/applyWrite\s*\(/,'Today flow must not bypass existing confirmed write paths');
- assert.doesNotMatch(source,/MutationObserver/,'Today flow must remain lifecycle-driven');
- assert.match(source,/dataset\.gtfC/,'C direction must explicitly own the Today visual mode');
+ assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)/,'Today flow must not write storage');assert.doesNotMatch(source,/applyWrite\s*\(/,'Today flow must not bypass existing confirmed write paths');assert.doesNotMatch(source,/MutationObserver/,'Today flow must remain lifecycle-driven');assert.match(source,/dataset\.gtfC/,'C direction must explicitly own the Today visual mode');assert.match(source,/gtf-track-visual/,'visual-first Today must keep the three domains glanceable without dashboard cards');
 }
-console.log('today-action-flow-v1 C-direction: PASS');
+console.log('today-action-flow-v1 visual-first C-direction: PASS');
