@@ -61,7 +61,7 @@ function state(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString(
   await page.waitForFunction(today=>{const s=window.GarangAgentStateBridge?.getState?.();return [...(s?.dailyCheckins||[]),...(s?.checkins||[])].some(row=>String(row?.date||'').slice(0,10)===today);},date(),{timeout:5000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked',null,{timeout:7000});
   await page.waitForFunction(today=>Number(window.GarangAgentStateBridge?.getState?.()?.meta?.dailyPlanDrafts?.[today]?.revision||0)>=2,date(),{timeout:7000});
-  await page.waitForFunction(()=>document.querySelectorAll('#garangTodayFlow .gtf-track[data-change]').length===3,null,{timeout:7000});
+  await page.waitForFunction(()=>document.querySelectorAll('#garangTodayFlow .gtf-track[data-change="changed"]').length>=1,null,{timeout:7000});
   const stateEdit=flow.locator('[data-garang-checkin-access="1"]');assert.match(await stateEdit.innerText(),/수정/,'saved check-in must collapse into a quiet state-edit affordance');assert.match(await stateEdit.innerText(),/수면 5\.5h/);assert.equal(await stateEdit.getAttribute('data-gto-priority'),'0');
   assert.match(await flow.locator('.gtf-decision>span').innerText(),/반영됨/,'Today decision must become the single merged Coach/Today decision summary after check-in');
   assert.equal(await flow.locator('.gtf-track[data-change]').count(),3,'check-in effect must stay merged into the same three-track visual');
