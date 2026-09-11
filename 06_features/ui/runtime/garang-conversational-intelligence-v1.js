@@ -106,7 +106,7 @@ function queueSync(){if(queued||!activeRoot)return;queued=true;requestAnimationF
 function activateRoot(root){
  if(!root||!root.isConnected)return;
  if(activeRoot===root){queueSync();return;}
- activeRoot=root;processedUserIds.clear();outcomes.clear();
+ activeRoot=root;processedUserIds.clear();
  root.querySelectorAll('.g2-message.user[data-message-id]').forEach(el=>processedUserIds.add(String(el.dataset.messageId||'')));
  queueSync();
 }
