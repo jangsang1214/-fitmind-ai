@@ -1,12 +1,12 @@
-/* GARANG Nonblocking Actions v1.2
+/* GARANG Nonblocking Actions v1.3
    Visible destructive/approval actions keep canonical app.js state mutations, but native blocking
    confirm() UI is replaced with a local two-tap confirmation. Binding follows explicit UI lifecycle
    events instead of watching the entire #main subtree. No global click interception.
 
    Today check-in accessibility:
    - the canonical app.js check-in modal remains the single write owner
-   - the brand-first Today surface gets one quiet, always-reachable check-in entry
-   - when Check-in is already the primary next action, no duplicate secondary control is shown
+   - the brand-first Today surface gets exactly one quiet, always-reachable check-in entry
+   - any Action Flow check-in CTA is internalized so it cannot compete with that single entry
 */
 (() => {
   'use strict';
@@ -65,14 +65,21 @@
     if(!state)return null;const date=today(),rows=[...(Array.isArray(state.dailyCheckins)?state.dailyCheckins:[]),...(Array.isArray(state.checkins)?state.checkins:[])];return rows.filter(row=>sameDate(row,date)).at(-1)||null;
   }
 
+  function internalizePrimaryCheckin(flow){
+    const primary=flow?.querySelector('.gtf-next[data-gtf-action="open-checkin"]');
+    if(!primary)return false;
+    primary.hidden=true;primary.setAttribute('aria-hidden','true');primary.tabIndex=-1;primary.dataset.garangCheckinInternalized='1';
+    const action=primary.closest('.gtf-action');if(action)action.style.setProperty('display','none','important');
+    return true;
+  }
+
   function promoteTodayCheckin(){
     if(main.dataset.garangScreen!=='today')return;
     const flow=main.querySelector('#garangTodayFlow');if(!flow)return;
-    const existing=flow.querySelector('[data-garang-checkin-access]'),primary=flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]');
-    if(primary){existing?.remove();return;}
-    const context=flow.querySelector('.gtf-context');if(!context)return;
+    internalizePrimaryCheckin(flow);
+    const existing=flow.querySelector('[data-garang-checkin-access]'),context=flow.querySelector('.gtf-context');if(!context)return;
     const checkin=latestTodayCheckin(),checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12,action=flow.querySelector('.gtf-action');
-    if(action){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
+    if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
     const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     button.innerHTML=checked
@@ -84,7 +91,7 @@
 
   function loadTodayMorningOrchestrator(){
     if(window.GarangTodayMorningOrchestratorV1||document.querySelector('script[data-garang-today-morning-orchestrator-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.3.0-brand';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.4.0-single-owner';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();}
@@ -92,5 +99,5 @@
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   window.addEventListener('garang:screen-rendered',queueScan);window.addEventListener('garang:state-updated',queueScan);window.addEventListener('garang:state-hydrated',queueScan);window.addEventListener('garang:agent-write',queueScan);window.addEventListener('garang:route-completed',queueScan);window.addEventListener('pageshow',queueScan);
   scan();queueScan();
-  window.GarangNonblockingActions=Object.freeze({version:'1.2.2',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
 })();
