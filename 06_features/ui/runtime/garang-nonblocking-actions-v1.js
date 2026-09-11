@@ -99,7 +99,7 @@
   function loadTodayMorningOrchestrator(){
     if(window.GarangTodayMorningOrchestratorV1||document.querySelector('script[data-garang-today-morning-orchestrator-v1]'))return;
     const script=document.createElement('script');
-    script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.1.0';
+    script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.1.1';
     script.dataset.garangTodayMorningOrchestratorV1='1';
     script.async=false;
     document.head.appendChild(script);
@@ -123,5 +123,5 @@
   window.addEventListener('pageshow',queueScan);
   scan();queueScan();
 
-  window.GarangNonblockingActions=Object.freeze({version:'1.2.0',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.2.1',scan,queueScan,promoteTodayCheckin});
 })();
