@@ -25,7 +25,7 @@ function cloudReady(){try{if(window.firebase?.auth?.().currentUser)return window
 function loadConversationalIntelligence(){
  if(window.GarangConversationalIntelligenceV1||document.querySelector('script[data-garang-conversational-intelligence-v1]'))return;
  const core=document.createElement('script');core.src='./02_core/conversational-intelligence-v1.js?v=1.0.0';core.dataset.garangConversationalIntelligenceV1='core';core.async=false;
- core.onload=()=>{if(window.GarangConversationalIntelligenceV1||document.querySelector('script[data-garang-conversational-intelligence-runtime-v1]'))return;const runtime=document.createElement('script');runtime.src='./06_features/ui/runtime/garang-conversational-intelligence-v1.js?v=1.0.0';runtime.dataset.garangConversationalIntelligenceRuntimeV1='1';runtime.async=false;document.head.appendChild(runtime);};
+ core.onload=()=>{if(window.GarangConversationalIntelligenceV1||document.querySelector('script[data-garang-conversational-intelligence-runtime-v1]'))return;const runtime=document.createElement('script');runtime.src='./06_features/ui/runtime/garang-conversational-intelligence-v1.js?v=1.1.0';runtime.dataset.garangConversationalIntelligenceRuntimeV1='1';runtime.async=false;document.head.appendChild(runtime);};
  core.onerror=()=>console.warn('[GARANG] Conversational Intelligence core failed to load.');document.head.appendChild(core);
 }
 
