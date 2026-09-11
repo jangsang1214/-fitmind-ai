@@ -10,9 +10,9 @@ function base(){return {meta:{schemaVersion:5},profile:{age:27,height:174,weight
 function model(state){return Flow.deriveModel(state,{date,lang:'ko',PlanExecution});}
 {
  const state=base(),before=JSON.stringify(state),m=model(state);
- assert.equal(Flow.version,'garang-today-action-flow-v1.2.0');assert.equal(m.route,'planner');assert.equal(m.action,null);assert.match(m.headline,/방향/);assert.equal(JSON.stringify(state),before,'Today flow must be read-only');
+ assert.equal(Flow.version,'garang-today-action-flow-v1.3.0');assert.equal(m.route,'planner');assert.equal(m.action,null);assert.match(m.headline,/방향/);assert.equal(JSON.stringify(state),before,'Today flow must be read-only');
  assert.equal(m.bodyEvidence,false);assert.equal(m.signalScore,0);assert.equal(m.tracks.length,3);assert.deepEqual(m.tracks.map(x=>x.domain),['training','recovery','nutrition']);assert.ok(m.tracks.every(x=>x.state==='empty'));
- const html=Flow.markup(m,false);assert.equal((html.match(/class="gtf-track"/g)||[]).length,3,'Today must expose one visual rail with three tracks');assert.match(html,/class="gtf-signal"/);assert.match(html,/class="gtf-track-visual"/);
+ const html=Flow.markup(m,false);assert.equal((html.match(/class="gtf-track"/g)||[]).length,3,'Today must expose one visual rail with three tracks');assert.match(html,/class="gtf-signal"/);assert.match(html,/data-garang-accumulation-symbol="1"/,'Today state must use GARANG accumulation symbol language');assert.match(html,/class="gtf-track-visual"/);assert.match(html,/GARANG의 판단/);assert.match(html,/오늘 ·/);assert.doesNotMatch(html,/>STATE ·/,'Korean Today should not lead with generic English UI labels');
 }
 {
  const state=base();state.planner=[{id:'p1',date,type:'workout',domain:'training',title:'상체 50분',completed:false},{id:'p2',date,type:'nutrition',domain:'nutrition',title:'식단',completed:true}];
@@ -31,14 +31,16 @@ function model(state){return Flow.deriveModel(state,{date,lang:'ko',PlanExecutio
 }
 {
  const state=base();state.planner=[{id:'p1',date,type:'nutrition',title:'식단',completed:true}];state.meals=[{id:'m1',date,kcal:2200,protein:120}];state.checkins=[{id:'c1',date,sleep:7.5,energy:4,soreness:2}];
- const m=model(state),html=Flow.markup(m,false);assert.equal(m.route,'progress');assert.match(m.headline,/흐름/);assert.match(html,/data-gtf-details/);assert.match(html,/data-gtf-detail hidden/);assert.match(html,/GARANG/);assert.match(html,/data-body-evidence="0"/);assert.doesNotMatch(html,/BODY EVIDENCE/);assert.doesNotMatch(html,/confidence|신뢰도/i,'technical confidence must stay out of Today default/detail layer');
+ const m=model(state),html=Flow.markup(m,false);assert.equal(m.route,'progress');assert.match(m.headline,/흐름/);assert.match(html,/data-gtf-details/);assert.match(html,/data-gtf-detail hidden/);assert.match(html,/GARANG/);assert.match(html,/data-body-evidence="0"/);assert.doesNotMatch(html,/신체 근거/);assert.doesNotMatch(html,/confidence|신뢰도/i,'technical confidence must stay out of Today default/detail layer');
 }
 {
  const state=base();state.planner=[{id:'p1',date,type:'nutrition',title:'식단',completed:true}];state.meals=[{id:'m1',date,kcal:2200,protein:120}];state.checkins=[{id:'c1',date,sleep:6.5,energy:3,soreness:5}];
- const m=model(state),html=Flow.markup(m,true);assert.equal(m.bodyEvidence,true,'high soreness must enable conditional body evidence');assert.match(html,/data-body-evidence="1"/);assert.match(html,/BODY EVIDENCE/);assert.match(html,/신체 맵은 판단을 보조하는 근거/);
+ const m=model(state),html=Flow.markup(m,true);assert.equal(m.bodyEvidence,true,'high soreness must enable conditional body evidence');assert.match(html,/data-body-evidence="1"/);assert.match(html,/신체 근거/);assert.match(html,/신체 맵은 판단을 보조하는 근거/);
 }
 {
  const source=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-today-action-flow-v1.js'),'utf8');
+ const css=fs.readFileSync(path.join(root,'03_styles/runtime/garang-today-action-flow-v1.css'),'utf8');
  assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)/,'Today flow must not write storage');assert.doesNotMatch(source,/applyWrite\s*\(/,'Today flow must not bypass existing confirmed write paths');assert.doesNotMatch(source,/MutationObserver/,'Today flow must remain lifecycle-driven');assert.match(source,/dataset\.gtfC/,'C direction must explicitly own the Today visual mode');assert.match(source,/gtf-track-visual/,'visual-first Today must keep the three domains glanceable without dashboard cards');
+ assert.doesNotMatch(css,/conic-gradient/,'GARANG accumulation mark must not fall back to a generic wellness progress ring');assert.match(css,/gtf-strata-in/,'accumulation strata need restrained brand motion');assert.match(css,/border-radius:9px 3px 9px 3px/,'track glyph containers must retain the asymmetric GARANG icon geometry');
 }
-console.log('today-action-flow-v1 visual-first C-direction: PASS');
+console.log('today-action-flow-v1 GARANG brand-first C-direction: PASS');
