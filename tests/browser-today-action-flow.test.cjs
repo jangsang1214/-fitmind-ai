@@ -18,7 +18,8 @@ function state(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString(
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:7000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.1.1',{timeout:7000});
-  await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',{timeout:7000});
+  await page.waitForTimeout(260);
+  await page.waitForFunction(()=>{const f=document.querySelector('#garangTodayFlow');return f?.dataset?.gtoPhase==='precheckin'&&f?.dataset?.gtoChecked==='0';},{timeout:7000});
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-gtf-c'),'1','C direction must own Today');
   assert.equal(await flow.getAttribute('data-gto-checked'),'0','Today must begin in pre-check-in hierarchy when no recovery state exists');
