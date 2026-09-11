@@ -1,14 +1,14 @@
-/* GARANG Today Morning Orchestrator v1.3
-   One quiet Today surface: ACCUMULATION STATE -> GARANG DECISION -> NEXT.
-   Check-in owns NEXT before recovery context exists; its effect is reflected inside the three-track visual instead of another text section.
-   Read-only UI orchestration only. Canonical check-in and plan writes remain owned by app.js / Daily Plan.
+/* GARANG Today Morning Orchestrator v1.4
+   One quiet Today surface: CHECK-IN -> ACCUMULATION STATE -> NEXT ACTION.
+   Coach is the single owner of judgment, rationale and decision disclosure.
+   Today keeps one state-entry affordance while canonical writes remain owned by app.js / Daily Plan.
 */
 (() => {
   'use strict';
   if (window.GarangTodayMorningOrchestratorV1) return;
 
   // Public version remains stable for runtime compatibility; cache/versioning is handled by the loader query.
-  const VERSION='1.1.1';
+  const VERSION='1.2.0';
   const main=()=>document.getElementById('main');
   const flow=()=>main()?.querySelector('#garangTodayFlow');
   const bridge=()=>window.GarangAgentStateBridge;
@@ -50,8 +50,10 @@
 #main[data-garang-screen="today"][data-gto="1"]>#garangCoreToday{display:none!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-context{display:none!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow{margin-bottom:10px!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision>p{display:none!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-disclosure{margin-top:7px!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision,
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-disclosure,
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-detail{display:none!important}
+#main[data-garang-screen="today"][data-gto="1"] .visual-today-hero{display:none!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-action{display:none!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access{margin:0!important;border-radius:10px!important;box-shadow:none!important;transition:opacity .18s ease,border-color .18s ease,background .18s ease!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:5px 14px!important;align-items:center!important;min-height:52px!important;padding:10px 13px!important;border:1px solid rgba(242,239,233,.11)!important;background:rgba(242,239,233,.018)!important;color:#f2efe9!important}
@@ -91,10 +93,11 @@
 
   function render(){
     timer=null;injectStyle();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin;
-    m.dataset.gto='1';f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':'precheckin';
-    const label=f.querySelector('.gtf-decision>span');if(label)label.textContent=english()?(checked?'GARANG DECISION · UPDATED':'GARANG DECISION'):(checked?'GARANG의 판단 · 반영됨':'GARANG의 판단');
-    const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state'),decision=f.querySelector('.gtf-decision');
-    if(access&&access.classList.contains('gtf-checkin-access')){if(checked&&stateNode)stateNode.insertAdjacentElement('afterend',access);else if(!checked&&decision)decision.insertAdjacentElement('afterend',access);}
+    m.dataset.gto='1';m.dataset.garangDecisionOwner='coach';delete m.dataset.gtfBodyOpen;
+    f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':'precheckin';f.dataset.decisionOwner='coach';
+    f.setAttribute('aria-label',english()?'Today state and next action':'오늘 상태와 다음 행동');
+    const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state');
+    if(access&&access.classList.contains('gtf-checkin-access')&&stateNode)stateNode.insertAdjacentElement('afterend',access);
     f.querySelector('[data-gto-impact="1"]')?.remove();decorateTracks(s,date,checkin);
   }
 
