@@ -1,4 +1,4 @@
-/* GARANG Nonblocking Actions v1.1
+/* GARANG Nonblocking Actions v1.2
    Visible destructive/approval actions keep canonical app.js state mutations, but native blocking
    confirm() UI is replaced with a local two-tap confirmation. Binding follows explicit UI lifecycle
    events instead of watching the entire #main subtree. No global click interception.
@@ -67,8 +67,7 @@
     if(document.getElementById('garangTodayCheckinAccessStyle'))return;
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
 .gtf-checkin-access{appearance:none;width:100%;min-height:48px;display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:10px;align-items:center;margin:12px 0 0;padding:0 2px 0 0;border:0;border-top:1px solid rgba(242,239,233,.075);border-bottom:1px solid rgba(242,239,233,.075);border-radius:0;background:transparent;color:#f2efe9;text-align:left;cursor:pointer}
-.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:10px;font-weight:500;letter-spacing:-.01em;color:rgba(242,239,233,.72)}.gtf-checkin-access>small{font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access[data-checked="0"]>strong{color:#f2efe9}.gtf-checkin-access[data-checked="0"]>small{color:#ad715b}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
-.gto-impact[data-state="pending"]{display:none!important}
+.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:10px;font-weight:500;letter-spacing:-.01em;color:rgba(242,239,233,.72)}.gtf-checkin-access>small{font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access[data-checked="0"]>strong{color:#f2efe9}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
 @media(max-width:390px){.gtf-checkin-access{grid-template-columns:60px minmax(0,1fr) auto;gap:8px;min-height:50px}.gtf-checkin-access>small{max-width:92px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
@@ -86,11 +85,13 @@
     const primary=flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]');
     if(primary){existing?.remove();return;}
     const context=flow.querySelector('.gtf-context');if(!context)return;
-    const checkin=latestTodayCheckin(),checked=!!checkin;
-    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
+    const checkin=latestTodayCheckin(),checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12;
+    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy);
     const summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
-    button.innerHTML=`<span>CHECK-IN</span><strong>${english()?(checked?'Edit state':'Today check-in'):(checked?'상태 수정':'오늘 상태 체크인')}</strong><small>${checked?(summary||(english()?'Saved':'저장됨')):(english()?'30 sec':'30초')}</small>`;
+    button.innerHTML=checked
+      ?`<span>STATE UPDATED</span><strong>${english()?'Edit state':'상태 수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
+      :`<span>${morning?'MORNING CHECK-IN':'CHECK-IN'}</span><strong>${english()?(morning?'Good morning. Tell GARANG how you are today.':'Tell GARANG how you are today.'):(morning?'좋은 아침입니다. 오늘 상태를 알려주세요.':'오늘 상태를 알려주세요.')}</strong><small>${english()?'30 sec · GARANG adjusts all 3 tracks':'30초 · 운동 · 회복 · 식단 자동 조정'}</small>`;
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
     if(!existing)context.insertAdjacentElement('afterend',button);
   }
@@ -98,7 +99,7 @@
   function loadTodayMorningOrchestrator(){
     if(window.GarangTodayMorningOrchestratorV1||document.querySelector('script[data-garang-today-morning-orchestrator-v1]'))return;
     const script=document.createElement('script');
-    script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.0.0';
+    script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.1.0';
     script.dataset.garangTodayMorningOrchestratorV1='1';
     script.async=false;
     document.head.appendChild(script);
@@ -122,5 +123,5 @@
   window.addEventListener('pageshow',queueScan);
   scan();queueScan();
 
-  window.GarangNonblockingActions=Object.freeze({version:'1.1.0',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.2.0',scan,queueScan,promoteTodayCheckin});
 })();
