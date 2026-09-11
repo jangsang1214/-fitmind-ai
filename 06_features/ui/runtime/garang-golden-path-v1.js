@@ -62,7 +62,10 @@ function inject(){
   const model=currentModel();if(!model)return;
   const html=surface(model);
   main.dataset.gpStep=model.step;main.dataset.gpComplete=model.completed?'true':'false';
-  if(!html)return;
+  if(!html){
+    if(actionFor(model).id==='checkin')requestAnimationFrame(()=>requestAnimationFrame(()=>window.GarangNonblockingActions?.promoteTodayCheckin?.()));
+    return;
+  }
   const anchor=main.querySelector('#garangCoreToday,.today-hero,.page-head');
   if(anchor)anchor.insertAdjacentHTML('afterend',html);else main.insertAdjacentHTML('afterbegin',html);
 }
