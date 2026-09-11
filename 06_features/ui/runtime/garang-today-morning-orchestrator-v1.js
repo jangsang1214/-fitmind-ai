@@ -1,12 +1,13 @@
 /* GARANG Today Morning Orchestrator v1
-   One quiet Today surface: morning check-in -> GARANG decision -> three-track impact -> next action.
+   One quiet Today surface: STATE -> GARANG DECISION -> NEXT.
+   Morning check-in owns NEXT before recovery context exists; three-track details stay progressive.
    Read-only UI orchestration only. Canonical check-in and plan writes remain owned by app.js / Daily Plan.
 */
 (() => {
   'use strict';
   if (window.GarangTodayMorningOrchestratorV1) return;
 
-  const VERSION='1.0.0';
+  const VERSION='1.1.0';
   const main=()=>document.getElementById('main');
   const flow=()=>main()?.querySelector('#garangTodayFlow');
   const bridge=()=>window.GarangAgentStateBridge;
@@ -83,16 +84,19 @@
     return {training:'운동',recovery:'회복',nutrition:'식단'}[domain]||domain;
   }
 
-  function fallbackTitle(domain){
-    if(english())return {training:'Training direction',recovery:'Recovery direction',nutrition:'Nutrition direction'}[domain];
-    return {training:'운동 방향',recovery:'회복 방향',nutrition:'식단 방향'}[domain];
-  }
-
-  function detailText(track){
-    const parts=[];
-    if(track?.title)parts.push(track.title);
-    if(finite(track?.duration)!==null)parts.push(`${Math.round(Number(track.duration))}${english()?' min':'분'}`);
-    return parts.join(' · ')||fallbackTitle(track?.domain);
+  function compactChange(before,after,isChanged,confirmedLocked){
+    if(confirmedLocked)return english()?'Kept':'확정 유지';
+    if(!isChanged)return english()?'Reflected':'반영';
+    const beforeDuration=finite(before?.duration),afterDuration=finite(after?.duration);
+    if(beforeDuration!==null&&afterDuration!==null&&beforeDuration!==afterDuration){
+      const delta=Math.round(afterDuration-beforeDuration);
+      return `${delta>0?'+':''}${delta}${english()?' min':'분'}`;
+    }
+    const beforeIntensity=finite(before?.intensityScale),afterIntensity=finite(after?.intensityScale);
+    if(beforeIntensity!==null&&afterIntensity!==null&&beforeIntensity!==afterIntensity)return afterIntensity>beforeIntensity?(english()?'Intensity ↑':'강도 ↑'):(english()?'Intensity ↓':'강도 ↓');
+    const title=String(after?.title||'').trim();
+    if(title)return title.length>22?`${title.slice(0,22)}…`:title;
+    return english()?'Adjusted':'조정';
   }
 
   function injectStyle(){
@@ -100,19 +104,34 @@
     const style=document.createElement('style');style.id='garangTodayMorningOrchestratorStyle';style.textContent=`
 #main[data-garang-screen="today"][data-gto="1"]>#garangCoreToday{display:none!important}
 #main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-context{display:none!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow{padding-top:10px!important;margin-bottom:16px!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-state{padding-bottom:15px!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision{padding:30px 0 22px!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision>span{margin-bottom:10px!important;font-size:7px!important;letter-spacing:.17em!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access{min-height:0!important;grid-template-columns:92px minmax(0,1fr) auto!important;gap:12px!important;margin:18px 0 0!important;padding:14px 15px!important;border:1px solid rgba(242,239,233,.1)!important;border-radius:12px!important;background:rgba(242,239,233,.018)!important;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-checkin-access{background:#eeeae2!important;border-color:#eeeae2!important;color:#111210!important;box-shadow:0 10px 28px rgba(0,0,0,.16)!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-checkin-access>span{color:#477565!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-checkin-access>strong{color:#111210!important;font-size:11px!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-checkin-access>small{color:rgba(17,18,16,.52)!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-action .gtf-next:not([data-gtf-action="open-checkin"]){background:transparent!important;border-color:rgba(242,239,233,.16)!important;color:rgba(242,239,233,.66)!important;box-shadow:none!important}
-#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-checked="0"] .gtf-action .gtf-next:not([data-gtf-action="open-checkin"])>span{color:#78aa99!important}
-.gto-impact{margin:0 0 18px;border-top:1px solid rgba(242,239,233,.07);border-bottom:1px solid rgba(242,239,233,.07);background:transparent}.gto-impact-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:13px 0 12px}.gto-impact-head>span{font-size:7px;font-weight:600;line-height:1.2;letter-spacing:.17em;color:#78aa99;white-space:nowrap}.gto-impact-head>strong{max-width:530px;font-size:10px;font-weight:500;line-height:1.55;text-align:right;color:rgba(242,239,233,.48);word-break:keep-all}.gto-impact-tracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(242,239,233,.055)}.gto-impact-row{min-width:0;padding:13px 12px 14px 0;border-right:1px solid rgba(242,239,233,.055)}.gto-impact-row:last-child{padding-right:0;padding-left:12px;border-right:0}.gto-impact-row:nth-child(2){padding-left:12px}.gto-impact-row>span{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px;font-size:8px;font-weight:600;letter-spacing:.09em;color:rgba(242,239,233,.36)}.gto-impact-row>span>b{font-size:7px;font-weight:600;letter-spacing:.08em;color:#78aa99}.gto-impact-row>strong{display:block;min-height:30px;font-size:10px;font-weight:500;line-height:1.45;color:rgba(242,239,233,.72);word-break:keep-all}.gto-impact-row>small{display:block;margin-top:5px;font-size:8px;line-height:1.45;color:rgba(242,239,233,.31);word-break:keep-all}.gto-impact-row[data-change="changed"]>span>b{color:#ad715b}.gto-impact[data-state="pending"] .gto-impact-row>strong{min-height:auto;color:rgba(242,239,233,.42)}.gto-impact[data-state="pending"] .gto-impact-row>small{display:none}
-@media(max-width:600px){#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision{padding:26px 0 20px!important}#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access{grid-template-columns:74px minmax(0,1fr)!important;padding:13px 14px!important}#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access>small{grid-column:2;text-align:left!important;max-width:none!important;margin-top:-4px}.gto-impact-head{display:grid;gap:6px}.gto-impact-head>strong{text-align:left}.gto-impact-tracks{display:block}.gto-impact-row,.gto-impact-row:nth-child(2),.gto-impact-row:last-child{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:8px;align-items:center;padding:11px 0!important;border-right:0;border-bottom:1px solid rgba(242,239,233,.05)}.gto-impact-row:last-child{border-bottom:0}.gto-impact-row>span{display:block;margin:0}.gto-impact-row>span>b{display:block;margin-top:3px}.gto-impact-row>strong{min-height:0}.gto-impact-row>small{margin:0;text-align:right;max-width:110px}}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow{padding-top:4px!important;margin-bottom:12px!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-state{padding:8px 0 18px!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision{padding:26px 0 18px!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision>span{margin-bottom:9px!important;font-size:7px!important;letter-spacing:.17em!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision>p{display:none!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-disclosure{margin-top:8px!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-action{display:none!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access{min-height:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important;transition:opacity .18s ease,border-color .18s ease!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px 18px!important;align-items:end!important;padding:18px 0!important;border:0!important;border-top:1px solid rgba(242,239,233,.1)!important;border-bottom:1px solid rgba(242,239,233,.1)!important;background:transparent!important;color:#f2efe9!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access>span{grid-column:1 / -1;color:#78aa99!important;font-size:7px!important;letter-spacing:.17em!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access>strong{font-family:Georgia,'Noto Serif KR','Apple SD Gothic Neo',serif!important;font-size:16px!important;font-weight:500!important;line-height:1.45!important;color:#f2efe9!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access>small{font-size:8px!important;line-height:1.4!important;color:rgba(242,239,233,.38)!important;text-align:right!important;white-space:nowrap!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="checked"] .gtf-checkin-access{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;padding:9px 0 11px!important;border:0!important;background:transparent!important;color:rgba(242,239,233,.38)!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="checked"] .gtf-checkin-access>span{font-size:7px!important;letter-spacing:.12em!important;color:#78aa99!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="checked"] .gtf-checkin-access>strong{font-size:9px!important;font-weight:500!important;color:rgba(242,239,233,.5)!important}
+#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="checked"] .gtf-checkin-access>small{font-size:8px!important;color:rgba(242,239,233,.28)!important}
+.gto-impact{margin:0 0 14px;border-top:1px solid rgba(242,239,233,.07);border-bottom:1px solid rgba(242,239,233,.07);background:transparent}
+.gto-impact[data-state="pending"]{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;margin-top:-2px}
+.gto-impact[data-state="pending"]>span{font-size:7px;font-weight:600;letter-spacing:.15em;color:#78aa99;white-space:nowrap}
+.gto-impact[data-state="pending"]>strong{font-size:9px;font-weight:500;line-height:1.45;text-align:right;color:rgba(242,239,233,.36);word-break:keep-all}
+.gto-impact[data-state="complete"]{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;padding:11px 0}
+.gto-impact-label{font-size:7px;font-weight:600;letter-spacing:.15em;color:#78aa99;white-space:nowrap}
+.gto-impact-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}
+.gto-impact-chip{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0;padding:0 12px;border-left:1px solid rgba(242,239,233,.06)}
+.gto-impact-chip:first-child{border-left:0;padding-left:0}.gto-impact-chip:last-child{padding-right:0}
+.gto-impact-chip>span{font-size:8px;font-weight:500;color:rgba(242,239,233,.36);white-space:nowrap}.gto-impact-chip>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;font-weight:500;color:rgba(242,239,233,.64)}
+.gto-impact-chip[data-change="changed"]>strong{color:#ad715b}.gto-impact-chip[data-change="stable"]>strong{color:#78aa99}
+@media(max-width:600px){#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-decision{padding:22px 0 16px!important}#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access{grid-template-columns:minmax(0,1fr)!important;padding:16px 0!important}#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow[data-gto-phase="precheckin"] .gtf-checkin-access>small{grid-column:1!important;text-align:left!important;white-space:normal!important}.gto-impact[data-state="pending"]{display:grid;gap:4px}.gto-impact[data-state="pending"]>strong{text-align:left}.gto-impact[data-state="complete"]{grid-template-columns:1fr;gap:8px}.gto-impact-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.gto-impact-chip{display:grid;gap:3px;padding:0 8px}.gto-impact-chip>strong{font-size:8px}}
 @media(prefers-reduced-motion:reduce){#main[data-garang-screen="today"][data-gto="1"] #garangTodayFlow .gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
   }
@@ -128,41 +147,40 @@
     access.dataset.gtoPriority=checked?'0':'1';
     access.setAttribute('aria-label',checked?(english()?'Edit today state':'오늘 상태 수정'):(english()?'Check in for today':'오늘 상태 체크인'));
     access.innerHTML=checked
-      ?`<span>CHECK-IN COMPLETE</span><strong>${english()?'State reflected':'오늘 상태 반영 완료'}</strong><small>${esc(summary||(english()?'Saved':'저장됨'))}</small>`
-      :`<span>${morning?'MORNING CHECK-IN':'CHECK-IN'}</span><strong>${english()?(morning?'Good morning. Tell GARANG how you are today.':'Tell GARANG how you are today.'):(morning?'좋은 아침입니다. 오늘 상태를 알려주세요.':'오늘 상태를 알려주세요.')}</strong><small>${english()?'30 sec · auto-adjust plan':'30초 · 계획 자동 조정'}</small>`;
+      ?`<span>STATE UPDATED</span><strong>${english()?'Edit state':'상태 수정'}</strong><small>${esc(summary||(english()?'Saved':'저장됨'))}</small>`
+      :`<span>${morning?'MORNING CHECK-IN':'CHECK-IN'}</span><strong>${english()?(morning?'Good morning. Tell GARANG how you are today.':'Tell GARANG how you are today.'):(morning?'좋은 아침입니다. 오늘 상태를 알려주세요.':'오늘 상태를 알려주세요.')}</strong><small>${english()?'30 sec · GARANG adjusts all 3 tracks':'30초 · 운동 · 회복 · 식단 자동 조정'}</small>`;
     return access;
   }
 
   function impactMarkup(s,date,checkin){
     const group=draftGroup(s,date),confirmed=confirmedPlans(s,date),current=currentTracks(s,date),baseline=readBaseline(date),checked=!!checkin;
-    if(!checked){
-      const rows=current.map(track=>`<div class="gto-impact-row" data-domain="${track.domain}" data-change="pending"><span>${trackLabel(track.domain)}<b>${english()?'READY':'대기'}</b></span><strong>${english()?'Adjusts after check-in':'체크인 후 자동 보정'}</strong></div>`).join('');
-      return `<section class="gto-impact" data-gto-impact="1" data-state="pending"><div class="gto-impact-head"><span>AFTER CHECK-IN</span><strong>${english()?'Training, recovery and nutrition are re-aligned from one check-in.':'한 번의 체크인으로 운동 · 회복 · 식단을 함께 다시 맞춥니다.'}</strong></div><div class="gto-impact-tracks">${rows}</div></section>`;
-    }
-    const baselineMap=new Map(list(baseline?.tracks).map(track=>[track.domain,track])),revision=Number(group?.revision)||1,adapted=!!baseline&&revision>(Number(baseline?.revision)||1),confirmedLocked=confirmed.length>0&&(!group||group.status==='confirmed');
-    const summary=confirmedLocked
-      ?(english()?'Check-in is reflected. Confirmed plans stay untouched unless you choose to edit them.':'체크인은 반영됐습니다. 이미 확정한 계획은 사용자의 선택 없이 자동으로 덮어쓰지 않습니다.')
-      :adapted||revision>1
-        ?(english()?'GARANG re-aligned today’s three tracks from your check-in.':'체크인을 반영해 오늘의 운동 · 회복 · 식단을 다시 맞췄습니다.')
-        :(english()?'Today’s three tracks now include your check-in.':'오늘의 세 영역에 체크인 상태가 반영됐습니다.');
-    const rows=current.map(track=>{
-      const before=baselineMap.get(track.domain),isChanged=!!before&&changed(before,track),status=confirmedLocked?(english()?'LOCKED':'확정 유지'):isChanged?(english()?'CHANGED':'변경'):(english()?'REFLECTED':'반영');
-      const previous=isChanged?detailText(before):'';
-      const after=detailText(track);
-      return `<div class="gto-impact-row" data-domain="${track.domain}" data-change="${isChanged?'changed':'stable'}"><span>${trackLabel(track.domain)}<b>${status}</b></span><strong>${esc(after)}</strong><small>${isChanged?`${esc(previous)} → ${esc(after)}`:(confirmedLocked?(english()?'User-confirmed plan':'사용자 확정 계획'):(english()?'Check-in reflected':'체크인 반영'))}</small></div>`;
+    if(!checked)return `<section class="gto-impact" data-gto-impact="1" data-state="pending"><span>AFTER CHECK-IN</span><strong>${english()?'Training · recovery · nutrition adjust together after one check-in.':'체크인 후 운동 · 회복 · 식단을 한 번에 다시 맞춥니다.'}</strong></section>`;
+    const baselineMap=new Map(list(baseline?.tracks).map(track=>[track.domain,track])),revision=Number(group?.revision)||1,confirmedLocked=confirmed.length>0&&(!group||group.status==='confirmed');
+    const chips=current.map(track=>{
+      const before=baselineMap.get(track.domain),isChanged=!!before&&changed(before,track),value=compactChange(before,track,isChanged,confirmedLocked);
+      return `<div class="gto-impact-chip" data-domain="${track.domain}" data-change="${isChanged?'changed':'stable'}"><span>${trackLabel(track.domain)}</span><strong>${esc(value)}</strong></div>`;
     }).join('');
-    return `<section class="gto-impact" data-gto-impact="1" data-state="complete" data-revision="${revision}"><div class="gto-impact-head"><span>3-TRACK IMPACT</span><strong>${esc(summary)}</strong></div><div class="gto-impact-tracks">${rows}</div></section>`;
+    return `<section class="gto-impact" data-gto-impact="1" data-state="complete" data-revision="${revision}"><span class="gto-impact-label">TODAY ADJUSTMENT</span><div class="gto-impact-strip">${chips}</div></section>`;
   }
 
   function render(){
     timer=null;injectStyle();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;
-    const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date);
-    m.dataset.gto='1';f.dataset.gtoChecked=checkin?'1':'0';
-    const label=f.querySelector('.gtf-decision>span');if(label)label.textContent=checkin?'TODAY DECISION · CHECK-IN REFLECTED':'TODAY DECISION · PRE-CHECK-IN';
-    updateCheckinControl(checkin);
+    const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin;
+    m.dataset.gto='1';f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':'precheckin';
+    const label=f.querySelector('.gtf-decision>span');if(label)label.textContent=checked?'GARANG DECISION · CHECK-IN REFLECTED':'GARANG DECISION';
+    const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state'),decision=f.querySelector('.gtf-decision'),action=f.querySelector('.gtf-action');
+    if(access&&access.classList.contains('gtf-checkin-access')){
+      if(checked&&stateNode)stateNode.insertAdjacentElement('afterend',access);
+      else if(!checked&&decision)decision.insertAdjacentElement('afterend',access);
+    }
     const previous=f.querySelector('[data-gto-impact="1"]');previous?.remove();
-    const decision=f.querySelector('.gtf-decision'),action=f.querySelector('.gtf-action');
-    if(decision){const host=document.createElement('div');host.innerHTML=impactMarkup(s,date,checkin);const node=host.firstElementChild;if(node){if(action)action.insertAdjacentElement('beforebegin',node);else decision.insertAdjacentElement('afterend',node);}}
+    const host=document.createElement('div');host.innerHTML=impactMarkup(s,date,checkin);const node=host.firstElementChild;
+    if(node){
+      if(checked&&action)action.insertAdjacentElement('beforebegin',node);
+      else if(!checked&&access?.classList.contains('gtf-checkin-access'))access.insertAdjacentElement('afterend',node);
+      else if(action)action.insertAdjacentElement('beforebegin',node);
+      else decision?.insertAdjacentElement('afterend',node);
+    }
   }
 
   function schedule(delay=120){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(render)),delay);}
