@@ -2,6 +2,7 @@
    Coordinates the first-use loop without becoming a second data owner.
    It reads the deterministic Golden Path model and routes into the existing
    onboarding, Record, Coach, Planner and Accumulation owners.
+   Today owns recovery check-in entry, so Golden Path never renders a second check-in CTA.
 */
 (() => {
 'use strict';
@@ -48,7 +49,10 @@ function actionFor(model){
 }
 function surface(model){
   if(model.step==='complete'&&!model.revisitAvailable)return '';
-  const content=model.step==='complete'?copy({...model,step:'revisit'}):copy(model),action=actionFor(model);
+  const action=actionFor(model);
+  /* Today has one state-entry owner. The compact Today check-in stays visible; Golden Path stays silent here. */
+  if(action.id==='checkin')return '';
+  const content=model.step==='complete'?copy({...model,step:'revisit'}):copy(model);
   return `<section class="gp-next" ${SURFACE}="1" data-gp-step="${esc(model.step)}" aria-label="${isKo()?'다음 단계':'Next step'}"><div class="gp-next-copy"><span class="gp-next-eyebrow">NEXT / ${isKo()?'다음':'NEXT'}</span><strong>${esc(content.title)}</strong><p>${esc(content.body)}</p></div><button type="button" class="gp-next-action" data-gp-action="${esc(action.id)}">${esc(action.label)}</button></section>`;
 }
 function removeSurface(){main.querySelectorAll(`[${SURFACE}]`).forEach(node=>node.remove());}
@@ -56,10 +60,11 @@ function inject(){
   removeSurface();
   if(screen()!=='today'){main.removeAttribute('data-gp-step');main.removeAttribute('data-gp-complete');return;}
   const model=currentModel();if(!model)return;
-  const html=surface(model);if(!html)return;
+  const html=surface(model);
+  main.dataset.gpStep=model.step;main.dataset.gpComplete=model.completed?'true':'false';
+  if(!html)return;
   const anchor=main.querySelector('#garangCoreToday,.today-hero,.page-head');
   if(anchor)anchor.insertAdjacentHTML('afterend',html);else main.insertAdjacentHTML('afterbegin',html);
-  main.dataset.gpStep=model.step;main.dataset.gpComplete=model.completed?'true':'false';
 }
 function schedule(){
   if(queued)return;queued=true;
@@ -108,5 +113,5 @@ for(const eventName of ['garang:screen-rendered','garang:state-updated','garang:
 doc.documentElement.addEventListener('garang:language-changed',schedule);
 window.addEventListener('pageshow',schedule);
 schedule();
-window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.0',refresh:schedule});
+window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.1',refresh:schedule});
 })();
