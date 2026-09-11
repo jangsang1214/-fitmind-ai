@@ -18,7 +18,7 @@ const RECOVERY_ACTIONS=['스트레칭','폼롤러','폼 롤러','마사지','걷
 
 const DEFAULT_QUESTIONS={
   workout:{activity:{ko:'오늘 어떤 운동 했어? 종목만 말해줘도 돼.',en:'What did you train today? Just the exercise names are enough.'},volume:{ko:'대략 몇 세트 정도 했어?',en:'About how many sets did you do?'},duration:{ko:'몇 분 정도 했어?',en:'About how many minutes did you train?'}},
-  nutrition:{foods:{ko:'뭐 먹었어? 기억나는 것만 말해줘.',en:'What did you eat? Just tell me what you remember.'},mealCount:{ko:'오늘 몇 끼 정도 먹었어?',en:'About how many meals did you have today?'}},
+  nutrition:{foods:{ko:'뭐 먹었어? 기억나는 것만 말해줘.',en:'What did you eat? Just tell me what you remember.'},mealCount:{ko:'오늘 몇 끼 정도 먹었어?',en:'About how many meals did you have today?'},amount:{ko:'양은 대략 어느 정도였어?',en:'Roughly how much did you have?'}},
   running:{distance:{ko:'몇 km 정도 뛰었어?',en:'About how far did you run?'},duration:{ko:'몇 분 정도 걸렸어?',en:'About how many minutes did it take?'}},
   recovery:{sleepHours:{ko:'어젯밤 몇 시간 정도 잤어?',en:'About how many hours did you sleep last night?'},action:{ko:'오늘 회복을 위해 실제로 한 건 뭐가 있어?',en:'What did you actually do for recovery today?'}}
 };
@@ -110,13 +110,22 @@ function questionFor(domain,slot,kb,language='ko',state={}){
   if(domain==='workout'&&slot==='volume'&&String(state?.onboarding?.experience||state?.userModel?.experience||'').toLowerCase()==='advanced')return language==='en'?'Roughly how many sets for each exercise?':'각 종목은 대략 몇 세트씩 했어?';
   return custom;
 }
+function questionScore(domain,slot,kb,state={}){
+  const q=kb?.domains?.[domain]?.questions?.[slot]||{};
+  let score=Number(q.value??50)-Number(q.burden??20);
+  const experience=String(state?.onboarding?.experience||state?.userModel?.experience||'').toLowerCase();
+  if(domain==='workout'&&slot==='volume'&&experience==='advanced')score+=12;
+  if(domain==='nutrition'&&slot==='amount'&&/근육|증량|감량|fat|muscle|bulk|cut/i.test(String(state?.onboarding?.goal||state?.profile?.goal||'')))score+=8;
+  return score;
+}
+function pickQuestion(domain,candidates,kb,state){return [...candidates].sort((a,b)=>questionScore(domain,b,kb,state)-questionScore(domain,a,kb,state))[0]||null;}
 function sourceIds(domain,kb){return clone(kb?.domains?.[domain]?.sourceIds||[]);}
 function cancellation(text){return /^(취소|아니|아니야|됐어|기록하지마|기록하지 마|cancel|never mind|don'?t log)/i.test(clean(text));}
-function buildPending(domain,slots,questionCount,expected,sourceMessageId,kb){return {version:VERSION,domain,slots:clone(slots),questionCount,expected,sourceMessageId:sourceMessageId||null,sourceIds:sourceIds(domain,kb),startedAt:new Date().toISOString()};}
-function ask(domain,slot,slots,questionCount,sourceMessageId,kb,language,state){return {type:'ask',domain,slot,question:questionFor(domain,slot,kb,language,state),pending:buildPending(domain,slots,questionCount+1,slot,sourceMessageId,kb),sourceIds:sourceIds(domain,kb)};}
+function buildPending(domain,slots,questionCount,expected,sourceMessageId,kb,utterances){return {version:VERSION,domain,slots:clone(slots),questionCount,expected,sourceMessageId:sourceMessageId||null,sourceIds:sourceIds(domain,kb),utterances:clone(utterances||[]),startedAt:new Date().toISOString()};}
+function ask(domain,slot,slots,questionCount,sourceMessageId,kb,language,state,utterances){return {type:'ask',domain,slot,question:questionFor(domain,slot,kb,language,state),pending:buildPending(domain,slots,questionCount+1,slot,sourceMessageId,kb,utterances),sourceIds:sourceIds(domain,kb),questionScore:questionScore(domain,slot,kb,state)};}
 function baseMeta(domain,raw,date,confidence){return {date,source:'coach-conversation',origin:ORIGIN,conversationDomain:domain,conversationConfidence:confidence,conversationRaw:clean(raw),loggedAt:new Date().toISOString()};}
 function workoutAction(slots,raw,date){
-  const name=slots.activityText||slots.exercises?.join(' + ')||slots.focus?`${slots.focus||''} 운동`.trim():'운동';
+  const name=clean(slots.activityText)||slots.exercises?.join(' + ')||(slots.focus?`${slots.focus} 운동`:'운동');
   const record={...baseMeta('workout',raw,date,.96),name};
   if(slots.sets!==null&&slots.sets!==undefined)record.sets=slots.exercises?.length>1?slots.sets*slots.exercises.length:slots.sets;
   if(slots.reps!==null&&slots.reps!==undefined)record.reps=slots.reps;
@@ -128,7 +137,7 @@ function workoutAction(slots,raw,date){
   return {type:'record',domain:'workout',write:{kind:'create',domain:'workouts',record},summary:name,confidence:.96};
 }
 function nutritionAction(slots,raw,date){
-  const name=slots.foodsText||slots.foods?.join(' + ')||'식사';
+  const name=clean(slots.foodsText)||slots.foods?.join(' + ')||'식사';
   const item={name};if(slots.grams!==null&&slots.grams!==undefined)item.grams=slots.grams;
   const record={...baseMeta('nutrition',raw,date,.94),name,items:[item]};if(slots.occasion)record.occasion=slots.occasion;if(slots.mealCount)record.mealCount=slots.mealCount;
   return {type:'record',domain:'nutrition',write:{kind:'create',domain:'meals',record},summary:name,confidence:.94};
@@ -143,38 +152,40 @@ function recoveryAction(slots,raw,date){
   const value=[slots.sleepHours!=null?`sleep=${slots.sleepHours}h`:null,clean(raw)].filter(Boolean).join(' · ');
   return {type:'record',domain:'recovery',write:{kind:'create',domain:'memory',record:{type:'recovery_observation',key:`recovery_observation_${date}_${Date.now()}`,value,importance:1,confidence:.9,userConfirmed:true,source:'coach-conversation',expiresAt:new Date(Date.now()+14*864e5).toISOString(),date}},summary:slots.sleepHours!=null?`수면 ${slots.sleepHours}시간`:'회복 상태',confidence:.9};
 }
+function attachSources(action,domain,kb){return {...action,sourceIds:sourceIds(domain,kb)};}
 function decide(message,state={},pending=null,kb={},options={}){
   const raw=clean(message),language=options.language==='en'?'en':'ko',date=options.date||localDate();if(!raw)return {type:'ignore'};
   if(pending&&cancellation(raw))return {type:'cancel',domain:pending.domain,summary:language==='en'?'Logging cancelled.':'기록을 취소했어.'};
   const domain=detectDomain(raw,pending);if(!domain)return {type:'ignore'};
   const slots=mergeSlots(domain,pending?.slots,raw,pending||{}),questions=Math.max(0,Number(pending?.questionCount)||0),maxQuestions=Math.max(1,Number(kb?.policy?.maxQuestionsPerLog)||2),sourceMessageId=options.messageId||null;
+  const utterances=[...(Array.isArray(pending?.utterances)?pending.utterances:[]),raw].slice(-4),traceRaw=utterances.join(' | ');
   if(domain==='workout'){
     const activity=clean(slots.activityText)||slots.exercises?.length||slots.focus;
-    if(!activity&&questions<maxQuestions)return ask(domain,'activity',slots,questions,sourceMessageId,kb,language,state);
-    const strength=!!(slots.exercises?.length||slots.focus||/(웨이트|근력|헬스|세트|벤치|스쿼트|데드|프레스|로우|컬)/i.test(raw));
-    if(strength&&slots.sets==null&&slots.duration==null&&questions<maxQuestions)return ask(domain,'volume',slots,questions,sourceMessageId,kb,language,state);
-    if(activity)return workoutAction(slots,raw,date);
+    if(!activity&&questions<maxQuestions){const slot=pickQuestion(domain,['activity'],kb,state);return ask(domain,slot,slots,questions,sourceMessageId,kb,language,state,utterances);}
+    const strength=!!(slots.exercises?.length||slots.focus||/(웨이트|근력|헬스|세트|벤치|스쿼트|데드|프레스|로우|컬)/i.test(traceRaw));
+    if(strength&&slots.sets==null&&slots.duration==null&&questions<maxQuestions){const slot=pickQuestion(domain,['volume','duration'],kb,state);return ask(domain,slot,slots,questions,sourceMessageId,kb,language,state,utterances);}
+    if(activity)return attachSources(workoutAction(slots,traceRaw,date),domain,kb);
     return {type:'ignore'};
   }
   if(domain==='nutrition'){
     const foods=clean(slots.foodsText)||slots.foods?.length;
-    if(!foods&&questions<maxQuestions)return ask(domain,'foods',slots,questions,sourceMessageId,kb,language,state);
-    if(foods)return nutritionAction(slots,raw,date);
+    if(!foods&&questions<maxQuestions){const slot=pickQuestion(domain,['foods','mealCount'],kb,state);return ask(domain,slot,slots,questions,sourceMessageId,kb,language,state,utterances);}
+    if(foods)return attachSources(nutritionAction(slots,traceRaw,date),domain,kb);
     return {type:'ignore'};
   }
   if(domain==='running'){
-    if(slots.distance==null&&questions<maxQuestions)return ask(domain,'distance',slots,questions,sourceMessageId,kb,language,state);
-    if(slots.duration==null&&questions<maxQuestions)return ask(domain,'duration',slots,questions,sourceMessageId,kb,language,state);
-    return runningAction(slots,raw,date);
+    if(slots.distance==null&&questions<maxQuestions){const slot=pickQuestion(domain,['distance','duration'],kb,state);return ask(domain,slot,slots,questions,sourceMessageId,kb,language,state,utterances);}
+    if(slots.duration==null&&questions<maxQuestions)return ask(domain,'duration',slots,questions,sourceMessageId,kb,language,state,utterances);
+    return attachSources(runningAction(slots,traceRaw,date),domain,kb);
   }
   if(domain==='recovery'){
-    if(slots.actionText)return recoveryAction(slots,raw,date);
-    if(slots.stateSignal&&slots.sleepHours==null&&questions<maxQuestions)return ask(domain,'sleepHours',slots,questions,sourceMessageId,kb,language,state);
-    if(slots.sleepHours!=null)return recoveryAction(slots,raw,date);
-    if(questions<maxQuestions)return ask(domain,'action',slots,questions,sourceMessageId,kb,language,state);
+    if(slots.actionText)return attachSources(recoveryAction(slots,traceRaw,date),domain,kb);
+    if(slots.stateSignal&&slots.sleepHours==null&&questions<maxQuestions){const slot=pickQuestion(domain,['sleepHours','action'],kb,state);return ask(domain,slot,slots,questions,sourceMessageId,kb,language,state,utterances);}
+    if(slots.sleepHours!=null)return attachSources(recoveryAction(slots,traceRaw,date),domain,kb);
+    if(questions<maxQuestions)return ask(domain,'action',slots,questions,sourceMessageId,kb,language,state,utterances);
   }
   return {type:'ignore'};
 }
 
-return Object.freeze({VERSION,ORIGIN,detectDomain,decide,localDate,extractWorkout,extractNutrition,extractRunning,extractRecovery,mergeSlots});
+return Object.freeze({VERSION,ORIGIN,detectDomain,decide,localDate,extractWorkout,extractNutrition,extractRunning,extractRecovery,mergeSlots,questionScore,pickQuestion});
 });
