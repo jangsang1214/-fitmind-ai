@@ -47,7 +47,7 @@ async function assertTodayStable(page,label){
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.cMode,'1',`${label}: C direction must own Today: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.gto,'1',`${label}: quiet Today orchestrator must own the surface: ${JSON.stringify(diagnostic)}`);
-  assert.equal(diagnostic.flowVisible,true,`${label}: decision-first flow must be visible: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.flowVisible,true,`${label}: Today flow must be visible: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.signal,true,`${label}: data-driven signal field must be present: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.legacyHeroDisplay,'none',`${label}: legacy body hero must stay visually internalized by default: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.bodyControlCount,2,`${label}: body evidence controls must remain in DOM for rollback/evidence use: ${JSON.stringify(diagnostic)}`);
@@ -96,7 +96,7 @@ async function openRecordRoute(page,route,touch,label){
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
       await page.waitForFunction(()=>document.getElementById('main')?.innerText?.trim().length>0,{timeout:10000});
       await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});
-      await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.1.1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase,null,{timeout:7000});
+      await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase,null,{timeout:7000});
 
       const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
       assert.equal(repaired.workouts.length,1,`${mode.name}: malformed workouts must be removed`);
