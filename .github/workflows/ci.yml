@@ -123,6 +123,8 @@ jobs:
         run: node tests/browser-authenticated-boot.test.cjs
       - name: Verify authenticated Coach plan flow
         run: node tests/browser-authenticated-coach-plan.test.cjs
+      - name: Verify Coach conversational logging flow
+        run: node tests/browser-conversational-intelligence.test.cjs
       - name: Trace authenticated recovery mutation loop
         run: node tests/browser-recovery-mutation-diagnostic.cjs
       - name: Verify authenticated recovery touch
