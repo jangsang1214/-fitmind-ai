@@ -36,16 +36,17 @@ async function tap(page,locator,touch,label='target'){
 }
 async function assertOwnsPoint(page,selector){const ok=await page.locator(selector).evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!hit&&(hit===el||el.contains(hit));});assert.equal(ok,true,`${selector} must own its hit-test point`);}
 async function assertTodayStable(page,label){
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gtfC==='1'&&!!document.querySelector('#garangTodayFlow'),null,{timeout:5000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gtfC==='1'&&document.getElementById('main')?.dataset?.gto==='1'&&!!document.querySelector('#garangTodayFlow'),null,{timeout:5000});
   const diagnostic=await page.evaluate(()=>{
     const main=document.getElementById('main'),grid=main?.querySelector('.quick-visual-grid')||null,hero=main?.querySelector('.visual-today-hero')||null,flow=main?.querySelector('#garangTodayFlow')||null;
     const fixed=[...document.querySelectorAll('body *')].map(el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();return {el,cs,r};})
       .filter(x=>x.cs.display!=='none'&&x.cs.visibility!=='hidden'&&x.cs.position==='fixed'&&x.r.width>=innerWidth*.75&&x.r.height>=120)
       .map(x=>({tag:x.el.tagName,id:x.el.id||'',cls:String(x.el.className||''),top:Math.round(x.r.top),bottom:Math.round(x.r.bottom),height:Math.round(x.r.height),z:x.cs.zIndex,pointer:x.cs.pointerEvents,opacity:x.cs.opacity,background:x.cs.backgroundColor}));
-    return {viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',cMode:main?.dataset?.gtfC||'',flowVisible:!!flow&&getComputedStyle(flow).display!=='none',signal:!!flow?.querySelector('.gtf-signal'),legacyHeroDisplay:hero?getComputedStyle(hero).display:null,bodyControlCount:main?.querySelectorAll('[data-today-view]').length||0,quickGrid:{exists:!!grid,hidden:grid?.hidden??null,count:grid?.querySelectorAll('.quick-visual').length||0},fixed};
+    return {viewportHeight:innerHeight,hasCoach:!!document.querySelector('.garang-coach-v2'),screen:main?.dataset?.garangScreen||'',cMode:main?.dataset?.gtfC||'',gto:main?.dataset?.gto||'',phase:flow?.dataset?.gtoPhase||'',flowVisible:!!flow&&getComputedStyle(flow).display!=='none',signal:!!flow?.querySelector('.gtf-signal'),legacyHeroDisplay:hero?getComputedStyle(hero).display:null,bodyControlCount:main?.querySelectorAll('[data-today-view]').length||0,quickGrid:{exists:!!grid,hidden:grid?.hidden??null,count:grid?.querySelectorAll('.quick-visual').length||0},fixed};
   });
   assert.equal(diagnostic.hasCoach,false,`${label}: Today must not retain Coach root: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.cMode,'1',`${label}: C direction must own Today: ${JSON.stringify(diagnostic)}`);
+  assert.equal(diagnostic.gto,'1',`${label}: quiet Today orchestrator must own the surface: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.flowVisible,true,`${label}: decision-first flow must be visible: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.signal,true,`${label}: data-driven signal field must be present: ${JSON.stringify(diagnostic)}`);
   assert.equal(diagnostic.legacyHeroDisplay,'none',`${label}: legacy body hero must stay visually internalized by default: ${JSON.stringify(diagnostic)}`);
@@ -95,6 +96,7 @@ async function openRecordRoute(page,route,touch,label){
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
       await page.waitForFunction(()=>document.getElementById('main')?.innerText?.trim().length>0,{timeout:10000});
       await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});
+      await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.1.0'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase,null,{timeout:7000});
 
       const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
       assert.equal(repaired.workouts.length,1,`${mode.name}: malformed workouts must be removed`);
@@ -106,7 +108,11 @@ async function openRecordRoute(page,route,touch,label){
       const menu=page.locator('#menuBtn');await menu.waitFor({state:'visible',timeout:5000});await assertOwnsPoint(page,'#menuBtn');
       await assertOwnsPoint(page,'#bottomNav button[data-page="coach"]');
       await assertOwnsPoint(page,'#bottomNav button[data-page="log"]');
-      await assertOwnsPoint(page,'.gtf-next');
+      const phase=await page.locator('#garangTodayFlow').getAttribute('data-gto-phase');
+      if(phase==='precheckin'){
+        await assertOwnsPoint(page,'[data-garang-checkin-access="1"]');
+        assert.equal(await page.locator('.gtf-action').isHidden(),true,`${mode.name}: plan action must stay hidden until check-in completes`);
+      }else await assertOwnsPoint(page,'.gtf-next');
       assert.equal(await page.locator('[data-today-view="front"]:visible').count(),0,`${mode.name}: body controls must not be visible in default Today hero`);
       assert.equal(await page.locator('[data-today-view="back"]:visible').count(),0,`${mode.name}: body controls must not be visible in default Today hero`);
 
@@ -129,6 +135,6 @@ async function openRecordRoute(page,route,touch,label){
       assert.deepEqual(pageErrors,[],`${mode.name} browser runtime errors:\n${pageErrors.join('\n')}`);
       await context.close();
     }
-    console.log('browser-interaction desktop+mobile malformed-state+simplified-routing+C-direction: PASS');
+    console.log('browser-interaction desktop+mobile malformed-state+simplified-routing+quiet-Today: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
