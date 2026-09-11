@@ -41,7 +41,7 @@ function executeRecoveryAction(decision,userId){
  const s=state(),date=decision.write.record.date||Core.localDate(),plans=(Array.isArray(s.planner)?s.planner:[]).filter(row=>sameDate(row,date)&&String(row?.domain||'')==='recovery'&&row?.status!=='draft');
  const plan=plans.find(row=>row.completed!==true)||plans[0]||null;
  if(plan&&plan.completed!==true){
-  const previous={completed:!!plan.completed,executionScore:plan.executionScore,evidence:clone(plan.evidence),evidenceAt:plan.evidenceAt};
+  const previous={completed:!!plan.completed,executionScore:plan.executionScore??0,evidence:Array.isArray(plan.evidence)?clone(plan.evidence):[],evidenceAt:plan.evidenceAt??null};
   const evidence=[...(Array.isArray(plan.evidence)?plan.evidence:[]),{type:'coach-conversation-recovery',label:decision.summary,at:now(),raw:decision.write.record.conversationRaw}];
   const result=b.updateRecord('planner',plan.id,{completed:true,executionScore:100,evidence,evidenceAt:now()},{userConfirmed:true,callId:idempotency(userId,'recovery-plan')});
   return {result,undo:{kind:'update',domain:'planner',id:plan.id,patch:previous},summary:decision.summary,recordDomain:'planner'};
@@ -72,7 +72,7 @@ function renderOutcomeForUser(root,userId){
  const outcome=outcomes.get(userId);if(!outcome)return;let card=body.querySelector(`[data-gci-for="${CSS.escape(String(userId))}"]`);if(!card){card=document.createElement('section');card.className='gci-coach-turn';card.dataset.gciFor=String(userId);body.appendChild(card);}card.dataset.state=outcome.state||outcome.type;
  if(outcome.type==='ask'){
   card.dataset.sourceIds=(outcome.sourceIds||[]).join(',');
-  card.innerHTML=`<small>${english()?'GARANG FOLLOW-UP':'GARANG FOLLOW-UP'}</small><strong>${esc(outcome.question)}</strong><p>${english()?'I will ask only what changes the log or next decision.':'기록이나 다음 판단에 필요한 것만 한 가지씩 물어볼게.'}</p>`;
+  card.innerHTML=`<small>GARANG FOLLOW-UP</small><strong>${esc(outcome.question)}</strong><p>${english()?'I will ask only what changes the log or next decision.':'기록이나 다음 판단에 필요한 것만 한 가지씩 물어볼게.'}</p>`;
  }else if(outcome.type==='record'){
   const undone=outcome.state==='undone';card.innerHTML=`<small>${undone?(english()?'LOG UNDONE':'기록 취소됨'):(english()?'AUTO LOGGED':'자동 기록')}</small><strong>${esc(outcome.summary||'')}</strong><p>${undone?(english()?'The automatic record was removed.':'자동 기록을 되돌렸어.'):(english()?'Your report was saved and GARANG will re-evaluate today from the canonical record.':'네 답을 실제 기록에 저장했고 오늘 판단과 계획에 다시 반영해.')}</p>${!undone&&outcome.undo?`<div class="gci-coach-actions"><button type="button" data-gci-undo>${english()?'Undo':'실행 취소'}</button></div>`:''}`;card.querySelector('[data-gci-undo]')?.addEventListener('click',()=>undoOutcome(userId),{once:true});
  }else if(outcome.type==='cancel')card.innerHTML=`<small>${english()?'LOG CANCELLED':'기록 취소'}</small><strong>${esc(outcome.summary||'')}</strong>`;
@@ -83,7 +83,7 @@ function processUser(userEl){
  const id=String(userEl?.dataset?.messageId||'');if(!id||processedUserIds.has(id))return;
  const text=userEl.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
  let pending=readPending();
- if(pending?.sourceMessageId&&!activeRoot?.querySelector(`.g2-message.user[data-message-id="${CSS.escape(String(pending.sourceMessageId))}"]`)) {writePending(null);pending=null;}
+ if(pending?.sourceMessageId&&!activeRoot?.querySelector(`.g2-message.user[data-message-id="${CSS.escape(String(pending.sourceMessageId))}"]`)){writePending(null);pending=null;}
  const decision=Core.decide(text,state(),pending,kb,{language:english()?'en':'ko',date:Core.localDate(),messageId:id});
  if(decision.type==='ignore'){processedUserIds.add(id);return;}
  if(decision.type==='ask'){
@@ -120,7 +120,6 @@ window.addEventListener('garang:coach-message-rendered',queueSync);
 window.addEventListener('garang:state-hydrated',queueSync);
 window.addEventListener('garang:agent-write',queueSync);
 window.addEventListener('garang:route-completed',discover);
-new MutationObserver(()=>{if(activeRoot)renderOutcomes(activeRoot);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.GarangConversationalIntelligenceV1=Object.freeze({version:VERSION,decide:apiDecision,getPending:readPending,clearPending:()=>writePending(null),getKnowledge:()=>clone(kb)});
 discover();
 })();
