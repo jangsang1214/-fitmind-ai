@@ -1,5 +1,5 @@
-/* GARANG Today Action Flow v1.2
-   Visual-first quiet Today: one state signal, three compact coaching tracks, one decision, one next action.
+/* GARANG Today Action Flow v1.3
+   Brand-first quiet Today: accumulation signal, three compact coaching tracks, one decision, one next action.
    C direction stays no-body hero + conditional body evidence.
    Read-only progressive-disclosure layer; existing writes remain owned by app.js / canonical bridges.
 */
@@ -42,15 +42,15 @@ function trackDomain(item,index=0){
 }
 function trackLabel(domain,lang){const table={ko:{training:'운동',recovery:'회복',nutrition:'식단'},en:{training:'Training',recovery:'Recovery',nutrition:'Nutrition'}};return table[lang]?.[domain]||domain;}
 function trackIcon(domain){
-  if(domain==='training')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/></svg>';
-  if(domain==='recovery')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 17.4A7 7 0 0 1 8.1 6.7 7.4 7.4 0 0 0 17.3 17c-.2.2-.3.3-.5.4Z"/><path d="M15 6.5h3M16.5 5v3"/></svg>';
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h14a7 7 0 0 1-14 0Z"/><path d="M8 7c0-1.3 1-2.3 2.3-2.3M12 7c0-1.3 1-2.3 2.3-2.3"/></svg>';
+  if(domain==='training')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V7M18 17V7M6 12h12"/><path d="M9 7l3-3 3 3"/></svg>';
+  if(domain==='recovery')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9c2.2-2 4.5-3 7-3s4.8 1 7 3"/><path d="M7 13c1.5-1.2 3.2-1.8 5-1.8s3.5.6 5 1.8"/><path d="M9.5 17c.8-.5 1.7-.8 2.5-.8s1.7.3 2.5.8"/></svg>';
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7.5h12M7.5 12h9M9.5 16.5h5"/><path d="M12 5V3.5"/></svg>';
 }
 function deriveTracks(day,safe,date,lang){
   const domains=day?.plan?.domains&&typeof day.plan.domains==='object'?day.plan.domains:{},draft=safe?.meta?.dailyPlanDrafts?.[date],draftItems=list(draft?.items);
   return TRACK_DOMAINS.map(domain=>{
     const row=domains?.[domain]||{},planned=Math.max(0,Number(row?.planned)||0),executed=Math.max(0,Number(row?.executed)||0),rawRate=finite(row?.rate),draftItem=draftItems.find((item,index)=>trackDomain(item,index)===domain);
-    let rate=rawRate,state='empty',value=lang==='en'?'—':'—';
+    let rate=rawRate,state='empty',value='—';
     if(planned>0){if(rate===null)rate=Math.round(executed/planned*100);rate=clamp(Math.round(rate||0),0,100);state=rate>=80?'done':rate>0?'partial':'planned';value=`${rate}%`;}
     else if(draft?.status==='draft'&&draftItem){rate=0;state='draft';value=lang==='en'?'READY':'준비';}
     else{rate=0;state='empty';}
@@ -81,9 +81,9 @@ function deriveModel(state,options={}){
   const intel=readIntelligence(safe,date,options),mode=String(intel.decision?.mode||'collect_data'),reasonCodes=list(intel.decision?.reasonCodes).map(String),reasons=humanReasons(intel.decision,lang);
   const recoveryScore=finite(intel.performance?.components?.recovery?.score),overallScore=finite(intel.performance?.score),memoryCount=list(safe?.memory?.entries).filter(row=>row?.status!=='superseded'&&row?.status!=='expired'&&row?.userConfirmed!==false).length;
   const decisionLine=intel.decision&&MODE_COPY[lang]?.[mode]?MODE_COPY[lang][mode]:headline,decisionReason=reasons[0]||String(intel.decision?.summary?.[lang]||support);
-  const stateLabel=recoveryScore!==null?'RECOVERY':overallScore!==null?'GARANG':'PLAN',stateValue=recoveryScore!==null?Math.round(recoveryScore):overallScore!==null?Math.round(overallScore):(progress===null?'—':progress),stateUnit=(recoveryScore!==null||overallScore!==null||progress!==null)?'/100':'',detailReasons=reasons.length?reasons:[support];
+  const stateLabel=recoveryScore!==null?(lang==='en'?'RECOVERY':'회복'):overallScore!==null?'GARANG':(lang==='en'?'PLAN':'계획'),stateValue=recoveryScore!==null?Math.round(recoveryScore):overallScore!==null?Math.round(overallScore):(progress===null?'—':progress),stateUnit=(recoveryScore!==null||overallScore!==null||progress!==null)?'/100':'',detailReasons=reasons.length?reasons:[support];
   const signalBase=recoveryScore!==null?recoveryScore:(overallScore!==null?overallScore:progress),signalScore=signalBase===null?0:clamp(Math.round(signalBase),0,100),bodyEvidence=reasonCodes.includes('HIGH_SORENESS')||(soreness!==null&&soreness>=4),tracks=deriveTracks(day,safe,date,lang);
-  return {version:'garang-today-action-flow-v1.2',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,signalScore,bodyEvidence,soreness,tracks,rows:[
+  return {version:'garang-today-action-flow-v1.3',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,signalScore,bodyEvidence,soreness,tracks,rows:[
     {key:'plan',label:lang==='en'?'Plan':'계획',value:planned?`${executed} / ${planned}`:(lang==='en'?'Not set':'미설정'),state:planned?(remaining?'pending':'done'):'neutral'},
     {key:'activity',label:lang==='en'?'Activity':'운동',value:workouts+runs?`${workouts+runs} session${workouts+runs===1?'':'s'}`:(lang==='en'?'No record':'기록 없음'),state:workouts+runs?'done':'neutral'},
     {key:'nutrition',label:lang==='en'?'Nutrition':'영양',value:meals?`${formatInt(kcal)} kcal · ${Math.round(protein)}g`:(lang==='en'?'No record':'기록 없음'),state:meals?'done':'neutral'},
@@ -95,15 +95,17 @@ function deriveModel(state,options={}){
 function markup(model,expanded=false){
   const detailId='garangTodayFlowDetail',progress=model.progress===null?'—':`${model.progress}%`,summary=model.planned?`${model.executed} / ${model.planned}`:'—';
   const actionAttrs=model.route?`data-gtf-route="${esc(model.route)}"${model.route==='planner'?' data-golden-path="planner-entry"':''}`:`data-gtf-action="${esc(model.action||'')}"`,dateLabel=String(model.date||'').slice(5).replace('-','.');
-  const bodyHint=model.bodyEvidence?`<div class="gtf-body-hint"><span>BODY EVIDENCE</span><p>${model.lang==='en'?'Muscle fatigue is part of this decision. The body map appears only here as supporting evidence.':'근육 피로가 이번 판단의 근거에 포함되어 있습니다. 신체 맵은 판단을 보조하는 근거로만 아래에 표시됩니다.'}</p></div>`:'';
+  const bodyHint=model.bodyEvidence?`<div class="gtf-body-hint"><span>${model.lang==='en'?'BODY EVIDENCE':'신체 근거'}</span><p>${model.lang==='en'?'Muscle fatigue is part of this decision. The body map appears only here as supporting evidence.':'근육 피로가 이번 판단의 근거에 포함되어 있습니다. 신체 맵은 판단을 보조하는 근거로만 아래에 표시됩니다.'}</p></div>`:'';
   const tracks=list(model.tracks).map(track=>`<div class="gtf-track" data-domain="${esc(track.domain)}" data-state="${esc(track.state)}" style="--gtf-track:${clamp(Number(track.rate)||0,0,100)}"><span class="gtf-track-icon">${trackIcon(track.domain)}</span><div class="gtf-track-copy"><span>${esc(track.label)}</span><strong>${esc(track.value)}</strong></div><em class="gtf-track-badge" aria-live="polite"></em><i class="gtf-track-line" aria-hidden="true"><b></b></i></div>`).join('');
+  const statePrefix=model.lang==='en'?'STATE':'오늘';
+  const decisionLabel=model.lang==='en'?'GARANG DECISION':'GARANG의 판단';
   return `<section id="garangTodayFlow" class="gtf gtf-luxury" data-version="${model.version}" data-decision-mode="${esc(model.mode)}" data-body-evidence="${model.bodyEvidence?'1':'0'}" style="--gtf-signal:${model.signalScore}" aria-label="${model.lang==='en'?'Today decision':'오늘의 판단'}">
-    <div class="gtf-state" aria-label="${model.lang==='en'?'Current state':'현재 상태'}"><div class="gtf-state-primary"><div class="gtf-state-copy"><span>STATE · ${esc(dateLabel)}</span><strong>${esc(model.stateLabel)}</strong></div><div class="gtf-state-visual" aria-label="${esc(model.stateLabel)} ${esc(model.stateValue)}${esc(model.stateUnit)}"><span class="gtf-signal" aria-hidden="true"><i></i><em><b>${esc(model.stateValue)}</b><small>${esc(model.stateUnit)}</small></em></span></div></div><div class="gtf-track-visual" aria-label="${model.lang==='en'?'Today training recovery nutrition':'오늘 운동 회복 식단'}">${tracks}</div></div>
-    <div class="gtf-context"><span>${esc(model.support)}</span><strong>PLAN ${esc(progress)} · ${esc(summary)}</strong></div>
-    <div class="gtf-decision"><span>GARANG DECISION</span><h2>${esc(model.decisionLine)}</h2><p>${esc(model.decisionReason)}</p></div>
+    <div class="gtf-state" aria-label="${model.lang==='en'?'Current state':'현재 상태'}"><div class="gtf-state-primary"><div class="gtf-state-copy"><span>${statePrefix} · ${esc(dateLabel)}</span><strong>${esc(model.stateLabel)}</strong></div><div class="gtf-state-visual" aria-label="${esc(model.stateLabel)} ${esc(model.stateValue)}${esc(model.stateUnit)}"><span class="gtf-signal" data-garang-accumulation-symbol="1" aria-hidden="true"><i></i><em><b>${esc(model.stateValue)}</b><small>${esc(model.stateUnit)}</small></em></span></div></div><div class="gtf-track-visual" aria-label="${model.lang==='en'?'Today training recovery nutrition':'오늘 운동 회복 식단'}">${tracks}</div></div>
+    <div class="gtf-context"><span>${esc(model.support)}</span><strong>${model.lang==='en'?'PLAN':'계획'} ${esc(progress)} · ${esc(summary)}</strong></div>
+    <div class="gtf-decision"><span>${decisionLabel}</span><h2>${esc(model.decisionLine)}</h2><p>${esc(model.decisionReason)}</p></div>
     <div class="gtf-action"><button type="button" class="gtf-next" ${actionAttrs}>${esc(model.cta)}<span aria-hidden="true">→</span></button></div>
     <button type="button" class="gtf-disclosure" data-gtf-details aria-expanded="${expanded?'true':'false'}" aria-controls="${detailId}"><span>${model.lang==='en'?'Why this decision?':'왜 이런 판단인가?'}</span><b aria-hidden="true">${expanded?'−':'+'}</b></button>
-    <div id="${detailId}" class="gtf-detail" data-gtf-detail ${expanded?'':'hidden'}><div class="gtf-detail-head"><span>${model.lang==='en'?'EVIDENCE':'EVIDENCE / 판단 근거'}</span><p>${model.detailReasons.map(reason=>`<i>${esc(reason)}</i>`).join('')}</p></div>${bodyHint}${model.rows.map(row=>`<div class="gtf-row" data-state="${row.state}" data-key="${row.key}"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong><i aria-hidden="true"></i></div>`).join('')}<div class="gtf-insight"><span>GARANG</span><p>${esc(model.goalLabel?(model.lang==='en'?`${model.goalLabel} context is reflected in today’s decision.`:`${model.goalLabel} 목표 맥락을 오늘의 판단에 반영하고 있습니다.`):(model.lang==='en'?'Plans, records, recovery and memory are read together before the next action.':'계획 · 기록 · 회복 · 기억을 함께 읽고 다음 행동을 정리합니다.'))}</p></div></div>
+    <div id="${detailId}" class="gtf-detail" data-gtf-detail ${expanded?'':'hidden'}><div class="gtf-detail-head"><span>${model.lang==='en'?'EVIDENCE':'판단 근거'}</span><p>${model.detailReasons.map(reason=>`<i>${esc(reason)}</i>`).join('')}</p></div>${bodyHint}${model.rows.map(row=>`<div class="gtf-row" data-state="${row.state}" data-key="${row.key}"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong><i aria-hidden="true"></i></div>`).join('')}<div class="gtf-insight"><span>GARANG</span><p>${esc(model.goalLabel?(model.lang==='en'?`${model.goalLabel} context is reflected in today’s decision.`:`${model.goalLabel} 목표 맥락을 오늘의 판단에 반영하고 있습니다.`):(model.lang==='en'?'Plans, records, recovery and memory are read together before the next action.':'계획 · 기록 · 회복 · 기억을 함께 읽고 다음 행동을 정리합니다.'))}</p></div></div>
   </section>`;
 }
 function mount(root){
@@ -118,5 +120,5 @@ function mount(root){
   doc.addEventListener('click',event=>{const drop=event.target.closest?.('[data-gtf-details]');if(drop&&main.contains(drop)){event.preventDefault();expanded=!expanded;const detail=main.querySelector('[data-gtf-detail]');if(detail)detail.hidden=!expanded;drop.setAttribute('aria-expanded',expanded?'true':'false');const symbol=drop.querySelector('b');if(symbol)symbol.textContent=expanded?'−':'+';const hasBody=drop.closest('#garangTodayFlow')?.dataset.bodyEvidence==='1';if(expanded&&hasBody)main.dataset.gtfBodyOpen='1';else delete main.dataset.gtfBodyOpen;return;}const routeButton=event.target.closest?.('[data-gtf-route]');if(routeButton&&main.contains(routeButton)){event.preventDefault();root.GarangRouter?.navigate?.(routeButton.dataset.gtfRoute,{source:'today-action-flow'});return;}const actionButton=event.target.closest?.('[data-gtf-action="open-checkin"]');if(actionButton&&main.contains(actionButton)){event.preventDefault();main.querySelector('[data-action="open-checkin"]')?.click();}},true);
   for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed'])root.addEventListener(name,schedule);doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);schedule();return true;
 }
-return Object.freeze({version:'garang-today-action-flow-v1.2.0',deriveModel,markup,mount,todayLocal});
+return Object.freeze({version:'garang-today-action-flow-v1.3.0',deriveModel,markup,mount,todayLocal});
 });
