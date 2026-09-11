@@ -94,7 +94,7 @@ async function gotoMoreRoute(page,routeName){
 }
 async function waitForStabilityRuntimes(page,errors){
   try{
-    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.4'&&window.GarangNonblockingActions?.version==='1.1.0',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.4'&&window.GarangNonblockingActions?.version==='1.2.2',null,{timeout:7000});
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       readyState:document.readyState,
@@ -154,9 +154,6 @@ async function waitForStabilityRuntimes(page,errors){
       await settle(page,`today ${cycle}`);
       await assertNoStaleBlocker(page,`today ${cycle}`);
 
-      // The simplified Today shell intentionally keeps the legacy Coach-plan CTA in the DOM
-      // as an action owner while hiding it visually. Stress only physically taps a CTA when
-      // that CTA is actually visible and therefore part of the current interaction contract.
       const applySelector='button.primary[data-action="apply-coach-plan"]:visible';
       const apply=page.locator(applySelector).first();
       if(await page.locator(applySelector).count()){
