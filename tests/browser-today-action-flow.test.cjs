@@ -31,9 +31,8 @@ function state(){const d=date();return {meta:{schemaVersion:5,updatedAt:new Date
   assert.ok(await page.locator('[data-pagego="coach"]').count()>=1,'existing Coach route must remain');
   assert.ok(await page.locator('[data-action="open-checkin"]').count()>=1,'canonical app check-in action must remain');
 
-  const impactPending=flow.locator('[data-gto-impact="1"]');await impactPending.waitFor({state:'visible',timeout:5000});
-  assert.equal(await impactPending.getAttribute('data-state'),'pending');
-  const pendingText=await impactPending.innerText();assert.match(pendingText,/AFTER CHECK-IN/);assert.match(pendingText,/운동/);assert.match(pendingText,/회복/);assert.match(pendingText,/식단/);assert.match(pendingText,/자동 보정/);
+  await page.waitForFunction(()=>document.querySelector('[data-gto-impact="1"]')?.dataset?.state==='pending',{timeout:5000});
+  const impactPending=flow.locator('[data-gto-impact="1"]');assert.equal(await impactPending.isHidden(),true,'pre-check-in three-track preview must stay internalized so the home hierarchy remains compact');
 
   const checkinAccess=flow.locator('[data-garang-checkin-access="1"]');await checkinAccess.waitFor({state:'visible',timeout:5000});
   assert.equal(await checkinAccess.getAttribute('data-gto-priority'),'1','pre-check-in control must own the primary visual hierarchy');
@@ -51,7 +50,7 @@ function state(){const d=date();return {meta:{schemaVersion:5,updatedAt:new Date
   assert.equal(await flow.locator('[data-garang-checkin-access="1"]').getAttribute('data-gto-priority'),'0');
   assert.match(await flow.locator('.gtf-decision>span').innerText(),/CHECK-IN REFLECTED/,'Today decision must become the single merged Coach/Today decision summary after check-in');
 
-  const impact=flow.locator('[data-gto-impact="1"]');const impactText=await impact.innerText();
+  const impact=flow.locator('[data-gto-impact="1"]');await impact.waitFor({state:'visible',timeout:5000});const impactText=await impact.innerText();
   assert.match(impactText,/3-TRACK IMPACT/);assert.match(impactText,/체크인을 반영해/);assert.match(impactText,/운동/);assert.match(impactText,/회복/);assert.match(impactText,/식단/);assert.match(impactText,/변경/,'low recovery check-in must visibly show at least one adapted track');
   const changedRows=impact.locator('[data-change="changed"]');assert.ok(await changedRows.count()>=1,'three-track impact must compare the pre-check-in draft with the adapted draft');
 
@@ -62,6 +61,6 @@ function state(){const d=date();return {meta:{schemaVersion:5,updatedAt:new Date
   const next=flow.locator('[data-gtf-route="planner"]');await next.click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});assert.equal(await page.locator('[data-garang-daily-plan-draft]').count(),1,'next action must open the existing three-track Planner draft instead of creating a parallel plan surface');
   await page.locator('#bottomNav [data-page="today"]').click();await flow.waitFor({state:'visible',timeout:5000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoChecked==='1',{timeout:5000});assert.match(await flow.locator('[data-garang-checkin-access="1"]').innerText(),/상태 반영 완료/,'merged check-in/decision state must survive route round-trip');assert.equal(await page.locator('.today-body-panel').count(),1,'Today anatomy must survive route round-trip');
   assert.deepEqual(errors,[],`Today morning flow browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-today-action-flow morning check-in -> three-track impact + merged decision: PASS');
+  await context.close();console.log('browser-today-action-flow compact morning check-in -> three-track impact + merged decision: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
