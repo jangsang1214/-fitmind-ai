@@ -31,6 +31,8 @@ assert.match(registry,/version:'1\.2\.2'/,'Screen Registry version must include 
 assert.match(runtime,/const VERSION = '1\.1\.1'/,'Simplified Shell runtime version must advance with canonical More routing');
 assert.match(runtime,/RECORD_ROUTES[\s\S]*workout[\s\S]*nutrition[\s\S]*running[\s\S]*body/,'Record surface must preserve all four existing record routes');
 assert.match(runtime,/quick-visual-grid/,'Today quick-record duplicate must be internalized by the shell');
+assert.match(runtime,/status-visual-card/,'Today legacy status owner must stay in the DOM but be internalized by the shell');
+assert.match(runtime,/garang-state-owner-internalized/,'Today must mark the duplicate state owner as internalized');
 assert.match(runtime,/DUPLICATE_MENU_ROUTES/,'duplicate first-level menu routes must be internalized');
 assert.match(runtime,/garang-more-sheet \[data-route\][\s\S]*simplified-shell-more/,'visible More routes must be delegated through the canonical Router');
 assert.doesNotMatch(runtime,/document\.querySelector\(`\[data-pagego=/,'Record shell must not bypass the canonical Router with a DOM fallback');
@@ -52,7 +54,7 @@ assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css\?v=1\.0\.1'\)/,'Sim
 assert.match(runtime,/garang-core-loop-v1\.js\?v=1\.0\.1/,'Simplified Shell must load the subordinate Core Loop runtime without changing frozen boot order');
 assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.2/,'Screen Registry cache key must ship the Record identity fix');
 assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.2/,'Simplified Shell stylesheet cache key must ship the current product loop');
-assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.2/,'Simplified Shell runtime cache key must ship canonical More routing');
+assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.3-single-state-entry/,'Simplified Shell runtime cache key must ship the single Today state entry');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
