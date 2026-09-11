@@ -38,8 +38,10 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'any surviving internal app bridge must stay invisible and non-interactive');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  await page.locator('#garangCoreToday').waitFor({state:'visible',timeout:5000});
-  assert.match(await page.locator('#garangCoreToday').innerText(),/남은 계획|방향/,'Today must surface the next useful state, not another dashboard');
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.0.0',{timeout:7000});
+  assert.equal(await page.locator('#garangCoreToday').isHidden(),true,'legacy accumulation whisper must be internalized after its useful state is merged into Today decision');
+  const mergedToday=page.locator('#garangTodayFlow');await mergedToday.waitFor({state:'visible',timeout:5000});
+  assert.match(await mergedToday.innerText(),/GARANG DECISION|TODAY DECISION|계획|방향/,'Today must surface the next useful state in one merged decision surface, not another dashboard');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').click();
   const firstSheet=page.locator('[data-garang-record-sheet="1"]');await firstSheet.waitFor({state:'visible',timeout:3000});
