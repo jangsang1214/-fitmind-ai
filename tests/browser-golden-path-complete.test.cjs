@@ -45,7 +45,7 @@ async function route(page,screen){
   await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});
   await heartbeat(page,'route '+screen);
 }
-async function waitForStep(page,step){
+async function waitForStep(page,step,{surface=true}={}){
   try{
     await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});
   }catch(error){
@@ -54,7 +54,7 @@ async function waitForStep(page,step){
     console.error(detail);
     throw new Error(error.message+'\n'+detail,{cause:error});
   }
-  await page.locator('[data-golden-path-surface][data-gp-step="'+step+'"]').waitFor({state:'visible',timeout:3000});
+  if(surface)await page.locator('[data-golden-path-surface][data-gp-step="'+step+'"]').waitFor({state:'visible',timeout:3000});
 }
 async function storedState(page){
   return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));
@@ -108,10 +108,10 @@ async function noHorizontalOverflow(page,label){
     await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(node=>/오늘 계획|계획을 만들어/.test(node.textContent||'')),null,{timeout:7000});
     assert.equal(await page.locator('.g4-agent-proposal').count(),0,'Coach must not invent a plan before recovery evidence exists');
 
-    await route(page,'today');await waitForStep(page,'plan');
-    assert.equal(await page.locator('[data-gp-action="checkin"]').count(),1,'plan step must ask for a recovery check-in when it is missing');
-    assert.match(await page.locator('[data-golden-path-surface]').innerText(),/회복 상태/);
-    await tap(page,'[data-gp-action="checkin"]','open recovery check-in');
+    await route(page,'today');await waitForStep(page,'plan',{surface:false});
+    assert.equal(await page.locator('[data-golden-path-surface]').count(),0,'Golden Path must stay silent when Today already owns recovery state entry');
+    assert.equal(await page.locator('[data-garang-checkin-access="1"]:visible').count(),1,'missing recovery evidence must expose one Today check-in entry');
+    await tap(page,'[data-garang-checkin-access="1"]','open recovery check-in');
     await page.locator('.modal #saveCheckin').waitFor({state:'visible',timeout:3000});
     await page.locator('#ciSleep').fill('7');await page.locator('#ciEnergy').fill('4');await page.locator('#ciStress').fill('2');await page.locator('#ciSoreness').fill('2');await page.locator('#ciMinutes').fill('45');
     await tap(page,'.modal #saveCheckin','save recovery check-in');
