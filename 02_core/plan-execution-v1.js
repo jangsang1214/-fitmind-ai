@@ -24,7 +24,7 @@ function dateParts(value){
 function dateAdd(value,delta){const p=dateParts(value);if(!p)return null;const x=new Date(p.ms+Number(delta||0)*86400000);return `${x.getUTCFullYear()}-${String(x.getUTCMonth()+1).padStart(2,'0')}-${String(x.getUTCDate()).padStart(2,'0')}`;}
 function todayLocal(){const x=new Date();return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
 function sameDate(row,date){return String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)===date;}
-function recordAt(row){const raw=row?.performedAt||row?.endedAt||row?.startedAt||row?.createdAt||row?.updatedAt||null;if(!raw)return null;const ms=new Date(raw).getTime();return Number.isFinite(ms)?ms:null;}
+function recordAt(row){const raw=row?.performedAt||row?.endedAt||row?.startedAt||row?.createdAt||row?.updatedAt||row?.at||null;if(!raw)return null;const ms=new Date(raw).getTime();return Number.isFinite(ms)?ms:null;}
 function confirmedAt(plan){const raw=plan?.confirmedAt||null;if(!raw)return null;const ms=new Date(raw).getTime();return Number.isFinite(ms)?ms:null;}
 function eligibleForPlan(row,plan){const gate=confirmedAt(plan);if(gate===null)return true;const at=recordAt(row);return at!==null&&at>=gate;}
 function evidenceAt(rows){const times=list(rows).map(recordAt).filter(v=>v!==null);if(!times.length)return null;return new Date(Math.max(...times)).toISOString();}
