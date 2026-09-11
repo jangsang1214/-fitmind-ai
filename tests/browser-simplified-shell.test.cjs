@@ -90,10 +90,11 @@ async function routeWithRouter(page,route,selector,screen=route){
   await openRecordRoute(page,'body');assert.equal(await page.locator('#saveBody').count(),1,'existing Body feature must remain reachable from another record screen');
 
   await routeWithRouter(page,'planner','#garangPlanExecution');
-  await routeWithRouter(page,'memory','#memoryView');
-  await routeWithRouter(page,'settings','#settingsView');
-  await routeWithRouter(page,'recovery','#recoveryView');
-  await routeWithRouter(page,'progress','#progressView');
+  await routeWithRouter(page,'memory','#saveMemory');
+  await routeWithRouter(page,'settings','#savePreferences');
+  await routeWithRouter(page,'progress','.progress-tabs');
+  const unsupportedRecovery=await page.evaluate(()=>window.GarangRouter?.navigate?.('recovery',{source:'simplified-shell-test',force:true}));
+  assert.equal(unsupportedRecovery,false,'Recovery is a Today/check-in state concern, not a standalone canonical route');
 
   assert.deepEqual(errors,[],`simplified shell browser errors:\n${errors.join('\n')}`);
   await context.close();console.log('browser-simplified-shell four-tab shell + Record reuse + route bridges: PASS');
