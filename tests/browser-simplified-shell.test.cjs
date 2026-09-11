@@ -37,11 +37,15 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.ok(await bridges.count()<=1,'runtime must never duplicate the single internal app bridge');
   assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'any surviving internal app bridge must stay invisible and non-interactive');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
+  assert.equal(await page.locator('.status-visual-card').isHidden(),true,'legacy Today state card must be internalized instead of exposing a second state entry');
+  assert.ok(await page.locator('.status-visual-card [data-action="open-checkin"]').count()>=1,'canonical check-in write owner must remain in the DOM while internalized');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.1.1',{timeout:7000});
   assert.equal(await page.locator('#garangCoreToday').isHidden(),true,'legacy accumulation whisper must be internalized after its useful state is merged into Today decision');
   const mergedToday=page.locator('#garangTodayFlow');await mergedToday.waitFor({state:'visible',timeout:5000});
   assert.match(await mergedToday.innerText(),/GARANG DECISION|TODAY DECISION|계획|방향/,'Today must surface the next useful state in one merged decision surface, not another dashboard');
+  assert.equal(await page.locator('#main [data-garang-checkin-access="1"]:visible').count(),1,'Today must expose exactly one visible state/check-in entry');
+  assert.equal(await page.locator('#main .status-visual-card [data-action="open-checkin"]:visible').count(),0,'legacy state owner must never compete visually with the branded Today check-in');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').click();
   const firstSheet=page.locator('[data-garang-record-sheet="1"]');await firstSheet.waitFor({state:'visible',timeout:3000});
@@ -97,6 +101,6 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(unsupportedRecovery,false,'Recovery is a Today/check-in state concern, not a standalone canonical route');
 
   assert.deepEqual(errors,[],`simplified shell browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-simplified-shell four-tab shell + Record reuse + route bridges: PASS');
+  await context.close();console.log('browser-simplified-shell four-tab shell + single Today state entry + Record reuse + route bridges: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
