@@ -85,3 +85,49 @@ body:has(.garang-coach-v2) .main{overflow:hidden!important}
   .g3-anatomy-tools{margin-top:2px}
   .g3-anatomy-legend{gap:7px;font-size:6px}
 }
+
+/* GARANG Korean Design System v1
+   Korean character comes from proportion, material tone, line rhythm and restraint — never decorative folklore. */
+:root{
+  --garang-meok:#080908;
+  --garang-meok-soft:#0d0e0c;
+  --garang-baekja:#f1ede4;
+  --garang-baekja-muted:#b7b1a7;
+  --garang-cheongja:#78988c;
+  --garang-cheongja-deep:#334b43;
+  --garang-onggi:#986b58;
+  --garang-hanji-line:rgba(241,237,228,.085);
+  --garang-hanji-soft:rgba(241,237,228,.042);
+  --g2-bg:var(--garang-meok);
+  --g2-panel:var(--garang-meok-soft);
+  --g2-ivory:var(--garang-baekja);
+  --g2-jade:var(--garang-cheongja);
+  --g2-copper:var(--garang-onggi);
+  --g3-ink:var(--garang-meok);
+  --g3-ivory:var(--garang-baekja);
+  --g3-jade-bright:var(--garang-cheongja);
+  --g3-primary:var(--garang-onggi);
+}
+html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"] textarea,html[lang="ko"] select{font-family:"Noto Sans KR",Pretendard,"Apple SD Gothic Neo",system-ui,sans-serif}
+#appView:not([hidden]) .page-head{position:relative;padding-top:17px}
+#appView:not([hidden]) .page-head:before{content:"";position:absolute;left:0;top:0;width:30px;height:1px;background:linear-gradient(90deg,var(--garang-cheongja),rgba(120,152,140,.08))}
+#appView:not([hidden]) .page-head .eyebrow{font-family:"Noto Sans KR",system-ui,sans-serif;font-weight:500;letter-spacing:.075em;color:rgba(241,237,228,.34)}
+#appView:not([hidden]) .page-head h1{font-family:"Noto Sans KR",system-ui,sans-serif;font-weight:500;letter-spacing:-.045em;line-height:1.24;color:var(--garang-baekja);word-break:keep-all}
+#main .section-title{position:relative;align-items:baseline;padding-top:4px}
+#main .section-title h2{position:relative;padding-left:13px;font-family:"Noto Sans KR",system-ui,sans-serif;font-weight:500;letter-spacing:-.03em;color:rgba(241,237,228,.9)}
+#main .section-title h2:before{content:"";position:absolute;left:0;top:.16em;width:1px;height:calc(100% - .22em);background:linear-gradient(180deg,var(--garang-cheongja),rgba(120,152,140,.12))}
+#main .section-title .pill,#main .section-title .text-btn{letter-spacing:.035em}
+#main .card:not(.today-hero){border-radius:12px 4px 12px 4px;border-color:var(--garang-hanji-line)}
+#main .primary,#main .ghost,#main .empty-action,.modal .primary,.modal .ghost{border-radius:10px 3px 10px 3px}
+#main .text-btn{color:rgba(120,152,140,.86)}
+#main .text-btn:hover{color:var(--garang-baekja)}
+.garang-coach-v2{border-radius:12px 4px 12px 4px;border-color:var(--garang-hanji-line)}
+.g2-new-chat,.g2-head-new,.g2-thread-row,.g2-thread-open,.g2-thread-menu,.g2-thread-popover{border-radius:9px 3px 9px 3px}
+.g2-message.user .g2-message-body{border-radius:13px 4px 13px 4px;background:rgba(51,75,67,.52);border-color:rgba(120,152,140,.2)}
+.g2-composer{border-radius:14px 5px 14px 5px;border-color:rgba(241,237,228,.11)}
+.g2-composer:focus-within{border-color:rgba(120,152,140,.42)}
+.g2-send{border-radius:11px 4px 11px 4px;background:var(--garang-baekja)}
+.bottom-nav button{position:relative}
+.bottom-nav button.active:before{content:"";position:absolute;left:50%;top:5px;width:17px;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--garang-cheongja) 24%,var(--garang-cheongja) 76%,transparent);opacity:.9}
+@media(max-width:800px){#appView:not([hidden]) .page-head{padding-top:15px}#main .section-title h2{padding-left:11px}.garang-coach-v2{border-radius:0}}
+@media(prefers-reduced-motion:reduce){.bottom-nav button.active:before{transition:none!important}}
