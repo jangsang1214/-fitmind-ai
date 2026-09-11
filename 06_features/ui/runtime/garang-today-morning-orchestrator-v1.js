@@ -7,7 +7,7 @@
   'use strict';
   if (window.GarangTodayMorningOrchestratorV1) return;
 
-  const VERSION='1.2.0';
+  const VERSION='1.1.1';
   const main=()=>document.getElementById('main');
   const flow=()=>main()?.querySelector('#garangTodayFlow');
   const bridge=()=>window.GarangAgentStateBridge;
