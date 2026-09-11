@@ -46,7 +46,7 @@ function state(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString(
   const checkinAccess=flow.locator('[data-garang-checkin-access="1"]');await checkinAccess.waitFor({state:'visible',timeout:5000});
   assert.equal(await checkinAccess.getAttribute('data-gto-priority'),'1','pre-check-in control must own the primary visual hierarchy');
   const checkinText=await checkinAccess.innerText();assert.match(checkinText,/오늘 상태/);assert.match(checkinText,/30초/);assert.match(checkinText,/3영역/);assert.doesNotMatch(checkinText,/MORNING|CHECK-IN/,'Korean check-in should not use generic English chrome');
-  const checkinBox=await checkinAccess.boundingBox();assert.ok(checkinBox&&checkinBox.height>=44,'Today check-in access must remain touchable on mobile');
+  await checkinAccess.waitFor({state:'visible',timeout:5000});const checkinBox=await checkinAccess.boundingBox();assert.ok(checkinBox&&checkinBox.height>=44,'Today check-in access must remain touchable on mobile');
   assert.equal(await flow.locator('.gtf-action').isHidden(),true,'before check-in, the plan action must not compete with the primary morning action');
 
   const firstViewport=await page.evaluate(()=>{
