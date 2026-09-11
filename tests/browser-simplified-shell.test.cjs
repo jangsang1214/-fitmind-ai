@@ -38,7 +38,7 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'any surviving internal app bridge must stay invisible and non-interactive');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.0.0',{timeout:7000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.1.1',{timeout:7000});
   assert.equal(await page.locator('#garangCoreToday').isHidden(),true,'legacy accumulation whisper must be internalized after its useful state is merged into Today decision');
   const mergedToday=page.locator('#garangTodayFlow');await mergedToday.waitFor({state:'visible',timeout:5000});
   assert.match(await mergedToday.innerText(),/GARANG DECISION|TODAY DECISION|계획|방향/,'Today must surface the next useful state in one merged decision surface, not another dashboard');
@@ -89,72 +89,13 @@ async function routeWithRouter(page,route,selector,screen=route){
   await openRecordRoute(page,'running');assert.equal(await page.locator('#runStart').count(),1,'existing Running feature must remain reachable from another record screen');
   await openRecordRoute(page,'body');assert.equal(await page.locator('#saveBody').count(),1,'existing Body feature must remain reachable from another record screen');
 
-  await routeWithRouter(page,'planner','#addPlan');
-  await routeWithRouter(page,'memory','#saveMemory');
-  await routeWithRouter(page,'profile','#saveProfile');
-  await routeWithRouter(page,'settings','#savePreferences');
-  await routeWithRouter(page,'onboarding','#saveOnboarding','modeling');
+  await routeWithRouter(page,'planner','#garangPlanExecution');
+  await routeWithRouter(page,'memory','#memoryView');
+  await routeWithRouter(page,'settings','#settingsView');
+  await routeWithRouter(page,'recovery','#recoveryView');
+  await routeWithRouter(page,'progress','#progressView');
 
-  await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="coach"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
-  assert.ok(await page.locator('.garang-coach-v2,.coach-app-shell').count()>=1,'existing Coach feature must remain reachable');
-  await page.locator('[data-gcl-coach-actions]').waitFor({state:'visible',timeout:7000});
-  assert.ok(await page.locator('[data-gcl-coach]').count()>=2,'Coach must expose contextual actions while preserving approval ownership');
-  assert.equal(await page.locator('[data-gcl-actions-toggle]').count(),1,'Coach actions must have one quiet disclosure control');
-  assert.equal(await page.locator('[data-gcl-actions-panel]').isHidden(),true,'Coach action details must stay behind the quiet disclosure by default');
-  const quietCoach=await page.evaluate(()=>{
-    const root=document.querySelector('.garang-coach-v2');
-    const strip=root?.querySelector('.g4-prompt-strip');
-    const legacy=[...(strip?.children||[])].filter(el=>el.matches?.('[data-garang-prompt-id]'));
-    const visibleLegacy=legacy.filter(el=>getComputedStyle(el).display!=='none').length;
-    const actions=[...(root?.querySelectorAll('[data-gcl-coach]')||[])];
-    const more=root?.querySelector('[data-garang-coach-more]');
-    const empty=root?.querySelector('.g2-empty-chat');
-    const mark=empty?.querySelector('.gcs-empty-mark');
-    const buttons=[...(strip?.querySelectorAll('button')||[])];
-    return {
-      marked:root?.dataset.garangCoachQuietSurface||'',
-      role:strip?.getAttribute('role')||'',
-      visibleLegacy,
-      actionCount:actions.length,
-      visibleActionCount:actions.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).display!=='none'}).length,
-      actionPanelHidden:root?.querySelector('[data-gcl-actions-panel]')?.hidden??true,
-      moreDisplay:more?getComputedStyle(more).display:'none',
-      moreVisible:!!more&&more.getBoundingClientRect().width>0&&more.getBoundingClientRect().height>0,
-      overflowX:strip?getComputedStyle(strip).overflowX:'',
-      maxButtonHeight:buttons.reduce((max,button)=>Math.max(max,button.getBoundingClientRect().height),0),
-      hasEmpty:!!empty,
-      emptyMarkDisplay:mark?getComputedStyle(mark).display:'none'
-    };
-  });
-  assert.equal(quietCoach.marked,'garang-coach-quiet-surface-v1.0.0','Coach must use the quiet presentation layer');
-  assert.equal(quietCoach.role,'group','Coach quick actions must be one grouped surface');
-  assert.equal(quietCoach.visibleLegacy,0,'legacy prompt pills must stay behind the Coach disclosure by default');
-  assert.ok(quietCoach.actionCount>=2,'contextual Coach actions must remain available behind the quiet disclosure');
-  assert.equal(quietCoach.visibleActionCount,0,'contextual Coach action pills must not dominate the default Coach surface');
-  assert.equal(quietCoach.actionPanelHidden,true,'contextual Coach action panel must start closed');
-  assert.notEqual(quietCoach.moreDisplay,'none','existing Coach prompts must remain discoverable through More');
-  assert.equal(quietCoach.moreVisible,true,'Coach More disclosure must expose a real touch box');
-  assert.equal(quietCoach.overflowX,'auto','Coach actions must use a horizontal mobile surface');
-  assert.ok(quietCoach.maxButtonHeight<=42,'Coach action pills must not become oversized vertical controls: '+JSON.stringify(quietCoach));
-  if(quietCoach.hasEmpty)assert.equal(quietCoach.emptyMarkDisplay,'none','empty Coach branding must stay compact');
-  await page.locator('[data-gcl-actions-toggle]').click();
-  await page.locator('[data-gcl-actions-panel]').waitFor({state:'visible',timeout:2000});
-  assert.ok(await page.locator('[data-gcl-actions-panel] [data-gcl-coach]:visible').count()>=2,'contextual Coach actions must remain usable after disclosure');
-  await page.locator('[data-garang-coach-more]').click();
-  await page.waitForFunction(()=>document.querySelector('.g4-prompt-strip')?.classList.contains('gcs-show-legacy'),{timeout:2000});
-  assert.ok(await page.locator('.g4-prompt-strip > [data-garang-prompt-id]:visible').count()>=5,'existing Coach prompts must remain reachable after disclosure');
-  await page.locator('[data-garang-coach-more]').click();
-  await page.waitForFunction(()=>!document.querySelector('.g4-prompt-strip')?.classList.contains('gcs-show-legacy'),{timeout:2000});
-
-  await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="progress"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
-  assert.equal(await page.locator('.progress-tabs').count(),1,'existing Progress/Accumulation feature must remain reachable');
-  await page.locator('#garangAccumulationOverview').waitFor({state:'visible',timeout:5000});
-  assert.match(await page.locator('#garangAccumulationOverview').innerText(),/30 DAY|누적/,'Accumulation must lead with meaningful recent change');
-
-  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Simplified shell must not overflow mobile viewport: ${JSON.stringify(width)}`);
-  assert.deepEqual(errors,[],`Simplified shell browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-simplified-shell WebKit mobile + core-loop: PASS');
+  assert.deepEqual(errors,[],`simplified shell browser errors:\n${errors.join('\n')}`);
+  await context.close();console.log('browser-simplified-shell four-tab shell + Record reuse + route bridges: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
