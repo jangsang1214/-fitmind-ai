@@ -39,11 +39,13 @@ function state(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString(
   for(const domain of ['training','recovery','nutrition'])assert.equal(await visual.locator(`.gtf-track[data-domain="${domain}"]`).count(),1,`${domain} must stay glanceable without another card`);
   assert.equal(await flow.locator('[data-gto-impact="1"]').count(),0,'visual track rail must replace the extra AFTER CHECK-IN text section');
   const decisionFont=await flow.locator('.gtf-decision h2').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));assert.ok(decisionFont<=30,`decision must be compact instead of an oversized text hero: ${decisionFont}px`);
-  const signalBox=await flow.locator('.gtf-signal').boundingBox();assert.ok(signalBox&&signalBox.width>=70,'state signal must become a real glanceable visual, not a tiny decoration');
+  const signal=flow.locator('[data-garang-accumulation-symbol="1"]');assert.equal(await signal.count(),1,'Today must expose one GARANG accumulation symbol');const signalBox=await signal.boundingBox();assert.ok(signalBox&&signalBox.width>=70,'accumulation symbol must be a real glanceable visual, not a tiny decoration');
+  assert.match(await flow.locator('.gtf-state-copy').innerText(),/오늘/,'Korean Today state label must lead in Korean');assert.doesNotMatch(await flow.locator('.gtf-state-copy').innerText(),/^STATE/,'generic English state label must not lead the Korean surface');assert.match(await flow.locator('.gtf-decision>span').innerText(),/GARANG의 판단/,'brand decision label must be Korean-first');
+  const trackShape=await visual.locator('.gtf-track-icon').first().evaluate(el=>getComputedStyle(el).borderRadius);assert.notEqual(trackShape,'50%','GARANG track glyphs must not collapse back to generic circular app icons');
 
   const checkinAccess=flow.locator('[data-garang-checkin-access="1"]');await checkinAccess.waitFor({state:'visible',timeout:5000});
   assert.equal(await checkinAccess.getAttribute('data-gto-priority'),'1','pre-check-in control must own the primary visual hierarchy');
-  const checkinText=await checkinAccess.innerText();assert.match(checkinText,/오늘 상태/);assert.match(checkinText,/30초/);assert.match(checkinText,/3영역/);
+  const checkinText=await checkinAccess.innerText();assert.match(checkinText,/오늘 상태/);assert.match(checkinText,/30초/);assert.match(checkinText,/3영역/);assert.doesNotMatch(checkinText,/MORNING|CHECK-IN/,'Korean check-in should not use generic English chrome');
   const checkinBox=await checkinAccess.boundingBox();assert.ok(checkinBox&&checkinBox.height>=44,'Today check-in access must remain touchable on mobile');
   assert.equal(await flow.locator('.gtf-action').isHidden(),true,'before check-in, the plan action must not compete with the primary morning action');
 
@@ -61,20 +63,20 @@ function state(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString(
   await page.waitForFunction(today=>Number(window.GarangAgentStateBridge?.getState?.()?.meta?.dailyPlanDrafts?.[today]?.revision||0)>=2,date(),{timeout:7000});
   await page.waitForFunction(()=>document.querySelectorAll('#garangTodayFlow .gtf-track[data-change]').length===3,null,{timeout:7000});
   const stateEdit=flow.locator('[data-garang-checkin-access="1"]');assert.match(await stateEdit.innerText(),/수정/,'saved check-in must collapse into a quiet state-edit affordance');assert.match(await stateEdit.innerText(),/수면 5\.5h/);assert.equal(await stateEdit.getAttribute('data-gto-priority'),'0');
-  assert.match(await flow.locator('.gtf-decision>span').innerText(),/UPDATED/,'Today decision must become the single merged Coach/Today decision summary after check-in');
+  assert.match(await flow.locator('.gtf-decision>span').innerText(),/반영됨/,'Today decision must become the single merged Coach/Today decision summary after check-in');
   assert.equal(await flow.locator('.gtf-track[data-change]').count(),3,'check-in effect must stay merged into the same three-track visual');
   assert.ok(await flow.locator('.gtf-track[data-change="changed"]').count()>=1,'low recovery check-in must visibly mark at least one adapted track');
   assert.equal(await flow.locator('[data-gto-impact="1"]').count(),0,'post-check-in must not add another dashboard strip below the visual state');
   assert.equal(await flow.locator('.gtf-action').isVisible(),true,'after check-in the single next action may return');
 
   const drop=flow.locator('[data-gtf-details]'),box=await drop.boundingBox();assert.ok(box&&box.width>=40&&box.height>=40,'decision detail control must remain touchable');assert.equal(await drop.getAttribute('aria-expanded'),'false');await drop.click();assert.equal(await drop.getAttribute('aria-expanded'),'true');
-  const detail=await flow.locator('[data-gtf-detail]').innerText();assert.match(detail,/수면 5\.5h/);assert.doesNotMatch(detail,/신뢰도|confidence/i);assert.equal(await page.locator('.visual-today-hero').isHidden(),false,'high soreness may reveal the body map only as conditional evidence after opening the decision reasons');
-  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today visual flow must not overflow mobile viewport: ${JSON.stringify(width)}`);
+  const detail=await flow.locator('[data-gtf-detail]').innerText();assert.match(detail,/수면 5\.5h/);assert.match(detail,/판단 근거/);assert.doesNotMatch(detail,/신뢰도|confidence/i);assert.equal(await page.locator('.visual-today-hero').isHidden(),false,'high soreness may reveal the body map only as conditional evidence after opening the decision reasons');
+  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today brand flow must not overflow mobile viewport: ${JSON.stringify(width)}`);
 
   const next=flow.locator('[data-gtf-route="planner"]');await next.click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
   const plannerDraft=page.locator('[data-garang-daily-plan-draft]');await plannerDraft.waitFor({state:'visible',timeout:5000});assert.equal(await plannerDraft.count(),1,'next action must open the existing three-track Planner draft instead of creating a parallel plan surface');
   await page.locator('#bottomNav [data-page="today"]').click();await flow.waitFor({state:'visible',timeout:5000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked',{timeout:5000});assert.match(await flow.locator('[data-garang-checkin-access="1"]').innerText(),/수정/,'merged check-in/decision state must survive route round-trip');assert.equal(await page.locator('.today-body-panel').count(),1,'Today anatomy must survive route round-trip');
-  assert.deepEqual(errors,[],`Today visual flow browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-today-action-flow visual STATE -> DECISION -> CHECK-IN/NEXT mobile flow: PASS');
+  assert.deepEqual(errors,[],`Today brand flow browser errors:\n${errors.join('\n')}`);
+  await context.close();console.log('browser-today-action-flow GARANG accumulation -> decision -> check-in/next mobile flow: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
