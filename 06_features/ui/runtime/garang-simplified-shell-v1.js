@@ -74,6 +74,22 @@
     heading.classList.add('garang-record-entry-internalized');
   }
 
+  function hideTodayDuplicateStateOwner() {
+    if (currentScreen() !== 'today') return;
+    const appMain = main();
+    const card = appMain?.querySelector('.status-visual-card');
+    if (!card) return;
+    card.hidden = true;
+    card.setAttribute('aria-hidden','true');
+    card.classList.add('garang-state-owner-internalized');
+    const heading = [...appMain.querySelectorAll('.section-title')]
+      .find(node => /오늘의\s*상태|today\s*state/i.test(node.textContent || ''));
+    if (!heading) return;
+    heading.hidden = true;
+    heading.setAttribute('aria-hidden','true');
+    heading.classList.add('garang-state-owner-internalized');
+  }
+
   function hideDuplicateMenuRoutes() {
     const selector = DUPLICATE_MENU_ROUTES
       .map(route => `.garang-more-sheet [data-route="${route}"],.garang-more-sheet [data-pagego="${route}"]`)
@@ -149,6 +165,7 @@
   function reconcile() {
     labelNavigation();
     hideTodayDuplicateRecordGrid();
+    hideTodayDuplicateStateOwner();
     hideDuplicateMenuRoutes();
     syncActiveNavigation();
     const menu = document.getElementById('menuBtn');
