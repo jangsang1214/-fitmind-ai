@@ -68,6 +68,7 @@
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
 .gtf-checkin-access{appearance:none;width:100%;min-height:48px;display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:10px;align-items:center;margin:12px 0 0;padding:0 2px 0 0;border:0;border-top:1px solid rgba(242,239,233,.075);border-bottom:1px solid rgba(242,239,233,.075);border-radius:0;background:transparent;color:#f2efe9;text-align:left;cursor:pointer}
 .gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:10px;font-weight:500;letter-spacing:-.01em;color:rgba(242,239,233,.72)}.gtf-checkin-access>small{font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access[data-checked="0"]>strong{color:#f2efe9}.gtf-checkin-access[data-checked="0"]>small{color:#ad715b}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
+.gto-impact[data-state="pending"]{display:none!important}
 @media(max-width:390px){.gtf-checkin-access{grid-template-columns:60px minmax(0,1fr) auto;gap:8px;min-height:50px}.gtf-checkin-access>small{max-width:92px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
