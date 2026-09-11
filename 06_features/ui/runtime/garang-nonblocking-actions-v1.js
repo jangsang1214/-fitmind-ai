@@ -5,7 +5,7 @@
 
    Today check-in accessibility:
    - the canonical app.js check-in modal remains the single write owner
-   - the visual-first Today surface gets one quiet, always-reachable check-in entry
+   - the brand-first Today surface gets one quiet, always-reachable check-in entry
    - when Check-in is already the primary next action, no duplicate secondary control is shown
 */
 (() => {
@@ -54,7 +54,7 @@
     if(document.getElementById('garangTodayCheckinAccessStyle'))return;
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
 .gtf-checkin-access{appearance:none;width:100%;min-height:48px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;margin:10px 0 0;padding:9px 11px;border:1px solid rgba(242,239,233,.09);border-radius:10px;background:rgba(242,239,233,.015);color:#f2efe9;text-align:left;cursor:pointer}
-.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:11px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
+.gtf-checkin-access>span{font-size:8px;font-weight:600;letter-spacing:.05em;color:#78aa99}.gtf-checkin-access>strong{font-size:11px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
 @media(max-width:390px){.gtf-checkin-access{min-height:50px}.gtf-checkin-access>small{max-width:92px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
@@ -76,15 +76,15 @@
     const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     button.innerHTML=checked
-      ?`<span>STATE</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
-      :`<span>${morning?'MORNING':'CHECK-IN'}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
+      ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
+      :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
     if(!existing)context.insertAdjacentElement('afterend',button);
   }
 
   function loadTodayMorningOrchestrator(){
     if(window.GarangTodayMorningOrchestratorV1||document.querySelector('script[data-garang-today-morning-orchestrator-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.2.0';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.3.0-brand';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();}
