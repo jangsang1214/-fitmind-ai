@@ -56,16 +56,31 @@ function surface(model){
   return `<section class="gp-next" ${SURFACE}="1" data-gp-step="${esc(model.step)}" aria-label="${isKo()?'다음 단계':'Next step'}"><div class="gp-next-copy"><span class="gp-next-eyebrow">NEXT / ${isKo()?'다음':'NEXT'}</span><strong>${esc(content.title)}</strong><p>${esc(content.body)}</p></div><button type="button" class="gp-next-action" data-gp-action="${esc(action.id)}">${esc(action.label)}</button></section>`;
 }
 function removeSurface(){main.querySelectorAll(`[${SURFACE}]`).forEach(node=>node.remove());}
+function syncSurface(existing,html){
+  const template=doc.createElement('template');template.innerHTML=html.trim();const fresh=template.content.firstElementChild;if(!fresh)return false;
+  existing.dataset.gpStep=fresh.dataset.gpStep||'';
+  const aria=fresh.getAttribute('aria-label');if(aria)existing.setAttribute('aria-label',aria);else existing.removeAttribute('aria-label');
+  for(const selector of ['.gp-next-eyebrow','.gp-next-copy>strong','.gp-next-copy>p']){
+    const current=existing.querySelector(selector),next=fresh.querySelector(selector);if(current&&next&&current.textContent!==next.textContent)current.textContent=next.textContent;
+  }
+  const currentAction=existing.querySelector('.gp-next-action'),nextAction=fresh.querySelector('.gp-next-action');
+  if(currentAction&&nextAction){currentAction.dataset.gpAction=nextAction.dataset.gpAction||'';if(currentAction.textContent!==nextAction.textContent)currentAction.textContent=nextAction.textContent;}
+  return true;
+}
 function inject(){
-  removeSurface();
-  if(screen()!=='today'){main.removeAttribute('data-gp-step');main.removeAttribute('data-gp-complete');return;}
+  if(screen()!=='today'){
+    removeSurface();main.removeAttribute('data-gp-step');main.removeAttribute('data-gp-complete');return;
+  }
   const model=currentModel();if(!model)return;
-  const html=surface(model);
+  const html=surface(model),existing=main.querySelector(`[${SURFACE}]`);
   main.dataset.gpStep=model.step;main.dataset.gpComplete=model.completed?'true':'false';
   if(!html){
+    existing?.remove();
     if(actionFor(model).id==='checkin')requestAnimationFrame(()=>requestAnimationFrame(()=>window.GarangNonblockingActions?.promoteTodayCheckin?.()));
     return;
   }
+  if(existing?.dataset?.gpStep===model.step&&syncSurface(existing,html))return;
+  removeSurface();
   const anchor=main.querySelector('#garangCoreToday,.today-hero,.page-head');
   if(anchor)anchor.insertAdjacentHTML('afterend',html);else main.insertAdjacentHTML('afterbegin',html);
 }
@@ -116,5 +131,5 @@ for(const eventName of ['garang:screen-rendered','garang:state-updated','garang:
 doc.documentElement.addEventListener('garang:language-changed',schedule);
 window.addEventListener('pageshow',schedule);
 schedule();
-window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.1',refresh:schedule});
+window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.2',refresh:schedule});
 })();
