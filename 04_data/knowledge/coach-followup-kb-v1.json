@@ -1,0 +1,162 @@
+{
+  "version": "garang-coach-followup-kb-v1",
+  "updatedAt": "2026-09-11",
+  "policy": {
+    "purpose": "Question-priority knowledge only. Do not reproduce source wording or treat community phrasing as medical advice.",
+    "runtimeMode": "curated-snapshot",
+    "maxQuestionsPerLog": 2,
+    "principles": [
+      "Ask only for information that materially improves logging, plan evidence, or the next coaching decision.",
+      "Do not ask for a field the user already supplied in the current conversation.",
+      "Prefer one high-value question at a time over a form-like checklist.",
+      "A clear natural-language statement that an action was performed can serve as user confirmation for a high-confidence log.",
+      "Morning or recovery-state observations are inputs, not proof that a recovery action was completed."
+    ]
+  },
+  "sources": [
+    {
+      "id": "acsm-fitt-vp",
+      "tier": "A",
+      "publisher": "American College of Sports Medicine",
+      "title": "General exercise prescription / FITT-VP framework",
+      "url": "https://www.acsm.org/docs/default-source/publications-files/acsms-exercise-testing-prescription.pdf",
+      "use": "Prioritize exercise type, intensity, time, frequency/volume and progression when those fields affect coaching.",
+      "copyrightMode": "metadata-and-paraphrased-principles-only"
+    },
+    {
+      "id": "who-physical-activity-2020",
+      "tier": "A",
+      "publisher": "World Health Organization",
+      "title": "WHO guidelines on physical activity and sedentary behaviour",
+      "url": "https://www.who.int/publications/i/item/9789240015128",
+      "use": "Treat frequency, intensity and duration as meaningful activity dimensions; do not copy guideline text into user logs.",
+      "copyrightMode": "metadata-and-paraphrased-principles-only"
+    },
+    {
+      "id": "usda-ampm",
+      "tier": "A",
+      "publisher": "USDA Agricultural Research Service",
+      "title": "USDA Automated Multiple-Pass Method",
+      "url": "https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/food-surveys-research-group/docs/ampm-usda-automated-multiple-pass-method/",
+      "use": "For meal recall, prioritize foods/beverages first, then time/occasion and amount only when they improve the decision; keep respondent burden low.",
+      "copyrightMode": "metadata-and-paraphrased-principles-only"
+    },
+    {
+      "id": "aasm-adult-sleep-duration",
+      "tier": "A",
+      "publisher": "American Academy of Sleep Medicine",
+      "title": "Adult Sleep Duration Health Advisory",
+      "url": "https://aasm.org/advocacy/position-statements/adult-sleep-duration-health-advisory/",
+      "use": "Sleep duration is a useful recovery-state input. Do not infer recovery-action completion from sleep or morning check-in alone.",
+      "copyrightMode": "metadata-and-paraphrased-principles-only"
+    }
+  ],
+  "domains": {
+    "workout": {
+      "sourceIds": ["acsm-fitt-vp", "who-physical-activity-2020"],
+      "requiredForLog": ["activity"],
+      "questionOrder": ["activity", "volume"],
+      "questions": {
+        "activity": {
+          "ko": "오늘 어떤 운동 했어? 종목만 말해줘도 돼.",
+          "en": "What did you train today? Just the exercise names are enough.",
+          "value": 100,
+          "burden": 12
+        },
+        "volume": {
+          "ko": "대략 몇 세트 정도 했어?",
+          "en": "About how many sets did you do?",
+          "value": 72,
+          "burden": 18
+        },
+        "duration": {
+          "ko": "몇 분 정도 했어?",
+          "en": "About how many minutes did you train?",
+          "value": 66,
+          "burden": 16
+        },
+        "intensity": {
+          "ko": "강도는 가볍게, 보통, 빡세게 중 어디에 가까웠어?",
+          "en": "Was the effort easy, moderate, or hard?",
+          "value": 55,
+          "burden": 22
+        }
+      }
+    },
+    "nutrition": {
+      "sourceIds": ["usda-ampm"],
+      "requiredForLog": ["foods"],
+      "questionOrder": ["foods", "amount"],
+      "questions": {
+        "foods": {
+          "ko": "뭐 먹었어? 기억나는 것만 말해줘.",
+          "en": "What did you eat? Just tell me what you remember.",
+          "value": 100,
+          "burden": 10
+        },
+        "mealCount": {
+          "ko": "오늘 몇 끼 정도 먹었어?",
+          "en": "About how many meals did you have today?",
+          "value": 58,
+          "burden": 12
+        },
+        "amount": {
+          "ko": "양은 대략 어느 정도였어?",
+          "en": "Roughly how much did you have?",
+          "value": 62,
+          "burden": 24
+        }
+      }
+    },
+    "running": {
+      "sourceIds": ["acsm-fitt-vp", "who-physical-activity-2020"],
+      "requiredForLog": [],
+      "questionOrder": ["distance", "duration"],
+      "questions": {
+        "distance": {
+          "ko": "몇 km 정도 뛰었어?",
+          "en": "About how far did you run?",
+          "value": 92,
+          "burden": 10
+        },
+        "duration": {
+          "ko": "몇 분 정도 걸렸어?",
+          "en": "About how many minutes did it take?",
+          "value": 82,
+          "burden": 10
+        },
+        "intensity": {
+          "ko": "체감 강도는 가볍게, 보통, 빡세게 중 어디였어?",
+          "en": "Was the run easy, moderate, or hard?",
+          "value": 48,
+          "burden": 18
+        }
+      }
+    },
+    "recovery": {
+      "sourceIds": ["aasm-adult-sleep-duration"],
+      "requiredForLog": [],
+      "questionOrder": ["sleepHours", "action"],
+      "questions": {
+        "sleepHours": {
+          "ko": "어젯밤 몇 시간 정도 잤어?",
+          "en": "About how many hours did you sleep last night?",
+          "value": 86,
+          "burden": 10
+        },
+        "action": {
+          "ko": "오늘 회복을 위해 실제로 한 건 뭐가 있어?",
+          "en": "What did you actually do for recovery today?",
+          "value": 74,
+          "burden": 20
+        },
+        "duration": {
+          "ko": "그건 몇 분 정도 했어?",
+          "en": "About how many minutes did you do it?",
+          "value": 50,
+          "burden": 18
+        }
+      }
+    }
+  }
+}
