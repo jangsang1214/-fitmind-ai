@@ -55,9 +55,9 @@
   function injectCheckinStyle(){
     if(document.getElementById('garangTodayCheckinAccessStyle'))return;
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
-.gtf-checkin-access{appearance:none;width:100%;min-height:48px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;margin:10px 0 0;padding:9px 11px;border:1px solid rgba(242,239,233,.09);border-radius:10px;background:rgba(242,239,233,.015);color:#f2efe9;text-align:left;cursor:pointer}
-.gtf-checkin-access>span{font-size:8px;font-weight:600;letter-spacing:.05em;color:#78aa99}.gtf-checkin-access>strong{font-size:11px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
-@media(max-width:390px){.gtf-checkin-access{min-height:50px}.gtf-checkin-access>small{max-width:92px}}
+.gtf-checkin-access{appearance:none;width:100%;min-height:64px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;margin:12px 0 0;padding:11px 0;border:0;border-top:1px solid rgba(120,170,153,.16);border-bottom:1px solid rgba(242,239,233,.07);border-radius:0;background:transparent;color:#f2efe9;text-align:left;cursor:pointer;box-shadow:none}
+.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:12px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
+@media(max-width:390px){.gtf-checkin-access{min-height:66px}.gtf-checkin-access>small{max-width:112px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
   }
