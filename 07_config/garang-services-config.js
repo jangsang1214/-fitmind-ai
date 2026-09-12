@@ -5,6 +5,8 @@ window.GARANG_SERVICES = Object.freeze({
   coachEndpoint: null,          // n8n / GARANG AI Gateway POST {message, context}
   mealScanEndpoint: null,       // Vision gateway POST multipart/form-data image -> {items:[...]}
   analyticsEndpoint: null,      // optional first-party event collector
+  analyticsConsent: false,      // remote analytics must remain disabled until the user consent boundary is implemented
+  analyticsContractVersion: 'garang-analytics-v1',
   paymentCheckoutEndpoint: null,
   paymentEntitlementEndpoint: null
 });

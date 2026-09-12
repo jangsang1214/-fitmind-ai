@@ -1,0 +1,51 @@
+{
+  "version": "garang-analytics-v1",
+  "purpose": "Measure GARANG activation and Golden Path behavior without collecting raw health, chat, credential or identity payloads.",
+  "privacy": {
+    "rawHealthPayloads": false,
+    "rawChatPayloads": false,
+    "email": false,
+    "displayName": false,
+    "providerTokens": false,
+    "preciseLocation": false,
+    "freeText": false
+  },
+  "delivery": {
+    "nonBlocking": true,
+    "remoteRequiresConsent": true,
+    "remoteRequiresConfiguredEndpoint": true,
+    "failureMayBlockUserAction": false
+  },
+  "canonicalEvents": {
+    "signup_completed": {"stage": "activation", "allowedProperties": []},
+    "onboarding_completed": {"stage": "activation", "allowedProperties": []},
+    "record_created": {"stage": "activation", "allowedProperties": ["recordType", "source"]},
+    "first_record_created": {"stage": "activation", "allowedProperties": ["recordType", "source"]},
+    "today_viewed": {"stage": "engagement", "allowedProperties": ["source"]},
+    "coach_opened": {"stage": "engagement", "allowedProperties": ["source"]},
+    "coach_recommendation_shown": {"stage": "intelligence", "allowedProperties": ["provider", "source"]},
+    "daily_plan_applied": {"stage": "activation", "allowedProperties": ["source"]},
+    "planned_action_started": {"stage": "execution", "allowedProperties": ["actionType", "source"]},
+    "planned_action_completed": {"stage": "execution", "allowedProperties": ["actionType", "source"]},
+    "accumulation_viewed": {"stage": "retention", "allowedProperties": ["source"]}
+  },
+  "derivedMetrics": {
+    "day2_return": "Compute from consented activity timestamps; do not rely on a client-authored day2 event.",
+    "day7_active": "Compute from consented activity timestamps; do not rely on a client-authored day7 event.",
+    "signup_to_first_record": "signup_completed -> first_record_created",
+    "first_record_to_coach": "first_record_created -> coach_opened",
+    "coach_to_plan_apply": "coach_opened -> daily_plan_applied"
+  },
+  "legacyEventMapping": {
+    "workout_saved": {"canonical": "record_created", "recordType": "workout"},
+    "meal_saved": {"canonical": "record_created", "recordType": "nutrition"},
+    "run_saved": {"canonical": "record_created", "recordType": "running"},
+    "inbody_saved": {"canonical": "record_created", "recordType": "body"},
+    "ai_chat_answered": {"canonical": "coach_recommendation_shown"},
+    "ai_plan_applied": {"canonical": "daily_plan_applied"},
+    "planner_completed": {"canonical": "planned_action_completed"},
+    "screen_viewed:today": {"canonical": "today_viewed"},
+    "screen_viewed:coach": {"canonical": "coach_opened"},
+    "screen_viewed:progress": {"canonical": "accumulation_viewed"}
+  }
+}
