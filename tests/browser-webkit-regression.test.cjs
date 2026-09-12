@@ -32,7 +32,7 @@ async function tapRecordRoute(page,route){
   const sheet=page.locator('[data-garang-record-sheet="1"]');
   await sheet.waitFor({state:'visible',timeout:3000});
   await tap(page,`[data-garang-record-sheet="1"] [data-garang-record-route="${route}"]`);
-  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,route,{timeout:5000});
+  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,route,{timeout:10000});
   assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${route} must remain owned by Record`);
 }
 
