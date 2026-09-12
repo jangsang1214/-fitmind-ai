@@ -75,6 +75,7 @@ function confirmToday(options={}){
   const result=Daily.confirmDraft(state,date);
   const confirmedGroup=Daily.readDraft?.(state,date)||group;
   if(result.confirmed){
+    list(result.rows).forEach((row,index)=>{row.order=Number(group?.items?.[index]?.order)||index+1;});
     confirmedGroup.confirmationSource=source;
     confirmedGroup.updatedAt=isoNow();
   }
