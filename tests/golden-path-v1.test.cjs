@@ -62,6 +62,33 @@ const view=(screen,at=date,props={})=>({name:'screen_viewed',props:{screen,date:
 }
 
 {
+  const state=base();state.onboarding.complete=true;
+  state.workouts=[{id:'w1',sessionId:'s1',date,name:'스쿼트',createdAt:'2026-09-10T09:00:00.000Z'}];
+  state.checkins=[{id:'c1',date,sleep:7,createdAt:'2026-09-10T09:15:00.000Z'}];
+  state.analytics.events=[view('coach')];
+  state.planner=[
+    {id:'p-training',date,time:'18:30',order:1,type:'workout',domain:'training',title:'상체 근력 45분',createdAt:'2026-09-10T10:00:00.000Z'},
+    {id:'p-recovery',date,time:'21:30',order:2,type:'recovery',domain:'recovery',title:'스트레칭 + 수면 준비',createdAt:'2026-09-10T10:00:00.000Z'},
+    {id:'p-nutrition',date,time:'12:30',order:3,type:'nutrition',domain:'nutrition',title:'단백질 목표 채우기',createdAt:'2026-09-10T10:00:00.000Z'}
+  ];
+  let result=Core.derive(state,{today:date});
+  assert.equal(result.step,'execute');
+  assert.equal(result.nextPlan.type,'workout','canonical Daily Plan order must drive the first Golden Path action');
+  assert.equal(result.execution.executed,0,'pre-plan evidence must not execute a newly confirmed track');
+  state.workouts.push({id:'w2',sessionId:'s2',date,name:'벤치프레스',createdAt:'2026-09-10T11:00:00.000Z'});
+  result=Core.derive(state,{today:date});
+  assert.equal(result.step,'accumulation','one real planned action is enough to unlock accumulation');
+  assert.equal(result.execution.executed,1);
+  assert.equal(result.execution.allExecuted,false,'remaining recovery and nutrition tracks must stay visibly incomplete');
+  assert.equal(result.nextPlan.type,'recovery');
+  state.analytics.events.push(view('progress'));
+  result=Core.derive(state,{today:date});
+  assert.equal(result.step,'complete','Golden Path activation can complete without pretending the whole Daily Plan is complete');
+  assert.equal(result.execution.allExecuted,false);
+  console.log('PASS three-track Daily Plan keeps partial completion while Golden Path advances after one real action');
+}
+
+{
   const state=base();state.onboarding.complete=true;state.workouts=[{id:'w1',sessionId:'s1',date:'2026-09-09',name:'스쿼트'}];state.analytics.events=[view('coach','2026-09-09'),view('progress','2026-09-09')];
   state.planner=[{id:'p1',date:'2026-09-09',type:'workout',title:'어제 계획'}];
   const result=Core.derive(state,{today:date});
