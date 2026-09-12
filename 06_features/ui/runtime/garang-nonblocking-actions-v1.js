@@ -55,9 +55,9 @@
   function injectCheckinStyle(){
     if(document.getElementById('garangTodayCheckinAccessStyle'))return;
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
-.gtf-checkin-access{appearance:none;width:100%;min-height:48px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 12px;align-items:center;margin:10px 0 0;padding:9px 11px;border:1px solid rgba(242,239,233,.09);border-radius:10px;background:rgba(242,239,233,.015);color:#f2efe9;text-align:left;cursor:pointer}
-.gtf-checkin-access>span{font-size:8px;font-weight:600;letter-spacing:.05em;color:#78aa99}.gtf-checkin-access>strong{font-size:11px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
-@media(max-width:390px){.gtf-checkin-access{min-height:50px}.gtf-checkin-access>small{max-width:92px}}
+.gtf-checkin-access{appearance:none;width:100%;min-height:64px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;margin:12px 0 0;padding:11px 0;border:0;border-top:1px solid rgba(120,170,153,.16);border-bottom:1px solid rgba(242,239,233,.07);border-radius:0;background:transparent;color:#f2efe9;text-align:left;cursor:pointer;box-shadow:none}
+.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:12px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
+@media(max-width:390px){.gtf-checkin-access{min-height:66px}.gtf-checkin-access>small{max-width:112px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
   }
@@ -75,6 +75,17 @@
     return true;
   }
 
+  function pinEditorialCheckin(button){
+    if(!button)return;
+    button.style.setProperty('border-radius','0px','important');
+    button.style.setProperty('background','transparent','important');
+    button.style.setProperty('box-shadow','none','important');
+    button.style.setProperty('border-left','0','important');
+    button.style.setProperty('border-right','0','important');
+    button.style.setProperty('border-top','1px solid rgba(120,170,153,.16)','important');
+    button.style.setProperty('border-bottom','1px solid rgba(242,239,233,.07)','important');
+  }
+
   function promoteTodayCheckin(){
     if(main.dataset.garangScreen!=='today')return;
     const flow=main.querySelector('#garangTodayFlow');if(!flow)return;
@@ -82,7 +93,7 @@
     const existing=flow.querySelector('[data-garang-checkin-access]'),context=flow.querySelector('.gtf-context');if(!context)return;
     const checkin=latestTodayCheckin(),checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12,action=flow.querySelector('.gtf-action');
     if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
-    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
+    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));pinEditorialCheckin(button);
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     const nextHtml=checked
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
@@ -105,12 +116,12 @@
 
   function loadTodayDensity(){
     if(window.GarangTodayDensityV1||document.querySelector('script[data-garang-today-density-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=3.0.0-visual-parity';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=4.0.0-mobile-first';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function loadAccumulationMotion(){
     if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=2.0.0-fluid';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=3.0.0-inapp-resilient';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
