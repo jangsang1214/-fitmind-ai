@@ -59,8 +59,8 @@ async function bootContext(browser,width,height,options={}){
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='4.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='3.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='fluid-mobile-v3'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-resilient',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='4.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='ink-water-v4'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-ink-water',{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayBrandHero')&&document.querySelector('#garangTodayDensity')&&document.querySelector('#garangTodayFlow .gtd3-score-head'),{timeout:10000});
   await page.waitForFunction(()=>document.querySelectorAll('#main [data-garang-motion-surface]').length===3,{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='0',{timeout:10000});
@@ -82,7 +82,8 @@ async function verifyViewport(browser,width,height){
   const {context,page,errors}=await bootContext(browser,width,height);
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'active');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'fluid-mobile-v3');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'ink-water-v4');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-renderer'),'canvas2d-ink-water');
   assert.equal(await page.locator('#garangTodayBrandHero h1').innerText(),'오늘도, 조금 쌓였습니다.');
   assert.match(await page.locator('#garangTodayBrandHero').innerText(),/작은 기록이 오늘의 몸을 만듭니다/);
   assert.doesNotMatch(await page.locator('#garangTodayBrandHero').innerText(),/QUIETLY|BECOMING/,'Hero must not carry detached decorative English copy');
@@ -104,7 +105,7 @@ async function verifyViewport(browser,width,height){
     const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents,quality:node.dataset.garangMotionQuality}));
     assert.ok(meta.w>0&&meta.h>0,`${name} canvas must have a real backing buffer`);
     assert.equal(meta.pointer,'none',`${name} canvas must never block interaction`);
-    assert.equal(meta.quality,'fluid-mobile-v3',`${name} canvas must use mobile-first fluid renderer`);
+    assert.equal(meta.quality,'ink-water-v4',`${name} canvas must use GARANG Ink Water renderer`);
     assert.notEqual(await canvasHash(canvas),0,`${name} canvas must render non-empty pixels`);
   }
   const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(300);const heroHashB=await canvasHash(heroCanvas);
@@ -183,7 +184,7 @@ async function verifyReducedMotion(browser){
     await verifyViewport(browser,430,932);
     await verifyInstagramInApp(browser);
     await verifyReducedMotion(browser);
-    console.log('browser-today-visual-parity mobile water motion v3 + Instagram WebKit + reduced fallback: PASS');
+    console.log('browser-today-visual-parity GARANG Ink Water v4 + Instagram WebKit + reduced fallback: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
