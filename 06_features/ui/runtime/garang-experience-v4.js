@@ -25,6 +25,8 @@
       .garang-more-sheet [data-route]{position:relative}
       .garang-more-sheet .garang-route-subtitle{display:block;margin-top:2px;font-size:10px;line-height:1.1;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.48);text-transform:none}
       .manual-entry[open] #saveMeal:not(:disabled){position:relative}
+      #main[data-garang-screen="today"] #garangTodayFlow .gtf-action{position:relative;z-index:4}
+      #main[data-garang-screen="today"] #garangTodayFlow .gtf-next[data-gsn-action]{position:relative;z-index:5;pointer-events:auto!important}
     `;
     document.head.appendChild(style);
   }
