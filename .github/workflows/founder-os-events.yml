@@ -1,0 +1,29 @@
+name: Founder OS Event Envelope
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["GARANG release gate"]
+    types: [completed]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  emit-event:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Emit Founder OS event envelope
+        run: node scripts/founder-os/emit-event.mjs
+      - name: Upload event envelope
+        uses: actions/upload-artifact@v4
+        with:
+          name: founder-os-event-${{ github.run_id }}
+          path: artifacts/founder-os-event.json
+          retention-days: 14
