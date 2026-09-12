@@ -1,4 +1,4 @@
-/* GARANG Today Action Flow v1.3
+/* GARANG Today Action Flow v1.3.1
    Brand-first quiet Today: accumulation signal, three compact coaching tracks, one decision, one next action.
    C direction stays no-body hero + conditional body evidence.
    Read-only progressive-disclosure layer; existing writes remain owned by app.js / canonical bridges.
@@ -15,7 +15,7 @@ const TRACK_DOMAINS=Object.freeze(['training','recovery','nutrition']);
 const list=value=>Array.isArray(value)?value:[];
 const finite=value=>{if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;};
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
+const esc=value=>String(value??'').replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot',"'":'&#39;'}[ch]));
 function todayLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function sameDate(row,date){return String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)===date;}
 function latestCheckin(state,date){return [...list(state?.dailyCheckins),...list(state?.checkins)].filter(row=>sameDate(row,date)).at(-1)||null;}
@@ -47,14 +47,15 @@ function trackIcon(domain){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7.5h12M7.5 12h9M9.5 16.5h5"/><path d="M12 5V3.5"/></svg>';
 }
 function deriveTracks(day,safe,date,lang){
-  const domains=day?.plan?.domains&&typeof day.plan.domains==='object'?day.plan.domains:{},draft=safe?.meta?.dailyPlanDrafts?.[date],draftItems=list(draft?.items);
+  const domains=day?.plan?.domains&&typeof day.plan.domains==='object'?day.plan.domains:{},planItems=list(day?.plan?.items),draft=safe?.meta?.dailyPlanDrafts?.[date],draftItems=list(draft?.items);
   return TRACK_DOMAINS.map(domain=>{
-    const row=domains?.[domain]||{},planned=Math.max(0,Number(row?.planned)||0),executed=Math.max(0,Number(row?.executed)||0),rawRate=finite(row?.rate),draftItem=draftItems.find((item,index)=>trackDomain(item,index)===domain);
+    const row=domains?.[domain]||{},planned=Math.max(0,Number(row?.planned)||0),executed=Math.max(0,Number(row?.executed)||0),rawRate=finite(row?.rate),draftItem=draftItems.find((item,index)=>trackDomain(item,index)===domain),planItem=planItems.find((item,index)=>trackDomain(item,index)===domain);
     let rate=rawRate,state='empty',value='—';
     if(planned>0){if(rate===null)rate=Math.round(executed/planned*100);rate=clamp(Math.round(rate||0),0,100);state=rate>=80?'done':rate>0?'partial':'planned';value=`${rate}%`;}
     else if(draft?.status==='draft'&&draftItem){rate=0;state='draft';value=lang==='en'?'READY':'준비';}
     else{rate=0;state='empty';}
-    return {domain,label:trackLabel(domain,lang),planned,executed,rate,state,value};
+    const title=String((draft?.status==='draft'?draftItem?.title:null)||planItem?.title||'').trim();
+    return {domain,label:trackLabel(domain,lang),planned,executed,rate,state,value,title};
   });
 }
 const MODE_COPY={
@@ -83,7 +84,7 @@ function deriveModel(state,options={}){
   const decisionLine=intel.decision&&MODE_COPY[lang]?.[mode]?MODE_COPY[lang][mode]:headline,decisionReason=reasons[0]||String(intel.decision?.summary?.[lang]||support);
   const stateLabel=recoveryScore!==null?(lang==='en'?'RECOVERY':'회복'):overallScore!==null?'GARANG':(lang==='en'?'PLAN':'계획'),stateValue=recoveryScore!==null?Math.round(recoveryScore):overallScore!==null?Math.round(overallScore):(progress===null?'—':progress),stateUnit=(recoveryScore!==null||overallScore!==null||progress!==null)?'/100':'',detailReasons=reasons.length?reasons:[support];
   const signalBase=recoveryScore!==null?recoveryScore:(overallScore!==null?overallScore:progress),signalScore=signalBase===null?0:clamp(Math.round(signalBase),0,100),bodyEvidence=reasonCodes.includes('HIGH_SORENESS')||(soreness!==null&&soreness>=4),tracks=deriveTracks(day,safe,date,lang);
-  return {version:'garang-today-action-flow-v1.3',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,signalScore,bodyEvidence,soreness,tracks,rows:[
+  return {version:'garang-today-action-flow-v1.3.1',date,lang,planned,executed,remaining,progress,headline,support,cta,route,action,nextTitle:String(incomplete?.title||''),decisionLine,decisionReason,stateLabel,stateValue,stateUnit,mode,recoveryScore,overallScore,memoryCount,detailReasons,signalScore,bodyEvidence,soreness,tracks,rows:[
     {key:'plan',label:lang==='en'?'Plan':'계획',value:planned?`${executed} / ${planned}`:(lang==='en'?'Not set':'미설정'),state:planned?(remaining?'pending':'done'):'neutral'},
     {key:'activity',label:lang==='en'?'Activity':'운동',value:workouts+runs?`${workouts+runs} session${workouts+runs===1?'':'s'}`:(lang==='en'?'No record':'기록 없음'),state:workouts+runs?'done':'neutral'},
     {key:'nutrition',label:lang==='en'?'Nutrition':'영양',value:meals?`${formatInt(kcal)} kcal · ${Math.round(protein)}g`:(lang==='en'?'No record':'기록 없음'),state:meals?'done':'neutral'},
@@ -96,7 +97,7 @@ function markup(model,expanded=false){
   const detailId='garangTodayFlowDetail',progress=model.progress===null?'—':`${model.progress}%`,summary=model.planned?`${model.executed} / ${model.planned}`:'—';
   const actionAttrs=model.route?`data-gtf-route="${esc(model.route)}"${model.route==='planner'?' data-golden-path="planner-entry"':''}`:`data-gtf-action="${esc(model.action||'')}"`,dateLabel=String(model.date||'').slice(5).replace('-','.');
   const bodyHint=model.bodyEvidence?`<div class="gtf-body-hint"><span>${model.lang==='en'?'BODY EVIDENCE':'신체 근거'}</span><p>${model.lang==='en'?'Muscle fatigue is part of this decision. The body map appears only here as supporting evidence.':'근육 피로가 이번 판단의 근거에 포함되어 있습니다. 신체 맵은 판단을 보조하는 근거로만 아래에 표시됩니다.'}</p></div>`:'';
-  const tracks=list(model.tracks).map(track=>`<div class="gtf-track" data-domain="${esc(track.domain)}" data-state="${esc(track.state)}" style="--gtf-track:${clamp(Number(track.rate)||0,0,100)}"><span class="gtf-track-icon">${trackIcon(track.domain)}</span><div class="gtf-track-copy"><span>${esc(track.label)}</span><strong>${esc(track.value)}</strong></div><em class="gtf-track-badge" aria-live="polite"></em><i class="gtf-track-line" aria-hidden="true"><b></b></i></div>`).join('');
+  const tracks=list(model.tracks).map(track=>`<div class="gtf-track" data-domain="${esc(track.domain)}" data-state="${esc(track.state)}" style="--gtf-track:${clamp(Number(track.rate)||0,0,100)}"><span class="gtf-track-icon">${trackIcon(track.domain)}</span><div class="gtf-track-copy"><span>${esc(track.label)}</span><strong>${esc(track.title||track.value)}</strong></div><em class="gtf-track-badge" aria-live="polite">${track.title?esc(track.value):''}</em><i class="gtf-track-line" aria-hidden="true"><b></b></i></div>`).join('');
   const statePrefix=model.lang==='en'?'STATE':'오늘';
   const decisionLabel=model.lang==='en'?'GARANG DECISION':'GARANG의 판단';
   return `<section id="garangTodayFlow" class="gtf gtf-luxury" data-version="${model.version}" data-decision-mode="${esc(model.mode)}" data-body-evidence="${model.bodyEvidence?'1':'0'}" style="--gtf-signal:${model.signalScore}" aria-label="${model.lang==='en'?'Today decision':'오늘의 판단'}">
@@ -127,5 +128,5 @@ function mount(root){
   doc.addEventListener('click',event=>{const drop=event.target.closest?.('[data-gtf-details]');if(drop&&main.contains(drop)){event.preventDefault();expanded=!expanded;const detail=main.querySelector('[data-gtf-detail]');if(detail)detail.hidden=!expanded;drop.setAttribute('aria-expanded',expanded?'true':'false');const symbol=drop.querySelector('b');if(symbol)symbol.textContent=expanded?'−':'+';const hasBody=drop.closest('#garangTodayFlow')?.dataset.bodyEvidence==='1';if(expanded&&hasBody)main.dataset.gtfBodyOpen='1';else delete main.dataset.gtfBodyOpen;return;}const routeButton=event.target.closest?.('[data-gtf-route]');if(routeButton&&main.contains(routeButton)){event.preventDefault();root.GarangRouter?.navigate?.(routeButton.dataset.gtfRoute,{source:'today-action-flow'});return;}const actionButton=event.target.closest?.('[data-gtf-action="open-checkin"]');if(actionButton&&main.contains(actionButton)){event.preventDefault();main.querySelector('[data-action="open-checkin"]')?.click();}},true);
   for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed'])root.addEventListener(name,schedule);doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);schedule();return true;
 }
-return Object.freeze({version:'garang-today-action-flow-v1.3.0',deriveModel,markup,mount,todayLocal});
+return Object.freeze({version:'garang-today-action-flow-v1.3.1',deriveModel,markup,mount,todayLocal});
 });
