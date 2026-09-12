@@ -75,6 +75,17 @@
     return true;
   }
 
+  function pinEditorialCheckin(button){
+    if(!button)return;
+    button.style.setProperty('border-radius','0px','important');
+    button.style.setProperty('background','transparent','important');
+    button.style.setProperty('box-shadow','none','important');
+    button.style.setProperty('border-left','0','important');
+    button.style.setProperty('border-right','0','important');
+    button.style.setProperty('border-top','1px solid rgba(120,170,153,.16)','important');
+    button.style.setProperty('border-bottom','1px solid rgba(242,239,233,.07)','important');
+  }
+
   function promoteTodayCheckin(){
     if(main.dataset.garangScreen!=='today')return;
     const flow=main.querySelector('#garangTodayFlow');if(!flow)return;
@@ -82,7 +93,7 @@
     const existing=flow.querySelector('[data-garang-checkin-access]'),context=flow.querySelector('.gtf-context');if(!context)return;
     const checkin=latestTodayCheckin(),checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12,action=flow.querySelector('.gtf-action');
     if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
-    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
+    const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));pinEditorialCheckin(button);
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     const nextHtml=checked
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
