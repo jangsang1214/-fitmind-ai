@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.1';
+  const VERSION = 'garang-today-single-next-action-v1.0.2';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -24,6 +24,7 @@
     style.id = STYLE_ID;
     style.textContent = `
       #main[data-garang-screen="today"] [data-golden-path-surface]{display:none!important}
+      #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
       #main[data-garang-screen="today"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important}
     `;
     document.head.appendChild(style);
