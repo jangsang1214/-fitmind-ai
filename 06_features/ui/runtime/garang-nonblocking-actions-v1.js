@@ -96,7 +96,7 @@
 
   function loadTodayDensity(){
     if(window.GarangTodayDensityV1||document.querySelector('script[data-garang-today-density-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=1.0.0';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=2.0.0-brand-surface';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
