@@ -100,9 +100,9 @@
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
     const signature=`${english()?'en':'ko'}|${checked?'1':'0'}|${morning?'1':'0'}|${summary}`;
     if(button.dataset.garangCheckinContentSignature!==signature){
-      const motionCanvas=button.querySelector('.gtd3-motion-canvas');
+      const cinematic=button.querySelector('.gac5-shell');
       button.innerHTML=nextHtml;
-      if(motionCanvas)button.appendChild(motionCanvas);
+      if(cinematic)button.appendChild(cinematic);
       button.dataset.garangCheckinContentSignature=signature;
     }
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
@@ -121,7 +121,7 @@
 
   function loadAccumulationMotion(){
     if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=4.0.0-ink-water';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=5.0.0-cinematic-asset';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
