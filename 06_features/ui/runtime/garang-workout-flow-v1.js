@@ -1,14 +1,15 @@
-/* GARANG Workout Flow v1.3
+/* GARANG Workout Flow v1.4
    One visible functional workout page at a time:
    Overview -> Exercise -> Log -> Overview.
    Existing app.js markup and handlers remain the feature owners.
+   Recent-record reuse is read-only and only prefills the existing form.
 */
 (function(root){
 'use strict';
 if(!root||root.__garangWorkoutFlowV1)return;
 root.__garangWorkoutFlowV1=true;
 
-const VERSION='garang-workout-flow-v1.3.0-paged';
+const VERSION='garang-workout-flow-v1.4.0-recent-prefill';
 const state={active:'overview'};
 const SURFACES=[
   {id:'overview',en:'Overview',ko:'개요'},
@@ -39,9 +40,15 @@ function ensureStyle(){
     '.gws-panel[hidden]{display:none!important}',
     '.gws-next{display:flex;justify-content:flex-end;margin:18px 0 0}',
     '.gws-next button{border:1px solid rgba(79,174,146,.28);border-radius:999px;background:transparent;color:#e9e8e2;padding:10px 14px;font:500 10px/1 var(--g2-ui,system-ui);cursor:pointer}',
+    '.gws-reuse{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0 2px 12px;border-bottom:1px solid rgba(242,239,233,.08)}',
+    '.gws-reuse-copy{min-width:0;display:grid;gap:3px}',
+    '.gws-reuse-copy strong{color:#e9e8e2;font:600 12px/1.35 var(--g2-ui,system-ui)}',
+    '.gws-reuse-copy small{color:#7f857f;font:500 10px/1.4 var(--g2-ui,system-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.gws-reuse button{flex:0 0 auto;border:1px solid rgba(79,174,146,.28);border-radius:999px;background:transparent;color:#e9e8e2;padding:9px 12px;font:500 10px/1 var(--g2-ui,system-ui);cursor:pointer}',
+    '.gws-reuse button:disabled{opacity:.45;cursor:default}',
     '.gws-panel[data-garang-workout-surface="exercise"] .exercise-visual-library{margin-top:0}',
     '.gws-panel[data-garang-workout-surface="log"] .workout-builder{margin-top:0}',
-    '@media(max-width:700px){.gws-nav{margin-bottom:18px}.gws-step{min-height:48px;padding:11px 4px 9px;font-size:10px}.gws-step em{font-size:7px}.gws-step.active::after{width:32px}.gws-next{margin-top:14px}}'
+    '@media(max-width:700px){.gws-nav{margin-bottom:18px}.gws-step{min-height:48px;padding:11px 4px 9px;font-size:10px}.gws-step em{font-size:7px}.gws-step.active::after{width:32px}.gws-next{margin-top:14px}.gws-reuse{align-items:flex-start}.gws-reuse button{padding:9px 10px}}'
   ].join('');
   document.head.appendChild(style);
 }
@@ -91,6 +98,58 @@ function renderNext(shell){
   });
   shell.appendChild(next);
 }
+function snapshot(){
+  try{return root.GarangAgentStateBridge?.ready?.()?root.GarangAgentStateBridge.getState():null;}catch{return null;}
+}
+function latestWorkout(){
+  const current=snapshot(),rows=Array.isArray(current?.workouts)?current.workouts:[];
+  return rows.length?{record:rows[rows.length-1],state:current}:null;
+}
+function field(id,value){
+  const node=document.getElementById(id);
+  if(!node||value===undefined||value===null||value==='')return false;
+  node.value=String(value);
+  node.dispatchEvent(new Event('input',{bubbles:true}));
+  node.dispatchEvent(new Event('change',{bubbles:true}));
+  return true;
+}
+function displayWeight(value,current){
+  const unit=current?.preferences?.unit==='imperial'?'imperial':'metric';
+  const converted=root.GarangUnits?.weight?.(Number(value),unit,1);
+  return Number.isFinite(Number(converted))?converted:value;
+}
+function prefillLatest(button){
+  const found=latestWorkout();
+  if(!found?.record)return;
+  const record=found.record,current=found.state;
+  const details=Array.isArray(record.setDetails)&&record.setDetails.length?record.setDetails:Array.isArray(record.setsDetail)&&record.setsDetail.length?record.setsDetail:[];
+  const first=details[0]||{};
+  field('wName',record.name);
+  field('wSets',record.sets||details.length||1);
+  field('wReps',record.reps??first.reps??first.r);
+  field('wWeight',displayWeight(record.weight??first.weight??first.w,current));
+  field('wRpe',record.rpe??first.rpe);
+  field('wDuration',record.duration);
+  button.textContent=isKo()?'최근 기록 적용됨':'Recent values applied';
+  button.dataset.gwsReuseApplied='1';
+}
+function ensureRecentReuse(shell){
+  const log=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="log"]');
+  const builder=log?.querySelector(':scope > .workout-builder');
+  if(!log||!builder)return;
+  let reuse=log.querySelector(':scope > .gws-reuse');
+  const found=latestWorkout();
+  if(!reuse){
+    reuse=document.createElement('div');
+    reuse.className='gws-reuse';
+    reuse.dataset.gwsReuse='latest-workout';
+    log.insertBefore(reuse,builder);
+  }
+  const label=found?.record?.name||'';
+  reuse.innerHTML='<div class="gws-reuse-copy"><strong>'+(isKo()?'최근 운동 재사용':'Reuse recent workout')+'</strong><small>'+(found?(isKo()?'저장하지 않고 입력값만 채웁니다 · ':'Prefills only · ')+String(label):isKo()?'저장된 운동 기록이 생기면 사용할 수 있습니다.':'Available after your first saved workout.')+'</small></div><button type="button" data-gws-reuse-latest '+(found?'':'disabled')+'>'+(isKo()?'불러오기':'Prefill')+'</button>';
+  const button=reuse.querySelector('[data-gws-reuse-latest]');
+  if(button&&!button.disabled)button.addEventListener('click',()=>prefillLatest(button));
+}
 function apply(shell){
   renderNav(shell);
   shell.querySelectorAll(':scope > .gws-panel').forEach(node=>{
@@ -100,6 +159,7 @@ function apply(shell){
     node.dataset.garangWorkoutAttached=on?'1':'0';
     node.setAttribute('data-garang-workout-attached',on?'1':'0');
   });
+  ensureRecentReuse(shell);
   renderNext(shell);
   const main=shell.parentElement;
   if(main)main.dataset.garangWorkoutSurface=state.active;
