@@ -92,7 +92,8 @@
     internalizePrimaryCheckin(flow);
     const existing=flow.querySelector('[data-garang-checkin-access]'),context=flow.querySelector('.gtf-context');if(!context)return;
     const checkin=latestTodayCheckin(),checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12,action=flow.querySelector('.gtf-action');
-    if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
+    const todaySingleActionOwned=main.dataset.garangNextOwner==='today-action-flow'&&!!main.dataset.gsnAction&&main.dataset.gsnAction!=='checkin';
+    if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')&&!todaySingleActionOwned){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
     const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));pinEditorialCheckin(button);
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     const nextHtml=checked
