@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.9';
+  const VERSION = 'garang-today-single-next-action-v1.0.10';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -32,6 +32,8 @@
     return ['workouts','meals','runs','body'].some(key => list(current[key]).some(row => sameDate(row,today)));
   };
   const completedOnboarding = snapshot => list(snapshot?.analytics?.events).some(event => event?.name === 'onboarding_completed');
+  const activationRecordEvents = new Set(['workout_saved','meal_saved','run_saved','body_saved']);
+  const hasActivationRecordEvent = snapshot => list(snapshot?.analytics?.events).some(event => activationRecordEvents.has(event?.name));
   let scheduled = false;
   let delayedTimer = 0;
   let latestModel = null;
@@ -79,7 +81,7 @@
   function activationBeforeCheckin(model, snapshot) {
     if (!model || !snapshot) return false;
     if (model.step === 'first_record') return completedOnboarding(snapshot);
-    if (model.step === 'coach') return hasTodayRecord(snapshot);
+    if (model.step === 'coach') return hasTodayRecord(snapshot) && hasActivationRecordEvent(snapshot);
     return false;
   }
 
@@ -263,7 +265,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
   ensureStyle();
   schedule();
 })();
