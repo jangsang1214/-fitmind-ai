@@ -101,11 +101,16 @@
     const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=3.0.0-visual-parity';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
-  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
+  function loadAccumulationMotion(){
+    if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=1.0.0';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+  }
+
+  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
   let queued=false;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   window.addEventListener('garang:screen-rendered',queueScan);window.addEventListener('garang:state-updated',queueScan);window.addEventListener('garang:state-hydrated',queueScan);window.addEventListener('garang:agent-write',queueScan);window.addEventListener('garang:route-completed',queueScan);window.addEventListener('pageshow',queueScan);
   scan();queueScan();
-  // Preserve the public compatibility version; the Today visual parity loader is cache-versioned independently.
+  // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
   window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
 })();
