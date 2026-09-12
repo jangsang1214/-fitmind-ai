@@ -112,7 +112,8 @@
   let queued=false,delayedScanTimer=0;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(()=>{queueScan();window.GarangAccumulationMotionV1?.sync?.();},340);}
-  window.addEventListener('garang:screen-rendered',queueLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',queueLifecycleScan);window.addEventListener('pageshow',queueLifecycleScan);
+  function immediateLifecycleScan(){scan();queueLifecycleScan();}
+  window.addEventListener('garang:screen-rendered',immediateLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',immediateLifecycleScan);window.addEventListener('pageshow',immediateLifecycleScan);
   scan();queueLifecycleScan();
   // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
   window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
