@@ -77,6 +77,8 @@
 
   function pinEditorialCheckin(button){
     if(!button)return;
+    button.style.setProperty('position','relative','important');
+    button.style.setProperty('z-index','2','important');
     button.style.setProperty('border-radius','0px','important');
     button.style.setProperty('background','transparent','important');
     button.style.setProperty('box-shadow','none','important');
