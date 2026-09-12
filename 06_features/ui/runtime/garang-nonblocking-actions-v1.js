@@ -105,12 +105,12 @@
 
   function loadTodayDensity(){
     if(window.GarangTodayDensityV1||document.querySelector('script[data-garang-today-density-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=3.0.0-visual-parity';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=4.0.0-mobile-first';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function loadAccumulationMotion(){
     if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=2.0.0-fluid';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=3.0.0-inapp-resilient';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
