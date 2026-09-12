@@ -76,9 +76,16 @@
     const access=f.querySelector('[data-garang-checkin-access="1"]');if(!access)return f.querySelector('.gtf-next[data-gtf-action="open-checkin"]');
     const checked=!!checkin,hour=new Date().getHours(),morning=hour>=5&&hour<12,sleep=finite(checkin?.sleepHours??checkin?.sleep),energy=finite(checkin?.energy),summary=checked?[sleep!==null?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',energy!==null?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
     access.dataset.gtoPriority=checked?'0':'1';access.setAttribute('aria-label',checked?(english()?'Edit today state':'오늘 상태 수정'):(english()?'Check in for today':'오늘 상태 체크인'));
-    access.innerHTML=checked
+    const nextHtml=checked
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${esc(summary||(english()?'Saved':'저장됨'))}</small>`
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
+    const signature=`${english()?'en':'ko'}|${checked?'1':'0'}|${morning?'1':'0'}|${summary}`;
+    if(access.dataset.gtoContentSignature!==signature){
+      const motionCanvas=access.querySelector('.gtd3-motion-canvas');
+      access.innerHTML=nextHtml;
+      if(motionCanvas)access.appendChild(motionCanvas);
+      access.dataset.gtoContentSignature=signature;
+    }
     return access;
   }
 
@@ -86,8 +93,8 @@
     const f=flow();if(!f)return;const checked=!!checkin,group=draftGroup(s,date),confirmed=confirmedPlans(s,date),baseline=readBaseline(date),baselineMap=new Map(list(baseline?.tracks).map(track=>[track.domain,track])),current=currentTracks(s,date),currentMap=new Map(current.map(track=>[track.domain,track])),confirmedLocked=confirmed.length>0&&(!group||group.status==='confirmed');
     f.querySelectorAll('.gtf-track[data-domain]').forEach(node=>{
       const domain=node.dataset.domain,after=currentMap.get(domain),before=baselineMap.get(domain),isChanged=checked&&!!before&&changed(before,after),badge=node.querySelector('.gtf-track-badge');
-      node.removeAttribute('data-change');if(!badge)return;if(!checked){badge.textContent='';return;}
-      node.dataset.change=isChanged?'changed':'stable';badge.textContent=compactChange(before,after,isChanged,confirmedLocked);
+      node.removeAttribute('data-change');if(!badge)return;if(!checked){if(badge.textContent)badge.textContent='';return;}
+      node.dataset.change=isChanged?'changed':'stable';const next=compactChange(before,after,isChanged,confirmedLocked);if(badge.textContent!==next)badge.textContent=next;
     });
   }
 
@@ -97,7 +104,7 @@
     f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':'precheckin';f.dataset.decisionOwner='coach';
     f.setAttribute('aria-label',english()?'Today state and next action':'오늘 상태와 다음 행동');
     const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state');
-    if(access&&access.classList.contains('gtf-checkin-access')&&stateNode)stateNode.insertAdjacentElement('afterend',access);
+    if(access&&access.classList.contains('gtf-checkin-access')&&stateNode&&access.previousElementSibling!==stateNode)stateNode.insertAdjacentElement('afterend',access);
     f.querySelector('[data-gto-impact="1"]')?.remove();decorateTracks(s,date,checkin);
   }
 

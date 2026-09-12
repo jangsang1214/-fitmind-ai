@@ -84,18 +84,23 @@
     if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
     const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
-    const motionCanvas=button.querySelector('.gtd3-motion-canvas');
-    button.innerHTML=checked
+    const nextHtml=checked
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
-    if(motionCanvas)button.appendChild(motionCanvas);
+    const signature=`${english()?'en':'ko'}|${checked?'1':'0'}|${morning?'1':'0'}|${summary}`;
+    if(button.dataset.garangCheckinContentSignature!==signature){
+      const motionCanvas=button.querySelector('.gtd3-motion-canvas');
+      button.innerHTML=nextHtml;
+      if(motionCanvas)button.appendChild(motionCanvas);
+      button.dataset.garangCheckinContentSignature=signature;
+    }
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
     if(!existing)context.insertAdjacentElement('afterend',button);
   }
 
   function loadTodayMorningOrchestrator(){
     if(window.GarangTodayMorningOrchestratorV1||document.querySelector('script[data-garang-today-morning-orchestrator-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.4.0-single-owner';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-morning-orchestrator-v1.js?v=1.4.1-stable-motion';script.dataset.garangTodayMorningOrchestratorV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function loadTodayDensity(){
@@ -105,14 +110,15 @@
 
   function loadAccumulationMotion(){
     if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=1.0.0';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=2.0.0-fluid';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
   let queued=false,delayedScanTimer=0;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(()=>{queueScan();window.GarangAccumulationMotionV1?.sync?.();},340);}
-  window.addEventListener('garang:screen-rendered',queueLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',queueLifecycleScan);window.addEventListener('pageshow',queueLifecycleScan);
+  function immediateLifecycleScan(){scan();queueLifecycleScan();}
+  window.addEventListener('garang:screen-rendered',immediateLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',immediateLifecycleScan);window.addEventListener('pageshow',immediateLifecycleScan);
   scan();queueLifecycleScan();
   // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
   window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});

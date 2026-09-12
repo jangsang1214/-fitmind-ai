@@ -56,7 +56,8 @@ async function bootContext(browser,width,height,options={}){
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='3.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='1.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='2.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='fluid-v2'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-composite',{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayBrandHero')&&document.querySelector('#garangTodayDensity')&&document.querySelector('#garangTodayFlow .gtd3-score-head'),{timeout:10000});
   await page.waitForFunction(()=>document.querySelectorAll('#main [data-garang-motion-surface]').length===3,{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='0',{timeout:10000});
@@ -68,6 +69,7 @@ async function verifyViewport(browser,width,height){
   const {context,page,errors}=await bootContext(browser,width,height);
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'active');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'fluid-v2');
   assert.equal(await page.locator('#garangTodayBrandHero h1').innerText(),'오늘도, 조금 쌓였습니다.');
   assert.match(await page.locator('#garangTodayBrandHero').innerText(),/작은 기록이 오늘의 몸을 만듭니다/);
   assert.equal(await page.locator('#garangTodayBrandHero [data-gtd-coach]').count(),1,'Hero must keep one Coach CTA');
@@ -81,13 +83,14 @@ async function verifyViewport(browser,width,height){
   const checkinCanvas=page.locator('[data-garang-motion-surface="checkin"]');
   for(const [name,canvas] of [['hero',heroCanvas],['score',scoreCanvas],['checkin',checkinCanvas]]){
     await canvas.waitFor({state:'visible',timeout:5000});
-    const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents}));
+    const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents,quality:node.dataset.garangMotionQuality}));
     assert.ok(meta.w>0&&meta.h>0,`${name} canvas must have a real backing buffer`);
     assert.equal(meta.pointer,'none',`${name} canvas must never block interaction`);
+    assert.equal(meta.quality,'fluid-v2',`${name} canvas must use premium fluid renderer`);
     assert.notEqual(await canvasHash(canvas),0,`${name} canvas must render non-empty pixels`);
   }
-  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(220);const heroHashB=await canvasHash(heroCanvas);
-  assert.notEqual(heroHashA,heroHashB,'Hero accumulation surface must animate when motion is allowed');
+  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(260);const heroHashB=await canvasHash(heroCanvas);
+  assert.notEqual(heroHashA,heroHashB,'Hero fluid surface must animate when motion is allowed');
 
   const scoreHead=await page.locator('#garangTodayFlow .gtd3-score-head').innerText();
   assert.match(scoreHead,/GARANG SCORE/);assert.match(scoreHead,/오늘/);
@@ -144,7 +147,7 @@ async function verifyReducedMotion(browser){
     await verifyViewport(browser,393,852);
     await verifyViewport(browser,430,932);
     await verifyReducedMotion(browser);
-    console.log('browser-today-visual-parity Canvas motion + reduced fallback @390/393/430: PASS');
+    console.log('browser-today-visual-parity premium fluid motion v2 + reduced fallback @390/393/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
