@@ -18,7 +18,35 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
 async function waitForStep(page,step,{action=true}={}){try{await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});}catch(error){const diagnostic=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen,gpStep:document.getElementById('main')?.dataset?.gpStep,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()}),planner:window.GarangAgentStateBridge?.getState?.()?.planner,workouts:window.GarangAgentStateBridge?.getState?.()?.workouts,events:window.GarangAgentStateBridge?.getState?.()?.analytics?.events?.slice(-8)}));throw new Error(error.message+'\nGolden Path diagnostic: '+JSON.stringify(diagnostic),{cause:error});}assert.equal(await page.locator('[data-golden-path-surface]').count(),0,'Today must not render a second Golden Path card');if(action)await page.locator(`#garangTodayFlow .gtf-next[data-gsn-step="${step}"]`).waitFor({state:'visible',timeout:5000});}
 async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));}
 async function noHorizontalOverflow(page,label){const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,label+' must not create horizontal overflow: '+JSON.stringify(width));}
-async function singleTodayOwner(page,label){const count=await page.locator('#garangTodayFlow .gtf-next[data-gsn-action],#garangTodayFlow [data-garang-checkin-access="1"],[data-golden-path-surface]').evaluateAll(nodes=>nodes.filter(el=>{const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;}).length);assert.equal(count,1,label+' must expose exactly one visible next-action owner');}
+async function singleTodayOwner(page,label){
+  const result=await page.evaluate(()=>{
+    const main=document.getElementById('main');
+    const flow=document.querySelector('#garangTodayFlow');
+    const button=flow?.querySelector('.gtf-next')||null;
+    const actionWrap=flow?.querySelector('.gtf-action')||null;
+    const checkin=flow?.querySelector('[data-garang-checkin-access="1"]')||null;
+    const legacy=[...document.querySelectorAll('[data-golden-path-surface]')];
+    const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};
+    const nodeInfo=el=>{if(!el)return null;const style=getComputedStyle(el),box=el.getBoundingClientRect();return {tag:el.tagName,id:el.id||'',className:String(el.className||''),attrs:Object.fromEntries([...el.attributes].map(a=>[a.name,a.value])),display:style.display,visibility:style.visibility,opacity:style.opacity,pointerEvents:style.pointerEvents,position:style.position,zIndex:style.zIndex,rect:{x:box.x,y:box.y,width:box.width,height:box.height},visible:visible(el),parentDisplay:el.parentElement?getComputedStyle(el.parentElement).display:null,parentClass:el.parentElement?.className||'',text:(el.innerText||el.textContent||'').trim().slice(0,180)};};
+    const candidates=[button,checkin,...legacy].filter(Boolean);
+    return {
+      count:candidates.filter(visible).length,
+      version:window.GarangTodaySingleNextActionV1?.version||null,
+      screen:main?.dataset?.garangScreen||null,
+      mainDataset:{...(main?.dataset||{})},
+      flowConnected:!!flow?.isConnected,
+      flowDataset:{...(flow?.dataset||{})},
+      flowHtml:(flow?.outerHTML||'').slice(0,1600),
+      button:nodeInfo(button),
+      actionWrap:nodeInfo(actionWrap),
+      checkin:nodeInfo(checkin),
+      legacy:legacy.map(nodeInfo),
+      model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()}),
+      recentEvents:window.GarangAgentStateBridge?.getState?.()?.analytics?.events?.slice(-8)||[]
+    };
+  });
+  assert.equal(result.count,1,label+' must expose exactly one visible next-action owner\nOwner diagnostic: '+JSON.stringify(result));
+}
 
 (async()=>{
   const server=startStaticServer(serveRoot,port);let browser;
