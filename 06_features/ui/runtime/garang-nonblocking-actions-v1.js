@@ -106,5 +106,6 @@
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   window.addEventListener('garang:screen-rendered',queueScan);window.addEventListener('garang:state-updated',queueScan);window.addEventListener('garang:state-hydrated',queueScan);window.addEventListener('garang:agent-write',queueScan);window.addEventListener('garang:route-completed',queueScan);window.addEventListener('pageshow',queueScan);
   scan();queueScan();
-  window.GarangNonblockingActions=Object.freeze({version:'1.3.0',scan,queueScan,promoteTodayCheckin});
+  // Preserve the public compatibility version; the Today visual parity loader is cache-versioned independently.
+  window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
 })();
