@@ -87,7 +87,11 @@ function recordCandidates(state,date,type){
 }
 
 function execution(state,today){
-  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>`${a.date}|${clean(a.row?.time)||'99:99'}|${clean(a.row?.id)||a.index}`.localeCompare(`${b.date}|${clean(b.row?.time)||'99:99'}|${clean(b.row?.id)||b.index}`));
+  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>{
+    const dateCompare=a.date.localeCompare(b.date);if(dateCompare)return dateCompare;
+    const ao=Number(a.row?.order),bo=Number(b.row?.order),orderCompare=(Number.isFinite(ao)?ao:999)-(Number.isFinite(bo)?bo:999);if(orderCompare)return orderCompare;
+    return `${clean(a.row?.time)||'99:99'}|${clean(a.row?.id)||a.index}`.localeCompare(`${clean(b.row?.time)||'99:99'}|${clean(b.row?.id)||b.index}`);
+  });
   const used=new Set(),candidates=new Map();
   const claim=(date,type,plan)=>{
     const key=`${date}|${type}`;if(!candidates.has(key))candidates.set(key,recordCandidates(state,date,type));
@@ -117,7 +121,7 @@ function derive(state,options={}){
     first_record:records.hasMeaningful,
     coach:coach.used,
     plan:plans.planned>0,
-    execute:plans.allExecuted,
+    execute:plans.hasExecution,
     accumulation:!!progressDate
   };
   const firstUnmet=STEP_ORDER.find(step=>!completed[step]);
