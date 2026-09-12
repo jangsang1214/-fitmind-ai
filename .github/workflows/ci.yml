@@ -105,6 +105,8 @@ jobs:
         run: node tests/browser-mobile-layout-boundary.test.cjs
       - name: Verify Today action flow
         run: node tests/browser-today-action-flow.test.cjs
+      - name: Verify Today visual parity
+        run: node tests/browser-today-visual-parity.test.cjs
       - name: Verify daily GARANG plan draft
         run: node tests/browser-daily-plan-draft.test.cjs
       - name: Verify Simplified Shell WebKit
