@@ -128,22 +128,8 @@ function installLegacyApplyInterceptor(){
     catch(error){console.warn('[GARANG] canonical daily plan apply failed',error);}
   },true);
 }
-function decorateCoachProposals(){
-  const summary=summaryToday({lang:document.documentElement.lang==='en'?'en':'ko'});if(!summary)return;
-  document.querySelectorAll('.g4-agent-proposal').forEach(card=>{
-    const tool=String(card.querySelector('.g4-proposal-head b')?.textContent||'').trim();
-    if(!/계획 생성|Create plan/i.test(tool))return;
-    const copy=card.querySelector(':scope > p');if(copy&&copy.textContent!==summary)copy.textContent=summary;
-    card.dataset.canonicalDailyPlan='1';
-  });
-}
-let decorateQueued=false;
-function scheduleDecorate(){if(decorateQueued)return;decorateQueued=true;requestAnimationFrame(()=>{decorateQueued=false;decorateCoachProposals();});}
 
 installWriteFacade();
 installLegacyApplyInterceptor();
-for(const name of ['garang:screen-rendered','garang:coach-mounted','garang:coach-message-rendered','garang:state-updated','garang:agent-write'])window.addEventListener(name,scheduleDecorate);
-new MutationObserver(scheduleDecorate).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
 window.GarangCanonicalDailyPlanV1=Object.freeze({version:VERSION,confirmToday,summaryToday,confirmedPlans:(state,date=currentDate())=>clone(confirmedPlans(state,date)),canonicalRows:(state,date=currentDate())=>clone(canonicalRows(state,date)),installWriteFacade});
-scheduleDecorate();
 })();
