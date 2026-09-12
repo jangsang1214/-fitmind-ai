@@ -1,4 +1,4 @@
-/* GARANG Coach Agent v4.7.1
+/* GARANG Coach Agent v4.7
    Canonical owner for Coach recommended prompts, proposal cards and Coach message display localization.
    Retires the former item4-final overlay by absorbing its bilingual prompt + stored-message repair behavior.
 */
@@ -129,6 +129,6 @@ window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:cloud-state-ready',()=>queueRootSync(activeRoot));
 window.addEventListener('garang:agent-write',()=>queueRootSync(activeRoot));
-window.GarangCoachAgentV4=Object.freeze({version:'garang-coach-agent-v4.7.1',prompts:PROMPTS,translateCoachText:translateKnownCoachText});
+window.GarangCoachAgentV4=Object.freeze({version:'garang-coach-agent-v4.7',prompts:PROMPTS,translateCoachText:translateKnownCoachText});
 loadConversationalIntelligence();syncLifecycleRoot();
 })();
