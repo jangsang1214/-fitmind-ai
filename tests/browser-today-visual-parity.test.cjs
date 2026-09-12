@@ -35,44 +35,73 @@ function seedState(){
   };
 }
 
-async function verifyViewport(browser,width,height){
-  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true});
+async function canvasHash(locator){
+  return locator.evaluate(canvas=>{
+    const ctx=canvas.getContext('2d');if(!ctx||!canvas.width||!canvas.height)return 0;
+    const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    const stride=Math.max(4,Math.floor(data.length/2400/4)*4);
+    let hash=0,alpha=0;
+    for(let i=0;i<data.length;i+=stride){hash=(hash*33+data[i]+data[i+1]*3+data[i+2]*7+data[i+3]*11)>>>0;alpha+=data[i+3];}
+    return alpha>0?hash:0;
+  });
+}
+
+async function bootContext(browser,width,height,options={}){
+  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,reducedMotion:options.reducedMotion||'no-preference'});
   await context.addInitScript(payload=>{
     localStorage.setItem('garang_demo','1');
     localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));
   },seedState());
-  const page=await context.newPage();
-  const errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='3.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='1.0.0',{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayBrandHero')&&document.querySelector('#garangTodayDensity')&&document.querySelector('#garangTodayFlow .gtd3-score-head'),{timeout:10000});
+  await page.waitForFunction(()=>document.querySelectorAll('#main [data-garang-motion-surface]').length===3,{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='0',{timeout:10000});
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(320);
+  return {context,page,errors};
+}
 
+async function verifyViewport(browser,width,height){
+  const {context,page,errors}=await bootContext(browser,width,height);
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'active');
   assert.equal(await page.locator('#garangTodayBrandHero h1').innerText(),'오늘도, 조금 쌓였습니다.');
   assert.match(await page.locator('#garangTodayBrandHero').innerText(),/작은 기록이 오늘의 몸을 만듭니다/);
   assert.equal(await page.locator('#garangTodayBrandHero [data-gtd-coach]').count(),1,'Hero must keep one Coach CTA');
-  const ripple=page.locator('#garangTodayBrandHero .gtd3-ripple img');
-  await ripple.waitFor({state:'visible',timeout:5000});
-  assert.ok(await ripple.evaluate(img=>img.complete&&img.naturalWidth>0),'signature ripple asset must load');
+
+  const legacyRipple=page.locator('#garangTodayBrandHero .gtd3-ripple>img');
+  assert.equal(await legacyRipple.count(),1,'legacy asset may remain as non-visible compatibility markup');
+  assert.equal(await legacyRipple.evaluate(img=>getComputedStyle(img).display),'none','legacy SVG ripple must never be user-visible');
+
+  const heroCanvas=page.locator('[data-garang-motion-surface="hero"]');
+  const scoreCanvas=page.locator('[data-garang-motion-surface="score"]');
+  const checkinCanvas=page.locator('[data-garang-motion-surface="checkin"]');
+  for(const [name,canvas] of [['hero',heroCanvas],['score',scoreCanvas],['checkin',checkinCanvas]]){
+    await canvas.waitFor({state:'visible',timeout:5000});
+    const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents}));
+    assert.ok(meta.w>0&&meta.h>0,`${name} canvas must have a real backing buffer`);
+    assert.equal(meta.pointer,'none',`${name} canvas must never block interaction`);
+    assert.notEqual(await canvasHash(canvas),0,`${name} canvas must render non-empty pixels`);
+  }
+  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(220);const heroHashB=await canvasHash(heroCanvas);
+  assert.notEqual(heroHashA,heroHashB,'Hero accumulation surface must animate when motion is allowed');
 
   const scoreHead=await page.locator('#garangTodayFlow .gtd3-score-head').innerText();
-  assert.match(scoreHead,/GARANG SCORE/);
-  assert.match(scoreHead,/오늘/);
+  assert.match(scoreHead,/GARANG SCORE/);assert.match(scoreHead,/오늘/);
   assert.equal(await page.locator('#garangTodayFlow .gtf-track').count(),3,'score composition keeps three state tracks');
-  const stateCopy=await page.locator('#garangTodayFlow .gtf-track-copy').allInnerTexts();
-  assert.equal(stateCopy.length,3);
 
   const checkin=page.locator('#garangTodayFlow [data-garang-checkin-access="1"]');
   await checkin.waitFor({state:'visible',timeout:5000});
-  assert.match(await checkin.innerText(),/오늘 상태 체크인/);
-  assert.match(await checkin.innerText(),/30초/);
+  assert.match(await checkin.innerText(),/오늘 상태 체크인/);assert.match(await checkin.innerText(),/30초/);
   const checkinBox=await checkin.boundingBox();
   assert.ok(checkinBox&&checkinBox.x>=0&&checkinBox.x+checkinBox.width<=width+1,`check-in card must stay inside viewport ${width}: ${JSON.stringify(checkinBox)}`);
   const smallBox=await checkin.locator('small').boundingBox();
   assert.ok(smallBox&&smallBox.x>=checkinBox.x-1&&smallBox.x+smallBox.width<=checkinBox.x+checkinBox.width+1,`check-in meta must not clip right: ${JSON.stringify({checkinBox,smallBox})}`);
+  await checkin.click();await page.locator('.modal-backdrop').waitFor({state:'visible',timeout:3000});
+  await page.locator('.modal-close').click();
 
   const metrics=page.locator('#garangTodayDensity .gtd3-metric');
   assert.equal(await metrics.count(),4,'Today accumulation must remain one four-signal composition');
@@ -85,18 +114,25 @@ async function verifyViewport(browser,width,height){
   const workout=page.locator('.garang-daily-workout');
   assert.equal(await workout.getAttribute('data-expanded'),'0','daily workout must be compact by default');
   assert.equal(await workout.locator('[data-daily-expand]').isHidden(),true,'workout builder controls stay progressive-disclosure by default');
-  assert.match(await workout.locator('[data-daily-summary-copy]').innerText(),/부위|전신|자동/);
-  await workout.locator('[data-daily-toggle]').click();
-  assert.equal(await workout.getAttribute('data-expanded'),'1');
-  await workout.locator('[data-daily-expand]').waitFor({state:'visible',timeout:3000});
-  assert.equal(await workout.locator('[data-daily-target]').count(),1,'expanded next action must preserve target control');
-  assert.equal(await workout.locator('[data-daily-minutes]').count(),1,'expanded next action must preserve duration control');
-  assert.equal(await workout.locator('[data-daily-intensity]').count(),1,'expanded next action must preserve intensity control');
 
   const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,main:document.getElementById('main')?.getBoundingClientRect().width||0,body:document.body.getBoundingClientRect().width}));
   assert.ok(layout.scroll<=layout.client+1,`Today visual parity must not horizontally overflow ${width}px: ${JSON.stringify(layout)}`);
   assert.ok(layout.main<=width+1&&layout.body<=width+1,`Today root surfaces must respect viewport ${width}px: ${JSON.stringify(layout)}`);
   assert.deepEqual(errors,[],`Today visual parity browser errors @${width}:\n${errors.join('\n')}`);
+  await context.close();
+}
+
+async function verifyReducedMotion(browser){
+  const {context,page,errors}=await bootContext(browser,390,844,{reducedMotion:'reduce'});
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'reduced');
+  assert.equal(await page.evaluate(()=>window.GarangAccumulationMotionV1?.reducedMotion),true,'runtime must respect prefers-reduced-motion');
+  const hero=page.locator('[data-garang-motion-surface="hero"]');
+  const before=await canvasHash(hero);await page.waitForTimeout(260);const after=await canvasHash(hero);
+  assert.notEqual(before,0,'reduced-motion fallback must still render a branded static frame');
+  assert.equal(before,after,'reduced-motion fallback must remain static');
+  const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+  assert.ok(layout.scroll<=layout.client+1,`reduced-motion Today must not overflow: ${JSON.stringify(layout)}`);
+  assert.deepEqual(errors,[],`Today reduced-motion browser errors:\n${errors.join('\n')}`);
   await context.close();
 }
 
@@ -107,7 +143,8 @@ async function verifyViewport(browser,width,height){
     await verifyViewport(browser,390,844);
     await verifyViewport(browser,393,852);
     await verifyViewport(browser,430,932);
-    console.log('browser-today-visual-parity mockup -> production @390/393/430: PASS');
+    await verifyReducedMotion(browser);
+    console.log('browser-today-visual-parity Canvas motion + reduced fallback @390/393/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');

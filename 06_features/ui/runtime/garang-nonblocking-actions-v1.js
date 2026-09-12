@@ -84,9 +84,11 @@
     if(action&&!flow.querySelector('.gtf-next[data-gtf-action="open-checkin"]')){if(checked)action.style.removeProperty('display');else action.style.setProperty('display','none','important');}
     const button=existing||document.createElement('button');button.type='button';button.className='gtf-checkin-access';button.dataset.garangCheckinAccess='1';button.dataset.checked=checked?'1':'0';button.dataset.gtoPriority=checked?'0':'1';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',english()?(checked?'Edit today check-in':'Check in today'):(checked?'오늘 상태 수정':'오늘 상태 체크인'));
     const sleep=Number(checkin?.sleepHours??checkin?.sleep),energy=Number(checkin?.energy),summary=checked?[Number.isFinite(sleep)?(english()?`Sleep ${sleep}h`:`수면 ${sleep}h`):'',Number.isFinite(energy)?(english()?`Energy ${energy}/5`:`에너지 ${energy}/5`):''].filter(Boolean).join(' · '):'';
+    const motionCanvas=button.querySelector('.gtd3-motion-canvas');
     button.innerHTML=checked
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
+    if(motionCanvas)button.appendChild(motionCanvas);
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
     if(!existing)context.insertAdjacentElement('afterend',button);
   }
@@ -101,11 +103,17 @@
     const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=3.0.0-visual-parity';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
-  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
-  let queued=false;
+  function loadAccumulationMotion(){
+    if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=1.0.0';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+  }
+
+  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
+  let queued=false,delayedScanTimer=0;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
-  window.addEventListener('garang:screen-rendered',queueScan);window.addEventListener('garang:state-updated',queueScan);window.addEventListener('garang:state-hydrated',queueScan);window.addEventListener('garang:agent-write',queueScan);window.addEventListener('garang:route-completed',queueScan);window.addEventListener('pageshow',queueScan);
-  scan();queueScan();
-  // Preserve the public compatibility version; the Today visual parity loader is cache-versioned independently.
+  function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(()=>{queueScan();window.GarangAccumulationMotionV1?.sync?.();},340);}
+  window.addEventListener('garang:screen-rendered',queueLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',queueLifecycleScan);window.addEventListener('pageshow',queueLifecycleScan);
+  scan();queueLifecycleScan();
+  // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
   window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
 })();
