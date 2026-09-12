@@ -12,19 +12,7 @@ const addDays=(date,offset)=>{const [year,month,day]=date.split('-').map(Number)
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const response=await fetch(baseURL);if(response.ok)return;}catch{}await new Promise(resolve=>setTimeout(resolve,180));}throw new Error('golden path preview server did not start');}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'golden-path-browser',force:true}),screen);assert.equal(ok,true,`${screen} must remain reachable through the canonical Router`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});}
 async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));}
-function emptyPlanState(){
-  const today=localDate();
-  return {
-    meta:{schemaVersion:5,updatedAt:new Date().toISOString()},
-    profile:{name:'Golden Path User',age:29,height:174,weight:70,gender:'male',goal:'근육 증가'},
-    onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},
-    preferences:{language:'ko',unit:'metric'},planner:[],
-    workouts:[],
-    meals:[{id:'meal-1',date:today,name:'기준 식단',kcal:2200,protein:112,carbs:260,fat:65,items:[{id:'food-1',name:'기준 식단',grams:500,kcal:2200,protein:112,carbs:260,fat:65}]}],
-    runs:[],body:[],checkins:[{id:'checkin-1',date:today,sleep:7.5,energy:4,stress:2,soreness:2}],dailyCheckins:[],
-    aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'
-  };
-}
+function emptyPlanState(){const today=localDate();return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Golden Path User',age:29,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[{id:'meal-1',date:today,name:'기준 식단',kcal:2200,protein:112,carbs:260,fat:65,items:[{id:'food-1',name:'기준 식단',grams:500,kcal:2200,protein:112,carbs:260,fat:65}]}],runs:[],body:[],checkins:[{id:'checkin-1',date:today,sleep:7.5,energy:4,stress:2,soreness:2}],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 
 (async()=>{
   const server=startStaticServer(serveRoot,port);let browser;
@@ -33,78 +21,31 @@ function emptyPlanState(){
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
     await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},emptyPlanState());
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
-    await page.goto(baseURL,{waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-    await page.waitForFunction(()=>window.GarangGoalAlignment&&window.GarangRouter&&window.GarangDailyPlanV1,null,{timeout:7000});
+    await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>window.GarangGoalAlignment&&window.GarangRouter&&window.GarangDailyPlanV1,null,{timeout:7000});
 
     const today=localDate(),monday=mondayOf(today);
-    const emptyPlan=page.locator('[data-golden-path="planner-entry"]');await emptyPlan.waitFor({state:'visible',timeout:7000});
-    await emptyPlan.click();
-    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:7000});
+    /* Planner behavior is tested through its canonical route. The Today Golden Path now routes
+       through Coach first, so this focused Planner integration test must not bypass that sequence. */
+    await route(page,'planner');
 
-    /* The canonical Golden Path now starts from GARANG's prepared three-track draft, not an empty manual form. */
     const dailyDraft=page.locator('[data-garang-daily-plan-draft="1"]');await dailyDraft.waitFor({state:'visible',timeout:7000});await page.waitForTimeout(250);
-    assert.equal(await dailyDraft.count(),1,'Today plan entry must expose one editable GARANG daily draft');
+    assert.equal(await dailyDraft.count(),1,'Planner must expose one editable GARANG daily draft');
     assert.equal(await page.locator('#garangPlanExecution').count(),1,'the canonical Planner execution surface must remain in the DOM');
     assert.equal(await page.locator('#garangPlanExecution').isVisible(),false,'legacy Planner evidence must stay quiet while the daily draft owns the screen');
     assert.match(await dailyDraft.innerText(),/운동 · 회복 · 식단/,'daily planning must cover all three coaching domains');
     assert.match(await dailyDraft.innerText(),/근육 증가/,'daily draft must show the active model goal as context');
     for(const domain of ['training','recovery','nutrition'])assert.equal(await dailyDraft.locator(`[data-gdp-domain="${domain}"]`).count(),1,domain+' must have one daily track');
-    const training=dailyDraft.locator('[data-gdp-domain="training"]');await training.locator('[data-gdp-title]').fill('저녁 상체 세션');await training.locator('[data-gdp-time]').fill('19:00');await training.locator('[data-gdp-duration]').fill('45');
-    await dailyDraft.locator('[data-gdp-confirm]').click();
-    await page.waitForFunction(date=>{const state=window.GarangAgentStateBridge?.getState?.();const rows=state?.planner?.filter(row=>row.date===date&&row.origin==='garang-daily-plan')||[];return rows.length===3&&rows.some(row=>row.title==='저녁 상체 세션');},today,{timeout:7000});
+    const training=dailyDraft.locator('[data-gdp-domain="training"]');await training.locator('[data-gdp-title]').fill('저녁 상체 세션');await training.locator('[data-gdp-time]').fill('19:00');await training.locator('[data-gdp-duration]').fill('45');await dailyDraft.locator('[data-gdp-confirm]').click();await page.waitForFunction(date=>{const state=window.GarangAgentStateBridge?.getState?.();const rows=state?.planner?.filter(row=>row.date===date&&row.origin==='garang-daily-plan')||[];return rows.length===3&&rows.some(row=>row.title==='저녁 상체 세션');},today,{timeout:7000});
 
-    const planner=page.locator('#garangPlanExecution');await planner.waitFor({state:'visible',timeout:7000});
-    assert.equal(await page.locator('#garangPlanExecution').count(),1,'confirming the draft must return to one canonical Planner surface');
-    assert.match(await planner.innerText(),/목표 · 근육 증가/,'Planner must retain the active model goal as context');
-    const timeline=await planner.locator('[data-gx-date]').evaluateAll(nodes=>nodes.map(node=>node.dataset.gxDate));
-    assert.deepEqual(timeline,Array.from({length:7},(_,index)=>addDays(monday,index)),'Planner week must run Monday through Sunday');
-    let state=await storedState(page);const dailyRows=state.planner.filter(row=>row.date===today&&row.origin==='garang-daily-plan'),savedPlan=dailyRows.find(row=>row.title==='저녁 상체 세션');
-    assert.equal(dailyRows.length,3,'confirming the draft must create training, recovery and nutrition plans');
-    assert.deepEqual(dailyRows.map(row=>row.domain),['training','recovery','nutrition']);
-    assert.equal(savedPlan.goalLabel,'근육 증가','a confirmed training plan must retain the current model goal');
-    assert.equal(savedPlan.completed,false,'confirmation alone must never count as execution');
+    const planner=page.locator('#garangPlanExecution');await planner.waitFor({state:'visible',timeout:7000});assert.equal(await page.locator('#garangPlanExecution').count(),1,'confirming the draft must return to one canonical Planner surface');assert.match(await planner.innerText(),/목표 · 근육 증가/,'Planner must retain the active model goal as context');const timeline=await planner.locator('[data-gx-date]').evaluateAll(nodes=>nodes.map(node=>node.dataset.gxDate));assert.deepEqual(timeline,Array.from({length:7},(_,index)=>addDays(monday,index)),'Planner week must run Monday through Sunday');let state=await storedState(page);const dailyRows=state.planner.filter(row=>row.date===today&&row.origin==='garang-daily-plan'),savedPlan=dailyRows.find(row=>row.title==='저녁 상체 세션');assert.equal(dailyRows.length,3,'confirming the draft must create training, recovery and nutrition plans');assert.deepEqual(dailyRows.map(row=>row.domain),['training','recovery','nutrition']);assert.equal(savedPlan.goalLabel,'근육 증가','a confirmed training plan must retain the current model goal');assert.equal(savedPlan.completed,false,'confirmation alone must never count as execution');
 
-    await route(page,'workout');
-    await page.locator('[data-gws-step="log"]').click();
-    await page.locator('.garang-set-options > summary').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});
-    const setValues=[[40,10,6],[60,8,7],[80,6,9]];
-    for(let index=0;index<setValues.length;index++){
-      const row=page.locator('#workoutSetDetails [data-set-row]').nth(index),[weight,reps,rpe]=setValues[index];
-      await row.locator('[data-set-weight]').fill(String(weight));await row.locator('[data-set-reps]').fill(String(reps));await row.locator('[data-set-rpe]').fill(String(rpe));
-    }
-    await page.waitForFunction(()=>document.getElementById('oneRmPreview')?.textContent==='96.0',null,{timeout:3000});
-    await page.locator('#addWorkout').click();await page.locator('[data-remove-workout="0"]').waitFor({state:'visible',timeout:5000});
-    assert.match(await page.locator('#workoutDraftArea').innerText(),/40kg × 10.*60kg × 8.*80kg × 6/,'one workout draft must preserve each set value');
-    await page.locator('#saveWorkoutSession').click();
-    await page.waitForFunction(()=>window.GarangAgentStateBridge?.getState?.()?.workouts?.length===1,null,{timeout:7000});
-    state=await storedState(page);const workout=state.workouts[0];
-    assert.deepEqual(workout.setDetails.map(row=>[row.weight,row.reps,row.rpe]),setValues,'saved workout must preserve per-set weight, reps and RPE');
-    assert.equal(workout.volume,1360,'saved workout volume must use the individual set weights');
-    assert.equal(workout.estimated1RM,96,'estimated 1RM must use the strongest set, not mixed aggregate fields');
+    await route(page,'workout');await page.locator('[data-gws-step="log"]').click();await page.locator('.garang-set-options > summary').click();await page.locator('#workoutSetDetails').waitFor({state:'visible',timeout:3000});const setValues=[[40,10,6],[60,8,7],[80,6,9]];for(let index=0;index<setValues.length;index++){const row=page.locator('#workoutSetDetails [data-set-row]').nth(index),[weight,reps,rpe]=setValues[index];await row.locator('[data-set-weight]').fill(String(weight));await row.locator('[data-set-reps]').fill(String(reps));await row.locator('[data-set-rpe]').fill(String(rpe));}await page.waitForFunction(()=>document.getElementById('oneRmPreview')?.textContent==='96.0',null,{timeout:3000});await page.locator('#addWorkout').click();await page.locator('[data-remove-workout="0"]').waitFor({state:'visible',timeout:5000});assert.match(await page.locator('#workoutDraftArea').innerText(),/40kg × 10.*60kg × 8.*80kg × 6/,'one workout draft must preserve each set value');await page.locator('#saveWorkoutSession').click();await page.waitForFunction(()=>window.GarangAgentStateBridge?.getState?.()?.workouts?.length===1,null,{timeout:7000});state=await storedState(page);const workout=state.workouts[0];assert.deepEqual(workout.setDetails.map(row=>[row.weight,row.reps,row.rpe]),setValues,'saved workout must preserve per-set weight, reps and RPE');assert.equal(workout.volume,1360,'saved workout volume must use individual set weights');assert.equal(workout.estimated1RM,96,'estimated 1RM must use the strongest set');
 
-    await route(page,'workout');await page.locator('[data-gws-step="overview"]').click();
-    assert.equal(await page.locator('#main > .record-insights').count(),0,'populated workout insights must not remain as a second surface');
-    assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"] .record-insights').count(),1,'populated workout insights must belong to Overview');
+    await route(page,'workout');await page.locator('[data-gws-step="overview"]').click();assert.equal(await page.locator('#main > .record-insights').count(),0,'populated workout insights must not remain as a second surface');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"] .record-insights').count(),1,'populated workout insights must belong to Overview');
 
-    await route(page,'coach');
-    await page.locator('.garang-coach-v2 [data-gcl-actions-toggle]').waitFor({state:'visible',timeout:7000});
-    assert.equal(await page.locator('.garang-coach-v2 [data-gcl-actions-panel]').isHidden(),true,'Coach next actions must stay quiet by default');
-    await page.locator('.garang-coach-v2 [data-gcl-actions-toggle]').click();
-    await page.locator('.garang-coach-v2 [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});
-    assert.ok(await page.locator('.garang-coach-v2 [data-gcl-actions-panel] [data-gcl-coach]:visible').count()>=2,'Coach actions must be available after disclosure');
-    await page.locator('.garang-coach-v2 [data-gcl-actions-panel] [data-gcl-coach="0"]').click();
-    await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>/오늘 남은 계획|남은 계획/.test(el.textContent||'')),null,{timeout:7000});
+    await route(page,'coach');await page.locator('.garang-coach-v2 [data-gcl-actions-toggle]').waitFor({state:'visible',timeout:7000});assert.equal(await page.locator('.garang-coach-v2 [data-gcl-actions-panel]').isHidden(),true,'Coach next actions must stay quiet by default');await page.locator('.garang-coach-v2 [data-gcl-actions-toggle]').click();await page.locator('.garang-coach-v2 [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});assert.ok(await page.locator('.garang-coach-v2 [data-gcl-actions-panel] [data-gcl-coach]:visible').count()>=2,'Coach actions must be available after disclosure');await page.locator('.garang-coach-v2 [data-gcl-actions-panel] [data-gcl-coach="0"]').click();await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>/오늘 남은 계획|남은 계획/.test(el.textContent||'')),null,{timeout:7000});
 
-    await route(page,'progress');
-    const accumulation=page.locator('#garangAccumulationOverview');await accumulation.waitFor({state:'visible',timeout:7000});
-    assert.equal(await page.locator('#garangAccumulationOverview').count(),1,'Accumulation must keep one canonical surface after the Golden Path');
-    assert.match(await accumulation.innerText(),/근육 증가/,'Accumulation must remain connected to the model goal');
-    assert.equal(await page.locator('#garangAccumulationOverview [data-gx-date]').count(),7);
-    await accumulation.locator('[data-gx-details]').click();await accumulation.locator('[data-gx-sheet]').waitFor({state:'visible',timeout:3000});
-    const goalDetail=await accumulation.locator('[data-gx-sheet]').innerText();assert.match(goalDetail,/목표 적합도/);assert.match(goalDetail,/운동/);assert.match(goalDetail,/식단/);assert.match(goalDetail,/회복/);assert.match(goalDetail,/저녁 상체 세션/);
-    const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,'Golden Path screens must not create horizontal overflow: '+JSON.stringify(width));
-    assert.deepEqual(errors,[],'Golden Path browser errors:\n'+errors.join('\n'));
-    await context.close();console.log('browser-golden-path WebKit mobile: PASS');
+    await route(page,'progress');const accumulation=page.locator('#garangAccumulationOverview');await accumulation.waitFor({state:'visible',timeout:7000});assert.equal(await page.locator('#garangAccumulationOverview').count(),1,'Accumulation must keep one canonical surface');assert.match(await accumulation.innerText(),/근육 증가/,'Accumulation must remain connected to the model goal');assert.equal(await page.locator('#garangAccumulationOverview [data-gx-date]').count(),7);await accumulation.locator('[data-gx-details]').click();await accumulation.locator('[data-gx-sheet]').waitFor({state:'visible',timeout:3000});const goalDetail=await accumulation.locator('[data-gx-sheet]').innerText();assert.match(goalDetail,/목표 적합도/);assert.match(goalDetail,/운동/);assert.match(goalDetail,/식단/);assert.match(goalDetail,/회복/);assert.match(goalDetail,/저녁 상체 세션/);const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,'Golden Path screens must not create horizontal overflow: '+JSON.stringify(width));assert.deepEqual(errors,[],'Golden Path browser errors:\n'+errors.join('\n'));
+    await context.close();console.log('browser-golden-path Planner + record truth + accumulation: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});

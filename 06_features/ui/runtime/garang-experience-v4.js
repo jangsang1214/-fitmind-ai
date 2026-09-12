@@ -25,6 +25,8 @@
       .garang-more-sheet [data-route]{position:relative}
       .garang-more-sheet .garang-route-subtitle{display:block;margin-top:2px;font-size:10px;line-height:1.1;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.48);text-transform:none}
       .manual-entry[open] #saveMeal:not(:disabled){position:relative}
+      #main[data-garang-screen="today"] #garangTodayFlow .gtf-action{position:relative;z-index:4}
+      #main[data-garang-screen="today"] #garangTodayFlow .gtf-next[data-gsn-action]{position:relative;z-index:5;pointer-events:auto!important}
     `;
     document.head.appendChild(style);
   }
@@ -127,4 +129,15 @@
   }, true);
 
   schedule();
+})();
+
+/* Subordinate Design/Brand integration: keep Golden Path logic, but give Today one visible next-action owner. */
+(() => {
+  'use strict';
+  if (window.GarangTodaySingleNextActionV1 || document.querySelector('script[data-garang-today-single-next-action-v1]')) return;
+  const script = document.createElement('script');
+  script.src = './06_features/ui/runtime/garang-today-single-next-action-v1.js?v=1.0.13';
+  script.dataset.garangTodaySingleNextActionV1 = '1';
+  script.async = false;
+  document.head.appendChild(script);
 })();
