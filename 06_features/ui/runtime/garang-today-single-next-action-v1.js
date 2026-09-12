@@ -10,13 +10,13 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.11';
+  const VERSION = 'garang-today-single-next-action-v1.0.12';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
   const list = value => Array.isArray(value) ? value : [];
   const pad = value => String(value).padStart(2,'0');
-  const fallbackLocalDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1,'0')}-${pad(d.getDate(),'0')}`; };
+  const fallbackLocalDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
   const localDate = () => { try { return window.GarangGoldenPath?.localDate?.() || fallbackLocalDate(); } catch { return fallbackLocalDate(); } };
   const sameDate = (row,date) => String(row?.date || row?.day || row?.performedAt || row?.createdAt || '').slice(0,10) === date;
   const hasTodayCheckin = snapshot => {
@@ -37,6 +37,8 @@
   let scheduled = false;
   let delayedTimer = 0;
   let latestModel = null;
+  let observedFlow = null;
+  let flowObserver = null;
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -90,6 +92,35 @@
   function todayActionFor(model, checkedToday, snapshot) {
     if (checkedToday || activationBeforeCheckin(model, snapshot)) return actionFor(model);
     return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
+  }
+
+  function flowOwnsExpectedAction(flow, model, snapshot) {
+    if (!flow || !model || !snapshot) return true;
+    const action = todayActionFor(model, hasTodayCheckin(snapshot), snapshot);
+    const button = flow.querySelector('.gtf-next');
+    if (!action) return true;
+    if (action.id === 'checkin') return main.dataset.gsnAction === 'checkin' && !button?.dataset?.gsnAction;
+    return main.dataset.gsnAction === action.id && button?.dataset?.gsnAction === action.id && button?.dataset?.gsnStep === model.step;
+  }
+
+  function ensureFlowObserver(flow) {
+    if (!flow || (flow === observedFlow && flowObserver)) return;
+    flowObserver?.disconnect();
+    observedFlow = flow;
+    flowObserver = new MutationObserver(() => {
+      if (main.dataset.garangScreen !== 'today') return;
+      if (flow !== main.querySelector('#garangTodayFlow')) return;
+      const snapshot = state();
+      const model = currentModel();
+      if (!snapshot || !model) return;
+      if (!flowOwnsExpectedAction(flow, model, snapshot)) sync();
+    });
+    flowObserver.observe(flow, {
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['data-gtf-route','data-gtf-action','data-golden-path','data-gsn-action','data-gsn-step','style']
+    });
   }
 
   function writeButtonLabel(button, label) {
@@ -171,6 +202,7 @@
 
     const flow = main.querySelector('#garangTodayFlow');
     if (!flow) return;
+    ensureFlowObserver(flow);
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
     const action = todayActionFor(model, checkedToday, snapshot);
