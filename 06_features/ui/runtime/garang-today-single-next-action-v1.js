@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.3';
+  const VERSION = 'garang-today-single-next-action-v1.0.4';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -107,10 +107,12 @@
       access.dataset.gsnSuppressed = '1';
       access.setAttribute('aria-hidden','true');
       access.tabIndex = -1;
+      access.style.setProperty('display','none','important');
     } else {
       delete access.dataset.gsnSuppressed;
       access.removeAttribute('aria-hidden');
       access.removeAttribute('tabindex');
+      access.style.removeProperty('display');
     }
   }
 
@@ -173,9 +175,7 @@
     button.dataset.gsnStep = model.step;
     button.setAttribute('aria-label', action.label);
     writeButtonLabel(button, action.label);
-    if (actionWrap) {
-      actionWrap.style.removeProperty('display');
-    }
+    if (actionWrap) actionWrap.style.removeProperty('display');
     suppressLegacyCheckin(flow, true);
   }
 
