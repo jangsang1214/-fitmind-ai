@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.2';
+  const VERSION = 'garang-today-single-next-action-v1.0.3';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -55,6 +55,13 @@
     }
     if (model.step === 'accumulation') return { id:'accumulation', label:ko ? '누적 확인하기' : 'View accumulation' };
     return null;
+  }
+
+  function todayActionFor(model, flow) {
+    if (model?.step === 'plan' && flow?.dataset?.gtoPhase === 'precheckin') {
+      return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
+    }
+    return actionFor(model);
   }
 
   function writeButtonLabel(button, label) {
@@ -131,7 +138,9 @@
     if (!flow) return;
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    const action = actionFor(model);
+    /* Today owns the current-day recovery state. A historical recovery signal can make
+       Golden Path recoveryReady=true, but it must never bypass today's pre-check-in gate. */
+    const action = todayActionFor(model, flow);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -164,7 +173,9 @@
     button.dataset.gsnStep = model.step;
     button.setAttribute('aria-label', action.label);
     writeButtonLabel(button, action.label);
-    if (actionWrap) actionWrap.style.setProperty('display','block','important');
+    if (actionWrap) {
+      actionWrap.style.removeProperty('display');
+    }
     suppressLegacyCheckin(flow, true);
   }
 
@@ -225,7 +236,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor });
   ensureStyle();
   schedule();
 })();
