@@ -134,7 +134,7 @@
   'use strict';
   if (window.GarangTodaySingleNextActionV1 || document.querySelector('script[data-garang-today-single-next-action-v1]')) return;
   const script = document.createElement('script');
-  script.src = './06_features/ui/runtime/garang-today-single-next-action-v1.js?v=1.0.3';
+  script.src = './06_features/ui/runtime/garang-today-single-next-action-v1.js?v=1.0.4';
   script.dataset.garangTodaySingleNextActionV1 = '1';
   script.async = false;
   document.head.appendChild(script);
