@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "status": "production-required",
+  "basePath": "./05_assets/garang-accumulation-cinematic/v1/",
+  "hero": {
+    "poster": "hero-poster.webp",
+    "idle": {
+      "webm": "hero-idle.webm",
+      "mp4": "hero-idle.mp4",
+      "durationMs": 12000,
+      "loop": true
+    },
+    "events": {
+      "deposit": {
+        "webm": "hero-deposit.webm",
+        "mp4": "hero-deposit.mp4",
+        "durationMs": 2600,
+        "loop": false
+      }
+    }
+  },
+  "delivery": {
+    "master": "ProRes 422 HQ or image sequence, 10-bit preferred",
+    "webm": "VP9, 30 fps, visually lossless dark gradients",
+    "mp4": "H.264 High Profile, 30 fps, iOS fallback",
+    "poster": "WebP, same neutral frame as idle start/end",
+    "safeCrop": "390-430 px portrait app viewport; hero media itself landscape/wide with centered action-safe region"
+  },
+  "visualContract": {
+    "material": "physically believable near-black water / ink / lacquer hybrid",
+    "lighting": "large soft source, negative fill, restrained warm-white specular, extremely subtle jade/celadon response",
+    "motion": "real surface tension and micro-reflection; no generic concentric ripple loop",
+    "koreanCharacter": "restraint, asymmetry, ink depth, lacquer depth, moon-jar imperfection; no literal traditional ornament",
+    "forbidden": [
+      "neon teal glow",
+      "jelly orb",
+      "perfect concentric circles",
+      "procedural Canvas water",
+      "particle-tech gaming look",
+      "stock wellness loop",
+      "visible compression banding in black gradients"
+    ]
+  }
+}
