@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.8';
+  const VERSION = 'garang-today-single-next-action-v1.0.9';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -25,6 +25,13 @@
     const today = localDate();
     return [...list(current.dailyCheckins), ...list(current.checkins)].some(row => sameDate(row,today));
   };
+  const hasTodayRecord = snapshot => {
+    const current = snapshot || state();
+    if (!current) return false;
+    const today = localDate();
+    return ['workouts','meals','runs','body'].some(key => list(current[key]).some(row => sameDate(row,today)));
+  };
+  const completedOnboarding = snapshot => list(snapshot?.analytics?.events).some(event => event?.name === 'onboarding_completed');
   let scheduled = false;
   let delayedTimer = 0;
   let latestModel = null;
@@ -36,7 +43,8 @@
     style.textContent = `
       #main[data-garang-screen="today"] [data-golden-path-surface]{display:none!important}
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"],
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-activation="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -68,12 +76,16 @@
     return null;
   }
 
-  function todayActionFor(model, checkedToday) {
-    /* Today morning state is the visible-action gate for every Golden Path step.
-       Before the current-day check-in, preserve the native hidden CTA and let the
-       canonical check-in control remain the only visible action. */
-    if (!checkedToday) return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
-    return actionFor(model);
+  function activationBeforeCheckin(model, snapshot) {
+    if (!model || !snapshot) return false;
+    if (model.step === 'first_record') return completedOnboarding(snapshot);
+    if (model.step === 'coach') return hasTodayRecord(snapshot);
+    return false;
+  }
+
+  function todayActionFor(model, checkedToday, snapshot) {
+    if (checkedToday || activationBeforeCheckin(model, snapshot)) return actionFor(model);
+    return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
   }
 
   function writeButtonLabel(button, label) {
@@ -133,6 +145,7 @@
       main.removeAttribute('data-garang-next-owner');
       main.removeAttribute('data-gsn-action');
       main.removeAttribute('data-gsn-checked');
+      main.removeAttribute('data-gsn-activation');
       main.querySelectorAll('[data-golden-path-surface]').forEach(node => node.remove());
       return;
     }
@@ -142,9 +155,11 @@
     if (!model || !snapshot) return;
     latestModel = model;
     const checkedToday = hasTodayCheckin(snapshot);
+    const activationPriority = !checkedToday && activationBeforeCheckin(model, snapshot);
     main.dataset.gpStep = model.step;
     main.dataset.gpComplete = model.completed ? 'true' : 'false';
     main.dataset.gsnChecked = checkedToday ? 'true' : 'false';
+    main.dataset.gsnActivation = activationPriority ? 'true' : 'false';
 
     /* The legacy Golden Path UI may still calculate/render a sibling surface.
        Keep its routing logic available but never let it become a second visible owner. */
@@ -154,10 +169,7 @@
     if (!flow) return;
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    /* Today owns the current-day recovery state. Historical recovery evidence may make
-       Golden Path recoveryReady=true, but only an actual current-day check-in can clear
-       the Today recovery gate. */
-    const action = todayActionFor(model, checkedToday);
+    const action = todayActionFor(model, checkedToday, snapshot);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -190,7 +202,7 @@
     button.dataset.gsnStep = model.step;
     button.setAttribute('aria-label', action.label);
     writeButtonLabel(button, action.label);
-    if (actionWrap) actionWrap.style.removeProperty('display');
+    if (actionWrap) actionWrap.style.setProperty('display','block','important');
     suppressLegacyCheckin(flow, true);
   }
 
@@ -251,7 +263,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin });
   ensureStyle();
   schedule();
 })();
