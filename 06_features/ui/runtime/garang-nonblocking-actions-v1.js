@@ -22,8 +22,10 @@
   const timers=new WeakMap();
   const english=()=>document.documentElement.lang==='en';
   const pad=value=>String(value).padStart(2,'0');
-  const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
-  const sameDate=(row,date)=>String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)===date;
+  const localDate=value=>{const d=value instanceof Date?value:new Date(value);return Number.isFinite(d.getTime())?`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`:'';};
+  const today=()=>localDate(new Date());
+  const rowDate=row=>{const explicit=String(row?.date||row?.day||'').trim();if(/^\d{4}-\d{2}-\d{2}/.test(explicit))return explicit.slice(0,10);const raw=row?.performedAt||row?.createdAt||row?.updatedAt||'';return raw?localDate(raw):'';};
+  const sameDate=(row,date)=>rowDate(row)===date;
 
   function reset(button){
     const timer=timers.get(button);if(timer)clearTimeout(timer);timers.delete(button);
@@ -96,7 +98,7 @@
 
   function loadTodayDensity(){
     if(window.GarangTodayDensityV1||document.querySelector('script[data-garang-today-density-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=2.0.0-brand-surface';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=3.0.0-visual-parity';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
@@ -104,5 +106,5 @@
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
   window.addEventListener('garang:screen-rendered',queueScan);window.addEventListener('garang:state-updated',queueScan);window.addEventListener('garang:state-hydrated',queueScan);window.addEventListener('garang:agent-write',queueScan);window.addEventListener('garang:route-completed',queueScan);window.addEventListener('pageshow',queueScan);
   scan();queueScan();
-  window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.3.0',scan,queueScan,promoteTodayCheckin});
 })();
