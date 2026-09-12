@@ -11,6 +11,7 @@ if(window.GarangCanonicalDailyPlanV1)return;
 const VERSION='garang-canonical-daily-plan-v1.0.0';
 const DOMAINS=Object.freeze(['training','recovery','nutrition']);
 const DOMAIN_LABELS=Object.freeze({ko:{training:'운동',recovery:'회복',nutrition:'식단'},en:{training:'Training',recovery:'Recovery',nutrition:'Nutrition'}});
+const CONFIRMATION_SCOPE_KEY=window.GarangAgentContractV2?.CONFIRMATION_SCOPE_KEY||'__GARANG_AGENT_CONFIRMED_WRITE_V2__';
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const list=value=>Array.isArray(value)?value:[];
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
@@ -98,11 +99,16 @@ function summaryToday(options={}){
   if(!parts.length)return null;
   return `${lang==='en'?"Today's plan":'오늘의 계획'} · ${parts.join(' · ')}`;
 }
+function confirmedWrite(meta){
+  if(meta?.userConfirmed===true||meta?.confirmed===true)return true;
+  const scoped=window[CONFIRMATION_SCOPE_KEY];
+  return scoped?.userConfirmed===true||scoped?.confirmed===true;
+}
 function installWriteFacade(){
   const base=stateBridge();if(!base||base.__canonicalDailyPlanV1===VERSION)return false;
   const previousApply=typeof base.applyWrite==='function'?base.applyWrite.bind(base):null;
   const facade=Object.freeze({...base,__canonicalDailyPlanV1:VERSION,applyWrite(tool,args,meta){
-    if(tool==='createPlan'){
+    if(tool==='createPlan'&&confirmedWrite(meta)){
       const result=confirmToday({source:'coach',navigate:false,proposalArgs:clone(args||{})});
       if(result.confirmed||result.reason==='existing-plan')return result;
       throw new Error(`CANONICAL_DAILY_PLAN_${String(result.reason||'NOT_CONFIRMED').toUpperCase().replace(/[^A-Z0-9]+/g,'_')}`);
