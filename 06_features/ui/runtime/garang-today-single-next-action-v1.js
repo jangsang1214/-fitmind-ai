@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.7';
+  const VERSION = 'garang-today-single-next-action-v1.0.8';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -69,9 +69,10 @@
   }
 
   function todayActionFor(model, checkedToday) {
-    if (model?.step === 'plan' && !checkedToday) {
-      return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
-    }
+    /* Today morning state is the visible-action gate for every Golden Path step.
+       Before the current-day check-in, preserve the native hidden CTA and let the
+       canonical check-in control remain the only visible action. */
+    if (!checkedToday) return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
     return actionFor(model);
   }
 
