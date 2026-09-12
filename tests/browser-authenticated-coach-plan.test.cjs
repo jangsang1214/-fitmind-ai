@@ -50,13 +50,22 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>el.textContent.includes('내 저장 기록을 기준으로 오늘 실행할 계획을 만들어주고')),null,{timeout:5000});
   for(let i=0;i<12;i++){await sleep(250);await heartbeat(page,`plan settle ${i}`);const state=await coachState(page);assert.equal(state.active,'coach',`plan prompt must not leave Coach at sample ${i}: ${JSON.stringify(state)}`);assert.equal(state.coach,true,`Coach root disappeared at sample ${i}: ${JSON.stringify(state)}`);assert.ok(state.planMessage||state.proposal,`cloud hydration must not reset the active Coach conversation at sample ${i}: ${JSON.stringify(state)}`);}
   await page.waitForFunction(()=>document.querySelector('.g4-agent-proposal'),null,{timeout:7000});
+  await page.waitForFunction(()=>document.querySelector('.g4-agent-proposal')?.dataset?.canonicalDailyPlan==='1',null,{timeout:4000});
   let proposed=await coachState(page);assert.equal(proposed.active,'coach',`plan proposal must remain in Coach until the user applies it: ${JSON.stringify(proposed)}`);assert.equal(proposed.proposal,true);
+  const proposalText=String(await page.locator('.g4-agent-proposal > p').textContent()||'');assert.match(proposalText,/오늘의 계획/,'Coach must present the proposal as one coordinated Daily Plan');assert.match(proposalText,/운동/);assert.match(proposalText,/회복/);assert.match(proposalText,/식단/);
   const applyButton=page.locator('.g4-agent-proposal [data-g4-approve]');assert.match(await applyButton.textContent(),/반영.*계획/,'createPlan approval must make the apply-and-continue behavior explicit');
   await tap(page,'.g4-agent-proposal [data-g4-approve]','apply plan');
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:7000});await heartbeat(page,'applied plan opens Planner');
   const afterApply=await page.evaluate(()=>({active:document.querySelector('#bottomNav button.active')?.dataset.page||null,screen:document.getElementById('main')?.dataset.garangScreen||'',plannerVisible:!!document.querySelector('#main[data-garang-screen="planner"]')}));assert.equal(afterApply.screen,'planner',`applied Coach plan must open Planner: ${JSON.stringify(afterApply)}`);assert.equal(afterApply.plannerVisible,true);
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null'));
-  assert.ok(Array.isArray(saved?.planner)&&saved.planner.some(p=>p.source==='ai'),`applied plan must persist before navigation: ${JSON.stringify(saved?.planner||[])}`);
+  const savedSnapshot=await page.evaluate(()=>({date:window.GarangDailyPlanV1.localDate(),state:JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null')})),saved=savedSnapshot.state,today=savedSnapshot.date;
+  const todayPlans=(saved?.planner||[]).filter(p=>String(p?.date||'').slice(0,10)===today);assert.equal(todayPlans.length,3,`Coach apply must confirm exactly one three-track Daily Plan: ${JSON.stringify(todayPlans)}`);
+  assert.deepEqual([...new Set(todayPlans.map(p=>p.domain))].sort(),['nutrition','recovery','training'],'Coach apply must persist training, recovery and nutrition together');
+  assert.ok(todayPlans.every(p=>p.source==='ai'&&p.origin==='garang-daily-plan'),`all Coach-applied rows must come from canonical Daily Plan: ${JSON.stringify(todayPlans)}`);
+  assert.equal(todayPlans.some(p=>p.origin==='ai'),false,'legacy single-row Coach plan origin must not be written');
+  const groupIds=[...new Set(todayPlans.map(p=>p.draftGroupId).filter(Boolean))];assert.equal(groupIds.length,1,'three tracks must share one Daily Plan draft group');
+  const group=saved?.meta?.dailyPlanDrafts?.[today];assert.equal(group?.status,'confirmed',`Daily Plan draft must be confirmed: ${JSON.stringify(group)}`);assert.equal(group?.confirmationSource,'coach','Coach approval must be recorded as the canonical confirmation source');
+  assert.deepEqual([...(group?.confirmedPlanIds||[])].sort(),todayPlans.map(p=>p.id).sort(),'confirmed Daily Plan ids must match Planner rows');
+  assert.ok((saved?.actionLog||[]).some(row=>row?.action==='daily_plan_draft_confirmed'&&row?.args?.source==='coach'),'canonical Coach apply must be auditable in actionLog');
   await page.evaluate(()=>window.GarangRouter.navigate('coach',{source:'authenticated-coach-plan-test',force:true}));await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:5000});
   await tap(page,'.g2-mobile-threads','open Coach conversations');
   await tap(page,'.g2-thread-row.active [data-thread-menu]','open thread menu');
@@ -70,6 +79,6 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   await heartbeat(page,'thread delete settles');assert.equal((await coachState(page)).active,'coach','deleting a Coach thread must not navigate away');
   const trace=await page.evaluate(()=>window.__coachRouteTrace||[]);assert.ok(trace.some(x=>x.kind==='route-completed'&&x.route==='planner'),`plan apply must complete a Planner route: ${JSON.stringify(trace)}`);assert.equal(trace.filter(x=>x.kind==='click'&&x.route&&x.route!=='coach').length,0,`Coach plan/thread actions must not depend on a synthetic non-Coach nav click: ${JSON.stringify(trace)}`);
   assert.deepEqual(errors,[],`authenticated Coach plan runtime errors:\n${errors.join('\n')}`);
-  console.log('browser-authenticated-coach-plan apply-to-Planner: PASS');
+  console.log('browser-authenticated-coach-plan canonical Daily Plan: PASS');
  }finally{clearTimeout(watchdog);if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
 })().catch(error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
