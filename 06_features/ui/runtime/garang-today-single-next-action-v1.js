@@ -10,13 +10,13 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.10';
+  const VERSION = 'garang-today-single-next-action-v1.0.11';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
   const list = value => Array.isArray(value) ? value : [];
   const pad = value => String(value).padStart(2,'0');
-  const fallbackLocalDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+  const fallbackLocalDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1,'0')}-${pad(d.getDate(),'0')}`; };
   const localDate = () => { try { return window.GarangGoldenPath?.localDate?.() || fallbackLocalDate(); } catch { return fallbackLocalDate(); } };
   const sameDate = (row,date) => String(row?.date || row?.day || row?.performedAt || row?.createdAt || '').slice(0,10) === date;
   const hasTodayCheckin = snapshot => {
@@ -45,6 +45,8 @@
     style.textContent = `
       #main[data-garang-screen="today"] [data-golden-path-surface]{display:none!important}
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
+      #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-action{display:block!important;position:relative!important;z-index:4!important;pointer-events:auto!important}
+      #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-next[data-gsn-action]{position:relative!important;z-index:5!important;pointer-events:auto!important}
       html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"],
       html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-activation="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
