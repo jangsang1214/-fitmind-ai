@@ -32,6 +32,7 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
    db={collection:name=>new CollectionRef(name),batch:()=>({set(){},delete(){},commit:async()=>{}}),runTransaction:async fn=>fn({get:ref=>ref.get(),set:()=>{}})};
    const auth={currentUser:user,onAuthStateChanged(cb){setTimeout(()=>cb(user),20);return ()=>{};},signOut:async()=>{auth.currentUser=null;}};function firestore(){return db;}firestore.FieldValue={serverTimestamp:()=>'mock-server-time'};firestore.FieldPath={documentId:()=>'__name__'};function authFn(){return auth;}authFn.GoogleAuthProvider=function(){};authFn.OAuthProvider=function(){};window.firebase={apps:[{}],initializeApp:()=>({}),auth:authFn,firestore};
    window.__coachRouteTrace=[];
+   window.addEventListener('garang:route-completed',e=>window.__coachRouteTrace.push({kind:'route-completed',route:e?.detail?.route||null,t:performance.now()}));
    document.addEventListener('click',e=>{const route=e.target?.closest?.('[data-page]')?.dataset?.page||null;const prompt=e.target?.closest?.('[data-garang-prompt-id]')?.dataset?.garangPromptId||null;if(route||prompt)window.__coachRouteTrace.push({kind:'click',route,prompt,t:performance.now()});},true);
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
@@ -49,12 +50,14 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.user .g2-message-text')].some(el=>el.textContent.includes('내 저장 기록을 기준으로 오늘 실행할 계획을 만들어주고')),null,{timeout:5000});
   for(let i=0;i<12;i++){await sleep(250);await heartbeat(page,`plan settle ${i}`);const state=await coachState(page);assert.equal(state.active,'coach',`plan prompt must not leave Coach at sample ${i}: ${JSON.stringify(state)}`);assert.equal(state.coach,true,`Coach root disappeared at sample ${i}: ${JSON.stringify(state)}`);assert.ok(state.planMessage||state.proposal,`cloud hydration must not reset the active Coach conversation at sample ${i}: ${JSON.stringify(state)}`);}
   await page.waitForFunction(()=>document.querySelector('.g4-agent-proposal'),null,{timeout:7000});
-  let proposed=await coachState(page);assert.equal(proposed.active,'coach',`plan proposal must remain in Coach: ${JSON.stringify(proposed)}`);assert.equal(proposed.proposal,true);
-  await tap(page,'.g4-agent-proposal [data-g4-approve]','approve plan');
-  await sleep(700);await heartbeat(page,'approved plan settles');
-  const after=await coachState(page);assert.equal(after.active,'coach',`approved plan must not leave Coach: ${JSON.stringify(after)}`);assert.equal(after.coach,true);assert.ok(after.planMessage,`approval must not reset Coach thread: ${JSON.stringify(after)}`);
+  let proposed=await coachState(page);assert.equal(proposed.active,'coach',`plan proposal must remain in Coach until the user applies it: ${JSON.stringify(proposed)}`);assert.equal(proposed.proposal,true);
+  const applyButton=page.locator('.g4-agent-proposal [data-g4-approve]');assert.match(await applyButton.textContent(),/반영.*계획/,'createPlan approval must make the apply-and-continue behavior explicit');
+  await tap(page,'.g4-agent-proposal [data-g4-approve]','apply plan');
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:7000});await heartbeat(page,'applied plan opens Planner');
+  const afterApply=await page.evaluate(()=>({active:document.querySelector('#bottomNav button.active')?.dataset.page||null,screen:document.getElementById('main')?.dataset.garangScreen||'',plannerVisible:!!document.querySelector('#main[data-garang-screen="planner"]')}));assert.equal(afterApply.screen,'planner',`applied Coach plan must open Planner: ${JSON.stringify(afterApply)}`);assert.equal(afterApply.plannerVisible,true);
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null'));
-  assert.ok(Array.isArray(saved?.planner)&&saved.planner.some(p=>p.source==='ai'),`approved plan must persist: ${JSON.stringify(saved?.planner||[])}`);
+  assert.ok(Array.isArray(saved?.planner)&&saved.planner.some(p=>p.source==='ai'),`applied plan must persist before navigation: ${JSON.stringify(saved?.planner||[])}`);
+  await page.evaluate(()=>window.GarangRouter.navigate('coach',{source:'authenticated-coach-plan-test',force:true}));await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:5000});
   await tap(page,'.g2-mobile-threads','open Coach conversations');
   await tap(page,'.g2-thread-row.active [data-thread-menu]','open thread menu');
   await tap(page,'.g2-thread-popover [data-act="rename"]','rename conversation');
@@ -65,8 +68,8 @@ async function coachState(page){return page.evaluate(()=>{const root=document.qu
   assert.match(await page.locator('.g2-thread-popover [data-act="delete"]').textContent(),/한 번 더/,'delete must require an in-app second tap');
   await tap(page,'.g2-thread-popover [data-act="delete"]','confirm delete');
   await heartbeat(page,'thread delete settles');assert.equal((await coachState(page)).active,'coach','deleting a Coach thread must not navigate away');
-  const trace=await page.evaluate(()=>window.__coachRouteTrace||[]);assert.equal(trace.filter(x=>x.route&&x.route!=='coach').length,0,`plan/thread actions emitted unexpected route click: ${JSON.stringify(trace)}`);
+  const trace=await page.evaluate(()=>window.__coachRouteTrace||[]);assert.ok(trace.some(x=>x.kind==='route-completed'&&x.route==='planner'),`plan apply must complete a Planner route: ${JSON.stringify(trace)}`);assert.equal(trace.filter(x=>x.kind==='click'&&x.route&&x.route!=='coach').length,0,`Coach plan/thread actions must not depend on a synthetic non-Coach nav click: ${JSON.stringify(trace)}`);
   assert.deepEqual(errors,[],`authenticated Coach plan runtime errors:\n${errors.join('\n')}`);
-  console.log('browser-authenticated-coach-plan: PASS');
+  console.log('browser-authenticated-coach-plan apply-to-Planner: PASS');
  }finally{clearTimeout(watchdog);if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
 })().catch(error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
