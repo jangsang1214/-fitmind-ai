@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.4';
+  const VERSION = 'garang-today-single-next-action-v1.0.5';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -25,7 +25,7 @@
     style.textContent = `
       #main[data-garang-screen="today"] [data-golden-path-surface]{display:none!important}
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
-      #main[data-garang-screen="today"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important}
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -107,12 +107,10 @@
       access.dataset.gsnSuppressed = '1';
       access.setAttribute('aria-hidden','true');
       access.tabIndex = -1;
-      access.style.setProperty('display','none','important');
     } else {
       delete access.dataset.gsnSuppressed;
       access.removeAttribute('aria-hidden');
       access.removeAttribute('tabindex');
-      access.style.removeProperty('display');
     }
   }
 
