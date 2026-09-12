@@ -10,10 +10,21 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.6';
+  const VERSION = 'garang-today-single-next-action-v1.0.7';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
+  const list = value => Array.isArray(value) ? value : [];
+  const pad = value => String(value).padStart(2,'0');
+  const fallbackLocalDate = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+  const localDate = () => { try { return window.GarangGoldenPath?.localDate?.() || fallbackLocalDate(); } catch { return fallbackLocalDate(); } };
+  const sameDate = (row,date) => String(row?.date || row?.day || row?.performedAt || row?.createdAt || '').slice(0,10) === date;
+  const hasTodayCheckin = snapshot => {
+    const current = snapshot || state();
+    if (!current) return false;
+    const today = localDate();
+    return [...list(current.dailyCheckins), ...list(current.checkins)].some(row => sameDate(row,today));
+  };
   let scheduled = false;
   let delayedTimer = 0;
   let latestModel = null;
@@ -25,7 +36,7 @@
     style.textContent = `
       #main[data-garang-screen="today"] [data-golden-path-surface]{display:none!important}
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow[data-gto-phase="checked"] [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -57,8 +68,8 @@
     return null;
   }
 
-  function todayActionFor(model, flow) {
-    if (model?.step === 'plan' && flow?.dataset?.gtoPhase === 'precheckin') {
+  function todayActionFor(model, checkedToday) {
+    if (model?.step === 'plan' && !checkedToday) {
       return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
     }
     return actionFor(model);
@@ -120,15 +131,19 @@
     if (main.dataset.garangScreen !== 'today') {
       main.removeAttribute('data-garang-next-owner');
       main.removeAttribute('data-gsn-action');
+      main.removeAttribute('data-gsn-checked');
       main.querySelectorAll('[data-golden-path-surface]').forEach(node => node.remove());
       return;
     }
 
+    const snapshot = state();
     const model = currentModel();
-    if (!model) return;
+    if (!model || !snapshot) return;
     latestModel = model;
+    const checkedToday = hasTodayCheckin(snapshot);
     main.dataset.gpStep = model.step;
     main.dataset.gpComplete = model.completed ? 'true' : 'false';
+    main.dataset.gsnChecked = checkedToday ? 'true' : 'false';
 
     /* The legacy Golden Path UI may still calculate/render a sibling surface.
        Keep its routing logic available but never let it become a second visible owner. */
@@ -138,9 +153,10 @@
     if (!flow) return;
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    /* Today owns the current-day recovery state. A historical recovery signal can make
-       Golden Path recoveryReady=true, but it must never bypass today's pre-check-in gate. */
-    const action = todayActionFor(model, flow);
+    /* Today owns the current-day recovery state. Historical recovery evidence may make
+       Golden Path recoveryReady=true, but only an actual current-day check-in can clear
+       the Today recovery gate. */
+    const action = todayActionFor(model, checkedToday);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -234,7 +250,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin });
   ensureStyle();
   schedule();
 })();
