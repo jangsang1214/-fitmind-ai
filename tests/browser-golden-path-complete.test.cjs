@@ -13,7 +13,27 @@ const timeout=(ms,label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Erro
 function freshState(){return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Golden Path New User',age:29,height:174,weight:70,gender:'male',goal:'퍼포먼스 향상'},onboarding:{complete:false,skipped:false,goal:'근육 증가',experience:'beginner',weeklyFrequency:4,availableMinutes:45,preferences:''},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const response=await fetch(baseURL);if(response.ok)return;}catch{}await sleep(180);}throw new Error('complete Golden Path preview server did not start');}
 async function heartbeat(page,label){await Promise.race([page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,35)))),timeout(2200,label+': WebKit main thread stopped responding')]);}
-async function tap(page,selector,label){const loc=page.locator(selector).first();await loc.waitFor({state:'visible',timeout:7000});await loc.evaluate(element=>element.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));await page.waitForTimeout(45);const box=await loc.boundingBox();assert.ok(box,label+': missing touch box');const hit=await loc.evaluate(element=>{const rect=element.getBoundingClientRect(),target=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return !!target&&(target===element||element.contains(target));});assert.equal(hit,true,label+': does not own its touch point');await Promise.race([page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2),timeout(3500,label+': physical tap did not settle')]);await heartbeat(page,label);}
+async function tap(page,selector,label){
+  const deadline=Date.now()+1600;let box=null,hit=false,lastDiagnostic=null;
+  while(Date.now()<deadline){
+    const loc=page.locator(selector).first();
+    try{
+      await loc.waitFor({state:'visible',timeout:Math.min(700,Math.max(100,deadline-Date.now()))});
+      await loc.evaluate(element=>element.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
+      await page.waitForTimeout(55);
+      box=await loc.boundingBox();
+      if(box){
+        hit=await loc.evaluate(element=>{const rect=element.getBoundingClientRect(),target=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return !!target&&(target===element||element.contains(target));});
+        if(hit)break;
+      }
+      lastDiagnostic=await loc.evaluate(element=>{const rect=element.getBoundingClientRect(),target=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return {connected:element.isConnected,display:getComputedStyle(element).display,visibility:getComputedStyle(element).visibility,pointer:getComputedStyle(element).pointerEvents,rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},hit:{tag:target?.tagName||null,id:target?.id||null,className:String(target?.className||'')}};}).catch(()=>null);
+    }catch{}
+    await page.waitForTimeout(70);
+  }
+  assert.ok(box,label+': missing stable touch box '+JSON.stringify(lastDiagnostic));
+  assert.equal(hit,true,label+': does not stably own its touch point '+JSON.stringify(lastDiagnostic));
+  await Promise.race([page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2),timeout(3500,label+': physical tap did not settle')]);await heartbeat(page,label);
+}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'golden-path-complete-browser',force:true}),screen);assert.equal(ok,true,screen+' must remain reachable through the canonical Router');await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});await heartbeat(page,'route '+screen);}
 async function waitForStep(page,step,{action=true}={}){try{await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});}catch(error){const diagnostic=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen,gpStep:document.getElementById('main')?.dataset?.gpStep,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()}),planner:window.GarangAgentStateBridge?.getState?.()?.planner,workouts:window.GarangAgentStateBridge?.getState?.()?.workouts,events:window.GarangAgentStateBridge?.getState?.()?.analytics?.events?.slice(-8)}));throw new Error(error.message+'\nGolden Path diagnostic: '+JSON.stringify(diagnostic),{cause:error});}assert.equal(await page.locator('[data-golden-path-surface]').count(),0,'Today must not render a second Golden Path card');if(action)await page.locator(`#garangTodayFlow .gtf-next[data-gsn-step="${step}"]`).waitFor({state:'visible',timeout:5000});}
 async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));}
