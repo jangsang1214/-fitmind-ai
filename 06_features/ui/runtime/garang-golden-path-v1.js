@@ -67,16 +67,20 @@ function syncSurface(existing,html){
   if(currentAction&&nextAction){currentAction.dataset.gpAction=nextAction.dataset.gpAction||'';if(currentAction.textContent!==nextAction.textContent)currentAction.textContent=nextAction.textContent;}
   return true;
 }
+function ensureTodayCheckinHandoff(){
+  try{window.GarangNonblockingActions?.promoteTodayCheckin?.();}catch{}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{try{window.GarangNonblockingActions?.promoteTodayCheckin?.();window.GarangAccumulationMotionV1?.sync?.();}catch{}}));
+}
 function inject(){
   if(screen()!=='today'){
     removeSurface();main.removeAttribute('data-gp-step');main.removeAttribute('data-gp-complete');return;
   }
   const model=currentModel();if(!model)return;
-  const html=surface(model),existing=main.querySelector(`[${SURFACE}]`);
+  const html=surface(model),existing=main.querySelector(`[${SURFACE}]`),action=actionFor(model);
+  if(!html&&action.id==='checkin')ensureTodayCheckinHandoff();
   main.dataset.gpStep=model.step;main.dataset.gpComplete=model.completed?'true':'false';
   if(!html){
     existing?.remove();
-    if(actionFor(model).id==='checkin')requestAnimationFrame(()=>requestAnimationFrame(()=>window.GarangNonblockingActions?.promoteTodayCheckin?.()));
     return;
   }
   if(existing?.dataset?.gpStep===model.step&&syncSurface(existing,html))return;
