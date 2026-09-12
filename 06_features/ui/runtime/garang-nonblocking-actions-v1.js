@@ -77,6 +77,8 @@
 
   function pinEditorialCheckin(button){
     if(!button)return;
+    button.style.setProperty('position','relative','important');
+    button.style.setProperty('z-index','2','important');
     button.style.setProperty('border-radius','0px','important');
     button.style.setProperty('background','transparent','important');
     button.style.setProperty('box-shadow','none','important');
@@ -121,7 +123,7 @@
 
   function loadAccumulationMotion(){
     if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=3.0.0-inapp-resilient';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
+    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=4.0.0-ink-water';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
   }
 
   function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
