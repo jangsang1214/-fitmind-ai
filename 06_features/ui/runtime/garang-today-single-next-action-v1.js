@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.12';
+  const VERSION = 'garang-today-single-next-action-v1.0.13';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -122,6 +122,13 @@
       attributeFilter:['data-gtf-route','data-gtf-action','data-golden-path','data-gsn-action','data-gsn-step','style']
     });
   }
+
+  const rootObserver = new MutationObserver(() => {
+    if (main.dataset.garangScreen !== 'today') return;
+    const flow = main.querySelector('#garangTodayFlow');
+    if (flow && flow !== observedFlow) sync();
+  });
+  rootObserver.observe(main, { childList:true, subtree:true });
 
   function writeButtonLabel(button, label) {
     if (!button) return;
