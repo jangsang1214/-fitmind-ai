@@ -10,6 +10,7 @@ const port=8791;
 const baseURL=`http://127.0.0.1:${port}`;
 const pad=n=>String(n).padStart(2,'0');
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const instagramUA='Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 398.0.0.0.0';
 
 async function waitForServer(){
   const deadline=Date.now()+15000;
@@ -47,7 +48,9 @@ async function canvasHash(locator){
 }
 
 async function bootContext(browser,width,height,options={}){
-  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,reducedMotion:options.reducedMotion||'no-preference'});
+  const contextOptions={viewport:{width,height},isMobile:true,hasTouch:true,reducedMotion:options.reducedMotion||'no-preference'};
+  if(options.userAgent)contextOptions.userAgent=options.userAgent;
+  const context=await browser.newContext(contextOptions);
   await context.addInitScript(payload=>{
     localStorage.setItem('garang_demo','1');
     localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));
@@ -55,28 +58,43 @@ async function bootContext(browser,width,height,options={}){
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='3.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='2.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='fluid-v2'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-composite',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='4.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='3.0.0',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='fluid-mobile-v3'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-resilient',{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayBrandHero')&&document.querySelector('#garangTodayDensity')&&document.querySelector('#garangTodayFlow .gtd3-score-head'),{timeout:10000});
   await page.waitForFunction(()=>document.querySelectorAll('#main [data-garang-motion-surface]').length===3,{timeout:10000});
   await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='0',{timeout:10000});
-  await page.waitForTimeout(320);
+  await page.waitForTimeout(360);
   return {context,page,errors};
+}
+
+async function verifyHeroStable(page){
+  const same=await page.evaluate(()=>new Promise(resolve=>{
+    const hero=document.querySelector('#garangTodayBrandHero');
+    window.dispatchEvent(new CustomEvent('garang:state-updated'));
+    window.dispatchEvent(new CustomEvent('garang:workout-intelligence-rendered'));
+    setTimeout(()=>resolve(hero===document.querySelector('#garangTodayBrandHero')),520);
+  }));
+  assert.equal(same,true,'Today Hero node must stay mounted across state/lifecycle events so Canvas time never resets');
 }
 
 async function verifyViewport(browser,width,height){
   const {context,page,errors}=await bootContext(browser,width,height);
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'active');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'fluid-v2');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'fluid-mobile-v3');
   assert.equal(await page.locator('#garangTodayBrandHero h1').innerText(),'오늘도, 조금 쌓였습니다.');
   assert.match(await page.locator('#garangTodayBrandHero').innerText(),/작은 기록이 오늘의 몸을 만듭니다/);
+  assert.doesNotMatch(await page.locator('#garangTodayBrandHero').innerText(),/QUIETLY|BECOMING/,'Hero must not carry detached decorative English copy');
   assert.equal(await page.locator('#garangTodayBrandHero [data-gtd-coach]').count(),1,'Hero must keep one Coach CTA');
 
   const legacyRipple=page.locator('#garangTodayBrandHero .gtd3-ripple>img');
   assert.equal(await legacyRipple.count(),1,'legacy asset may remain as non-visible compatibility markup');
   assert.equal(await legacyRipple.evaluate(img=>getComputedStyle(img).display),'none','legacy SVG ripple must never be user-visible');
+
+  const heroStage=page.locator('#garangTodayBrandHero .gtd3-ripple');
+  const stageBox=await heroStage.boundingBox();
+  assert.ok(stageBox&&stageBox.width>=width*.78&&stageBox.height>=80,`mobile water stage must be large enough to read as motion @${width}: ${JSON.stringify(stageBox)}`);
 
   const heroCanvas=page.locator('[data-garang-motion-surface="hero"]');
   const scoreCanvas=page.locator('[data-garang-motion-surface="score"]');
@@ -86,23 +104,29 @@ async function verifyViewport(browser,width,height){
     const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents,quality:node.dataset.garangMotionQuality}));
     assert.ok(meta.w>0&&meta.h>0,`${name} canvas must have a real backing buffer`);
     assert.equal(meta.pointer,'none',`${name} canvas must never block interaction`);
-    assert.equal(meta.quality,'fluid-v2',`${name} canvas must use premium fluid renderer`);
+    assert.equal(meta.quality,'fluid-mobile-v3',`${name} canvas must use mobile-first fluid renderer`);
     assert.notEqual(await canvasHash(canvas),0,`${name} canvas must render non-empty pixels`);
   }
-  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(260);const heroHashB=await canvasHash(heroCanvas);
-  assert.notEqual(heroHashA,heroHashB,'Hero fluid surface must animate when motion is allowed');
+  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(300);const heroHashB=await canvasHash(heroCanvas);
+  assert.notEqual(heroHashA,heroHashB,'Hero water surface must visibly advance when motion is allowed');
+  await verifyHeroStable(page);
+  const heroHashC=await canvasHash(heroCanvas);await page.waitForTimeout(300);const heroHashD=await canvasHash(heroCanvas);
+  assert.notEqual(heroHashC,heroHashD,'Hero motion must continue after state/lifecycle events');
 
   const scoreHead=await page.locator('#garangTodayFlow .gtd3-score-head').innerText();
   assert.match(scoreHead,/GARANG SCORE/);assert.match(scoreHead,/오늘/);
   assert.equal(await page.locator('#garangTodayFlow .gtf-track').count(),3,'score composition keeps three state tracks');
+  const signalStyle=await page.locator('#garangTodayFlow .gtf-signal').evaluate(node=>({radius:getComputedStyle(node).borderRadius,width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
+  assert.ok(parseFloat(signalStyle.radius||'0')<8,'GARANG Score must not fall back to a generic giant donut');
+  assert.ok(signalStyle.width<=115&&signalStyle.height<=95,`GARANG Score should stay editorial and compact: ${JSON.stringify(signalStyle)}`);
 
   const checkin=page.locator('#garangTodayFlow [data-garang-checkin-access="1"]');
   await checkin.waitFor({state:'visible',timeout:5000});
   assert.match(await checkin.innerText(),/오늘 상태 체크인/);assert.match(await checkin.innerText(),/30초/);
   const checkinBox=await checkin.boundingBox();
-  assert.ok(checkinBox&&checkinBox.x>=0&&checkinBox.x+checkinBox.width<=width+1,`check-in card must stay inside viewport ${width}: ${JSON.stringify(checkinBox)}`);
-  const smallBox=await checkin.locator('small').boundingBox();
-  assert.ok(smallBox&&smallBox.x>=checkinBox.x-1&&smallBox.x+smallBox.width<=checkinBox.x+checkinBox.width+1,`check-in meta must not clip right: ${JSON.stringify({checkinBox,smallBox})}`);
+  assert.ok(checkinBox&&checkinBox.x>=0&&checkinBox.x+checkinBox.width<=width+1,`check-in row must stay inside viewport ${width}: ${JSON.stringify(checkinBox)}`);
+  const checkinRadius=await checkin.evaluate(node=>parseFloat(getComputedStyle(node).borderRadius||'0'));
+  assert.ok(checkinRadius<4,'check-in must read as a quiet editorial row, not another decorative card');
   await checkin.click();await page.locator('.modal-backdrop').waitFor({state:'visible',timeout:3000});
   await page.locator('.modal-close').click();
 
@@ -125,12 +149,23 @@ async function verifyViewport(browser,width,height){
   await context.close();
 }
 
+async function verifyInstagramInApp(browser){
+  const {context,page,errors}=await bootContext(browser,390,844,{userAgent:instagramUA});
+  assert.equal(await page.evaluate(()=>window.GarangAccumulationMotionV1?.inAppBrowser),true,'Instagram UA must enable in-app resilient motion path');
+  const hero=page.locator('[data-garang-motion-surface="hero"]');
+  const before=await canvasHash(hero);await page.waitForTimeout(420);const after=await canvasHash(hero);
+  assert.notEqual(before,after,'Instagram-style WebKit context must keep advancing the Hero canvas');
+  await verifyHeroStable(page);
+  assert.deepEqual(errors,[],`Instagram in-app Today browser errors:\n${errors.join('\n')}`);
+  await context.close();
+}
+
 async function verifyReducedMotion(browser){
   const {context,page,errors}=await bootContext(browser,390,844,{reducedMotion:'reduce'});
   assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'reduced');
   assert.equal(await page.evaluate(()=>window.GarangAccumulationMotionV1?.reducedMotion),true,'runtime must respect prefers-reduced-motion');
   const hero=page.locator('[data-garang-motion-surface="hero"]');
-  const before=await canvasHash(hero);await page.waitForTimeout(260);const after=await canvasHash(hero);
+  const before=await canvasHash(hero);await page.waitForTimeout(300);const after=await canvasHash(hero);
   assert.notEqual(before,0,'reduced-motion fallback must still render a branded static frame');
   assert.equal(before,after,'reduced-motion fallback must remain static');
   const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
@@ -146,8 +181,9 @@ async function verifyReducedMotion(browser){
     await verifyViewport(browser,390,844);
     await verifyViewport(browser,393,852);
     await verifyViewport(browser,430,932);
+    await verifyInstagramInApp(browser);
     await verifyReducedMotion(browser);
-    console.log('browser-today-visual-parity premium fluid motion v2 + reduced fallback @390/393/430: PASS');
+    console.log('browser-today-visual-parity mobile water motion v3 + Instagram WebKit + reduced fallback: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
