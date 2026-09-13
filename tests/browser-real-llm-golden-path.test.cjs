@@ -26,13 +26,15 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-  await tap(page,'#bottomNav button[data-page="coach"]','open Coach');await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach'&&document.querySelector('.g2-composer textarea'),null,{timeout:10000});
-  assert.ok(await page.locator('.gcl-decision,.gcl-context-actions').count()>0,'decision-first Coach surface must remain present');
+  await tap(page,'#bottomNav button[data-page="coach"]','open Coach');
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach'&&document.querySelector('.garang-coach-v2')&&document.querySelector('.g2-composer textarea')&&document.querySelector('.gcl-context-actions [data-gcl-coach="0"]'),null,{timeout:10000});
+  assert.equal(await page.locator('.garang-coach-v2').count(),1,'decision-first Coach root must remain present');
+  assert.equal(await page.locator('.gcl-context-actions [data-gcl-actions-toggle]').count(),1,'decision-first Coach next-action disclosure must remain present');
   const input=page.locator('.g2-composer textarea');await input.fill('오늘 벤치 세게 해도 돼?');await tap(page,'.g2-send','send real LLM question');
   await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.assistant .g2-message-text')].some(node=>String(node.textContent||'').includes('REAL LLM:')),null,{timeout:9000});
   assert.equal(gatewayCalls.length>=1,true,'authenticated Coach must call the real gateway transport');const first=gatewayCalls[0];assert.match(first.headers.authorization||'',/^Bearer firebase-id-token-llm-user$/);assert.deepEqual(Object.keys(first.body).sort(),['language','message']);assert.equal(first.body.message,'오늘 벤치 세게 해도 돼?');assert.equal('context' in first.body,false);
   let state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'LLM explanation alone must never mutate Planner');
-  await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach actions');await tap(page,'.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach="0"]','request plan');
+  await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach actions');await page.locator('.gcl-context-actions [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});await tap(page,'.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach="0"]','request plan');
   await page.waitForSelector('.g4-agent-proposal [data-g4-approve]',{state:'visible',timeout:10000});state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'action proposal must still wait for user approval');
   await tap(page,'.g4-agent-proposal [data-g4-approve]','approve canonical plan');await page.waitForFunction(()=>window.GarangAgentStateBridge.getState().planner?.length===3,null,{timeout:8000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:8000});
   state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.deepEqual([...new Set(state.planner.map(row=>row.domain))].sort(),['nutrition','recovery','training']);assert.ok(state.planner.every(row=>row.origin==='garang-daily-plan'),'approval must use canonical Daily Plan');
