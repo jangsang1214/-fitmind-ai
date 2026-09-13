@@ -15,6 +15,8 @@ const CONFIRMATION_SCOPE_KEY=window.GarangAgentContractV2?.CONFIRMATION_SCOPE_KE
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const list=value=>Array.isArray(value)?value:[];
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const clean=value=>String(value??'').trim();
+const finite=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const dateKey=value=>String(value||'').slice(0,10);
 const sameDate=(row,date)=>dateKey(row?.date||row?.day||row?.performedAt||row?.createdAt)===date;
 const id=prefix=>globalThis.crypto?.randomUUID?.()||`${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -54,11 +56,37 @@ function ensureDraft(state,date){
   }
   return {group,report};
 }
+function proposalDomain(args={}){
+  const raw=clean(args.domain||args.type).toLowerCase();
+  if(/recover|recovery|sleep|회복|수면/.test(raw))return 'recovery';
+  if(/meal|nutrition|food|식단|영양/.test(raw))return 'nutrition';
+  return 'training';
+}
+function applyProposalRevision(Daily,state,date,group,args={}){
+  const revision=Math.max(1,Number(args.recommendationRevision)||1);if(revision<=1||!group||group.status!=='draft')return group;
+  const items=list(group.items).map(item=>({...item}));if(!items.length)return group;
+  const domain=proposalDomain(args),index=Math.max(0,items.findIndex(item=>String(item?.domain||'')===domain)),target=items[index];
+  if(clean(args.title))target.title=clean(args.title);
+  const duration=finite(args.duration);if(duration!==null)target.duration=Math.max(0,duration);
+  if(clean(args.type)&&domain==='training')target.type=clean(args.type);
+  return Daily.updateDraft?.(state,date,items)||group;
+}
+function recommendationMetadata(args={}){
+  const metadata={};
+  if(clean(args.recommendationId))metadata.recommendationId=clean(args.recommendationId);
+  if(clean(args.recommendationSource))metadata.recommendationSource=clean(args.recommendationSource);
+  if(clean(args.recommendationReason))metadata.recommendationReason=clean(args.recommendationReason);
+  if(Array.isArray(args.recommendationEvidence))metadata.recommendationEvidence=clone(args.recommendationEvidence).slice(0,12);
+  const confidence=finite(args.recommendationConfidence);if(confidence!==null)metadata.recommendationConfidence=Math.max(0,Math.min(1,confidence));
+  if(clean(args.expectedOutcome))metadata.expectedOutcome=clean(args.expectedOutcome);
+  const revision=finite(args.recommendationRevision);if(revision!==null)metadata.recommendationRevision=Math.max(1,Math.round(revision));
+  return metadata;
+}
 function navigatePlanner(source){try{return window.GarangRouter?.navigate?.('planner',{source:source||'canonical-daily-plan',force:true})===true;}catch{return false;}}
 function confirmToday(options={}){
   const Daily=daily(),bridge=stateBridge();
   if(!Daily||!bridge?.ready?.())throw new Error('CANONICAL_DAILY_PLAN_NOT_READY');
-  const date=String(options.date||currentDate()).slice(0,10),source=String(options.source||'canonical-daily-plan');
+  const date=String(options.date||currentDate()).slice(0,10),source=String(options.source||'canonical-daily-plan'),proposalArgs=object(options.proposalArgs)?clone(options.proposalArgs):{};
   const state=bridge.getLiveState?.();if(!state)throw new Error('CANONICAL_DAILY_PLAN_STATE_NOT_READY');
   const existing=confirmedPlans(state,date);
   if(existing.length){
@@ -66,21 +94,24 @@ function confirmToday(options={}){
     if(options.navigate===true)navigatePlanner(source);
     return result;
   }
-  const {group,report}=ensureDraft(state,date);
+  let {group,report}=ensureDraft(state,date);
   if(!group||group.status!=='draft'){
     const result={confirmed:false,existing:false,reason:group?.status||'no-draft',date,rows:[]};
     if(options.navigate===true)navigatePlanner(source);
     return result;
   }
-  const result=Daily.confirmDraft(state,date);
+  group=applyProposalRevision(Daily,state,date,group,proposalArgs);
+  const metadata=recommendationMetadata(proposalArgs),result=Daily.confirmDraft(state,date);
   const confirmedGroup=Daily.readDraft?.(state,date)||group;
   if(result.confirmed){
-    list(result.rows).forEach((row,index)=>{row.order=Number(group?.items?.[index]?.order)||index+1;});
+    list(result.rows).forEach((row,index)=>{row.order=Number(group?.items?.[index]?.order)||index+1;Object.assign(row,clone(metadata));});
     confirmedGroup.confirmationSource=source;
+    if(metadata.recommendationId)confirmedGroup.recommendationId=metadata.recommendationId;
+    if(metadata.recommendationRevision)confirmedGroup.recommendationRevision=metadata.recommendationRevision;
     confirmedGroup.updatedAt=isoNow();
   }
   persist(state,result.confirmed?'daily_plan_draft_confirmed':'daily_plan_draft_superseded',true,{
-    date,source,reason:result.reason,planIds:list(result.rows).map(row=>row.id),domains:list(result.rows).map(row=>row.domain),
+    date,source,reason:result.reason,planIds:list(result.rows).map(row=>row.id),domains:list(result.rows).map(row=>row.domain),recommendationId:metadata.recommendationId||null,recommendationRevision:metadata.recommendationRevision||null,
     created:report?.created===true,adapted:report?.adapted===true,revision:Number(confirmedGroup?.revision)||1
   });
   const output={...result,date,source,existing:false,group:clone(confirmedGroup)};
