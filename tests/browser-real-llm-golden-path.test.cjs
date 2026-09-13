@@ -2,7 +2,7 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict'),path=require('node:path');
 const {webkit}=require('playwright');
-const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8791,baseURL=`http://127.0.0.1:${port}`;
+const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8765,baseURL=`http://127.0.0.1:${port}`;
 const endpoint='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach';
 const watchdog=setTimeout(()=>{console.error('browser-real-llm-golden-path: WATCHDOG TIMEOUT');process.exit(1);},70000);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -13,11 +13,11 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
  try{
   await waitServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const gatewayCalls=[];
-  await context.route(endpoint,async route=>{
+  await context.route('**/api/coach',async route=>{
    const request=route.request(),method=request.method();
    const cors={'Access-Control-Allow-Origin':baseURL,'Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
    if(method==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
-   const body=JSON.parse(request.postData()||'{}');gatewayCalls.push({headers:request.headers(),body});
+   const body=JSON.parse(request.postData()||'{}');gatewayCalls.push({url:request.url(),headers:request.headers(),body});
    await route.fulfill({status:200,headers:{...cors,'Content-Type':'application/json'},body:JSON.stringify({ok:true,answer:'REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.',data:{answer:'REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.',decisionSummary:'GARANG은 오늘 강도 감소를 권장합니다.',reasoningSummary:'낮은 수면과 에너지 신호를 우선 반영했습니다.',suggestedNextStep:'오늘 계획의 운동 볼륨을 조정하세요.',actionIntent:{type:'updatePlan'},confidence:.86,source:'llm',metadata:{provider:'mock-openai',model:'gpt-test'},garangDecision:{mode:'reduce',reasonCodes:['SHORT_SLEEP','LOW_ENERGY']}}})});
   });
   await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked */'}));
@@ -36,12 +36,14 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach'&&document.querySelector('.garang-coach-v2')&&document.querySelector('.g2-composer textarea')&&document.querySelector('.gcl-context-actions [data-gcl-coach="0"]'),null,{timeout:10000});
   assert.equal(await page.locator('.garang-coach-v2').count(),1,'decision-first Coach root must remain present');
   assert.equal(await page.locator('.gcl-context-actions [data-gcl-actions-toggle]').count(),1,'decision-first Coach next-action disclosure must remain present');
+  const transport=await page.evaluate(async expected=>({endpoint:window.GARANG_SERVICES?.coachEndpoint||null,transport:window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__?.version||null,uid:window.firebase?.auth?.().currentUser?.uid||null,getIdToken:typeof window.firebase?.auth?.().currentUser?.getIdToken,token:await window.firebase?.auth?.().currentUser?.getIdToken?.()}),endpoint);
+  assert.equal(transport.endpoint,endpoint,'Coach must retain the production Functions endpoint');assert.equal(transport.transport,'garang-coach-gateway-transport-v1.1.0');assert.equal(transport.uid,'llm-user');assert.equal(transport.getIdToken,'function');assert.equal(transport.token,'firebase-id-token-llm-user');
   const beforeAssistant=await page.locator('.g2-message.assistant:not([data-thinking="1"]) .g2-message-text').count();
   const input=page.locator('.g2-composer textarea');await input.fill('오늘 벤치 세게 해도 돼?');await tap(page,'.g2-send','send real LLM question');
   await page.waitForFunction(before=>document.querySelectorAll('.g2-message.assistant:not([data-thinking="1"]) .g2-message-text').length>before,beforeAssistant,{timeout:9000});
   const latestAssistant=String(await page.locator('.g2-message.assistant:not([data-thinking="1"]) .g2-message-text').last().textContent()||'');
-  assert.equal(gatewayCalls.length>=1,true,`authenticated Coach must call the real gateway transport; assistant=${latestAssistant}`);assert.match(latestAssistant,/REAL LLM:/,`successful gateway response must be rendered as the Coach answer; assistant=${latestAssistant}`);
-  const first=gatewayCalls[0];assert.match(first.headers.authorization||'',/^Bearer firebase-id-token-llm-user$/);assert.deepEqual(Object.keys(first.body).sort(),['language','message']);assert.equal(first.body.message,'오늘 벤치 세게 해도 돼?');assert.equal('context' in first.body,false);
+  assert.equal(gatewayCalls.length>=1,true,`authenticated Coach must call the real gateway transport; assistant=${latestAssistant}; transport=${JSON.stringify(transport)}`);assert.match(latestAssistant,/REAL LLM:/,`successful gateway response must be rendered as the Coach answer; assistant=${latestAssistant}`);
+  const first=gatewayCalls[0];assert.equal(first.url,endpoint);assert.match(first.headers.authorization||'',/^Bearer firebase-id-token-llm-user$/);assert.deepEqual(Object.keys(first.body).sort(),['language','message']);assert.equal(first.body.message,'오늘 벤치 세게 해도 돼?');assert.equal('context' in first.body,false);
   let state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'LLM explanation alone must never mutate Planner');
   await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach actions');await page.locator('.gcl-context-actions [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});await tap(page,'.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach="0"]','request plan');
   await page.waitForSelector('.g4-agent-proposal [data-g4-approve]',{state:'visible',timeout:10000});state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'action proposal must still wait for user approval');
