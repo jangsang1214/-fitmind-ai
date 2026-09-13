@@ -188,6 +188,24 @@
   display:none!important;
 }
 
+/* Keep conversational record controls physically above adjacent message/composer layers.
+   Visual-only stacking fix; no event handler, mutation, or ownership changes. */
+.garang-coach-v2 .gci-coach-turn[data-state="logged"]{
+  position:relative!important;
+  z-index:2!important;
+}
+.garang-coach-v2 .gci-coach-actions{
+  position:relative!important;
+  z-index:4!important;
+  pointer-events:auto!important;
+}
+.garang-coach-v2 .gci-coach-actions button[data-gci-undo]{
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+
 @media(max-width:800px){
   .garang-coach-v2 .g2-empty-chat[data-garang-quiet-empty="1"]{
     padding:14px 0 6px!important;
