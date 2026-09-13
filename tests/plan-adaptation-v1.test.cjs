@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const Adapt=require('../02_core/plan-adaptation-v1.js');
 
-const base=()=>({meta:{dailyPlanDrafts:{}},profile:{goal:'근육 증가'},onboarding:{weeklyFrequency:4},planner:[],workouts:[],runs:[],meals:[],body:[],dailyCheckins:[],checkins:[],actionLog:[]});
+const base=()=>({meta:{dailyPlanDrafts:{}},profile:{goal:'근육 증가'},onboarding:{weeklyFrequency:4,availableMinutes:60},planner:[],workouts:[],runs:[],meals:[],body:[],dailyCheckins:[],checkins:[],actionLog:[]});
 const finalized=(date,rates)=>({date,status:'finalized',result:'partial',outcome:{date,planned:3,executed:0,rate:Math.round((rates.training+rates.recovery+rates.nutrition)/3),domains:{training:{planned:1,executed:rates.training>=80?1:0,rate:rates.training},recovery:{planned:1,executed:rates.recovery>=80?1:0,rate:rates.recovery},nutrition:{planned:1,executed:rates.nutrition>=80?1:0,rate:rates.nutrition}}}});
 
 {
@@ -39,5 +39,15 @@ const finalized=(date,rates)=>({date,status:'finalized',result:'partial',outcome
  const result=Adapt.derive(state,{date:'2026-09-10'});
  assert.equal(result.domains.training.sampleDays,2,'legacy confirmed plans must be readable through PlanExecution even without finalized draft metadata');
  assert.equal(result.domains.training.classification,'missed');
+}
+{
+ globalThis.GarangPlanAdaptation=Adapt;
+ const Daily=require('../06_features/ui/runtime/garang-daily-plan-v1.js'),state=base();
+ for(const date of ['2026-09-08','2026-09-09']){state.meta.dailyPlanDrafts[date]=finalized(date,{training:0,recovery:100,nutrition:100});state.dailyCheckins.push({date,sleepHours:5.5,energy:2,stress:4,soreness:{general:5}});}
+ const behavior=Daily.domainBehavior(state,'2026-09-10');
+ assert.equal(behavior.interpretation.training.classification,'recovery_constrained');assert.equal(behavior.scales.training,.85);
+ const draft=Daily.buildDailyDraft(state,{date:'2026-09-10',decision:{mode:'maintain'},performance:{components:{recovery:{score:80}}}}),training=draft.items.find(item=>item.domain==='training');
+ assert.equal(draft.modelSnapshot.adaptation.engineVersion,'plan-adaptation-v1');assert.equal(draft.modelSnapshot.domainInterpretation.training.cause,'recovery_constraint');assert.equal(training.adaptation.classification,'recovery_constrained');assert.ok(training.reasonCodes.includes('OUTCOME_RECOVERY_CONSTRAINED'));assert.equal(training.volumeScale,.85,'canonical next Daily Plan must consume the bounded adaptation scale');
+ delete globalThis.GarangPlanAdaptation;
 }
 console.log('plan-adaptation-v1 plan-vs-actual interpretation + bounded adjustment: PASS');
