@@ -6,7 +6,7 @@ const flow=read('06_features/ui/runtime/garang-workout-flow-v1.js');
 const html=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 
-assert.ok(flow.includes("VERSION='garang-workout-flow-v1.3.0-paged'"),'Workout flow must expose a canonical paged structural version');
+assert.ok(flow.includes("VERSION='garang-workout-flow-v1.4.0-recent-prefill'"),'Workout flow must expose the recent-prefill structural version');
 assert.ok(flow.includes('data-garang-workout-surface'), 'Workout flow must create named structural surfaces');
 assert.ok(flow.includes('data-garang-workout-nav'), 'Workout flow must expose one canonical visible navigation');
 assert.ok(flow.includes("main.querySelectorAll('.garang-workout-tabs"), 'Workout flow must remove the duplicate legacy navigation');
@@ -23,6 +23,12 @@ assert.ok(flow.includes('data-gws-next'), 'Workout surfaces must provide a circu
 assert.ok(flow.includes('node.hidden=!on'),'inactive workout pages must stay hidden while preserving the existing feature nodes');
 assert.ok(flow.includes('data-garang-workout-attached'),'Workout pages must expose which functional page is attached');
 assert.equal(flow.includes('new MutationObserver'),false,'Workout structural flow must not add a broad observer');
-assert.ok(html.includes('garang-workout-flow-v1.js?v=1.3.0-paged'),'index must load the paged Workout flow version');
+assert.ok(flow.includes('GarangAgentStateBridge.getState()'),'Recent workout reuse must read through the account-pinned read-only state bridge');
+assert.ok(flow.includes('data-gws-reuse-latest'),'Workout Log must expose one explicit recent-record prefill action');
+assert.ok(flow.includes("field('wName',record.name)"),'Recent reuse must prefill the existing workout name field');
+assert.ok(flow.includes("field('wSets',record.sets||details.length||1)"),'Recent reuse must prefill the existing sets field');
+assert.equal(flow.includes('applyWrite('),false,'Recent reuse must not create a new write path');
+assert.equal(flow.includes('localStorage.setItem'),false,'Recent reuse must not write storage directly');
+assert.ok(html.includes('garang-workout-flow-v1.js?v=1.3.0-paged'),'index must retain the canonical Workout flow asset; service worker is network-first for runtime updates');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-flow-v1.js'),'runtime manifest must retain the canonical Workout flow');
 console.log('workout-three-surface-v1: PASS');
