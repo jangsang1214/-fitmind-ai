@@ -10,6 +10,7 @@ const base=()=>({
   analytics:{events:[]}
 });
 const view=(screen,at=date,props={})=>({name:'screen_viewed',props:{screen,date:at,...props},at:`${at}T12:00:00.000Z`});
+const viewAt=(screen,day,time)=>({name:'screen_viewed',props:{screen,date:day},at:`${day}T${time}Z`});
 const coachAnswered=(at=date)=>({name:'ai_chat_answered',props:{date:at},at:`${at}T12:05:00.000Z`});
 
 {
@@ -55,7 +56,7 @@ const coachAnswered=(at=date)=>({name:'ai_chat_answered',props:{date:at},at:`${a
 
 {
   const state=base();state.onboarding.complete=true;state.workouts=[{id:'w1',sessionId:'s1',date,name:'스쿼트',createdAt:'2026-09-10T09:00:00.000Z'}];
-  state.analytics.events=[coachAnswered(),view('progress')];
+  state.analytics.events=[coachAnswered(),viewAt('progress',date,'10:30:00.000')];
   let result=Core.derive(state,{today:date});
   assert.equal(result.step,'plan','a Progress visit without execution must never complete accumulation');
   assert.equal(result.progressDate,null);
@@ -66,10 +67,16 @@ const coachAnswered=(at=date)=>({name:'ai_chat_answered',props:{date:at},at:`${a
   assert.equal(result.execution.executed,0);
   state.workouts.push({id:'w2',sessionId:'s2',date,name:'레그프레스',createdAt:'2026-09-10T11:00:00.000Z'});
   result=Core.derive(state,{today:date});
-  assert.equal(result.step,'complete','an accumulation visit becomes meaningful only after real execution evidence exists');
+  assert.equal(result.step,'accumulation','a same-day Progress visit from before execution must not be retroactively counted');
+  assert.equal(result.progressDate,null);
+  assert.equal(result.accumulationEvidence.viewedAt,'2026-09-10T10:30:00.000Z');
+  assert.equal(result.accumulationEvidence.latestExecutionAt,'2026-09-10T11:00:00.000Z');
+  state.analytics.events.push(viewAt('progress',date,'11:30:00.000'));
+  result=Core.derive(state,{today:date});
+  assert.equal(result.step,'complete','a new post-execution accumulation visit completes the activation loop');
   assert.equal(result.execution.allExecuted,true);
   assert.equal(result.progressDate,date);
-  console.log('PASS Coach → plan → execution → meaningful accumulation progression');
+  console.log('PASS Coach → plan → execution → post-execution accumulation progression');
 }
 
 {
@@ -128,7 +135,7 @@ const coachAnswered=(at=date)=>({name:'ai_chat_answered',props:{date:at},at:`${a
   assert.equal(result.progressDate,null,'a raw progress view is never accumulation completion by itself');
   assert.equal(result.accumulationEvidence.viewedDate,'2026-09-08');
   assert.equal(JSON.stringify(state),before,'Golden Path derivation must remain read-only');
-  console.log('PASS accumulation evidence is deterministic, meaningful, and read-only');
+  console.log('PASS accumulation evidence is deterministic, ordered, meaningful, and read-only');
 }
 
 console.log('golden-path-v1: PASS');
