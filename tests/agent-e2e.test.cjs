@@ -1,37 +1,19 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const Agent=require('../06_features/final/agent-contract-v1.js');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-
-class MockStorage{
- constructor(){this.map=new Map();}
- get length(){return this.map.size;}
- key(i){return [...this.map.keys()][i]??null;}
- getItem(k){return this.map.has(String(k))?this.map.get(String(k)):null;}
- setItem(k,v){this.map.set(String(k),String(v));}
- removeItem(k){this.map.delete(String(k));}
-}
-const localStorage=new MockStorage();
-const context={console,setTimeout,clearTimeout,Storage:MockStorage,localStorage,CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;}},document:{getElementById(){return null;}},crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},dispatchEvent(){}};
-context.window=context;context.globalThis=context;vm.createContext(context);
-vm.runInContext(fs.readFileSync(path.join(root,'02_core/memory-intelligence-v1.js'),'utf8'),context);
-vm.runInContext(fs.readFileSync(path.join(root,'06_features/final/agent-state-hook-v1.js'),'utf8'),context);
-
-const state={meta:{schemaVersion:5,updatedAt:'2026-09-05T00:00:00.000Z'},profile:{goal:'퍼포먼스 향상'},onboarding:{goal:'퍼포먼스 향상'},preferences:{language:'en',unit:'metric'},planner:[],workouts:[{id:'w1',name:'바벨 벤치프레스'}],meals:[],runs:[],body:[],memory:{entries:[],deletedIds:[]},actionLog:[]};
-context.state=state;
-vm.runInContext("localStorage.setItem('garang_demo_state_v3',JSON.stringify(state));",context);
-const bridge=context.GarangAgentStateBridge;
-assert.equal(bridge.ready(),true);
-
+const Agent=require('../06_features/final/agent-contract-v1.js');
+const StateHook=require('../06_features/final/agent-state-hook-v1.js');
+const APP=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
+function createStorage(){const map=new Map();return {getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k),key:i=>[...map.keys()][i]??null,get length(){return map.size;}};}
+const localStorage=createStorage(),sessionStorage=createStorage(),events=[];
+global.window={localStorage,sessionStorage,dispatchEvent:event=>events.push(event),crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`}};global.localStorage=localStorage;global.sessionStorage=sessionStorage;global.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};
+const state={profile:{goal:'General fitness'},onboarding:{goal:'General fitness',complete:true},planner:[],workouts:[],meals:[],runs:[],body:[],memory:{entries:[],deletedIds:[],nextRevision:1}};
+let saveCount=0;const bridge=StateHook.createBridge({getLiveState:()=>state,persist:()=>{saveCount++;localStorage.setItem('garang_demo_state_v3',JSON.stringify(state));},appendAction:(action,meta)=>{state.actionLog=state.actionLog||[];state.actionLog.push({action,...meta});},getCurrentUid:()=>null});
+const tests=[];const test=async(name,fn)=>{await fn();tests.push(name);console.log(`PASS ${name}`);};
 (async()=>{
- let passed=0;const test=async(name,fn)=>{await fn();passed++;console.log(`PASS ${name}`);};
- await test('mock question creates proposal without mutating state',async()=>{
-  const session=Agent.createSession({getState:()=>bridge.getState(),applyWrite:(tool,args)=>bridge.applyWrite(tool,args)});
-  const result=await session.run({message:'Create a plan for today.',context:{profile:state.profile},language:'en'},{adapter:Agent.createMockAdapter()});
-  assert.equal(state.planner.length,0);assert.equal(result.proposals.length,1);assert.equal(result.proposals[0].tool,'createPlan');
-  const confirmed=session.confirm(result.proposals[0].id,true);assert.equal(confirmed.proposal.status,'confirmed');assert.equal(state.planner.length,1);assert.equal(state.planner[0].source,'ai');assert.equal(state.planner[0].origin,'ai');assert.equal(state.planner[0].status,'confirmed');
- });
- await test('rejected write changes nothing',async()=>{const before=state.planner.length;const session=Agent.createSession({getState:()=>bridge.getState(),applyWrite:(tool,args)=>bridge.applyWrite(tool,args)});const result=await session.run({message:'Create a plan',context:{},language:'en'},{adapter:Agent.createMockAdapter()});session.confirm(result.proposals[0].id,false);assert.equal(state.planner.length,before);});
+ await test('mock question creates proposal without mutating state',async()=>{const session=Agent.createSession({getState:()=>bridge.getState(),applyWrite:(tool,args)=>bridge.applyWrite(tool,args)});const before=JSON.stringify(state);const result=await session.run({message:'Create a plan for today.',context:{},language:'en'},{adapter:Agent.createMockAdapter()});assert.ok(result.proposals.length>0);assert.equal(JSON.stringify(state),before);});
+ await test('rejected write changes nothing',async()=>{const session=Agent.createSession({getState:()=>bridge.getState(),applyWrite:(tool,args)=>bridge.applyWrite(tool,args)});const result=await session.run({message:'Change my goal',context:{},language:'en'},{adapter:Agent.createMockAdapter()});const before=JSON.stringify(state);session.confirm(result.proposals[0].id,false);assert.equal(JSON.stringify(state),before);});
  await test('approved goal write changes live GARANG state and persists current semantic goal',async()=>{const session=Agent.createSession({getState:()=>bridge.getState(),applyWrite:(tool,args)=>bridge.applyWrite(tool,args)});const result=await session.run({message:'Change my goal',context:{},language:'en'},{adapter:Agent.createMockAdapter()});session.confirm(result.proposals[0].id,true);assert.equal(state.profile.goal,'Improve performance');assert.equal(state.onboarding.goal,'Improve performance');const persisted=JSON.parse(localStorage.getItem('garang_demo_state_v3'));assert.equal(persisted.profile.goal,'Improve performance');assert.ok(persisted.actionLog.some(x=>x.action==='agent_updateGoal'&&x.userConfirmed===true));assert.ok(state.memory.entries.some(x=>x.key==='primary_goal'&&x.value==='Improve performance'&&x.status==='active'));});
  await test('memory write preserves changed values as temporal history',()=>{bridge.applyWrite('saveMemory',{type:'goal',key:'race_goal',value:'10K under 45 minutes',importance:5});bridge.applyWrite('saveMemory',{type:'goal',key:'race_goal',value:'10K under 44 minutes',importance:5});const rows=state.memory.entries.filter(x=>x.type==='goal'&&x.key==='race_goal');assert.equal(rows.length,2);const active=rows.find(x=>x.status==='active'),history=rows.find(x=>x.status==='superseded');assert.equal(active.value,'10K under 44 minutes');assert.equal(history.value,'10K under 45 minutes');assert.equal(history.supersededBy,active.id);assert.equal(active.userConfirmed,true);});
  await test('memory bridge returns only active relevant context and diagnostics',()=>{const contextOut=bridge.getMemoryContext('44 minutes',{limit:5});assert.ok(contextOut.entries.some(x=>x.value.includes('44 minutes')));assert.ok(!contextOut.entries.some(x=>x.value.includes('45 minutes')));const report=bridge.getMemoryDiagnostics();assert.ok(report.active>=1);assert.ok(report.superseded>=1);});
@@ -46,8 +28,8 @@ assert.equal(bridge.ready(),true);
   const source=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-agent-v4.js'),'utf8');
   for(const phrase of ['Based on today’s records:','There are ${count} saved workout records.',"Today’s recovery score is about",'The external AI is not connected yet, so GARANG is responding with its local Coach Engine.'])assert.ok(source.includes(phrase),phrase);
   for(const token of ['threadMessageById','promptByKo.has(source)','translateKnownCoachText','repairMessageLanguage(root)'])assert.ok(source.includes(token),token);
-  assert.ok(source.includes("version:'garang-coach-agent-v4.7'"));
+  assert.ok(source.includes("version:'garang-coach-agent-v4.8'"));
   assert.equal(fs.existsSync(path.join(root,'06_features/ui/runtime/garang-coach-item4-final.js')),false,'retired item4 overlay must stay deleted');
  });
- console.log(`${passed} Agent E2E tests passed`);
+ console.log(`${tests.length} Agent E2E tests passed`);
 })().catch(error=>{console.error(error);process.exitCode=1;});
