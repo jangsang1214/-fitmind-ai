@@ -3,12 +3,12 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const Agent=require('../06_features/final/agent-contract-v1.js');
+class TestStorage{constructor(){this.map=new Map();}getItem(k){return this.map.has(k)?this.map.get(k):null;}setItem(k,v){this.map.set(k,String(v));}removeItem(k){this.map.delete(k);}key(i){return [...this.map.keys()][i]??null;}get length(){return this.map.size;}}
+const localStorage=new TestStorage(),sessionStorage=new TestStorage(),events=[];
+global.Storage=TestStorage;global.window={localStorage,sessionStorage,dispatchEvent:event=>events.push(event),crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`}};global.localStorage=localStorage;global.sessionStorage=sessionStorage;global.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};
 const StateHook=require('../06_features/final/agent-state-hook-v1.js');
 const APP=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
-function createStorage(){const map=new Map();return {getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k),key:i=>[...map.keys()][i]??null,get length(){return map.size;}};}
-const localStorage=createStorage(),sessionStorage=createStorage(),events=[];
-global.window={localStorage,sessionStorage,dispatchEvent:event=>events.push(event),crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`}};global.localStorage=localStorage;global.sessionStorage=sessionStorage;global.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};
-const state={profile:{goal:'General fitness'},onboarding:{goal:'General fitness',complete:true},planner:[],workouts:[],meals:[],runs:[],body:[],memory:{entries:[],deletedIds:[],nextRevision:1}};
+const state={profile:{goal:'General fitness'},onboarding:{goal:'General fitness',complete:true},planner:[],workouts:[],meals:[],runs:[],body:[],preferences:{language:'en'},memory:{entries:[],deletedIds:[],nextRevision:1}};
 let saveCount=0;const bridge=StateHook.createBridge({getLiveState:()=>state,persist:()=>{saveCount++;localStorage.setItem('garang_demo_state_v3',JSON.stringify(state));},appendAction:(action,meta)=>{state.actionLog=state.actionLog||[];state.actionLog.push({action,...meta});},getCurrentUid:()=>null});
 const tests=[];const test=async(name,fn)=>{await fn();tests.push(name);console.log(`PASS ${name}`);};
 (async()=>{
