@@ -1,9 +1,6 @@
 @import url("./garang-brandified-metal-app-v1.css?v=1.0.0");
 
-/* GARANG Coach Quiet Surface v1 — one restrained action surface, all capabilities preserved
- * Immutable design preview for verified PR head:
- * https://rawcdn.githack.com/jangsang1214/-fitmind-ai/910337d5e18bb1095958d45fd3044bcbecbfccbd/index.html
- */
+/* GARANG Coach Quiet Surface v1 — one restrained action surface, all capabilities preserved */
 
 .garang-coach-v2 .g2-empty-chat[data-garang-quiet-empty="1"]{
   display:block!important;
@@ -127,7 +124,7 @@
   height:30px!important;
   box-sizing:border-box!important;
   padding:0 10px!important;
-  border:1px solid rgba(79,174,154,.24)!important;
+  border:1px solid rgba(79,174,146,.24)!important;
   border-radius:999px!important;
   background:transparent!important;
   color:#d7e4de!important;
@@ -138,7 +135,7 @@
 }
 .garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]:hover,
 .garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]:focus-visible{
-  border-color:rgba(79,174,154,.46)!important;
+  border-color:rgba(79,174,146,.46)!important;
   background:#0d1b17!important;
   color:#eef5f1!important;
   outline:none!important;
