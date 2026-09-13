@@ -5,7 +5,7 @@ const runtime=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coac
 const coreLoop=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-core-loop-v1.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 
-assert.ok(runtime.includes("VERSION='garang-coach-decision-v1.4-decision-first'"),'decision-first Coach runtime v1.4 must be active');
+assert.ok(runtime.includes("VERSION='garang-coach-decision-v1.5-canonical-next'"),'canonical-next Coach runtime v1.5 must be active');
 assert.ok(runtime.includes('garang-decision-primary')&&runtime.includes('garang-decision-preview'),'Coach must expose judgment and reason before chat detail');
 assert.ok(runtime.includes('garang-decision-toggle'),'decision evidence must use one disclosure toggle');
 assert.ok(runtime.includes('aria-expanded'),'decision detail disclosure must be accessible');
@@ -16,6 +16,8 @@ assert.ok(runtime.includes('min-height:0!important')&&runtime.includes('height:a
 assert.ok(runtime.includes('garang-has-decision-card')&&runtime.includes('grid-template-rows:auto auto minmax(0,1fr) auto!important'),'decision card must own its own grid row instead of consuming the chat 1fr track');
 assert.ok(runtime.includes("card.dataset.expanded='false'"),'new decision cards must start with evidence collapsed');
 assert.ok(runtime.includes("input.value='오늘 계획을 만들어줘'"),'plan action must remain wired through the existing Coach proposal flow');
+assert.ok(runtime.includes('function actionReason(action,isEn)')&&runtime.includes('최근 회복 근거가 부족해 과도한 개인화를 하지 않고 오늘 상태를 먼저 확인합니다.'),'Korean Coach must localize the canonical next-action reason instead of leaking the English core reason');
+assert.ok(runtime.includes('nextReason=actionReason(canonical,isEn)'),'decision details must render the locale-aware canonical reason');
 assert.equal(runtime.includes('localStorage.setItem'),false,'decision presentation must not create a direct persistence path');
 assert.equal(runtime.includes('.applyWrite('),false,'decision presentation must not bypass the Coach approval boundary');
 assert.equal(runtime.includes('>+</'),false,'ambiguous plus-only decision action must not return');
