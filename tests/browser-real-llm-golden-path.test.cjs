@@ -1,0 +1,42 @@
+'use strict';
+const {startStaticServer}=require('./helpers/static-server.cjs');
+const assert=require('node:assert/strict'),path=require('node:path');
+const {webkit}=require('playwright');
+const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8791,baseURL=`http://127.0.0.1:${port}`;
+const endpoint='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach';
+const watchdog=setTimeout(()=>{console.error('browser-real-llm-golden-path: WATCHDOG TIMEOUT');process.exit(1);},70000);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function waitServer(){for(let i=0;i<80;i++){try{if((await fetch(baseURL)).ok)return;}catch{}await sleep(150);}throw new Error('server start timeout');}
+async function tap(page,selector,label=selector){const loc=page.locator(selector).first();await loc.waitFor({state:'visible',timeout:7000});await loc.scrollIntoViewIfNeeded();const box=await loc.boundingBox();assert.ok(box,`${label}: no box`);await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);}
+(async()=>{
+ const server=startStaticServer(serveRoot,port);let browser;
+ try{
+  await waitServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const gatewayCalls=[];
+  await context.route(endpoint,async route=>{const request=route.request(),body=JSON.parse(request.postData()||'{}');gatewayCalls.push({headers:request.headers(),body});await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,answer:'REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.',data:{answer:'REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.',decisionSummary:'GARANG은 오늘 강도 감소를 권장합니다.',reasoningSummary:'낮은 수면과 에너지 신호를 우선 반영했습니다.',suggestedNextStep:'오늘 계획의 운동 볼륨을 조정하세요.',actionIntent:{type:'updatePlan'},confidence:.86,source:'llm',metadata:{provider:'mock-openai',model:'gpt-test'},garangDecision:{mode:'reduce',reasonCodes:['SHORT_SLEEP','LOW_ENERGY']}}})});});
+  await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked */'}));
+  await context.addInitScript(()=>{
+   const date=new Date().toISOString().slice(0,10),remote={meta:{schemaVersion:5,updatedAt:new Date().toISOString(),syncOwnerUid:'llm-user'},profile:{name:'LLM User',age:29,height:175,weight:75,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:50},preferences:{language:'ko',unit:'metric'},checkins:[{id:'ci1',date,sleep:5.5,energy:2,stress:3,soreness:3,availableMinutes:50}],dailyCheckins:[],planner:[],workouts:[{id:'w1',date,name:'벤치프레스',weight:80,reps:5,sets:5,duration:45}],meals:[{id:'m1',date,name:'아침',kcal:550,protein:35}],runs:[],body:[{id:'b1',date,weight:75}],aiChat:[],memory:{entries:[{id:'mem1',type:'preference',key:'training_time',value:'evening',userConfirmed:true,confidence:.9,importance:4}],facts:[],preferences:[],goals:[],events:[]},actionLog:[],errors:[],analytics:{events:[]},plan:'FREE'};
+   localStorage.removeItem('garang_demo');
+   const user={uid:'llm-user',displayName:'LLM User',email:'llm@example.com',getIdToken:async()=> 'firebase-id-token-llm-user',updateProfile:async()=>{}};let db;
+   class DocRef{constructor(p){this.path=p;this.id=p.split('/').pop();this.firestore=db;}collection(n){return new CollectionRef(`${this.path}/${n}`);}async get(){if(this.path==='users/llm-user/app/state')return {exists:true,id:this.id,ref:this,metadata:{},data:()=>structuredClone(remote),get:k=>remote[k]};return {exists:false,id:this.id,ref:this,metadata:{},data:()=>null,get:()=>undefined};}async set(data){if(this.path==='users/llm-user/app/state')Object.assign(remote,structuredClone(data||{}));}async delete(){}}
+   class CollectionRef{constructor(p){this.path=p;}doc(id){return new DocRef(`${this.path}/${id}`);}orderBy(){return this;}startAfter(){return this;}limit(){return this;}async get(){return {docs:[]};}}
+   db={collection:n=>new CollectionRef(n),batch:()=>({set(){},delete(){},commit:async()=>{}}),runTransaction:async fn=>fn({get:r=>r.get(),set:()=>{}})};
+   const auth={currentUser:user,onAuthStateChanged(cb){setTimeout(()=>cb(user),10);return()=>{};},signOut:async()=>{auth.currentUser=null;}};function authFn(){return auth;}authFn.GoogleAuthProvider=function(){};authFn.OAuthProvider=function(){};function firestore(){return db;}firestore.FieldValue={serverTimestamp:()=>new Date().toISOString()};firestore.FieldPath={documentId:()=>'__name__'};window.firebase={apps:[{}],initializeApp:()=>({}),auth:authFn,firestore};
+  });
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+  await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
+  await tap(page,'#bottomNav button[data-page="coach"]','open Coach');await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach'&&document.querySelector('.g2-composer textarea'),null,{timeout:10000});
+  assert.ok(await page.locator('.gcl-decision,.gcl-context-actions').count()>0,'decision-first Coach surface must remain present');
+  const input=page.locator('.g2-composer textarea');await input.fill('오늘 벤치 세게 해도 돼?');await tap(page,'.g2-send','send real LLM question');
+  await page.waitForFunction(()=>[...document.querySelectorAll('.g2-message.assistant .g2-message-text')].some(node=>String(node.textContent||'').includes('REAL LLM:')),null,{timeout:9000});
+  assert.equal(gatewayCalls.length>=1,true,'authenticated Coach must call the real gateway transport');const first=gatewayCalls[0];assert.match(first.headers.authorization||'',/^Bearer firebase-id-token-llm-user$/);assert.deepEqual(Object.keys(first.body).sort(),['language','message']);assert.equal(first.body.message,'오늘 벤치 세게 해도 돼?');assert.equal('context' in first.body,false);
+  let state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'LLM explanation alone must never mutate Planner');
+  await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach actions');await tap(page,'.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach="0"]','request plan');
+  await page.waitForSelector('.g4-agent-proposal [data-g4-approve]',{state:'visible',timeout:10000});state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'action proposal must still wait for user approval');
+  await tap(page,'.g4-agent-proposal [data-g4-approve]','approve canonical plan');await page.waitForFunction(()=>window.GarangAgentStateBridge.getState().planner?.length===3,null,{timeout:8000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:8000});
+  state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.deepEqual([...new Set(state.planner.map(row=>row.domain))].sort(),['nutrition','recovery','training']);assert.ok(state.planner.every(row=>row.origin==='garang-daily-plan'),'approval must use canonical Daily Plan');
+  assert.ok((state.actionLog||[]).some(row=>row.action==='daily_plan_draft_confirmed'),'approved Real LLM-assisted flow must persist through canonical audited write path');assert.deepEqual(errors,[],`real LLM Golden Path browser errors:\n${errors.join('\n')}`);
+  console.log('browser Real LLM -> Agent confirmation -> canonical Planner: PASS');
+ }finally{clearTimeout(watchdog);if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
+})().catch(error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
