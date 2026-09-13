@@ -124,7 +124,10 @@
     const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state');
     if(access&&access.classList.contains('gtf-checkin-access')&&stateNode&&access.previousElementSibling!==stateNode)stateNode.insertAdjacentElement('afterend',access);
     f.querySelector('[data-gto-impact="1"]')?.remove();decorateTracks(s,date,checkin);
-    try{window.GarangTodaySingleNextActionV1?.refresh?.();}catch{}
+    try{
+      const nextAction=window.GarangTodaySingleNextActionV1;
+      if(nextAction?.syncNow)nextAction.syncNow();else nextAction?.refresh?.();
+    }catch{}
   }
 
   function schedule(delay=120){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(render)),delay);}
