@@ -7,15 +7,19 @@ const crypto=require('node:crypto');
 const rows=value=>Array.isArray(value)?value:[];
 const clean=(value,limit=1000)=>String(value??'').trim().slice(0,limit);
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
-function select(row,keys){const out={};for(const key of keys){const value=row?.[key];if(value!==undefined&&value!==null&&value!=='')out[key]=clone(value);}return out;}
-function minimalContext(full){
- const memory=rows(full?.memory?.entries).slice(0,10).map(row=>select(row,['type','key','value','confidence','importance','createdAt']));
+const directIdentifierKey=value=>/(?:^|_)(?:email|e_mail|phone|mobile|address|location|latitude|longitude|token|display_name|full_name)(?:_|$)/i.test(String(value||''));
+function redactText(value,limit=800){return clean(value,limit).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted-email]').replace(/(?:\+?\d[\d\s().-]{7,}\d)/g,'[redacted-phone]');}
+function select(row,keys,{redact=false}={}){const out={};for(const key of keys){const value=row?.[key];if(value===undefined||value===null||value==='')continue;out[key]=redact&&typeof value==='string'?redactText(value):clone(value);}return out;}
+function latestCheckin(state){return [...rows(state?.dailyCheckins),...rows(state?.checkins)].slice().sort((a,b)=>String(a?.date||a?.createdAt||'').localeCompare(String(b?.date||b?.createdAt||''))).at(-1)||null;}
+function minimalContext(full,state={}){
+ const memory=rows(full?.memory?.entries).filter(row=>!directIdentifierKey(row?.key)&&String(row?.type||'').toLowerCase()!=='identity').slice(0,10).map(row=>select(row,['type','key','value','confidence','importance','createdAt'],{redact:true}));
  const workouts=rows(full?.workouts).slice(0,8).map(row=>select(row,['date','name','exercise','sets','reps','weight','rpe','duration','volume']));
  const meals=rows(full?.meals).slice(0,8).map(row=>select(row,['date','name','kcal','protein','carbs','fat']));
  const runs=rows(full?.runs).slice(0,6).map(row=>select(row,['date','distance','duration','pace','rpe']));
  const body=rows(full?.body).slice(0,6).map(row=>select(row,['date','weight','fatPercent','muscle']));
  const planner=rows(full?.planner).slice(0,6).map(row=>select(row,['date','domain','type','title','status','completed','executionScore']));
- return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,planner},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
+ const checkin=select(latestCheckin(state)||{},['date','sleep','sleepHours','energy','energyLevel','stress','stressLevel','soreness','muscleSoreness','availableMinutes']);
+ return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
 }
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function errorCode(error){return clean(error?.code||error?.message||'LLM_GATEWAY_ERROR',80).replace(/[^A-Z0-9_]+/gi,'_').toUpperCase();}
@@ -29,7 +33,7 @@ function createCoachGatewayHandler(deps={}){
   const uid=clean(decoded?.uid,180);if(!uid)return res.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
   const message=clean(req?.body?.message,1800),language=req?.body?.language==='en'?'en':'ko';if(!message)return res.status(400).json({ok:false,error:{code:'MESSAGE_REQUIRED'}});
   let state;try{state=await readUser(uid);}catch{return res.status(503).json({ok:false,error:{code:'USER_DATA_UNAVAILABLE'}});}
-  const full=buildAgentContext(state||{},{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full),id=requestId();
+  const full=buildAgentContext(state||{},{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full,state||{}),id=requestId();
   try{
    const config=getProviderConfig(),provider=providerFactory(config),generated=await provider.generate({message,context,language,requestId:id});
    const data={...generated,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
@@ -39,4 +43,4 @@ function createCoachGatewayHandler(deps={}){
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext};
+module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin};
