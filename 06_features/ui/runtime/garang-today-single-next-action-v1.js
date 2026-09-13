@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.1.0';
+  const VERSION = 'garang-today-single-next-action-v1.1.1';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -49,8 +49,7 @@
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
       #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-action{display:block!important;position:relative!important;z-index:4!important;pointer-events:auto!important}
       #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-next[data-gsn-action]{position:relative!important;z-index:5!important;pointer-events:auto!important}
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"],
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-activation="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -99,14 +98,13 @@
     return false;
   }
 
-  function todayActionFor(model, checkedToday, snapshot) {
-    if (checkedToday || activationBeforeCheckin(model, snapshot)) return actionFor(model);
-    return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today', canonical:model?.nextAction||null };
+  function todayActionFor(model) {
+    return actionFor(model);
   }
 
   function flowOwnsExpectedAction(flow, model, snapshot) {
     if (!flow || !model || !snapshot) return true;
-    const action = todayActionFor(model, hasTodayCheckin(snapshot), snapshot);
+    const action = todayActionFor(model);
     const button = flow.querySelector('.gtf-next');
     if (!action) return true;
     if (action.id === 'checkin') return main.dataset.gsnAction === 'checkin' && !button?.dataset?.gsnAction;
@@ -222,7 +220,7 @@
     ensureFlowObserver(flow);
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    const action = todayActionFor(model, checkedToday, snapshot);
+    const action = todayActionFor(model);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -237,8 +235,7 @@
     flow.dataset.garangNextOwner = 'golden-path';
 
     if (action.id === 'checkin') {
-      /* Recovery is the one intentional special case: the existing quiet state-entry
-         control remains the single visible action because it owns the canonical modal. */
+      /* Check-in is visible only when the canonical next-action contract asks for data. */
       restoreNative(button);
       if (actionWrap) actionWrap.style.setProperty('display','none','important');
       suppressLegacyCheckin(flow, false);
