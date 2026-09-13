@@ -8,7 +8,7 @@
 const Base=BrowserBase||(typeof module==='object'&&module.exports?require('./agent-contract-v1.js'):null);
 if(!Base)throw new Error('GARANG_AGENT_CONTRACT_V1_REQUIRED');
 const CONTRACT_VERSION=Base.CONTRACT_VERSION;
-const ACTION_LAYER_VERSION='garang-agent-action-v2';
+const ACTION_LAYER_VERSION='garang-agent-action-v2.1';
 const CONFIRMATION_SCOPE_KEY='__GARANG_AGENT_CONFIRMED_WRITE_V2__';
 const CRUD_DOMAINS=Object.freeze(['workouts','meals','runs','body','planner','memory']);
 const READ_TOOLS=Object.freeze([...Base.READ_TOOLS]);
@@ -46,7 +46,7 @@ function normalizeToolCall(call,{idFactory=defaultId}={}){
 function createRequest(input,options={}){
   const request=Base.createRequest(input,options);
   request.capabilities={...request.capabilities,readTools:[...READ_TOOLS],writeTools:[...WRITE_TOOLS],crudDomains:[...CRUD_DOMAINS],actionLayerVersion:ACTION_LAYER_VERSION};
-  request.policy={...request.policy,idempotentConfirmedWrites:true,revisionConflictProtection:true,explicitDeletionTombstones:true};
+  request.policy={...request.policy,idempotentConfirmedWrites:true,revisionConflictProtection:true,explicitDeletionTombstones:true,recommendationLifecycle:['accept','modify','dismiss'],outcomeLinkage:true};
   return request;
 }
 function validateResponse(raw,request,{idFactory=defaultId}={}){
@@ -57,6 +57,28 @@ function validateResponse(raw,request,{idFactory=defaultId}={}){
 }
 function createMockAdapter(options){return Base.createMockAdapter(options);}
 function readFromState(tool,state){return Base.readFromState(tool,state);}
+function expectedOutcome(tool,args={}){
+  if(tool==='createPlan'||(tool==='createRecord'&&args.domain==='planner'))return 'Complete the accepted plan and create real execution evidence that GARANG can evaluate.';
+  if(tool==='updatePlan'||(tool==='updateRecord'&&args.domain==='planner'))return 'Execute the revised plan and compare the result with this recommendation.';
+  if(tool==='updateGoal')return 'Use the confirmed goal as the reference for future plan alignment.';
+  return 'Observe the user-confirmed result before changing the next recommendation.';
+}
+function recommendationEvidence(call,request){
+  const fromArgs=Array.isArray(call?.args?.reasonCodes)?call.args.reasonCodes:[];
+  const fromDecision=Array.isArray(request?.context?.decision?.reasonCodes)?request.context.decision.reasonCodes:[];
+  return [...new Set([...fromArgs,...fromDecision].map(String).filter(Boolean))].slice(0,12);
+}
+function validateModifiedProposal(proposal,patch){
+  const args={...clone(proposal.args),...clone(patch)};
+  if(proposal.tool==='createRecord'||proposal.tool==='updateRecord')return validateCrud(proposal.tool,args);
+  return Base.normalizeToolCall({id:proposal.id,tool:proposal.tool,args,reason:proposal.reason},{idFactory:()=>proposal.id}).args;
+}
+function linkedArgs(proposal){
+  const metadata={recommendationId:proposal.recommendationId,recommendationSource:proposal.source,recommendationReason:proposal.reason,recommendationEvidence:clone(proposal.evidence),recommendationConfidence:proposal.confidence,expectedOutcome:proposal.expectedOutcome,recommendationRevision:proposal.revision};
+  if(proposal.tool==='createRecord'&&proposal.args?.domain==='planner')return {...clone(proposal.args),record:{...clone(proposal.args.record),...metadata}};
+  if(proposal.tool==='updateRecord'&&proposal.args?.domain==='planner')return {...clone(proposal.args),patch:{...clone(proposal.args.patch),...metadata}};
+  return {...clone(proposal.args),...metadata};
+}
 function withConfirmedWriteScope(meta,run){
   const previous=root[CONFIRMATION_SCOPE_KEY],scope=Object.freeze({...clone(meta),userConfirmed:true});
   root[CONFIRMATION_SCOPE_KEY]=scope;
@@ -76,21 +98,27 @@ function createSession({getState=()=>({}),readTool=null,applyWrite=()=>null,idFa
       const raw=await adapter.respond(clone(request)),response=validateResponse(raw,request,{idFactory}),reads=[],pending=[];
       for(const call of response.toolCalls){
         if(call.kind==='read'){const result=read(call.tool,call.args);reads.push({call:clone(call),result});audit.push({event:'read_executed',callId:call.id,tool:call.tool,at:clock().toISOString()});}
-        else{const proposal={...clone(call),status:'pending',createdAt:clock().toISOString()};proposals.set(proposal.id,proposal);pending.push(clone(proposal));audit.push({event:'write_proposed',callId:proposal.id,tool:proposal.tool,at:proposal.createdAt});}
+        else{const proposal={...clone(call),recommendationId:call.id,status:'pending',revision:1,source:clean(response?.meta?.provider)||'coach',evidence:recommendationEvidence(call,request),confidence:Number.isFinite(Number(request?.context?.decision?.confidence))?Math.max(0,Math.min(1,Number(request.context.decision.confidence))):null,expectedOutcome:expectedOutcome(call.tool,call.args),createdAt:clock().toISOString()};proposals.set(proposal.id,proposal);pending.push(clone(proposal));audit.push({event:'write_proposed',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,at:proposal.createdAt});}
       }
       return {request,response,reads,proposals:pending};
+    },
+    modify(proposalId,changes={}){
+      const proposal=proposals.get(proposalId);assert(proposal,'PROPOSAL_NOT_FOUND');assert(proposal.status==='pending','PROPOSAL_ALREADY_RESOLVED');assert(object(changes),'INVALID_TOOL_ARGS');
+      const patch=object(changes.args)?changes.args:changes;proposal.args=validateModifiedProposal(proposal,patch);proposal.revision=Math.max(1,Number(proposal.revision)||1)+1;proposal.modifiedAt=clock().toISOString();
+      if(clean(changes.reason))proposal.reason=clean(changes.reason);if(clean(changes.expectedOutcome))proposal.expectedOutcome=clean(changes.expectedOutcome);
+      audit.push({event:'write_modified',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.modifiedAt});return clone(proposal);
     },
     confirm(proposalId,approved){
       const proposal=proposals.get(proposalId);assert(proposal,'PROPOSAL_NOT_FOUND');assert(proposal.status==='pending','PROPOSAL_ALREADY_RESOLVED');proposal.status=approved?'confirmed':'rejected';proposal.resolvedAt=clock().toISOString();let result=null;
       if(approved){
-        const meta={callId:proposal.id,idempotencyKey:proposal.id,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)};
-        result=withConfirmedWriteScope(meta,()=>applyWrite(proposal.tool,clone(proposal.args),meta));
+        const args=linkedArgs(proposal),meta={callId:proposal.id,idempotencyKey:proposal.id,recommendationId:proposal.recommendationId,recommendationRevision:proposal.revision,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)};
+        result=withConfirmedWriteScope(meta,()=>applyWrite(proposal.tool,args,meta));
       }
-      audit.push({event:proposal.status==='confirmed'?'write_confirmed':'write_rejected',callId:proposal.id,tool:proposal.tool,at:proposal.resolvedAt});return {proposal:clone(proposal),result:clone(result)};
+      audit.push({event:proposal.status==='confirmed'?'write_confirmed':'write_rejected',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.resolvedAt});return {proposal:clone(proposal),result:clone(result)};
     },
     getProposal(id){const proposal=proposals.get(id);return proposal?clone(proposal):null;}
   });
 }
 
-return Object.freeze({CONTRACT_VERSION,ACTION_LAYER_VERSION,CONFIRMATION_SCOPE_KEY,CRUD_DOMAINS,READ_TOOLS,WRITE_TOOLS,AgentContractError:Base.AgentContractError,createRequest,validateResponse,normalizeToolCall,createMockAdapter,createSession,readFromState});
+return Object.freeze({CONTRACT_VERSION,ACTION_LAYER_VERSION,CONFIRMATION_SCOPE_KEY,CRUD_DOMAINS,READ_TOOLS,WRITE_TOOLS,AgentContractError:Base.AgentContractError,createRequest,validateResponse,normalizeToolCall,createMockAdapter,createSession,readFromState,expectedOutcome});
 });
