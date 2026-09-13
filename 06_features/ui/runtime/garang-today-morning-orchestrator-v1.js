@@ -24,6 +24,7 @@
 
   function state(){try{return bridge()?.getLiveState?.()||bridge()?.getState?.()||null;}catch{return null;}}
   function todayCheckin(s,date){return [...list(s?.dailyCheckins),...list(s?.checkins)].filter(row=>sameDate(row,date)).at(-1)||null;}
+  function canonicalNext(s,date){try{return window.GarangGoldenPath?.derive?.(s,{today:date})?.nextAction||null;}catch{return null;}}
   function domainOf(item,index=0){const explicit=String(item?.domain||'').toLowerCase();if(['training','recovery','nutrition'].includes(explicit))return explicit;const type=String(item?.type||'').toLowerCase();if(type==='recovery')return'recovery';if(type==='nutrition'||type==='meal')return'nutrition';if(['workout','running','run'].includes(type))return'training';return ['training','recovery','nutrition'][index]||'training';}
   function normalizeTrack(item,domain,index=0){if(!item)return {domain,title:'',duration:null,intensityScale:null};return {domain:domain||domainOf(item,index),title:String(item.title||item.name||'').trim(),duration:finite(item.duration),intensityScale:finite(item.intensityScale)};}
   function draftGroup(s,date){const group=s?.meta?.dailyPlanDrafts?.[date];return group&&typeof group==='object'?group:null;}
@@ -115,20 +116,21 @@
   }
 
   function render(){
-    timer=null;injectStyle();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin;
+    timer=null;injectStyle();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin,next=canonicalNext(s,date),needsCheckin=!checked&&next?.action==='collect_data'&&next?.intent==='checkin';
     m.dataset.gto='1';m.dataset.garangDecisionOwner='coach';delete m.dataset.gtfBodyOpen;
-    f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':'precheckin';f.dataset.decisionOwner='coach';
+    f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':(needsCheckin?'precheckin':'canonical');f.dataset.decisionOwner='coach';
     f.setAttribute('aria-label',english()?'Today state and next action':'오늘 상태와 다음 행동');
     ensureStateVisual(f);
     const access=updateCheckinControl(checkin),stateNode=f.querySelector('.gtf-state');
     if(access&&access.classList.contains('gtf-checkin-access')&&stateNode&&access.previousElementSibling!==stateNode)stateNode.insertAdjacentElement('afterend',access);
     f.querySelector('[data-gto-impact="1"]')?.remove();decorateTracks(s,date,checkin);
+    try{window.GarangTodaySingleNextActionV1?.refresh?.();}catch{}
   }
 
   function schedule(delay=120){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(render)),delay);}
   document.addEventListener('click',event=>{const target=event.target.closest?.('[data-garang-checkin-access="1"],.gtf-next[data-gtf-action="open-checkin"],[data-action="open-checkin"]');if(target&&main()?.dataset.garangScreen==='today')snapshotBaseline();},true);
   ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:agent-write','garang:route-completed'].forEach(name=>window.addEventListener(name,()=>schedule(name==='garang:state-updated'?180:100)));
   window.addEventListener('pageshow',()=>schedule(80));
-  window.GarangTodayMorningOrchestratorV1=Object.freeze({version:VERSION,render,schedule,snapshotBaseline});
+  window.GarangTodayMorningOrchestratorV1=Object.freeze({version:VERSION,render,schedule,snapshotBaseline,canonicalNext});
   schedule(120);
 })();
