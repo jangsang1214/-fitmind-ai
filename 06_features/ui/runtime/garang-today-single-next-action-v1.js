@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.1.1';
+  const VERSION = 'garang-today-single-next-action-v1.1.2';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -265,6 +265,11 @@
     delayedTimer = setTimeout(sync, 420);
   }
 
+  function syncNow() {
+    clearTimeout(delayedTimer);
+    sync();
+  }
+
   function afterRoute(route, callback) {
     const listener = event => {
       if (event?.detail?.route !== route) return;
@@ -313,7 +318,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, syncNow, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
   ensureStyle();
   schedule();
 })();
