@@ -49,6 +49,17 @@ test('default surfaces separate plan execution from recording rhythm',()=>{
   assert.doesNotMatch(ui,/오늘 \$\{done\} \/ \$\{rows\.length\} .*완료/);
 });
 
+test('accumulation explains accumulated evidence, change, and next action without overclaiming',()=>{
+  assert.match(ui,/function weeklyReview\(state,today\)/);
+  assert.match(ui,/getWeeklyReview/);
+  assert.match(ui,/GarangPlanAdaptation\?\.weeklyReview/);
+  assert.match(ui,/GarangGoldenPath\?\.derive/,'the payoff surface must reuse the canonical next action');
+  assert.match(ui,/data-gx-meaning-loop/);
+  assert.match(ui,/쌓인 것/);assert.match(ui,/변화/);assert.match(ui,/다음 행동/);
+  assert.match(ui,/classification!=='insufficient_evidence'/);
+  assert.match(ui,/의미 있는 변화를 단정하지 않습니다/);
+});
+
 test('goal fit is quiet by default and evidence stays behind the droplet',()=>{
   assert.match(ui,/GarangGoalAlignment/);assert.match(ui,/function goalDetails\(goal,c,lang\)/);assert.match(ui,/gx-detail-domains/);
   assert.match(ui,/data-gx-details/);assert.match(ui,/dropletIcon\('\+'\)/);assert.match(ui,/role="dialog"/);
