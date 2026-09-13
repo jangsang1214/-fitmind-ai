@@ -7,10 +7,17 @@ const crypto=require('node:crypto');
 const rows=value=>Array.isArray(value)?value:[];
 const clean=(value,limit=1000)=>String(value??'').trim().slice(0,limit);
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const finite=value=>{const n=Number(value);return Number.isFinite(n)?n:null;};
+const round=(value,digits=1)=>{const n=finite(value);if(n===null)return null;const p=10**digits;return Math.round(n*p)/p;};
 const directIdentifierKey=value=>/(?:^|_)(?:email|e_mail|phone|mobile|address|location|latitude|longitude|token|display_name|full_name)(?:_|$)/i.test(String(value||''));
 function redactText(value,limit=800){return clean(value,limit).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted-email]').replace(/(?:\+?\d[\d\s().-]{7,}\d)/g,'[redacted-phone]');}
 function select(row,keys,{redact=false}={}){const out={};for(const key of keys){const value=row?.[key];if(value===undefined||value===null||value==='')continue;out[key]=redact&&typeof value==='string'?redactText(value):clone(value);}return out;}
 function latestCheckin(state){return [...rows(state?.dailyCheckins),...rows(state?.checkins)].slice().sort((a,b)=>String(a?.date||a?.createdAt||'').localeCompare(String(b?.date||b?.createdAt||''))).at(-1)||null;}
+function bodyTrend(bodyRows){
+ const sorted=rows(bodyRows).filter(row=>row?.date).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));if(!sorted.length)return null;
+ const first=sorted[0],last=sorted.at(-1),delta=(key,digits=1)=>{const a=finite(first?.[key]),b=finite(last?.[key]);return a===null||b===null?null:round(b-a,digits);};
+ return {fromDate:String(first.date).slice(0,10),toDate:String(last.date).slice(0,10),weightDelta:delta('weight'),fatPercentDelta:delta('fatPercent'),muscleDelta:delta('muscle')};
+}
 function minimalContext(full,state={}){
  const memory=rows(full?.memory?.entries).filter(row=>!directIdentifierKey(row?.key)&&String(row?.type||'').toLowerCase()!=='identity').slice(0,10).map(row=>select(row,['type','key','value','confidence','importance','createdAt'],{redact:true}));
  const workouts=rows(full?.workouts).slice(0,8).map(row=>select(row,['date','name','exercise','sets','reps','weight','rpe','duration','volume']));
@@ -19,7 +26,7 @@ function minimalContext(full,state={}){
  const body=rows(full?.body).slice(0,6).map(row=>select(row,['date','weight','fatPercent','muscle']));
  const planner=rows(full?.planner).slice(0,6).map(row=>select(row,['date','domain','type','title','status','completed','executionScore']));
  const checkin=select(latestCheckin(state)||{},['date','sleep','sleepHours','energy','energyLevel','stress','stressLevel','soreness','muscleSoreness','availableMinutes']);
- return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
+ return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,bodyTrend:bodyTrend(body),planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
 }
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function errorCode(error){return clean(error?.code||error?.message||'LLM_GATEWAY_ERROR',80).replace(/[^A-Z0-9_]+/gi,'_').toUpperCase();}
@@ -43,4 +50,4 @@ function createCoachGatewayHandler(deps={}){
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin};
+module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,bodyTrend};
