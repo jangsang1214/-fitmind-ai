@@ -7,7 +7,7 @@
 const main=document.getElementById('main');if(!main)return;
 const VERSION='garang-coach-decision-v1.4-decision-first';
 const english=()=>document.documentElement.lang==='en';
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const LABELS={collect_data:{ko:'데이터 필요',en:'More data needed'},caution:{ko:'주의',en:'Caution'},recover:{ko:'회복 우선',en:'Recovery first'},reduce:{ko:'강도 조정',en:'Reduce load'},maintain:{ko:'계획 유지',en:'Maintain'},progress:{ko:'점진 향상',en:'Progress'},goal_focus:{ko:'목표 집중',en:'Goal focus'}};
 const SIGNAL={readinessBand:{ko:'준비도',en:'Readiness'},fatigueBand:{ko:'피로',en:'Fatigue'},loadBand:{ko:'부하',en:'Load'}};
 function text(pair){return english()?pair?.en:pair?.ko;}
