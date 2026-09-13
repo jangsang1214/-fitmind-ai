@@ -10,6 +10,7 @@ const Core=window.GarangIntelligenceCore;
 const Score=window.GarangPerformanceScore;
 const Planner=window.GarangAdaptivePlanner;
 const PlanAdaptation=window.GarangPlanAdaptation;
+const WeeklyReview=window.GarangWeeklyReview;
 const clone=value=>value==null?value:JSON.parse(JSON.stringify(value));
 function requireReady(){if(!Base?.ready?.())throw new Error('AGENT_STATE_NOT_READY');if(!Core?.run)throw new Error('INTELLIGENCE_CORE_NOT_READY');return Base.getState();}
 function ownerUid(){try{return String(window.firebase?.auth?.().currentUser?.uid||'').trim()||null;}catch{return null;}}
@@ -22,6 +23,8 @@ window.GarangIntelligenceBridge=Object.freeze({
  getAdaptivePlan:(options={})=>{const state=requireReady(),userState=Base.getUserState?.()||null,decision=Base.getDecision?.()||null,score=Score.compute(state,{...options,userState}),memoryContext=Base.getMemoryContext?.('',{limit:24,budgetChars:6000})||null;return clone(Planner.adaptWeek(state,{...options,userState,decision,score,memoryContext}));},
  getPlanAdaptation:(options={})=>{const state=requireReady();return clone(PlanAdaptation?.derive?.(state,options)||null);},
  getPlanAdaptationContext:(options={})=>{const state=requireReady(),value=PlanAdaptation?.derive?.(state,options)||null;return clone(PlanAdaptation?.compactForContext?.(value)||value);},
+ getWeeklyReview:(options={})=>{const state=requireReady();return clone(WeeklyReview?.review?.(state,options)||null);},
+ getWeeklyReviewContext:(options={})=>{const state=requireReady(),value=WeeklyReview?.review?.(state,options)||null;return clone(WeeklyReview?.compact?.(value)||value);},
  getDiagnostics:(options={})=>clone(Core.diagnostics(requireReady(),{ownerUid:ownerUid(),...options}))
 });
 })();
