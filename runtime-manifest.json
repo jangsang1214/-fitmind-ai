@@ -44,6 +44,7 @@
     "02_core/adaptive-planner-v1.js",
     "02_core/intelligence-core-v1.js",
     "02_core/plan-execution-v1.js",
+    "02_core/plan-adaptation-v1.js",
     "02_core/nutrition-recommendation-v1.js",
     "02_core/golden-path-v1.js",
     "02_core/workout-intelligence-v1.js",
