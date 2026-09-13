@@ -22,6 +22,8 @@ window.GarangIntelligenceBridge=Object.freeze({
  getAdaptivePlan:(options={})=>{const state=requireReady(),userState=Base.getUserState?.()||null,decision=Base.getDecision?.()||null,score=Score.compute(state,{...options,userState}),memoryContext=Base.getMemoryContext?.('',{limit:24,budgetChars:6000})||null;return clone(Planner.adaptWeek(state,{...options,userState,decision,score,memoryContext}));},
  getPlanAdaptation:(options={})=>{const state=requireReady();return clone(PlanAdaptation?.derive?.(state,options)||null);},
  getPlanAdaptationContext:(options={})=>{const state=requireReady(),value=PlanAdaptation?.derive?.(state,options)||null;return clone(PlanAdaptation?.compactForContext?.(value)||value);},
+ getWeeklyReview:(options={})=>{const state=requireReady();return clone(PlanAdaptation?.weeklyReview?.(state,options)||null);},
+ getWeeklyReviewContext:(options={})=>{const state=requireReady(),value=PlanAdaptation?.weeklyReview?.(state,options)||null;return clone(PlanAdaptation?.compactWeeklyReview?.(value)||value);},
  getDiagnostics:(options={})=>clone(Core.diagnostics(requireReady(),{ownerUid:ownerUid(),...options}))
 });
 })();

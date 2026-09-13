@@ -1,5 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const Adapt=require('../02_core/plan-adaptation-v1.js');
 
 const base=()=>({meta:{dailyPlanDrafts:{}},profile:{goal:'근육 증가'},onboarding:{weeklyFrequency:4,availableMinutes:60},planner:[],workouts:[],runs:[],meals:[],body:[],dailyCheckins:[],checkins:[],actionLog:[]});
@@ -25,6 +27,16 @@ const finalized=(date,rates)=>({date,status:'finalized',result:'partial',outcome
  assert.equal(training.executionStatus,'missed');assert.equal(training.classification,'recovery_constrained');assert.equal(training.cause,'recovery_constraint');assert.equal(training.scale,.85,'recovery-constrained misses must simplify without punitive over-reduction');
  assert.ok(training.reasonCodes.includes('RECOVERY_CONSTRAINT_LOW_SLEEP'));assert.ok(training.reasonCodes.includes('RECOVERY_CONSTRAINT_HIGH_SORENESS'));assert.equal(result.classification,'recovery_constrained');
  assert.deepEqual(result.guardrails,{readOnly:true,noSilentMutation:true,requiresConfirmationForConfirmedPlan:true,noAutomaticProgressionIncrease:true,scaleBounds:{min:.75,max:1}});
+ const before=JSON.stringify(state),review=Adapt.weeklyReview(state,{date:'2026-09-10'});
+ assert.equal(review.classification,'recovery_constrained');
+ assert.equal(review.insight.code,'WEEKLY_RECOVERY_CONSTRAINT');
+ assert.equal(review.nextAdjustment.domain,'training');
+ assert.equal(review.nextAdjustment.scale,.85);
+ assert.equal(review.nextAdjustment.requiresApproval,true);
+ assert.equal(review.recoveryContext.constraintDays,2);
+ assert.ok(review.recoveryContext.reasonCodes.includes('RECOVERY_CONSTRAINT_LOW_SLEEP'));
+ assert.deepEqual(review.guardrails,{readOnly:true,noSilentMutation:true,noAutomaticProgressionIncrease:true,coachApprovalForBehaviorChange:true});
+ assert.equal(JSON.stringify(state),before,'Weekly Review must be read-only');
 }
 {
  const state=base();state.meta.dailyPlanDrafts['2026-09-08']=finalized('2026-09-08',{training:100,recovery:50,nutrition:20});state.meta.dailyPlanDrafts['2026-09-09']=finalized('2026-09-09',{training:100,recovery:60,nutrition:30});
@@ -33,6 +45,20 @@ const finalized=(date,rates)=>({date,status:'finalized',result:'partial',outcome
  assert.equal(result.domains.recovery.classification,'partial');assert.equal(result.domains.recovery.scale,.9);
  assert.equal(result.domains.nutrition.classification,'missed');assert.equal(result.domains.nutrition.scale,.85);
  assert.equal(result.classification,'missed');
+ const review=Adapt.weeklyReview(state,{date:'2026-09-10'});
+ assert.equal(review.insight.code,'WEEKLY_EXECUTION_GAP');
+ assert.equal(review.nutritionContext.classification,'missed');
+ assert.equal(review.nextAdjustment.requiresApproval,true);
+}
+{
+ const state=base();for(const date of ['2026-09-08','2026-09-09'])state.meta.dailyPlanDrafts[date]=finalized(date,{training:100,recovery:100,nutrition:100});
+ const review=Adapt.weeklyReview(state,{date:'2026-09-10'});
+ assert.equal(review.classification,'completed');
+ assert.equal(review.insight.code,'WEEKLY_COMPLETED');
+ assert.equal(review.nextAdjustment.kind,'hold');
+ assert.equal(review.nextAdjustment.scale,1);
+ assert.equal(review.nextAdjustment.requiresApproval,false);
+ assert.equal(review.guardrails.noAutomaticProgressionIncrease,true,'Weekly Review must never turn completion into automatic progression');
 }
 {
  const state=base();for(const date of ['2026-09-08','2026-09-09'])state.planner.push({id:`t-${date}`,date,type:'workout',domain:'training',title:'하체',completed:false,status:'confirmed'});
@@ -50,4 +76,11 @@ const finalized=(date,rates)=>({date,status:'finalized',result:'partial',outcome
  assert.equal(draft.modelSnapshot.adaptation.engineVersion,'plan-adaptation-v1');assert.equal(draft.modelSnapshot.domainInterpretation.training.cause,'recovery_constraint');assert.equal(training.adaptation.classification,'recovery_constrained');assert.ok(training.reasonCodes.includes('OUTCOME_RECOVERY_CONSTRAINED'));assert.equal(training.volumeScale,.85,'canonical next Daily Plan must consume the bounded adaptation scale');
  delete globalThis.GarangPlanAdaptation;
 }
-console.log('plan-adaptation-v1 plan-vs-actual interpretation + bounded adjustment: PASS');
+{
+ const bridge=fs.readFileSync(path.resolve(__dirname,'../06_features/final/intelligence-state-bridge-v1.js'),'utf8');
+ assert.ok(bridge.includes('getWeeklyReview:'),'Intelligence Bridge must expose the full Weekly Review');
+ assert.ok(bridge.includes('getWeeklyReviewContext:'),'Intelligence Bridge must expose a compact Weekly Review context');
+ assert.ok(bridge.includes('PlanAdaptation?.weeklyReview?.'),'Weekly Review must consume the canonical plan adaptation engine');
+ assert.equal(bridge.includes('applyWrite('),false,'Weekly Review bridge must remain read-only');
+}
+console.log('plan-adaptation-v1 plan-vs-actual + bounded adjustment + Weekly Review: PASS');
