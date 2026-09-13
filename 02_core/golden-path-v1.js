@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='golden-path-v1';
+const VERSION='golden-path-v1.1';
 const STEP_ORDER=Object.freeze(['onboarding','first_record','coach','plan','execute','accumulation']);
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const list=value=>Array.isArray(value)?value:[];
@@ -43,12 +43,10 @@ function meaningfulRecords(state){
 function coachEvidence(state){
   const events=list(state?.analytics?.events);
   const chats=list(state?.aiChat);
-  const userMessage=chats.some(row=>String(row?.role||'').toLowerCase()==='user'&&clean(row?.text||row?.content));
-  const evidenceNames=new Set(['ai_chat_started','ai_chat_answered','ai_plan_applied','coach_action_requested']);
-  const eventEvidence=events.some(row=>evidenceNames.has(clean(row?.name))||(
-    clean(row?.name)==='screen_viewed'&&clean(row?.props?.screen||row?.props?.route)==='coach'
-  ));
-  return {used:userMessage||eventEvidence,userMessage,eventEvidence};
+  const assistantMessage=chats.some(row=>['assistant','ai','coach'].includes(String(row?.role||'').toLowerCase())&&clean(row?.text||row?.content));
+  const meaningfulEventNames=new Set(['coach_recommendation_shown','ai_chat_answered','daily_plan_applied','ai_plan_applied','agent_proposal_confirmed']);
+  const eventEvidence=events.some(row=>meaningfulEventNames.has(clean(row?.name)));
+  return {used:assistantMessage||eventEvidence,assistantMessage,eventEvidence};
 }
 
 function planType(value){
@@ -87,11 +85,7 @@ function recordCandidates(state,date,type){
 }
 
 function execution(state,today){
-  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>{
-    const dateCompare=a.date.localeCompare(b.date);if(dateCompare)return dateCompare;
-    const ao=Number(a.row?.order),bo=Number(b.row?.order),orderCompare=(Number.isFinite(ao)?ao:999)-(Number.isFinite(bo)?bo:999);if(orderCompare)return orderCompare;
-    return `${clean(a.row?.time)||'99:99'}|${clean(a.row?.id)||a.index}`.localeCompare(`${clean(b.row?.time)||'99:99'}|${clean(b.row?.id)||b.index}`);
-  });
+  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>`${a.date}|${clean(a.row?.time)||'99:99'}|${clean(a.row?.id)||a.index}`.localeCompare(`${b.date}|${clean(b.row?.time)||'99:99'}|${clean(b.row?.id)||b.index}`));
   const used=new Set(),candidates=new Map();
   const claim=(date,type,plan)=>{
     const key=`${date}|${type}`;if(!candidates.has(key))candidates.set(key,recordCandidates(state,date,type));
@@ -100,7 +94,7 @@ function execution(state,today){
   const items=rows.map(({row,date})=>{
     const type=planType(row?.type||row?.category),explicit=row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';
     const derived=!explicit&&type!=='rest'&&type!=='other'&&claim(date,type,row);
-    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalClass:clean(row?.goalClass)||goalClass(state),goalLabel:clean(row?.goalLabel||row?.goal),executed:explicit||derived,explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
+    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalClass:clean(row?.goalClass)||goalClass(state),goalLabel:clean(row?.goalLabel||row?.goal),recommendationId:clean(row?.recommendationId)||null,executed:explicit||derived,explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
   });
   const executed=items.filter(row=>row.executed).length;
   return {planned:items.length,executed,allExecuted:items.length>0&&executed===items.length,hasExecution:executed>0,items,nextPlan:items.find(row=>!row.executed)||items[0]||null};
@@ -109,23 +103,40 @@ function execution(state,today){
 function latestProgressVisit(state,today){
   const dates=list(state?.analytics?.events).filter(event=>{
     const name=clean(event?.name),screen=clean(event?.props?.screen||event?.props?.route);
-    return name==='screen_viewed'&&(screen==='progress'||screen==='accumulation');
+    return (name==='accumulation_viewed'||(name==='screen_viewed'&&(screen==='progress'||screen==='accumulation')));
   }).map(eventDate).filter(date=>date&&date<=today).sort();
   return dates.at(-1)||null;
 }
+function accumulationEvidence(state,today,plans){
+  const progressDate=latestProgressVisit(state,today),executedDates=list(plans?.items).filter(row=>row?.executed&&row?.date).map(row=>row.date).sort(),latestExecutionDate=executedDates.at(-1)||null;
+  const meaningful=!!(progressDate&&latestExecutionDate&&progressDate>=latestExecutionDate);
+  return {meaningful,date:meaningful?progressDate:null,viewedDate:progressDate,latestExecutionDate};
+}
+function evidenceEntry(type,value,label){return {type,value:value??null,label:label||null};}
+function canonicalNextAction({step,recoveryReady,records,coach,plans,accumulation,today}){
+  const next=plans?.nextPlan||null;
+  if(step==='onboarding')return {id:`gp:${today}:onboarding`,action:'onboarding',route:'onboarding',reason:'Complete your goal and baseline so GARANG can interpret later records.',evidence:[evidenceEntry('onboarding','incomplete','ONBOARDING_INCOMPLETE')],source:VERSION,confidence:1,expectedOutcome:'A usable goal and baseline for the first recommendation.'};
+  if(step==='first_record')return {id:`gp:${today}:first_record`,action:'record',route:'log',reason:'GARANG needs one real behavior record before it can interpret your pattern.',evidence:[evidenceEntry('meaningful_records',records?.count||0,'NO_MEANINGFUL_RECORD')],source:VERSION,confidence:1,expectedOutcome:'Create the first evidence point for personalized interpretation.'};
+  if(step==='coach')return {id:`gp:${today}:coach`,action:'coach',route:'coach',reason:'A saved record exists but no evidence-backed Coach interpretation has been observed yet.',evidence:[evidenceEntry('meaningful_records',records?.count||0,'RECORD_AVAILABLE'),evidenceEntry('coach_interpretation',coach?.used===true,'COACH_INTERPRETATION_MISSING')],source:VERSION,confidence:.9,expectedOutcome:'Turn the saved record into an explicit recommendation before planning.'};
+  if(step==='plan'&&!recoveryReady)return {id:`gp:${today}:collect_data`,action:'collect_data',route:'today',intent:'checkin',reason:'Recent recovery evidence is missing, so GARANG should not over-personalize the plan.',evidence:[evidenceEntry('recovery_ready',false,'RECOVERY_SIGNAL_MISSING')],source:VERSION,confidence:1,expectedOutcome:'Collect a current recovery signal so the next plan can use the right intensity.'};
+  if(step==='plan')return {id:`gp:${today}:plan`,action:'plan',route:'coach',reason:'An interpretation exists and recovery evidence is recent enough to turn it into an executable plan.',evidence:[evidenceEntry('recovery_ready',true,'RECOVERY_SIGNAL_READY'),evidenceEntry('planned_actions',plans?.planned||0,'PLAN_NOT_CREATED')],source:VERSION,confidence:.9,expectedOutcome:'Create one concrete action that can later be matched to a real record.'};
+  if(step==='execute')return {id:`gp:${today}:execute:${clean(next?.id)||clean(next?.type)||'next'}`,action:'execute',route:next?.type==='running'?'running':next?.type==='nutrition'?'nutrition':next?.type==='recovery'?'today':'workout',actionType:next?.type||'workout',planId:next?.id||null,reason:next?.title?`The next unexecuted plan is ${next.title}.`:'The plan needs a real execution record before GARANG can evaluate the outcome.',evidence:[evidenceEntry('planned_actions',plans?.planned||0,'PLAN_AVAILABLE'),evidenceEntry('executed_actions',plans?.executed||0,'EXECUTION_PENDING')],source:VERSION,confidence:1,expectedOutcome:'Create real execution evidence that can be compared with the recommendation.'};
+  if(step==='accumulation')return {id:`gp:${today}:accumulation`,action:'review_accumulation',route:'progress',reason:'At least one planned action has real execution evidence and is ready to be interpreted in accumulation.',evidence:[evidenceEntry('executed_actions',plans?.executed||0,'EXECUTION_EVIDENCE_READY'),evidenceEntry('meaningful_accumulation_review',accumulation?.meaningful===true,'ACCUMULATION_REVIEW_PENDING')],source:VERSION,confidence:.95,expectedOutcome:'Review what accumulated, what changed, and the next action without overstating weak trends.'};
+  return {id:`gp:${today}:continue`,action:'continue',route:'today',reason:'The activation loop has meaningful evidence through accumulation review.',evidence:[evidenceEntry('accumulation_review_date',accumulation?.date||null,'ACCUMULATION_REVIEWED')],source:VERSION,confidence:1,expectedOutcome:'Start the next daily loop from accumulated evidence.'};
+}
 
 function derive(state,options={}){
-  const safe=state&&typeof state==='object'?state:{},today=dateOnly(options.today)||localDate(),records=meaningfulRecords(safe),coach=coachEvidence(safe),plans=execution(safe,today),progressDate=latestProgressVisit(safe,today),onboardingComplete=safe.onboarding?.complete===true||safe.onboarding?.skipped===true,recoveryDate=latestRecoveryDate(safe,today),recoveryReady=!!recoveryDate&&recoveryDate>=shiftDate(today,-2);
+  const safe=state&&typeof state==='object'?state:{},today=dateOnly(options.today)||localDate(),records=meaningfulRecords(safe),coach=coachEvidence(safe),plans=execution(safe,today),onboardingComplete=safe.onboarding?.complete===true||safe.onboarding?.skipped===true,recoveryDate=latestRecoveryDate(safe,today),recoveryReady=!!recoveryDate&&recoveryDate>=shiftDate(today,-2),accumulation=accumulationEvidence(safe,today,plans),progressDate=accumulation.date;
   const completed={
     onboarding:onboardingComplete,
     first_record:records.hasMeaningful,
     coach:coach.used,
     plan:plans.planned>0,
     execute:plans.hasExecution,
-    accumulation:!!progressDate
+    accumulation:accumulation.meaningful
   };
   const firstUnmet=STEP_ORDER.find(step=>!completed[step]);
-  const step=firstUnmet||'complete';
+  const step=firstUnmet||'complete',nextAction=canonicalNextAction({step,recoveryReady,records,coach,plans,accumulation,today});
   return {
     version:VERSION,
     today,
@@ -138,14 +149,17 @@ function derive(state,options={}){
     steps:STEP_ORDER.map(id=>({id,complete:!!completed[id]})),
     records,
     coachUsed:coach.used,
+    coachEvidence:clone(coach),
     planCount:plans.planned,
     execution:{planned:plans.planned,executed:plans.executed,allExecuted:plans.allExecuted,hasExecution:plans.hasExecution},
     nextPlan:clone(plans.nextPlan),
-    accumulationViewed:!!progressDate,
+    nextAction:clone(nextAction),
+    accumulationViewed:!!accumulation.viewedDate,
+    accumulationEvidence:clone(accumulation),
     progressDate,
     revisitAvailable:!!progressDate&&progressDate<today
   };
 }
 
-return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,goalClass,meaningfulRecords,coachEvidence,execution,derive});
+return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,goalClass,meaningfulRecords,coachEvidence,execution,latestProgressVisit,accumulationEvidence,canonicalNextAction,derive});
 });
