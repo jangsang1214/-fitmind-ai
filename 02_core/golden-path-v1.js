@@ -89,7 +89,7 @@ function recordCandidates(state,date,type){
 }
 
 function execution(state,today){
-  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>`${a.date}|${clean(a.row?.time)||'99:99'}|${clean(a.row?.id)||a.index}`.localeCompare(`${b.date}|${clean(b.row?.time)||'99:99'}|${clean(b.row?.id)||b.index}`));
+  const rows=list(state?.planner).map((row,index)=>({row,index,date:dateOfRow(row)||today})).filter(item=>item.date&&item.date<=today).sort((a,b)=>a.date.localeCompare(b.date)||((Number.isFinite(Number(a.row?.order))?Number(a.row.order):Number.POSITIVE_INFINITY)-(Number.isFinite(Number(b.row?.order))?Number(b.row.order):Number.POSITIVE_INFINITY))||(clean(a.row?.time)||'99:99').localeCompare(clean(b.row?.time)||'99:99')||(clean(a.row?.id)||String(a.index)).localeCompare(clean(b.row?.id)||String(b.index)));
   const used=new Set(),candidates=new Map();
   const claim=(date,type,plan)=>{
     const key=`${date}|${type}`;if(!candidates.has(key))candidates.set(key,recordCandidates(state,date,type));
