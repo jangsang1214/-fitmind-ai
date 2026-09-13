@@ -125,6 +125,8 @@ jobs:
         run: node tests/browser-authenticated-boot.test.cjs
       - name: Verify authenticated Coach plan flow
         run: node tests/browser-authenticated-coach-plan.test.cjs
+      - name: Verify Real LLM Golden Path integration
+        run: node tests/browser-real-llm-golden-path.test.cjs
       - name: Verify Coach conversational logging flow
         run: node tests/browser-conversational-intelligence.test.cjs
       - name: Trace authenticated recovery mutation loop
