@@ -60,10 +60,14 @@ function planType(value){
   return 'other';
 }
 
+function parseStamp(raw){const stamp=Date.parse(raw||'');return Number.isFinite(stamp)?stamp:null;}
 function stampOf(value){
-  const raw=value?.createdAt||value?.created_at||value?.updatedAt||value?.updated_at||value?.performedAt||value?.performed_at;
-  const stamp=Date.parse(raw||'');return Number.isFinite(stamp)?stamp:null;
+  const raw=value?.performedAt||value?.performed_at||value?.completedAt||value?.completed_at||value?.updatedAt||value?.updated_at||value?.createdAt||value?.created_at;
+  return parseStamp(raw);
 }
+function explicitExecutionStamp(value){return parseStamp(value?.completedAt||value?.completed_at||value?.updatedAt||value?.updated_at);}
+function eventStamp(event){return parseStamp(event?.at||event?.createdAt||event?.created_at||event?.props?.at||event?.props?.timestamp);}
+function candidateStamp(candidate){const stamps=list(candidate?.rows).map(stampOf).filter(stamp=>stamp!==null);return stamps.length?Math.max(...stamps):null;}
 function afterPlan(candidate,plan){
   const planStamp=stampOf(plan),rows=Array.isArray(candidate?.rows)?candidate.rows:[candidate];
   if(planStamp===null||!rows.length)return true;
@@ -89,28 +93,33 @@ function execution(state,today){
   const used=new Set(),candidates=new Map();
   const claim=(date,type,plan)=>{
     const key=`${date}|${type}`;if(!candidates.has(key))candidates.set(key,recordCandidates(state,date,type));
-    const row=candidates.get(key).find(item=>!used.has(item.token)&&afterPlan(item,plan));if(!row)return false;used.add(row.token);return true;
+    const matched=candidates.get(key).find(item=>!used.has(item.token)&&afterPlan(item,plan));if(!matched)return null;used.add(matched.token);return matched;
   };
   const items=rows.map(({row,date})=>{
     const type=planType(row?.type||row?.category),explicit=row?.completed===true||row?.done===true||String(row?.status||'').toLowerCase()==='completed';
-    const derived=!explicit&&type!=='rest'&&type!=='other'&&claim(date,type,row);
-    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalClass:clean(row?.goalClass)||goalClass(state),goalLabel:clean(row?.goalLabel||row?.goal),recommendationId:clean(row?.recommendationId)||null,executed:explicit||derived,explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
+    const matched=!explicit&&type!=='rest'&&type!=='other'?claim(date,type,row):null,derived=!!matched,executionStamp=explicit?explicitExecutionStamp(row):candidateStamp(matched);
+    return {id:clean(row?.id),date,type,title:clean(row?.title||row?.name)||'계획',goalClass:clean(row?.goalClass)||goalClass(state),goalLabel:clean(row?.goalLabel||row?.goal),recommendationId:clean(row?.recommendationId)||null,executed:explicit||derived,executionAt:executionStamp===null?null:new Date(executionStamp).toISOString(),explicitCompleted:explicit,derivedCompleted:derived,evidence:explicit?'PLANNER_COMPLETED':(derived?'ACTUAL_RECORD_MATCH':'NONE')};
   });
   const executed=items.filter(row=>row.executed).length;
   return {planned:items.length,executed,allExecuted:items.length>0&&executed===items.length,hasExecution:executed>0,items,nextPlan:items.find(row=>!row.executed)||items[0]||null};
 }
 
-function latestProgressVisit(state,today){
-  const dates=list(state?.analytics?.events).filter(event=>{
+function latestProgressEvidence(state,today){
+  const evidence=list(state?.analytics?.events).filter(event=>{
     const name=clean(event?.name),screen=clean(event?.props?.screen||event?.props?.route);
-    return (name==='accumulation_viewed'||(name==='screen_viewed'&&(screen==='progress'||screen==='accumulation')));
-  }).map(eventDate).filter(date=>date&&date<=today).sort();
-  return dates.at(-1)||null;
+    return name==='accumulation_viewed'||(name==='screen_viewed'&&(screen==='progress'||screen==='accumulation'));
+  }).map(event=>({date:eventDate(event),stamp:eventStamp(event)})).filter(row=>row.date&&row.date<=today).sort((a,b)=>a.date.localeCompare(b.date)||((a.stamp??Number.NEGATIVE_INFINITY)-(b.stamp??Number.NEGATIVE_INFINITY)));
+  return evidence.at(-1)||null;
 }
+function latestProgressVisit(state,today){return latestProgressEvidence(state,today)?.date||null;}
 function accumulationEvidence(state,today,plans){
-  const progressDate=latestProgressVisit(state,today),executedDates=list(plans?.items).filter(row=>row?.executed&&row?.date).map(row=>row.date).sort(),latestExecutionDate=executedDates.at(-1)||null;
-  const meaningful=!!(progressDate&&latestExecutionDate&&progressDate>=latestExecutionDate);
-  return {meaningful,date:meaningful?progressDate:null,viewedDate:progressDate,latestExecutionDate};
+  const progress=latestProgressEvidence(state,today),executed=list(plans?.items).filter(row=>row?.executed&&row?.date).map(row=>({date:row.date,stamp:parseStamp(row.executionAt)})).sort((a,b)=>a.date.localeCompare(b.date)||((a.stamp??Number.NEGATIVE_INFINITY)-(b.stamp??Number.NEGATIVE_INFINITY))),latestExecution=executed.at(-1)||null;
+  let meaningful=false;
+  if(progress&&latestExecution){
+    if(progress.date>latestExecution.date)meaningful=true;
+    else if(progress.date===latestExecution.date)meaningful=progress.stamp===null||latestExecution.stamp===null?true:progress.stamp>=latestExecution.stamp;
+  }
+  return {meaningful,date:meaningful?progress?.date||null:null,viewedDate:progress?.date||null,viewedAt:progress?.stamp===null||progress?.stamp===undefined?null:new Date(progress.stamp).toISOString(),latestExecutionDate:latestExecution?.date||null,latestExecutionAt:latestExecution?.stamp===null||latestExecution?.stamp===undefined?null:new Date(latestExecution.stamp).toISOString()};
 }
 function evidenceEntry(type,value,label){return {type,value:value??null,label:label||null};}
 function canonicalNextAction({step,recoveryReady,records,coach,plans,accumulation,today}){
@@ -161,5 +170,5 @@ function derive(state,options={}){
   };
 }
 
-return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,goalClass,meaningfulRecords,coachEvidence,execution,latestProgressVisit,accumulationEvidence,canonicalNextAction,derive});
+return Object.freeze({VERSION,STEP_ORDER,localDate,dateOfRow,eventDate,goalClass,meaningfulRecords,coachEvidence,execution,latestProgressEvidence,latestProgressVisit,accumulationEvidence,canonicalNextAction,derive});
 });
