@@ -3,9 +3,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const Agent=require('../06_features/final/agent-contract-v1.js');
+const Memory=require('../02_core/memory-intelligence-v1.js');
 class TestStorage{constructor(){this.map=new Map();}getItem(k){return this.map.has(k)?this.map.get(k):null;}setItem(k,v){this.map.set(k,String(v));}removeItem(k){this.map.delete(k);}key(i){return [...this.map.keys()][i]??null;}get length(){return this.map.size;}}
 const localStorage=new TestStorage(),sessionStorage=new TestStorage(),events=[];
-global.Storage=TestStorage;global.window={localStorage,sessionStorage,dispatchEvent:event=>events.push(event),crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},firebase:null};global.localStorage=localStorage;global.sessionStorage=sessionStorage;global.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};
+global.Storage=TestStorage;global.window={localStorage,sessionStorage,dispatchEvent:event=>events.push(event),crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},firebase:null,GarangMemoryIntelligence:Memory};global.localStorage=localStorage;global.sessionStorage=sessionStorage;global.CustomEvent=class{constructor(type,init){this.type=type;this.detail=init?.detail;}};
 require('../06_features/final/agent-state-hook-v1.js');
 const APP=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
 const state={profile:{goal:'General fitness'},onboarding:{goal:'General fitness',complete:true},planner:[],workouts:[],meals:[],runs:[],body:[],preferences:{language:'en'},memory:{entries:[],deletedIds:[],nextRevision:1}};
