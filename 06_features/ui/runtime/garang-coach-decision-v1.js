@@ -13,6 +13,20 @@ const SIGNAL={readinessBand:{ko:'준비도',en:'Readiness'},fatigueBand:{ko:'피
 function text(pair){return english()?pair?.en:pair?.ko;}
 function canonicalNext(Bridge){try{const snapshot=Bridge.getState?.(),Core=window.GarangGoldenPath;if(!snapshot||!Core?.derive)return null;return Core.derive(snapshot,{today:Core.localDate?.()}).nextAction||null;}catch{return null;}}
 function actionLabel(action,isEn){const id=String(action?.action||'');const table={onboarding:{ko:'목표와 기본 정보 정리',en:'Complete your baseline'},record:{ko:'첫 기록 남기기',en:'Leave the first record'},coach:{ko:'기록 근거 해석 확인',en:'Review the evidence-backed interpretation'},collect_data:{ko:'회복 상태 체크인',en:'Add a recovery check-in'},plan:{ko:'해석을 실행 계획으로 연결',en:'Turn the interpretation into a plan'},execute:{ko:'다음 계획 실행',en:'Execute the next plan'},review_accumulation:{ko:'누적 근거 확인',en:'Review accumulation evidence'},continue:{ko:'다음 하루 이어가기',en:'Continue the next daily loop'}};return (table[id]||{ko:'다음 행동 이어가기',en:'Continue the next action'})[isEn?'en':'ko'];}
+function actionReason(action,isEn){
+ const id=String(action?.action||'');if(isEn)return action?.reason||'Continue from the current evidence without creating a competing action.';
+ const table={
+  onboarding:'목표와 기본 정보를 먼저 정리해야 이후 기록을 GARANG이 정확히 해석할 수 있습니다.',
+  record:'개인화된 판단을 시작하려면 먼저 실제 행동 기록이 하나 필요합니다.',
+  coach:'기록은 있지만 아직 그 기록을 근거로 한 Coach 해석이 확인되지 않았습니다.',
+  collect_data:'최근 회복 근거가 부족해 과도한 개인화를 하지 않고 오늘 상태를 먼저 확인합니다.',
+  plan:'해석과 최근 회복 근거가 준비되어 이제 실행 가능한 계획으로 연결할 수 있습니다.',
+  execute:action?.planId?'정해진 순서의 다음 계획을 실제 실행 기록으로 연결할 차례입니다.':'계획 결과를 평가하려면 실제 실행 기록이 필요합니다.',
+  review_accumulation:'실행 근거가 생겼으므로 무엇이 쌓였고 무엇이 달라졌는지 확인할 차례입니다.',
+  continue:'기록부터 누적 확인까지 의미 있는 근거가 연결되어 다음 하루를 이어갈 수 있습니다.'
+ };
+ return table[id]||'현재 근거에서 별도의 경쟁 행동을 만들지 않고 다음 흐름을 이어갑니다.';
+}
 function ensureStyle(){
  if(document.getElementById('garang-coach-decision-v1-style'))return;
  const style=document.createElement('style');style.id='garang-coach-decision-v1-style';style.textContent=`
@@ -43,7 +57,7 @@ function render(){
  const isEn=english(),mode=LABELS[decision.mode]||{ko:decision.mode,en:decision.mode},confidence=Math.round((Number(decision.confidence)||0)*100),signals=decision.signals||{},summary=text(decision.summary)||'',canPlan=!!decision.actionProposal&&(!canonical||canonical.action==='plan');
  card.dataset.garangCanonicalAction=canonical?.action||'unknown';
  const signature=JSON.stringify([isEn,decision.decisionId,decision.mode,confidence,signals,summary,canPlan,canonical?.id,canonical?.action,canonical?.reason]);if(card.dataset.signature===signature)return;card.dataset.signature=signature;
- const wasExpanded=card.dataset.expanded==='true',preview=summary||(isEn?'GARANG is waiting for enough evidence before changing your plan.':'GARANG이 계획을 바꾸기 전 필요한 근거를 확인하고 있습니다.'),nextLabel=actionLabel(canonical,isEn),nextReason=canonical?.reason||(isEn?'Continue from the current evidence without creating a competing action.':'현재 근거에서 별도의 경쟁 행동을 만들지 않고 다음 흐름을 이어갑니다.');
+ const wasExpanded=card.dataset.expanded==='true',preview=summary||(isEn?'GARANG is waiting for enough evidence before changing your plan.':'GARANG이 계획을 바꾸기 전 필요한 근거를 확인하고 있습니다.'),nextLabel=actionLabel(canonical,isEn),nextReason=actionReason(canonical,isEn);
  card.innerHTML=`<div class="garang-decision-primary"><button type="button" class="garang-decision-toggle" aria-expanded="${wasExpanded?'true':'false'}"><span class="garang-decision-kicker">${isEn?'GARANG DECISION':'GARANG 판단'}</span><b class="garang-decision-mode">${esc(text(mode))}</b><span class="garang-decision-chevron" aria-hidden="true">⌄</span><span class="garang-decision-preview garang-decision-summary">${esc(preview)}</span></button>${canPlan?`<div class="garang-decision-action-wrap"><button type="button" class="garang-decision-action">${isEn?'Propose this plan':'계획 제안'}</button></div>`:''}</div><div class="garang-decision-details" ${wasExpanded?'':'hidden'}><span class="garang-decision-evidence-label">${isEn?'WHY THIS DECISION':'판단 근거'}</span><div class="garang-decision-signals"><span>${text(SIGNAL.readinessBand)} · ${esc(signals.readinessBand||'unknown')}</span><span>${text(SIGNAL.fatigueBand)} · ${esc(signals.fatigueBand||'unknown')}</span><span>${text(SIGNAL.loadBand)} · ${esc(signals.loadBand||'unknown')}</span></div><div class="garang-decision-next" data-garang-canonical-next="${esc(canonical?.action||'unknown')}"><span>${isEn?'CANONICAL NEXT':'다음 행동'}</span><strong>${esc(nextLabel)}</strong><p>${esc(nextReason)}</p></div><div class="garang-decision-foot"><span>${isEn?'Confidence':'판단 신뢰도'} ${confidence}%</span><span>${isEn?'No silent changes':'자동 변경 없음'}</span></div></div>`;
  const toggle=card.querySelector('.garang-decision-toggle');if(toggle)toggle.onclick=()=>setExpanded(card,card.dataset.expanded!=='true');
  const button=card.querySelector('.garang-decision-action');if(button)button.onclick=()=>{input.value='오늘 계획을 만들어줘';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();};
