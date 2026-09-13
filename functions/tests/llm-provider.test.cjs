@@ -8,7 +8,7 @@ const response=text=>({ok:true,json:async()=>({id:'resp_1',output:[{content:[{te
   let request=null;const provider=createOpenAIProvider({apiKey:'secret',model:'model-a',fetchImpl:async(url,init)=>{request={url,init};return response(JSON.stringify({answer:'오늘은 강도를 낮추세요.',decisionSummary:'REDUCE',reasoningSummary:'수면과 회복이 낮습니다.',suggestedNextStep:'볼륨을 낮춥니다.',actionIntent:{type:'updatePlan'},confidence:.82}));}});
   const out=await provider.generate({message:'오늘 벤치 세게 해도 돼?',context:{garangDecision:{mode:'reduce'}},requestId:'r1'});
   assert.equal(out.answer,'오늘은 강도를 낮추세요.');assert.equal(out.actionIntent.type,'updatePlan');assert.equal(out.metadata.provider,'openai');assert.equal(out.metadata.model,'model-a');
-  assert.equal(request.url,'https://api.openai.com/v1/responses');assert.match(request.init.headers.Authorization,/Bearer secret/);assert.equal(JSON.parse(request.init.body).model,'model-a');
+  assert.equal(request.url,'https://api.openai.com/v1/responses');assert.match(request.init.headers.Authorization,/Bearer secret/);const body=JSON.parse(request.init.body);assert.equal(body.model,'model-a');assert.equal(body.text?.format?.type,'json_schema');assert.equal(body.text?.format?.strict,true);assert.equal(body.text?.format?.name,'garang_coach_response');assert.deepEqual(body.text?.format?.schema?.properties?.actionIntent?.properties?.type?.enum,['none','createPlan','updatePlan','askFollowup']);
  });
  await test('malformed provider response is rejected',()=>assert.throws(()=>parseCoachResponse('not-json'),error=>error?.code==='LLM_RESPONSE_MALFORMED'));
  await test('missing required structured fields are rejected',()=>assert.throws(()=>parseCoachResponse('{"answer":"x"}'),error=>error?.code==='LLM_RESPONSE_INVALID'));
