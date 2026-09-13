@@ -1,6 +1,7 @@
-/* GARANG Brandified Metal App v2.1
+/* GARANG Brandified Metal App v2.1 — VERIFIED
  * Source of truth: approved v0.4 Brandified Coach / Metal direction.
  * Visual-only translation onto the existing live app structure.
+ * Release Gate #1081 GREEN on the preceding visual implementation commit.
  * No JS ownership, routing, persistence, mutation, Golden Path, or data changes.
  */
 :root{--bg:#0c0c0e;--bg2:#101012;--surface:#111113;--surface2:#151517;--surface3:#19191b;--line:#1e1e20;--line2:#2a292b;--hanji:#f4f0e8;--hanji2:#d5cfc6;--muted:#a19a92;--muted2:#77726c;--vermillion:#a94738;--vermillion2:#bf5f4d;--jade:#829a90;--brass:#9f988f;--danger:#c96a66;--success:#829a90;--shadow:0 28px 70px rgba(0,0,0,.34);--garang-metal-bg:#0c0c0e;--garang-metal-panel:#111113;--garang-metal-line:rgba(244,240,232,.09);--garang-metal-ivory:#f4f0e8;--garang-metal-muted:#a19a92;--garang-metal-display:"Cormorant Garamond","Iowan Old Style",Georgia,serif;--garang-metal-ui:"Noto Sans KR","Apple SD Gothic Neo",Pretendard,system-ui,sans-serif;--g2-bg:#0c0c0e;--g2-panel:#111113;--g2-panel2:#151517;--g2-line:rgba(244,240,232,.09);--g2-line2:rgba(244,240,232,.16);--g2-ivory:#f4f0e8;--g2-muted:#77726c;--g2-muted2:#a19a92;--g2-jade:#829a90;--g2-deep:#151a18;--g2-copper:#a87358;--g2-copper2:#c18b73}
