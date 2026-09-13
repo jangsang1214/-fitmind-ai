@@ -49,6 +49,13 @@ test('default surfaces separate plan execution from recording rhythm',()=>{
   assert.doesNotMatch(ui,/오늘 \$\{done\} \/ \$\{rows\.length\} .*완료/);
 });
 
+test('Planner reads the same canonical next action without adding a competing CTA',()=>{
+  assert.match(ui,/canonical=window\.GarangGoldenPath\?\.derive\?\.\(state,\{today\}\)\?\.nextAction\|\|null/);
+  assert.match(ui,/data-gx-canonical-next/);
+  assert.match(ui,/canonicalCopy=nextActionCopy\(canonical,lang\)/);
+  assert.doesNotMatch(ui,/data-gx-canonical-next[^>]*><button/,'canonical guidance must stay informational on Planner');
+});
+
 test('accumulation explains accumulated evidence, change, and next action without overclaiming',()=>{
   assert.match(ui,/function weeklyReview\(state,today\)/);
   assert.match(ui,/getWeeklyReview/);
