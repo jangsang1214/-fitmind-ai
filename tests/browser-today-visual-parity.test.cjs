@@ -32,7 +32,7 @@ function seedState(){
     workouts:[{id:'vp-workout',date,name:'하체 운동',sets:4,reps:8,weight:80,rpe:7,duration:45,createdAt:now,updatedAt:now}],
     meals:[{id:'vp-meal',date,name:'계란후라이 + 크림파스타',kcal:1073,protein:48,carbs:112,fat:44,items:[{name:'계란후라이',kcal:273},{name:'크림파스타',kcal:800}],createdAt:now,updatedAt:now}],
     runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],
-    analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'
+    analytics:{events:[{name:'coach_recommendation_shown',date,props:{screen:'coach',date}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'
   };
 }
 
