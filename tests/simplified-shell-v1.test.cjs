@@ -71,7 +71,7 @@ assert.match(coreCss,/grid-template-rows:auto auto auto minmax\(0,1fr\) auto/,'C
 assert.match(coreCss,/gcl-coach-actions\{grid-row:3/,'Coach actions must occupy the dedicated next-action row');
 assert.match(coreSource,/최근 \$\{streak\}일 연속 기록이 이어졌습니다/,'Accumulation streak must explain consecutive recording days');
 assert.match(planSurface,/dataset\.gxStreakKind='recording'/,'Accumulation must identify a recording streak separately from plan completion');
-assert.match(planSurface,/hero=goal\?\.overall===null\|\|goal\?\.overall===undefined\?'—'/,'Accumulation must have an explicit no-data state');
+assert.match(planSurface,/hero=week\.planned\?pct\(week\.executionRate\):\(week\.recorded\?`\$\{week\.recorded\}\/7`:'—'\)/,'Accumulation must show an explicit unknown hero when no plan or saved weekly evidence exists');
 assert.match(planSurface,/GarangGoalAlignment/,'Accumulation must use deterministic goal alignment');
 assert.match(coreSource,/gcl-context-actions/,'Coach actions must be embedded as contextual next actions');
 assert.doesNotMatch(coreSource,/ACT \/ 행동/,'Coach must not render a standalone ACT section');
