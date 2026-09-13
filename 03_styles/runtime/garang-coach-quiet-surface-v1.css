@@ -188,6 +188,24 @@
   display:none!important;
 }
 
+/* Conversational auto-log actions keep their physical touch ownership above the
+   fixed composer/navigation layers. Event and mutation ownership remain unchanged. */
+.garang-coach-v2 .gci-coach-turn{
+  position:relative!important;
+  z-index:2!important;
+}
+.garang-coach-v2 .gci-coach-actions{
+  position:relative!important;
+  z-index:4!important;
+  pointer-events:auto!important;
+}
+.garang-coach-v2 .gci-coach-actions button[data-gci-undo]{
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+
 @media(max-width:800px){
   .garang-coach-v2 .g2-empty-chat[data-garang-quiet-empty="1"]{
     padding:14px 0 6px!important;
