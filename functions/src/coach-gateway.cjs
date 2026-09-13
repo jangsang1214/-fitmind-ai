@@ -32,7 +32,8 @@ function createCoachGatewayHandler(deps={}){
   const full=buildAgentContext(state||{},{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full),id=requestId();
   try{
    const config=getProviderConfig(),provider=providerFactory(config),generated=await provider.generate({message,context,language,requestId:id});
-   return res.status(200).json({ok:true,data:{...generated,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed}});
+   const data={...generated,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
+   return res.status(200).json({ok:true,answer:generated.answer,data});
   }catch(error){
    const code=errorCode(error);return res.status(code==='LLM_SECRET_MISSING'?503:502).json({ok:false,error:{code},fallbackRequired:true,requestId:id,garangDecision:clone(context.garangDecision)});
   }
