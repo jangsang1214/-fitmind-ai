@@ -1,16 +1,14 @@
-/* GARANG Coach Decision UI v1.3
-   Compact-by-default decision strip for Coach.
-   Details remain available on demand and plan changes still flow through the approval gate.
-   The decision strip owns an explicit grid row so it can never consume the chat's flexible 1fr track. */
+/* GARANG Coach Decision UI v1.4
+   Decision-first hierarchy for Coach: judgment -> reason -> action.
+   Evidence remains progressively disclosed and plan changes still flow through the existing Coach approval gate.
+   The decision card owns an explicit grid row so it can never consume the chat's flexible 1fr track. */
 (() => {
 'use strict';
 const main=document.getElementById('main');if(!main)return;
-const VERSION='garang-coach-decision-v1.3';
+const VERSION='garang-coach-decision-v1.4-decision-first';
 const english=()=>document.documentElement.lang==='en';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const LABELS={
- collect_data:{ko:'데이터 필요',en:'More data needed'},caution:{ko:'주의',en:'Caution'},recover:{ko:'회복 우선',en:'Recovery first'},reduce:{ko:'강도 조정',en:'Reduce load'},maintain:{ko:'계획 유지',en:'Maintain'},progress:{ko:'점진 향상',en:'Progress'},goal_focus:{ko:'목표 집중',en:'Goal focus'}
-};
+const LABELS={collect_data:{ko:'데이터 필요',en:'More data needed'},caution:{ko:'주의',en:'Caution'},recover:{ko:'회복 우선',en:'Recovery first'},reduce:{ko:'강도 조정',en:'Reduce load'},maintain:{ko:'계획 유지',en:'Maintain'},progress:{ko:'점진 향상',en:'Progress'},goal_focus:{ko:'목표 집중',en:'Goal focus'}};
 const SIGNAL={readinessBand:{ko:'준비도',en:'Readiness'},fatigueBand:{ko:'피로',en:'Fatigue'},loadBand:{ko:'부하',en:'Load'}};
 function text(pair){return english()?pair?.en:pair?.ko;}
 function ensureStyle(){
@@ -19,50 +17,20 @@ function ensureStyle(){
 section.garang-decision-card{margin:8px 0 10px!important;padding:0!important;min-height:0!important;height:auto!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:14px!important;background:#0b0d0b!important;display:block!important;align-self:start!important;box-shadow:none!important}
 .garang-coach-v2>.garang-decision-card{margin-left:0!important;margin-right:0!important}
 .g2-chat-main.garang-has-decision-card{grid-template-rows:auto auto minmax(0,1fr) auto!important}
-.g2-chat-main.garang-has-decision-card>.g2-chat-head{grid-row:1}
-.g2-chat-main.garang-has-decision-card>.garang-decision-card{grid-row:2;align-self:start!important}
-.g2-chat-main.garang-has-decision-card>.g2-chat-scroll{grid-row:3;min-height:0!important}
-.g2-chat-main.garang-has-decision-card>.g2-composer-wrap{grid-row:4}
-.garang-decision-toggle{width:100%;min-height:48px;height:48px;margin:0;padding:0 14px;border:0;background:transparent;color:inherit;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:left;cursor:pointer;touch-action:manipulation}
-.garang-decision-kicker{font-size:9px;letter-spacing:.11em;color:#8c918b;white-space:nowrap}
-.garang-decision-mode{justify-self:start;font-size:13px;font-weight:650;color:#efeee9;letter-spacing:-.01em}
-.garang-decision-chevron{width:28px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:999px;display:grid;place-items:center;color:#a8ada7;font-size:15px;line-height:1;transition:transform .18s ease,background .18s ease}
-.garang-decision-card[data-expanded="true"] .garang-decision-chevron{transform:rotate(180deg);background:rgba(255,255,255,.04)}
-.garang-decision-details{padding:0 14px 13px;border-top:1px solid rgba(255,255,255,.075)}
-.garang-decision-details[hidden]{display:none!important}
-.garang-decision-summary{margin:12px 0 9px;font-size:12px;line-height:1.55;color:#b8bbb6;word-break:keep-all}
-.garang-decision-signals{display:flex;gap:6px;flex-wrap:wrap}
-.garang-decision-signals span{font-size:9px;padding:5px 7px;border:1px solid rgba(255,255,255,.09);border-radius:999px;color:#8f958f}
-.garang-decision-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;font-size:9px;color:#727873}
-.garang-decision-action{border:1px solid rgba(88,170,145,.28);background:#0d1b17;color:#b8d8ce;border-radius:9px;padding:8px 10px;font-size:10px;cursor:pointer;white-space:nowrap}
-.garang-decision-action:hover,.garang-decision-action:focus-visible{border-color:rgba(88,170,145,.46);outline:none}
-@media(max-width:800px){
- section.garang-decision-card{margin:6px 10px 7px!important;border-radius:12px!important}
- .garang-coach-v2 .g2-chat-main.garang-has-decision-card>.garang-decision-card .garang-decision-toggle{min-height:44px!important;height:44px!important;padding:0 12px!important;gap:9px!important}
- .garang-decision-kicker{font-size:8px}.garang-decision-mode{font-size:12px}.garang-decision-chevron{width:26px;height:26px;font-size:14px}
- .garang-decision-details{padding:0 12px 11px}.garang-decision-foot{align-items:flex-end}.garang-decision-action{padding:8px 9px}
-}
+.g2-chat-main.garang-has-decision-card>.g2-chat-head{grid-row:1}.g2-chat-main.garang-has-decision-card>.garang-decision-card{grid-row:2;align-self:start!important}.g2-chat-main.garang-has-decision-card>.g2-chat-scroll{grid-row:3;min-height:0!important}.g2-chat-main.garang-has-decision-card>.g2-composer-wrap{grid-row:4}
+.garang-decision-primary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;border-bottom:1px solid transparent}
+.garang-decision-card[data-expanded="true"] .garang-decision-primary{border-bottom-color:rgba(255,255,255,.075)}
+.garang-decision-toggle{width:100%;min-height:66px;margin:0;padding:11px 12px 10px 14px;border:0;background:transparent;color:inherit;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"kicker mode chevron" "preview preview preview";align-items:center;column-gap:10px;row-gap:5px;text-align:left;cursor:pointer;touch-action:manipulation;min-width:0}
+.garang-decision-kicker{grid-area:kicker;font-size:9px;letter-spacing:.11em;color:#8c918b;white-space:nowrap}.garang-decision-mode{grid-area:mode;justify-self:start;font-size:14px;font-weight:680;color:#efeee9;letter-spacing:-.015em;min-width:0}.garang-decision-preview{grid-area:preview;color:#a9aea8;font-size:11px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.garang-decision-chevron{grid-area:chevron;width:28px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:999px;display:grid;place-items:center;color:#a8ada7;font-size:15px;line-height:1;transition:transform .18s ease,background .18s ease}.garang-decision-card[data-expanded="true"] .garang-decision-chevron{transform:rotate(180deg);background:rgba(255,255,255,.04)}
+.garang-decision-action-wrap{display:flex;align-items:center;padding:10px 12px 10px 0}.garang-decision-action{border:1px solid rgba(88,170,145,.34);background:#0d1b17;color:#c2ddd5;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:650;cursor:pointer;white-space:nowrap;touch-action:manipulation}.garang-decision-action:hover,.garang-decision-action:focus-visible{border-color:rgba(88,170,145,.52);outline:none}
+.garang-decision-details{padding:11px 14px 13px}.garang-decision-details[hidden]{display:none!important}.garang-decision-evidence-label{display:block;margin:0 0 7px;color:#747a75;font-size:8px;letter-spacing:.12em}.garang-decision-signals{display:flex;gap:6px;flex-wrap:wrap}.garang-decision-signals span{font-size:9px;padding:5px 7px;border:1px solid rgba(255,255,255,.09);border-radius:999px;color:#8f958f}.garang-decision-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:9px;color:#727873}
+@media(max-width:800px){section.garang-decision-card{margin:6px 10px 7px!important;border-radius:12px!important}.garang-decision-primary{grid-template-columns:minmax(0,1fr) auto}.garang-coach-v2 .g2-chat-main.garang-has-decision-card>.garang-decision-card .garang-decision-toggle{min-height:52px!important;padding:6px 8px 5px 12px!important;column-gap:8px!important;row-gap:2px!important}.garang-decision-kicker{font-size:8px}.garang-decision-mode{font-size:12px}.garang-decision-preview{font-size:10px;line-height:1.3}.garang-decision-chevron{width:24px;height:24px;font-size:13px}.garang-decision-action-wrap{padding:6px 9px 6px 0}.garang-decision-action{padding:7px 8px;font-size:9px}.garang-decision-details{padding:10px 12px 11px}.garang-decision-foot{align-items:flex-end}}
+@media(max-width:430px){.garang-decision-primary{grid-template-columns:1fr}.garang-decision-action-wrap{padding:0 12px 8px}.garang-decision-action{width:100%}}
 `;document.head.appendChild(style);
 }
-function markDecisionGrid(parent,card){
- if(!parent)return;
- document.querySelectorAll('.g2-chat-main.garang-has-decision-card').forEach(el=>{if(el!==parent)el.classList.remove('garang-has-decision-card');});
- if(parent.classList?.contains('g2-chat-main')&&card?.parentNode===parent)parent.classList.add('garang-has-decision-card');
-}
-function placeCard(root,card,wrap,composer){
- const head=root.querySelector('.g2-chat-head,.coach-app-head');
- if(head?.parentNode){if(head.nextElementSibling!==card)head.parentNode.insertBefore(card,head.nextSibling);markDecisionGrid(head.parentNode,card);return;}
- const thread=root.querySelector('.g2-chat-main,.g2-thread,.coach-thread,#coachChat');
- if(thread?.parentNode){if(thread.previousElementSibling!==card)thread.parentNode.insertBefore(card,thread);markDecisionGrid(card.closest('.g2-chat-main'),card);return;}
- if(wrap&&composer&&card.parentNode!==wrap)wrap.insertBefore(card,wrap.querySelector('.g4-prompt-strip')||composer);
- markDecisionGrid(card.closest('.g2-chat-main'),card);
-}
-function setExpanded(card,expanded){
- card.dataset.expanded=expanded?'true':'false';
- const toggle=card.querySelector('.garang-decision-toggle'),details=card.querySelector('.garang-decision-details');
- if(toggle)toggle.setAttribute('aria-expanded',expanded?'true':'false');
- if(details)details.hidden=!expanded;
-}
+function markDecisionGrid(parent,card){if(!parent)return;document.querySelectorAll('.g2-chat-main.garang-has-decision-card').forEach(el=>{if(el!==parent)el.classList.remove('garang-has-decision-card');});if(parent.classList?.contains('g2-chat-main')&&card?.parentNode===parent)parent.classList.add('garang-has-decision-card');}
+function placeCard(root,card,wrap,composer){const head=root.querySelector('.g2-chat-head,.coach-app-head');if(head?.parentNode){if(head.nextElementSibling!==card)head.parentNode.insertBefore(card,head.nextSibling);markDecisionGrid(head.parentNode,card);return;}const thread=root.querySelector('.g2-chat-main,.g2-thread,.coach-thread,#coachChat');if(thread?.parentNode){if(thread.previousElementSibling!==card)thread.parentNode.insertBefore(card,thread);markDecisionGrid(card.closest('.g2-chat-main'),card);return;}if(wrap&&composer&&card.parentNode!==wrap)wrap.insertBefore(card,wrap.querySelector('.g4-prompt-strip')||composer);markDecisionGrid(card.closest('.g2-chat-main'),card);}
+function setExpanded(card,expanded){card.dataset.expanded=expanded?'true':'false';const toggle=card.querySelector('.garang-decision-toggle'),details=card.querySelector('.garang-decision-details');if(toggle)toggle.setAttribute('aria-expanded',expanded?'true':'false');if(details)details.hidden=!expanded;}
 function render(){
  const root=main.querySelector('.garang-coach-v2'),Bridge=window.GarangAgentStateBridge;if(!root||!Bridge?.ready?.()||!Bridge.getDecisionContext)return;
  const wrap=root.querySelector('.g2-composer-wrap'),composer=root.querySelector('.g2-composer'),input=root.querySelector('.g2-composer textarea');if(!wrap||!composer||!input)return;
@@ -71,14 +39,13 @@ function render(){
  placeCard(root,card,wrap,composer);
  const isEn=english(),mode=LABELS[decision.mode]||{ko:decision.mode,en:decision.mode},confidence=Math.round((Number(decision.confidence)||0)*100),signals=decision.signals||{},summary=text(decision.summary)||'',canPlan=!!decision.actionProposal;
  const signature=JSON.stringify([isEn,decision.decisionId,decision.mode,confidence,signals,summary,canPlan]);if(card.dataset.signature===signature)return;card.dataset.signature=signature;
- const wasExpanded=card.dataset.expanded==='true';
- card.innerHTML=`<button type="button" class="garang-decision-toggle" aria-expanded="${wasExpanded?'true':'false'}"><span class="garang-decision-kicker">${isEn?'GARANG DECISION':'GARANG 판단'}</span><b class="garang-decision-mode">${esc(text(mode))}</b><span class="garang-decision-chevron" aria-hidden="true">⌄</span></button><div class="garang-decision-details" ${wasExpanded?'':'hidden'}>${summary?`<p class="garang-decision-summary">${esc(summary)}</p>`:''}<div class="garang-decision-signals"><span>${text(SIGNAL.readinessBand)} · ${esc(signals.readinessBand||'unknown')}</span><span>${text(SIGNAL.fatigueBand)} · ${esc(signals.fatigueBand||'unknown')}</span><span>${text(SIGNAL.loadBand)} · ${esc(signals.loadBand||'unknown')}</span></div><div class="garang-decision-foot"><span>${isEn?'Confidence':'판단 신뢰도'} ${confidence}% · ${isEn?'No silent changes':'자동 변경 없음'}</span>${canPlan?`<button type="button" class="garang-decision-action">${isEn?'Propose this plan':'계획 제안'}</button>`:''}</div></div>`;
+ const wasExpanded=card.dataset.expanded==='true',preview=summary||(isEn?'GARANG is waiting for enough evidence before changing your plan.':'GARANG이 계획을 바꾸기 전 필요한 근거를 확인하고 있습니다.');
+ card.innerHTML=`<div class="garang-decision-primary"><button type="button" class="garang-decision-toggle" aria-expanded="${wasExpanded?'true':'false'}"><span class="garang-decision-kicker">${isEn?'GARANG DECISION':'GARANG 판단'}</span><b class="garang-decision-mode">${esc(text(mode))}</b><span class="garang-decision-chevron" aria-hidden="true">⌄</span><span class="garang-decision-preview garang-decision-summary">${esc(preview)}</span></button>${canPlan?`<div class="garang-decision-action-wrap"><button type="button" class="garang-decision-action">${isEn?'Propose this plan':'계획 제안'}</button></div>`:''}</div><div class="garang-decision-details" ${wasExpanded?'':'hidden'}><span class="garang-decision-evidence-label">${isEn?'WHY THIS DECISION':'판단 근거'}</span><div class="garang-decision-signals"><span>${text(SIGNAL.readinessBand)} · ${esc(signals.readinessBand||'unknown')}</span><span>${text(SIGNAL.fatigueBand)} · ${esc(signals.fatigueBand||'unknown')}</span><span>${text(SIGNAL.loadBand)} · ${esc(signals.loadBand||'unknown')}</span></div><div class="garang-decision-foot"><span>${isEn?'Confidence':'판단 신뢰도'} ${confidence}%</span><span>${isEn?'No silent changes':'자동 변경 없음'}</span></div></div>`;
  const toggle=card.querySelector('.garang-decision-toggle');if(toggle)toggle.onclick=()=>setExpanded(card,card.dataset.expanded!=='true');
  const button=card.querySelector('.garang-decision-action');if(button)button.onclick=()=>{input.value='오늘 계획을 만들어줘';input.dispatchEvent(new Event('input',{bubbles:true}));root.querySelector('.g2-send')?.click();};
  try{window.dispatchEvent(new CustomEvent('garang:coach-decision-rendered',{detail:{card,root}}));}catch{}
 }
 let queued=false;function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;ensureStyle();render();});}
-window.addEventListener('garang:screen-rendered',queue);window.addEventListener('garang:coach-mounted',queue);new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-window.addEventListener('garang:state-hydrated',queue);window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
+window.addEventListener('garang:screen-rendered',queue);window.addEventListener('garang:coach-mounted',queue);new MutationObserver(queue).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.addEventListener('garang:state-hydrated',queue);window.addEventListener('garang:agent-write',queue);window.addEventListener('garang:agent-proposal-resolved',queue);window.addEventListener('online',queue);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queue();});
 queue();
 })();
