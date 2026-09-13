@@ -20,6 +20,9 @@
     if(lang==='en')return {
       accumulation:'ACCUMULATION',planner:'PLAN EXECUTION',recordRhythm:'Recording rhythm',planRhythm:'Plan execution',
       accumulationFlow:'Goal fit becomes clearer as your actual records accumulate.',planFlow:'This is how much of the planned rhythm was executed this week.',
+      accumulated:'WHAT ACCUMULATED',changed:'WHAT CHANGED',nextAction:'NEXT ACTION',insufficientTrend:'There is not enough repeated execution evidence yet to describe a meaningful change.',
+      accumulatedPlans:(executed,planned)=>planned?`${executed} of ${planned} planned actions have execution evidence this week.`:'No planned execution evidence has accumulated this week yet.',
+      accumulatedRecords:recorded=>`${recorded} of 7 days contain saved evidence this week.`,
       today:'Today',signals:'signals recorded',planned:'planned',executed:'executed',workout:'Workout',nutrition:'Nutrition',protein:'Protein',recovery:'Recovery',
       insight:'GARANG INSIGHT',inside:'The saved signals are now part of your goal picture.',needsEnergy:'Energy intake is below the current target.',needsProtein:'Protein intake is below the current target.',needsExecution:'The remaining plan is the next useful step.',needsRecords:'More actual records are needed before GARANG judges goal fit.',
       details:'Open details',close:'Close details',actual:'Actual',target:'Target',planEvidence:'Execution evidence',goalAlignment:'Goal fit',confidence:'Judgement confidence',
@@ -31,6 +34,9 @@
     return {
       accumulation:'누적.',planner:'계획 실행',recordRhythm:'기록 리듬',planRhythm:'계획 실행',
       accumulationFlow:'실제 기록이 쌓이면 처음 세운 목표와의 흐름이 더 선명해집니다.',planFlow:'이번 주 계획 중 실제로 실행된 흐름입니다.',
+      accumulated:'쌓인 것',changed:'변화',nextAction:'다음 행동',insufficientTrend:'반복된 실행 근거가 아직 부족해 의미 있는 변화를 단정하지 않습니다.',
+      accumulatedPlans:(executed,planned)=>planned?`이번 주 계획 ${planned}개 중 ${executed}개에 실제 실행 근거가 쌓였습니다.`:'이번 주는 아직 계획 실행 근거가 충분히 쌓이지 않았습니다.',
+      accumulatedRecords:recorded=>`이번 주 7일 중 ${recorded}일에 실제 기록 근거가 쌓였습니다.`,
       today:'오늘',signals:'신호 기록',planned:'계획',executed:'실행',workout:'운동',nutrition:'영양',protein:'단백질',recovery:'회복',
       insight:'GARANG INSIGHT',inside:'저장된 기록이 현재 목표의 흐름에 연결되어 있습니다.',needsEnergy:'현재 목표 기준으로 에너지가 조금 부족합니다.',needsProtein:'현재 목표 기준으로 단백질이 조금 부족합니다.',needsExecution:'남은 계획 중 다음 한 가지를 이어가면 됩니다.',needsRecords:'목표 적합도를 판단하려면 실제 기록이 더 필요합니다.',
       details:'상세 근거 열기',close:'상세 근거 닫기',actual:'실제',target:'목표',planEvidence:'수행 근거',goalAlignment:'목표 적합도',confidence:'판단 신뢰도',
@@ -98,6 +104,27 @@
     if(day.nutrition.protein.status==='insufficient')return c.needsProtein;
     return c.inside;
   }
+  function weeklyReview(state,today){
+    try{const bridge=window.GarangIntelligenceBridge;if(bridge?.ready?.())return bridge.getWeeklyReview?.({date:today})||null;}catch{}
+    try{return window.GarangPlanAdaptation?.weeklyReview?.(state,{date:today})||null;}catch{return null;}
+  }
+  function nextActionCopy(action,lang){
+    if(!action)return lang==='en'?'Keep recording the next real action.':'다음 실제 행동을 기록으로 이어가세요.';
+    if(action.action==='collect_data')return lang==='en'?'Add today’s recovery check-in before GARANG changes the plan.':'계획을 바꾸기 전에 오늘의 회복 체크인을 먼저 남기세요.';
+    if(action.action==='record')return lang==='en'?'Add one real record.':'실제 기록 하나를 남기세요.';
+    if(action.action==='coach')return lang==='en'?'Open Coach and get an evidence-backed interpretation.':'Coach에서 기록 근거가 있는 해석을 확인하세요.';
+    if(action.action==='plan')return lang==='en'?'Turn the interpretation into one executable plan.':'해석을 실제로 실행할 계획 하나로 연결하세요.';
+    if(action.action==='execute')return action.planId?(lang==='en'?`Execute the next planned action (${action.actionType||'plan'}).`:`다음 계획된 ${action.actionType==='nutrition'?'식단':action.actionType==='recovery'?'회복':action.actionType==='running'?'러닝':'운동'} 행동을 실행하세요.`):(lang==='en'?'Execute the next planned action.':'다음 계획을 실행하세요.');
+    if(action.action==='review_accumulation')return lang==='en'?'Review this evidence, then continue from the next useful action.':'이 근거를 확인한 뒤 다음 유용한 행동으로 이어가세요.';
+    return lang==='en'?'Continue the next daily loop from this evidence.':'이 근거에서 다음 하루의 루프를 이어가세요.';
+  }
+  function meaningLoop(state,today,lang,week){
+    const c=copy(lang),review=weeklyReview(state,today),golden=window.GarangGoldenPath?.derive?.(state,{today}),action=golden?.nextAction||null,sufficient=!!review&&review.classification!=='insufficient_evidence'&&Number(review.plannedEvidenceDays||0)>=2;
+    const accumulated=week.planned?c.accumulatedPlans(week.executed,week.planned):c.accumulatedRecords(week.recorded);
+    const changed=sufficient&&review?.insight?.text?String(review.insight.text):c.insufficientTrend;
+    const next=nextActionCopy(action,lang);
+    return {review,action,sufficient,accumulated,changed,next};
+  }
   function dropletIcon(symbol='+'){
     return `<svg viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path d="M16 2.5C12.8 8.1 5 16.5 5 25.1 5 32.5 9.9 37.2 16 37.2s11-4.7 11-12.1C27 16.5 19.2 8.1 16 2.5Z"></path><text x="16" y="28" text-anchor="middle">${esc(symbol)}</text></svg>`;
   }
@@ -157,11 +184,11 @@
     if(restoreFocus)button.focus({preventScroll:true});
   }
   function buildPlanner(state){
-    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),goalLabel=String(goal?.goalLabel||'').trim();
+    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),goalLabel=String(goal?.goalLabel||'').trim(),canonical=window.GarangGoldenPath?.derive?.(state,{today})?.nextAction||null,canonicalCopy=nextActionCopy(canonical,lang);
     if(!selectedDate)selectedDate=defaultSelected(state);
     const week=weekSummary(state,today);
     const section=doc.createElement('section');section.id='garangPlanExecution';section.className='gx-panel gx-minimal';section.dataset.gxSurface='plan-execution';
-    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.planner)}</span><strong>${pct(week.executionRate)}</strong><p>${esc(c.planFlow)}</p>${goalLabel?`<small class="gx-hero-context">${esc(lang==='en'?`Goal · ${goalLabel}`:`목표 · ${goalLabel}`)}</small>`:''}</div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'plan')}${summaryView(state,selectedDate,lang,'planner')}${detailSheet(state,selectedDate,lang,'planner')}`;
+    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.planner)}</span><strong>${pct(week.executionRate)}</strong><p data-gx-canonical-next="${esc(canonical?.action||'unknown')}">${esc(canonicalCopy)}</p>${goalLabel?`<small class="gx-hero-context">${esc(lang==='en'?`Goal · ${goalLabel}`:`목표 · ${goalLabel}`)}</small>`:''}</div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'plan')}${summaryView(state,selectedDate,lang,'planner')}${detailSheet(state,selectedDate,lang,'planner')}`;
     section.addEventListener('click',event=>{
       const dayButton=event.target.closest('[data-gx-date]');
       if(dayButton){selectedDate=dayButton.dataset.gxDate;restorePlannerComposer(section);const fresh=buildPlanner(state);section.replaceWith(fresh);movePlannerComposer(fresh,doc.getElementById('main'));return;}
@@ -171,10 +198,10 @@
     return section;
   }
   function buildAccumulation(state){
-    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),week=weekSummary(state,today),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),hero=goal?.overall===null||goal?.overall===undefined?'—':`${goal.overall}%`,heroCopy=goal?.overall===null||goal?.overall===undefined?c.accumulationFlow:`${goal.goalLabel||'목표 기준'} · 최근 30일`;
+    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),week=weekSummary(state,today),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),meaning=meaningLoop(state,today,lang,week),hero=week.planned?pct(week.executionRate):(week.recorded?`${week.recorded}/7`:'—'),heroCopy=week.planned?c.accumulatedPlans(week.executed,week.planned):c.accumulatedRecords(week.recorded);
     if(!selectedDate)selectedDate=defaultSelected(state);
     const section=doc.createElement('section');section.id='garangAccumulationOverview';section.className='gx-panel gx-minimal gx-accumulation-surface';section.dataset.gxSurface='accumulation';section.dataset.gxStreakKind='recording';
-    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.accumulation)}</span><strong>${hero}</strong><p>${esc(heroCopy)}</p><small class="gx-hero-context">${esc(goal?.overall===null||goal?.overall===undefined?c.noGoalJudgement:c.inside)}</small></div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'recording')}${summaryView(state,selectedDate,lang,'accumulation')}${detailSheet(state,selectedDate,lang,'accumulation')}`;
+    section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.accumulation)}</span><strong>${esc(hero)}</strong><p>${esc(heroCopy)}</p><small class="gx-hero-context">${esc(goal?.overall===null||goal?.overall===undefined?c.noGoalJudgement:c.inside)}</small></div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div><div class="gx-day-summary" data-gx-meaning-loop data-gx-weekly-evidence="${meaning.sufficient?'sufficient':'insufficient'}"><div class="gx-insight"><span>${esc(c.accumulated)}</span><p>${esc(meaning.accumulated)}</p></div><div class="gx-insight"><span>${esc(c.changed)}</span><p>${esc(meaning.changed)}</p></div><div class="gx-insight"><span>${esc(c.nextAction)}</span><p>${esc(meaning.next)}</p></div></div>${weekStrip(week,lang,'recording')}${summaryView(state,selectedDate,lang,'accumulation')}${detailSheet(state,selectedDate,lang,'accumulation')}`;
     section.addEventListener('click',event=>{
       const dayButton=event.target.closest('[data-gx-date]');
       if(dayButton){selectedDate=dayButton.dataset.gxDate;const fresh=buildAccumulation(state);section.replaceWith(fresh);return;}

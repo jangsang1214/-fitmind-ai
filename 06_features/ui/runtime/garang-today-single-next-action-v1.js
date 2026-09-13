@@ -1,6 +1,6 @@
 /* GARANG Today Single Next Action v1
    One visible next-action owner on Today.
-   Golden Path keeps sequence truth; Today Action Flow keeps the visible CTA surface.
+   Golden Path owns the canonical next-action contract; Today Action Flow owns the visible CTA surface.
    Existing canonical routes, Record sheet, recovery modal and execution screens remain the mutation owners.
 */
 (() => {
@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.0.13';
+  const VERSION = 'garang-today-single-next-action-v1.1.2';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -49,8 +49,7 @@
       #main[data-garang-screen="today"][data-gsn-action="checkin"] #garangTodayFlow .gtf-action{display:none!important}
       #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-action{display:block!important;position:relative!important;z-index:4!important;pointer-events:auto!important}
       #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow .gtf-next[data-gsn-action]{position:relative!important;z-index:5!important;pointer-events:auto!important}
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-checked="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"],
-      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-activation="true"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
+      html body #main[data-garang-screen="today"][data-garang-next-owner="today-action-flow"][data-gsn-action]:not([data-gsn-action="checkin"]) #garangTodayFlow [data-garang-checkin-access="1"]{display:none!important;pointer-events:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -65,19 +64,29 @@
   function actionFor(model) {
     if (!model) return null;
     const ko = isKo();
+    const canonical = model.nextAction || null;
+    if (canonical) {
+      if (canonical.action === 'record') return { id:'record', label:ko ? '첫 기록 남기기' : 'Leave first record', canonical };
+      if (canonical.action === 'coach') return { id:'coach', label:ko ? 'Coach에서 판단 보기' : 'Open Coach', canonical };
+      if (canonical.action === 'collect_data' && canonical.intent === 'checkin') return { id:'checkin', label:ko ? '오늘 상태 체크인' : 'Check in today', canonical };
+      if (canonical.action === 'plan') return { id:'coach', label:ko ? 'Coach에서 계획 제안 받기' : 'Get plan from Coach', canonical };
+      if (canonical.action === 'execute') {
+        const type = canonical.actionType || model.nextPlan?.type;
+        if (type === 'running') return { id:'execute', label:ko ? '러닝 기록 열기' : 'Open running log', canonical };
+        if (type === 'nutrition') return { id:'execute', label:ko ? '식단 기록 열기' : 'Open meal log', canonical };
+        if (type === 'recovery') return { id:'execute', label:ko ? '오늘 상태 기록하기' : 'Open recovery check-in', canonical };
+        if (type === 'body') return { id:'execute', label:ko ? '체성분 기록 열기' : 'Open body log', canonical };
+        return { id:'execute', label:ko ? '운동 기록 열기' : 'Open workout log', canonical };
+      }
+      if (canonical.action === 'review_accumulation') return { id:'accumulation', label:ko ? '누적 확인하기' : 'View accumulation', canonical };
+      if (canonical.action === 'continue') return null;
+    }
     if (model.step === 'first_record') return { id:'record', label:ko ? '첫 기록 남기기' : 'Leave first record' };
     if (model.step === 'coach') return { id:'coach', label:ko ? 'Coach에서 판단 보기' : 'Open Coach' };
     if (model.step === 'plan') return model.recoveryReady
       ? { id:'coach', label:ko ? 'Coach에서 계획 제안 받기' : 'Get plan from Coach' }
       : { id:'checkin', label:ko ? '오늘 상태 체크인' : 'Check in today' };
-    if (model.step === 'execute') {
-      const type = model.nextPlan?.type;
-      if (type === 'running') return { id:'execute', label:ko ? '러닝 기록 열기' : 'Open running log' };
-      if (type === 'nutrition') return { id:'execute', label:ko ? '식단 기록 열기' : 'Open meal log' };
-      if (type === 'recovery') return { id:'execute', label:ko ? '오늘 상태 기록하기' : 'Open recovery check-in' };
-      if (type === 'body') return { id:'execute', label:ko ? '체성분 기록 열기' : 'Open body log' };
-      return { id:'execute', label:ko ? '운동 기록 열기' : 'Open workout log' };
-    }
+    if (model.step === 'execute') return { id:'execute', label:ko ? '계획 실행하기' : 'Execute plan' };
     if (model.step === 'accumulation') return { id:'accumulation', label:ko ? '누적 확인하기' : 'View accumulation' };
     return null;
   }
@@ -89,14 +98,13 @@
     return false;
   }
 
-  function todayActionFor(model, checkedToday, snapshot) {
-    if (checkedToday || activationBeforeCheckin(model, snapshot)) return actionFor(model);
-    return { id:'checkin', label:isKo() ? '오늘 상태 체크인' : 'Check in today' };
+  function todayActionFor(model) {
+    return actionFor(model);
   }
 
   function flowOwnsExpectedAction(flow, model, snapshot) {
     if (!flow || !model || !snapshot) return true;
-    const action = todayActionFor(model, hasTodayCheckin(snapshot), snapshot);
+    const action = todayActionFor(model);
     const button = flow.querySelector('.gtf-next');
     if (!action) return true;
     if (action.id === 'checkin') return main.dataset.gsnAction === 'checkin' && !button?.dataset?.gsnAction;
@@ -212,7 +220,7 @@
     ensureFlowObserver(flow);
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    const action = todayActionFor(model, checkedToday, snapshot);
+    const action = todayActionFor(model);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -227,8 +235,7 @@
     flow.dataset.garangNextOwner = 'golden-path';
 
     if (action.id === 'checkin') {
-      /* Recovery is the one intentional special case: the existing quiet state-entry
-         control remains the single visible action because it owns the canonical modal. */
+      /* Check-in is visible only when the canonical next-action contract asks for data. */
       restoreNative(button);
       if (actionWrap) actionWrap.style.setProperty('display','none','important');
       suppressLegacyCheckin(flow, false);
@@ -258,6 +265,11 @@
     delayedTimer = setTimeout(sync, 420);
   }
 
+  function syncNow() {
+    clearTimeout(delayedTimer);
+    sync();
+  }
+
   function afterRoute(route, callback) {
     const listener = event => {
       if (event?.detail?.route !== route) return;
@@ -276,7 +288,7 @@
   }
 
   function execute(model) {
-    const type = model?.nextPlan?.type;
+    const type = model?.nextAction?.actionType || model?.nextPlan?.type;
     if (type === 'running') return afterRoute('running');
     if (type === 'nutrition') return afterRoute('nutrition');
     if (type === 'body') return afterRoute('body');
@@ -306,7 +318,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, syncNow, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
   ensureStyle();
   schedule();
 })();

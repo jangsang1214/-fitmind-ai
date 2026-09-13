@@ -1,6 +1,6 @@
 /* GARANG Coach Quiet Surface v1
-   Presentation-only layer for the premium Coach surface.
-   It does not own messages, prompts, proposals, decisions, writes, or scrolling.
+   Premium Coach presentation plus an evidence-only bridge for fresh assistant answers.
+   It does not own messages, prompts, proposals, decisions, plan mutations, or scrolling.
 */
 (() => {
 'use strict';
@@ -15,6 +15,8 @@ const raf=callback=>{
   else window.setTimeout(callback,0);
 };
 const isEnglish=()=>document.documentElement.lang==='en';
+const coachEvidenceSeen=new Set();
+let coachEvidenceRoot=null;
 
 function ensureRuntimeOverrides(){
   if(document.getElementById(STYLE_ID))return;
@@ -123,6 +125,53 @@ function hideActionLabels(root){
   });
 }
 
+function localDay(stamp){
+  const d=new Date(stamp||Date.now());
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function persistCoachEvidence(message){
+  const messageId=String(message?.dataset?.messageId||'').trim();
+  const text=String(message?.querySelector?.('.g2-message-text')?.textContent||'').trim();
+  if(!messageId||!text||message?.dataset?.thinking==='1')return false;
+  try{
+    const Bridge=window.GarangAgentStateBridge;
+    if(!Bridge?.ready?.()||!Bridge.getLiveState||!Bridge.getStorageKey)return false;
+    if(window.firebase?.auth?.().currentUser&&window.GarangCloudHydrationReady===false)return false;
+    const state=Bridge.getLiveState(),key=Bridge.getStorageKey();
+    if(!state||!key)return false;
+    state.analytics=state.analytics&&typeof state.analytics==='object'&&!Array.isArray(state.analytics)?state.analytics:{};
+    state.analytics.events=Array.isArray(state.analytics.events)?state.analytics.events:[];
+    const exists=state.analytics.events.some(event=>String(event?.name||'')==='ai_chat_answered'&&String(event?.props?.coachMessageId||'')===messageId);
+    if(exists)return true;
+    const at=new Date().toISOString(),date=localDay(at);
+    state.analytics.events.push({id:`coach_answer_${messageId}`,name:'ai_chat_answered',date,at,props:{screen:'coach',date,source:'coach-quiet-evidence-v1',coachMessageId:messageId}});
+    if(state.analytics.events.length>1000)state.analytics.events.splice(0,state.analytics.events.length-1000);
+    state.meta=state.meta&&typeof state.meta==='object'&&!Array.isArray(state.meta)?state.meta:{};
+    state.meta.updatedAt=at;
+    localStorage.setItem(key,JSON.stringify(state));
+    window.dispatchEvent(new CustomEvent('garang:state-updated',{detail:{source:'coach-quiet-evidence-v1',event:'ai_chat_answered',messageId,storageKey:key}}));
+    window.setTimeout(()=>{try{if(window.firebase?.auth?.().currentUser)document.getElementById('syncBadge')?.click();}catch{}},120);
+    return true;
+  }catch(error){
+    console.warn('[GARANG] Coach evidence bridge deferred',error);
+    return false;
+  }
+}
+function syncCoachEvidence(root){
+  const messages=Array.from(root.querySelectorAll('.g2-message.assistant[data-message-id]:not([data-thinking="1"])'));
+  if(coachEvidenceRoot!==root){
+    coachEvidenceRoot=root;
+    coachEvidenceSeen.clear();
+    messages.forEach(message=>coachEvidenceSeen.add(String(message.dataset.messageId||'')));
+    return;
+  }
+  messages.forEach(message=>{
+    const id=String(message.dataset.messageId||'');
+    if(!id||coachEvidenceSeen.has(id))return;
+    if(persistCoachEvidence(message))coachEvidenceSeen.add(id);
+  });
+}
+
 function sync(){
   ensureRuntimeOverrides();
   if(main.dataset.garangScreen!=='coach')return;
@@ -132,6 +181,7 @@ function sync(){
   syncEmptyState(root);
   syncPromptSurface(root);
   hideActionLabels(root);
+  syncCoachEvidence(root);
 }
 
 let queued=false;
