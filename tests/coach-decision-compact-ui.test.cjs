@@ -10,7 +10,7 @@ assert.ok(runtime.includes('garang-decision-primary')&&runtime.includes('garang-
 assert.ok(runtime.includes('garang-decision-toggle'),'decision evidence must use one disclosure toggle');
 assert.ok(runtime.includes('aria-expanded'),'decision detail disclosure must be accessible');
 assert.ok(runtime.includes('garang-decision-details')&&runtime.includes('[hidden]{display:none!important}'),'supporting evidence must stay progressively disclosed by default');
-assert.ok(runtime.includes('garang-decision-action-wrap')&&runtime.includes('오늘 계획에 반영'),'approved plan action must be visible without expanding evidence');
+assert.ok(runtime.includes('garang-decision-action-wrap')&&runtime.includes('Propose this plan')&&runtime.includes('계획 제안'),'proposal-gated plan action must be visible without expanding evidence');
 assert.ok(runtime.includes('min-height:60px!important'),'mobile decision-first surface must stay bounded');
 assert.ok(runtime.includes('min-height:0!important')&&runtime.includes('height:auto!important'),'decision container must resist inherited oversized card heights');
 assert.ok(runtime.includes('garang-has-decision-card')&&runtime.includes('grid-template-rows:auto auto minmax(0,1fr) auto!important'),'decision card must own its own grid row instead of consuming the chat 1fr track');
