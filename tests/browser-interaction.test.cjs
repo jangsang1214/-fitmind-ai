@@ -35,10 +35,14 @@ async function tap(page,locator,touch,label='target'){
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
 }
 async function assertOwnsPoint(page,selector){
-  const diagnostic=await page.locator(selector).evaluate(el=>{
+  const locator=page.locator(selector);
+  await locator.waitFor({state:'visible',timeout:5000});
+  await locator.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
+  await page.waitForTimeout(24);
+  const diagnostic=await locator.evaluate(el=>{
     const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,hit=document.elementFromPoint(x,y),stack=document.elementsFromPoint(x,y).slice(0,8);
     const describe=node=>node?{tag:node.tagName,id:node.id||'',cls:String(node.className||''),pointer:getComputedStyle(node).pointerEvents,position:getComputedStyle(node).position,z:getComputedStyle(node).zIndex,display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility,ariaHidden:node.getAttribute?.('aria-hidden')||null,data:{...node.dataset}}:null;
-    return {ok:!!hit&&(hit===el||el.contains(hit)),target:describe(el),hit:describe(hit),stack:stack.map(describe),rect:{left:r.left,top:r.top,width:r.width,height:r.height},main:{...document.getElementById('main')?.dataset},phase:document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase||''};
+    return {ok:!!hit&&(hit===el||el.contains(hit)),target:describe(el),hit:describe(hit),stack:stack.map(describe),rect:{left:r.left,top:r.top,width:r.width,height:r.height},viewport:{width:innerWidth,height:innerHeight,scrollY},main:{...document.getElementById('main')?.dataset},phase:document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase||''};
   });
   assert.equal(diagnostic.ok,true,`${selector} must own its hit-test point: ${JSON.stringify(diagnostic)}`);
 }
