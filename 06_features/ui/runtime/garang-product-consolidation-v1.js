@@ -35,6 +35,7 @@ html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow
 html body #main[data-garang-screen="progress"]>.garang-progress-legacy-internalized{display:none!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview{margin-top:4px!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview [data-gx-meaning-loop]{margin-top:14px!important}
+.garang-more-sheet [data-route="planner"],.garang-more-sheet [data-pagego="planner"],.garang-more-sheet [data-route="memory"],.garang-more-sheet [data-pagego="memory"]{display:none!important}
 .garang-more-sheet .garang-gpc-internalized[hidden]{display:none!important}
 @media(max-width:600px){html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-decision{padding-top:18px!important}html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-primary{gap:12px!important}html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan{padding-top:12px!important}}
 `;document.head.appendChild(style);}
