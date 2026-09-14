@@ -7,7 +7,20 @@ const endpoint='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach'
 const watchdog=setTimeout(()=>{console.error('browser-real-llm-golden-path: WATCHDOG TIMEOUT');process.exit(1);},70000);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function waitServer(){for(let i=0;i<80;i++){try{if((await fetch(baseURL)).ok)return;}catch{}await sleep(150);}throw new Error('server start timeout');}
-async function tap(page,selector,label=selector){const loc=page.locator(selector).first();await loc.waitFor({state:'visible',timeout:7000});await loc.scrollIntoViewIfNeeded();const box=await loc.boundingBox();assert.ok(box,`${label}: no box`);await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);}
+async function tap(page,selector,label=selector){
+ const deadline=Date.now()+7000;let lastError='';
+ while(Date.now()<deadline){
+  const loc=page.locator(selector).first();
+  try{
+   await loc.waitFor({state:'visible',timeout:Math.min(1200,Math.max(150,deadline-Date.now()))});
+   await loc.scrollIntoViewIfNeeded();
+   const box=await loc.boundingBox();
+   if(!box){lastError='no box';await sleep(60);continue;}
+   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);return;
+  }catch(error){lastError=String(error?.message||error);await sleep(70);}
+ }
+ throw new Error(`${label}: stable touch target unavailable; ${lastError}`);
+}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
