@@ -44,24 +44,27 @@ function memorySummary(memoryContext){
  const entries=rows(memoryContext?.entries),active=entries.filter(x=>x.status!=='superseded'&&x.status!=='expired'&&x.userConfirmed!==false);
  return {evidenceCount:active.length,goalMemory:active.some(x=>String(x.type||x.category)==='goal'),preferenceCount:active.filter(x=>String(x.memoryClass||x.type)==='preference'||String(x.type)==='preference').length};
 }
-function chooseMode(s){
- const confidence=clamp(s?.confidence,0,1),readiness=s?.readiness||{},fatigue=s?.fatigue||{},load=s?.load||{},goal=s?.goalAlignment||{},patterns=patternIds(s);
+function outcomeSummary(outcomeContext){const value=object(outcomeContext)?outcomeContext:{};return {classification:String(value.classification||'insufficient_evidence'),confidence:round(clamp(value.confidence,0,1),2),evidenceDays:rows(value.evidenceDays).length?value.evidenceDays.slice(0,7):Array.isArray(value.evidenceDays)?value.evidenceDays.slice(0,7):[],counts:object(value.counts)?value.counts:{}};}
+function chooseMode(s,outcomeContext=null){
+ const confidence=clamp(s?.confidence,0,1),readiness=s?.readiness||{},fatigue=s?.fatigue||{},load=s?.load||{},goal=s?.goalAlignment||{},patterns=patternIds(s),outcome=outcomeSummary(outcomeContext);
  const pain=has(readiness.reasons,'PAIN_CAUTION')||has(fatigue.reasons,'PAIN_CAUTION');
  if(pain)return 'caution';
  if((readiness.value==null&&confidence<.35)||confidence<.18)return 'collect_data';
  if(fatigue.band==='very_high'||(load.band==='spike'&&['low','guarded'].includes(readiness.band))||patterns.has('high_fatigue_proxy'))return 'recover';
  if(fatigue.band==='high'||readiness.band==='low'||load.band==='spike'||patterns.has('sleep_debt')||patterns.has('fatigue_cluster'))return 'reduce';
+ if(outcome.classification==='recovery_constrained'&&outcome.confidence>=.25)return 'reduce';
  if(goal.score!=null&&['low','mixed'].includes(goal.band)&&Number(goal.confidence)>=.4)return 'goal_focus';
- if(readiness.band==='high'&&fatigue.band==='low'&&load.band==='stable'&&confidence>=.55)return 'progress';
+ if(readiness.band==='high'&&fatigue.band==='low'&&load.band==='stable'&&confidence>=.55){if(['missed','partial'].includes(outcome.classification)&&outcome.confidence>=.5)return 'maintain';return 'progress';}
  return 'maintain';
 }
-function reasonsFor(s,mode){
- const out=[`MODE_${mode.toUpperCase()}`],readiness=s?.readiness||{},fatigue=s?.fatigue||{},load=s?.load||{},goal=s?.goalAlignment||{},patterns=patternIds(s);
+function reasonsFor(s,mode,outcomeContext=null){
+ const out=[`MODE_${mode.toUpperCase()}`],readiness=s?.readiness||{},fatigue=s?.fatigue||{},load=s?.load||{},goal=s?.goalAlignment||{},patterns=patternIds(s),outcome=outcomeSummary(outcomeContext);
  for(const code of readiness.reasons||[])if(['PAIN_CAUTION','LOW_ENERGY','SHORT_SLEEP','HIGH_SORENESS','HIGH_STRESS','CHECKIN_STABLE'].includes(code))out.push(code);
  if(load.band==='spike')out.push('LOAD_SPIKE');if(load.band==='drop')out.push('LOAD_DROP');
  if(['high','very_high'].includes(fatigue.band))out.push('FATIGUE_ELEVATED');
  for(const id of ['sleep_debt','fatigue_cluster','training_load_spike','training_load_drop','consistency_drop','low_readiness','high_fatigue_proxy'])if(patterns.has(id))out.push(`PATTERN_${id.toUpperCase()}`);
  if(goal.score!=null)out.push(`GOAL_${String(goal.band||'unknown').toUpperCase()}`);
+ if(outcome.classification!=='insufficient_evidence')out.push(`OUTCOME_${outcome.classification.toUpperCase()}`);
  return [...new Set(out)].slice(0,10);
 }
 function actionProposal(mode,reasons,confidence){
@@ -69,22 +72,23 @@ function actionProposal(mode,reasons,confidence){
  const p=MODE_POLICY[mode];
  return {tool:'createPlan',requiresConfirmation:true,title:TITLES[mode],args:{type:p.type,duration:p.duration,intensityScale:p.intensityScale,volumeScale:p.volumeScale,decisionEngineVersion:ENGINE_VERSION,decisionMode:mode,reasonCodes:reasons.slice(0,8)}};
 }
-function decide(userStateInput,{memoryContext=null}={}){
- const s=object(userStateInput)?userStateInput:{},mode=chooseMode(s),policy=MODE_POLICY[mode],confidence=round(clamp(s.confidence,0,1),2),reasons=reasonsFor(s,mode),memory=memorySummary(memoryContext),highPattern=rows(s.patterns).some(p=>p.severity==='high'&&Number(p.confidence)>=.5);
+function decide(userStateInput,{memoryContext=null,outcomeContext=null}={}){
+ const s=object(userStateInput)?userStateInput:{},mode=chooseMode(s,outcomeContext),policy=MODE_POLICY[mode],confidence=round(clamp(s.confidence,0,1),2),reasons=reasonsFor(s,mode,outcomeContext),memory=memorySummary(memoryContext),outcome=outcomeSummary(outcomeContext),highPattern=rows(s.patterns).some(p=>p.severity==='high'&&Number(p.confidence)>=.5);
  const surface=mode!=='maintain'||highPattern;
  return {
   engineVersion:ENGINE_VERSION,
   decisionId:`${String(s.asOf||'unknown')}:${mode}:${reasons.slice(0,3).join('|')}`,
   asOf:String(s.asOf||''),mode,priority:policy.priority,confidence,surface,
   reasonCodes:reasons,summary:COPY[mode],
-  signals:{readinessBand:String(s?.readiness?.band||'unknown'),readinessValue:s?.readiness?.value??null,fatigueBand:String(s?.fatigue?.band||'unknown'),fatigueScore:s?.fatigue?.score??null,loadBand:String(s?.load?.band||'unknown'),loadRatio:s?.load?.ratio??null,goalBand:String(s?.goalAlignment?.band||'unknown'),goalScore:s?.goalAlignment?.score??null},
+  signals:{readinessBand:String(s?.readiness?.band||'unknown'),readinessValue:s?.readiness?.value??null,fatigueBand:String(s?.fatigue?.band||'unknown'),fatigueScore:s?.fatigue?.score??null,loadBand:String(s?.load?.band||'unknown'),loadRatio:s?.load?.ratio??null,goalBand:String(s?.goalAlignment?.band||'unknown'),goalScore:s?.goalAlignment?.score??null,outcomeClassification:outcome.classification,outcomeConfidence:outcome.confidence},
   recommendation:{intensityScale:policy.intensityScale,volumeScale:policy.volumeScale,duration:policy.duration,type:policy.type},
   actionProposal:actionProposal(mode,reasons,confidence),
   memoryEvidence:memory,
-  guardrails:{requiresConfirmation:true,noSilentMutation:true,painCautionBlocksIntensity:true,medicalDiagnosis:false}
+  outcomeEvidence:outcome,
+  guardrails:{requiresConfirmation:true,noSilentMutation:true,painCautionBlocksIntensity:true,medicalDiagnosis:false,noAutomaticProgressionAfterExecutionGap:true}
  };
 }
-function compactForContext(d){if(!object(d))return null;return {engineVersion:d.engineVersion,decisionId:d.decisionId,asOf:d.asOf,mode:d.mode,priority:d.priority,confidence:d.confidence,surface:d.surface,reasonCodes:d.reasonCodes,summary:d.summary,signals:d.signals,recommendation:d.recommendation,actionProposal:d.actionProposal,memoryEvidence:d.memoryEvidence,guardrails:d.guardrails};}
-function diagnostics(userState,options={}){const d=decide(userState,options);return {engineVersion:d.engineVersion,asOf:d.asOf,mode:d.mode,priority:d.priority,confidence:d.confidence,surface:d.surface,reasonCount:d.reasonCodes.length,hasActionProposal:!!d.actionProposal,guardrails:d.guardrails};}
+function compactForContext(d){if(!object(d))return null;return {engineVersion:d.engineVersion,decisionId:d.decisionId,asOf:d.asOf,mode:d.mode,priority:d.priority,confidence:d.confidence,surface:d.surface,reasonCodes:d.reasonCodes,summary:d.summary,signals:d.signals,recommendation:d.recommendation,actionProposal:d.actionProposal,memoryEvidence:d.memoryEvidence,outcomeEvidence:d.outcomeEvidence,guardrails:d.guardrails};}
+function diagnostics(userState,options={}){const d=decide(userState,options);return {engineVersion:d.engineVersion,asOf:d.asOf,mode:d.mode,priority:d.priority,confidence:d.confidence,surface:d.surface,reasonCount:d.reasonCodes.length,hasActionProposal:!!d.actionProposal,outcomeClassification:d.outcomeEvidence?.classification||'insufficient_evidence',guardrails:d.guardrails};}
 return Object.freeze({ENGINE_VERSION,MODES,MODE_POLICY,COPY,decide,compactForContext,diagnostics});
 });
