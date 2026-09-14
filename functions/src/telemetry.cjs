@@ -1,5 +1,5 @@
 'use strict';
-const analyticsContract=require('../../07_config/analytics-contract-v1.json');
+const analyticsContract=require('./analytics-contract-v1.cjs');
 const {parseBearer}=require('./agent-context.cjs');
 
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
