@@ -186,7 +186,7 @@
   function buildPlanner(state){
     const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),goalLabel=String(goal?.goalLabel||'').trim(),canonical=window.GarangGoldenPath?.derive?.(state,{today})?.nextAction||null,canonicalCopy=nextActionCopy(canonical,lang);
     if(!selectedDate)selectedDate=defaultSelected(state);
-    const week=weekSummary(state,today);
+    const week=weekSummary(state,selectedDate||today);
     const section=doc.createElement('section');section.id='garangPlanExecution';section.className='gx-panel gx-minimal';section.dataset.gxSurface='plan-execution';
     section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.planner)}</span><strong>${pct(week.executionRate)}</strong><p data-gx-canonical-next="${esc(canonical?.action||'unknown')}">${esc(canonicalCopy)}</p>${goalLabel?`<small class="gx-hero-context">${esc(lang==='en'?`Goal · ${goalLabel}`:`목표 · ${goalLabel}`)}</small>`:''}</div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div>${weekStrip(week,lang,'plan')}${summaryView(state,selectedDate,lang,'planner')}${detailSheet(state,selectedDate,lang,'planner')}`;
     section.addEventListener('click',event=>{
@@ -198,8 +198,9 @@
     return section;
   }
   function buildAccumulation(state){
-    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),week=weekSummary(state,today),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today}),meaning=meaningLoop(state,today,lang,week),hero=week.planned?pct(week.executionRate):(week.recorded?`${week.recorded}/7`:'—'),heroCopy=week.planned?c.accumulatedPlans(week.executed,week.planned):c.accumulatedRecords(week.recorded);
+    const lang=state?.preferences?.language==='en'?'en':'ko',c=copy(lang),today=localToday(),goal=window.GarangGoalAlignment?.summarize?.(state,{days:30,endDate:today});
     if(!selectedDate)selectedDate=defaultSelected(state);
+    const week=weekSummary(state,selectedDate||today),meaning=meaningLoop(state,today,lang,week),hero=week.planned?pct(week.executionRate):(week.recorded?`${week.recorded}/7`:'—'),heroCopy=week.planned?c.accumulatedPlans(week.executed,week.planned):c.accumulatedRecords(week.recorded);
     const section=doc.createElement('section');section.id='garangAccumulationOverview';section.className='gx-panel gx-minimal gx-accumulation-surface';section.dataset.gxSurface='accumulation';section.dataset.gxStreakKind='recording';
     section.innerHTML=`<div class="gx-hero"><div><span class="eyebrow">${esc(c.accumulation)}</span><strong>${esc(hero)}</strong><p>${esc(heroCopy)}</p><small class="gx-hero-context">${esc(goal?.overall===null||goal?.overall===undefined?c.noGoalJudgement:c.inside)}</small></div><button type="button" class="gx-drop-button" data-gx-details aria-label="${esc(c.details)}" aria-expanded="false">${dropletIcon('+')}</button></div><div class="gx-day-summary" data-gx-meaning-loop data-gx-weekly-evidence="${meaning.sufficient?'sufficient':'insufficient'}"><div class="gx-insight"><span>${esc(c.accumulated)}</span><p>${esc(meaning.accumulated)}</p></div><div class="gx-insight"><span>${esc(c.changed)}</span><p>${esc(meaning.changed)}</p></div><div class="gx-insight"><span>${esc(c.nextAction)}</span><p>${esc(meaning.next)}</p></div></div>${weekStrip(week,lang,'recording')}${summaryView(state,selectedDate,lang,'accumulation')}${detailSheet(state,selectedDate,lang,'accumulation')}`;
     section.addEventListener('click',event=>{
