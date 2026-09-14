@@ -1,0 +1,42 @@
+{
+  "version": "garang-coach-nutrition-eval-v2",
+  "updatedAt": "2026-09-15",
+  "coach": [
+    {
+      "id": "coach-pain-caution",
+      "userState": {"asOf":"2026-09-15","confidence":0.9,"readiness":{"band":"low","value":25,"reasons":["PAIN_CAUTION"]},"fatigue":{"band":"high","score":80,"reasons":[]},"load":{"band":"stable","ratio":1},"goalAlignment":{"band":"high","score":90,"confidence":0.8},"patterns":[]},
+      "expectedMode": "caution"
+    },
+    {
+      "id": "coach-insufficient-data",
+      "userState": {"asOf":"2026-09-15","confidence":0.1,"readiness":{"band":"unknown","value":null,"reasons":[]},"fatigue":{"band":"unknown","score":null,"reasons":[]},"load":{"band":"unknown","ratio":null},"goalAlignment":{"band":"unknown","score":null,"confidence":0},"patterns":[]},
+      "expectedMode": "collect_data"
+    },
+    {
+      "id": "coach-stable-progress",
+      "userState": {"asOf":"2026-09-15","confidence":0.82,"readiness":{"band":"high","value":86,"reasons":["CHECKIN_STABLE"]},"fatigue":{"band":"low","score":20,"reasons":[]},"load":{"band":"stable","ratio":1.02},"goalAlignment":{"band":"high","score":88,"confidence":0.8},"patterns":[]},
+      "expectedMode": "progress"
+    },
+    {
+      "id": "coach-high-fatigue-reduce",
+      "userState": {"asOf":"2026-09-15","confidence":0.75,"readiness":{"band":"guarded","value":52,"reasons":["SHORT_SLEEP"]},"fatigue":{"band":"high","score":74,"reasons":["SHORT_SLEEP"]},"load":{"band":"stable","ratio":1.05},"goalAlignment":{"band":"high","score":82,"confidence":0.8},"patterns":[]},
+      "expectedMode": "reduce"
+    },
+    {
+      "id": "coach-very-high-fatigue-recover",
+      "userState": {"asOf":"2026-09-15","confidence":0.76,"readiness":{"band":"low","value":38,"reasons":["LOW_ENERGY"]},"fatigue":{"band":"very_high","score":91,"reasons":["HIGH_SORENESS"]},"load":{"band":"stable","ratio":1.08},"goalAlignment":{"band":"high","score":80,"confidence":0.8},"patterns":[]},
+      "expectedMode": "recover"
+    },
+    {
+      "id": "coach-outcome-gap-blocks-progression",
+      "userState": {"asOf":"2026-09-15","confidence":0.8,"readiness":{"band":"high","value":84,"reasons":["CHECKIN_STABLE"]},"fatigue":{"band":"low","score":22,"reasons":[]},"load":{"band":"stable","ratio":1},"goalAlignment":{"band":"high","score":90,"confidence":0.8},"patterns":[]},
+      "outcomeContext": {"classification":"partial","confidence":0.7,"evidenceDays":["2026-09-14","2026-09-13","2026-09-12"],"decisionSupport":{"suppressProgression":true,"preferReducedLoad":false}},
+      "expectedMode": "maintain"
+    }
+  ],
+  "nutrition": [
+    {"id":"nutrition-ready","state":{"profile":{"age":29,"height":174,"weight":70,"gender":"male","goal":"근육 증가"},"meals":[],"workouts":[],"runs":[],"body":[]},"expectedStatus":"ready"},
+    {"id":"nutrition-missing-weight","state":{"profile":{"age":29,"height":174,"gender":"male","goal":"근육 증가"},"meals":[],"workouts":[],"runs":[],"body":[]},"expectedStatus":"needs_profile"},
+    {"id":"nutrition-fat-loss","state":{"profile":{"age":32,"height":165,"weight":61,"gender":"female","goal":"체지방 감량"},"meals":[],"workouts":[],"runs":[],"body":[]},"expectedStatus":"ready"}
+  ]
+}
