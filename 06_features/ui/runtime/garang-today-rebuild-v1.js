@@ -8,6 +8,15 @@
   window.__garangTodayRebuildV1=true;
   const main=document.getElementById('main');
   if(!main)return;
+  function ensureStyle(){
+    if(document.querySelector('link[data-garang-rebuild-system-v1]'))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='./03_styles/runtime/garang-rebuild-system-v1.css?v=1.0.0';
+    link.dataset.garangRebuildSystemV1='1';
+    document.head.appendChild(link);
+  }
+  ensureStyle();
   const esc=value=>String(value??'').replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));
   const list=value=>Array.isArray(value)?value:[];
   const todayLocal=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
