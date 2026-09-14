@@ -1,6 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": {"title": "GARANG API", "version": "1.1.0"},
+  "info": {"title": "GARANG API", "version": "1.2.0"},
   "servers": [{"url": "https://asia-northeast3-fitfind-ai.cloudfunctions.net/api"}],
   "paths": {
     "/agent/context": {
@@ -9,12 +9,17 @@
         "summary": "Read the authenticated GARANG user's current context",
         "security": [{"firebaseIdToken": []}],
         "parameters": [{"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "minimum": 1, "maximum": 200, "default": 50}}],
-        "responses": {
-          "200": {"description": "Authenticated user context"},
-          "401": {"description": "Missing, invalid, expired or revoked Firebase ID token"},
-          "405": {"description": "GET is the only allowed method"},
-          "503": {"description": "Firestore is temporarily unavailable"}
-        }
+        "responses": {"200":{"description":"Authenticated user context"},"401":{"description":"Missing, invalid, expired or revoked Firebase ID token"},"405":{"description":"GET is the only allowed method"},"503":{"description":"Firestore is temporarily unavailable"}}
+      }
+    },
+    "/coach": {
+      "post": {
+        "operationId": "askCoach",
+        "summary": "Explain the authenticated user's server-computed GARANG decision with the configured LLM provider",
+        "description": "The gateway derives Memory, State and Decision context from the Firebase-authenticated user's canonical state. Client-supplied context or user identifiers are not trusted. LLM action intent is advisory only and never writes user state.",
+        "security": [{"firebaseIdToken": []}],
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["message"],"additionalProperties":false,"properties":{"message":{"type":"string","minLength":1,"maxLength":1800},"language":{"type":"string","enum":["ko","en"]}}}}}},
+        "responses": {"200":{"description":"Structured LLM explanation anchored to the GARANG decision"},"400":{"description":"Message is missing"},"401":{"description":"Missing, invalid, expired or revoked Firebase ID token"},"405":{"description":"POST is the only allowed method"},"502":{"description":"LLM timeout, provider error, or malformed response; client should use deterministic fallback"},"503":{"description":"User data unavailable or LLM secret missing; client should use deterministic fallback"}}
       }
     },
     "/account/delete": {
@@ -22,12 +27,7 @@
         "operationId": "deleteAccount",
         "summary": "Permanently delete the authenticated user's GARANG data and Firebase Auth account",
         "security": [{"firebaseIdToken": []}],
-        "responses": {
-          "200": {"description": "Account and user data deleted"},
-          "401": {"description": "Missing token or recent authentication required"},
-          "405": {"description": "POST is the only allowed method"},
-          "500": {"description": "Account deletion failed"}
-        }
+        "responses": {"200":{"description":"Account and user data deleted"},"401":{"description":"Missing token or recent authentication required"},"405":{"description":"POST is the only allowed method"},"500":{"description":"Account deletion failed"}}
       }
     }
   },
