@@ -1,0 +1,61 @@
+{
+  "version": "garang-food-source-registry-v2",
+  "updatedAt": "2026-09-15",
+  "policy": {
+    "primaryRegion": "KR",
+    "verifiedRequires": ["provider", "dataset", "recordId"],
+    "qualityStates": ["verified", "approximate", "estimated", "unknown"],
+    "rules": [
+      "Never promote an estimated or approximate value to verified without traceable source metadata.",
+      "Preserve the source record identifier and dataset name at ingestion.",
+      "Normalize nutrients to a declared gram basis before recommendation math.",
+      "Treat serving text as display metadata; basisG owns nutrient scaling.",
+      "Do not expose API keys in repository files or client bundles."
+    ]
+  },
+  "sources": [
+    {
+      "id": "kfind",
+      "provider": "MFDS K-FIND",
+      "country": "KR",
+      "priority": 100,
+      "official": true,
+      "apiKeyRequired": true,
+      "apiPage": "https://various.foodsafetykorea.go.kr/nutrient/industry/openApi/info.do",
+      "datasets": [
+        {"id": "KDDB", "name": "식품의약품안전처 음식 DB"},
+        {"id": "PFDB", "name": "식품의약품안전처 가공식품 DB"},
+        {"id": "KFCT", "name": "농촌진흥청 국가표준식품성분표"},
+        {"id": "KCTMP", "name": "해양수산부 표준수산물성분표"}
+      ],
+      "nutrientCodes": {
+        "kcal": "A001",
+        "sodium": "A002",
+        "carbs": "A003",
+        "sugar": "A004",
+        "fat": "A005",
+        "transFat": "A006",
+        "saturatedFat": "A007",
+        "cholesterol": "A008",
+        "protein": "A009"
+      },
+      "adapterStatus": "normalized-boundary-ready_raw-payload-mapping-pending"
+    },
+    {
+      "id": "usda-fdc",
+      "provider": "USDA FoodData Central",
+      "country": "US",
+      "priority": 70,
+      "official": true,
+      "apiKeyRequired": true,
+      "apiPage": "https://fdc.nal.usda.gov/api-guide/",
+      "license": "CC0 1.0 / public domain",
+      "datasets": [
+        {"id": "Foundation", "name": "Foundation Foods"},
+        {"id": "FNDDS", "name": "Food and Nutrient Database for Dietary Studies"},
+        {"id": "Branded", "name": "Global Branded Food Products Database"}
+      ],
+      "adapterStatus": "normalized-boundary-ready_raw-payload-mapping-pending"
+    }
+  ]
+}
