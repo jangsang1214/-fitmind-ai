@@ -11,9 +11,9 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
-  await waitServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  await waitServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   const gatewayCalls=[];
-  await context.route('**/api/coach',async route=>{
+  await context.route(endpoint,async route=>{
    const request=route.request(),method=request.method();
    const cors={'Access-Control-Allow-Origin':baseURL,'Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
    if(method==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
