@@ -1,0 +1,48 @@
+(function(root,factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  if(root)root.GarangNutritionIntelligenceV2=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+'use strict';
+
+const VERSION='garang-nutrition-intelligence-v2';
+const MODES=Object.freeze(['collect_data','recovery_support','performance_fuel','protein_support','balanced','maintain']);
+const list=value=>Array.isArray(value)?value:[];
+const clean=value=>String(value??'').trim();
+const finite=value=>{if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;};
+const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+const round=(value,d=1)=>{const p=10**d;return Math.round(Number(value||0)*p)/p;};
+const dateRe=/^\d{4}-\d{2}-\d{2}$/;
+
+function dateParts(value){const s=clean(value).slice(0,10);if(!dateRe.test(s))return null;const [y,m,d]=s.split('-').map(Number),x=new Date(Date.UTC(y,m-1,d));return x.getUTCFullYear()===y&&x.getUTCMonth()===m-1&&x.getUTCDate()===d?{s,ms:x.getTime()}:null;}
+function localDate(now=new Date()){const d=now instanceof Date?now:new Date(now);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function sameDate(row,date){return clean(row?.date||row?.day||row?.performedAt||row?.createdAt).slice(0,10)===date;}
+function goalClass(state){const raw=clean(state?.profile?.goal||state?.userModel?.goal||state?.onboarding?.goal).toLowerCase();if(/근육|muscle|bulk|hypertrophy/.test(raw))return 'muscle_gain';if(/체지방|감량|weight.?loss|fat.?loss|cut/.test(raw))return 'fat_loss';if(/러닝|running|run|마라톤/.test(raw))return 'running_performance';if(/근력|strength|performance|기록 향상|퍼포먼스/.test(raw))return 'performance';return 'maintenance';}
+function latestWeight(state,date){const end=dateParts(date),rows=list(state?.body).filter(row=>{const p=dateParts(row?.date);return p&&end&&p.ms<=end.ms&&finite(row?.weight)>0;}).sort((a,b)=>clean(a.date).localeCompare(clean(b.date)));return finite(rows.at(-1)?.weight)||finite(state?.profile?.weight);}
+function metricFromMeal(row,key){const direct=finite(row?.[key]);if(direct!==null)return {value:direct,observed:true};const aliases={protein:['protein_g'],carbs:['carbohydrate','carbohydrate_g'],fat:['fat_g'],kcal:['calories','energy']};const values=list(row?.items).map(item=>{let value=finite(item?.[key]);if(value!==null)return value;for(const alias of aliases[key]||[]){value=finite(item?.[alias]);if(value!==null)return value;}return null;}).filter(value=>value!==null);return {value:values.reduce((sum,value)=>sum+value,0),observed:values.length>0};}
+function dayNutrition(state,date){const rows=list(state?.meals).filter(row=>sameDate(row,date));const out={date,meals:rows.length,kcal:0,protein:0,carbs:0,fat:0,observed:{kcal:false,protein:false,carbs:false,fat:false}};for(const row of rows){for(const key of ['kcal','protein','carbs','fat']){const metric=metricFromMeal(row,key);out[key]+=metric.value;if(metric.observed)out.observed[key]=true;}}for(const key of ['kcal','protein','carbs','fat'])out[key]=round(out[key]);return out;}
+function recentNutrition(state,endDate,days=7){const end=dateParts(endDate);if(!end)return {days:[],loggedDays:0,coverage:0,averages:{kcal:null,protein:null,carbs:null,fat:null}};const rows=[];for(let offset=days-1;offset>=0;offset--){const d=new Date(end.ms-offset*86400000),date=d.toISOString().slice(0,10);rows.push(dayNutrition(state,date));}const logged=rows.filter(row=>row.meals>0),averages={};for(const key of ['kcal','protein','carbs','fat']){const observed=logged.filter(row=>row.observed[key]);averages[key]=observed.length?round(observed.reduce((sum,row)=>sum+row[key],0)/observed.length):null;}return {days:rows,loggedDays:logged.length,coverage:round(logged.length/days,2),averages};}
+function latestCheckin(state,date){const candidates=[...list(state?.dailyCheckins),...list(state?.checkins)].filter(row=>{const p=dateParts(row?.date||row?.day);const end=dateParts(date);return p&&end&&p.ms<=end.ms;}).sort((a,b)=>clean(a.date||a.day).localeCompare(clean(b.date||b.day)));return candidates.at(-1)||null;}
+function recoverySignals(state,date){const row=latestCheckin(state,date),sleep=finite(row?.sleepHours??row?.sleep_hours??row?.sleep),soreness=finite(row?.soreness??row?.muscleSoreness),energy=finite(row?.energy??row?.energyLevel),stress=finite(row?.stress??row?.stressLevel),reasons=[];let severity=0;if(sleep!==null&&sleep<6){severity+=2;reasons.push('SHORT_SLEEP');}if(soreness!==null&&soreness>=8){severity+=2;reasons.push('HIGH_SORENESS');}else if(soreness!==null&&soreness>=6){severity+=1;reasons.push('ELEVATED_SORENESS');}if(energy!==null&&energy<=3){severity+=2;reasons.push('LOW_ENERGY');}if(stress!==null&&stress>=8){severity+=1;reasons.push('HIGH_STRESS');}return {severity,band:severity>=3?'high':severity>=1?'guarded':'stable',sleepHours:sleep,soreness,energy,stress,reasons};}
+function trainingDemand(state,date){const end=dateParts(date);if(!end)return {today:false,tomorrow:false,recent:false,score:0,reasons:[]};const tomorrow=new Date(end.ms+86400000).toISOString().slice(0,10),todayDone=[...list(state?.workouts),...list(state?.runs)].some(row=>sameDate(row,date)),recentStart=end.ms-2*86400000,recent=[...list(state?.workouts),...list(state?.runs)].some(row=>{const p=dateParts(row?.date);return p&&p.ms>=recentStart&&p.ms<=end.ms;});const planned=list(state?.planner).filter(row=>row?.done!==true),isTraining=row=>/workout|run|training|운동|러닝/i.test(clean(row?.type||row?.category||row?.title||row?.name)),todayPlan=planned.some(row=>sameDate(row,date)&&isTraining(row)),tomorrowPlan=planned.some(row=>sameDate(row,tomorrow)&&isTraining(row)),today=todayDone||todayPlan,score=(today?2:0)+(tomorrowPlan?1:0)+(recent?1:0),reasons=[];if(today)reasons.push('TRAINING_TODAY');if(tomorrowPlan)reasons.push('TRAINING_TOMORROW');if(recent)reasons.push('RECENT_TRAINING');return {today,tomorrow:tomorrowPlan,recent,score,reasons};}
+function proteinTarget(state,date){const explicit=finite(state?.profile?.proteinTarget??state?.profile?.targetProtein??state?.proteinTarget);if(explicit&&explicit>0)return {value:round(explicit),basis:'explicit'};const weight=latestWeight(state,date);if(!(weight>0))return {value:null,basis:'missing_weight'};const goal=goalClass(state),factor=goal==='fat_loss'||goal==='muscle_gain'?1.8:1.6;return {value:round(weight*factor),basis:`weight_${factor.toFixed(1)}g_per_kg_starting_point`};}
+function buildConfidence({today,recent,recovery,target}){let score=0;if(today.meals>0)score+=0.25;if(today.observed.protein)score+=0.15;if(today.observed.carbs)score+=0.1;if(recent.loggedDays>=3)score+=0.2;if(recovery.sleepHours!==null||recovery.energy!==null||recovery.soreness!==null)score+=0.1;if(target.value!==null)score+=0.2;return round(clamp(score,0,1),2);}
+function interpret(stateInput={},options={}){
+  const state=stateInput&&typeof stateInput==='object'?stateInput:{},date=clean(options.date||localDate(options.now)).slice(0,10),goal=goalClass(state),today=dayNutrition(state,date),recent=recentNutrition(state,date,7),recovery=recoverySignals(state,date),training=trainingDemand(state,date),target=proteinTarget(state,date),reasons=[],guardrails=['NO_SILENT_STATE_MUTATION','USE_SAVED_RECORDS_ONLY','NUTRITION_VALUES_MAY_BE_ESTIMATES'];
+  let mode='maintain',priority='Maintain the current pattern and keep logging enough evidence for the next decision.';
+  const observedProtein=today.observed.protein&&today.meals>0,proteinRatio=observedProtein&&target.value>0?today.protein/target.value:null;
+  if(today.meals===0&&recent.loggedDays<2){mode='collect_data';priority='Collect at least one representative meal and body-weight signal before making a stronger nutrition adjustment.';reasons.push('INSUFFICIENT_NUTRITION_EVIDENCE');}
+  else if(recovery.band==='high'){
+    mode='recovery_support';priority='Favor a simple recovery-supportive eating pattern and avoid aggressive nutrition changes until recovery signals improve.';reasons.push(...recovery.reasons,'RECOVERY_SIGNAL_PRIORITY');
+  }else if(training.score>=2&&today.meals>0&&today.observed.carbs&&latestWeight(state,date)>0&&today.carbs/latestWeight(state,date)<1.5){
+    mode='performance_fuel';priority='Training demand is present while logged carbohydrate intake is still light; prioritize a balanced carbohydrate-containing next meal rather than cutting intake further.';reasons.push(...training.reasons,'LOW_LOGGED_CARBS_FOR_TRAINING_DAY');
+  }else if(proteinRatio!==null&&proteinRatio<0.7){
+    mode='protein_support';priority='Logged protein is materially below the current starting-point target; make protein the main gap to close with the next normal meal.';reasons.push('PROTEIN_GAP');
+  }else if(today.meals>0){mode='balanced';priority='Current logged intake does not show a strong deterministic nutrition exception; keep the next meal balanced and continue recording.';reasons.push('NO_STRONG_NUTRITION_EXCEPTION');}
+  const confidence=buildConfidence({today,recent,recovery,target});
+  if(confidence<0.45&&!reasons.includes('INSUFFICIENT_NUTRITION_EVIDENCE'))reasons.push('LOW_EVIDENCE_CONFIDENCE');
+  return {version:VERSION,date,mode,goal,priority,confidence,evidence:{today,recent:{loggedDays:recent.loggedDays,coverage:recent.coverage,averages:recent.averages},recovery,training,proteinTarget:target,proteinRatio:proteinRatio===null?null:round(proteinRatio,2)},reasonCodes:[...new Set(reasons)],guardrails};
+}
+
+return Object.freeze({VERSION,MODES,localDate,goalClass,dayNutrition,recentNutrition,recoverySignals,trainingDemand,proteinTarget,interpret});
+});
