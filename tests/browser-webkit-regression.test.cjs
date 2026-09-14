@@ -201,8 +201,9 @@ async function assertCoachSettles(page){
     await tap(page,'#menuBtn');
     await page.locator('.garang-more-sheet').waitFor({state:'visible'});
     assert.equal(await page.locator('.garang-more-sheet [data-route="running"]').isHidden(),true,'duplicate Running entry must stay hidden from More');
-    await tap(page,'.garang-more-sheet [data-route="planner"]');
-    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
+    assert.equal(await page.locator('.garang-more-sheet [data-route="planner"]').isHidden(),true,'Planner capability must stay internalized instead of exposing a competing first-level touch target');
+    assert.equal(await page.locator('.garang-more-sheet [data-route="memory"]').isHidden(),true,'Memory capability must stay internalized instead of exposing a competing first-level touch target');
+    await page.keyboard.press('Escape').catch(()=>{});
 
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="coach"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
