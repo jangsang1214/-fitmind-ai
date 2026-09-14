@@ -2,6 +2,9 @@
 
 const {parseBearer,buildAgentContext}=require('./agent-context.cjs');
 const {createProvider}=require('./llm-provider.cjs');
+const Nutrition=require('./nutrition-intelligence-v2.cjs');
+const Grounding=require('./coach-knowledge-grounding-v2.cjs');
+const {RULES:COACH_KNOWLEDGE}=require('./coach-knowledge-v2.cjs');
 const crypto=require('node:crypto');
 
 const rows=value=>Array.isArray(value)?value:[];
@@ -41,6 +44,18 @@ function minimalContext(full,state={}){
  const checkin=select(latestCheckin(state)||{},['date','sleep','sleepHours','energy','energyLevel','stress','stressLevel','soreness','muscleSoreness','availableMinutes','painCaution']);
  return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,bodyTrend:bodyTrend(body),planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),outcomeLearning:clone(full?.outcome||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
 }
+function compactNutrition(value={}){return {version:value?.version||null,date:value?.date||null,mode:value?.mode||null,goal:value?.goal||null,priority:value?.priority||null,confidence:finite(value?.confidence),evidence:clone(value?.evidence||{}),reasonCodes:rows(value?.reasonCodes).slice(0,8),guardrails:rows(value?.guardrails).slice(0,8)};}
+function groundingFailure(code){return Object.assign(new Error(code),{code});}
+function validateGroundingContext(context={}){
+ const grounding=context?.knowledgeGrounding||{},expected=context?.garangDecision||{},identity=grounding?.decisionIdentity||{},contract=grounding?.contract||{};
+ if(!expected?.decisionId||!expected?.mode||identity.decisionId!==expected.decisionId||identity.mode!==expected.mode)throw groundingFailure('GROUNDING_DECISION_MISMATCH');
+ if(contract.decisionOwnedBy!=='GARANG'||contract.llmRole!=='explain_only'||contract.stateMutationAllowed!==false)throw groundingFailure('GROUNDING_CONTRACT_INVALID');
+ return true;
+}
+function buildGroundedContext(full,state={},options={}){
+ const context=minimalContext(full,state),nutrition=Nutrition.interpret(state,{now:options.now}),knowledgeGrounding=Grounding.ground({decision:context.garangDecision,userState:context.stateIntelligence,nutrition,query:redactText(options.query,500),coachRules:COACH_KNOWLEDGE,limit:5}),grounded={...context,nutritionIntelligence:compactNutrition(nutrition),knowledgeGrounding};
+ validateGroundingContext(grounded);return grounded;
+}
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function errorCode(error){return clean(error?.code||error?.message||'LLM_GATEWAY_ERROR',80).replace(/[^A-Z0-9_]+/gi,'_').toUpperCase();}
 function safeProviderData(generated={}){const {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata}=generated||{};return {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata};}
@@ -54,8 +69,9 @@ function verifyGeneratedAlignment(generated,context){
  return {verified:true,decisionId:actualId,decisionMode:actualMode,reasonCodesUsed};
 }
 function alignGenerated(generated,context){
+ validateGroundingContext(context);
  const providerAlignment=verifyGeneratedAlignment(generated,context),decisionConfidence=finite(context?.garangDecision?.confidence),llmConfidence=finite(generated?.confidence),effective=decisionConfidence===null?llmConfidence:llmConfidence===null?decisionConfidence:Math.min(llmConfidence,decisionConfidence),capped=decisionConfidence!==null&&llmConfidence!==null&&llmConfidence>decisionConfidence;
- return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',outcomeLongitudinalClassification:clean(context?.outcomeLearning?.longitudinal?.classification,80)||'insufficient_longitudinal_evidence',contractVerified:providerAlignment.verified,reasonCodesUsed:providerAlignment.reasonCodesUsed}}};
+ return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',outcomeLongitudinalClassification:clean(context?.outcomeLearning?.longitudinal?.classification,80)||'insufficient_longitudinal_evidence',contractVerified:providerAlignment.verified,reasonCodesUsed:providerAlignment.reasonCodesUsed},grounding:{version:clean(context?.knowledgeGrounding?.version,80)||null,evidenceCount:Math.max(0,Number(context?.knowledgeGrounding?.evidenceCount)||0),nutritionMode:clean(context?.nutritionIntelligence?.mode,60)||null,decisionOwnedBy:'GARANG',contractVerified:true}}};
 }
 function defaultObserve(event){try{console.info('[GARANG_COACH_EVENT]',JSON.stringify(event));}catch{}}
 function createCoachGatewayHandler(deps={}){
@@ -67,19 +83,19 @@ function createCoachGatewayHandler(deps={}){
   let decoded;try{decoded=await verifyIdToken(token);}catch{return res.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
   const uid=clean(decoded?.uid,180);if(!uid)return res.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
   const message=clean(req?.body?.message,1800),language=req?.body?.language==='en'?'en':'ko';if(!message)return res.status(400).json({ok:false,error:{code:'MESSAGE_REQUIRED'}});
-  const id=requestId();
-  let rate;try{rate=await consumeRateLimit(uid,{now:clock(),route:'coach'});}catch{observe({event:'llm_fallback',requestId:id,code:'COACH_RATE_LIMIT_UNAVAILABLE',providerStatus:null,decisionMode:null});return res.status(503).json({ok:false,error:{code:'COACH_RATE_LIMIT_UNAVAILABLE'},fallbackRequired:true,requestId:id});}
+  const id=requestId(),now=clock();
+  let rate;try{rate=await consumeRateLimit(uid,{now,route:'coach'});}catch{observe({event:'llm_fallback',requestId:id,code:'COACH_RATE_LIMIT_UNAVAILABLE',providerStatus:null,decisionMode:null});return res.status(503).json({ok:false,error:{code:'COACH_RATE_LIMIT_UNAVAILABLE'},fallbackRequired:true,requestId:id});}
   if(rate?.allowed===false){const retry=Math.max(1,Number(rate.retryAfterSec)||60);observe({event:'llm_fallback',requestId:id,code:'COACH_RATE_LIMITED',providerStatus:429,decisionMode:null,rateLimitReason:clean(rate?.reason,24)||null});res.set?.('Retry-After',String(retry));return res.status(429).json({ok:false,error:{code:'COACH_RATE_LIMITED'},fallbackRequired:true,retryAfterSec:retry,requestId:id});}
   let state;try{state=await readUser(uid);}catch{return res.status(503).json({ok:false,error:{code:'USER_DATA_UNAVAILABLE'}});}
-  const normalizedState=normalizeStateForIntelligence(state||{}),full=buildAgentContext(normalizedState,{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full,normalizedState);
+  let context;try{const normalizedState=normalizeStateForIntelligence(state||{}),full=buildAgentContext(normalizedState,{ownerUid:uid,query:message,now,limit:12,memoryLimit:10});context=buildGroundedContext(full,normalizedState,{query:message,now});}catch(error){const code=errorCode(error);observe({event:'llm_fallback',requestId:id,code,providerStatus:null,decisionMode:null});return res.status(503).json({ok:false,error:{code},fallbackRequired:true,requestId:id});}
   try{
-   const config=getProviderConfig();observe({event:'llm_request',requestId:id,provider:clean(config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence'});
+   const config=getProviderConfig();observe({event:'llm_request',requestId:id,provider:clean(config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',nutritionMode:clean(context?.nutritionIntelligence?.mode,60)||null,groundingEvidenceCount:Number(context?.knowledgeGrounding?.evidenceCount)||0});
    const provider=providerFactory(config),generated=alignGenerated(await provider.generate({message,context,language,requestId:id}),context),safe=safeProviderData(generated),data={...safe,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
-   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true,alignmentVerified:safe?.metadata?.alignment?.contractVerified===true});
+   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true,alignmentVerified:safe?.metadata?.alignment?.contractVerified===true,groundingVerified:safe?.metadata?.grounding?.contractVerified===true});
    return res.status(200).json({ok:true,answer:safe.answer,data});
   }catch(error){
    const code=errorCode(error);observe({event:'llm_fallback',requestId:id,code,providerStatus:finite(error?.status),decisionMode:clean(context?.garangDecision?.mode,40)||null});return res.status(code==='LLM_SECRET_MISSING'?503:502).json({ok:false,error:{code},fallbackRequired:true,requestId:id,garangDecision:clone(context.garangDecision)});
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,verifyGeneratedAlignment,alignGenerated};
+module.exports={createCoachGatewayHandler,minimalContext,buildGroundedContext,compactNutrition,validateGroundingContext,redactText,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,verifyGeneratedAlignment,alignGenerated};
