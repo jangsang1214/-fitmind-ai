@@ -93,6 +93,7 @@ async function openRecordRoute(page,route,touch,label){
       const detail=page.locator('[data-gtr1-detail]');await tap(page,detail,mode.touch,`${mode.name}: evidence toggle`);assert.equal(await detail.getAttribute('aria-expanded'),'true',`${mode.name}: evidence must expand`);
 
       const menu=page.locator('#menuBtn');await tap(page,menu,mode.touch,`${mode.name}: hamburger`);await page.locator('.garang-more-sheet').waitFor({state:'visible',timeout:3000});
+      await page.waitForFunction(()=>['workout','nutrition','running','body'].every(route=>[...document.querySelectorAll(`.garang-more-sheet [data-route="${route}"]`)].every(el=>{const cs=getComputedStyle(el);return el.hidden||cs.display==='none'||cs.visibility==='hidden';})),null,{timeout:1000});
       for(const route of ['workout','nutrition','running','body'])assert.equal(await page.locator(`.garang-more-sheet [data-route="${route}"]:visible`).count(),0,`${mode.name}: ${route} must not duplicate Record in More`);
       await page.evaluate(()=>window.GarangRouter?.cleanup?.());assert.equal(await page.locator('.garang-more-sheet').count(),0,`${mode.name}: transient More sheet must close cleanly`);
 
