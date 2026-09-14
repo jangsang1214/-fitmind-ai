@@ -1,51 +1,67 @@
 /* GARANG external service endpoints.
    Provider secrets stay on the server. Browser code receives public HTTPS endpoints only.
-   Coach transport is deliberately narrow: it authenticates the configured Coach request,
-   normalizes legacy Coach packets, removes client context, and lets the local fallback own failures. */
+   Server Readiness Stage 0 keeps new privileged endpoints activation-gated until the
+   matching Cloud Functions revision is deployed and smoke-verified. */
 (() => {
   'use strict';
-  const coachEndpoint='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach';
+  const apiBase='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api';
+  const coachEndpoint=`${apiBase}/coach`;
   window.GARANG_SERVICES = Object.freeze({
+    apiBase,
+    serverReadinessVersion:'server-readiness-stage0-v1',
     coachEndpoint,
-    mealScanEndpoint: null,
-    analyticsEndpoint: null,
-    analyticsConsent: false,
-    analyticsContractVersion: 'garang-analytics-v1',
-    paymentCheckoutEndpoint: null,
-    paymentEntitlementEndpoint: null
+    accountDeleteEndpoint:null,
+    accountExportEndpoint:null,
+    mealScanEndpoint:null,
+    analyticsEndpoint:null,
+    telemetryErrorEndpoint:null,
+    analyticsConsent:false,
+    analyticsContractVersion:'garang-analytics-v1',
+    paymentCheckoutEndpoint:null,
+    paymentEntitlementEndpoint:null
   });
   if(!window.GARANG_LLM_ENDPOINT)window.GARANG_LLM_ENDPOINT=coachEndpoint;
 
-  if(typeof window.fetch!=='function'||window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__)return;
+  if(typeof window.fetch!=='function'||window.__GARANG_SERVICE_TRANSPORT_V2__)return;
   const nativeFetch=window.fetch.bind(window);
-  const diag={stage:'installed',lastError:null,lastRequest:null};
-  async function coachFetch(input,init={}){
-    const url=typeof input==='string'?input:input?.url;
-    const method=String(init?.method||input?.method||'GET').toUpperCase();
-    if(url!==coachEndpoint||method!=='POST')return nativeFetch(input,init);
-    diag.stage='auth';diag.lastError=null;
-    try{
-      const user=window.firebase?.auth?.().currentUser;
-      if(!user||typeof user.getIdToken!=='function'){
-        const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;
-      }
-      const token=await user.getIdToken();
-      diag.stage='normalize';
-      let source={};try{source=typeof init.body==='string'?JSON.parse(init.body):{};}catch{}
-      const message=String(source?.message||source?.question||'').trim();
-      if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
-      const language=source?.language==='en'||document.documentElement?.lang==='en'?'en':'ko';
-      const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${token}`);
-      diag.lastRequest={url:coachEndpoint,method:'POST',language,messageLength:message.length,uid:String(user.uid||'')};
-      diag.stage='native-fetch';
-      const response=await nativeFetch(coachEndpoint,{...init,method:'POST',headers,body:JSON.stringify({message,language})});
-      diag.stage='response';
-      return response;
-    }catch(error){
-      diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};
-      throw error;
-    }
+  const diag={stage:'installed',lastError:null,lastRequest:null,analyticsSuppressed:0,errorSuppressed:0};
+  const urlOf=input=>typeof input==='string'?input:input?.url;
+  const methodOf=(input,init)=>String(init?.method||input?.method||'GET').toUpperCase();
+  function currentUser(){try{return window.firebase?.auth?.().currentUser||null;}catch{return null;}}
+  function analyticsConsent(){
+    const user=currentUser();if(!user)return false;
+    try{const state=JSON.parse(localStorage.getItem(`garang_user_${user.uid}_v3`)||'null');return state?.privacy?.consent?.analytics===true;}catch{return false;}
   }
-  window.fetch=coachFetch;
-  window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=Object.freeze({version:'garang-coach-gateway-transport-v1.1.1',endpoint:coachEndpoint,diagnostics:diag});
+  async function token(){const user=currentUser();if(!user||typeof user.getIdToken!=='function'){const error=new Error('GARANG_AUTH_REQUIRED');error.code='GARANG_AUTH_REQUIRED';throw error;}return user.getIdToken();}
+  async function authenticatedFetch(input,init={}){
+    const headers=new Headers(init.headers||{});headers.set('Authorization',`Bearer ${await token()}`);return nativeFetch(input,{...init,headers});
+  }
+  async function routedFetch(input,init={}){
+    const url=urlOf(input),method=methodOf(input,init),services=window.GARANG_SERVICES||{};
+    if(url===coachEndpoint&&method==='POST'){
+      diag.stage='coach-auth';diag.lastError=null;
+      try{
+        const user=currentUser();if(!user){const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;}
+        let source={};try{source=typeof init.body==='string'?JSON.parse(init.body):{};}catch{}
+        const message=String(source?.message||source?.question||'').trim();if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
+        const language=source?.language==='en'||document.documentElement?.lang==='en'?'en':'ko',headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${await token()}`);
+        diag.lastRequest={url:coachEndpoint,method:'POST',language,messageLength:message.length,uid:String(user.uid||'')};diag.stage='coach-fetch';
+        const response=await nativeFetch(coachEndpoint,{...init,method:'POST',headers,body:JSON.stringify({message,language})});diag.stage='coach-response';return response;
+      }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
+    }
+    if((services.analyticsEndpoint&&url===services.analyticsEndpoint)||(services.telemetryErrorEndpoint&&url===services.telemetryErrorEndpoint)){
+      if(!analyticsConsent()){
+        if(url===services.analyticsEndpoint)diag.analyticsSuppressed++;else diag.errorSuppressed++;
+        return new Response(JSON.stringify({ok:true,accepted:false,reason:'CONSENT_REQUIRED'}),{status:202,headers:{'Content-Type':'application/json'}});
+      }
+      return authenticatedFetch(input,init);
+    }
+    return nativeFetch(input,init);
+  }
+  window.fetch=routedFetch;
+  window.addEventListener('garang:error',event=>{
+    const endpoint=window.GARANG_SERVICES?.telemetryErrorEndpoint;if(!endpoint||!analyticsConsent())return;
+    const detail=event?.detail||{};routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(detail)}).catch(()=>{});
+  });
+  window.__GARANG_SERVICE_TRANSPORT_V2__=Object.freeze({version:'garang-service-transport-v2',apiBase,coachEndpoint,authenticatedFetch,analyticsConsent,diagnostics:diag});
 })();
