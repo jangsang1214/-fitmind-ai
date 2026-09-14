@@ -141,3 +141,14 @@
   script.async = false;
   document.head.appendChild(script);
 })();
+
+/* Rebuild branch: mount the new Today DOM from functional contracts, not legacy presentation. */
+(() => {
+  'use strict';
+  if (window.GarangTodayRebuildV1 || document.querySelector('script[data-garang-today-rebuild-v1]')) return;
+  const script=document.createElement('script');
+  script.src='./06_features/ui/runtime/garang-today-rebuild-v1.js?v=1.0.0';
+  script.dataset.garangTodayRebuildV1='1';
+  script.async=false;
+  document.head.appendChild(script);
+})();
