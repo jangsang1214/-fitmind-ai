@@ -7,174 +7,48 @@
 (() => {
 'use strict';
 if(window.GarangProductConsolidationV1)return;
-
 const VERSION='garang-product-consolidation-v1.0.0';
 const main=()=>document.getElementById('main');
 const isKo=()=>document.documentElement.lang!=='en';
-let queued=false,delayed=0,observer=null;
-
-function ensureStyle(){
-  if(document.getElementById('garang-product-consolidation-v1-style'))return;
-  const style=document.createElement('style');
-  style.id='garang-product-consolidation-v1-style';
-  style.textContent=`
-/* Four-surface shell: utilities stay available without competing with the product model. */
-#appView:not([hidden])>.topbar #planBadge,
-#appView:not([hidden])>.topbar #logoutBtn{display:none!important}
-
-/* Today: one question, one judgment summary, one plan, one canonical next action. */
-html body #main[data-garang-screen="today"]>#garangTodayBrandHero,
-html body #main[data-garang-screen="today"]>#garangTodayDensity{display:none!important}
+const setText=(node,value)=>{const next=String(value??'');if(node&&node.textContent!==next)node.textContent=next;};
+let queued=false,delayed=0,observer=null,observedMain=null;
+function ensureStyle(){if(document.getElementById('garang-product-consolidation-v1-style'))return;const style=document.createElement('style');style.id='garang-product-consolidation-v1-style';style.textContent=`
+#appView:not([hidden])>.topbar #planBadge,#appView:not([hidden])>.topbar #logoutBtn{display:none!important}
+html body #main[data-garang-screen="today"]>#garangTodayBrandHero,html body #main[data-garang-screen="today"]>#garangTodayDensity{display:none!important}
 html body #main[data-garang-screen="today"] [data-garang-motion-surface]{display:none!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-decision{display:block!important;order:2!important;padding:22px 0 15px!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-disclosure,
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-detail{display:none!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow{display:flex!important;flex-direction:column!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state{display:grid!important;grid-template-columns:1fr!important;gap:0!important;order:1!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-primary{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:18px!important;min-width:0!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-copy{align-self:center!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-visual{justify-self:end!important;min-width:80px!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-decision{display:block!important;order:2!important;padding:22px 0 15px!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-disclosure,html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-detail{display:none!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-coach-explain{appearance:none;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;width:100%!important;min-height:40px!important;order:3!important;margin:-2px 0 12px!important;padding:0!important;border:0!important;border-bottom:1px solid rgba(242,239,233,.065)!important;background:transparent!important;color:rgba(242,239,233,.5)!important;font:500 9px/1.2 "Noto Sans KR",system-ui,sans-serif!important;text-align:left!important;cursor:pointer!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-coach-explain b{color:#78988c!important;font-size:12px!important;font-weight:400!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan{display:block!important;order:4!important;margin:0 0 14px!important;padding:14px 0 3px!important;border-top:1px solid rgba(242,239,233,.07)!important;border-bottom:1px solid rgba(242,239,233,.07)!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:16px!important;margin:0 0 8px!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head span{font-size:8px!important;font-weight:600!important;letter-spacing:.055em!important;color:#78988c!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head small{font-size:8px!important;color:rgba(242,239,233,.3)!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-context{display:flex!important;padding:0 0 8px!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-track-visual{display:grid!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-coach-explain{appearance:none;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;width:100%!important;min-height:40px!important;order:3!important;margin:-2px 0 12px!important;padding:0!important;border:0!important;border-bottom:1px solid rgba(242,239,233,.065)!important;background:transparent!important;color:rgba(242,239,233,.5)!important;font:500 9px/1.2 "Noto Sans KR",system-ui,sans-serif!important;text-align:left!important;cursor:pointer!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-coach-explain b{color:#78988c!important;font-size:12px!important;font-weight:400!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-action{order:5!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow{display:flex!important;flex-direction:column!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow>.gtf-checkin-access{order:5!important}
-
-/* Progress: canonical meaning loop owns the surface; legacy dashboard remains in DOM only. */
 html body #main[data-garang-screen="progress"]>.garang-progress-legacy-internalized{display:none!important}
-html body #main[data-garang-screen="progress"]>.page-head p{max-width:620px!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview{margin-top:4px!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview [data-gx-meaning-loop]{margin-top:14px!important}
-
-/* Secondary capability/utility routes stay routable but do not compete in More. */
 .garang-more-sheet .garang-gpc-internalized[hidden]{display:none!important}
-
-@media(max-width:600px){
-  html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-decision{padding-top:18px!important}
-  html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-primary{gap:12px!important}
-  html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan{padding-top:12px!important}
-}
-@media(prefers-reduced-motion:reduce){.gpc-coach-explain{transition:none!important}}
-`;
-  document.head.appendChild(style);
-}
-
-function labelNavigation(){
-  const labels={today:'Today',log:'Record',coach:'Coach',progress:'Progress'};
-  document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]').forEach(button=>{
-    const label=button.querySelector('b'),next=labels[button.dataset.page];
-    if(label&&next&&label.textContent!==next)label.textContent=next;
-  });
-}
-
-function hideCapabilityMenuEntries(){
-  for(const route of ['planner','memory']){
-    document.querySelectorAll(`.garang-more-sheet [data-route="${route}"],.garang-more-sheet [data-pagego="${route}"]`).forEach(node=>{
-      node.hidden=true;node.setAttribute('aria-hidden','true');node.tabIndex=-1;node.classList.add('garang-gpc-internalized');
-    });
-  }
-}
-
-function recoveryRecordRow(){
-  const ko=isKo();
-  return `<button type="button" class="garang-record-route garang-record-route-recovery" data-garang-record-action="recovery"><span><strong>${ko?'회복':'Recovery'}</strong><small>${ko?'수면 · 에너지 · 스트레스 · 근육 피로':'Sleep · energy · stress · soreness'}</small></span><b aria-hidden="true">→</b></button>`;
-}
-function ensureRecoveryRecordEntry(){
-  const sheet=document.querySelector('.garang-record-sheet');if(!sheet||sheet.querySelector('[data-garang-record-action="recovery"]'))return;
-  const routes=sheet.querySelector('.garang-record-routes');if(!routes)return;
-  routes.insertAdjacentHTML('beforeend',recoveryRecordRow());
-}
-function clickCanonicalCheckin(){
-  const m=main();if(!m||m.dataset.garangScreen!=='today')return false;
-  const owner=m.querySelector('.status-visual-card [data-action="open-checkin"], [data-action="open-checkin"]');
-  if(!owner)return false;
-  if(typeof owner.onclick==='function')owner.onclick.call(owner,{type:'garang-product-consolidation',target:owner,currentTarget:owner,preventDefault(){},stopPropagation(){}});
-  else owner.click();
-  return true;
-}
-function openRecovery(){
-  try{window.GarangSimplifiedShell?.closeRecordSheet?.({restoreFocus:false});}catch{}
-  if(main()?.dataset?.garangScreen==='today'){
-    requestAnimationFrame(()=>requestAnimationFrame(()=>clickCanonicalCheckin()));return;
-  }
-  const onRoute=event=>{
-    if(event?.detail?.route!=='today')return;
-    window.removeEventListener('garang:route-completed',onRoute);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>clickCanonicalCheckin()));
-  };
-  window.addEventListener('garang:route-completed',onRoute);
-  let ok=false;try{ok=window.GarangRouter?.navigate?.('today',{source:'product-consolidation-recovery',force:true})===true;}catch{}
-  if(!ok)window.removeEventListener('garang:route-completed',onRoute);
-}
-
-function consolidateToday(){
-  const m=main();if(!m||m.dataset.garangScreen!=='today')return;
-  const flow=m.querySelector('#garangTodayFlow');if(!flow)return;
-  m.dataset.gpcToday='1';m.dataset.garangDecisionOwner='today-summary';flow.dataset.decisionOwner='today-summary';
-  flow.setAttribute('aria-label',isKo()?'오늘 상태, GARANG 판단, 오늘 계획과 다음 행동':'Today state, GARANG judgment, plan and next action');
-  const stateNode=flow.querySelector(':scope > .gtf-state'),decision=flow.querySelector(':scope > .gtf-decision'),context=flow.querySelector(':scope > .gtf-context'),tracks=stateNode?.querySelector(':scope > .gtf-track-visual')||flow.querySelector(':scope > .gtf-track-visual'),action=flow.querySelector(':scope > .gtf-action');
-  if(!stateNode||!decision||!tracks)return;
-  let plan=flow.querySelector(':scope > .gpc-today-plan');
-  if(!plan){
-    plan=document.createElement('section');plan.className='gpc-today-plan';plan.dataset.gpcTodayPlan='1';
-    plan.innerHTML=`<div class="gpc-today-plan-head"><span>${isKo()?'오늘 계획':'TODAY PLAN'}</span><small>${isKo()?'운동 · 회복 · 식단':'Training · Recovery · Nutrition'}</small></div>`;
-  }
-  if(context&&context.parentElement!==plan)plan.appendChild(context);
-  if(tracks.parentElement!==plan)plan.appendChild(tracks);
-  if(plan.parentElement!==flow){if(action)flow.insertBefore(plan,action);else flow.appendChild(plan);}
-  if(decision.previousElementSibling!==stateNode)stateNode.insertAdjacentElement('afterend',decision);
-  let explain=flow.querySelector(':scope > .gpc-coach-explain');
-  if(!explain){explain=document.createElement('button');explain.type='button';explain.className='gpc-coach-explain';explain.dataset.gpcCoachExplain='1';}
-  explain.innerHTML=`<span>${isKo()?'왜 이런 판단인지 Coach에서 보기':'See why in Coach'}</span><b aria-hidden="true">→</b>`;
-  if(explain.previousElementSibling!==decision)decision.insertAdjacentElement('afterend',explain);
-  if(plan.previousElementSibling!==explain)explain.insertAdjacentElement('afterend',plan);
-}
-
-function internalizeProgressLegacy(){
-  const m=main();if(!m||m.dataset.garangScreen!=='progress')return;
-  const accumulation=m.querySelector(':scope > #garangAccumulationOverview');if(!accumulation)return;
-  const legacy=[m.querySelector(':scope > .progress-tabs'),m.querySelector(':scope > .grid.grid-4'),m.querySelector(':scope > .grid.grid-2'),...m.querySelectorAll(':scope > .section-title')].filter(Boolean);
-  for(const node of [...m.children]){
-    if(node===accumulation||node.matches?.('.page-head')||legacy.includes(node))continue;
-    if(node.matches?.('.card')&&/Weekly Review|주간/i.test(node.textContent||''))legacy.push(node);
-  }
-  legacy.forEach(node=>{node.hidden=true;node.setAttribute('aria-hidden','true');node.classList.add('garang-progress-legacy-internalized');});
-  const head=m.querySelector(':scope > .page-head');
-  const title=head?.querySelector('h1'),desc=head?.querySelector('p');
-  if(title)title.textContent=isKo()?'나의 변화':'Progress';
-  if(desc)desc.textContent=isKo()?'기록이 패턴이 되고, 그 패턴이 GARANG의 다음 판단을 바꿉니다.':'Records become patterns, and those patterns change GARANG’s next judgment.';
-  const insights=accumulation.querySelectorAll('[data-gx-meaning-loop] .gx-insight');
-  if(insights[0]?.querySelector('span'))insights[0].querySelector('span').textContent=isKo()?'실제 기록':'ACTUAL RECORDS';
-  if(insights[1]?.querySelector('span'))insights[1].querySelector('span').textContent=isKo()?'GARANG이 배운 것':'WHAT GARANG LEARNED';
-  if(insights[2]?.querySelector('span'))insights[2].querySelector('span').textContent=isKo()?'다음 판단':'NEXT JUDGMENT';
-  accumulation.dataset.gpcProgress='1';
-}
-
-function reconcile(){
-  queued=false;ensureStyle();labelNavigation();hideCapabilityMenuEntries();ensureRecoveryRecordEntry();consolidateToday();internalizeProgressLegacy();
-}
-function schedule(){
-  if(!queued){queued=true;requestAnimationFrame(()=>requestAnimationFrame(reconcile));}
-  clearTimeout(delayed);delayed=setTimeout(reconcile,480);
-}
-
-document.addEventListener('click',event=>{
-  const recovery=event.target.closest?.('[data-garang-record-action="recovery"]');
-  if(recovery){event.preventDefault();event.stopImmediatePropagation();openRecovery();return;}
-  const explain=event.target.closest?.('[data-gpc-coach-explain]');
-  if(explain){event.preventDefault();event.stopImmediatePropagation();try{window.GarangRouter?.navigate?.('coach',{source:'today-explain',force:true});}catch{}return;}
-},true);
-for(const name of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:record-sheet-opened','garang:agent-proposal-resolved'])window.addEventListener(name,schedule);
-document.documentElement.addEventListener('garang:language-changed',schedule);
-window.addEventListener('pageshow',schedule);window.addEventListener('load',schedule);
-
-const root=document.getElementById('appView')||document.body;
-if(root&&window.MutationObserver){observer=new MutationObserver(()=>schedule());observer.observe(root,{childList:true,subtree:true});}
-window.GarangProductConsolidationV1=Object.freeze({version:VERSION,reconcile:schedule,openRecovery});
-schedule();
+@media(max-width:600px){html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-decision{padding-top:18px!important}html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state-primary{gap:12px!important}html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan{padding-top:12px!important}}
+`;document.head.appendChild(style);}
+function labelNavigation(){const labels={today:'Today',log:'Record',coach:'Coach',progress:'Progress'};document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]').forEach(button=>setText(button.querySelector('b'),labels[button.dataset.page]||button.querySelector('b')?.textContent));}
+function hideCapabilityMenuEntries(){for(const route of ['planner','memory'])document.querySelectorAll(`.garang-more-sheet [data-route="${route}"],.garang-more-sheet [data-pagego="${route}"]`).forEach(node=>{node.hidden=true;node.setAttribute('aria-hidden','true');node.tabIndex=-1;node.classList.add('garang-gpc-internalized');});}
+function ensureRecoveryRecordEntry(){const routes=document.querySelector('.garang-record-sheet .garang-record-routes');if(!routes||routes.querySelector('[data-garang-record-action="recovery"]'))return;const ko=isKo();routes.insertAdjacentHTML('beforeend',`<button type="button" class="garang-record-route garang-record-route-recovery" data-garang-record-action="recovery"><span><strong>${ko?'회복':'Recovery'}</strong><small>${ko?'수면 · 에너지 · 스트레스 · 근육 피로':'Sleep · energy · stress · soreness'}</small></span><b aria-hidden="true">→</b></button>`);}
+function clickCanonicalCheckin(){const m=main();if(!m||m.dataset.garangScreen!=='today')return false;const owner=m.querySelector('.status-visual-card [data-action="open-checkin"], [data-action="open-checkin"]');if(!owner)return false;if(typeof owner.onclick==='function')owner.onclick.call(owner,{type:'garang-product-consolidation',target:owner,currentTarget:owner,preventDefault(){},stopPropagation(){}});else owner.click();return true;}
+function openRecovery(){try{window.GarangSimplifiedShell?.closeRecordSheet?.({restoreFocus:false});}catch{}if(main()?.dataset?.garangScreen==='today'){requestAnimationFrame(()=>requestAnimationFrame(clickCanonicalCheckin));return;}const onRoute=event=>{if(event?.detail?.route!=='today')return;window.removeEventListener('garang:route-completed',onRoute);requestAnimationFrame(()=>requestAnimationFrame(clickCanonicalCheckin));};window.addEventListener('garang:route-completed',onRoute);let ok=false;try{ok=window.GarangRouter?.navigate?.('today',{source:'product-consolidation-recovery',force:true})===true;}catch{}if(!ok)window.removeEventListener('garang:route-completed',onRoute);}
+function consolidateToday(){const m=main();if(!m||m.dataset.garangScreen!=='today')return;const flow=m.querySelector('#garangTodayFlow');if(!flow)return;m.dataset.gpcToday='1';m.dataset.garangDecisionOwner='today-summary';flow.dataset.decisionOwner='today-summary';flow.setAttribute('aria-label',isKo()?'오늘 상태, GARANG 판단, 오늘 계획과 다음 행동':'Today state, GARANG judgment, plan and next action');const stateNode=flow.querySelector(':scope > .gtf-state'),decision=flow.querySelector(':scope > .gtf-decision'),context=flow.querySelector(':scope > .gtf-context'),tracks=stateNode?.querySelector(':scope > .gtf-track-visual')||flow.querySelector(':scope > .gtf-track-visual'),action=flow.querySelector(':scope > .gtf-action');if(!stateNode||!decision||!tracks)return;let plan=flow.querySelector(':scope > .gpc-today-plan');if(!plan){plan=document.createElement('section');plan.className='gpc-today-plan';plan.dataset.gpcTodayPlan='1';plan.innerHTML='<div class="gpc-today-plan-head"><span></span><small></small></div>';}setText(plan.querySelector('.gpc-today-plan-head span'),isKo()?'오늘 계획':'TODAY PLAN');setText(plan.querySelector('.gpc-today-plan-head small'),isKo()?'운동 · 회복 · 식단':'Training · Recovery · Nutrition');if(context&&context.parentElement!==plan)plan.appendChild(context);if(tracks.parentElement!==plan)plan.appendChild(tracks);if(plan.parentElement!==flow){if(action)flow.insertBefore(plan,action);else flow.appendChild(plan);}if(decision.previousElementSibling!==stateNode)stateNode.insertAdjacentElement('afterend',decision);let explain=flow.querySelector(':scope > .gpc-coach-explain');if(!explain){explain=document.createElement('button');explain.type='button';explain.className='gpc-coach-explain';explain.dataset.gpcCoachExplain='1';explain.innerHTML='<span></span><b aria-hidden="true">→</b>';}setText(explain.querySelector('span'),isKo()?'왜 이런 판단인지 Coach에서 보기':'See why in Coach');if(explain.previousElementSibling!==decision)decision.insertAdjacentElement('afterend',explain);if(plan.previousElementSibling!==explain)explain.insertAdjacentElement('afterend',plan);}
+function internalizeProgressLegacy(){const m=main();if(!m||m.dataset.garangScreen!=='progress')return;const accumulation=m.querySelector(':scope > #garangAccumulationOverview');if(!accumulation)return;const legacy=[m.querySelector(':scope > .progress-tabs'),m.querySelector(':scope > .grid.grid-4'),m.querySelector(':scope > .grid.grid-2'),...m.querySelectorAll(':scope > .section-title')].filter(Boolean);for(const node of [...m.children])if(node!==accumulation&&!node.matches?.('.page-head')&&!legacy.includes(node)&&node.matches?.('.card')&&/Weekly Review|주간/i.test(node.textContent||''))legacy.push(node);legacy.forEach(node=>{if(!node.hidden)node.hidden=true;if(node.getAttribute('aria-hidden')!=='true')node.setAttribute('aria-hidden','true');node.classList.add('garang-progress-legacy-internalized');});const head=m.querySelector(':scope > .page-head');setText(head?.querySelector('h1'),isKo()?'나의 변화':'Progress');setText(head?.querySelector('p'),isKo()?'기록이 패턴이 되고, 그 패턴이 GARANG의 다음 판단을 바꿉니다.':'Records become patterns, and those patterns change GARANG’s next judgment.');const insights=accumulation.querySelectorAll('[data-gx-meaning-loop] .gx-insight');setText(insights[0]?.querySelector('span'),isKo()?'실제 기록':'ACTUAL RECORDS');setText(insights[1]?.querySelector('span'),isKo()?'GARANG이 배운 것':'WHAT GARANG LEARNED');setText(insights[2]?.querySelector('span'),isKo()?'다음 판단':'NEXT JUDGMENT');accumulation.dataset.gpcProgress='1';}
+function observeMain(){const m=main();if(!m||m===observedMain)return;observer?.disconnect();observedMain=m;observer=new MutationObserver(schedule);observer.observe(m,{childList:true,subtree:false});}
+function reconcile(){queued=false;ensureStyle();observeMain();labelNavigation();hideCapabilityMenuEntries();ensureRecoveryRecordEntry();consolidateToday();internalizeProgressLegacy();}
+function schedule(){if(!queued){queued=true;requestAnimationFrame(()=>requestAnimationFrame(reconcile));}clearTimeout(delayed);delayed=setTimeout(reconcile,480);}
+document.addEventListener('click',event=>{const recovery=event.target.closest?.('[data-garang-record-action="recovery"]');if(recovery){event.preventDefault();event.stopImmediatePropagation();openRecovery();return;}const explain=event.target.closest?.('[data-gpc-coach-explain]');if(explain){event.preventDefault();event.stopImmediatePropagation();try{window.GarangRouter?.navigate?.('coach',{source:'today-explain',force:true});}catch{}return;}if(event.target.closest?.('#menuBtn'))setTimeout(schedule,0);},true);
+for(const name of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:record-sheet-opened','garang:agent-proposal-resolved'])window.addEventListener(name,schedule);document.documentElement.addEventListener('garang:language-changed',schedule);window.addEventListener('pageshow',schedule);window.addEventListener('load',schedule);
+window.GarangProductConsolidationV1=Object.freeze({version:VERSION,reconcile:schedule,openRecovery});schedule();
 })();
