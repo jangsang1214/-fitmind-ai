@@ -44,9 +44,18 @@ function minimalContext(full,state={}){
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function errorCode(error){return clean(error?.code||error?.message||'LLM_GATEWAY_ERROR',80).replace(/[^A-Z0-9_]+/gi,'_').toUpperCase();}
 function safeProviderData(generated={}){const {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata}=generated||{};return {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata};}
+function alignmentFailure(code){return Object.assign(new Error(code),{code});}
+function verifyGeneratedAlignment(generated,context){
+ const alignment=generated?.alignment;if(!alignment)return {verified:false,decisionId:null,decisionMode:null,reasonCodesUsed:[]};
+ const expectedId=clean(context?.garangDecision?.decisionId,320),expectedMode=clean(context?.garangDecision?.mode,40),actualId=clean(alignment?.decisionId,320),actualMode=clean(alignment?.decisionMode,40),reasonCodesUsed=Array.isArray(alignment?.reasonCodesUsed)?[...new Set(alignment.reasonCodesUsed.map(code=>clean(code,100)).filter(Boolean))].slice(0,8):[];
+ if(!expectedId||!expectedMode||actualId!==expectedId||actualMode!==expectedMode)throw alignmentFailure('LLM_ALIGNMENT_MISMATCH');
+ const allowed=new Set(rows(context?.decisionReasons).map(code=>clean(code,100)).filter(Boolean));
+ if(reasonCodesUsed.some(code=>!allowed.has(code)))throw alignmentFailure('LLM_ALIGNMENT_UNSUPPORTED_REASON');
+ return {verified:true,decisionId:actualId,decisionMode:actualMode,reasonCodesUsed};
+}
 function alignGenerated(generated,context){
- const decisionConfidence=finite(context?.garangDecision?.confidence),llmConfidence=finite(generated?.confidence),effective=decisionConfidence===null?llmConfidence:llmConfidence===null?decisionConfidence:Math.min(llmConfidence,decisionConfidence),capped=decisionConfidence!==null&&llmConfidence!==null&&llmConfidence>decisionConfidence;
- return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence'}}};
+ const providerAlignment=verifyGeneratedAlignment(generated,context),decisionConfidence=finite(context?.garangDecision?.confidence),llmConfidence=finite(generated?.confidence),effective=decisionConfidence===null?llmConfidence:llmConfidence===null?decisionConfidence:Math.min(llmConfidence,decisionConfidence),capped=decisionConfidence!==null&&llmConfidence!==null&&llmConfidence>decisionConfidence;
+ return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',outcomeLongitudinalClassification:clean(context?.outcomeLearning?.longitudinal?.classification,80)||'insufficient_longitudinal_evidence',contractVerified:providerAlignment.verified,reasonCodesUsed:providerAlignment.reasonCodesUsed}}};
 }
 function defaultObserve(event){try{console.info('[GARANG_COACH_EVENT]',JSON.stringify(event));}catch{}}
 function createCoachGatewayHandler(deps={}){
@@ -66,11 +75,11 @@ function createCoachGatewayHandler(deps={}){
   try{
    const config=getProviderConfig();observe({event:'llm_request',requestId:id,provider:clean(config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence'});
    const provider=providerFactory(config),generated=alignGenerated(await provider.generate({message,context,language,requestId:id}),context),safe=safeProviderData(generated),data={...safe,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
-   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true});
+   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true,alignmentVerified:safe?.metadata?.alignment?.contractVerified===true});
    return res.status(200).json({ok:true,answer:safe.answer,data});
   }catch(error){
    const code=errorCode(error);observe({event:'llm_fallback',requestId:id,code,providerStatus:finite(error?.status),decisionMode:clean(context?.garangDecision?.mode,40)||null});return res.status(code==='LLM_SECRET_MISSING'?503:502).json({ok:false,error:{code},fallbackRequired:true,requestId:id,garangDecision:clone(context.garangDecision)});
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,alignGenerated};
+module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,verifyGeneratedAlignment,alignGenerated};
