@@ -33,6 +33,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await page.waitForFunction(today=>{const s=window.GarangAgentStateBridge?.getState?.();return [...(s?.dailyCheckins||[]),...(s?.checkins||[])].some(row=>String(row?.date||'').slice(0,10)===today);},date(),{timeout:5000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked'&&document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),null,{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach',null,{timeout:3000});
+  await page.waitForFunction(()=>{const plan=document.querySelector('#garangTodayFlow .gpc-today-plan');if(!plan)return false;const style=getComputedStyle(plan),box=plan.getBoundingClientRect();return style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;},null,{timeout:3000});
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'post-check-in GARANG judgment must stay visible on Today');
   assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'plan remains visible between judgment and action');
   assert.equal(await flow.locator('.gtf-action').isVisible(),true,'canonical next action must return after check-in');
