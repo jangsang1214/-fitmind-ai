@@ -1,6 +1,6 @@
-/* GARANG experience v4.5
+/* GARANG experience v4.6
    Keeps the existing product policy while making observer reconciliation idempotent.
-   One body observer owns subtree changes; identical text/HTML state is never rewritten. */
+   Rebuilt Today owns presentation; late-mounted legacy siblings are internalized without subtree churn. */
 (() => {
   'use strict';
 
@@ -82,10 +82,11 @@
 
   function internalizeRebuiltTodayLegacy() {
     if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
-    const flow = main.querySelector('#garangTodayFlow');
-    if (!flow) return;
-    flow.classList.add('gtr1-legacy-hidden');
-    flow.setAttribute('aria-hidden','true');
+    [...main.children].forEach(child => {
+      if (child.id === 'garangTodayRebuild') return;
+      child.classList.add('gtr1-legacy-hidden');
+      child.setAttribute('aria-hidden','true');
+    });
   }
 
   function reconcileRebuiltTodayLegacy() {
@@ -146,6 +147,11 @@
   window.addEventListener('garang:screen-rendered', scheduleWithTodayReconcile);
   window.addEventListener('garang:state-updated', scheduleWithTodayReconcile);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
+  new MutationObserver(records => {
+    if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
+    const addedLegacySibling = records.some(record => [...record.addedNodes].some(node => node.nodeType === 1 && node.id !== 'garangTodayRebuild'));
+    if (addedLegacySibling) internalizeRebuiltTodayLegacy();
+  }).observe(main, { childList:true });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
