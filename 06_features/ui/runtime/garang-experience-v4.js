@@ -80,6 +80,14 @@
     main.querySelectorAll('.today-body-panel .g3-anatomy-tools').forEach(el => el.remove());
   }
 
+  function internalizeRebuiltTodayLegacy() {
+    if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
+    const flow = main.querySelector('#garangTodayFlow');
+    if (!flow) return;
+    flow.classList.add('gtr1-legacy-hidden');
+    flow.setAttribute('aria-hidden','true');
+  }
+
   function internalizeMemorySurface() {
     removeRoute('[data-pagego="memory"], [data-page="memory"]');
     removeRoute('[data-pagego="settings"], [data-page="settings"]');
@@ -111,6 +119,7 @@
     decorateMoreSheet();
     cleanTodayAnatomy();
     keepMealEntryOpen();
+    internalizeRebuiltTodayLegacy();
   }
 
   function schedule() {
@@ -123,6 +132,9 @@
   window.addEventListener('garang:screen-rendered', schedule);
   window.addEventListener('garang:state-updated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
+  new MutationObserver(() => {
+    if (main.dataset.garangScreen === 'today' && main.querySelector('#garangTodayRebuild')) internalizeRebuiltTodayLegacy();
+  }).observe(main, { childList:true, subtree:true });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
