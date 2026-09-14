@@ -5,39 +5,32 @@ const {onRequest}=require('firebase-functions/v2/https');
 const {defineSecret}=require('firebase-functions/params');
 const {initializeApp,getApps}=require('firebase-admin/app');
 const {getAuth}=require('firebase-admin/auth');
-const {getFirestore}=require('firebase-admin/firestore');
+const {getFirestore,FieldValue}=require('firebase-admin/firestore');
 const {createAgentContextHandler}=require('./src/http-handler.cjs');
 const {createDeleteAccountHandler}=require('./src/account-security.cjs');
+const {createAccountExportHandler}=require('./src/account-export.cjs');
 const {createCoachGatewayHandler}=require('./src/coach-gateway.cjs');
+const {normalizeForServer,canonicalTransport}=require('./src/server-state-boundary.cjs');
+const {securityMiddleware}=require('./src/request-security.cjs');
+const {createTelemetryHandler}=require('./src/telemetry.cjs');
+const History=require('./src/history-boundary.cjs');
 
 if(!getApps().length)initializeApp();
 const llmApiKey=defineSecret('GARANG_LLM_API_KEY');
 const COACH_WINDOW_MS=10*60*1000,COACH_WINDOW_LIMIT=20,COACH_DAILY_LIMIT=120;
+const USER_SUBCOLLECTIONS=['app','workoutHistory','mealHistory','runHistory','bodyHistory','recoverySnapshots','telemetry'];
 
 const app=express();
 app.disable('x-powered-by');
 app.use(express.json({limit:'64kb'}));
-const allowedOrigins=new Set(['https://jangsang1214.github.io','http://localhost:8765','http://127.0.0.1:8765']);
-app.use((request,response,next)=>{
- const origin=request.get('origin');
- if(origin&&allowedOrigins.has(origin)){
-  response.set('Access-Control-Allow-Origin',origin);
-  response.set('Vary','Origin');
-  response.set('Access-Control-Allow-Headers','Authorization, Content-Type');
-  response.set('Access-Control-Allow-Methods','GET, POST, OPTIONS');
- }
- response.set('Cache-Control','no-store');
- response.set('X-Content-Type-Options','nosniff');
- response.set('Referrer-Policy','no-referrer');
- if(request.method==='OPTIONS')return allowedOrigins.has(origin)?response.status(204).end():response.status(403).end();
- next();
-});
+app.use(securityMiddleware());
 
-async function readCanonicalUser(uid){
+async function readRawUser(uid){
  const db=getFirestore(),root=db.collection('users').doc(uid),state=await root.collection('app').doc('state').get();
  if(state.exists)return state.data()||{};
  const legacy=await root.get();return legacy.exists?legacy.data()||{}:{};
 }
+async function readCanonicalUser(uid){return normalizeForServer(await readRawUser(uid));}
 
 async function consumeCoachRateLimit(uid,{now=new Date()}={}){
  const db=getFirestore(),ref=db.collection('_internal_coach_rate_limits').doc(uid),nowMs=now instanceof Date?now.getTime():Date.now(),day=new Date(nowMs).toISOString().slice(0,10);
@@ -50,6 +43,23 @@ async function consumeCoachRateLimit(uid,{now=new Date()}={}){
   return {allowed:true,remainingWindow:COACH_WINDOW_LIMIT-windowCount-1,remainingDaily:COACH_DAILY_LIMIT-dayCount-1};
  });
 }
+
+async function collectionRecords(ref){const snap=await ref.get();return snap.docs.map(doc=>doc.data?.()||{});}
+async function readAccountExport(uid){
+ const db=getFirestore(),userRef=db.collection('users').doc(uid),rootSnap=await userRef.get(),raw=await readRawUser(uid),historyByDomain={};
+ for(const [domain,name] of Object.entries(History.COLLECTIONS)){const docs=await collectionRecords(userRef.collection(name));historyByDomain[domain]=docs.map(History.recordFromDoc).filter(Boolean);}
+ const merged=History.mergeStateWithHistory(raw,historyByDomain),state=canonicalTransport(merged),telemetry=await collectionRecords(userRef.collection('telemetry'));
+ return {exportVersion:'garang-user-export-v1',exportedAt:new Date().toISOString(),contractVersion:state.contractVersion,schemaVersion:state.schemaVersion,state,privacy:{consent:rootSnap.exists?(rootSnap.data()?.consent||null):null},serverData:{telemetry}};
+}
+async function deleteCollection(ref){const snap=await ref.get();for(let i=0;i<snap.docs.length;i+=350){const batch=getFirestore().batch();snap.docs.slice(i,i+350).forEach(doc=>batch.delete(doc.ref));await batch.commit();}}
+async function deleteUserData(uid){
+ const db=getFirestore(),ref=db.collection('users').doc(uid);
+ if(typeof db.recursiveDelete==='function')await db.recursiveDelete(ref);
+ else{for(const name of USER_SUBCOLLECTIONS)await deleteCollection(ref.collection(name));await ref.delete().catch(()=>{});}
+ await db.collection('_internal_coach_rate_limits').doc(uid).delete().catch(()=>{});
+}
+async function readAnalyticsConsent(uid){const snap=await getFirestore().collection('users').doc(uid).get();return snap.exists&&snap.data()?.consent?.analytics===true;}
+async function writeTelemetry(uid,payload){await getFirestore().collection('users').doc(uid).collection('telemetry').add({...payload,createdAt:FieldValue.serverTimestamp()});}
 
 app.get('/agent/context',createAgentContextHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
@@ -65,16 +75,15 @@ app.post('/coach',createCoachGatewayHandler({
 }));
 app.all('/coach',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
 
-app.post('/account/delete',createDeleteAccountHandler({
- verifyIdToken:token=>getAuth().verifyIdToken(token,true),
- deleteUserData:async uid=>{
-  const db=getFirestore(),ref=db.collection('users').doc(uid);
-  if(typeof db.recursiveDelete==='function')return db.recursiveDelete(ref);
-  const appDocs=await ref.collection('app').get();
-  const batch=db.batch();appDocs.docs.forEach(doc=>batch.delete(doc.ref));batch.delete(ref);await batch.commit();
- },
- deleteAuthUser:uid=>getAuth().deleteUser(uid)
-}));
+app.get('/account/export',createAccountExportHandler({verifyIdToken:token=>getAuth().verifyIdToken(token,true),readExport:readAccountExport}));
+app.all('/account/export',(request,response)=>response.status(405).set('Allow','GET').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'GET requests only.'}}));
+
+app.post('/account/delete',createDeleteAccountHandler({verifyIdToken:token=>getAuth().verifyIdToken(token,true),deleteUserData,deleteAuthUser:uid=>getAuth().deleteUser(uid)}));
 app.all('/account/delete',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
+
+const telemetryHandler=createTelemetryHandler({verifyIdToken:token=>getAuth().verifyIdToken(token,true),readConsent:readAnalyticsConsent,writeEvent:writeTelemetry});
+app.post('/analytics/events',telemetryHandler);
+app.post('/telemetry/errors',telemetryHandler);
+app.all(['/analytics/events','/telemetry/errors'],(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
 
 exports.api=onRequest({region:'asia-northeast3',cors:false,timeoutSeconds:15,memory:'256MiB',maxInstances:10,secrets:[llmApiKey]},app);

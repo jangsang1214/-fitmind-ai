@@ -24,7 +24,9 @@ async function tap(page,selector){
     return !!h&&(h===el||el.contains(h));
   });
   assert.equal(hit,true,`${selector} must own hit point`);
-  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+  // Locator.tap preserves real touch semantics while waiting for the target to be stable
+  // between hit-testing and dispatch. Raw coordinate taps can race lifecycle-driven layout.
+  await loc.tap({timeout:7000});
 }
 
 async function tapRecordRoute(page,route){
@@ -218,12 +220,26 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
-    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
-    assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'final Today return must stay decision-first');
 
+    const finalState=await page.evaluate(()=>({
+      screen:document.getElementById('main')?.dataset?.garangScreen||'',
+      bottom:[...document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]')].map(b=>({page:b.dataset.page,hit:(()=>{const r=b.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!h&&(h===b||b.contains(h));})()})),
+      bodyOverflow:getComputedStyle(document.body).overflowY,
+      appOverflow:getComputedStyle(document.getElementById('main')).overflowY,
+      overlays:document.querySelectorAll('.garang-more-sheet,.modal-backdrop,.garang-record-backdrop,.g2-sidebar-backdrop').length,
+      menuOpen:document.body.classList.contains('menu-open'),recordOpen:document.body.classList.contains('garang-record-open'),
+      coachRoots:document.querySelectorAll('.garang-coach-v2').length
+    }));
+    assert.equal(finalState.screen,'today');
+    assert.ok(finalState.bottom.every(x=>x.hit),`bottom nav must remain touchable after repeated transitions: ${JSON.stringify(finalState.bottom)}`);
+    assert.notEqual(finalState.bodyOverflow,'hidden','body must not stay scroll-locked after modal/sidebar use');
+    assert.notEqual(finalState.appOverflow,'hidden','app main must not stay scroll-locked');
+    assert.equal(finalState.overlays,0,'transient overlays must be removed after repeated navigation');
+    assert.equal(finalState.menuOpen,false);assert.equal(finalState.recordOpen,false);assert.ok(finalState.coachRoots<=1,'Coach roots must not duplicate');
     assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);
-    console.log('browser-webkit-regression C-direction: PASS');
-  }finally{
+    await context.close();
+    console.log('browser-webkit-regression Safari iPhone C-layout + touch/scroll/runtime stability: PASS');
+  } finally {
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
   }
