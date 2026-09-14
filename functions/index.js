@@ -13,7 +13,7 @@ const {createCoachGatewayHandler}=require('./src/coach-gateway.cjs');
 const {normalizeForServer,canonicalTransport}=require('./src/server-state-boundary.cjs');
 const {securityMiddleware}=require('./src/request-security.cjs');
 const {createTelemetryHandler}=require('./src/telemetry.cjs');
-const History=require('../02_core/history-persistence-v2.js');
+const History=require('./src/history-boundary.cjs');
 
 if(!getApps().length)initializeApp();
 const llmApiKey=defineSecret('GARANG_LLM_API_KEY');
