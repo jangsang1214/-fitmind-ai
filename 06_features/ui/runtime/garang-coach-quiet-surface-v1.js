@@ -7,7 +7,7 @@
 
 const main=document.getElementById('main');
 if(!main)return;
-const VERSION='garang-coach-quiet-surface-v1.0.0';
+const VERSION='garang-coach-quiet-surface-v1.0.1';
 const STYLE_ID='garang-coach-quiet-surface-v1-runtime-style';
 const raf=callback=>{
   const frame=window.requestAnimationFrame;
@@ -157,12 +157,19 @@ function persistCoachEvidence(message){
     return false;
   }
 }
+function primeCoachEvidence(root=main.querySelector('.garang-coach-v2')){
+  if(!root||coachEvidenceRoot===root)return;
+  coachEvidenceRoot=root;
+  coachEvidenceSeen.clear();
+  root.querySelectorAll('.g2-message.assistant[data-message-id]:not([data-thinking="1"])').forEach(message=>{
+    const id=String(message.dataset.messageId||'');
+    if(id)coachEvidenceSeen.add(id);
+  });
+}
 function syncCoachEvidence(root){
   const messages=Array.from(root.querySelectorAll('.g2-message.assistant[data-message-id]:not([data-thinking="1"])'));
   if(coachEvidenceRoot!==root){
-    coachEvidenceRoot=root;
-    coachEvidenceSeen.clear();
-    messages.forEach(message=>coachEvidenceSeen.add(String(message.dataset.messageId||'')));
+    primeCoachEvidence(root);
     return;
   }
   messages.forEach(message=>{
@@ -194,6 +201,7 @@ function schedule(){
   }));
 }
 
+window.addEventListener('garang:coach-mounted',()=>primeCoachEvidence());
 for(const eventName of ['garang:screen-rendered','garang:coach-mounted','garang:coach-message-rendered','garang:coach-decision-rendered','garang:state-hydrated','garang:state-updated','garang:agent-proposal-resolved','garang:route-completed']){
   window.addEventListener(eventName,schedule);
 }
