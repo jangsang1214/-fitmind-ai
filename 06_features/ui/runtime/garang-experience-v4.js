@@ -1,6 +1,6 @@
-/* GARANG experience v4.5
+/* GARANG experience v4.7
    Keeps the existing product policy while making observer reconciliation idempotent.
-   One body observer owns subtree changes; identical text/HTML state is never rewritten. */
+   Rebuilt Today owns presentation; late-mounted legacy siblings are internalized without subtree churn. */
 (() => {
   'use strict';
 
@@ -80,6 +80,34 @@
     main.querySelectorAll('.today-body-panel .g3-anatomy-tools').forEach(el => el.remove());
   }
 
+  function internalizeRebuiltTodayLegacy() {
+    if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
+    [...main.children].forEach(child => {
+      if (child.id === 'garangTodayRebuild') return;
+      child.classList.add('gtr1-legacy-hidden');
+      child.setAttribute('aria-hidden','true');
+    });
+  }
+
+  function reconcileRebuiltTodayLegacy() {
+    const sweep = () => internalizeRebuiltTodayLegacy();
+    requestAnimationFrame(sweep);
+    setTimeout(sweep,16);
+    setTimeout(sweep,48);
+    setTimeout(sweep,120);
+    setTimeout(sweep,300);
+  }
+
+  function persistCompletedCoachAnswer(event) {
+    if (event?.detail?.event !== 'ai_chat_answered') return;
+    try {
+      const bridge = window.GarangAgentStateBridge;
+      const key = bridge?.getStorageKey?.();
+      const live = bridge?.getLiveState?.();
+      if (key && live) localStorage.setItem(key, JSON.stringify(live));
+    } catch {}
+  }
+
   function internalizeMemorySurface() {
     removeRoute('[data-pagego="memory"], [data-page="memory"]');
     removeRoute('[data-pagego="settings"], [data-page="settings"]');
@@ -111,6 +139,7 @@
     decorateMoreSheet();
     cleanTodayAnatomy();
     keepMealEntryOpen();
+    internalizeRebuiltTodayLegacy();
   }
 
   function schedule() {
@@ -119,16 +148,30 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
+  function scheduleWithTodayReconcile() {
+    schedule();
+    reconcileRebuiltTodayLegacy();
+  }
+
   /* Screen/state lifecycle replaces broad body reconciliation. */
-  window.addEventListener('garang:screen-rendered', schedule);
-  window.addEventListener('garang:state-updated', schedule);
+  window.addEventListener('garang:screen-rendered', scheduleWithTodayReconcile);
+  window.addEventListener('garang:state-updated', event => {
+    persistCompletedCoachAnswer(event);
+    scheduleWithTodayReconcile();
+  });
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
+  new MutationObserver(records => {
+    if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
+    const addedLegacySibling = records.some(record => [...record.addedNodes].some(node => node.nodeType === 1 && node.id !== 'garangTodayRebuild'));
+    if (addedLegacySibling) internalizeRebuiltTodayLegacy();
+  }).observe(main, { childList:true });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
   }, true);
 
   schedule();
+  reconcileRebuiltTodayLegacy();
 })();
 
 /* Subordinate Design/Brand integration: keep Golden Path logic, but give Today one visible next-action owner. */
@@ -139,5 +182,16 @@
   script.src = './06_features/ui/runtime/garang-today-single-next-action-v1.js?v=1.0.13';
   script.dataset.garangTodaySingleNextActionV1 = '1';
   script.async = false;
+  document.head.appendChild(script);
+})();
+
+/* Rebuild branch: mount the new Today DOM from functional contracts, not legacy presentation. */
+(() => {
+  'use strict';
+  if (window.GarangTodayRebuildV1 || document.querySelector('script[data-garang-today-rebuild-v1]')) return;
+  const script=document.createElement('script');
+  script.src='./06_features/ui/runtime/garang-today-rebuild-v1.js?v=1.0.0';
+  script.dataset.garangTodayRebuildV1='1';
+  script.async=false;
   document.head.appendChild(script);
 })();

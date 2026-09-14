@@ -29,7 +29,9 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     });
     const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e?.stack||e?.message||e)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:10000});await page.waitForFunction(()=>document.getElementById('main')?.innerText?.trim().length>0,{timeout:10000});
-    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});await page.locator('#menuBtn').waitFor({state:'visible',timeout:5000});
+    await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:7000});await page.locator('#menuBtn').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('#garangTodayFlow').isHidden(),true,'authenticated Today must internalize the canonical legacy flow');
+    assert.equal(await page.locator('#garangTodayFlow').getAttribute('aria-hidden'),'true','legacy Today must remain mounted but aria-hidden under rebuild');
     assert.equal(await page.locator('#authView').isHidden(),true);assert.equal(await page.locator('#appView').isVisible(),true);
     assert.equal(await page.locator('#main').getAttribute('data-gtf-c'),'1','authenticated boot must land on C-direction Today');
     assert.equal(await page.locator('.today-body-panel').count(),1,'legacy anatomy capability must remain available');
@@ -44,7 +46,11 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
       await page.locator(`#bottomNav [data-garang-primary-nav="1"][data-page="${route}"]`).click();
       await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
       assert.ok((await page.locator('#main').innerText()).trim().length>0,`${route} must render after authenticated boot`);
-      if(route==='today'){await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'Today round-trip must preserve C direction');}
+      if(route==='today'){
+        await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:5000});
+        assert.equal(await page.locator('#garangTodayFlow').isHidden(),true,'Today round-trip must keep legacy flow internalized');
+        assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'Today round-trip must preserve C direction');
+      }
     }
 
     const preservedRoutes=[['workout','#saveWorkoutSession'],['body','#saveBody']];
@@ -56,6 +62,6 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
       assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page',`${route} must belong to the Record primary axis`);
     }
 
-    assert.deepEqual(pageErrors,[],`authenticated browser runtime errors:\n${pageErrors.join('\n')}`);console.log('browser-authenticated malformed-cloud boot + C-direction Today: PASS');
+    assert.deepEqual(pageErrors,[],`authenticated browser runtime errors:\n${pageErrors.join('\n')}`);console.log('browser-authenticated malformed-cloud boot + rebuilt C-direction Today: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});

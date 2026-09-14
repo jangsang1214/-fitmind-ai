@@ -18,7 +18,7 @@ async function waitForServer(){
     try{const r=await fetch(baseURL);if(r.ok)return;}catch{}
     await new Promise(r=>setTimeout(r,200));
   }
-  throw new Error('GARANG Today visual parity preview server did not start');
+  throw new Error('GARANG Today rebuild preview server did not start');
 }
 
 function seedState(){
@@ -32,19 +32,9 @@ function seedState(){
     workouts:[{id:'vp-workout',date,name:'하체 운동',sets:4,reps:8,weight:80,rpe:7,duration:45,createdAt:now,updatedAt:now}],
     meals:[{id:'vp-meal',date,name:'계란후라이 + 크림파스타',kcal:1073,protein:48,carbs:112,fat:44,items:[{name:'계란후라이',kcal:273},{name:'크림파스타',kcal:800}],createdAt:now,updatedAt:now}],
     runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],
-    analytics:{events:[{name:'coach_recommendation_shown',date,props:{screen:'coach',date}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'
+    analytics:{events:[{name:'coach_recommendation_shown',date,props:{screen:'coach',date}}]},
+    memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'
   };
-}
-
-async function canvasHash(locator){
-  return locator.evaluate(canvas=>{
-    const ctx=canvas.getContext('2d');if(!ctx||!canvas.width||!canvas.height)return 0;
-    const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-    const stride=Math.max(4,Math.floor(data.length/2400/4)*4);
-    let hash=0,alpha=0;
-    for(let i=0;i<data.length;i+=stride){hash=(hash*33+data[i]+data[i+1]*3+data[i+2]*7+data[i+3]*11)>>>0;alpha+=data[i+3];}
-    return alpha>0?hash:0;
-  });
 }
 
 async function bootContext(browser,width,height,options={}){
@@ -55,122 +45,113 @@ async function bootContext(browser,width,height,options={}){
     localStorage.setItem('garang_demo','1');
     localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));
   },seedState());
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayDensityV1?.version==='4.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.version==='4.0.0',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangAccumulationMotionV1?.quality==='ink-water-v4'&&window.GarangAccumulationMotionV1?.renderer==='canvas2d-ink-water',{timeout:10000});
-  await page.waitForFunction(()=>document.querySelector('#garangTodayBrandHero')&&document.querySelector('#garangTodayDensity')&&document.querySelector('#garangTodayFlow .gtd3-score-head'),{timeout:10000});
-  await page.waitForFunction(()=>document.querySelectorAll('#main [data-garang-motion-surface]').length===3,{timeout:10000});
-  await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='0',{timeout:10000});
-  await page.waitForTimeout(360);
+  await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:10000});
+  await page.waitForFunction(()=>{
+    const main=document.getElementById('main');
+    const flow=document.getElementById('garangTodayFlow');
+    return main?.dataset?.garangScreen==='today'&&flow?.getAttribute('aria-hidden')==='true'&&flow?.classList.contains('gtr1-legacy-hidden');
+  },null,{timeout:7000});
+  await page.waitForFunction(()=>document.querySelector('#garangTodayRebuild .gtr1-next-card')?.getBoundingClientRect().height>0,{timeout:7000});
+  /* Single-next-action performs one delayed canonical reconciliation (~420ms).
+     Verify the settled rebuilt node rather than racing that intentional replacement. */
+  await page.waitForTimeout(650);
+  await page.waitForFunction(()=>{
+    const root=document.getElementById('garangTodayRebuild');
+    const detail=root?.querySelector('[data-gtr1-detail]');
+    const flow=document.getElementById('garangTodayFlow');
+    if(!root||!detail||flow?.getAttribute('aria-hidden')!=='true')return false;
+    const r=detail.getBoundingClientRect(),cs=getComputedStyle(detail);
+    return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>=44;
+  },null,{timeout:7000});
   return {context,page,errors};
 }
 
-async function verifyHeroStable(page){
-  const same=await page.evaluate(()=>new Promise(resolve=>{
-    const hero=document.querySelector('#garangTodayBrandHero');
-    window.dispatchEvent(new CustomEvent('garang:state-updated'));
-    window.dispatchEvent(new CustomEvent('garang:workout-intelligence-rendered'));
-    setTimeout(()=>resolve(hero===document.querySelector('#garangTodayBrandHero')),520);
-  }));
-  assert.equal(same,true,'Today Hero node must stay mounted across state/lifecycle events so Canvas time never resets');
-}
-
-async function verifyViewport(browser,width,height){
-  const {context,page,errors}=await bootContext(browser,width,height);
+async function verifyViewport(browser,width,height,options={}){
+  const {context,page,errors}=await bootContext(browser,width,height,options);
+  const root=page.locator('#garangTodayRebuild');
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'active');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-quality'),'ink-water-v4');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion-renderer'),'canvas2d-ink-water');
-  assert.equal(await page.locator('#garangTodayBrandHero h1').innerText(),'오늘도, 조금 쌓였습니다.');
-  assert.match(await page.locator('#garangTodayBrandHero').innerText(),/작은 기록이 오늘의 몸을 만듭니다/);
-  assert.doesNotMatch(await page.locator('#garangTodayBrandHero').innerText(),/QUIETLY|BECOMING/,'Hero must not carry detached decorative English copy');
-  assert.equal(await page.locator('#garangTodayBrandHero [data-gtd-coach]').count(),1,'Hero must keep one Coach CTA');
+  assert.equal(await root.isVisible(),true,'rebuilt Today must own the visible Today surface');
+  assert.equal(await page.locator('#garangTodayFlow').getAttribute('aria-hidden'),'true','canonical legacy Today remains internalized');
+  assert.equal(await page.locator('#garangTodayFlow').evaluate(el=>el.classList.contains('gtr1-legacy-hidden')),true,'legacy Today must not compete visually');
+  assert.equal(await page.locator('#garangTodayBrandHero:visible').count(),0,'retired brand hero must not be visible');
+  assert.equal(await page.locator('#garangTodayDensity:visible').count(),0,'retired density surface must not be visible');
+  assert.equal(await page.locator('.gtd3-motion-canvas').count(),0,'retired Ink Water canvas must not mount in rebuild');
 
-  const legacyRipple=page.locator('#garangTodayBrandHero .gtd3-ripple>img');
-  assert.equal(await legacyRipple.count(),1,'legacy asset may remain as non-visible compatibility markup');
-  assert.equal(await legacyRipple.evaluate(img=>getComputedStyle(img).display),'none','legacy SVG ripple must never be user-visible');
+  const style=await root.evaluate(node=>{
+    const cs=getComputedStyle(node),hero=node.querySelector('.gtr1-hero h1'),next=node.querySelector('.gtr1-next-card');
+    const heroStyle=hero?getComputedStyle(hero):null,nextStyle=next?getComputedStyle(next):null;
+    return {
+      bg:cs.backgroundColor,color:cs.color,width:node.getBoundingClientRect().width,
+      heroSize:heroStyle?parseFloat(heroStyle.fontSize):0,
+      heroLine:heroStyle?parseFloat(heroStyle.lineHeight):0,
+      nextHeight:next?.getBoundingClientRect().height||0,
+      nextBg:nextStyle?.backgroundColor||'',
+      wordmark:getComputedStyle(document.querySelector('#appView .brand.mini b')).fontFamily
+    };
+  });
+  assert.ok(style.width<=width+1,`rebuilt Today width must fit viewport ${width}: ${JSON.stringify(style)}`);
+  assert.ok(style.heroSize>=34,`Today judgment must keep strong editorial hierarchy @${width}: ${style.heroSize}`);
+  assert.ok(style.heroLine>0,'Today judgment line-height must resolve');
+  assert.ok(style.nextHeight>=64,`Next Action must remain comfortably tappable @${width}: ${style.nextHeight}`);
+  assert.match(style.wordmark,/Instrument Sans|Inter/i,'GARANG wordmark must use the locked Instrument Sans stack');
 
-  const heroStage=page.locator('#garangTodayBrandHero .gtd3-ripple');
-  const stageBox=await heroStage.boundingBox();
-  assert.ok(stageBox&&stageBox.width>=width*.78&&stageBox.height>=80,`mobile water stage must be large enough to read as motion @${width}: ${JSON.stringify(stageBox)}`);
+  const headline=(await root.locator('.gtr1-hero h1').innerText()).trim();
+  const reason=(await root.locator('.gtr1-hero p').innerText()).trim();
+  assert.ok(headline.length>0,'GARANG judgment headline must render from intelligence state');
+  assert.ok(reason.length>0,'GARANG judgment support must render');
+  assert.equal(await root.locator('.gtr1-track').count(),3,'training/recovery/nutrition must remain one glanceable three-track state');
+  assert.equal(await root.locator('.gtr1-score').count(),1,'Today must keep one primary state score');
 
-  const heroCanvas=page.locator('[data-garang-motion-surface="hero"]');
-  const scoreCanvas=page.locator('[data-garang-motion-surface="score"]');
-  const checkinCanvas=page.locator('[data-garang-motion-surface="checkin"]');
-  for(const [name,canvas] of [['hero',heroCanvas],['score',scoreCanvas],['checkin',checkinCanvas]]){
-    await canvas.waitFor({state:'visible',timeout:5000});
-    const meta=await canvas.evaluate(node=>({w:node.width,h:node.height,pointer:getComputedStyle(node).pointerEvents,quality:node.dataset.garangMotionQuality}));
-    assert.ok(meta.w>0&&meta.h>0,`${name} canvas must have a real backing buffer`);
-    assert.equal(meta.pointer,'none',`${name} canvas must never block interaction`);
-    assert.equal(meta.quality,'ink-water-v4',`${name} canvas must use GARANG Ink Water renderer`);
-    assert.notEqual(await canvasHash(canvas),0,`${name} canvas must render non-empty pixels`);
-  }
-  const heroHashA=await canvasHash(heroCanvas);await page.waitForTimeout(300);const heroHashB=await canvasHash(heroCanvas);
-  assert.notEqual(heroHashA,heroHashB,'Hero water surface must visibly advance when motion is allowed');
-  await verifyHeroStable(page);
-  const heroHashC=await canvasHash(heroCanvas);await page.waitForTimeout(300);const heroHashD=await canvasHash(heroCanvas);
-  assert.notEqual(heroHashC,heroHashD,'Hero motion must continue after state/lifecycle events');
+  const next=root.locator('.gtr1-next-card');
+  assert.equal(await next.isVisible(),true,'one rebuilt Next Action must be visible');
+  const canonical=await next.getAttribute('data-gtr1-canonical-action');
+  assert.ok(canonical||await next.getAttribute('data-gtr1-route')||await next.getAttribute('data-gtr1-action'),'Next Action must retain a functional contract');
+  assert.equal(await root.locator('.gtr1-next-card:visible').count(),1,'Today must expose one primary rebuilt CTA');
 
-  const scoreHead=await page.locator('#garangTodayFlow .gtd3-score-head').innerText();
-  assert.match(scoreHead,/GARANG SCORE/);assert.match(scoreHead,/오늘/);
-  assert.equal(await page.locator('#garangTodayFlow .gtf-track').count(),3,'score composition keeps three state tracks');
-  const signalStyle=await page.locator('#garangTodayFlow .gtf-signal').evaluate(node=>({radius:getComputedStyle(node).borderRadius,width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
-  assert.ok(parseFloat(signalStyle.radius||'0')<8,'GARANG Score must not fall back to a generic giant donut');
-  assert.ok(signalStyle.width<=115&&signalStyle.height<=95,`GARANG Score should stay editorial and compact: ${JSON.stringify(signalStyle)}`);
+  const detail=page.locator('#garangTodayRebuild [data-gtr1-detail]');
+  const detailMetrics=await detail.evaluate(node=>{const r=node.getBoundingClientRect();return {width:r.width,height:r.height,display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility};});
+  assert.ok(detailMetrics.width>0&&detailMetrics.height>=44&&detailMetrics.display!=='none'&&detailMetrics.visibility!=='hidden',`evidence disclosure must remain touchable: ${JSON.stringify(detailMetrics)}`);
+  assert.equal(await detail.getAttribute('aria-expanded'),'false','evidence starts progressively disclosed');
+  await detail.click();
+  const detailAfter=page.locator('#garangTodayRebuild [data-gtr1-detail]');
+  assert.equal(await detailAfter.getAttribute('aria-expanded'),'true','evidence disclosure must open');
+  assert.equal(await page.locator('#garangTodayRebuild .gtr1-detail-panel').isVisible(),true,'evidence panel must become visible');
 
-  const checkin=page.locator('#garangTodayFlow [data-garang-checkin-access="1"]');
-  await checkin.waitFor({state:'visible',timeout:5000});
-  assert.match(await checkin.innerText(),/오늘 상태 체크인/);assert.match(await checkin.innerText(),/30초/);
-  const checkinBox=await checkin.boundingBox();
-  assert.ok(checkinBox&&checkinBox.x>=0&&checkinBox.x+checkinBox.width<=width+1,`check-in row must stay inside viewport ${width}: ${JSON.stringify(checkinBox)}`);
-  const checkinRadius=await checkin.evaluate(node=>parseFloat(getComputedStyle(node).borderRadius||'0'));
-  assert.ok(checkinRadius<4,'check-in must read as a quiet editorial row, not another decorative card');
-  await checkin.click();await page.locator('.modal-backdrop').waitFor({state:'visible',timeout:3000});
-  await page.locator('.modal-close').click();
-
-  const metrics=page.locator('#garangTodayDensity .gtd3-metric');
-  assert.equal(await metrics.count(),4,'Today accumulation must remain one four-signal composition');
-  const metricText=(await metrics.allInnerTexts()).join(' | ');
-  assert.match(metricText,/45분/,'workout duration must use real Today data');
-  assert.match(metricText,/1,073 kcal/,'nutrition metric must use real Today data');
-  assert.match(metricText,/2개/,'record count must reflect real Today records');
-  assert.equal(await page.locator('#garangTodayDensity .gtd3-record').count(),2,'recent trace should expose at most two rows');
-
-  const workout=page.locator('.garang-daily-workout');
-  assert.equal(await workout.getAttribute('data-expanded'),'0','daily workout must be compact by default');
-  assert.equal(await workout.locator('[data-daily-expand]').isHidden(),true,'workout builder controls stay progressive-disclosure by default');
-
-  const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,main:document.getElementById('main')?.getBoundingClientRect().width||0,body:document.body.getBoundingClientRect().width}));
-  assert.ok(layout.scroll<=layout.client+1,`Today visual parity must not horizontally overflow ${width}px: ${JSON.stringify(layout)}`);
-  assert.ok(layout.main<=width+1&&layout.body<=width+1,`Today root surfaces must respect viewport ${width}px: ${JSON.stringify(layout)}`);
-  assert.deepEqual(errors,[],`Today visual parity browser errors @${width}:\n${errors.join('\n')}`);
+  const layout=await page.evaluate(()=>({
+    scroll:document.documentElement.scrollWidth,
+    client:document.documentElement.clientWidth,
+    body:document.body.getBoundingClientRect().width,
+    main:document.getElementById('main')?.getBoundingClientRect().width||0,
+    root:document.getElementById('garangTodayRebuild')?.getBoundingClientRect().width||0
+  }));
+  assert.ok(layout.scroll<=layout.client+1,`Today rebuild must not horizontally overflow ${width}px: ${JSON.stringify(layout)}`);
+  assert.ok(layout.body<=width+1&&layout.main<=width+1&&layout.root<=width+1,`Today surfaces must respect viewport ${width}px: ${JSON.stringify(layout)}`);
+  assert.deepEqual(errors,[],`Today rebuild browser errors @${width}:\n${errors.join('\n')}`);
   await context.close();
 }
 
 async function verifyInstagramInApp(browser){
   const {context,page,errors}=await bootContext(browser,390,844,{userAgent:instagramUA});
-  assert.equal(await page.evaluate(()=>window.GarangAccumulationMotionV1?.inAppBrowser),true,'Instagram UA must enable in-app resilient motion path');
-  const hero=page.locator('[data-garang-motion-surface="hero"]');
-  const before=await canvasHash(hero);await page.waitForTimeout(420);const after=await canvasHash(hero);
-  assert.notEqual(before,after,'Instagram-style WebKit context must keep advancing the Hero canvas');
-  await verifyHeroStable(page);
+  assert.equal(await page.locator('#garangTodayRebuild').isVisible(),true,'Instagram WebKit must boot rebuilt Today');
+  assert.equal(await page.locator('.gtd3-motion-canvas').count(),0,'Instagram path must not restore retired motion');
+  const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+  assert.ok(layout.scroll<=layout.client+1,`Instagram WebKit Today must not overflow: ${JSON.stringify(layout)}`);
   assert.deepEqual(errors,[],`Instagram in-app Today browser errors:\n${errors.join('\n')}`);
   await context.close();
 }
 
 async function verifyReducedMotion(browser){
   const {context,page,errors}=await bootContext(browser,390,844,{reducedMotion:'reduce'});
-  assert.equal(await page.locator('#main').getAttribute('data-garang-motion'),'reduced');
-  assert.equal(await page.evaluate(()=>window.GarangAccumulationMotionV1?.reducedMotion),true,'runtime must respect prefers-reduced-motion');
-  const hero=page.locator('[data-garang-motion-surface="hero"]');
-  const before=await canvasHash(hero);await page.waitForTimeout(300);const after=await canvasHash(hero);
-  assert.notEqual(before,0,'reduced-motion fallback must still render a branded static frame');
-  assert.equal(before,after,'reduced-motion fallback must remain static');
-  const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
-  assert.ok(layout.scroll<=layout.client+1,`reduced-motion Today must not overflow: ${JSON.stringify(layout)}`);
+  assert.equal(await page.locator('#garangTodayRebuild').isVisible(),true,'reduced-motion users must receive the same rebuilt information hierarchy');
+  assert.equal(await page.locator('.gtd3-motion-canvas').count(),0,'reduced-motion path must remain motion-free');
+  const animated=await page.locator('#garangTodayRebuild *').evaluateAll(nodes=>nodes.filter(node=>{
+    const cs=getComputedStyle(node);return cs.animationName&&cs.animationName!=='none'&&parseFloat(cs.animationDuration||'0')>0;
+  }).length);
+  assert.equal(animated,0,'rebuilt Today must not introduce decorative animation under reduced motion');
   assert.deepEqual(errors,[],`Today reduced-motion browser errors:\n${errors.join('\n')}`);
   await context.close();
 }
@@ -184,7 +165,7 @@ async function verifyReducedMotion(browser){
     await verifyViewport(browser,430,932);
     await verifyInstagramInApp(browser);
     await verifyReducedMotion(browser);
-    console.log('browser-today-visual-parity GARANG Ink Water v4 + Instagram WebKit + reduced fallback: PASS');
+    console.log('browser-today-visual-parity rebuilt Today v1 + WebKit viewports + reduced motion: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
