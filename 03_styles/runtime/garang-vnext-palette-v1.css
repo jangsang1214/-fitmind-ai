@@ -1,0 +1,169 @@
+/* GARANG vNext Palette v1
+   Unifies the live product chrome and Today surface under one restrained palette.
+   Brand: near-black / warm ivory / vermilion. Legacy jade/brass remain neutralized here.
+*/
+:root{
+  --bg:#080808;
+  --bg2:#0d0d0e;
+  --surface:#111111;
+  --surface2:#151413;
+  --surface3:#1a1816;
+  --line:#2a2724;
+  --line2:#3a3530;
+  --hanji:#f2eee6;
+  --hanji2:#d8d0c5;
+  --muted:#8f8981;
+  --muted2:#66615b;
+  --vermillion:#e84a34;
+  --vermillion2:#f05c43;
+  --jade:#a29b92;
+  --brass:#c9c0b4;
+  --success:#b9b1a8;
+  --blue:#9a948d;
+  --violet:#a39c95;
+
+  --g2-bg:#080808;
+  --g2-panel:#101010;
+  --g2-panel2:#151413;
+  --g2-line:rgba(242,238,230,.10);
+  --g2-line2:rgba(242,238,230,.18);
+  --g2-ivory:#f2eee6;
+  --g2-muted:#77716a;
+  --g2-muted2:#9b948c;
+  --g2-jade:#e84a34;
+  --g2-deep:#18110f;
+  --g2-copper:#e84a34;
+  --g2-copper2:#f06a54;
+
+  --g3-ink:#080808;
+  --g3-graphite:#171717;
+  --g3-ivory:#f2eee6;
+  --g3-silver:#aaa39b;
+  --g3-jade:#1b1412;
+  --g3-jade-bright:#e84a34;
+  --g3-primary:#e84a34;
+  --g3-secondary:#8d877f;
+  --g3-tertiary:#66615b;
+
+  --garang-meok:#080808;
+  --garang-meok-soft:#101010;
+  --garang-baekja:#f2eee6;
+  --garang-baekja-muted:#aaa39a;
+  --garang-cheongja:#e84a34;
+  --garang-cheongja-deep:#3a1813;
+  --garang-onggi:#e84a34;
+  --garang-hanji-line:rgba(242,238,230,.10);
+  --garang-hanji-soft:rgba(242,238,230,.045);
+}
+
+html,body{background:#080808!important;color:#f2eee6!important}
+body:before{opacity:.018!important}
+
+/* App chrome uses the same material as Today. */
+#appView:not([hidden])>.topbar{
+  background:rgba(8,8,8,.96)!important;
+  border-bottom:1px solid rgba(242,238,230,.08)!important;
+}
+#appView:not([hidden])>.bottom-nav{
+  background:rgba(8,8,8,.98)!important;
+  border-top:1px solid rgba(242,238,230,.08)!important;
+}
+#appView:not([hidden])>.bottom-nav button{
+  color:rgba(242,238,230,.34)!important;
+  background:transparent!important;
+}
+#appView:not([hidden])>.bottom-nav button.active{
+  color:#f2eee6!important;
+}
+#appView:not([hidden])>.bottom-nav button.active:before{
+  background:#e84a34!important;
+  width:18px!important;
+  height:2px!important;
+  opacity:1!important;
+}
+#appView .topbar .sync-badge,
+#appView .topbar .badge,
+#appView .topbar .ghost,
+#appView .topbar .icon-settings{
+  background:#101010!important;
+  border-color:rgba(242,238,230,.10)!important;
+  color:rgba(242,238,230,.58)!important;
+}
+#appView .topbar .badge{color:rgba(242,238,230,.58)!important}
+#appView .topbar .sync-badge[data-state="synced"] .sync-dot{background:#b9b1a8!important}
+#appView .topbar .sync-badge[data-state="syncing"] .sync-dot,
+#appView .topbar .sync-badge[data-state="pending"] .sync-dot{background:#e84a34!important}
+
+/* Today: kill the old jade/copper visual residue. */
+#main[data-garang-screen="today"] .page-head:before,
+#main[data-garang-screen="today"] .section-title h2:before,
+#main[data-garang-screen="today"] .gtf-state:before{
+  background:#e84a34!important;
+}
+#main[data-garang-screen="today"] .text-btn,
+#main[data-garang-screen="today"] .eyebrow,
+#main[data-garang-screen="today"] .gtf-state-copy>strong,
+#main[data-garang-screen="today"] .gtf-detail-head>span,
+#main[data-garang-screen="today"] .gtf-insight span{
+  color:rgba(242,238,230,.46)!important;
+}
+#main[data-garang-screen="today"] .card,
+#main[data-garang-screen="today"] .today-body-panel,
+#main[data-garang-screen="today"] .gx-detail-sheet,
+#main[data-garang-screen="today"] .gcp-panel{
+  background:#101010!important;
+  border-color:rgba(242,238,230,.10)!important;
+}
+#main[data-garang-screen="today"] .pill,
+#main[data-garang-screen="today"] .badge{
+  background:#121212!important;
+  border-color:rgba(242,238,230,.10)!important;
+  color:rgba(242,238,230,.52)!important;
+}
+#main[data-garang-screen="today"] .pill.jade,
+#main[data-garang-screen="today"] .jade,
+#main[data-garang-screen="today"] [style*="120,152,140"],
+#main[data-garang-screen="today"] [style*="120,170,153"]{
+  color:rgba(242,238,230,.58)!important;
+}
+
+/* Check-in is part of the same visual system, not a leftover green surface. */
+#main[data-garang-screen="today"] .gtf-checkin-access{
+  border-top-color:rgba(232,74,52,.24)!important;
+  border-bottom-color:rgba(242,238,230,.08)!important;
+  color:#f2eee6!important;
+}
+#main[data-garang-screen="today"] .gtf-checkin-access>span{color:#e84a34!important}
+#main[data-garang-screen="today"] .gtf-checkin-access>strong{color:rgba(242,238,230,.90)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access>small{color:rgba(242,238,230,.36)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access:focus-visible{outline-color:rgba(232,74,52,.70)!important}
+
+/* Remove the ink/water accumulation animation completely from the visible product. */
+.gtd3-motion-canvas,
+[data-garang-accumulation-motion],
+[data-garang-motion-canvas],
+.garang-accumulation-motion,
+.garang-ink-water,
+.ink-water-motion{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  animation:none!important;
+  transition:none!important;
+  pointer-events:none!important;
+}
+#main[data-garang-screen="today"] .gtf-signal,
+#main[data-garang-screen="today"] .gtf-signal:before,
+#main[data-garang-screen="today"] .gtf-signal:after,
+#main[data-garang-screen="today"] .gtf-signal>i{
+  animation:none!important;
+  transition:none!important;
+}
+
+/* Keep motion restrained to state changes; decorative motion is out. */
+@media(prefers-reduced-motion:no-preference){
+  #main[data-garang-screen="today"] .gtf-next,
+  #main[data-garang-screen="today"] .gtf-disclosure{
+    transition:opacity .14s ease,transform .14s ease!important;
+  }
+}
