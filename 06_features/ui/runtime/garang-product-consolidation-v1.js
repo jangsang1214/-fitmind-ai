@@ -14,7 +14,7 @@ const setText=(node,value)=>{const next=String(value??'');if(node&&node.textCont
 let queued=false,delayed=0,observer=null,observedMain=null;
 function ensureStyle(){if(document.getElementById('garang-product-consolidation-v1-style'))return;const style=document.createElement('style');style.id='garang-product-consolidation-v1-style';style.textContent=`
 #appView:not([hidden])>.topbar #planBadge,#appView:not([hidden])>.topbar #logoutBtn{display:none!important}
-html body #main[data-garang-screen="today"]>#garangTodayBrandHero,html body #main[data-garang-screen="today"]>#garangTodayDensity{display:none!important}
+html body #main[data-garang-screen="today"] #garangTodayBrandHero,html body #main[data-garang-screen="today"] #garangTodayDensity{display:none!important}
 html body #main[data-garang-screen="today"] [data-garang-motion-surface]{display:none!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow{display:flex!important;flex-direction:column!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-state{display:grid!important;grid-template-columns:1fr!important;gap:0!important;order:1!important}
