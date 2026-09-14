@@ -36,7 +36,7 @@ async function verifyCapabilityRoute(context,screen,selector){const page=await c
   assert.equal(await today.locator('.gpc-today-plan').count(),1,'Today must expose one consolidated plan section');
   assert.equal(await today.locator('.gpc-today-plan .gtf-track').count(),3,'Training, Recovery and Nutrition must remain visible in Today plan');
   assert.equal(await today.locator('.gpc-coach-explain').count(),1,'Today must provide one natural entry to Coach rationale');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'today-summary');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today may show a judgment summary while Coach remains the canonical decision disclosure owner');
   assert.equal(await today.locator('.gtf-disclosure').isHidden(),true,'detailed rationale stays out of Today');
   await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
   assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');
