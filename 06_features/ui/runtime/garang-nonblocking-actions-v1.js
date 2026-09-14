@@ -55,8 +55,8 @@
   function injectCheckinStyle(){
     if(document.getElementById('garangTodayCheckinAccessStyle'))return;
     const style=document.createElement('style');style.id='garangTodayCheckinAccessStyle';style.textContent=`
-.gtf-checkin-access{appearance:none;width:100%;min-height:64px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;margin:12px 0 0;padding:11px 0;border:0;border-top:1px solid rgba(120,170,153,.16);border-bottom:1px solid rgba(242,239,233,.07);border-radius:0;background:transparent;color:#f2efe9;text-align:left;cursor:pointer;box-shadow:none}
-.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#78aa99}.gtf-checkin-access>strong{font-size:12px;font-weight:600;letter-spacing:-.01em;color:rgba(242,239,233,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(242,239,233,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid rgba(120,170,153,.72);outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
+.gtf-checkin-access{appearance:none;width:100%;min-height:64px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;margin:12px 0 0;padding:11px 0;border:0;border-top:1px solid rgba(241,237,228,.1);border-bottom:1px solid rgba(241,237,228,.07);border-radius:0;background:transparent;color:#f1ede4;text-align:left;cursor:pointer;box-shadow:none}
+.gtf-checkin-access>span{font-size:7px;font-weight:600;letter-spacing:.16em;color:#8b847b}.gtf-checkin-access>strong{font-size:12px;font-weight:600;letter-spacing:-.01em;color:rgba(241,237,228,.86)}.gtf-checkin-access>small{grid-column:2;grid-row:1/3;font-size:8px;line-height:1.35;color:rgba(241,237,228,.34);text-align:right}.gtf-checkin-access:focus-visible{outline:1px solid #b64a3a;outline-offset:3px}.gtf-checkin-access:active{opacity:.78}
 @media(max-width:390px){.gtf-checkin-access{min-height:66px}.gtf-checkin-access>small{max-width:112px}}
 @media(prefers-reduced-motion:reduce){.gtf-checkin-access{transition:none!important}}
 `;document.head.appendChild(style);
@@ -82,8 +82,8 @@
     button.style.setProperty('box-shadow','none','important');
     button.style.setProperty('border-left','0','important');
     button.style.setProperty('border-right','0','important');
-    button.style.setProperty('border-top','1px solid rgba(120,170,153,.16)','important');
-    button.style.setProperty('border-bottom','1px solid rgba(242,239,233,.07)','important');
+    button.style.setProperty('border-top','1px solid rgba(241,237,228,.1)','important');
+    button.style.setProperty('border-bottom','1px solid rgba(241,237,228,.07)','important');
   }
 
   function promoteTodayCheckin(){
@@ -101,9 +101,7 @@
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
     const signature=`${english()?'en':'ko'}|${checked?'1':'0'}|${morning?'1':'0'}|${summary}`;
     if(button.dataset.garangCheckinContentSignature!==signature){
-      const motionCanvas=button.querySelector('.gtd3-motion-canvas');
       button.innerHTML=nextHtml;
-      if(motionCanvas)button.appendChild(motionCanvas);
       button.dataset.garangCheckinContentSignature=signature;
     }
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
@@ -120,18 +118,12 @@
     const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=4.0.0-mobile-first';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
-  function loadAccumulationMotion(){
-    if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=4.0.0-ink-water';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
-  }
-
-  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
+  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
   let queued=false,delayedScanTimer=0;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
-  function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(()=>{queueScan();window.GarangAccumulationMotionV1?.sync?.();},340);}
+  function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(queueScan,340);}
   function immediateLifecycleScan(){scan();queueLifecycleScan();}
   window.addEventListener('garang:screen-rendered',immediateLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',immediateLifecycleScan);window.addEventListener('pageshow',immediateLifecycleScan);
   scan();queueLifecycleScan();
-  // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
-  window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
+  window.GarangNonblockingActions=Object.freeze({version:'1.3.0-no-accumulation-motion',scan,queueScan,promoteTodayCheckin});
 })();
