@@ -44,7 +44,14 @@
   }
 
   function cleanMoreSheet() {
-    document.querySelectorAll('.garang-more-sheet [data-route="memory"], .garang-more-sheet [data-route="settings"]').forEach(el => {
+    document.querySelectorAll([
+      '.garang-more-sheet [data-route="memory"]',
+      '.garang-more-sheet [data-route="settings"]',
+      '.garang-more-sheet [data-route="workout"]',
+      '.garang-more-sheet [data-route="nutrition"]',
+      '.garang-more-sheet [data-route="running"]',
+      '.garang-more-sheet [data-route="body"]'
+    ].join(',')).forEach(el => {
       const parent = el.parentElement;
       el.remove();
       markSingleRoute(parent);
