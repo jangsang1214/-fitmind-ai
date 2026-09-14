@@ -6,7 +6,7 @@ Connect a real language model to GARANG without transferring decision or mutatio
 
 Canonical flow:
 
-`Authenticated user state -> Memory Intelligence -> State Intelligence -> Decision Intelligence -> minimal server context -> LLM explanation/orchestration -> optional action intent -> existing Agent proposal -> user confirmation -> existing GARANG write path`
+`Authenticated user state -> normalized recovery/check-in state -> Memory Intelligence -> State Intelligence -> Decision Intelligence -> minimal server context -> LLM explanation -> existing GARANG action surfaces -> Agent proposal -> user confirmation -> existing GARANG write path`
 
 The LLM is not the source of truth for the GARANG decision and has no Firestore write capability.
 
@@ -30,6 +30,8 @@ Legacy client-generated `context`, `uid`, and `userId` values are removed at the
 
 ## Server-derived LLM context
 
+Before State / Decision Intelligence runs, active `checkins` and legacy `dailyCheckins` are merged and normalized to the canonical recovery fields. This prevents an empty legacy collection or legacy field aliases from hiding current sleep, energy, stress, soreness, pain-caution, or available-time evidence.
+
 The gateway computes GARANG Intelligence before invoking the provider, then exposes only a bounded subset:
 
 - current goal
@@ -39,11 +41,12 @@ The gateway computes GARANG Intelligence before invoking the provider, then expo
 - recent running summaries
 - recent body summaries
 - current canonical planner summaries
+- normalized recovery check-in
 - State Intelligence
 - Performance / readiness signal
 - GARANG Decision
 - Decision reason codes
-- whether an action proposal is allowed
+- whether the deterministic decision permits an action proposal
 
 Direct identity fields, tokens, precise location, raw chat history, and arbitrary free-text record notes are not included in the provider context.
 
@@ -57,7 +60,7 @@ Current built-in provider:
 - default model: `gpt-5.6-luna`
 - API style: server-side Responses API request through `fetch`
 
-Model/provider selection is configuration, not browser code. Future provider adapters must return the same normalized contract and must not gain state mutation dependencies.
+Model/provider selection is configuration, not browser code. Future provider adapters must return the same normalized explanation contract and must not gain state mutation dependencies.
 
 Normalized response:
 
@@ -65,19 +68,29 @@ Normalized response:
 - `decisionSummary`
 - `reasoningSummary`
 - `suggestedNextStep`
-- `actionIntent.type`
 - `confidence`
 - provider/model metadata
 
-Allowed action intents are advisory only: `none`, `createPlan`, `updatePlan`, `askFollowup`.
+The provider response deliberately contains no action-intent or write contract. Actionable changes remain owned by GARANG's existing deterministic action surfaces and Agent Contract, where user confirmation is mandatory.
 
 ## Decision ownership
 
 The provider system instruction explicitly states that GARANG's deterministic intelligence owns the decision. The server also returns the canonical `garangDecision` alongside the LLM explanation.
 
-The provider is not given a write adapter, Firestore handle, Agent write capability, or Firebase Admin object.
+The provider is not given a write adapter, Firestore handle, Agent write capability, or Firebase Admin object. It cannot create, update, approve, or execute a proposal.
 
-If an LLM response suggests an action, mutation still requires the existing Agent Contract proposal/confirmation flow. A repeated confirmation cannot write twice because resolved Agent proposals cannot be confirmed again.
+## Abuse / spend boundary
+
+Every authenticated `/coach` request is checked against a server-side Firestore transaction before user-state reads or provider invocation.
+
+Current per-authenticated-user quotas:
+
+- 20 provider requests per rolling 10-minute window
+- 120 provider requests per UTC day
+
+Rate-limit storage is kept in the server-only `_internal_coach_rate_limits` collection. Exceeding quota returns HTTP `429`, `COACH_RATE_LIMITED`, `fallbackRequired: true`, and `Retry-After`. If the quota store is unavailable, the gateway fails closed with `COACH_RATE_LIMIT_UNAVAILABLE` instead of making an unmetered provider call.
+
+The Firebase Function also retains a bounded `maxInstances` setting. These controls reduce accidental or abusive provider spend; provider-side project budgets and billing alerts remain recommended defense in depth.
 
 ## Secret configuration
 
@@ -107,6 +120,8 @@ Provider failure is intentionally non-fatal.
 
 These conditions return an explicit non-success response with `fallbackRequired: true`:
 
+- rate limit exceeded
+- rate-limit storage unavailable
 - provider timeout
 - provider HTTP error
 - malformed provider response
@@ -123,7 +138,7 @@ The server ignores any client-supplied user identifier or context. The only user
 
 Required invariant:
 
-`verified token uid -> users/{uid}/app/state -> server Intelligence -> bounded provider context`
+`verified token uid -> quota -> users/{uid}/app/state -> normalized state -> server Intelligence -> bounded provider context`
 
 A request cannot select a different user by modifying its JSON body.
 
@@ -135,7 +150,7 @@ A production activation is complete only when all are true:
 2. `api` Firebase Function containing `/coach` is deployed.
 3. an authenticated request receives `source: llm` from the live endpoint.
 4. the same question against materially different authenticated user states produces explanations anchored to each user's server-computed GARANG decision.
-5. provider failure is verified to return to deterministic local fallback.
+5. provider failure and quota exhaustion are verified to return to deterministic local fallback.
 6. full GARANG Release Gate remains GREEN.
 
 Until steps 1-5 are observed against the deployed environment, live-provider status is `UNKNOWN`, even if repository CI is GREEN.

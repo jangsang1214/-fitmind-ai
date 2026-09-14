@@ -13,6 +13,19 @@ const directIdentifierKey=value=>/(?:^|_)(?:email|e_mail|phone|mobile|address|lo
 function redactText(value,limit=800){return clean(value,limit).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[redacted-email]').replace(/(?:\+?\d[\d\s().-]{7,}\d)/g,'[redacted-phone]');}
 function select(row,keys,{redact=false}={}){const out={};for(const key of keys){const value=row?.[key];if(value===undefined||value===null||value==='')continue;out[key]=redact&&typeof value==='string'?redactText(value):clone(value);}return out;}
 function latestCheckin(state){return [...rows(state?.dailyCheckins),...rows(state?.checkins)].slice().sort((a,b)=>String(a?.date||a?.createdAt||'').localeCompare(String(b?.date||b?.createdAt||''))).at(-1)||null;}
+function normalizeCheckin(row){
+ const source=row&&typeof row==='object'&&!Array.isArray(row)?row:{};
+ const sorenessValue=source.soreness??source.muscleSoreness;
+ const soreness=sorenessValue&&typeof sorenessValue==='object'&&!Array.isArray(sorenessValue)?clone(sorenessValue):(finite(sorenessValue)===null?{}:{overall:finite(sorenessValue)});
+ return {...clone(source),sleepHours:finite(source.sleepHours??source.sleep),energy:finite(source.energy??source.energyLevel),stress:finite(source.stress??source.stressLevel),soreness,painCaution:source.painCaution===true||source.pain===true,availableMinutes:finite(source.availableMinutes)};
+}
+function normalizeStateForIntelligence(stateInput={}){
+ const state=stateInput&&typeof stateInput==='object'&&!Array.isArray(stateInput)?clone(stateInput):{};
+ const merged=[...rows(stateInput?.dailyCheckins),...rows(stateInput?.checkins)].map(normalizeCheckin);
+ state.dailyCheckins=merged;
+ state.checkins=merged;
+ return state;
+}
 function bodyTrend(bodyRows){
  const sorted=rows(bodyRows).filter(row=>row?.date).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));if(!sorted.length)return null;
  const first=sorted[0],last=sorted.at(-1),delta=(key,digits=1)=>{const a=finite(first?.[key]),b=finite(last?.[key]);return a===null||b===null?null:round(b-a,digits);};
@@ -30,8 +43,9 @@ function minimalContext(full,state={}){
 }
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
 function errorCode(error){return clean(error?.code||error?.message||'LLM_GATEWAY_ERROR',80).replace(/[^A-Z0-9_]+/gi,'_').toUpperCase();}
+function safeProviderData(generated={}){const {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata}=generated||{};return {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence,metadata};}
 function createCoachGatewayHandler(deps={}){
- const verifyIdToken=deps.verifyIdToken,readUser=deps.readUser,clock=deps.clock||(()=>new Date()),providerFactory=deps.providerFactory||createProvider,getProviderConfig=deps.getProviderConfig||(()=>({provider:'openai',apiKey:process.env.GARANG_LLM_API_KEY||'',model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna'}));
+ const verifyIdToken=deps.verifyIdToken,readUser=deps.readUser,consumeRateLimit=deps.consumeRateLimit|| (async()=>({allowed:true})),clock=deps.clock||(()=>new Date()),providerFactory=deps.providerFactory||createProvider,getProviderConfig=deps.getProviderConfig||(()=>({provider:'openai',apiKey:process.env.GARANG_LLM_API_KEY||'',model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna'}));
  if(typeof verifyIdToken!=='function'||typeof readUser!=='function')throw new Error('COACH_GATEWAY_DEPENDENCIES_REQUIRED');
  return async function coachGateway(req,res){
   if(String(req?.method||'POST').toUpperCase()!=='POST')return res.status(405).json({ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
@@ -39,15 +53,17 @@ function createCoachGatewayHandler(deps={}){
   let decoded;try{decoded=await verifyIdToken(token);}catch{return res.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
   const uid=clean(decoded?.uid,180);if(!uid)return res.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
   const message=clean(req?.body?.message,1800),language=req?.body?.language==='en'?'en':'ko';if(!message)return res.status(400).json({ok:false,error:{code:'MESSAGE_REQUIRED'}});
+  let rate;try{rate=await consumeRateLimit(uid,{now:clock(),route:'coach'});}catch{return res.status(503).json({ok:false,error:{code:'COACH_RATE_LIMIT_UNAVAILABLE'},fallbackRequired:true});}
+  if(rate?.allowed===false){const retry=Math.max(1,Number(rate.retryAfterSec)||60);res.set?.('Retry-After',String(retry));return res.status(429).json({ok:false,error:{code:'COACH_RATE_LIMITED'},fallbackRequired:true,retryAfterSec:retry});}
   let state;try{state=await readUser(uid);}catch{return res.status(503).json({ok:false,error:{code:'USER_DATA_UNAVAILABLE'}});}
-  const full=buildAgentContext(state||{},{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full,state||{}),id=requestId();
+  const normalizedState=normalizeStateForIntelligence(state||{}),full=buildAgentContext(normalizedState,{ownerUid:uid,query:message,now:clock(),limit:12,memoryLimit:10}),context=minimalContext(full,normalizedState),id=requestId();
   try{
-   const config=getProviderConfig(),provider=providerFactory(config),generated=await provider.generate({message,context,language,requestId:id});
-   const data={...generated,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
-   return res.status(200).json({ok:true,answer:generated.answer,data});
+   const config=getProviderConfig(),provider=providerFactory(config),generated=await provider.generate({message,context,language,requestId:id}),safe=safeProviderData(generated);
+   const data={...safe,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
+   return res.status(200).json({ok:true,answer:safe.answer,data});
   }catch(error){
    const code=errorCode(error);return res.status(code==='LLM_SECRET_MISSING'?503:502).json({ok:false,error:{code},fallbackRequired:true,requestId:id,garangDecision:clone(context.garangDecision)});
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,bodyTrend};
+module.exports={createCoachGatewayHandler,minimalContext,redactText,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData};
