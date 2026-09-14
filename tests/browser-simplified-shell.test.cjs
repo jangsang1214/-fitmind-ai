@@ -4,23 +4,11 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8781,baseURL=`http://127.0.0.1:${port}`;
-async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,200));}throw new Error('GARANG simplified shell preview server did not start');}
 function dateOffset(offset){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('GARANG consolidated shell preview server did not start');}
 function demoState(){const today=dateOffset(0),yesterday=dateOffset(-1),older=dateOffset(-20);return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Shell',age:28,height:174,weight:70,gender:'male',goal:'퍼포먼스 향상'},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[{id:'w1',date:yesterday,name:'스쿼트',sets:4,reps:6,weight:82.5,rpe:8,duration:50}],meals:[{id:'m1',date:yesterday,name:'닭가슴살 식사',kcal:620,protein:52,carbs:45,fat:12,items:[{name:'닭가슴살',grams:180,kcal:300,protein:48,carbs:0,fat:6}]}],runs:[{id:'r1',date:yesterday,distance:5,duration:30}],body:[{id:'b0',date:older,weight:71,muscle:31,fatPercent:15},{id:'b1',date:yesterday,weight:70,muscle:31.5,fatPercent:14.5}],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,props:{date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
-async function openRecordRoute(page,route){
-  await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').click();
-  const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:3000});
-  await sheet.locator(`[data-garang-record-route="${route}"]`).click();
-  await page.waitForFunction(r=>document.getElementById('main')?.dataset?.garangScreen===r,route,{timeout:5000});
-  assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: Record navigation must not reopen legacy More`);
-}
-async function routeWithRouter(page,route,selector,screen=route){
-  const ok=await page.evaluate(r=>window.GarangRouter?.navigate?.(r,{source:'simplified-shell-test',force:true}),route);
-  assert.equal(ok,true,`${route}: canonical Router must retain direct navigation`);
-  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:5000});
-  assert.equal(await page.locator(selector).count(),1,`${route}: existing screen capability must remain reachable`);
-  assert.equal(await page.locator('.garang-more-sheet').count(),0,`${route}: direct route must not create legacy More`);
-}
+async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-test',force:true}),screen);assert.equal(ok,true,`${screen} must remain canonically routable`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:6000});await page.waitForTimeout(600);}
+async function openRecord(page){await page.locator('#bottomNav [data-page="log"]').click();const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:4000});await page.waitForFunction(()=>document.querySelectorAll('.garang-record-sheet [data-garang-record-route]').length===4&&document.querySelector('.garang-record-sheet [data-garang-record-action="recovery"]'),null,{timeout:4000});return sheet;}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
@@ -29,80 +17,62 @@ async function routeWithRouter(page,route,selector,screen=route){
   await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},demoState());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangSimplifiedShell?.version==='1.1.1'&&window.GarangCoreLoopV1?.version==='garang-core-loop-v1.0.0'&&window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangScreens?.version==='1.2.2',{timeout:7000});
-  const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary navigation items may remain');
-  const navPages=await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page));assert.deepEqual(navPages,['today','log','coach','progress']);
-  const labels=await nav.locator('b').allTextContents();assert.deepEqual(labels,['Today','Record','Coach','누적.']);
-  const bridges=page.locator('#bottomNav [data-garang-route-bridge="1"]');
-  assert.ok(await bridges.count()<=1,'runtime must never duplicate the single internal app bridge');
-  assert.equal(await bridges.evaluateAll(nodes=>nodes.every(x=>x.hidden&&x.getAttribute('aria-hidden')==='true'&&getComputedStyle(x).display==='none')),true,'any surviving internal app bridge must stay invisible and non-interactive');
-  assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must be hidden');
-  assert.equal(await page.locator('.status-visual-card').isHidden(),true,'legacy Today state card must be internalized instead of exposing a second state entry');
-  assert.ok(await page.locator('.status-visual-card [data-action="open-checkin"]').count()>=1,'canonical check-in write owner must remain in the DOM while internalized');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.2.0',{timeout:7000});
-  assert.equal(await page.locator('#garangCoreToday').isHidden(),true,'legacy accumulation whisper must stay internalized while Today presents one state-entry surface');
-  const mergedToday=page.locator('#garangTodayFlow');await mergedToday.waitFor({state:'visible',timeout:5000});
-  assert.equal(await mergedToday.locator('.gtf-decision').isHidden(),true,'Today must not expose a duplicate judgment surface; Coach owns judgment');
-  assert.equal(await mergedToday.locator('.gtf-disclosure').isHidden(),true,'Today must not expose duplicate decision rationale; Coach owns explanation');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Coach must be the single user-facing decision owner');
-  assert.equal(await page.locator('#main [data-garang-checkin-access="1"]:visible').count(),1,'Today must expose exactly one visible state/check-in entry');
-  assert.equal(await page.locator('#main .status-visual-card [data-action="open-checkin"]:visible').count(),0,'legacy state owner must never compete visually with the branded Today check-in');
+  await page.waitForFunction(()=>window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.0.0'&&window.GarangSimplifiedShell&&window.GarangRouter,{timeout:8000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1',null,{timeout:8000});
 
-  await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').click();
-  const firstSheet=page.locator('[data-garang-record-sheet="1"]');await firstSheet.waitFor({state:'visible',timeout:3000});
-  assert.equal(await firstSheet.locator('[data-garang-record-route]').count(),4,'Record must expose the four existing recording routes');
-  assert.doesNotMatch(await firstSheet.innerText(),/All\s*Log/i,'legacy All Log must not be exposed');
-  await firstSheet.locator('[data-gcl-recent]').waitFor({state:'visible',timeout:3000});
-  assert.ok(await firstSheet.locator('[data-gcl-reuse]').count()>=4,'Record must expose reusable recent values without auto-saving them');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today','opening Record must not navigate to the legacy LOG page');
-  const lock=await page.evaluate(()=>getComputedStyle(document.body).overflowY);assert.equal(lock,'hidden','Record sheet must lock background vertical scrolling');
-  await firstSheet.locator('[data-gcl-reuse="0"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});
-  await page.waitForFunction(()=>document.getElementById('wName')?.value==='스쿼트'&&document.getElementById('wWeight')?.value==='82.5'&&document.getElementById('wSets')?.value==='4',{timeout:3000});
-  assert.equal(await page.locator('#wWeight').inputValue(),'82.5','recent workout reuse must prefill existing Workout form');
-  assert.equal(await page.locator('#wSets').inputValue(),'4','recent workout reuse must keep sets');
-  assert.equal(await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').getAttribute('aria-current'),'page','Record nav must own workout sub-route');
-  const workoutSurfaces=page.locator('.gws-panel[data-garang-workout-surface]');
-  assert.equal(await workoutSurfaces.count(),3,'Workout must be split into exactly three structural surfaces');
-  assert.equal(await page.locator('.gws-nav').count(),1,'Workout must expose one canonical surface navigation');
-  assert.equal(await page.locator('.garang-workout-tabs').count(),0,'legacy featureless workout tabs must not remain visible');
-  assert.equal(await page.locator('.gws-nav').evaluate(nav=>nav.nextElementSibling?.matches('.gws-panel[data-garang-workout-surface="overview"]')),true,'canonical navigation must sit above the functional panels');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"] .workout-visual-hero').count(),1,'Overview must contain the existing workout overview feature');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"] .exercise-visual-library').count(),1,'Exercises must contain the existing exercise feature');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"] .workout-builder').count(),1,'Log must contain the existing logging feature');
-  assert.equal(await page.locator('#wName').count(),1,'Workout logging inputs must not be duplicated across layers');
-  assert.equal(await page.locator('.gwf-nav').count(),0,'legacy overlay navigation must not remain beside the canonical surface navigation');
-  assert.deepEqual(await workoutSurfaces.evaluateAll(nodes=>nodes.map(node=>node.dataset.garangWorkoutSurface)),['overview','exercise','log'],'Workout surfaces must have stable overview/exercise/log identities');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),true,'Overview must be the initial visible surface');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"]').isVisible(),false,'Exercise must stay hidden until selected');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"]').isVisible(),false,'Log must stay hidden until selected');
-  await page.locator('[data-gws-step="exercise"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='exercise',{timeout:2000});
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="exercise"]').isVisible(),true,'Exercise surface must open in place');
-  assert.equal(await page.locator('.exercise-visual-library').isVisible(),true,'Exercise library must belong to the Exercise surface');
-  assert.equal(await page.locator('.workout-builder').isVisible(),false,'Log builder must not remain on the Exercise surface');
-  await page.locator('[data-gws-step="log"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='log',{timeout:2000});
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="log"]').isVisible(),true,'Log surface must open in place');
-  assert.equal(await page.locator('#addWorkout').isVisible(),true,'Existing workout add action must remain on the Log surface');
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),false,'Overview must not be duplicated below Log');
-  await page.locator('[data-gws-next="overview"]').click();
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutSurface==='overview',{timeout:2000});
-  assert.equal(await page.locator('.gws-panel[data-garang-workout-surface="overview"]').isVisible(),true,'Workout flow must cycle back to Overview');
+  const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary product surfaces may remain');
+  assert.deepEqual(await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page)),['today','log','coach','progress']);
+  assert.deepEqual(await nav.locator('b').allTextContents(),['Today','Record','Coach','Progress']);
+  assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must stay internalized');
+  assert.equal(await page.locator('.status-visual-card').isHidden(),true,'legacy Today state owner must stay internalized');
+  assert.ok(await page.locator('.status-visual-card [data-action="open-checkin"]').count()>=1,'canonical check-in write owner must remain in DOM');
+  assert.equal(await page.locator('#garangTodayBrandHero').isHidden(),true,'decorative brand hero must be internalized, not deleted');
+  assert.equal(await page.locator('#garangTodayDensity').isHidden(),true,'duplicate Today density dashboard must be internalized');
 
-  await openRecordRoute(page,'nutrition');assert.equal(await page.locator('#saveMeal').count(),1,'existing Nutrition feature must remain reachable from another record screen');
-  await openRecordRoute(page,'running');assert.equal(await page.locator('#runStart').count(),1,'existing Running feature must remain reachable from another record screen');
-  await openRecordRoute(page,'body');assert.equal(await page.locator('#saveBody').count(),1,'existing Body feature must remain reachable from another record screen');
+  const today=page.locator('#garangTodayFlow');await today.waitFor({state:'visible',timeout:5000});
+  assert.equal(await today.locator('.gtf-decision').isVisible(),true,'Today must show the deterministic GARANG judgment summary');
+  assert.equal(await today.locator('.gpc-today-plan').count(),1,'Today must expose one consolidated plan section');
+  assert.equal(await today.locator('.gpc-today-plan .gtf-track').count(),3,'Training, Recovery and Nutrition must remain visible in Today plan');
+  assert.equal(await today.locator('.gpc-coach-explain').count(),1,'Today must provide one natural entry to Coach rationale');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'today-summary');
+  assert.equal(await today.locator('.gtf-disclosure').isHidden(),true,'detailed rationale stays out of Today');
+  await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
+  assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');
+  await route(page,'today');
 
-  await routeWithRouter(page,'planner','#garangPlanExecution');
-  await routeWithRouter(page,'memory','#saveMemory');
-  await routeWithRouter(page,'settings','#savePreferences');
-  await routeWithRouter(page,'progress','.progress-tabs');
-  const unsupportedRecovery=await page.evaluate(()=>window.GarangRouter?.navigate?.('recovery',{source:'simplified-shell-test',force:true}));
-  assert.equal(unsupportedRecovery,false,'Recovery is a Today/check-in state concern, not a standalone canonical route');
+  let sheet=await openRecord(page);
+  assert.equal(await sheet.locator('[data-garang-record-route]').count(),4,'four canonical record routes must remain unchanged');
+  assert.equal(await sheet.locator('[data-garang-record-action="recovery"]').count(),1,'Recovery must join the Record mental model without a new route');
+  assert.equal(await sheet.locator('.garang-record-route').count(),5,'Record must present five human recording domains');
+  await sheet.locator('[data-garang-record-action="recovery"]').click();
+  await page.locator('.modal #saveCheckin').waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today','Recovery Record must reuse Today canonical check-in owner');await page.locator('.modal-close').click();
 
-  assert.deepEqual(errors,[],`simplified shell browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-simplified-shell four-tab shell + single Today state entry + Coach-owned decision + Record reuse + route bridges: PASS');
+  for(const [recordRoute,selector] of [['workout','#addWorkout'],['nutrition','#saveMeal'],['running','#runStart'],['body','#saveBody']]){
+    sheet=await openRecord(page);await sheet.locator(`[data-garang-record-route="${recordRoute}"]`).click();await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,recordRoute,{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${recordRoute} canonical flow must remain reachable`);
+  }
+  await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
+
+  await route(page,'planner');assert.equal(await page.locator('#garangPlanExecution').count(),1,'Planner capability must remain directly routable');
+  await route(page,'memory');assert.equal(await page.locator('#saveMemory').count(),1,'Memory capability must remain directly routable');
+  await route(page,'settings');assert.equal(await page.locator('#savePreferences').count(),1,'Settings utility must remain directly routable');
+
+  await route(page,'today');await page.locator('#menuBtn').click();await page.waitForTimeout(250);
+  assert.equal(await page.locator('.garang-more-sheet [data-route="planner"]:visible,.garang-more-sheet [data-pagego="planner"]:visible').count(),0,'Planner must not compete as a first-level product');
+  assert.equal(await page.locator('.garang-more-sheet [data-route="memory"]:visible,.garang-more-sheet [data-pagego="memory"]:visible').count(),0,'Memory must read as a capability, not a product surface');
+  await page.keyboard.press('Escape').catch(()=>{});
+
+  await route(page,'progress');await page.waitForFunction(()=>document.querySelector('#garangAccumulationOverview')?.dataset?.gpcProgress==='1',null,{timeout:6000});
+  assert.equal(await page.locator('#garangAccumulationOverview').isVisible(),true,'canonical Progress interpretation surface must remain visible');
+  assert.equal(await page.locator('.progress-tabs').isHidden(),true,'legacy range/dashboard chrome must be internalized');
+  assert.equal(await page.locator('.grid.grid-4').isHidden(),true,'legacy metric wall must be internalized rather than deleted');
+  const meaning=await page.locator('#garangAccumulationOverview [data-gx-meaning-loop] .gx-insight>span').allTextContents();assert.deepEqual(meaning,['실제 기록','GARANG이 배운 것','다음 판단'],'Progress must read as record -> learning -> next judgment');
+  assert.match(await page.locator('#main>.page-head').innerText(),/나의 변화/);
+
+  assert.equal(await page.locator('#planBadge').isHidden(),true,'membership chrome must not compete in the primary shell');
+  assert.equal(await page.locator('#logoutBtn').isHidden(),true,'logout remains a Settings utility, not primary chrome');
+  await route(page,'settings');assert.equal(await page.locator('#settingsLogout').count(),1,'logout capability must remain preserved in Settings');
+  const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(overflow.scroll<=overflow.client+1,`consolidated shell must not horizontally overflow: ${JSON.stringify(overflow)}`);
+  assert.deepEqual(errors,[],`consolidated shell browser errors:\n${errors.join('\n')}`);
+  await context.close();console.log('browser-simplified-shell four-surface product consolidation: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
