@@ -92,6 +92,7 @@
     routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safeError(event?.detail||{}))}).catch(()=>{});
   });
   const transport=Object.freeze({version:'garang-service-transport-v2',apiBase,coachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,diagnostics:diag});
+  const legacyCoachTransport=Object.freeze({version:'garang-coach-gateway-transport-v1.1.1',endpoint:coachEndpoint,diagnostics:diag});
   window.__GARANG_SERVICE_TRANSPORT_V2__=transport;
-  window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=transport;
+  window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=legacyCoachTransport;
 })();
