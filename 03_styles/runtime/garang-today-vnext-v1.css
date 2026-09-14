@@ -1,0 +1,541 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap');
+
+/* GARANG Today vNext v1
+   Visual North Star: exact mark + Instrument Sans wordmark + black / warm ivory / restrained vermilion.
+   This layer only changes presentation. Existing Today data, routing, mutation ownership and progressive disclosure stay intact.
+*/
+:root{
+  --gv-bg:#080808;
+  --gv-bg-top:#0d0d0e;
+  --gv-surface:#111111;
+  --gv-surface-2:#151413;
+  --gv-ivory:#f2eee6;
+  --gv-muted:#8f8981;
+  --gv-muted-2:#66615b;
+  --gv-line:rgba(242,238,230,.11);
+  --gv-line-strong:rgba(242,238,230,.18);
+  --gv-accent:#e84a34;
+  --gv-accent-soft:rgba(232,74,52,.13);
+  --gv-ui:"Noto Sans KR",Inter,"Apple SD Gothic Neo",system-ui,sans-serif;
+  --gv-wordmark:"Instrument Sans",Inter,"Helvetica Neue",Arial,sans-serif;
+}
+
+/* App-shell brand: preserve the committed PNG exactly; only sharpen presentation. */
+#appView .topbar .brand.mini>img{
+  width:19px!important;
+  height:44px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  opacity:1!important;
+  filter:invert(1) contrast(1.18) brightness(1.06)!important;
+  transform:translateZ(0);
+}
+#appView .topbar .brand.mini>div>b{
+  font-family:var(--gv-wordmark)!important;
+  font-size:12px!important;
+  font-weight:400!important;
+  letter-spacing:.27em!important;
+  line-height:1!important;
+  color:var(--gv-ivory)!important;
+}
+#appView .topbar .brand.mini>div>span{
+  margin-top:4px!important;
+  font-size:6px!important;
+  font-weight:500!important;
+  letter-spacing:.18em!important;
+  color:rgba(242,238,230,.34)!important;
+}
+
+/* Today owns the visual hierarchy, while app-shell geometry remains untouched. */
+#main[data-garang-screen="today"]{
+  color:var(--gv-ivory);
+  background:
+    radial-gradient(110% 42% at 88% -8%,rgba(255,255,255,.045),transparent 56%),
+    linear-gradient(180deg,var(--gv-bg-top) 0%,var(--gv-bg) 62%,#060606 100%);
+  font-family:var(--gv-ui)!important;
+}
+#main[data-garang-screen="today"]>.page-head{
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+  border:0!important;
+}
+#main[data-garang-screen="today"]>.page-head h1{
+  font-family:var(--gv-wordmark)!important;
+  font-size:9px!important;
+  font-weight:500!important;
+  letter-spacing:.22em!important;
+  text-transform:uppercase!important;
+  color:rgba(242,238,230,.35)!important;
+}
+#main[data-garang-screen="today"]>.page-head p{
+  display:none!important;
+}
+
+/* Reorder the existing deterministic Today model into the approved hierarchy:
+   decision -> metrics -> next action -> evidence. */
+#main[data-garang-screen="today"] #garangTodayFlow.gtf{
+  display:flex!important;
+  flex-direction:column!important;
+  width:min(100%,760px)!important;
+  margin:0 auto 20px!important;
+  padding:24px 0 0!important;
+  color:var(--gv-ivory)!important;
+  background:transparent!important;
+  font-family:var(--gv-ui)!important;
+}
+#main[data-garang-screen="today"] .gtf-decision{order:1!important}
+#main[data-garang-screen="today"] .gtf-context{order:2!important}
+#main[data-garang-screen="today"] .gtf-state{order:3!important}
+#main[data-garang-screen="today"] .gtf-action{order:4!important}
+#main[data-garang-screen="today"] .gtf-disclosure{order:5!important}
+#main[data-garang-screen="today"] .gtf-detail{order:6!important}
+
+/* Hero: interpretation first. */
+#main[data-garang-screen="today"] .gtf-decision{
+  max-width:680px!important;
+  padding:26px 0 28px!important;
+}
+#main[data-garang-screen="today"] .gtf-decision:before{
+  width:34px!important;
+  height:2px!important;
+  margin:0 0 22px!important;
+  background:var(--gv-accent)!important;
+}
+#main[data-garang-screen="today"] .gtf-decision>span{
+  margin-bottom:11px!important;
+  font-family:var(--gv-wordmark)!important;
+  font-size:8px!important;
+  font-weight:500!important;
+  letter-spacing:.20em!important;
+  color:rgba(242,238,230,.42)!important;
+  text-transform:uppercase!important;
+}
+#main[data-garang-screen="today"] .gtf-decision h2{
+  max-width:650px!important;
+  margin:0!important;
+  font-family:var(--gv-ui)!important;
+  font-size:clamp(36px,6.2vw,54px)!important;
+  font-weight:700!important;
+  line-height:1.08!important;
+  letter-spacing:-.062em!important;
+  color:var(--gv-ivory)!important;
+  text-wrap:balance!important;
+  word-break:keep-all!important;
+}
+#main[data-garang-screen="today"] .gtf-decision p{
+  max-width:520px!important;
+  margin:16px 0 0!important;
+  font-size:12px!important;
+  font-weight:400!important;
+  line-height:1.78!important;
+  letter-spacing:-.018em!important;
+  color:var(--gv-muted)!important;
+  word-break:keep-all!important;
+}
+
+/* Keep product context available but visually quiet. */
+#main[data-garang-screen="today"] .gtf-context{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  padding:0 0 14px!important;
+  color:rgba(242,238,230,.32)!important;
+  font-size:8px!important;
+  line-height:1.45!important;
+  border-bottom:1px solid var(--gv-line)!important;
+}
+#main[data-garang-screen="today"] .gtf-context span{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#main[data-garang-screen="today"] .gtf-context strong{
+  flex:0 0 auto!important;
+  font-family:var(--gv-wordmark)!important;
+  font-size:7px!important;
+  font-weight:500!important;
+  letter-spacing:.10em!important;
+  color:rgba(242,238,230,.42)!important;
+}
+
+/* Metrics: remove ornamental moon-jar language and expose the real state/tracks plainly. */
+#main[data-garang-screen="today"] .gtf-state{
+  display:grid!important;
+  grid-template-columns:88px minmax(0,1fr)!important;
+  gap:18px!important;
+  align-items:stretch!important;
+  padding:0!important;
+  border:0!important;
+  border-bottom:1px solid var(--gv-line)!important;
+  background:transparent!important;
+}
+#main[data-garang-screen="today"] .gtf-state:before{display:none!important}
+#main[data-garang-screen="today"] .gtf-state-primary{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:7px!important;
+  padding:17px 12px 17px 0!important;
+  border-right:1px solid var(--gv-line)!important;
+}
+#main[data-garang-screen="today"] .gtf-state-copy{
+  display:grid!important;
+  gap:4px!important;
+}
+#main[data-garang-screen="today"] .gtf-state-copy>span{
+  font-family:var(--gv-wordmark)!important;
+  font-size:7px!important;
+  font-weight:500!important;
+  letter-spacing:.10em!important;
+  color:rgba(242,238,230,.34)!important;
+}
+#main[data-garang-screen="today"] .gtf-state-copy>strong{
+  font-size:8px!important;
+  font-weight:600!important;
+  letter-spacing:.04em!important;
+  color:var(--gv-muted)!important;
+}
+#main[data-garang-screen="today"] .gtf-state-visual{
+  display:block!important;
+}
+#main[data-garang-screen="today"] .gtf-signal{
+  position:static!important;
+  display:flex!important;
+  align-items:baseline!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:0!important;
+  background:none!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+#main[data-garang-screen="today"] .gtf-signal:before,
+#main[data-garang-screen="today"] .gtf-signal:after,
+#main[data-garang-screen="today"] .gtf-signal>i,
+#main[data-garang-screen="today"] .gtf-signal>em:before,
+#main[data-garang-screen="today"] .gtf-signal>em:after{display:none!important}
+#main[data-garang-screen="today"] .gtf-signal>em{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:3px!important;
+  font-style:normal!important;
+}
+#main[data-garang-screen="today"] .gtf-signal>em>b{
+  font-family:var(--gv-wordmark)!important;
+  font-size:27px!important;
+  font-weight:500!important;
+  line-height:1!important;
+  letter-spacing:-.045em!important;
+  color:var(--gv-ivory)!important;
+}
+#main[data-garang-screen="today"] .gtf-signal>em>small{
+  font-family:var(--gv-wordmark)!important;
+  font-size:7px!important;
+  color:rgba(242,238,230,.32)!important;
+}
+#main[data-garang-screen="today"] .gtf-track-visual{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-content:stretch!important;
+  min-width:0!important;
+}
+#main[data-garang-screen="today"] .gtf-track{
+  --track-color:rgba(242,238,230,.28)!important;
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  min-width:0!important;
+  min-height:78px!important;
+  padding:15px 11px!important;
+  border:0!important;
+  border-right:1px solid var(--gv-line)!important;
+  background:transparent!important;
+}
+#main[data-garang-screen="today"] .gtf-track:last-child{border-right:0!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="done"]{--track-color:rgba(242,238,230,.82)!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="partial"]{--track-color:var(--gv-accent)!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="planned"],
+#main[data-garang-screen="today"] .gtf-track[data-state="draft"]{--track-color:rgba(242,238,230,.42)!important}
+#main[data-garang-screen="today"] .gtf-track-icon{display:none!important}
+#main[data-garang-screen="today"] .gtf-track-copy{
+  display:grid!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+#main[data-garang-screen="today"] .gtf-track-copy>span{
+  font-family:var(--gv-wordmark)!important;
+  font-size:7px!important;
+  font-weight:500!important;
+  letter-spacing:.08em!important;
+  color:rgba(242,238,230,.36)!important;
+}
+#main[data-garang-screen="today"] .gtf-track-copy>strong{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  letter-spacing:-.02em!important;
+  color:rgba(242,238,230,.82)!important;
+}
+#main[data-garang-screen="today"] .gtf-track-badge{
+  margin-top:5px!important;
+  max-width:none!important;
+  font-family:var(--gv-wordmark)!important;
+  font-size:7px!important;
+  font-style:normal!important;
+  font-weight:500!important;
+  color:var(--track-color)!important;
+}
+#main[data-garang-screen="today"] .gtf-track-line{
+  position:absolute!important;
+  left:11px!important;
+  right:11px!important;
+  bottom:8px!important;
+  display:block!important;
+  height:1px!important;
+  background:rgba(242,238,230,.06)!important;
+}
+#main[data-garang-screen="today"] .gtf-track-line>b{
+  height:1px!important;
+  background:var(--track-color)!important;
+}
+
+/* Next Action becomes the strongest interaction object after the interpretation. */
+#main[data-garang-screen="today"] .gtf-action{
+  position:relative!important;
+  display:block!important;
+  margin:34px 0 18px!important;
+  padding:19px!important;
+  border:1px solid var(--gv-line-strong)!important;
+  border-radius:24px 7px 24px 7px!important;
+  background:
+    linear-gradient(140deg,rgba(255,255,255,.038),transparent 34%),
+    linear-gradient(180deg,var(--gv-surface-2) 0%,#0f0f0f 100%)!important;
+  box-shadow:0 22px 52px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.02)!important;
+  overflow:hidden!important;
+}
+#main[data-garang-screen="today"] .gtf-action:before{
+  content:"TODAY'S NEXT ACTION";
+  display:block!important;
+  margin:0 0 13px!important;
+  font-family:var(--gv-wordmark)!important;
+  font-size:8px!important;
+  font-weight:500!important;
+  letter-spacing:.20em!important;
+  color:var(--gv-accent)!important;
+}
+#main[data-garang-screen="today"] .gtf-action:after{
+  content:"";
+  position:absolute!important;
+  right:-40px!important;
+  top:-56px!important;
+  width:150px!important;
+  height:150px!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,var(--gv-accent-soft),transparent 67%)!important;
+  pointer-events:none!important;
+}
+#main[data-garang-screen="today"] .gtf-next{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  min-height:58px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--gv-ivory)!important;
+  font-family:var(--gv-ui)!important;
+  font-size:18px!important;
+  font-weight:700!important;
+  line-height:1.25!important;
+  letter-spacing:-.04em!important;
+  text-align:left!important;
+  box-shadow:none!important;
+}
+#main[data-garang-screen="today"] .gtf-next>span{
+  flex:0 0 52px!important;
+  width:52px!important;
+  height:52px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:var(--gv-accent)!important;
+  color:#fff!important;
+  font-family:var(--gv-wordmark)!important;
+  font-size:21px!important;
+  font-weight:400!important;
+  transition:transform .16s ease!important;
+}
+#main[data-garang-screen="today"] .gtf-next:hover>span{transform:translateX(2px)!important}
+#main[data-garang-screen="today"] .gtf-next:active{transform:none!important}
+#main[data-garang-screen="today"] .gtf-next:focus-visible{outline:1px solid var(--gv-accent)!important;outline-offset:4px!important}
+
+/* Evidence stays available through progressive disclosure, but never competes with the next action. */
+#main[data-garang-screen="today"] .gtf-disclosure{
+  min-height:46px!important;
+  padding:0!important;
+  border:0!important;
+  border-top:1px solid var(--gv-line)!important;
+  border-bottom:1px solid var(--gv-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:rgba(242,238,230,.52)!important;
+  font-size:9px!important;
+  font-weight:500!important;
+}
+#main[data-garang-screen="today"] .gtf-disclosure>b{
+  font-family:var(--gv-wordmark)!important;
+  font-size:14px!important;
+  font-weight:400!important;
+  color:var(--gv-accent)!important;
+}
+#main[data-garang-screen="today"] .gtf-detail{
+  padding:18px 0 3px!important;
+  color:var(--gv-muted)!important;
+}
+#main[data-garang-screen="today"] .gtf-detail-head,
+#main[data-garang-screen="today"] .gtf-body-hint,
+#main[data-garang-screen="today"] .gtf-row{
+  border-color:var(--gv-line)!important;
+}
+#main[data-garang-screen="today"] .gtf-detail-head>span,
+#main[data-garang-screen="today"] .gtf-insight span{
+  color:var(--gv-accent)!important;
+}
+#main[data-garang-screen="today"] .gtf-body-hint>span{
+  color:#bd755f!important;
+}
+#main[data-garang-screen="today"] .gtf-row[data-state="done"]>i{background:rgba(242,238,230,.64)!important}
+#main[data-garang-screen="today"] .gtf-row[data-state="pending"]>i{background:var(--gv-accent)!important}
+
+/* Legacy body evidence remains conditional; restyle only when disclosed. */
+#main[data-garang-screen="today"][data-gtf-body-open="1"]>.today-hero.visual-today-hero .today-body-panel{
+  border-color:var(--gv-line)!important;
+  background:radial-gradient(circle at 50% 56%,rgba(232,74,52,.025),transparent 40%),linear-gradient(160deg,#0d0d0d,#080808 72%)!important;
+}
+
+/* Bottom navigation: retain the four-tab contract, refine only the visual treatment. */
+#appView:has(#main[data-garang-screen="today"])>.bottom-nav{
+  background:#070707!important;
+  border-top:1px solid var(--gv-line)!important;
+}
+#appView:has(#main[data-garang-screen="today"])>.bottom-nav button{
+  color:rgba(242,238,230,.38)!important;
+  font-family:var(--gv-wordmark)!important;
+}
+#appView:has(#main[data-garang-screen="today"])>.bottom-nav button>b{
+  font-size:9px!important;
+  font-weight:500!important;
+  letter-spacing:.01em!important;
+}
+#appView:has(#main[data-garang-screen="today"])>.bottom-nav button.active{
+  color:var(--gv-ivory)!important;
+}
+#appView:has(#main[data-garang-screen="today"])>.bottom-nav button.active:after{
+  content:"";
+  position:absolute!important;
+  left:50%!important;
+  bottom:5px!important;
+  width:18px!important;
+  height:2px!important;
+  border-radius:99px!important;
+  transform:translateX(-50%)!important;
+  background:var(--gv-accent)!important;
+}
+
+@media(max-width:799px){
+  #main[data-garang-screen="today"] #garangTodayFlow.gtf{
+    width:100%!important;
+    padding:18px 20px 0!important;
+  }
+  #main[data-garang-screen="today"]>.page-head{
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-decision{
+    padding:24px 0 24px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-decision:before{
+    margin-bottom:18px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-decision h2{
+    font-size:clamp(34px,10.4vw,46px)!important;
+    line-height:1.06!important;
+    letter-spacing:-.065em!important;
+  }
+  #main[data-garang-screen="today"] .gtf-decision p{
+    max-width:330px!important;
+    font-size:11px!important;
+    line-height:1.76!important;
+  }
+  #main[data-garang-screen="today"] .gtf-context{
+    padding-bottom:12px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-context span{
+    max-width:68%!important;
+  }
+  #main[data-garang-screen="today"] .gtf-state{
+    grid-template-columns:76px minmax(0,1fr)!important;
+    gap:0!important;
+  }
+  #main[data-garang-screen="today"] .gtf-state-primary{
+    padding:14px 8px 14px 0!important;
+  }
+  #main[data-garang-screen="today"] .gtf-signal>em>b{
+    font-size:24px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-track{
+    min-height:72px!important;
+    padding:13px 8px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-track-copy>strong{
+    font-size:9px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-track-line{
+    left:8px!important;
+    right:8px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-action{
+    margin-top:28px!important;
+    padding:17px!important;
+    border-radius:22px 7px 22px 7px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-next{
+    font-size:17px!important;
+  }
+  #main[data-garang-screen="today"] .gtf-next>span{
+    flex-basis:48px!important;
+    width:48px!important;
+    height:48px!important;
+  }
+}
+
+@media(max-width:390px){
+  #main[data-garang-screen="today"] #garangTodayFlow.gtf{padding-left:17px!important;padding-right:17px!important}
+  #main[data-garang-screen="today"] .gtf-decision h2{font-size:35px!important}
+  #main[data-garang-screen="today"] .gtf-state{grid-template-columns:70px minmax(0,1fr)!important}
+  #main[data-garang-screen="today"] .gtf-track{padding-left:7px!important;padding-right:7px!important}
+  #main[data-garang-screen="today"] .gtf-track-copy>span{font-size:6.5px!important}
+  #main[data-garang-screen="today"] .gtf-track-copy>strong{font-size:8px!important}
+  #main[data-garang-screen="today"] .gtf-context span{max-width:62%!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #main[data-garang-screen="today"] *,
+  #main[data-garang-screen="today"] *:before,
+  #main[data-garang-screen="today"] *:after{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
