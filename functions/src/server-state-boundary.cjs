@@ -1,32 +1,48 @@
 'use strict';
 
-require('../../02_core/data-schema.js');
-const Schema=globalThis.GarangSchema;
-if(!Schema?.toTransport)throw new Error('GARANG_SCHEMA_UNAVAILABLE');
-
-const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+/* Self-contained Functions copy of the frozen garang-state-v1 boundary semantics.
+   Firebase deploys only the functions/ source directory, so production code must not
+   require browser files outside this directory. Parity is enforced by the repository
+   test against 02_core/data-schema.js. */
+const CONTRACT_VERSION='garang-state-v1';
+const SCHEMA_VERSION=8;
+const TOP_LEVEL=['contractVersion','schemaVersion','profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','memory','aiChats','scoreHistory','plan','language','settings','updatedAtMs'];
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+const rows=value=>Array.isArray(value)?value.filter(object):[];
+const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const numeric=value=>value===null||value===undefined||(typeof value==='string'&&!value.trim())?null:Number.isFinite(Number(value))?Number(value):null;
+const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+const today=()=>new Date().toISOString().slice(0,10);
+const validDate=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(`${value}T12:00:00Z`));
+const validTime=value=>typeof value==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+function row(domain,value,index){return {...clone(value),id:String(value?.id||`server_${domain}_${index}`),date:validDate(value?.date)?value.date:today()};}
+function numbers(value,keys){const out={...value};for(const key of keys)out[key]=Math.max(0,numeric(value?.[key])||0);return out;}
+function userModel(input){if(!object(input))return null;const weekly=numeric(input.weeklyFrequency),minutes=numeric(input.availableMinutes);return {...clone(input),goal:String(input.goal||''),experience:String(input.experience||''),weeklyFrequency:weekly===null?null:clamp(Math.round(weekly),1,7),availableMinutes:minutes===null?null:clamp(Math.round(minutes),5,1440),preferences:String(input.preferences||''),complete:input.complete===true,skipped:input.skipped===true};}
+function memory(input){const out=object(input)?clone(input):{};for(const key of ['facts','preferences','goals','events','entries','deletedIds'])out[key]=Array.isArray(out[key])?out[key]:[];out.deletedIds=[...new Set(out.deletedIds.map(String))];out.entries=rows(out.entries).map((entry,index)=>{const rawImportance=numeric(entry.importance);return {...entry,id:String(entry.id||`server_memory_${index}`),category:String(entry.category||entry.type||'notes'),type:String(entry.type||entry.category||'notes'),key:String(entry.key||entry.id||`server_memory_${index}`),text:String(entry.text??entry.value??''),value:String(entry.value??entry.text??''),source:String(entry.source||'user'),confidence:clamp(numeric(entry.confidence)??1,0,1),importance:clamp(Math.round(rawImportance===null?3:rawImportance),1,5),userConfirmed:entry.userConfirmed!==false,expiresAt:entry.expiresAt?String(entry.expiresAt):null,revisionHistory:rows(entry.revisionHistory)};}).filter(entry=>!out.deletedIds.includes(entry.id));out.legacyMigrated=true;return out;}
 
 function canonicalTransport(stateInput={}){
- return clone(Schema.toTransport(object(stateInput)?stateInput:{}));
+ const input=object(stateInput)?stateInput:{};
+ if(input.contractVersion&&String(input.contractVersion)!==CONTRACT_VERSION){const error=new Error('FOREIGN_CONTRACT');error.code='FOREIGN_CONTRACT';throw error;}
+ const settings={notifications:true,unit:'metric',...(object(input.settings)?clone(input.settings):{})};if(object(input.preferences)&&['metric','imperial'].includes(input.preferences.unit))settings.unit=input.preferences.unit;settings.notifications=settings.notifications!==false;settings.unit=settings.unit==='imperial'?'imperial':'metric';
+ let profile=object(input.profile)?clone(input.profile):null;if(profile){profile.name=String(profile.name||'');profile.weight=numeric(profile.weight??profile.bodyWeight??profile.body_weight??profile['체중']);for(const key of ['bodyWeight','body_weight','체중'])delete profile[key];for(const key of ['age','height','targetWeight','runningGoalKm'])profile[key]=numeric(profile[key]);if('gender'in profile)profile.gender=['male','female'].includes(profile.gender)?profile.gender:null;if('goal'in profile)profile.goal=String(profile.goal||'');}
+ const workouts=rows(input.workouts).map((value,index)=>({...numbers(row('workouts',value,index),['sets','reps','weight','rpe','duration','body','met','kcal','volume']),name:String(value.name||''),sessionId:String(value.sessionId||value.id||`server_workouts_${index}`)}));
+ const meals=rows(input.meals).map((value,index)=>({...numbers(row('meals',value,index),['grams','kcal','protein','carbs','fat']),name:String(value.name||''),items:rows(value.items).map((item,itemIndex)=>({...numbers(item,['grams','kcal','protein','carbs','fat']),id:String(item.id||`server_meal_item_${index}_${itemIndex}`),name:String(item.name||'')}))}));
+ const runs=rows(input.runs).map((value,index)=>({...numbers(row('runs',value,index),['distance','duration','kcal']),pace:String(numeric(value.pace)??'—'),coords:Array.isArray(value.coords)?value.coords.filter(c=>Array.isArray(c)&&c.length>=2&&Number.isFinite(Number(c[0]))&&Number.isFinite(Number(c[1]))).map(c=>[Number(c[0]),Number(c[1]),...(c.length>2&&Number.isFinite(Number(c[2]))?[Number(c[2])]:[])]):[]}));
+ const body=rows(input.body).map((value,index)=>{const out={...row('body',value,index),weight:numeric(value.weight??value.bodyWeight??value.body_weight??value['체중']),muscle:numeric(value.muscle??value.skeletalMuscleMass),bodyFat:numeric(value.bodyFat??value.fatPercent??value.bodyFatPercent),fatMass:numeric(value.fatMass??value.bodyFatMass),leanMass:numeric(value.leanMass),bmi:numeric(value.bmi??value.BMI),bmr:numeric(value.bmr??value.BMR)};for(const key of ['bodyWeight','body_weight','체중','skeletalMuscleMass','fatPercent','bodyFatPercent','bodyFatMass','BMI','BMR'])delete out[key];return out;}).sort((a,b)=>a.date.localeCompare(b.date));
+ const planner=rows(input.planner).map((value,index)=>{const out={...row('planner',value,index),title:String(value.title||''),time:validTime(value.time)?value.time:'18:30',done:value.done===true||value.completed===true,notify:value.notify!==false,type:String(value.type||'routine'),origin:String(value.origin||value.source||'user'),confirmed:value.confirmed!==false,revisionHistory:rows(value.revisionHistory)};delete out.completed;delete out.source;return out;});
+ const checkinSource=Array.isArray(input.dailyCheckins)?input.dailyCheckins:input.checkins,dailyCheckins=rows(checkinSource).map((value,index)=>({...row('dailyCheckins',value,index),timezone:String(value.timezone||'UTC'),sleepHours:numeric(value.sleepHours??value.sleep),energy:numeric(value.energy??value.energyLevel),stress:numeric(value.stress??value.stressLevel),availableMinutes:numeric(value.availableMinutes),soreness:object(value.soreness)?clone(value.soreness):(numeric(value.soreness)===null?{}:{general:numeric(value.soreness)}),notes:String(value.notes||''),painCaution:value.painCaution===true||value.pain===true,schemaVersion:1,revision:Math.max(1,numeric(value.revision)||1)}));
+ const chatSource=Array.isArray(input.aiChats)?input.aiChats:input.aiChat,aiChats=rows(chatSource).map((value,index)=>({...clone(value),id:String(value.id||`server_chat_${index}`),role:['user','assistant','system'].includes(value.role)?value.role:'system',text:String(value.text??value.content??''),plans:rows(value.plans).filter(plan=>typeof plan.title==='string')}));
+ const scoreHistory=rows(input.scoreHistory).filter(value=>validDate(value.date)).map(value=>{const out={date:value.date,formulaVersion:String(value.formulaVersion||'legacy')};for(const key of ['total','exercise','nutrition','recovery','activity','body'])out[key]=numeric(value[key])===null?null:clamp(numeric(value[key]),0,100);return out;});
+ const language=input.language==='en'||input.preferences?.language==='en'?'en':'ko',updatedAtMs=Math.max(0,numeric(input.updatedAtMs)||Date.parse(input.meta?.updatedAt||0)||0);
+ const out={contractVersion:CONTRACT_VERSION,schemaVersion:SCHEMA_VERSION,profile,userModel:userModel(object(input.userModel)?input.userModel:input.onboarding),workouts,meals,runs,body,planner,dailyCheckins,memory:memory(input.memory),aiChats,scoreHistory,plan:input.plan==='PRO'?'PRO':'FREE',language,settings,updatedAtMs};
+ for(const key of TOP_LEVEL)if(!(key in out)){const error=new Error(`INVALID_CONTRACT:${key}`);error.code='INVALID_CONTRACT';throw error;}
+ return out;
 }
 
 function normalizeForServer(stateInput={}){
  const raw=object(stateInput)?clone(stateInput):{},canonical=canonicalTransport(raw);
- return {
-  ...raw,
-  ...canonical,
-  meta:object(raw.meta)?raw.meta:{},
-  checkins:clone(canonical.dailyCheckins),
-  aiChat:clone(canonical.aiChats),
-  onboarding:clone(canonical.userModel),
-  preferences:{...(object(raw.preferences)?raw.preferences:{}),language:canonical.language,unit:canonical.settings?.unit||'metric'}
- };
+ const bodyCompat=canonical.body.map(item=>({...item,fatPercent:item.bodyFat})),plannerCompat=canonical.planner.map(item=>({...item,completed:item.done,source:item.origin}));
+ return {...raw,...canonical,body:bodyCompat,planner:plannerCompat,meta:object(raw.meta)?raw.meta:{},checkins:clone(canonical.dailyCheckins),aiChat:clone(canonical.aiChats),onboarding:clone(canonical.userModel),preferences:{...(object(raw.preferences)?raw.preferences:{}),language:canonical.language,unit:canonical.settings?.unit||'metric'}};
 }
-
-function contractSummary(stateInput={}){
- const canonical=canonicalTransport(stateInput);
- return {contractVersion:canonical.contractVersion,schemaVersion:canonical.schemaVersion,updatedAtMs:canonical.updatedAtMs};
-}
-
-module.exports={canonicalTransport,normalizeForServer,contractSummary,CONTRACT_VERSION:Schema.CONTRACT_VERSION,SCHEMA_VERSION:Schema.VERSION};
+function contractSummary(stateInput={}){const canonical=canonicalTransport(stateInput);return {contractVersion:canonical.contractVersion,schemaVersion:canonical.schemaVersion,updatedAtMs:canonical.updatedAtMs};}
+module.exports={canonicalTransport,normalizeForServer,contractSummary,CONTRACT_VERSION,SCHEMA_VERSION};
