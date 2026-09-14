@@ -7,7 +7,7 @@
 
 const main=document.getElementById('main');
 if(!main)return;
-const VERSION='garang-coach-quiet-surface-v1.0.1';
+const VERSION='garang-coach-quiet-surface-v1.0.2';
 const STYLE_ID='garang-coach-quiet-surface-v1-runtime-style';
 const raf=callback=>{
   const frame=window.requestAnimationFrame;
@@ -17,6 +17,8 @@ const raf=callback=>{
 const isEnglish=()=>document.documentElement.lang==='en';
 const coachEvidenceSeen=new Set();
 let coachEvidenceRoot=null;
+let coachVisitActive=false;
+let coachVisitStartedAt=0;
 
 function ensureRuntimeOverrides(){
   if(document.getElementById(STYLE_ID))return;
@@ -129,6 +131,39 @@ function localDay(stamp){
   const d=new Date(stamp||Date.now());
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function storedCoachMessage(messageId){
+  if(!messageId)return null;
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(!String(key||'').startsWith('garang_coach_threads_v2::'))continue;
+      const store=JSON.parse(localStorage.getItem(key)||'null');
+      for(const thread of store?.threads||[]){
+        const message=(thread?.messages||[]).find(item=>String(item?.id||'')===String(messageId));
+        if(message)return message;
+      }
+    }
+  }catch{}
+  return null;
+}
+function messageBelongsToCurrentVisit(messageId){
+  const stored=storedCoachMessage(messageId),stamp=Date.parse(stored?.at||'');
+  if(!Number.isFinite(stamp)||!coachVisitStartedAt)return false;
+  return stamp>=coachVisitStartedAt-250;
+}
+function beginCoachVisit(){
+  if(coachVisitActive)return;
+  coachVisitActive=true;
+  coachVisitStartedAt=Date.now();
+  coachEvidenceRoot=null;
+  coachEvidenceSeen.clear();
+}
+function endCoachVisit(){
+  coachVisitActive=false;
+  coachVisitStartedAt=0;
+  coachEvidenceRoot=null;
+  coachEvidenceSeen.clear();
+}
 function persistCoachEvidence(message){
   const messageId=String(message?.dataset?.messageId||'').trim();
   const text=String(message?.querySelector?.('.g2-message-text')?.textContent||'').trim();
@@ -163,18 +198,16 @@ function primeCoachEvidence(root=main.querySelector('.garang-coach-v2')){
   coachEvidenceSeen.clear();
   root.querySelectorAll('.g2-message.assistant[data-message-id]:not([data-thinking="1"])').forEach(message=>{
     const id=String(message.dataset.messageId||'');
-    if(id)coachEvidenceSeen.add(id);
+    if(id&&!messageBelongsToCurrentVisit(id))coachEvidenceSeen.add(id);
   });
 }
 function syncCoachEvidence(root){
   const messages=Array.from(root.querySelectorAll('.g2-message.assistant[data-message-id]:not([data-thinking="1"])'));
-  if(coachEvidenceRoot!==root){
-    primeCoachEvidence(root);
-    return;
-  }
+  if(coachEvidenceRoot!==root)primeCoachEvidence(root);
   messages.forEach(message=>{
     const id=String(message.dataset.messageId||'');
     if(!id||coachEvidenceSeen.has(id))return;
+    if(!messageBelongsToCurrentVisit(id)){coachEvidenceSeen.add(id);return;}
     if(persistCoachEvidence(message))coachEvidenceSeen.add(id);
   });
 }
@@ -182,6 +215,7 @@ function syncCoachEvidence(root){
 function sync(){
   ensureRuntimeOverrides();
   if(main.dataset.garangScreen!=='coach')return;
+  beginCoachVisit();
   const root=main.querySelector('.garang-coach-v2');
   if(!root)return;
   root.dataset.garangCoachQuietSurface=VERSION;
@@ -201,8 +235,14 @@ function schedule(){
   }));
 }
 
-window.addEventListener('garang:coach-mounted',()=>primeCoachEvidence());
-for(const eventName of ['garang:screen-rendered','garang:coach-mounted','garang:coach-message-rendered','garang:coach-decision-rendered','garang:state-hydrated','garang:state-updated','garang:agent-proposal-resolved','garang:route-completed']){
+window.addEventListener('garang:screen-rendered',event=>{
+  const screen=String(event?.detail?.screen||'');
+  if(screen==='coach')beginCoachVisit();
+  else if(screen)endCoachVisit();
+  schedule();
+});
+window.addEventListener('garang:coach-mounted',()=>{beginCoachVisit();primeCoachEvidence();schedule();});
+for(const eventName of ['garang:coach-message-rendered','garang:coach-decision-rendered','garang:state-hydrated','garang:state-updated','garang:agent-proposal-resolved','garang:route-completed']){
   window.addEventListener(eventName,schedule);
 }
 document.documentElement.addEventListener('garang:language-changed',schedule);
