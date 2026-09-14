@@ -1,11 +1,16 @@
 /* GARANG external service endpoints.
    Provider secrets stay on the server. Browser code receives public HTTPS endpoints only.
-   Server Readiness Stage 0 keeps new privileged endpoints activation-gated until the
-   matching Cloud Functions revision is deployed and smoke-verified. */
+   Privileged browser endpoints are fail-closed and activate only when the loaded Firebase
+   browser config targets the verified staging project `garang-staging`. Production stays off. */
 (() => {
   'use strict';
-  const apiBase='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api';
+  const productionProjectId='fitfind-ai';
+  const stagingProjectId='garang-staging';
+  const firebaseProjectId=String(window.GARANG_FIREBASE_CONFIG?.projectId||'').trim();
+  const selectedProjectId=firebaseProjectId||productionProjectId;
+  const apiBase=`https://asia-northeast3-${selectedProjectId}.cloudfunctions.net/api`;
   const coachEndpoint=`${apiBase}/coach`;
+  const privilegedStagingEnabled=selectedProjectId===stagingProjectId;
   const analyticsSpec=Object.freeze({
     signup_completed:[],onboarding_completed:[],record_created:['recordType','source'],first_record_created:['recordType','source'],today_viewed:['source'],coach_opened:['source'],coach_recommendation_shown:['provider','source'],daily_plan_applied:['source'],planned_action_started:['actionType','source'],planned_action_completed:['actionType','source'],accumulation_viewed:['source']
   });
@@ -15,12 +20,14 @@
   window.GARANG_SERVICES = Object.freeze({
     apiBase,
     serverReadinessVersion:'server-readiness-stage0-v1',
+    environmentProjectId:selectedProjectId,
+    privilegedStagingEnabled,
     coachEndpoint,
-    accountDeleteEndpoint:null,
-    accountExportEndpoint:null,
+    accountDeleteEndpoint:privilegedStagingEnabled?`${apiBase}/account/delete`:null,
+    accountExportEndpoint:privilegedStagingEnabled?`${apiBase}/account/export`:null,
     mealScanEndpoint:null,
-    analyticsEndpoint:null,
-    telemetryErrorEndpoint:null,
+    analyticsEndpoint:privilegedStagingEnabled?`${apiBase}/analytics/events`:null,
+    telemetryErrorEndpoint:privilegedStagingEnabled?`${apiBase}/telemetry/errors`:null,
     analyticsConsent:false,
     analyticsContractVersion:'garang-analytics-v1',
     paymentCheckoutEndpoint:null,
