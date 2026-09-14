@@ -7,13 +7,14 @@ const VALID=new Set(['completed','partial','missed','recovery_constrained']);
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 const round=(value,digits=2)=>{const p=10**digits;return Math.round((Number(value)+Number.EPSILON)*p)/p;};
+const finite=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const dateKey=value=>String(value||'').slice(0,10);
 function shiftDate(date,delta){const d=new Date(`${date}T12:00:00Z`);if(Number.isNaN(d.getTime()))return null;d.setUTCDate(d.getUTCDate()+delta);return d.toISOString().slice(0,10);}
 function inferResult(group){
  const explicit=String(group?.result||group?.outcome?.classification||'').toLowerCase();
  if(VALID.has(explicit))return explicit;
  const domains=object(group?.outcome?.domains)?group.outcome.domains:{};
- const rates=Object.values(domains).map(row=>Number(row?.rate)).filter(Number.isFinite);
+ const rates=Object.values(domains).map(row=>finite(row?.rate)).filter(value=>value!==null);
  if(!rates.length)return null;
  const average=rates.reduce((sum,value)=>sum+value,0)/rates.length;
  return average>=80?'completed':average>=40?'partial':'missed';
