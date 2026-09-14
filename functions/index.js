@@ -12,6 +12,7 @@ const {createCoachGatewayHandler}=require('./src/coach-gateway.cjs');
 
 if(!getApps().length)initializeApp();
 const llmApiKey=defineSecret('GARANG_LLM_API_KEY');
+const COACH_WINDOW_MS=10*60*1000,COACH_WINDOW_LIMIT=20,COACH_DAILY_LIMIT=120;
 
 const app=express();
 app.disable('x-powered-by');
@@ -38,6 +39,18 @@ async function readCanonicalUser(uid){
  const legacy=await root.get();return legacy.exists?legacy.data()||{}:{};
 }
 
+async function consumeCoachRateLimit(uid,{now=new Date()}={}){
+ const db=getFirestore(),ref=db.collection('_internal_coach_rate_limits').doc(uid),nowMs=now instanceof Date?now.getTime():Date.now(),day=new Date(nowMs).toISOString().slice(0,10);
+ return db.runTransaction(async transaction=>{
+  const snap=await transaction.get(ref),current=snap.exists?(snap.data()||{}):{},sameWindow=Number(current.windowStartMs)>0&&nowMs-Number(current.windowStartMs)<COACH_WINDOW_MS,sameDay=current.day===day;
+  const windowStartMs=sameWindow?Number(current.windowStartMs):nowMs,windowCount=sameWindow?Number(current.windowCount||0):0,dayCount=sameDay?Number(current.dayCount||0):0;
+  if(windowCount>=COACH_WINDOW_LIMIT)return {allowed:false,retryAfterSec:Math.max(1,Math.ceil((windowStartMs+COACH_WINDOW_MS-nowMs)/1000)),reason:'window'};
+  if(dayCount>=COACH_DAILY_LIMIT){const tomorrow=Date.parse(`${day}T00:00:00.000Z`)+86400000;return {allowed:false,retryAfterSec:Math.max(1,Math.ceil((tomorrow-nowMs)/1000)),reason:'daily'};}
+  transaction.set(ref,{windowStartMs,windowCount:windowCount+1,day,dayCount:dayCount+1,updatedAt:new Date(nowMs).toISOString()},{merge:true});
+  return {allowed:true,remainingWindow:COACH_WINDOW_LIMIT-windowCount-1,remainingDaily:COACH_DAILY_LIMIT-dayCount-1};
+ });
+}
+
 app.get('/agent/context',createAgentContextHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
  readUser:async uid=>{try{return await readCanonicalUser(uid);}catch(error){const wrapped=new Error('USER_DATA_READ_FAILED');wrapped.code='USER_DATA_READ_FAILED';wrapped.cause=error;throw wrapped;}}
@@ -47,6 +60,7 @@ app.all('/agent/context',(request,response)=>response.status(405).set('Allow','G
 app.post('/coach',createCoachGatewayHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
  readUser:readCanonicalUser,
+ consumeRateLimit:consumeCoachRateLimit,
  getProviderConfig:()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||8000})
 }));
 app.all('/coach',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
