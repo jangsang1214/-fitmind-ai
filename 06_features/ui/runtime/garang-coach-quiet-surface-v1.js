@@ -7,7 +7,7 @@
 
 const main=document.getElementById('main');
 if(!main)return;
-const VERSION='garang-coach-quiet-surface-v1.0.1';
+const VERSION='garang-coach-quiet-surface-v1.0.2';
 const STYLE_ID='garang-coach-quiet-surface-v1-runtime-style';
 const raf=callback=>{
   const frame=window.requestAnimationFrame;
@@ -178,6 +178,11 @@ function syncCoachEvidence(root){
     if(persistCoachEvidence(message))coachEvidenceSeen.add(id);
   });
 }
+function syncCoachEvidenceEvent(event){
+  const root=event?.detail?.root;
+  if(!root||!root.matches?.('.garang-coach-v2'))return;
+  syncCoachEvidence(root);
+}
 
 function sync(){
   ensureRuntimeOverrides();
@@ -201,7 +206,8 @@ function schedule(){
   }));
 }
 
-window.addEventListener('garang:coach-mounted',()=>primeCoachEvidence());
+window.addEventListener('garang:coach-mounted',event=>primeCoachEvidence(event?.detail?.root));
+window.addEventListener('garang:coach-message-rendered',syncCoachEvidenceEvent);
 for(const eventName of ['garang:screen-rendered','garang:coach-mounted','garang:coach-message-rendered','garang:coach-decision-rendered','garang:state-hydrated','garang:state-updated','garang:agent-proposal-resolved','garang:route-completed']){
   window.addEventListener(eventName,schedule);
 }
