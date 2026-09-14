@@ -1,0 +1,187 @@
+/* GARANG Unified Palette v1
+   One visual system across app chrome and current surfaces.
+   Palette: meok black + warm ivory + one restrained vermilion accent.
+   Semantic state is expressed primarily through value/opacity, not unrelated hues.
+*/
+:root{
+  --gu-bg:#080808;
+  --gu-bg-2:#0d0d0c;
+  --gu-surface:#11110f;
+  --gu-surface-2:#161411;
+  --gu-surface-3:#1b1815;
+  --gu-ivory:#f1ede4;
+  --gu-ivory-2:#d8d1c7;
+  --gu-muted:#918980;
+  --gu-muted-2:#655f58;
+  --gu-line:rgba(241,237,228,.10);
+  --gu-line-strong:rgba(241,237,228,.18);
+  --gu-accent:#d65340;
+  --gu-accent-strong:#e45f4a;
+  --gu-accent-soft:rgba(214,83,64,.12);
+
+  /* Reconcile legacy token families into the same system. */
+  --bg:var(--gu-bg)!important;
+  --bg2:var(--gu-bg-2)!important;
+  --surface:var(--gu-surface)!important;
+  --surface2:var(--gu-surface-2)!important;
+  --surface3:var(--gu-surface-3)!important;
+  --line:var(--gu-line)!important;
+  --line2:var(--gu-line-strong)!important;
+  --hanji:var(--gu-ivory)!important;
+  --hanji2:var(--gu-ivory-2)!important;
+  --muted:var(--gu-muted)!important;
+  --muted2:var(--gu-muted-2)!important;
+  --vermillion:var(--gu-accent)!important;
+  --vermillion2:var(--gu-accent-strong)!important;
+  --jade:var(--gu-muted)!important;
+  --brass:var(--gu-muted)!important;
+  --blue:var(--gu-muted)!important;
+  --violet:var(--gu-muted)!important;
+  --success:var(--gu-ivory-2)!important;
+  --danger:var(--gu-accent-strong)!important;
+
+  --garang-meok:var(--gu-bg)!important;
+  --garang-meok-soft:var(--gu-bg-2)!important;
+  --garang-baekja:var(--gu-ivory)!important;
+  --garang-baekja-muted:var(--gu-muted)!important;
+  --garang-cheongja:var(--gu-muted)!important;
+  --garang-cheongja-deep:var(--gu-surface-2)!important;
+  --garang-onggi:var(--gu-accent)!important;
+  --garang-hanji-line:var(--gu-line)!important;
+  --garang-hanji-soft:rgba(241,237,228,.045)!important;
+
+  --g2-bg:var(--gu-bg)!important;
+  --g2-panel:var(--gu-bg-2)!important;
+  --g2-panel2:var(--gu-surface)!important;
+  --g2-line:var(--gu-line)!important;
+  --g2-line2:var(--gu-line-strong)!important;
+  --g2-ivory:var(--gu-ivory)!important;
+  --g2-muted:var(--gu-muted)!important;
+  --g2-muted2:var(--gu-muted)!important;
+  --g2-jade:var(--gu-accent)!important;
+  --g2-deep:var(--gu-surface-2)!important;
+  --g2-copper:var(--gu-accent)!important;
+  --g2-copper2:var(--gu-accent-strong)!important;
+
+  --g3-ink:var(--gu-bg)!important;
+  --g3-graphite:var(--gu-surface-2)!important;
+  --g3-ivory:var(--gu-ivory)!important;
+  --g3-silver:var(--gu-muted)!important;
+  --g3-jade:var(--gu-surface-2)!important;
+  --g3-jade-bright:var(--gu-accent)!important;
+  --g3-primary:var(--gu-accent)!important;
+  --g3-secondary:var(--gu-muted)!important;
+  --g3-tertiary:var(--gu-muted-2)!important;
+}
+
+html,body{background:var(--gu-bg)!important;color:var(--gu-ivory)!important}
+#appView{background:var(--gu-bg)!important}
+#appView>.topbar,
+#appView>.bottom-nav{background:rgba(8,8,8,.98)!important;border-color:var(--gu-line)!important}
+#main{color:var(--gu-ivory)}
+
+/* One accent only: active/next/critical. Everything else stays neutral. */
+#appView .bottom-nav button{color:var(--gu-muted)!important}
+#appView .bottom-nav button.active{color:var(--gu-ivory)!important}
+#appView .bottom-nav button.active:before{background:var(--gu-accent)!important;opacity:1!important}
+#appView .badge{border-color:var(--gu-line-strong)!important;background:var(--gu-surface)!important;color:var(--gu-muted)!important}
+#appView .sync-badge{border-color:var(--gu-line)!important;background:var(--gu-surface)!important;color:var(--gu-muted)!important}
+#appView .sync-dot{background:var(--gu-muted-2)!important}
+#appView .sync-badge[data-state="synced"] .sync-dot{background:var(--gu-ivory-2)!important}
+#appView .sync-badge[data-state="syncing"] .sync-dot,
+#appView .sync-badge[data-state="pending"] .sync-dot{background:var(--gu-accent)!important}
+#appView .sync-badge[data-state="failed"] .sync-dot{background:var(--gu-accent-strong)!important}
+
+/* Neutralize legacy named color utility classes. */
+#appView .brass,#appView .jade,#appView .violet{color:var(--gu-muted)!important}
+#appView .accent{color:var(--gu-accent-strong)!important}
+#appView .text-btn{color:var(--gu-muted)!important}
+#appView .text-btn:hover,#appView .text-btn:focus-visible{color:var(--gu-ivory)!important}
+
+/* Shared surfaces */
+#appView .card,
+#appView .list-item,
+#appView .review-cell,
+#appView .coach-answer,
+#appView .auth-card{
+  border-color:var(--gu-line)!important;
+  background:var(--gu-surface)!important;
+  color:var(--gu-ivory)!important;
+}
+#appView .ghost,#appView .social{
+  border-color:var(--gu-line)!important;
+  background:var(--gu-surface)!important;
+  color:var(--gu-ivory)!important;
+}
+#appView .ghost:hover,#appView .social:hover{border-color:var(--gu-line-strong)!important;background:var(--gu-surface-2)!important}
+#appView .primary{background:var(--gu-ivory)!important;color:#111!important}
+#appView .primary.vermillion{background:var(--gu-accent)!important;color:#fff!important}
+
+/* Pills/badges: no independent green/purple/gold identities. */
+#appView .pill,
+#appView .pill.jade,
+#appView .pill.violet,
+#appView .pill.red{
+  border-color:var(--gu-line-strong)!important;
+  background:var(--gu-surface)!important;
+  color:var(--gu-muted)!important;
+}
+#appView .pill.red{color:var(--gu-accent-strong)!important;border-color:rgba(214,83,64,.30)!important}
+
+/* Today: ensure injected/legacy pieces belong to the same palette. */
+#main[data-garang-screen="today"]{background:var(--gu-bg)!important}
+#main[data-garang-screen="today"] .gtf-decision:before,
+#main[data-garang-screen="today"] .gtf-action:before{background:var(--gu-accent)!important;color:var(--gu-accent)!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="partial"]{--track-color:var(--gu-accent)!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="done"]{--track-color:rgba(241,237,228,.78)!important}
+#main[data-garang-screen="today"] .gtf-track[data-state="planned"],
+#main[data-garang-screen="today"] .gtf-track[data-state="draft"]{--track-color:rgba(241,237,228,.38)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access{border-top-color:var(--gu-line)!important;border-bottom-color:var(--gu-line)!important;color:var(--gu-ivory)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access>span{color:var(--gu-accent)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access>strong{color:var(--gu-ivory)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access>small{color:var(--gu-muted)!important}
+#main[data-garang-screen="today"] .gtf-checkin-access:focus-visible{outline-color:var(--gu-accent)!important}
+
+/* Body evidence may use one accent, never copper/jade combinations. */
+#main[data-garang-screen="today"] .g3-body-model .g3-muscle,
+#main[data-garang-screen="today"] .g2-body-model .muscle-zone{fill:#3b3834!important;stroke:#6f6860!important}
+#main[data-garang-screen="today"] .muscle-map[data-muscle] .g3-body-model [class*="muscle-"],
+#main[data-garang-screen="today"] .muscle-map[data-muscle] .g2-body-model [class*="muscle-"]{filter:none!important}
+#main[data-garang-screen="today"] .g3-body-model .g3-muscle:hover,
+#main[data-garang-screen="today"] .g3-body-model .g3-muscle:focus,
+#main[data-garang-screen="today"] .g2-body-model .muscle-zone:hover,
+#main[data-garang-screen="today"] .g2-body-model .muscle-zone:focus{fill:var(--gu-accent)!important;stroke:var(--gu-accent-strong)!important}
+
+/* Coach inherits the same visual system instead of jade. */
+.garang-coach-v2{background:var(--gu-bg)!important;border-color:var(--gu-line)!important;color:var(--gu-ivory)!important}
+.garang-coach-v2 .g2-chat-sidebar,
+.garang-coach-v2 .g2-chat-main{background:var(--gu-bg)!important}
+.garang-coach-v2 .g2-chat-sidebar{border-right-color:var(--gu-line)!important}
+.garang-coach-v2 .g2-new-chat,
+.garang-coach-v2 .g2-head-new,
+.garang-coach-v2 .g2-composer{border-color:var(--gu-line)!important;background:var(--gu-surface)!important}
+.garang-coach-v2 .g2-new-chat b,
+.garang-coach-v2 .gcs-prompt-more{color:var(--gu-accent)!important}
+.garang-coach-v2 .g2-message.user .g2-message-body{background:var(--gu-surface-2)!important;border-color:var(--gu-line-strong)!important}
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip>button[data-garang-prompt-id],
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]{background:var(--gu-surface)!important;border-color:var(--gu-line)!important;color:var(--gu-muted)!important}
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip>button[data-garang-prompt-id]:hover,
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip>button[data-garang-prompt-id]:focus-visible,
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]:hover,
+.garang-coach-v2 .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]:focus-visible{background:var(--gu-surface-2)!important;border-color:rgba(214,83,64,.28)!important;color:var(--gu-ivory)!important}
+
+/* Remove all ink/water/droplet decorative motion from the current product surface. */
+#appView .gtd3-motion-canvas,
+#appView canvas[data-garang-accumulation-motion],
+#appView [data-garang-accumulation-motion],
+#appView [class*="ink-water"],
+#appView [class*="water-drop"],
+#appView [class*="droplet"]{display:none!important;visibility:hidden!important;animation:none!important;transition:none!important}
+#main[data-garang-screen="today"] .gtf-signal,
+#main[data-garang-screen="today"] .gtf-signal:before,
+#main[data-garang-screen="today"] .gtf-signal:after,
+#main[data-garang-screen="today"] .gtf-signal>i{animation:none!important;transition:none!important}
+
+@media(max-width:800px){
+  #appView>.topbar,#appView>.bottom-nav{background:var(--gu-bg)!important}
+}
