@@ -6,6 +6,12 @@
   'use strict';
   const apiBase='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api';
   const coachEndpoint=`${apiBase}/coach`;
+  const analyticsSpec=Object.freeze({
+    signup_completed:[],onboarding_completed:[],record_created:['recordType','source'],first_record_created:['recordType','source'],today_viewed:['source'],coach_opened:['source'],coach_recommendation_shown:['provider','source'],daily_plan_applied:['source'],planned_action_started:['actionType','source'],planned_action_completed:['actionType','source'],accumulation_viewed:['source']
+  });
+  const legacyAnalytics=Object.freeze({
+    workout_saved:{canonical:'record_created',recordType:'workout'},meal_saved:{canonical:'record_created',recordType:'nutrition'},run_saved:{canonical:'record_created',recordType:'running'},inbody_saved:{canonical:'record_created',recordType:'body'},ai_chat_answered:{canonical:'coach_recommendation_shown'},ai_plan_applied:{canonical:'daily_plan_applied'},planner_completed:{canonical:'planned_action_completed'},'screen_viewed:today':{canonical:'today_viewed'},'screen_viewed:coach':{canonical:'coach_opened'},'screen_viewed:progress':{canonical:'accumulation_viewed'}
+  });
   window.GARANG_SERVICES = Object.freeze({
     apiBase,
     serverReadinessVersion:'server-readiness-stage0-v1',
@@ -27,10 +33,29 @@
   const diag={stage:'installed',lastError:null,lastRequest:null,analyticsSuppressed:0,errorSuppressed:0};
   const urlOf=input=>typeof input==='string'?input:input?.url;
   const methodOf=(input,init)=>String(init?.method||input?.method||'GET').toUpperCase();
+  const text=(value,limit=120)=>String(value??'').trim().slice(0,limit);
   function currentUser(){try{return window.firebase?.auth?.().currentUser||null;}catch{return null;}}
   function analyticsConsent(){
     const user=currentUser();if(!user)return false;
     try{const state=JSON.parse(globalThis.localStorage?.getItem?.(`garang_user_${user.uid}_v3`)||'null');return state?.privacy?.consent?.analytics===true;}catch{return false;}
+  }
+  function canonicalAnalytics(name,properties={}){
+    let key=text(name,80),props=properties&&typeof properties==='object'&&!Array.isArray(properties)?{...properties}:{};
+    if(key==='screen_viewed'){const page=text(props.page,30);if(page)key=`screen_viewed:${page}`;}
+    const legacy=legacyAnalytics[key];if(legacy){key=legacy.canonical;props={...props,...Object.fromEntries(Object.entries(legacy).filter(([k])=>k!=='canonical'))};}
+    const allowed=analyticsSpec[key];if(!allowed)return null;
+    const safe={};for(const property of allowed){const value=props[property];if(['string','number','boolean'].includes(typeof value)||value===null)safe[property]=typeof value==='string'?text(value):value;}
+    return {name:key,properties:safe};
+  }
+  function sanitizeAnalyticsBody(body){
+    let source={};try{source=typeof body==='string'?JSON.parse(body):body||{};}catch{return JSON.stringify({events:[]});}
+    const rows=Array.isArray(source.events)?source.events.slice(0,50):[source],events=rows.map(row=>canonicalAnalytics(row?.name,row?.properties||row?.props)).filter(Boolean);
+    return JSON.stringify({events});
+  }
+  function safeError(detail={}){
+    const context=detail?.context&&typeof detail.context==='object'&&!Array.isArray(detail.context)?detail.context:{},safeContext={};
+    for(const key of ['category','code','sourceCode','retryable','fingerprint','feature','source','layer']){const value=context[key];if(['string','number','boolean'].includes(typeof value)||value===null)safeContext[key]=typeof value==='string'?text(value,160):value;}
+    return {category:text(detail?.category,40)||'unknown',code:text(detail?.code,80)||'GARANG_UNKNOWN',sourceCode:text(detail?.sourceCode,80)||null,retryable:detail?.retryable===true,fingerprint:text(detail?.fingerprint,80)||null,context:safeContext};
   }
   async function token(){const user=currentUser();if(!user||typeof user.getIdToken!=='function'){const error=new Error('GARANG_AUTH_REQUIRED');error.code='GARANG_AUTH_REQUIRED';throw error;}return user.getIdToken();}
   async function authenticatedFetch(input,init={}){
@@ -55,16 +80,18 @@
         if(typeof Response==='function')return new Response(JSON.stringify({ok:true,accepted:false,reason:'CONSENT_REQUIRED'}),{status:202,headers:{'Content-Type':'application/json'}});
         return {ok:true,status:202,json:async()=>({ok:true,accepted:false,reason:'CONSENT_REQUIRED'})};
       }
-      return authenticatedFetch(input,init);
+      const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');
+      const body=url===services.analyticsEndpoint?sanitizeAnalyticsBody(init.body):JSON.stringify(safeError(typeof init.body==='string'?(()=>{try{return JSON.parse(init.body);}catch{return {};}})():init.body||{}));
+      return authenticatedFetch(input,{...init,headers,body});
     }
     return nativeFetch(input,init);
   }
   window.fetch=routedFetch;
   if(typeof window.addEventListener==='function')window.addEventListener('garang:error',event=>{
     const endpoint=window.GARANG_SERVICES?.telemetryErrorEndpoint;if(!endpoint||!analyticsConsent())return;
-    const detail=event?.detail||{};routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(detail)}).catch(()=>{});
+    routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safeError(event?.detail||{}))}).catch(()=>{});
   });
-  const transport=Object.freeze({version:'garang-service-transport-v2',apiBase,coachEndpoint,authenticatedFetch,analyticsConsent,diagnostics:diag});
+  const transport=Object.freeze({version:'garang-service-transport-v2',apiBase,coachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,diagnostics:diag});
   window.__GARANG_SERVICE_TRANSPORT_V2__=transport;
   window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=transport;
 })();
