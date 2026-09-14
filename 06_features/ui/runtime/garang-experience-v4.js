@@ -1,4 +1,4 @@
-/* GARANG experience v4.6
+/* GARANG experience v4.7
    Keeps the existing product policy while making observer reconciliation idempotent.
    Rebuilt Today owns presentation; late-mounted legacy siblings are internalized without subtree churn. */
 (() => {
@@ -98,6 +98,16 @@
     setTimeout(sweep,300);
   }
 
+  function persistCompletedCoachAnswer(event) {
+    if (event?.detail?.event !== 'ai_chat_answered') return;
+    try {
+      const bridge = window.GarangAgentStateBridge;
+      const key = bridge?.getStorageKey?.();
+      const live = bridge?.getLiveState?.();
+      if (key && live) localStorage.setItem(key, JSON.stringify(live));
+    } catch {}
+  }
+
   function internalizeMemorySurface() {
     removeRoute('[data-pagego="memory"], [data-page="memory"]');
     removeRoute('[data-pagego="settings"], [data-page="settings"]');
@@ -145,7 +155,10 @@
 
   /* Screen/state lifecycle replaces broad body reconciliation. */
   window.addEventListener('garang:screen-rendered', scheduleWithTodayReconcile);
-  window.addEventListener('garang:state-updated', scheduleWithTodayReconcile);
+  window.addEventListener('garang:state-updated', event => {
+    persistCompletedCoachAnswer(event);
+    scheduleWithTodayReconcile();
+  });
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   new MutationObserver(records => {
     if (main.dataset.garangScreen !== 'today' || !main.querySelector('#garangTodayRebuild')) return;
