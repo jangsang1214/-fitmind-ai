@@ -18,8 +18,8 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:9000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:5000});
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'today-summary','Today owns the deterministic judgment summary while Coach owns explanation/action');
-  assert.equal(await flow.getAttribute('data-decision-owner'),'today-summary');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today shows the deterministic judgment summary while Coach remains the canonical decision disclosure owner');
+  assert.equal(await flow.getAttribute('data-decision-owner'),'coach');
   assert.match(await flow.getAttribute('aria-label'),/GARANG 판단/);
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must answer what GARANG thinks today');
   assert.equal(await flow.locator('.gtf-disclosure').isHidden(),true,'detailed rationale must remain progressive and Coach-owned');
@@ -32,7 +32,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await checkin.click();const save=page.locator('.modal #saveCheckin');await save.waitFor({state:'visible',timeout:3000});await page.locator('#ciSleep').fill('5.5');await page.locator('#ciEnergy').fill('2');await page.locator('#ciStress').fill('4');await page.locator('#ciSoreness').fill('5');await page.locator('#ciMinutes').fill('35');await save.click();
   await page.waitForFunction(today=>{const s=window.GarangAgentStateBridge?.getState?.();return [...(s?.dailyCheckins||[]),...(s?.checkins||[])].some(row=>String(row?.date||'').slice(0,10)===today);},date(),{timeout:5000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked'&&document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),null,{timeout:9000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='today-summary',null,{timeout:3000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach',null,{timeout:3000});
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'post-check-in GARANG judgment must stay visible on Today');
   assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'plan remains visible between judgment and action');
   assert.equal(await flow.locator('.gtf-action').isVisible(),true,'canonical next action must return after check-in');
