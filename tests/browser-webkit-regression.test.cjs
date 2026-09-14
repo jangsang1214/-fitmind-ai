@@ -148,15 +148,18 @@ async function assertCoachSettles(page){
 
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:10000});
+    await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:10000});
     await page.waitForFunction(()=>document.querySelector('.today-body-panel'),{timeout:10000});
 
     const layout=await page.evaluate(()=>{
-      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),hero=document.querySelector('.visual-today-hero'),flow=document.querySelector('#garangTodayFlow'),
+      const main=document.getElementById('main'),s=getComputedStyle(main),top=document.querySelector('.topbar'),menu=document.getElementById('menuBtn'),record=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]'),hero=document.querySelector('.visual-today-hero'),flow=document.querySelector('#garangTodayFlow'),rebuild=document.querySelector('#garangTodayRebuild'),
         tr=top?.getBoundingClientRect(),mr=menu?.getBoundingClientRect(),rr=record?.getBoundingClientRect(),menuHit=mr?document.elementFromPoint(mr.left+mr.width/2,mr.top+mr.height/2):null,recordHit=rr?document.elementFromPoint(rr.left+rr.width/2,rr.top+rr.height/2):null;
       return {
         x:s.overflowX,y:s.overflowY,max:s.maxHeight,
-        cMode:main?.dataset?.gtfC||'',flowVisible:!!flow&&getComputedStyle(flow).display!=='none',bodyHeroHidden:!!hero&&getComputedStyle(hero).display==='none',
+        cMode:main?.dataset?.gtfC||'',
+        rebuildVisible:!!rebuild&&getComputedStyle(rebuild).display!=='none'&&rebuild.getBoundingClientRect().height>0,
+        legacyFlowHidden:!!flow&&getComputedStyle(flow).display==='none'&&flow.getAttribute('aria-hidden')==='true',
+        bodyHeroHidden:!!hero&&getComputedStyle(hero).display==='none',
         quickHidden:!!document.querySelector('.quick-visual-grid')&&getComputedStyle(document.querySelector('.quick-visual-grid')).display==='none',
         primaryCount:document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]').length,
         top:{top:tr?.top,bottom:tr?.bottom,height:tr?.height},
@@ -168,7 +171,8 @@ async function assertCoachSettles(page){
     assert.equal(layout.y,'visible');
     assert.equal(layout.max,'none');
     assert.equal(layout.cMode,'1','WebKit Today must use C direction');
-    assert.equal(layout.flowVisible,true,'decision-first C surface must be visible');
+    assert.equal(layout.rebuildVisible,true,'rebuilt Today surface must be visible');
+    assert.equal(layout.legacyFlowHidden,true,'canonical legacy Today must remain hidden but mounted');
     assert.equal(layout.bodyHeroHidden,true,'body anatomy must not be the default WebKit hero');
     assert.equal(layout.quickHidden,true,'Today duplicate quick-record grid must stay internalized on WebKit');
     assert.equal(layout.primaryCount,4,'WebKit must expose exactly four primary navigation axes');
@@ -208,7 +212,8 @@ async function assertCoachSettles(page){
 
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
-    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
+    await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('#garangTodayFlow').isHidden(),true,'returning to Today must keep legacy flow internalized');
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
     await tapRecordRoute(page,'body');
@@ -218,11 +223,12 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
-    await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
+    await page.locator('#garangTodayRebuild').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('#garangTodayFlow').isHidden(),true,'final Today return must keep legacy flow internalized');
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'final Today return must stay decision-first');
 
     assert.deepEqual(errors,[],`WebKit runtime errors:\n${errors.join('\n')}`);
-    console.log('browser-webkit-regression C-direction: PASS');
+    console.log('browser-webkit-regression rebuilt C-direction: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     server.kill('SIGTERM');
