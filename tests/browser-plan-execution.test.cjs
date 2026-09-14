@@ -2,7 +2,6 @@
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {spawn}=require('node:child_process');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8771,baseURL=`http://127.0.0.1:${port}`;
 const pad=n=>String(n).padStart(2,'0');
@@ -33,11 +32,13 @@ function state(){
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-    await page.locator('#menuBtn').click();
-    const planner=page.locator('.garang-more-sheet [data-route="planner"]');await planner.waitFor({state:'visible',timeout:5000});await planner.click();
+    await page.waitForFunction(()=>window.GarangRouter,{timeout:7000});
+    const routed=await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'plan-execution-capability-test',force:true})===true);
+    assert.equal(routed,true,'Planner must remain available through its canonical capability route');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:7000});
     const section=page.locator('#garangPlanExecution');await section.waitFor({state:'visible',timeout:7000});
 
-    const plannerHead=await page.evaluate(()=>{const head=document.querySelector('#main > .page-head');const title=head?.querySelector('h1'),kicker=head?.querySelector('.eyebrow');return {screen:document.getElementById('main')?.dataset?.garangScreen||'',title: title?.textContent?.trim()||'',titleDisplay:title?getComputedStyle(title).display:'missing',kicker:kicker?.textContent?.trim()||''};});
+    const plannerHead=await page.evaluate(()=>{const head=document.querySelector('#main > .page-head');const title=head?.querySelector('h1'),kicker=head?.querySelector('.eyebrow');return {screen:document.getElementById('main')?.dataset?.garangScreen||'',title:title?.textContent?.trim()||'',titleDisplay:title?getComputedStyle(title).display:'missing',kicker:kicker?.textContent?.trim()||''};});
     assert.equal(plannerHead.screen,'planner','Planner must keep the canonical screen identity');
     assert.equal(plannerHead.title,'Planner','legacy page title may remain in markup for owner compatibility');
     assert.equal(plannerHead.titleDisplay,'none','large Planner page title must stay visually removed');
@@ -67,6 +68,6 @@ function state(){
     const bodyWidth=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert.ok(bodyWidth.scroll<=bodyWidth.client+1,`execution preview must not cause page overflow: ${JSON.stringify(bodyWidth)}`);
     assert.deepEqual(errors,[],`plan execution browser errors:\n${errors.join('\n')}`);
-    await context.close();console.log('browser-plan-execution minimal+droplet WebKit mobile: PASS');
+    await context.close();console.log('browser-plan-execution canonical capability route + minimal droplet WebKit mobile: PASS');
   }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
