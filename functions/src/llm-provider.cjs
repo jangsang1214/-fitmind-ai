@@ -2,7 +2,8 @@
 
 const DEFAULT_TIMEOUT_MS=8000;
 const DEFAULT_MODEL='gpt-5.6-luna';
-const COACH_RESPONSE_SCHEMA=Object.freeze({type:'object',additionalProperties:false,required:['answer','decisionSummary','reasoningSummary','suggestedNextStep','confidence'],properties:{answer:{type:'string'},decisionSummary:{type:'string'},reasoningSummary:{type:'string'},suggestedNextStep:{type:'string'},confidence:{type:['number','null'],minimum:0,maximum:1}}});
+const DECISION_MODES=Object.freeze(['collect_data','caution','recover','reduce','maintain','progress','goal_focus']);
+const COACH_RESPONSE_SCHEMA=Object.freeze({type:'object',additionalProperties:false,required:['answer','decisionSummary','reasoningSummary','suggestedNextStep','confidence','alignment'],properties:{answer:{type:'string'},decisionSummary:{type:'string'},reasoningSummary:{type:'string'},suggestedNextStep:{type:'string'},confidence:{type:['number','null'],minimum:0,maximum:1},alignment:{type:'object',additionalProperties:false,required:['decisionId','decisionMode','reasonCodesUsed'],properties:{decisionId:{type:'string'},decisionMode:{type:'string',enum:[...DECISION_MODES]},reasonCodesUsed:{type:'array',items:{type:'string'},maxItems:8}}}}});
 
 function clean(value,limit=2000){return String(value??'').trim().slice(0,limit);}
 function numberOrNull(value){if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;}
@@ -17,11 +18,14 @@ function validateCoachResponse(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Object.assign(new Error('LLM_RESPONSE_INVALID'),{code:'LLM_RESPONSE_INVALID'});
  const answer=clean(input.answer,5000),decisionSummary=clean(input.decisionSummary,1000),reasoningSummary=clean(input.reasoningSummary,2000),suggestedNextStep=clean(input.suggestedNextStep,1000);
  if(!answer||!decisionSummary||!reasoningSummary)throw Object.assign(new Error('LLM_RESPONSE_INVALID'),{code:'LLM_RESPONSE_INVALID'});
- const confidence=numberOrNull(input.confidence);
- return {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence:confidence===null?null:Math.max(0,Math.min(1,confidence))};
+ const confidence=numberOrNull(input.confidence),rawAlignment=input.alignment;
+ if(!rawAlignment||typeof rawAlignment!=='object'||Array.isArray(rawAlignment))throw Object.assign(new Error('LLM_RESPONSE_INVALID'),{code:'LLM_RESPONSE_INVALID'});
+ const decisionId=clean(rawAlignment.decisionId,320),decisionMode=clean(rawAlignment.decisionMode,40),reasonCodesUsed=Array.isArray(rawAlignment.reasonCodesUsed)?[...new Set(rawAlignment.reasonCodesUsed.map(code=>clean(code,100)).filter(Boolean))].slice(0,8):[];
+ if(!decisionId||!DECISION_MODES.includes(decisionMode))throw Object.assign(new Error('LLM_RESPONSE_INVALID'),{code:'LLM_RESPONSE_INVALID'});
+ return {answer,decisionSummary,reasoningSummary,suggestedNextStep,confidence:confidence===null?null:Math.max(0,Math.min(1,confidence)),alignment:{decisionId,decisionMode,reasonCodesUsed}};
 }
 function parseCoachResponse(text){let parsed;try{parsed=JSON.parse(stripFence(text));}catch{throw Object.assign(new Error('LLM_RESPONSE_MALFORMED'),{code:'LLM_RESPONSE_MALFORMED'});}return validateCoachResponse(parsed);}
-function systemPrompt(){return `You are the language layer for GARANG Personal Performance Intelligence. GARANG's deterministic intelligence owns the decision. Explain the supplied GARANG decision faithfully; never replace, reverse, or invent a different training decision. Never claim to have changed user data. Never propose or encode a state mutation; actionable changes are handled separately by GARANG's existing Agent Contract and explicit user confirmation. Use only supplied context. If evidence is insufficient, say so.`;}
+function systemPrompt(){return `You are the language layer for GARANG Personal Performance Intelligence. GARANG's deterministic intelligence owns the decision. Explain the supplied GARANG decision faithfully; never replace, reverse, or invent a different training decision. Never claim to have changed user data. Never propose or encode a state mutation; actionable changes are handled separately by GARANG's existing Agent Contract and explicit user confirmation. Use only supplied context. If evidence is insufficient, say so. In alignment, copy garangContext.garangDecision.decisionId and garangContext.garangDecision.mode exactly, and list only reason codes that exist in garangContext.decisionReasons.`;}
 function createOpenAIProvider(options={}){
  const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(500,Number(options.timeoutMs)||DEFAULT_TIMEOUT_MS);
  if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
@@ -37,4 +41,4 @@ function createOpenAIProvider(options={}){
 }
 function createProvider(options={}){const provider=clean(options.provider||'openai',40).toLowerCase();if(provider==='openai')return createOpenAIProvider(options);throw Object.assign(new Error('LLM_PROVIDER_UNSUPPORTED'),{code:'LLM_PROVIDER_UNSUPPORTED'});}
 
-module.exports={DEFAULT_MODEL,COACH_RESPONSE_SCHEMA,createProvider,createOpenAIProvider,parseCoachResponse,validateCoachResponse,extractResponseText};
+module.exports={DEFAULT_MODEL,DECISION_MODES,COACH_RESPONSE_SCHEMA,createProvider,createOpenAIProvider,parseCoachResponse,validateCoachResponse,extractResponseText};
