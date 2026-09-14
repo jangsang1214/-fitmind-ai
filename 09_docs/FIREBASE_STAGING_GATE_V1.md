@@ -8,7 +8,7 @@ This gate is intentionally fail-closed:
 - `fitfind-ai` is rejected as a staging project;
 - staging Coach smoke only accepts the exact `asia-northeast3-<staging-project>.cloudfunctions.net/api/coach` endpoint;
 - provider secrets remain in Firebase/Google Secret Manager and are never stored in the repository;
-- browser privileged endpoints remain activation-gated until staging deployment and smoke verification pass.
+- privileged browser endpoints activate only when the loaded browser Firebase config has `projectId === 'garang-staging'`; production `fitfind-ai` remains disabled.
 
 ## Repository preflight
 From the repository root:
@@ -74,5 +74,18 @@ Expected evidence:
 - provider decision identity/mode match GARANG;
 - no secret material appears in output.
 
+## Staging browser activation
+After the external staging server-path validation is GREEN, `07_config/garang-services-config.js` may expose the verified privileged routes only when the browser Firebase config identifies the exact staging project `garang-staging`.
+
+When `window.GARANG_FIREBASE_CONFIG.projectId === 'garang-staging'`, the browser service layer derives these public HTTPS routes from the staging project:
+- `/account/export`
+- `/account/delete`
+- `/analytics/events`
+- `/telemetry/errors`
+
+When the configured project is production `fitfind-ai`, all four privileged browser endpoints remain `null`. The Coach endpoint continues to derive from the active Firebase project ID, so production Coach behavior remains unchanged while a staging-configured browser routes Coach to staging.
+
+Activation does not weaken consent filtering, authentication, recent-login deletion requirements, server-side allowlists, or deterministic GARANG decision ownership.
+
 ## Activation boundary
-A GREEN staging smoke does not automatically activate account deletion/export, analytics ingestion, telemetry ingestion, payment, or production endpoints. Each remains a separate explicit activation/release decision.
+Staging-only browser activation does not authorize payment endpoints, production privileged endpoints, production Functions deployment, or commercial release. Production activation remains a separate explicit release decision.
