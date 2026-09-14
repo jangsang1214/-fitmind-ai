@@ -10,6 +10,7 @@ function demoState(){const today=dateOffset(0),yesterday=dateOffset(-1),older=da
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-test',force:true}),screen);assert.equal(ok,true,`${screen} must remain canonically routable`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:6000});await page.waitForTimeout(600);}
 async function waitControl(page,screen,selector){await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached`);}
 async function openRecord(page){await page.locator('#bottomNav [data-page="log"]').click();const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:4000});await page.waitForFunction(()=>document.querySelectorAll('.garang-record-sheet [data-garang-record-route]').length===4&&document.querySelector('.garang-record-sheet [data-garang-record-action="recovery"]'),null,{timeout:4000});return sheet;}
+async function verifyCapabilityRoute(context,screen,selector){const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));try{await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});await page.waitForFunction(()=>window.GarangRouter&&window.GarangScreens,{timeout:8000});const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-capability-preservation',force:true}),screen);assert.equal(ok,true,`${screen} capability route must remain available`);await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:6000});await page.waitForTimeout(700);assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),screen,`${screen} must remain the active capability screen after runtime reconciliation`);assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached after runtime reconciliation`);assert.deepEqual(errors,[],`${screen} capability route browser errors:\n${errors.join('\n')}`);}finally{await page.close();}}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
@@ -53,9 +54,9 @@ async function openRecord(page){await page.locator('#bottomNav [data-page="log"]
   }
   await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
 
-  await route(page,'planner');await waitControl(page,'planner','#addPlan');
-  await route(page,'memory');await waitControl(page,'memory','#saveMemory');
-  await route(page,'settings');await waitControl(page,'settings','#savePreferences');
+  await verifyCapabilityRoute(context,'planner','#addPlan');
+  await verifyCapabilityRoute(context,'memory','#saveMemory');
+  await verifyCapabilityRoute(context,'settings','#savePreferences');
 
   await route(page,'today');await page.locator('#menuBtn').click();await page.waitForTimeout(250);
   assert.equal(await page.locator('.garang-more-sheet [data-route="planner"]:visible,.garang-more-sheet [data-pagego="planner"]:visible').count(),0,'Planner must not compete as a first-level product');
