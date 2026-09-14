@@ -42,12 +42,16 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gto==='1'&&window.GarangTodayMorningOrchestratorV1?.version==='1.2.0',{timeout:7000});
   assert.equal(await page.locator('#garangCoreToday').isHidden(),true,'legacy accumulation whisper must stay internalized while Today presents one state-entry surface');
-  const mergedToday=page.locator('#garangTodayFlow');await mergedToday.waitFor({state:'visible',timeout:5000});
-  assert.equal(await mergedToday.locator('.gtf-decision').isHidden(),true,'Today must not expose a duplicate judgment surface; Coach owns judgment');
-  assert.equal(await mergedToday.locator('.gtf-disclosure').isHidden(),true,'Today must not expose duplicate decision rationale; Coach owns explanation');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Coach must be the single user-facing decision owner');
-  assert.equal(await page.locator('#main [data-garang-checkin-access="1"]:visible').count(),1,'Today must expose exactly one visible state/check-in entry');
-  assert.equal(await page.locator('#main .status-visual-card [data-action="open-checkin"]:visible').count(),0,'legacy state owner must never compete visually with the branded Today check-in');
+
+  /* Rebuilt Today is the only visible Today owner. Canonical legacy flow stays mounted for routing/state contracts. */
+  const rebuiltToday=page.locator('#garangTodayRebuild');await rebuiltToday.waitFor({state:'visible',timeout:7000});
+  const canonicalToday=page.locator('#garangTodayFlow');await canonicalToday.waitFor({state:'attached',timeout:5000});
+  assert.equal(await canonicalToday.getAttribute('aria-hidden'),'true','canonical Today flow must remain internalized under rebuilt presentation');
+  assert.equal(await canonicalToday.evaluate(el=>el.classList.contains('gtr1-legacy-hidden')),true,'legacy Today flow must not compete visually');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Coach must remain the canonical decision owner');
+  assert.equal(await rebuiltToday.locator('.gtr1-next-card:visible').count(),1,'rebuilt Today must expose exactly one visible next action');
+  assert.equal(await page.locator('#main .status-visual-card [data-action="open-checkin"]:visible').count(),0,'legacy state owner must never compete visually with rebuilt Today');
+  assert.equal(await page.locator('#main #garangTodayFlow [data-garang-checkin-access="1"]:visible').count(),0,'legacy branded check-in access must remain visually internalized');
 
   await page.locator('#bottomNav [data-garang-primary-nav="1"][data-page="log"]').click();
   const firstSheet=page.locator('[data-garang-record-sheet="1"]');await firstSheet.waitFor({state:'visible',timeout:3000});
@@ -103,6 +107,6 @@ async function routeWithRouter(page,route,selector,screen=route){
   assert.equal(unsupportedRecovery,false,'Recovery is a Today/check-in state concern, not a standalone canonical route');
 
   assert.deepEqual(errors,[],`simplified shell browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-simplified-shell four-tab shell + single Today state entry + Coach-owned decision + Record reuse + route bridges: PASS');
+  await context.close();console.log('browser-simplified-shell four-tab shell + rebuilt Today single-action + Record reuse + route bridges: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
