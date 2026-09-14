@@ -7,7 +7,9 @@ const styles=read('03_styles/runtime/garang-coach-quiet-surface-v1.css');
 const html=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 
-assert.ok(runtime.includes("VERSION='garang-coach-quiet-surface-v1.0.0'"),'quiet Coach runtime must have a canonical version');
+assert.ok(runtime.includes("VERSION='garang-coach-quiet-surface-v1.0.1'"),'quiet Coach runtime must have a canonical version');
+assert.ok(runtime.includes('function primeCoachEvidence'),'Coach evidence must baseline existing answers before first interaction');
+assert.ok(runtime.includes("window.addEventListener('garang:coach-mounted',()=>primeCoachEvidence())"),'Coach mount must synchronously prime the evidence baseline');
 assert.ok(runtime.includes('gcs-quiet-strip'),'quiet runtime must mark one shared Coach prompt surface');
 assert.ok(runtime.includes('gcs-prompt-more'),'existing prompts must remain available through a disclosure');
 assert.ok(runtime.includes('gcs-empty-mark'),'large empty-state branding must be presentation-only');
