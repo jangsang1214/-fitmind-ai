@@ -9,7 +9,6 @@
   let scheduled = false;
   let redirecting = false;
   let mealEntryScrollY = null;
-  let moreReconcileTimer = 0;
 
   const isKo = () => document.documentElement.lang !== 'en';
   const setText=(el,value)=>{const next=String(value??'');if(el&&el.textContent!==next)el.textContent=next;};
@@ -45,14 +44,7 @@
   }
 
   function cleanMoreSheet() {
-    document.querySelectorAll([
-      '.garang-more-sheet [data-route="memory"]',
-      '.garang-more-sheet [data-route="settings"]',
-      '.garang-more-sheet [data-route="workout"]',
-      '.garang-more-sheet [data-route="nutrition"]',
-      '.garang-more-sheet [data-route="running"]',
-      '.garang-more-sheet [data-route="body"]'
-    ].join(',')).forEach(el => {
+    document.querySelectorAll('.garang-more-sheet [data-route="memory"], .garang-more-sheet [data-route="settings"]').forEach(el => {
       const parent = el.parentElement;
       el.remove();
       markSingleRoute(parent);
@@ -127,26 +119,12 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
-  function reconcileMoreAfterMount() {
-    clearInterval(moreReconcileTimer);
-    let attempts=0;
-    const sweep=()=>{
-      attempts+=1;
-      cleanMoreSheet();
-      decorateMoreSheet();
-      if(attempts>=24)clearInterval(moreReconcileTimer);
-    };
-    sweep();
-    moreReconcileTimer=setInterval(sweep,25);
-  }
-
   /* Screen/state lifecycle replaces broad body reconciliation. */
   window.addEventListener('garang:screen-rendered', schedule);
   window.addEventListener('garang:state-updated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
-    if (event.target.closest('#menuBtn')) reconcileMoreAfterMount();
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
   }, true);
 
