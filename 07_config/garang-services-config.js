@@ -41,7 +41,7 @@
   }
   function canonicalAnalytics(name,properties={}){
     let key=text(name,80),props=properties&&typeof properties==='object'&&!Array.isArray(properties)?{...properties}:{};
-    if(key==='screen_viewed'){const page=text(props.page,30);if(page)key=`screen_viewed:${page}`;}
+    if(key==='screen_viewed'){const page=text(props.page??props.screen,30);if(page)key=`screen_viewed:${page}`;}
     const legacy=legacyAnalytics[key];if(legacy){key=legacy.canonical;props={...props,...Object.fromEntries(Object.entries(legacy).filter(([k])=>k!=='canonical'))};}
     const allowed=analyticsSpec[key];if(!allowed)return null;
     const safe={};for(const property of allowed){const value=props[property];if(['string','number','boolean'].includes(typeof value)||value===null)safe[property]=typeof value==='string'?text(value):value;}
