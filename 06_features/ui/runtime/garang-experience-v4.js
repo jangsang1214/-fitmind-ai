@@ -9,6 +9,7 @@
   let scheduled = false;
   let redirecting = false;
   let mealEntryScrollY = null;
+  let moreReconcileTimer = 0;
 
   const isKo = () => document.documentElement.lang !== 'en';
   const setText=(el,value)=>{const next=String(value??'');if(el&&el.textContent!==next)el.textContent=next;};
@@ -127,11 +128,16 @@
   }
 
   function reconcileMoreAfterMount() {
-    const sweep=()=>{cleanMoreSheet();decorateMoreSheet();};
-    requestAnimationFrame(sweep);
-    setTimeout(sweep,16);
-    setTimeout(sweep,48);
-    setTimeout(sweep,120);
+    clearInterval(moreReconcileTimer);
+    let attempts=0;
+    const sweep=()=>{
+      attempts+=1;
+      cleanMoreSheet();
+      decorateMoreSheet();
+      if(attempts>=24)clearInterval(moreReconcileTimer);
+    };
+    sweep();
+    moreReconcileTimer=setInterval(sweep,25);
   }
 
   /* Screen/state lifecycle replaces broad body reconciliation. */
