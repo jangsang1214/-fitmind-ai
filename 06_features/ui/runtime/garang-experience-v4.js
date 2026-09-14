@@ -88,6 +88,15 @@
     flow.setAttribute('aria-hidden','true');
   }
 
+  function reconcileRebuiltTodayLegacy() {
+    const sweep = () => internalizeRebuiltTodayLegacy();
+    requestAnimationFrame(sweep);
+    setTimeout(sweep,16);
+    setTimeout(sweep,48);
+    setTimeout(sweep,120);
+    setTimeout(sweep,300);
+  }
+
   function internalizeMemorySurface() {
     removeRoute('[data-pagego="memory"], [data-page="memory"]');
     removeRoute('[data-pagego="settings"], [data-page="settings"]');
@@ -128,19 +137,22 @@
     requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
+  function scheduleWithTodayReconcile() {
+    schedule();
+    reconcileRebuiltTodayLegacy();
+  }
+
   /* Screen/state lifecycle replaces broad body reconciliation. */
-  window.addEventListener('garang:screen-rendered', schedule);
-  window.addEventListener('garang:state-updated', schedule);
+  window.addEventListener('garang:screen-rendered', scheduleWithTodayReconcile);
+  window.addEventListener('garang:state-updated', scheduleWithTodayReconcile);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
-  new MutationObserver(() => {
-    if (main.dataset.garangScreen === 'today' && main.querySelector('#garangTodayRebuild')) internalizeRebuiltTodayLegacy();
-  }).observe(main, { childList:true, subtree:true });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
   }, true);
 
   schedule();
+  reconcileRebuiltTodayLegacy();
 })();
 
 /* Subordinate Design/Brand integration: keep Golden Path logic, but give Today one visible next-action owner. */
