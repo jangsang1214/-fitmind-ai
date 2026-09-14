@@ -8,6 +8,7 @@ function dateOffset(offset){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('GARANG consolidated shell preview server did not start');}
 function demoState(){const today=dateOffset(0),yesterday=dateOffset(-1),older=dateOffset(-20);return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Shell',age:28,height:174,weight:70,gender:'male',goal:'퍼포먼스 향상'},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[{id:'w1',date:yesterday,name:'스쿼트',sets:4,reps:6,weight:82.5,rpe:8,duration:50}],meals:[{id:'m1',date:yesterday,name:'닭가슴살 식사',kcal:620,protein:52,carbs:45,fat:12,items:[{name:'닭가슴살',grams:180,kcal:300,protein:48,carbs:0,fat:6}]}],runs:[{id:'r1',date:yesterday,distance:5,duration:30}],body:[{id:'b0',date:older,weight:71,muscle:31,fatPercent:15},{id:'b1',date:yesterday,weight:70,muscle:31.5,fatPercent:14.5}],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,props:{date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-test',force:true}),screen);assert.equal(ok,true,`${screen} must remain canonically routable`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:6000});await page.waitForTimeout(600);}
+async function waitControl(page,screen,selector){await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached`);}
 async function openRecord(page){await page.locator('#bottomNav [data-page="log"]').click();const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:4000});await page.waitForFunction(()=>document.querySelectorAll('.garang-record-sheet [data-garang-record-route]').length===4&&document.querySelector('.garang-record-sheet [data-garang-record-action="recovery"]'),null,{timeout:4000});return sheet;}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
@@ -52,9 +53,9 @@ async function openRecord(page){await page.locator('#bottomNav [data-page="log"]
   }
   await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
 
-  await route(page,'planner');assert.equal(await page.locator('#garangPlanExecution').count(),1,'Planner capability must remain directly routable');
-  await route(page,'memory');assert.equal(await page.locator('#saveMemory').count(),1,'Memory capability must remain directly routable');
-  await route(page,'settings');assert.equal(await page.locator('#savePreferences').count(),1,'Settings utility must remain directly routable');
+  await route(page,'planner');await waitControl(page,'planner','#addPlan');
+  await route(page,'memory');await waitControl(page,'memory','#saveMemory');
+  await route(page,'settings');await waitControl(page,'settings','#savePreferences');
 
   await route(page,'today');await page.locator('#menuBtn').click();await page.waitForTimeout(250);
   assert.equal(await page.locator('.garang-more-sheet [data-route="planner"]:visible,.garang-more-sheet [data-pagego="planner"]:visible').count(),0,'Planner must not compete as a first-level product');
@@ -70,7 +71,7 @@ async function openRecord(page){await page.locator('#bottomNav [data-page="log"]
 
   assert.equal(await page.locator('#planBadge').isHidden(),true,'membership chrome must not compete in the primary shell');
   assert.equal(await page.locator('#logoutBtn').isHidden(),true,'logout remains a Settings utility, not primary chrome');
-  await route(page,'settings');assert.equal(await page.locator('#settingsLogout').count(),1,'logout capability must remain preserved in Settings');
+  await route(page,'settings');await waitControl(page,'settings','#settingsLogout');
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(overflow.scroll<=overflow.client+1,`consolidated shell must not horizontally overflow: ${JSON.stringify(overflow)}`);
   assert.deepEqual(errors,[],`consolidated shell browser errors:\n${errors.join('\n')}`);
   await context.close();console.log('browser-simplified-shell four-surface product consolidation: PASS');
