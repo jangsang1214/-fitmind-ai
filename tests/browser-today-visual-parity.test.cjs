@@ -56,6 +56,17 @@ async function bootContext(browser,width,height,options={}){
     return main?.dataset?.garangScreen==='today'&&flow?.getAttribute('aria-hidden')==='true'&&flow?.classList.contains('gtr1-legacy-hidden');
   },null,{timeout:7000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayRebuild .gtr1-next-card')?.getBoundingClientRect().height>0,{timeout:7000});
+  /* Single-next-action performs one delayed canonical reconciliation (~420ms).
+     Verify the settled rebuilt node rather than racing that intentional replacement. */
+  await page.waitForTimeout(650);
+  await page.waitForFunction(()=>{
+    const root=document.getElementById('garangTodayRebuild');
+    const detail=root?.querySelector('[data-gtr1-detail]');
+    const flow=document.getElementById('garangTodayFlow');
+    if(!root||!detail||flow?.getAttribute('aria-hidden')!=='true')return false;
+    const r=detail.getBoundingClientRect(),cs=getComputedStyle(detail);
+    return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>=44;
+  },null,{timeout:7000});
   return {context,page,errors};
 }
 
@@ -101,9 +112,9 @@ async function verifyViewport(browser,width,height,options={}){
   assert.ok(canonical||await next.getAttribute('data-gtr1-route')||await next.getAttribute('data-gtr1-action'),'Next Action must retain a functional contract');
   assert.equal(await root.locator('.gtr1-next-card:visible').count(),1,'Today must expose one primary rebuilt CTA');
 
-  const detail=root.locator('[data-gtr1-detail]');
-  const detailBox=await detail.boundingBox();
-  assert.ok(detailBox&&detailBox.height>=44,'evidence disclosure must remain touchable');
+  const detail=page.locator('#garangTodayRebuild [data-gtr1-detail]');
+  const detailMetrics=await detail.evaluate(node=>{const r=node.getBoundingClientRect();return {width:r.width,height:r.height,display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility};});
+  assert.ok(detailMetrics.width>0&&detailMetrics.height>=44&&detailMetrics.display!=='none'&&detailMetrics.visibility!=='hidden',`evidence disclosure must remain touchable: ${JSON.stringify(detailMetrics)}`);
   assert.equal(await detail.getAttribute('aria-expanded'),'false','evidence starts progressively disclosed');
   await detail.click();
   const detailAfter=page.locator('#garangTodayRebuild [data-gtr1-detail]');
