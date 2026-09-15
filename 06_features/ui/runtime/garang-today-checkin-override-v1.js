@@ -47,7 +47,7 @@
 
   function isWorkoutExecute(button) {
     if (!button) return false;
-    const text = `${button.getAttribute('aria-label') || ''} ${button.textContent || ''}`;
+    const text = button.textContent || '';
     return /운동\s*기록\s*열기|Open\s+workout\s+log/i.test(text);
   }
 
@@ -69,13 +69,13 @@
     if (!m || m.dataset.garangScreen !== 'today') return;
     const button = m.querySelector(selector);
     if (!button) return;
-    const shouldOverride = isWorkoutExecute(button) || button.dataset.garangTodayCheckinOverride === '1';
-    if (!shouldOverride) {
+    if (!isWorkoutExecute(button)) {
       button.removeAttribute('data-garang-today-checkin-override');
       return;
     }
     button.dataset.garangTodayCheckinOverride = '1';
-    button.setAttribute('aria-label', document.documentElement.lang === 'en' ? 'Check-in' : '체크인');
+    const label = document.documentElement.lang === 'en' ? 'Check-in' : '체크인';
+    if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
   }
 
   function schedule() {
@@ -90,7 +90,7 @@
     observer?.disconnect();
     observedMain = m;
     observer = new MutationObserver(schedule);
-    observer.observe(m, {childList:true, subtree:true, attributes:true, attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen']});
+    observer.observe(m, {childList:true, subtree:true, attributes:true, attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen','aria-label']});
   }
 
   document.addEventListener('click', event => {
