@@ -1,0 +1,23 @@
+name: Export food DB artifact temp
+
+on:
+  push:
+    branches:
+      - agent/official-food-corpus-v3-2026-09-16
+    paths:
+      - .github/workflows/export-food-db-artifact-temp.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: garang-food-db-current
+          path: 04_data/knowledge/food-db.json
+          if-no-files-found: error
+          retention-days: 1
