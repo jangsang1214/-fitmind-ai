@@ -22,14 +22,15 @@ jobs:
         run: python scripts/agent-apply-coach-hardening.py
       - name: Generate Functions lockfile
         run: npm install --package-lock-only --prefix functions --ignore-scripts --no-audit --no-fund
+      - name: Keep workflow files out of the bot commit
+        run: git restore .github/workflows
       - name: Verify patch diff
         run: git diff --check
-      - name: Commit generated changes
+      - name: Commit generated product changes
         run: |
-          rm .github/workflows/agent-apply-coach-hardening.yml scripts/agent-apply-coach-hardening.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
-          git commit -m 'Add Coach photo input and release hardening'
+          git commit -m 'Add Coach photo input and Functions lockfile'
           git push origin HEAD:agent/coach-multimodal-hardening-2026-09-16
