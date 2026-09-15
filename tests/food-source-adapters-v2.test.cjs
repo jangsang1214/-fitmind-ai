@@ -22,6 +22,20 @@ const kfindIncomplete=Adapters.adaptKfind({...kfindFixture,PROTEIN_G:''});
 assert.equal(kfindIncomplete.quality,'unknown');
 assert.ok(Foundation.assess(kfindIncomplete).warnings.some(x=>x.code==='UNKNOWN_QUALITY'));
 
+const dataGoKrFixture={foodCd:'P116-705070200-1080',foodNm:'대추 쌀과자',dataCd:'P',typeNm:'가공식품',enerc:'382',nutConSrtrQua:'100g',prot:'8.50',fatce:'2.00',chocdf:'82.00',sugar:'0.20',nat:'18',fasat:'0.40',fatrn:'0.00',srcNm:'식품의약품안전처',dataProdYmd:'2025-01-22'};
+const dataGoKr=Adapters.adaptDataGoKrStandard(dataGoKrFixture,{retrievedAt:'2026-09-15'});
+assert.equal(dataGoKr.quality,'verified');
+assert.equal(dataGoKr.provenance.provider,'DATA.GO.KR');
+assert.equal(dataGoKr.provenance.dataset,'PROCESSED');
+assert.equal(dataGoKr.provenance.recordId,'P116-705070200-1080');
+assert.equal(dataGoKr.basisG,100);
+assert.equal(dataGoKr.nutrients.kcal,382);
+assert.equal(dataGoKr.nutrients.protein,8.5);
+assert.equal(Foundation.assess(dataGoKr).errors.length,0);
+
+const volumeBasis=Adapters.adaptDataGoKrStandard({...dataGoKrFixture,foodCd:'P-VOLUME',foodNm:'간장 테스트',nutConSrtrQua:'100ml'});
+assert.equal(volumeBasis.quality,'unknown','volume basis must not be silently treated as gram basis');
+
 const usdaFixture={
   fdcId:999001,dataType:'Foundation',description:'Chicken breast, cooked, roasted',foodCategory:'Poultry Products',publicationDate:'2026-04-01',
   foodNutrients:[
@@ -65,7 +79,21 @@ const ambiguous=Adapters.exactMatchProposal(ambiguousExisting,[ambiguousOfficial
 assert.equal(ambiguous.proposals.length,0);
 assert.equal(ambiguous.review[0].reason,'AMBIGUOUS_EXACT_MATCH');
 
+const riceStandard=Adapters.adaptDataGoKrStandard({foodCd:'RICE-1',foodNm:'흰쌀밥',typeNm:'음식',enerc:'130',nutConSrtrQua:'100g',prot:'2.4',fatce:'0.3',chocdf:'28.7',srcNm:'식품의약품안전처'});
+const plan=Adapters.corpusUpgradePlan(existing,[riceStandard,Adapters.adaptUsda(usdaFixture,{name:'닭가슴살'})]);
+assert.equal(plan.summary.targets,2);
+assert.equal(plan.summary.safeProposals,2);
+assert.equal(plan.summary.before.approximate,2);
+assert.equal(plan.summary.projectedAfterReview.verified,2);
+assert.equal(plan.summary.projectedAfterReview.approximate,0);
+
+const riceDuplicate=Adapters.adaptDataGoKrStandard({foodCd:'RICE-2',foodNm:'흰쌀밥',typeNm:'음식',enerc:'131',nutConSrtrQua:'100g',prot:'2.5',fatce:'0.3',chocdf:'28.8',srcNm:'식품의약품안전처'});
+const multiOfficial=Adapters.corpusUpgradePlan(existing,[riceStandard,riceDuplicate]);
+assert.equal(multiOfficial.summary.safeProposals,0);
+assert.equal(multiOfficial.review[0].reason,'MULTIPLE_OFFICIAL_CANDIDATES');
+
 assert.deepEqual(Adapters.unwrapRows({response:{body:{items:{item:[kfindFixture]}}}},'kfind'),[kfindFixture]);
+assert.deepEqual(Adapters.unwrapRows({response:{body:{items:[dataGoKrFixture]}}},'data-go-kr-standard'),[dataGoKrFixture]);
 assert.deepEqual(Adapters.unwrapRows({foods:[usdaFixture]},'usda-fdc'),[usdaFixture]);
 
 console.log('food-source-adapters-v2.test: ok');
