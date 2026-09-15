@@ -47,6 +47,9 @@ for name in TARGETS:
         insert = f"{match.group('indent')}await installAuthenticatedFirebaseMock(context);\n"
         s = s[:match.start()] + insert + s[match.start():]
 
+    # Removing a standalone demo-flag statement can leave indentation-only lines.
+    s = re.sub(r'^[ \t]+$', '', s, flags=re.MULTILINE)
+
     if "setItem('garang_demo'" in s or 'garang_demo_state_v3' in s:
         raise SystemExit(f'{name}: legacy demo boot fixture remains')
     if s == original:
