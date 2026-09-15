@@ -1,0 +1,144 @@
+name: Production Coach Activation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/production-coach-activation.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-coach-activation
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: contains(github.event.head_commit.message, 'Activate production Real AI Coach')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out approved revision
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Select fail-closed Firebase authentication
+        id: auth
+        shell: bash
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_SERVICE_ACCOUNT_FITFIND_AI: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FITFIND_AI }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+        run: |
+          set -euo pipefail
+          cred_file="$RUNNER_TEMP/firebase-service-account.json"
+          if [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
+            printf '%s' "$FIREBASE_SERVICE_ACCOUNT_FITFIND_AI" > "$cred_file"
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$cred_file"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$cred_file" >> "$GITHUB_ENV"
+            echo "mode=adc-service-account-fitfind" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${GOOGLE_APPLICATION_CREDENTIALS_JSON:-}" ]]; then
+            printf '%s' "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > "$cred_file"
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$cred_file"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$cred_file" >> "$GITHUB_ENV"
+            echo "mode=adc-service-account-generic" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${FIREBASE_TOKEN:-}" ]]; then
+            echo "mode=legacy-firebase-token" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No Firebase deployment credential is configured. Expected FIREBASE_SERVICE_ACCOUNT_FITFIND_AI, GOOGLE_APPLICATION_CREDENTIALS_JSON, or FIREBASE_TOKEN."
+            exit 42
+          fi
+
+      - name: Verify production project access
+        shell: bash
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.auth.outputs.mode }}" != "legacy-firebase-token" ]]; then unset FIREBASE_TOKEN; fi
+          npx firebase projects:list --json > "$RUNNER_TEMP/firebase-projects.json"
+          node - "$RUNNER_TEMP/firebase-projects.json" <<'NODE'
+          const fs=require('fs');
+          const raw=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const rows=Array.isArray(raw)?raw:Array.isArray(raw.result)?raw.result:[];
+          if(!rows.some(project=>project.projectId==='fitfind-ai')){
+            console.error('fitfind-ai is not accessible with the configured Firebase credential.');
+            process.exit(43);
+          }
+          console.log('fitfind-ai credential access verified.');
+          NODE
+
+      - name: Confirm or configure GARANG LLM secret
+        shell: bash
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GARANG_LLM_API_KEY: ${{ secrets.GARANG_LLM_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.auth.outputs.mode }}" != "legacy-firebase-token" ]]; then unset FIREBASE_TOKEN; fi
+          if npx firebase functions:secrets:get GARANG_LLM_API_KEY --project fitfind-ai > /dev/null 2>&1; then
+            echo "Existing GARANG_LLM_API_KEY metadata found; preserving the current production secret value."
+          elif [[ -n "${GARANG_LLM_API_KEY:-}" ]]; then
+            printf '%s' "$GARANG_LLM_API_KEY" | npx firebase functions:secrets:set GARANG_LLM_API_KEY --project fitfind-ai
+            echo "GARANG_LLM_API_KEY created from the masked GitHub Actions secret."
+          else
+            echo "::error::GARANG_LLM_API_KEY is absent from Firebase Secret Manager and no masked GitHub secret is available to create it."
+            exit 44
+          fi
+
+      - name: Deploy only the approved production api Function
+        shell: bash
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.auth.outputs.mode }}" != "legacy-firebase-token" ]]; then unset FIREBASE_TOKEN; fi
+          npx firebase deploy --only functions:api --project fitfind-ai --non-interactive
+
+      - name: Verify public Coach auth and method boundaries
+        run: npm run preflight:coach:prod-route
+
+      - name: Run authenticated live Coach smoke when a token is available
+        id: live_smoke
+        shell: bash
+        env:
+          GARANG_FIREBASE_ID_TOKEN: ${{ secrets.GARANG_FIREBASE_ID_TOKEN }}
+          GARANG_FIREBASE_ID_TOKEN_ALT: ${{ secrets.GARANG_FIREBASE_ID_TOKEN_ALT }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${GARANG_FIREBASE_ID_TOKEN:-}" ]]; then
+            npm run smoke:coach:prod
+            echo "status=PASS" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Production route is deployed and fail-closed boundaries passed, but authenticated live LLM smoke is pending because no GARANG_FIREBASE_ID_TOKEN GitHub secret is available."
+            echo "status=SKIPPED_NO_TOKEN" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Remove temporary Firebase credential material
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json" "$RUNNER_TEMP/firebase-projects.json"
+
+      - name: Record non-secret activation evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## GARANG Production Coach Activation"
+            echo "- Project: \`fitfind-ai\`"
+            echo "- Function: \`api\` / \`asia-northeast3\`"
+            echo "- Repository revision: \`${GITHUB_SHA}\`"
+            echo "- Firebase auth mode: \`${{ steps.auth.outputs.mode || 'unavailable' }}\`"
+            echo "- Authenticated live smoke: \`${{ steps.live_smoke.outputs.status || 'NOT_REACHED' }}\`"
+            echo "- Secret values were scoped to the minimum required steps and were not printed or persisted to repository files."
+          } >> "$GITHUB_STEP_SUMMARY"
