@@ -1,17 +1,72 @@
-/* GARANG State Event Durability v1.1
+/* GARANG State Event Durability v1.2
    Bridges the legacy app.js saveState ordering to the canonical Agent State Bridge.
-   app.js emits `garang:state-updated` after adding its semantic event, but the legacy
-   local write happens just before that event is added. This boundary commits the live
-   bridge object once more at the lifecycle boundary and then reuses the existing
-   app-state synchronization event so the next app-owned write cannot overwrite the
-   canonical bridge with a stale pre-event snapshot.
+   app.js can persist a state snapshot just before adding the semantic lifecycle event.
+   A following route write may therefore overwrite storage/bridge with that stale snapshot.
+   This boundary keeps lifecycle evidence scoped to its exact storage key and re-injects
+   missing evidence before any later state write reaches the existing persistence chain.
 */
 (() => {
 'use strict';
 if(window.GarangStateEventDurabilityV1)return;
 
 let committing=false;
+const previousSetItem=Storage.prototype.setItem;
+const requiredByKey=new Map();
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const isObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+const isStateKey=key=>/^garang_(?:demo_state_v3|user_.+_v3)$/.test(String(key||''));
+const eventId=()=>globalThis.crypto?.randomUUID?.()||`evt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+function requiredEvents(key){
+  const normalized=String(key||'');
+  if(!requiredByKey.has(normalized))requiredByKey.set(normalized,new Map());
+  return requiredByKey.get(normalized);
+}
+function ensureAnalytics(state){
+  state.analytics=isObject(state.analytics)?state.analytics:{events:[]};
+  state.analytics.events=Array.isArray(state.analytics.events)?state.analytics.events:[];
+  return state.analytics.events;
+}
+function rememberLifecycle(key,eventName,source,live){
+  if(!eventName)return null;
+  const events=ensureAnalytics(live);
+  const existing=[...events].reverse().find(row=>row?.name===eventName)||null;
+  const row=existing||{
+    id:eventId(),
+    name:eventName,
+    props:{source:String(source||'app'),durabilityBoundary:'state-event-v1'},
+    at:new Date().toISOString()
+  };
+  if(!existing)events.push(row);
+  requiredEvents(key).set(eventName,clone(row));
+  if(events.length>500)events.splice(0,events.length-500);
+  return row;
+}
+function mergeRequired(key,state){
+  if(!isObject(state))return state;
+  const required=requiredByKey.get(String(key||''));
+  if(!required?.size)return state;
+  const events=ensureAnalytics(state);
+  for(const [name,row] of required){
+    if(events.some(event=>event?.name===name))continue;
+    events.push(clone(row));
+  }
+  if(events.length>500)events.splice(0,events.length-500);
+  return state;
+}
+
+/* This wrapper is deliberately installed after the existing sync + Agent bridge wrappers.
+   It changes only state-key payloads and delegates the final write to the full canonical
+   persistence chain, so account pinning, durability metadata and bridge capture remain owned
+   by their existing runtimes. */
+Storage.prototype.setItem=function(key,value){
+  if(this!==localStorage||!isStateKey(key))return previousSetItem.call(this,key,value);
+  try{
+    const parsed=JSON.parse(String(value));
+    if(isObject(parsed))return previousSetItem.call(this,key,JSON.stringify(mergeRequired(key,parsed)));
+  }catch{}
+  return previousSetItem.call(this,key,value);
+};
 
 function publishAppStateSync(key,event){
   try{
@@ -35,28 +90,11 @@ function commitLifecycleEvent(event){
   if(!key||!live||typeof live!=='object')return false;
 
   const eventName=String(event?.detail?.event||'').trim();
-  live.analytics=live.analytics&&typeof live.analytics==='object'?live.analytics:{events:[]};
-  live.analytics.events=Array.isArray(live.analytics.events)?live.analytics.events:[];
-
-  /* The app normally already added this event to the same live object. If a legacy
-     write boundary supplied an older object, the lifecycle envelope is enough evidence
-     to restore the missing event exactly once before the next route can consume state. */
-  if(eventName&&!live.analytics.events.some(row=>row?.name===eventName)){
-    live.analytics.events.push({
-      id:globalThis.crypto?.randomUUID?.()||`evt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-      name:eventName,
-      props:{source:String(event?.detail?.source||'app'),durabilityBoundary:'state-event-v1'},
-      at:new Date().toISOString()
-    });
-    if(live.analytics.events.length>500)live.analytics.events.splice(0,live.analytics.events.length-500);
-  }
+  rememberLifecycle(key,eventName,event?.detail?.source,live);
 
   try{
     committing=true;
     localStorage.setItem(key,JSON.stringify(live));
-    /* app.js already treats garang:agent-write as its canonical "adopt bridge state"
-       boundary. Publishing only after the durable write keeps app state and bridge state
-       on the same object before a route transition can emit another persisted event. */
     publishAppStateSync(key,event);
     return true;
   }catch(error){
@@ -68,5 +106,10 @@ function commitLifecycleEvent(event){
 }
 
 window.addEventListener('garang:state-updated',commitLifecycleEvent);
-window.GarangStateEventDurabilityV1=Object.freeze({version:'1.1.0',commit:event=>commitLifecycleEvent(event),snapshot:()=>clone(window.GarangAgentStateBridge?.getState?.()||null)});
+window.GarangStateEventDurabilityV1=Object.freeze({
+  version:'1.2.0',
+  commit:event=>commitLifecycleEvent(event),
+  snapshot:()=>clone(window.GarangAgentStateBridge?.getState?.()||null),
+  required:key=>clone([...(requiredByKey.get(String(key||''))?.values()||[])])
+});
 })();
