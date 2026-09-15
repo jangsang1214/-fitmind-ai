@@ -20,11 +20,11 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.1'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
+  await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.2'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
   try{
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutPrepExecution==='1'&&document.querySelector('.garang-daily-workout')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:10000});
   }catch(error){
-    const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,800)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
+    const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,1200)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
     throw new Error(error.message+'\nToday workout preparation diagnostic: '+JSON.stringify(diagnostic),{cause:error});
   }
   await page.waitForTimeout(200);
@@ -44,8 +44,13 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   const start=prep.locator('[data-garang-workout-prep-start="1"]');
   await start.waitFor({state:'visible',timeout:3000});
   assert.equal(await start.getAttribute('aria-label'),'운동 시작','workout execution must be merged into preparation');
-  assert.equal(await prep.locator('.garang-daily-head').isHidden(),true,'duplicate workout heading and explanation must be simplified');
+  assert.equal(await prep.locator('.garang-daily-head > div').isHidden(),true,'duplicate workout heading and explanation must be simplified');
   assert.equal(await prep.locator('.garang-daily-summary-mark').isHidden(),true,'duplicate GARANG badge must not add visual noise during execution');
+  const details=prep.locator('.garang-daily-head .gci-toggle');
+  await details.waitFor({state:'visible',timeout:3000});
+  await details.click();
+  await prep.locator('[data-daily-target]').waitFor({state:'visible',timeout:3000});
+  assert.equal(await prep.locator('[data-daily-generate]').isVisible(),true,'advanced workout generation controls must remain available behind disclosure');
 
   const layout=await page.evaluate(()=>{const main=document.getElementById('main'),start=document.querySelector('[data-garang-workout-prep-start="1"]'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');const sb=start?.getBoundingClientRect(),cb=checkin?.getBoundingClientRect();return {start:{height:sb?.height||0,display:start?getComputedStyle(start).display:''},checkin:{top:cb?.top||0,color:checkin?getComputedStyle(checkin).color:'',background:checkin?getComputedStyle(checkin).backgroundColor:'',height:cb?.height||0,last:main?.lastElementChild===checkin}};});
   assert.ok(layout.start.height>=44,`merged workout start must remain touch-safe: ${JSON.stringify(layout)}`);
@@ -58,6 +63,6 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   await page.locator('.modal .modal-close,.modal-close').first().click();await save.waitFor({state:'hidden',timeout:5000});
   await start.click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
   assert.deepEqual(errors,[],`Today workout preparation integration browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-today-checkin-override preparation owns workout start + bottom Check-in: PASS');
+  await context.close();console.log('browser-today-checkin-override preparation owns workout start + progressive details + bottom Check-in: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
