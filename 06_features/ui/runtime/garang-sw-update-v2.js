@@ -10,7 +10,16 @@ function loadProductConsolidation(){
   script.async=false;
   document.head.appendChild(script);
 }
+function loadTodayCheckinOverride(){
+  if(window.GarangTodayCheckinOverrideV1||document.querySelector('script[data-garang-today-checkin-override-v1]'))return;
+  const script=document.createElement('script');
+  script.src='./06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.0.0';
+  script.dataset.garangTodayCheckinOverrideV1='1';
+  script.async=false;
+  document.head.appendChild(script);
+}
 loadProductConsolidation();
+loadTodayCheckinOverride();
 async function update(){if(!('serviceWorker' in navigator))return false;try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});await registration.update();return true;}catch(error){console.warn('[GARANG] service worker update deferred',error);return false;}}
 update();
 window.GarangSwUpdateV2=Object.freeze({version:'v2',update});
