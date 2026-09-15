@@ -29,7 +29,7 @@ function loadTodayCheckinOverride(){
 function loadTodayWorkoutPrepIntegration(){
   if(window.GarangTodayWorkoutPrepIntegrationV1||document.querySelector('script[data-garang-today-workout-prep-integration-v1]'))return;
   const script=document.createElement('script');
-  script.src='./06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.0';
+  script.src='./06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.1';
   script.dataset.garangTodayWorkoutPrepIntegrationV1='1';
   script.async=false;
   document.head.appendChild(script);
