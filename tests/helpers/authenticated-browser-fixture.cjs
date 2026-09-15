@@ -2,15 +2,14 @@
 
 function storageKey(uid='mock-user'){return `garang_user_${uid}_v3`;}
 
-async function installAuthenticatedBrowserFixture(context,state,options={}){
+async function installAuthenticatedFirebaseMock(context,options={}){
   const uid=String(options.uid||'mock-user');
   const displayName=String(options.displayName||'Regression User');
   const email=String(options.email||'regression@example.com');
   const standalone=options.standalone===true;
   await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked by authenticated browser fixture */'}));
-  await context.addInitScript(({state,uid,displayName,email,standalone})=>{
+  await context.addInitScript(({uid,displayName,email,standalone})=>{
     if(standalone){try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}}
-    localStorage.setItem(`garang_user_${uid}_v3`,JSON.stringify(state));
     const user={uid,displayName,email,updateProfile:async()=>{},getIdToken:async()=>`mock-id-token-${uid}`};
     let db;
     class DocRef{
@@ -41,8 +40,14 @@ async function installAuthenticatedBrowserFixture(context,state,options={}){
     authFn.GoogleAuthProvider=function(){};
     authFn.OAuthProvider=function(){};
     window.firebase={apps:[{}],initializeApp:()=>({}),auth:authFn,firestore};
-  },{state,uid,displayName,email,standalone});
+  },{uid,displayName,email,standalone});
   return {uid,storageKey:storageKey(uid)};
 }
 
-module.exports={installAuthenticatedBrowserFixture,storageKey};
+async function installAuthenticatedBrowserFixture(context,state,options={}){
+  const identity=await installAuthenticatedFirebaseMock(context,options);
+  await context.addInitScript(({state,key})=>{localStorage.setItem(key,JSON.stringify(state));},{state,key:identity.storageKey});
+  return identity;
+}
+
+module.exports={installAuthenticatedFirebaseMock,installAuthenticatedBrowserFixture,storageKey};
