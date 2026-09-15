@@ -1,0 +1,51 @@
+{
+  "version": "garang-kfind-home-analyzed-v1",
+  "source": {
+    "provider": "MFDS K-FIND",
+    "dataset": "KDDB_HOME_ANALYZED",
+    "url": "https://www.nics.go.kr/food/kfi/fct/fctIntro/list?menuId=PS03562",
+    "sourceDate": "2026-08-28",
+    "retrievedAt": "2026-09-15",
+    "label": "K-FIND 음식 DB · 가정식(분석 함량)",
+    "file": "20260828_음식DB_19617건.xlsx",
+    "sha256": "1ef3551f9a1d0ee87891d6306fa22bbd6a7ffcc90f2c70a4a184dbfe3fce6ea6",
+    "duplicateSha256": "1ef3551f9a1d0ee87891d6306fa22bbd6a7ffcc90f2c70a4a184dbfe3fce6ea6",
+    "rows": 19617,
+    "selection": "식품기원명=가정식(분석 함량) AND 영양성분함량기준량=100g",
+    "basisG": 100,
+    "eligibleSourceRows": 482,
+    "includedSafeBatchRows": 5
+  },
+  "records": [
+    {
+      "recordId": "D101-050000000-0001",
+      "name": "현미밥",
+      "category": "밥류",
+      "nutrients": {"kcal":172,"protein":3.1,"carbs":38.9,"fat":0.47,"sugar":0,"fiber":2,"sodium":2,"cholesterol":0,"saturatedFat":0.18,"transFat":0}
+    },
+    {
+      "recordId": "D101-032000000-0001",
+      "name": "잡곡밥",
+      "category": "밥류",
+      "nutrients": {"kcal":146,"protein":5.3,"carbs":29.33,"fat":0.87,"sugar":0.32,"fiber":6.1,"sodium":3,"cholesterol":0,"saturatedFat":0.22,"transFat":0}
+    },
+    {
+      "recordId": "D101-016000000-0001",
+      "name": "보리밥",
+      "category": "밥류",
+      "nutrients": {"kcal":161,"protein":2.9,"carbs":36.77,"fat":0.24,"sugar":2.57,"fiber":2.4,"sodium":4,"cholesterol":0,"saturatedFat":0.1,"transFat":0}
+    },
+    {
+      "recordId": "D101-049000000-0001",
+      "name": "하이라이스",
+      "category": "밥류",
+      "nutrients": {"kcal":112,"protein":4.02,"carbs":21.34,"fat":1.13,"sugar":0,"fiber":0.9,"sodium":246,"cholesterol":2.83,"saturatedFat":0.13,"transFat":0}
+    },
+    {
+      "recordId": "D102-109000000-0001",
+      "name": "카스텔라",
+      "category": "빵 및 과자류",
+      "nutrients": {"kcal":335,"protein":10.03,"carbs":47.99,"fat":11.47,"sugar":33.77,"fiber":1.3,"sodium":63,"cholesterol":211.21,"saturatedFat":1.14,"transFat":0.01}
+    }
+  ]
+}
