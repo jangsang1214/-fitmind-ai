@@ -1,0 +1,43 @@
+name: Official food source audit
+on:
+  pull_request:
+    paths:
+      - 'scripts/acquire-kfind-public-food-db.cjs'
+      - '.github/workflows/official-food-source-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acquire-kfind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Acquire official K-FIND food DB
+        id: acquire
+        continue-on-error: true
+        run: node scripts/acquire-kfind-public-food-db.cjs
+      - name: List acquisition artifacts
+        if: always()
+        run: find tmp/kfind-source -maxdepth 2 -type f -printf '%f %s bytes\n' | sort || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kfind-public-food-source
+          path: tmp/kfind-source
+          if-no-files-found: error
+          retention-days: 2
+      - name: Require source download
+        if: always()
+        run: test "${{ steps.acquire.outcome }}" = "success"
