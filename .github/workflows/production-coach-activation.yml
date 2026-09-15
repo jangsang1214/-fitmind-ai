@@ -32,6 +32,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Install Functions runtime dependencies
+        run: npm install --prefix functions --omit=dev --no-audit --no-fund
+
       - name: Select fail-closed Firebase authentication
         id: auth
         shell: bash
