@@ -22,6 +22,10 @@ const overrideFromUpdater=updater.match(/garang-today-checkin-override-v1\.js\?v
 const overrideFromPrecache=sw.match(/garang-today-checkin-override-v1\.js\?v=([0-9.]+)/)?.[1];
 assert.ok(overrideFromUpdater&&overrideFromPrecache,'Today Check-in runtime must expose a versioned dynamic asset');
 assert.equal(overrideFromPrecache,overrideFromUpdater,'Today Check-in runtime must be precached at the exact version requested by the app');
+const prepFromUpdater=updater.match(/garang-today-workout-prep-integration-v1\.js\?v=([0-9.]+)/)?.[1];
+const prepFromPrecache=sw.match(/garang-today-workout-prep-integration-v1\.js\?v=([0-9.]+)/)?.[1];
+assert.ok(prepFromUpdater&&prepFromPrecache,'Today workout preparation integration must expose a versioned dynamic asset');
+assert.equal(prepFromPrecache,prepFromUpdater,'Today workout preparation integration must be precached at the exact version requested by the app');
 assert.match(sw,/EXTRA_ASSETS/,'dynamically loaded critical runtimes must be explicitly available offline');
 assert.match(updater,/updateViaCache:'none'/);
 assert.match(updater,/registration\.update\(\)/);
