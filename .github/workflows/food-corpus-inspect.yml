@@ -1,0 +1,22 @@
+name: Food corpus inspect
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/food-corpus-inspect.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Print compact canonical food corpus
+        run: |
+          node - <<'NODE'
+          const foods=require('./04_data/knowledge/food-db.json');
+          const rows=foods.map(x=>({id:x.food_id,name:x.name,category:x.category,serving:x.serving,basis:x.basis_g,quality:x.nutrition_status}));
+          console.log('GARANG_FOOD_CORPUS_JSON='+JSON.stringify(rows));
+          NODE
