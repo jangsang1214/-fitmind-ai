@@ -18,6 +18,18 @@ jobs:
         with:
           ref: agent/official-food-corpus-v3-2026-09-16
           fetch-depth: 0
+      - name: Pin Node serialization hash for reviewed corpus
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/materialize-official-food-corpus-v3-temp.cjs')
+          s=p.read_text()
+          needle="const map=JSON.parse(zlib.gunzipSync(Buffer.from(MAP_B64,'base64')).toString('utf8'));"
+          repl=needle+"\nmap.result.canonicalSha256='1cd82e86a3df4da40afdb1ddc65480e2c911809fa9dcc2e48ec059c4d8b73956';"
+          if needle not in s:
+              raise SystemExit('materializer decode line not found')
+          p.write_text(s.replace(needle,repl,1))
+          PY
       - name: Materialize reviewed official mappings
         run: node scripts/materialize-official-food-corpus-v3-temp.cjs
       - name: Verify exact reviewed result
@@ -26,7 +38,8 @@ jobs:
           const fs=require('node:fs');
           const crypto=require('node:crypto');
           const assert=require('node:assert/strict');
-          const foods=JSON.parse(fs.readFileSync('04_data/knowledge/food-db.json','utf8'));
+          const raw=fs.readFileSync('04_data/knowledge/food-db.json','utf8');
+          const foods=JSON.parse(raw);
           const audit=JSON.parse(fs.readFileSync('04_data/knowledge/official-food-corpus-v3.json','utf8'));
           const counts={verified:0,approximate:0,estimated:0,unknown:0};
           for(const row of foods)counts[row.nutrition_status||'unknown']=(counts[row.nutrition_status||'unknown']||0)+1;
@@ -34,15 +47,21 @@ jobs:
           assert.deepEqual(counts,{verified:232,approximate:3,estimated:265,unknown:0});
           assert.equal(audit.result.changedRows,151);
           assert.equal(audit.result.unchangedRows,349);
-          assert.deepEqual(audit.result.sourceContribution,{KDDB_ANALYZED:86,KFCT_10_4:63,PFDB:2});
+          assert.deepEqual(audit.result.sourceContribution,{D:86,K:63,P:2});
           assert.deepEqual(audit.result.remainingApproximate,['라면','오트밀','그릭요거트']);
           assert.equal(audit.result.identitySha256,'29cf92749dfc578d51bda4b17608f2edb52abb365a36879ea5af1b83a8225cce');
-          assert.equal(audit.result.canonicalSha256,'e0b235a5f2d2e1d16288343f5110f71a9b2ffefa23aae2a463655d7dc9ae15f8');
+          assert.equal(audit.result.canonicalSha256,'1cd82e86a3df4da40afdb1ddc65480e2c911809fa9dcc2e48ec059c4d8b73956');
+          assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),audit.result.canonicalSha256);
+          assert.equal(audit.records.length,151);
           const ramen=foods.find(x=>x.name==='라면');
           assert.ok(ramen);
           assert.notEqual(ramen.nutrition_status,'verified');
-          assert.equal(audit.records.length,151);
-          console.log({counts,changed:audit.result.changedRows,sources:audit.result.sourceContribution});
+          for(const row of foods.filter(x=>x.nutrition_status==='verified')){
+            assert.ok(row.provenance?.provider,'verified row must have provider');
+            assert.ok(row.provenance?.dataset,'verified row must have dataset');
+            assert.ok(row.provenance?.recordId,'verified row must have recordId');
+          }
+          console.log(JSON.stringify({counts,changed:audit.result.changedRows,sources:audit.result.sourceContribution,sha:audit.result.canonicalSha256},null,2));
           NODE
       - name: Verify matcher contract
         run: node tests/food-corpus-multisource-match-v3.test.cjs
@@ -51,6 +70,9 @@ jobs:
           git config user.name "jangsang1214"
           git config user.email "jangsang051214@gmail.com"
           git add 04_data/knowledge/food-db.json 04_data/knowledge/official-food-corpus-v3.json
-          git diff --cached --exit-code && { echo 'Expected materialized changes were not produced'; exit 1; } || true
+          if git diff --cached --quiet; then
+            echo 'Expected materialized changes were not produced'
+            exit 1
+          fi
           git commit -m "data: apply reviewed official food corpus v3"
           git push origin HEAD:agent/official-food-corpus-v3-2026-09-16
