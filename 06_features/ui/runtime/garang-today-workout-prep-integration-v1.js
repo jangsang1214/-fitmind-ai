@@ -25,10 +25,14 @@
   function canonicalWorkoutExecute() {
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') return null;
+    const button = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    if (!button) return null;
     const model = window.GarangTodaySingleNextActionV1?.currentModel?.();
-    const type = model?.nextAction?.actionType || model?.nextPlan?.type;
-    if (model?.nextAction?.action !== 'execute' || type !== 'workout') return null;
-    return m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    const type = model?.nextAction?.actionType || model?.nextPlan?.type || '';
+    const marked = button.dataset.garangTodayWorkoutExecute === '1';
+    const copy = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`;
+    const workoutCopy = /운동\s*기록\s*열기|오늘\s*운동\s*실행|Open\s+workout\s+log|Start\s+today(?:'|’)?s\s+workout/i.test(copy);
+    return type === 'workout' || marked || workoutCopy ? button : null;
   }
 
   function ensureStyle() {
