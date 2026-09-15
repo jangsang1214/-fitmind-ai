@@ -101,7 +101,17 @@ async function openRecordRoute(page,route,touch,label){
     await waitForServer();browser=await chromium.launch({headless:true});
     for(const mode of [{name:'desktop',viewport:{width:1280,height:900},touch:false},{name:'mobile',viewport:{width:390,height:844},touch:true}]){
       const context=await browser.newContext({viewport:mode.viewport,isMobile:mode.touch,hasTouch:mode.touch});
-      await context.addInitScript(state=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(state));},dirtyState());
+      await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked by init script */'}));
+      await context.addInitScript(state=>{
+        localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(state));
+        const user={uid:'mock-user',displayName:'Regression User',email:'regression@example.com',updateProfile:async()=>{},getIdToken:async()=> 'mock-id-token'};let db;
+        class DocRef{constructor(path){this.path=path;this.id=path.split('/').pop();this.firestore=db;}collection(name){return new CollectionRef(`${this.path}/${name}`);}async get(){return {exists:false,id:this.id,ref:this,metadata:{},data:()=>null,get:()=>undefined};}async set(){return undefined;}}
+        class CollectionRef{constructor(path){this.path=path;}doc(id){return new DocRef(`${this.path}/${id}`);}}
+        db={collection:name=>new CollectionRef(name),runTransaction:async fn=>fn({get:ref=>ref.get(),set:()=>{}})};
+        const auth={currentUser:user,onAuthStateChanged(cb){setTimeout(()=>cb(user),20);return ()=>{};},signOut:async()=>{auth.currentUser=null;}};
+        function firestore(){return db;}firestore.FieldValue={serverTimestamp:()=> 'mock-server-time'};function authFn(){return auth;}authFn.GoogleAuthProvider=function(){};authFn.OAuthProvider=function(){};
+        window.firebase={apps:[{}],initializeApp:()=>({}),auth:authFn,firestore};
+      },dirtyState());
       const page=await context.newPage(),pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e?.stack||e?.message||e)));
       await page.goto(`${baseURL}/?mode=${mode.name}`,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
@@ -109,7 +119,7 @@ async function openRecordRoute(page,route,touch,label){
       await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});
       await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase,null,{timeout:7000});
 
-      const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));
+      const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')));
       assert.equal(repaired.workouts.length,1,`${mode.name}: malformed workouts must be removed`);
       assert.equal(repaired.meals.length,1);assert.equal(repaired.meals[0].items.length,1);assert.equal(repaired.checkins.length,1);
       assert.ok(repaired.memory&&Array.isArray(repaired.memory.entries));assert.ok(repaired.analytics&&Array.isArray(repaired.analytics.events));

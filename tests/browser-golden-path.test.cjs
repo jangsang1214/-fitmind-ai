@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -11,7 +12,7 @@ const mondayOf=date=>{const [year,month,day]=date.split('-').map(Number),d=new D
 const addDays=(date,offset)=>{const [year,month,day]=date.split('-').map(Number),d=new Date(year,month-1,day);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const response=await fetch(baseURL);if(response.ok)return;}catch{}await new Promise(resolve=>setTimeout(resolve,180));}throw new Error('golden path preview server did not start');}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'golden-path-browser',force:true}),screen);assert.equal(ok,true,`${screen} must remain reachable through the canonical Router`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});}
-async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));}
+async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null'));}
 function emptyPlanState(){const today=localDate();return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Golden Path User',age:29,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[{id:'meal-1',date:today,name:'기준 식단',kcal:2200,protein:112,carbs:260,fat:65,items:[{id:'food-1',name:'기준 식단',grams:500,kcal:2200,protein:112,carbs:260,fat:65}]}],runs:[],body:[],checkins:[{id:'checkin-1',date:today,sleep:7.5,energy:4,stress:2,soreness:2}],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 
 (async()=>{
@@ -19,7 +20,8 @@ function emptyPlanState(){const today=localDate();return {meta:{schemaVersion:5,
   try{
     await waitForServer();browser=await webkit.launch({headless:true});
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-    await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},emptyPlanState());
+    await installAuthenticatedFirebaseMock(context);
+    await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},emptyPlanState());
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>window.GarangGoalAlignment&&window.GarangRouter&&window.GarangDailyPlanV1,null,{timeout:7000});
 

@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -45,7 +46,8 @@ async function assertSettingsInteractive(page,label){
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   stage('server');await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
-  await context.addInitScript(()=>{try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify({meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},profile:{name:'WebKit Settings',weight:70},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},workouts:[],meals:[],runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},plan:'FREE'}));});
+  await installAuthenticatedFirebaseMock(context);
+  await context.addInitScript(()=>{try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}localStorage.setItem('garang_user_mock-user_v3',JSON.stringify({meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},profile:{name:'WebKit Settings',weight:70},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},workouts:[],meals:[],runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},plan:'FREE'}));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>{const msg=String(e?.stack||e?.message||e);errors.push(msg);console.error(`settings-pageerror: ${msg}`);});
   stage('goto');await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>document.querySelector('.today-body-panel'),null,{timeout:10000});await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.0'&&window.GarangPrivacySecurityRuntime?.version==='v1.5',null,{timeout:7000});
   const baseline=await page.evaluate(()=>({router:window.GarangRouter?.version||null,legacySafety:window.GarangSettingsTouchSafety?.version||null,gear:typeof document.getElementById('settingsTopBtn')?.onclick,prototypePatched:window.__garangSettingsTextGuardInstalled===true}));assert.equal(baseline.router,'garang-router-v1.3.0');assert.equal(baseline.legacySafety,null,'retired Settings safety runtime must not boot');assert.equal(baseline.gear,'function');assert.equal(baseline.prototypePatched,false);
