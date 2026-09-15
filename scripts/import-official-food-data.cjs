@@ -15,21 +15,39 @@ async function fetchUsda(query,key,pageSize=25){
   if(!response.ok)throw Object.assign(new Error(`USDA_FDC_HTTP_${response.status}`),{code:`USDA_FDC_HTTP_${response.status}`});
   return response.json();
 }
+async function fetchDataGoKr(key,{pageSize=1000,maxPages=1000}={}){
+  if(!key)throw Object.assign(new Error('DATA_GO_KR_SERVICE_KEY_REQUIRED'),{code:'DATA_GO_KR_SERVICE_KEY_REQUIRED'});
+  const rows=[];let pageNo=1,totalCount=null;
+  while(pageNo<=Number(maxPages||1000)){
+    const url=new URL('https://api.data.go.kr/openapi/tn_pubr_public_nutri_info_api');
+    url.searchParams.set('serviceKey',key);url.searchParams.set('pageNo',String(pageNo));url.searchParams.set('numOfRows',String(Number(pageSize)||1000));url.searchParams.set('type','json');
+    const response=await fetch(url);if(!response.ok)throw Object.assign(new Error(`DATA_GO_KR_HTTP_${response.status}`),{code:`DATA_GO_KR_HTTP_${response.status}`});
+    const payload=await response.json(),pageRows=Adapters.unwrapRows(payload,'data-go-kr-standard');
+    const header=payload?.response?.header;if(header&&String(header.resultCode??'00')!=='00')throw Object.assign(new Error(`DATA_GO_KR_${header.resultCode||'ERROR'}`),{code:`DATA_GO_KR_${header.resultCode||'ERROR'}`});
+    if(totalCount===null){const n=Number(payload?.response?.body?.totalCount??payload?.totalCount);totalCount=Number.isFinite(n)?n:null;}
+    rows.push(...pageRows);
+    if(!pageRows.length||pageRows.length<(Number(pageSize)||1000)||(totalCount!==null&&rows.length>=totalCount))break;
+    pageNo++;
+  }
+  return {response:{body:{items:rows,totalCount:totalCount??rows.length}},retrieval:{pages:pageNo,rows:rows.length,totalCount}};
+}
+function unwrapImportedRecords(payload){return Array.isArray(payload?.records)?payload.records:Array.isArray(payload)?payload:null;}
 async function main(){
   const args=argsOf(process.argv.slice(2)),source=String(args.source||'').trim();
-  if(!['kfind','usda-fdc'].includes(source))throw new Error('Use --source kfind or --source usda-fdc');
+  if(!['kfind','data-go-kr-standard','usda-fdc'].includes(source))throw new Error('Use --source kfind, --source data-go-kr-standard, or --source usda-fdc');
   let payload;
   if(args.input)payload=readJson(args.input);
   else if(source==='usda-fdc'&&args.query)payload=await fetchUsda(String(args.query),process.env.USDA_FDC_API_KEY,args['page-size']);
-  else throw new Error(source==='kfind'?'K-FIND live calls require an approved portal key; export the JSON response and use --input.':'Provide --input or --query with USDA_FDC_API_KEY.');
+  else if(source==='data-go-kr-standard')payload=await fetchDataGoKr(process.env.DATA_GO_KR_SERVICE_KEY,{pageSize:args['page-size'],maxPages:args['max-pages']});
+  else throw new Error('K-FIND live calls require an approved portal key; export the JSON response and use --input.');
 
-  const retrievedAt=new Date().toISOString(),records=Adapters.adaptMany(source,payload,{dataset:args.dataset,retrievedAt});
+  const retrievedAt=new Date().toISOString(),alreadyNormalized=unwrapImportedRecords(payload),records=alreadyNormalized||Adapters.adaptMany(source,payload,{dataset:args.dataset,retrievedAt});
   const audit=Foundation.audit(records),result={version:'garang-official-food-import-v2',source,retrievedAt,count:records.length,audit:{pass:audit.pass,statusCounts:audit.statusCounts,errors:audit.errors,warnings:audit.warnings},records};
-  if(args.output)writeJson(args.output,result);else process.stdout.write(JSON.stringify(result,null,2)+'\n');
+  if(args.output)writeJson(args.output,result);else if(!args.existing)process.stdout.write(JSON.stringify(result,null,2)+'\n');
 
   if(args.existing){
-    const existing=readJson(args.existing),proposal=Adapters.exactMatchProposal(existing,records),proposalOut={...proposal,source,retrievedAt};
-    if(args.proposal)writeJson(args.proposal,proposalOut);else process.stderr.write(JSON.stringify(proposalOut.summary)+'\n');
+    const existing=readJson(args.existing),plan=Adapters.corpusUpgradePlan(existing,records),planOut={...plan,source,retrievedAt};
+    if(args.plan)writeJson(args.plan,planOut);else process.stdout.write(JSON.stringify(planOut,null,2)+'\n');
   }
   if(!audit.pass)process.exitCode=2;
 }
