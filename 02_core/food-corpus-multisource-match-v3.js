@@ -9,6 +9,7 @@ if(!Foundation)throw new Error('FOOD_DATA_FOUNDATION_REQUIRED');
 
 const VERSION='garang-food-corpus-multisource-match-v3';
 const DEFAULT_PRESERVE_NAMES=Object.freeze(['라면']);
+const NUTRIENT_KEYS=Object.freeze(['kcal','protein','carbs','fat','sugar','fiber','sodium','cholesterol','saturatedFat','transFat']);
 const DATASET_PRIORITY=Object.freeze({
   KDDB_HOME_ANALYZED:400,
   KDDB:350,
@@ -23,9 +24,8 @@ const COOKING_TOKENS=Object.freeze(['구이','구운','볶음','볶은','튀김'
 
 const list=value=>Array.isArray(value)?value:[];
 const clean=value=>String(value??'').trim();
-const finite=value=>{const n=Number(value);return Number.isFinite(n)?n:null;};
+const finite=value=>{if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;};
 const normalized=value=>Foundation.normalizedName(value);
-const qualityRank=Object.freeze({verified:4,approximate:3,estimated:2,unknown:1});
 
 function sourcePriority(food){return DATASET_PRIORITY[clean(food?.provenance?.dataset)]||0;}
 function cookingSignature(name){const text=clean(name);return COOKING_TOKENS.filter(token=>text.includes(token)).sort();}
@@ -39,14 +39,16 @@ function categoryCompatible(target,official){
   if(!a||!b)return true;
   if(a===b||a.includes(b)||b.includes(a))return true;
   const groups=[
-    ['밥','곡류','죽'],['면','만두'],['국','탕','찌개','전골'],['육류','고기','가금'],['어패','수산','생선'],
+    ['밥','곡류','죽'],['면','만두'],['국','탕','찌개','전골'],['육류','고기','가금'],['어패','수산','생선','어류'],
     ['채소','나물'],['과일'],['유제품','우유','치즈'],['빵','과자','디저트'],['음료'],['난류','달걀','계란']
   ];
   return groups.some(group=>group.some(x=>a.includes(x))&&group.some(x=>b.includes(x)));
 }
 function isTraceableVerified(row){
-  const a=Foundation.assess(row);
-  return !a.errors.length&&a.food.quality==='verified'&&!!(a.food.provenance.provider&&a.food.provenance.dataset&&a.food.provenance.recordId);
+  const a=Foundation.assess(row),food=a.food;
+  return !a.errors.length&&food.quality==='verified'&&food.basisG>0&&
+    !!(food.provenance.provider&&food.provenance.dataset&&food.provenance.recordId)&&
+    NUTRIENT_KEYS.every(key=>finite(food.nutrients[key])!==null);
 }
 function officialIdentity(row){const f=Foundation.canonicalize(row);return `${f.provenance.provider||''}/${f.provenance.dataset||''}/${f.provenance.recordId||f.foodId||''}`;}
 function targetKeys(target){return [target.name,...list(target.aliases)].map(normalized).filter(Boolean);}
@@ -91,7 +93,7 @@ function buildPlan(existing=[],officialRecords=[],options={}){
       const id=officialIdentity(officialRow);if(candidates.some(x=>x.id===id))continue;
       candidates.push({id,kind,score:matchScore(target,officialRow,kind),categoryCompatible:categoryCompatible(target,officialRow),cookingCompatible:signaturesCompatible(target,officialRow),official:officialRow});
     }
-    candidates.sort((a,b)=>b.score-a.score||b.id.localeCompare(a.id));
+    candidates.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
     if(!candidates.length){preserveExisting.push({reason:'NO_TRACEABLE_MATCH',targetFoodId:target.foodId,targetName:target.name,currentQuality:target.quality});continue;}
     const compatible=candidates.filter(x=>x.categoryCompatible&&x.cookingCompatible);
     if(!compatible.length){review.push({reason:'SEMANTIC_MISMATCH',targetFoodId:target.foodId,targetName:target.name,candidates:candidates.slice(0,5)});continue;}
@@ -109,17 +111,22 @@ function buildPlan(existing=[],officialRecords=[],options={}){
   for(const p of apply){projectedAfter[p.currentQuality]=Math.max(0,(projectedAfter[p.currentQuality]||0)-1);projectedAfter.verified++;}
   return {version:VERSION,summary:{targets:targets.length,traceableOfficialRecords:official.length,apply:apply.length,review:review.length,preserveExisting:preserveExisting.length,alreadyVerified:alreadyVerified.length,before,projectedAfter},apply,review,preserveExisting,alreadyVerified};
 }
+function nutrientsPer100(official){
+  const basis=finite(official?.basisG);if(!(basis>0))throw new Error('OFFICIAL_BASIS_REQUIRED');
+  const factor=100/basis;
+  return Object.fromEntries(NUTRIENT_KEYS.map(key=>[key,finite(official?.nutrients?.[key])*factor]));
+}
 function applyPlan(existing=[],plan={}){
   const byId=new Map(list(plan.apply).map(row=>[row.targetFoodId,row]));
   return list(existing).map(raw=>{
     const target=Foundation.canonicalize(raw),proposal=byId.get(target.foodId);
     if(!proposal)return {...raw};
-    const official=proposal.official,n=official.nutrients,p=official.provenance;
-    return {...raw,basis_g:100,nutrition_basis_g:100,kcal:finite(n.kcal),protein:finite(n.protein),carbs:finite(n.carbs),fat:finite(n.fat),sugar:finite(n.sugar),fiber:finite(n.fiber),sodium:finite(n.sodium),cholesterol:finite(n.cholesterol),saturated_fat:finite(n.saturatedFat),trans_fat:finite(n.transFat),source:`${p.provider} / ${p.dataset} / ${p.recordId}`,source_date:p.sourceDate||null,nutrition_status:'verified',provenance:{...p}};
+    const official=proposal.official,n=nutrientsPer100(official),p=official.provenance;
+    return {...raw,basis_g:100,nutrition_basis_g:100,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fat:n.fat,sugar:n.sugar,fiber:n.fiber,sodium:n.sodium,cholesterol:n.cholesterol,saturated_fat:n.saturatedFat,trans_fat:n.transFat,source:`${p.provider} / ${p.dataset} / ${p.recordId}`,source_date:p.sourceDate||null,nutrition_status:'verified',provenance:{...p}};
   });
 }
 function corpusIdentity(records=[]){return list(records).map(row=>({food_id:row.food_id,name:row.name,aliases:row.aliases,category:row.category,serving:row.serving}));}
 function verifyIdentity(before=[],after=[]){return JSON.stringify(corpusIdentity(before))===JSON.stringify(corpusIdentity(after));}
 
-return Object.freeze({VERSION,DEFAULT_PRESERVE_NAMES,DATASET_PRIORITY,cookingSignature,categoryCompatible,signaturesCompatible,isTraceableVerified,buildPlan,applyPlan,verifyIdentity});
+return Object.freeze({VERSION,DEFAULT_PRESERVE_NAMES,NUTRIENT_KEYS,DATASET_PRIORITY,cookingSignature,categoryCompatible,signaturesCompatible,isTraceableVerified,nutrientsPer100,buildPlan,applyPlan,verifyIdentity});
 });
