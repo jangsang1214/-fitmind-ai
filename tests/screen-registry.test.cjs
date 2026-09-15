@@ -64,6 +64,11 @@ assert.equal(GarangScreens.isCompact('memory'),false);
 }
 
 {
+  const main=fakeMain({eyebrow:'RECORD / 기록',title:'누적 기록'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'log','Accumulation wording inside Record must not steal the screen identity from Record');
+}
+
+{
   const main=fakeMain({selectors:['#addPlan'],eyebrow:'TODAY / 오늘',title:'Planner'});
   assert.equal(GarangScreens.detect(main,fakeDoc('today')),'planner','Planner must beat stale Today bottom-nav state');
   GarangScreens.applyHeader(main,fakeDoc('today','ko'));
