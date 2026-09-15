@@ -581,6 +581,6 @@ async function shareCompositeImage(m,record,kind){try{const canvas=await compose
 async function shareMedia(m){try{if(navigator.share&&m.file&&navigator.canShare?.({files:[m.file]})){await navigator.share({title:'GARANG VERIFIED',files:[m.file]});return;}const a=document.createElement('a');a.href=m.url;a.download=m.name;a.target='_blank';a.click();}catch(e){if(e?.name!=='AbortError')toast('공유/저장이 브라우저 정책으로 제한됩니다.');}}
 
 async function registerSW(){if('serviceWorker'in navigator)try{await navigator.serviceWorker.register('./sw.js');}catch(e){captureError('service_worker',e);}}
-async function boot(){storageKey=DEMO_KEY;loadLocal(storageKey);bindAuth();nav();initFirebase();registerSW();if(localStorage.getItem('garang_demo')==='1'&&!firebaseReady)showApp();else if(!firebaseReady)showAuth();loadDB().then(()=>{if(!$('appView')?.hidden)render();}).catch(e=>{captureError('db_load',e);toast('일부 운동/식단 데이터는 연결 후 다시 불러옵니다.');});}
+async function boot(){storageKey=SIGNED_OUT_KEY;loadLocal(storageKey);bindAuth();nav();initFirebase();registerSW();if(!firebaseReady)showAuth();loadDB().then(()=>{if(!$('appView')?.hidden)render();}).catch(e=>{captureError('db_load',e);toast('일부 운동/식단 데이터는 연결 후 다시 불러옵니다.');});}
 boot();
 })();
