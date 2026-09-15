@@ -10,7 +10,7 @@
   'use strict';
   if (window.GarangTodayWorkoutPrepIntegrationV1) return;
 
-  const VERSION = '1.0.1';
+  const VERSION = '1.0.2';
   const STYLE_ID = 'garang-today-workout-prep-integration-v1-style';
   const PLAN_KEY = 'garang_daily_workout_plan_v1';
   const main = () => document.getElementById('main');
@@ -59,24 +59,33 @@
         display:none!important;
         pointer-events:none!important;
       }
-      html body #main[data-garang-screen="today"] .garang-daily-workout [data-garang-workout-prep-start="1"]{
+      html body #main[data-garang-screen="today"] .garang-daily-workout [data-garang-workout-prep-actions="1"]{
         display:none!important;
+      }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-garang-workout-prep-actions="1"]{
+        display:flex!important;
+        gap:8px!important;
+        padding:0 0 10px!important;
       }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-garang-workout-prep-start="1"]{
         display:inline-flex!important;
         align-items:center!important;
         justify-content:center!important;
+        width:100%!important;
         min-height:46px!important;
-        flex:1 1 150px!important;
       }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-summary{
         grid-template-columns:minmax(0,1fr) 36px!important;
       }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-summary-copy>.eyebrow,
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-summary-mark,
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-head,
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-head>div,
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-result>.garang-daily-note{
         display:none!important;
+      }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-head{
+        min-height:32px!important;
+        justify-content:flex-end!important;
       }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-result [data-daily-import]{
         display:none!important;
@@ -109,8 +118,16 @@
   }
 
   function ensureStartButton(card) {
-    const actionRow = card?.querySelector('[data-daily-expand] > .garang-daily-actions');
-    if (!actionRow) return null;
+    const expand = card?.querySelector('[data-daily-expand]');
+    const head = expand?.querySelector('.garang-daily-head');
+    if (!expand || !head) return null;
+    let actionRow = expand.querySelector(':scope > [data-garang-workout-prep-actions="1"]');
+    if (!actionRow) {
+      actionRow = document.createElement('div');
+      actionRow.className = 'garang-daily-actions garang-workout-prep-actions';
+      actionRow.dataset.garangWorkoutPrepActions = '1';
+      expand.insertBefore(actionRow, head);
+    }
     let button = actionRow.querySelector('[data-garang-workout-prep-start="1"]');
     if (!button) {
       button = document.createElement('button');
@@ -121,8 +138,8 @@
       actionRow.appendChild(button);
     }
     const label = isEnglish() ? 'Start workout' : '운동 시작';
-    button.textContent = label;
-    button.setAttribute('aria-label', label);
+    if (button.textContent !== label) button.textContent = label;
+    if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
     return button;
   }
 
