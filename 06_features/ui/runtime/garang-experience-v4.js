@@ -7,7 +7,6 @@
   const main = document.getElementById('main');
   if (!main) return;
   let scheduled = false;
-  let redirecting = false;
   let mealEntryScrollY = null;
 
   const isKo = () => document.documentElement.lang !== 'en';
@@ -94,14 +93,8 @@
       if (/advanced\s+memory/i.test(item.textContent)) setText(item,isKo() ? '지속 개인화' : 'Persistent personalization');
     });
 
-    if (!redirecting && main.querySelector('#saveMemory, .memory-card')) {
-      const today = document.querySelector('#bottomNav [data-page="today"]');
-      if (today) {
-        redirecting = true;
-        today.click();
-        setTimeout(() => { redirecting = false; }, 0);
-      } else if (main.childNodes.length) main.replaceChildren();
-    }
+    /* Product consolidation keeps Memory out of first-level navigation while preserving
+       its canonical direct route for capability maintenance and verification. */
   }
 
   function run() {

@@ -7,6 +7,7 @@
    - the canonical app.js check-in modal remains the single write owner
    - the brand-first Today surface gets exactly one quiet, always-reachable check-in entry
    - any Action Flow check-in CTA is internalized so it cannot compete with that single entry
+   - decorative accumulation motion is intentionally not mounted; state and action ownership are unchanged
 */
 (() => {
   'use strict';
@@ -100,12 +101,7 @@
       ?`<span>${english()?'STATE':'상태'}</span><strong>${english()?'Edit':'수정'}</strong><small>${summary||(english()?'Saved':'저장됨')}</small>`
       :`<span>${english()?(morning?'MORNING':'CHECK-IN'):(morning?'아침':'상태')}</span><strong>${english()?'Today check-in':'오늘 상태 체크인'}</strong><small>${english()?'30 sec · 3 tracks':'30초 · 3영역 자동 조정'}</small>`;
     const signature=`${english()?'en':'ko'}|${checked?'1':'0'}|${morning?'1':'0'}|${summary}`;
-    if(button.dataset.garangCheckinContentSignature!==signature){
-      const motionCanvas=button.querySelector('.gtd3-motion-canvas');
-      button.innerHTML=nextHtml;
-      if(motionCanvas)button.appendChild(motionCanvas);
-      button.dataset.garangCheckinContentSignature=signature;
-    }
+    if(button.dataset.garangCheckinContentSignature!==signature){button.innerHTML=nextHtml;button.dataset.garangCheckinContentSignature=signature;}
     button.onclick=()=>{const canonical=main.querySelector('[data-action="open-checkin"]');if(canonical)canonical.click();};
     if(!existing)context.insertAdjacentElement('afterend',button);
   }
@@ -120,18 +116,13 @@
     const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-today-density-v1.js?v=4.0.0-mobile-first';script.dataset.garangTodayDensityV1='1';script.async=false;document.head.appendChild(script);
   }
 
-  function loadAccumulationMotion(){
-    if(window.GarangAccumulationMotionV1||document.querySelector('script[data-garang-accumulation-motion-v1]'))return;
-    const script=document.createElement('script');script.src='./06_features/ui/runtime/garang-accumulation-motion-v1.js?v=4.0.0-ink-water';script.dataset.garangAccumulationMotionV1='1';script.async=false;document.head.appendChild(script);
-  }
-
-  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();loadAccumulationMotion();}
+  function scan(){for(const rule of RULES)main.querySelectorAll(rule.selector).forEach(button=>bind(button,rule));injectCheckinStyle();promoteTodayCheckin();loadTodayMorningOrchestrator();loadTodayDensity();}
   let queued=false,delayedScanTimer=0;
   function queueScan(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{queued=false;scan();})));}
-  function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(()=>{queueScan();window.GarangAccumulationMotionV1?.sync?.();},340);}
+  function queueLifecycleScan(){queueScan();clearTimeout(delayedScanTimer);delayedScanTimer=setTimeout(queueScan,340);}
   function immediateLifecycleScan(){scan();queueLifecycleScan();}
   window.addEventListener('garang:screen-rendered',immediateLifecycleScan);window.addEventListener('garang:state-updated',queueLifecycleScan);window.addEventListener('garang:state-hydrated',queueLifecycleScan);window.addEventListener('garang:agent-write',queueLifecycleScan);window.addEventListener('garang:route-completed',immediateLifecycleScan);window.addEventListener('pageshow',immediateLifecycleScan);
   scan();queueLifecycleScan();
-  // Preserve the public compatibility version; Today visual and motion loaders are cache-versioned independently.
+  // Preserve the public compatibility version; visual loaders are cache-versioned independently.
   window.GarangNonblockingActions=Object.freeze({version:'1.2.3',scan,queueScan,promoteTodayCheckin});
 })();
