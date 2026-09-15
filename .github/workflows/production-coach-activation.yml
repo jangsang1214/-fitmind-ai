@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - .github/workflows/production-coach-activation.yml
+      - functions/**
+      - firebase.json
 
 permissions:
   contents: read

@@ -71,7 +71,7 @@ app.post('/coach',createCoachGatewayHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
  readUser:readCanonicalUser,
  consumeRateLimit:consumeCoachRateLimit,
- getProviderConfig:()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||8000})
+ getProviderConfig:()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||20000})
 }));
 app.all('/coach',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
 
@@ -86,4 +86,4 @@ app.post('/analytics/events',telemetryHandler);
 app.post('/telemetry/errors',telemetryHandler);
 app.all(['/analytics/events','/telemetry/errors'],(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
 
-exports.api=onRequest({region:'asia-northeast3',cors:false,timeoutSeconds:15,memory:'256MiB',maxInstances:10,secrets:[llmApiKey]},app);
+exports.api=onRequest({region:'asia-northeast3',cors:false,timeoutSeconds:30,memory:'256MiB',maxInstances:10,secrets:[llmApiKey]},app);
