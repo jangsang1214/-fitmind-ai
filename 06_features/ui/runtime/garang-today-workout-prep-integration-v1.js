@@ -10,11 +10,13 @@
   'use strict';
   if (window.GarangTodayWorkoutPrepIntegrationV1) return;
 
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
   const STYLE_ID = 'garang-today-workout-prep-integration-v1-style';
   const PLAN_KEY = 'garang_daily_workout_plan_v1';
   const main = () => document.getElementById('main');
   let queued = false;
+  let observedMain = null;
+  let mountObserver = null;
 
   function isEnglish() { return document.documentElement.lang === 'en'; }
   function readPlan() {
@@ -174,6 +176,20 @@
     requestAnimationFrame(() => requestAnimationFrame(reconcile));
   }
 
+  function observeMounts() {
+    const m = main();
+    if (!m || m === observedMain) return;
+    mountObserver?.disconnect();
+    observedMain = m;
+    mountObserver = new MutationObserver(schedule);
+    mountObserver.observe(m, {
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['data-gsn-action','data-gsn-step','data-garang-today-workout-execute','data-garang-screen']
+    });
+  }
+
   for (const eventName of [
     'garang:workout-intelligence-rendered',
     'garang:screen-rendered',
@@ -181,9 +197,10 @@
     'garang:state-updated',
     'garang:state-hydrated',
     'pageshow'
-  ]) window.addEventListener(eventName, schedule);
+  ]) window.addEventListener(eventName, () => { observeMounts(); schedule(); });
 
   ensureStyle();
+  observeMounts();
   schedule();
   window.GarangTodayWorkoutPrepIntegrationV1 = Object.freeze({
     version:VERSION,
