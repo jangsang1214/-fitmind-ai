@@ -1,0 +1,58 @@
+name: Agent Fix Browser Auth Fixture
+on:
+  push:
+    branches:
+      - agent/coach-multimodal-hardening-2026-09-16
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: agent/coach-multimodal-hardening-2026-09-16
+      - name: Replace legacy demo browser fixture with authenticated Firebase mock
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/browser-interaction.test.cjs')
+          s=p.read_text()
+          old="""      const context=await browser.newContext({viewport:mode.viewport,isMobile:mode.touch,hasTouch:mode.touch});
+      await context.addInitScript(state=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(state));},dirtyState());
+      const page=await context.newPage(),pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e?.stack||e?.message||e)));
+"""
+          new="""      const context=await browser.newContext({viewport:mode.viewport,isMobile:mode.touch,hasTouch:mode.touch});
+      await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked by init script */'}));
+      await context.addInitScript(state=>{
+        localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(state));
+        const user={uid:'mock-user',displayName:'Regression User',email:'regression@example.com',updateProfile:async()=>{},getIdToken:async()=> 'mock-id-token'};let db;
+        class DocRef{constructor(path){this.path=path;this.id=path.split('/').pop();this.firestore=db;}collection(name){return new CollectionRef(`${this.path}/${name}`);}async get(){return {exists:false,id:this.id,ref:this,metadata:{},data:()=>null,get:()=>undefined};}async set(){return undefined;}}
+        class CollectionRef{constructor(path){this.path=path;}doc(id){return new DocRef(`${this.path}/${id}`);}}
+        db={collection:name=>new CollectionRef(name),runTransaction:async fn=>fn({get:ref=>ref.get(),set:()=>{}})};
+        const auth={currentUser:user,onAuthStateChanged(cb){setTimeout(()=>cb(user),20);return ()=>{};},signOut:async()=>{auth.currentUser=null;}};
+        function firestore(){return db;}firestore.FieldValue={serverTimestamp:()=> 'mock-server-time'};function authFn(){return auth;}authFn.GoogleAuthProvider=function(){};authFn.OAuthProvider=function(){};
+        window.firebase={apps:[{}],initializeApp:()=>({}),auth:authFn,firestore};
+      },dirtyState());
+      const page=await context.newPage(),pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e?.stack||e?.message||e)));
+"""
+          if old not in s:
+              raise SystemExit('legacy demo browser fixture block not found')
+          s=s.replace(old,new,1)
+          old_saved="const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_demo_state_v3')));"
+          new_saved="const repaired=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')));"
+          if old_saved not in s:
+              raise SystemExit('legacy demo state assertion not found')
+          p.write_text(s.replace(old_saved,new_saved,1))
+          PY
+          git diff --check
+          node tests/no-demo-entry.test.cjs
+      - name: Commit browser fixture migration
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/browser-interaction.test.cjs
+          git diff --cached --quiet && exit 0
+          git commit -m "Migrate browser interaction test to authenticated fixture"
+          git push origin HEAD:agent/coach-multimodal-hardening-2026-09-16
