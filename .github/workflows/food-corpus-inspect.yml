@@ -10,16 +10,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Print exact official-name matches
+      - name: Verify only reviewed nutrition rows changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           node - <<'NODE'
-          const foods=require('./04_data/knowledge/food-db.json');
-          const officialNames=["흑임자죽","회무침_가오리","회무침","회덮밥_모듬","호박찌개_고추장","호박죽","호박오가리나물무침","호떡_견과류","현미밥","햄볶음_채소","햄버거_불고기버거","햄버거","해초무침","해장국_선지","해장국_뼈다귀","함박스테이크","하이라이스","피조개무침","피자빵","피자_콤비네이션피자","풋마늘무침","풋고추찜","풋고추볶음","풋고추된장무침_풋고추","페이스트리","팥죽","팔보채","파전_해물","파이/만주_사과파이","파무침","파래무침","톳나물무침","토란대나물무침","토란국","탕수육_새우","크로와상","콩조림(콩자반)","콩비지찌개","콩밥_완두콩","콩밥_검정콩","콩나물찜_해물","콩나물밥","콩나물무침_고춧가루","콩나물무침","콩나물국","콩국수","코다리찜","코다리조림","케이크_생크림케이크","케이크_롤케이크","칼국수_바지락","칼국수","카스텔라","카레라이스","치킨데리야끼","츄러스","취나물_취나물(마른것)","취나물_된장","추어탕","초코소라빵","초밥_유부초밥","초밥_모듬","청국장찌개","채소죽","채소전","찹쌀떡_팥","참치구이_머리","참나물","찰밥","차조밥","쫄면","짬뽕밥","짬뽕","증편","쥐포조림","죽순볶음_소고기","주먹밥_소고기","족발","조기구이","조개국","조개구이_키조개","절편_쑥","전복죽","재첩국","장조림_소고기_메추리알","장조림_소고기","장조림_메추리알","장조림_달걀","장어탕","장어구이_고추장","잡채밥","잡채_콩나물","잡채_어묵","잡채","잡곡밥","잔멸치볶음_홍고추_풋고추","잔멸치볶음_풋고추","잔멸치볶음_꽈리고추","잔멸치볶음_견과류","자장밥","자장면","인절미","육회","육개장_닭고기","육개장","유채나물","유산슬","월남쌈","우엉조림","우동볶음","우동_일식","완자전_해물","완자전_참치","완자전_소고기","완자전_돼지고기","옥수수_찐옥수수","오징어채조림","오징어채무침","오징어찌개","오징어조림","오징어젓_양념","오징어볶음","오징어무침_채소","오징어국","오이지무침","오이지","오이장아찌","오이생채","오이무침_부추","오이김치","오므라이스","오리탕","오리죽","오리불고기","오리백숙","오리고기구이","영양돌솥밥","열무나물_된장","열무나물","연근조림","얼갈이배추김치","어묵조림","어묵볶음_채소","어묵볶음","어묵국(어묵탕)","양파볶음","양장피","양미리조림","약식","애호박찜","애호박전","애호박볶음","알탕","알밥","아귀찜","씀바귀나물무침","식빵","시루떡","시래기나물무침","시금치나물","스프_양송이버섯","스파게티_미트볼","스테이크_소안심","스테이크_소등심","스크램블드에그","순두부찌개_김치","순대국","순대","숙주나물","수제비","수육_소고기","수수밥","송편_깨","소시지볶음","소불고기","소보로빵","소고기전골","소고기볶음_채소","소고기볶음_버섯","소고기볶음_고추장","설렁탕","샤브샤브_소고기","샤브샤브_버섯","샐러드_채소","샐러드_참치","샐러드_옥수수","샐러드_양상추","샐러드_양배추","샐러드_새싹","샐러드_닭가슴살","샐러드_단호박","샐러드_감자","샌드위치_햄_달걀","샌드위치_채소","샌드위치_참치","샌드위치_모듬","샌드위치_닭가슴살","새우탕","새우젓_양념","새우볶음","새우구이","삼치조림","삼치구이","삼계탕","삼겹살볶음_묵은지김치","삼겹살구이_고추장","삼겹살구이","삼각김밥_참치마요네즈","산적_돼지고기","사태찜_소고기","사골국","비빔밥_육회","비빔밥_돌솥","비빔밥","비름나물무침","브로콜리볶음","북어채무침","북어국","부추전","부추무침_양파","부추무침","부추김치","부대찌개","볶음밥_표고버섯","볶음밥_채소","볶음밥_참치","볶음밥_소고기","볶음밥_새우","볶음밥_김치","볶음밥_계란","볶음밥","보쌈김치","보리밥","병어조림","베이글","버섯조림","버섯전골","버섯전_표고버섯","버섯볶음_새송이버섯","버섯볶음_느타리버섯","버섯무침_느타리버섯","버섯구이표고버섯","버섯구이_새송이버섯","버섯구이","뱅어포구이","백설기","배추나물","배추국_소고기","방풍나물무침","민들레잎무침","미트볼조림","미역튀각","미역초무침","미역줄기볶음","미역국_소고기","미역국_새우","미역국_대합","미역국","미숫가루","미나리무침","물회_오징어","물김치_돌나물","문어볶음_고추장","묵무침_도토리묵","묵국_메밀묵","무초절임(치킨무)","무짠지","무조림","무생채_굴","무생채","무말랭이무침","무나물무침","무국_홍합","무국_소고기","모카빵","모듬찰떡","모닝빵","멸치조림","멸치젓_양념","멸치볶음_풋고추","멸치볶음_마늘쫑","멸치볶음_꽈리고추","멸치볶음_견과류","멸치볶음","메밀전","메밀국수_온면","머핀","머위대나물무침","매운탕_해물","매운탕_대구","매실장아찌_우메보시(일본)","맛살전","만두국_사골","만두_물만두","만두_김치만두","만두_군만두","만두_고기만두","마파두부","마늘쫑볶음_멸치","마늘쫑볶음","마늘쫑무침","마늘빵","런천미트구이","라볶이","라면_떡","라면_달걀","라면","떡볶이_채소","떡볶이","떡만두국","떡국","떡강정","떡갈비","땅콩조림","두부찌개_소고기_된장","두부찌개_소고기_고추장","두부찌개_고추장","두부조림","두부부침","두릅무침_초고추장","된장찌개_바지락","된장찌개_두부","된장찌개_달래","된장찌개_냉이","된장찌개","된장국_호박잎","된장국_호박","된장국_해물","된장국_콩나물","된장국_우거지","된장국_얼갈이배추","된장국_아욱","된장국_쑥","된장국_시래기","된장국_시금치","된장국_배추","된장국_미역","된장국_냉이","된장국_감자","돼지고기찌개","돼지고기볶음_채소","돼지고기볶음_김치","돼지고기볶음(제육볶음)","돼지갈비찜","동태찌개","동태국","동치미","돌나물무침","도라지생채","도라지나물무침","도넛_찹쌀","도넛_링도넛","도가니탕","덮밥_오징어","덮밥_불고기","덮밥_돼지고기(제육)","덮밥_닭고기","덮밥_낙지","더덕장아찌","당근볶음","닭튀김_날개","닭찜","닭죽","닭조림_고추장","닭조림","닭볶음탕","닭볶음(닭갈비)_닭가슴살_피망","닭볶음(닭갈비)","닭발볶음","닭발구이","닭다리튀김_간장","닭구이","닭곰탕","달래무침","달걀탕_순두부","달걀찜_우유","달걀찜_새우젓","달걀부침(달걀후라이)_햄","달걀부침(달걀후라이)","달걀말이","달걀국","단무지","다시마튀각","다시마무침","냉채_닭고기","냉이나물","냉면_회냉면_홍어","냉면_비빔냉면","냉면_물냉면","냉국_미역_오이","냉국_미역","내장탕","낙지전골","낙지볶음","낙지무침","나박김치","꿀떡","꽈리고추찜","꽃게탕","꽃게장_양념","꽃게장_간장","꽁치조림","꼬치구이_닭고기_대파","꼬막찜","깻잎찜","깻잎나물","깻잎김치","깍두기","김튀김","김치찌개_햄","김치찌개_참치","김치찌개_어묵","김치찌개_돼지고기","김치찌개_꽁치","김치전골","김치전","김치볶음_참치","김치볶음","김치국_콩나물","김치국","김밥_풋고추","김밥_치즈","김밥_채소","김밥_참치","김밥_소고기","김밥_돈가스","김밥_날치알","김밥_김치","김밥","김무침","김구이_조미김","기장밥","굴무침","굴국_무","국수_쟁반막국수","국수_잔치국수","국수_비빔국수","국수_막국수","국밥_콩나물","국밥_순대국밥","국밥_돼지머리","곱창볶음_돼지고기","곱창구이_소고기","곰탕_우거지","곰탕","골뱅이무침_소면","고춧잎나물무침","고사리나물무침","고등어조림","고등어구이_석쇠","고들빼기김치","고구마줄기나물","고구마전","고구마_찐고구마","경단_깨","겉절이_치커리","겉절이_열무","겉절이_상추","겉절이_배추","건새우볶음","감자튀김","감자탕","감자조림","감자전","감자볶음_채소","감자볶음","감자국","감자_찐감자","갈치찌개","갈치젓_양념","갈치구이_기름","갈비탕","갈비찜_소고기","갈비구이_소고기","간자장","가지전","가지나물","가죽나물무침","가자미식해","가자미구이","가오리찜","가래떡"];
-          const set=new Set(officialNames);
-          const matches=foods.filter(x=>set.has(x.name)).map(x=>({id:x.food_id,name:x.name,category:x.category,serving:x.serving,basis:x.basis_g,quality:x.nutrition_status}));
-          console.log('EXACT_MATCH_COUNT='+matches.length);
-          console.log('EXACT_MATCHES_JSON='+JSON.stringify(matches));
+          const assert=require('node:assert/strict');
+          const {execFileSync}=require('node:child_process');
+          const Food=require('./02_core/food-data-foundation-v2.js');
+          const base=JSON.parse(execFileSync('git',['show',`${process.env.BASE_SHA}:04_data/knowledge/food-db.json`],{encoding:'utf8'}));
+          const head=require('./04_data/knowledge/food-db.json');
+          const official=require('./04_data/knowledge/kfind-home-analyzed-v2.json');
+          assert.equal(base.length,500); assert.equal(head.length,500);
+          const officialByName=new Map(official.records.map(r=>[Food.normalizedName(r.name),r]));
+          const allowed=new Set(['basis_g','nutrition_basis_g','kcal','protein','carbs','fat','sugar','fiber','sodium','cholesterol','saturated_fat','trans_fat','source','source_date','nutrition_status','provenance']);
+          const strip=row=>Object.fromEntries(Object.entries(row).filter(([key])=>!allowed.has(key)));
+          const changed=[];
+          for(let i=0;i<base.length;i++){
+            const before=base[i],after=head[i];
+            assert.equal(after.food_id,before.food_id,`food id changed at ${i}`);
+            assert.equal(after.name,before.name,`food name changed: ${before.food_id}`);
+            assert.equal(after.category,before.category,`food category changed: ${before.food_id}`);
+            assert.equal(after.serving,before.serving,`food serving changed: ${before.food_id}`);
+            assert.deepEqual(strip(after),strip(before),`non-nutrition fields changed: ${before.food_id}`);
+            if(JSON.stringify(before)!==JSON.stringify(after))changed.push(after);
+          }
+          const expected=official.records.filter(r=>{
+            const before=base.find(x=>Food.normalizedName(x.name)===Food.normalizedName(r.name));
+            return before && String(before.nutrition_status).toLowerCase()!=='verified';
+          });
+          assert.equal(expected.length,76,'expected exactly 76 new official upgrades');
+          assert.equal(changed.length,76,'canonical diff must contain exactly 76 changed food rows');
+          assert.deepEqual(new Set(changed.map(r=>Food.normalizedName(r.name))),new Set(expected.map(r=>Food.normalizedName(r.name))),'changed row set must equal reviewed official v2 targets');
+          for(const row of changed){
+            const src=officialByName.get(Food.normalizedName(row.name));
+            assert.ok(src,`changed row missing official source: ${row.name}`);
+            assert.equal(row.nutrition_status,'verified');
+            assert.equal(row.provenance.provider,'MFDS K-FIND');
+            assert.equal(row.provenance.dataset,'KDDB_HOME_ANALYZED');
+            assert.equal(row.provenance.recordId,src.recordId);
+            const map={kcal:'kcal',protein:'protein',carbs:'carbs',fat:'fat',sugar:'sugar',fiber:'fiber',sodium:'sodium',cholesterol:'cholesterol',saturatedFat:'saturated_fat',transFat:'trans_fat'};
+            for(const [sourceKey,targetKey] of Object.entries(map))assert.equal(row[targetKey],src.nutrients[sourceKey],`${row.name} ${sourceKey} differs from official source`);
+          }
+          const untouched=500-changed.length;
+          console.log(JSON.stringify({status:'PASS',changedRows:changed.length,untouchedRows:untouched,verifiedAfter:head.filter(x=>x.nutrition_status==='verified').length,changedNames:changed.map(x=>x.name)},null,2));
+          console.log('official-food-v2-diff-scope: PASS');
           NODE
