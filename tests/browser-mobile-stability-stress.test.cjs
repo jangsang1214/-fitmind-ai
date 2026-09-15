@@ -199,7 +199,10 @@ async function waitForStabilityRuntimes(page,errors){
     }
 
     stage('planner delete');
-    await gotoMoreRoute(page,'planner');
+    const plannerRouted=await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'mobile-stability-planner',force:true})===true);
+    assert.equal(plannerRouted,true,'Planner capability must remain directly routable after first-level internalization');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:5000});
+    await heartbeat(page,'Planner capability route');
     await page.waitForFunction(()=>document.querySelector('[data-plan-delete="stress-plan"]'),null,{timeout:7000});
     await tap(page,'[data-plan-delete="stress-plan"]','planner delete arm');
     const deleteButton=page.locator('[data-plan-delete="stress-plan"]');
