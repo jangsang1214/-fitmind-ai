@@ -37,6 +37,19 @@
     style.id = STYLE_ID;
     style.textContent = `
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-action{
+        max-height:0!important;
+        min-height:0!important;
+        height:0!important;
+        margin-top:0!important;
+        margin-bottom:0!important;
+        padding-top:0!important;
+        padding-bottom:0!important;
+        border:0!important;
+        overflow:hidden!important;
+        opacity:0!important;
+        pointer-events:none!important;
+      }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-next[data-gsn-action="execute"]{
         display:none!important;
         pointer-events:none!important;
       }
@@ -107,6 +120,23 @@
     return button;
   }
 
+  function restorePresentation(m,card) {
+    m?.removeAttribute('data-garang-workout-prep-execution');
+    if (card) {
+      delete card.dataset.garangWorkoutPrepExecution;
+      const generate = card.querySelector('[data-daily-generate]');
+      if (generate) {
+        generate.classList.remove('ghost');
+        generate.classList.add('primary');
+      }
+    }
+    const current = m?.querySelector('#garangTodayFlow .gtf-next[data-gsn-action]');
+    if (current) {
+      current.removeAttribute('aria-hidden');
+      current.removeAttribute('tabindex');
+    }
+  }
+
   function reconcile() {
     queued = false;
     ensureStyle();
@@ -127,16 +157,11 @@
       canonical.setAttribute('aria-hidden','true');
       canonical.tabIndex = -1;
       const generate = card.querySelector('[data-daily-generate]');
-      if (generate) generate.classList.remove('primary');
-      if (generate) generate.classList.add('ghost');
-    } else {
-      m.removeAttribute('data-garang-workout-prep-execution');
-      if (card) delete card.dataset.garangWorkoutPrepExecution;
-      if (canonical) {
-        canonical.removeAttribute('aria-hidden');
-        canonical.removeAttribute('tabindex');
+      if (generate) {
+        generate.classList.remove('primary');
+        generate.classList.add('ghost');
       }
-    }
+    } else restorePresentation(m,card);
   }
 
   function schedule() {
