@@ -1,8 +1,6 @@
 name: Official food safe apply
 on:
-  push:
-    branches:
-      - agent/official-food-safe-overrides-v1-2026-09-15
+  pull_request:
     paths:
       - '04_data/knowledge/kfind-home-analyzed-v1.json'
       - '02_core/food-corpus-safe-overrides-v1.js'
@@ -13,6 +11,7 @@ permissions:
   contents: write
 jobs:
   apply-safe-overrides:
+    if: github.head_ref == 'agent/official-food-safe-overrides-v1-2026-09-15'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
