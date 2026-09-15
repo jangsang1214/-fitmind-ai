@@ -21,9 +21,10 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.0.0'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
-  await page.waitForFunction(()=>document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"][data-garang-today-checkin-override="1"]'),null,{timeout:10000});
+  await page.waitForFunction(()=>{const button=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"][data-garang-today-checkin-override="1"]');return button?.getAttribute('aria-label')==='체크인';},null,{timeout:10000});
+  await page.waitForTimeout(200);
   const button=page.locator('#garangTodayFlow .gtf-next[data-garang-today-checkin-override="1"]');
-  assert.equal(await button.getAttribute('aria-label'),'체크인','workout execute affordance must be presented as Check-in');
+  assert.equal(await button.getAttribute('aria-label'),'체크인','workout execute affordance must settle as Check-in');
   const visual=await button.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor,before:getComputedStyle(el,'::before').content,minHeight:el.getBoundingClientRect().height}));
   assert.equal(visual.color,'rgb(247, 245, 241)','dark Today CTA must use visible white text');
   assert.equal(visual.background,'rgb(8, 9, 8)','Check-in CTA keeps the restrained dark surface');
