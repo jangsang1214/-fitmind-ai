@@ -1,0 +1,40 @@
+name: Official food safe apply
+on:
+  push:
+    branches:
+      - agent/official-food-safe-overrides-v1-2026-09-15
+    paths:
+      - '04_data/knowledge/kfind-home-analyzed-v1.json'
+      - '02_core/food-corpus-safe-overrides-v1.js'
+      - 'scripts/apply-official-food-overrides.cjs'
+      - 'tests/food-data-quality-gate.test.cjs'
+      - '.github/workflows/official-food-safe-apply.yml'
+permissions:
+  contents: write
+jobs:
+  apply-safe-overrides:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/official-food-safe-overrides-v1-2026-09-15
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify pre-apply quality gate
+        run: node tests/food-data-quality-gate.test.cjs
+      - name: Apply safe official overrides
+        run: node scripts/apply-official-food-overrides.cjs --write
+      - name: Verify post-apply quality gate
+        run: node tests/food-data-quality-gate.test.cjs
+      - name: Commit generated canonical food DB
+        run: |
+          if git diff --quiet -- 04_data/knowledge/food-db.json; then
+            echo 'No canonical food changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 04_data/knowledge/food-db.json
+          git commit -m 'Apply provenance-safe K-FIND nutrition overrides'
+          git push
