@@ -13,7 +13,7 @@ function loadProductConsolidation(){
 function loadStateEventDurability(){
   if(window.GarangStateEventDurabilityV1||document.querySelector('script[data-garang-state-event-durability-v1]'))return;
   const script=document.createElement('script');
-  script.src='./06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.2.0';
+  script.src='./06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.3.0';
   script.dataset.garangStateEventDurabilityV1='1';
   script.async=false;
   document.head.appendChild(script);
