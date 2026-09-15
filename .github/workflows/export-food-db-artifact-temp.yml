@@ -1,4 +1,4 @@
-name: Materialize official food corpus v3 temp
+name: Finalize official food corpus v3 temp
 
 on:
   push:
@@ -11,68 +11,67 @@ permissions:
   contents: write
 
 jobs:
-  materialize:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: agent/official-food-corpus-v3-2026-09-16
           fetch-depth: 0
-      - name: Pin Node serialization hash for reviewed corpus
+      - name: Strengthen food quality gate for v3
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('scripts/materialize-official-food-corpus-v3-temp.cjs')
+          p=Path('tests/food-data-quality-gate.test.cjs')
           s=p.read_text()
-          needle="const map=JSON.parse(zlib.gunzipSync(Buffer.from(MAP_B64,'base64')).toString('utf8'));"
-          repl=needle+"\nmap.result.canonicalSha256='1cd82e86a3df4da40afdb1ddc65480e2c911809fa9dcc2e48ec059c4d8b73956';"
-          if needle not in s:
-              raise SystemExit('materializer decode line not found')
-          p.write_text(s.replace(needle,repl,1))
+          s=s.replace("const crypto=require('node:crypto');", "const crypto=require('node:crypto');\nconst fs=require('node:fs');", 1)
+          s=s.replace("const official=require('../04_data/knowledge/kfind-home-analyzed-v2.json');", "const official=require('../04_data/knowledge/kfind-home-analyzed-v2.json');\nconst v3=require('../04_data/knowledge/official-food-corpus-v3.json');", 1)
+          old="assert.deepEqual(plan.summary.projectedAfter,{verified:81,approximate:10,estimated:409,unknown:0},'v2 quality projection drifted');"
+          new="assert.deepEqual(plan.summary.projectedAfter,{verified:232,approximate:3,estimated:265,unknown:0},'current quality projection drifted after v3 materialization');"
+          if old not in s: raise SystemExit('v2 projection assertion not found')
+          s=s.replace(old,new,1)
+          old="assert.ok([5,81].includes(report.statusCounts.verified),'canonical DB must be at v1 baseline or fully applied v2 state while this PR is being materialized');"
+          new="""assert.equal(v3.version,'garang-official-food-corpus-v3');
+assert.equal(v3.result.changedRows,151,'v3 must change exactly the reviewed 151 rows');
+assert.equal(v3.result.unchangedRows,349,'v3 must preserve the other 349 rows');
+assert.deepEqual(v3.result.quality,{verified:232,approximate:3,estimated:265,unknown:0});
+assert.deepEqual(v3.result.sourceContribution,{D:86,K:63,P:2});
+assert.deepEqual(v3.result.remainingApproximate,['라면','오트밀','그릭요거트']);
+assert.equal(v3.result.identitySha256,'29cf92749dfc578d51bda4b17608f2edb52abb365a36879ea5af1b83a8225cce');
+assert.equal(v3.result.canonicalSha256,'1cd82e86a3df4da40afdb1ddc65480e2c911809fa9dcc2e48ec059c4d8b73956');
+assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../04_data/knowledge/food-db.json'))).digest('hex'),v3.result.canonicalSha256,'canonical food DB bytes drifted');
+assert.equal(v3.records.length,151,'v3 audit must contain exactly 151 reviewed upgrades');
+const foodById=new Map(foods.map(row=>[row.food_id,row]));
+for(const entry of v3.records){
+  const [foodId,sourceKey,recordId,sourceRowName,matchRule,...values]=entry;
+  const row=foodById.get(foodId),source=v3.sources[sourceKey];
+  assert.ok(row&&source,`v3 audit reference missing for ${foodId}`);
+  assert.equal(row.nutrition_status,'verified');
+  assert.equal(row.provenance.provider,source.provider);
+  assert.equal(row.provenance.dataset,source.dataset);
+  assert.equal(row.provenance.recordId,String(recordId));
+  assert.equal(row.provenance.sourceFileSha256,source.sha256);
+  assert.equal(row.provenance.sourceRowName,sourceRowName);
+  assert.equal(row.provenance.matchRule,matchRule);
+  for(let i=0;i<v3.nutrientOrder.length;i++)assert.equal(row[v3.nutrientOrder[i]],Number(values[i]),`${row.name} ${v3.nutrientOrder[i]} must equal reviewed official v3 value`);
+}
+assert.deepEqual(report.statusCounts,{verified:232,approximate:3,estimated:265,unknown:0},'canonical quality state must match reviewed v3 result');
+assert.equal(foodById.get('F0268')?.name,'라면');
+assert.notEqual(foodById.get('F0268')?.nutrition_status,'verified','generic 라면 must remain fail-closed');"""
+          if old not in s: raise SystemExit('legacy final quality assertion not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
           PY
-      - name: Materialize reviewed official mappings
-        run: node scripts/materialize-official-food-corpus-v3-temp.cjs
-      - name: Verify exact reviewed result
+      - name: Run food data gates
         run: |
-          node <<'NODE'
-          const fs=require('node:fs');
-          const crypto=require('node:crypto');
-          const assert=require('node:assert/strict');
-          const raw=fs.readFileSync('04_data/knowledge/food-db.json','utf8');
-          const foods=JSON.parse(raw);
-          const audit=JSON.parse(fs.readFileSync('04_data/knowledge/official-food-corpus-v3.json','utf8'));
-          const counts={verified:0,approximate:0,estimated:0,unknown:0};
-          for(const row of foods)counts[row.nutrition_status||'unknown']=(counts[row.nutrition_status||'unknown']||0)+1;
-          assert.equal(foods.length,500);
-          assert.deepEqual(counts,{verified:232,approximate:3,estimated:265,unknown:0});
-          assert.equal(audit.result.changedRows,151);
-          assert.equal(audit.result.unchangedRows,349);
-          assert.deepEqual(audit.result.sourceContribution,{D:86,K:63,P:2});
-          assert.deepEqual(audit.result.remainingApproximate,['라면','오트밀','그릭요거트']);
-          assert.equal(audit.result.identitySha256,'29cf92749dfc578d51bda4b17608f2edb52abb365a36879ea5af1b83a8225cce');
-          assert.equal(audit.result.canonicalSha256,'1cd82e86a3df4da40afdb1ddc65480e2c911809fa9dcc2e48ec059c4d8b73956');
-          assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),audit.result.canonicalSha256);
-          assert.equal(audit.records.length,151);
-          const ramen=foods.find(x=>x.name==='라면');
-          assert.ok(ramen);
-          assert.notEqual(ramen.nutrition_status,'verified');
-          for(const row of foods.filter(x=>x.nutrition_status==='verified')){
-            assert.ok(row.provenance?.provider,'verified row must have provider');
-            assert.ok(row.provenance?.dataset,'verified row must have dataset');
-            assert.ok(row.provenance?.recordId,'verified row must have recordId');
-          }
-          console.log(JSON.stringify({counts,changed:audit.result.changedRows,sources:audit.result.sourceContribution,sha:audit.result.canonicalSha256},null,2));
-          NODE
-      - name: Verify matcher contract
-        run: node tests/food-corpus-multisource-match-v3.test.cjs
-      - name: Commit materialized corpus
+          node tests/food-data-quality-gate.test.cjs
+          node tests/food-corpus-multisource-match-v3.test.cjs
+      - name: Remove temporary materialization helpers and commit
         run: |
+          rm .github/workflows/export-food-db-artifact-temp.yml
+          rm scripts/materialize-official-food-corpus-v3-temp.cjs
           git config user.name "jangsang1214"
           git config user.email "jangsang051214@gmail.com"
-          git add 04_data/knowledge/food-db.json 04_data/knowledge/official-food-corpus-v3.json
-          if git diff --cached --quiet; then
-            echo 'Expected materialized changes were not produced'
-            exit 1
-          fi
-          git commit -m "data: apply reviewed official food corpus v3"
+          git add -A tests/food-data-quality-gate.test.cjs .github/workflows/export-food-db-artifact-temp.yml scripts/materialize-official-food-corpus-v3-temp.cjs
+          git commit -m "test: lock official food corpus v3 quality state"
           git push origin HEAD:agent/official-food-corpus-v3-2026-09-16
