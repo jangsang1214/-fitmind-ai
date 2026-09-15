@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -36,9 +37,9 @@ async function tap(page,selector,label){
 }
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'golden-path-complete-browser',force:true}),screen);assert.equal(ok,true,screen+' must remain reachable through the canonical Router');await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});await heartbeat(page,'route '+screen);}
 async function waitForStep(page,step,{action=true}={}){try{await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.gpStep===expected,step,{timeout:7000});}catch(error){const diagnostic=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen,gpStep:document.getElementById('main')?.dataset?.gpStep,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()}),planner:window.GarangAgentStateBridge?.getState?.()?.planner,workouts:window.GarangAgentStateBridge?.getState?.()?.workouts,events:window.GarangAgentStateBridge?.getState?.()?.analytics?.events?.slice(-8)}));throw new Error(error.message+'\nGolden Path diagnostic: '+JSON.stringify(diagnostic),{cause:error});}assert.equal(await page.locator('[data-golden-path-surface]').count(),0,'Today must not render a second Golden Path card');if(action)await page.locator(`#garangTodayFlow .gtf-next[data-gsn-step="${step}"]`).waitFor({state:'visible',timeout:5000});}
-async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null'));}
-async function waitForPersistedEvent(page,name){await page.waitForFunction(eventName=>{try{const state=JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null');return state?.analytics?.events?.some(event=>event?.name===eventName)===true;}catch{return false;}},name,{timeout:15000});}
-async function waitForPersistedLength(page,key,length){await page.waitForFunction(({key,length})=>{try{const state=JSON.parse(localStorage.getItem('garang_demo_state_v3')||'null');return Array.isArray(state?.[key])&&state[key].length===length;}catch{return false;}},{key,length},{timeout:15000});}
+async function storedState(page){return page.evaluate(()=>window.GarangAgentStateBridge?.getState?.()||JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null'));}
+async function waitForPersistedEvent(page,name){await page.waitForFunction(eventName=>{try{const state=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null');return state?.analytics?.events?.some(event=>event?.name===eventName)===true;}catch{return false;}},name,{timeout:15000});}
+async function waitForPersistedLength(page,key,length){await page.waitForFunction(({key,length})=>{try{const state=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'null');return Array.isArray(state?.[key])&&state[key].length===length;}catch{return false;}},{key,length},{timeout:15000});}
 async function noHorizontalOverflow(page,label){const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,label+' must not create horizontal overflow: '+JSON.stringify(width));}
 async function singleTodayOwner(page,label){
   const result=await page.evaluate(()=>{
@@ -77,7 +78,8 @@ async function singleTodayOwner(page,label){
   try{
     await waitForServer();browser=await webkit.launch({headless:true});
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-    await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},freshState());
+    await installAuthenticatedFirebaseMock(context);
+    await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},freshState());
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});await page.waitForFunction(()=>window.GarangGoldenPath&&window.GarangRouter&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:7000});
 

@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -12,7 +13,8 @@ function demoState(){const date=today();return {meta:{schemaVersion:5,updatedAt:
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},demoState());
+  await installAuthenticatedFirebaseMock(context);
+  await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},demoState());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangDailyPlanV1?.VERSION==='garang-daily-plan-v1.1.0'&&window.GarangDailyPlanV1?.STRATEGY_VERSION==='garang-three-track-adaptive-v1'&&window.GarangDailyPlanV1?.DOMAIN_STRATEGY_VERSION==='garang-domain-execution-adaptive-v1'&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:10000});
