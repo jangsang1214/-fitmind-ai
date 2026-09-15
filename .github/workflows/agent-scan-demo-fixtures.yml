@@ -12,7 +12,7 @@ jobs:
           ref: agent/coach-multimodal-hardening-2026-09-16
       - name: Find legacy demo fixtures
         run: |
-          echo '--- garang_demo test references ---'
-          grep -Rnl --exclude='no-demo-entry.test.cjs' "garang_demo" tests || true
-          echo '--- garang_demo_state_v3 test references ---'
-          grep -Rnl --exclude='no-demo-entry.test.cjs' "garang_demo_state_v3" tests || true
+          echo '--- browser demo references with context ---'
+          grep -Rn -B 3 -A 5 "garang_demo" tests/browser-*.cjs || true
+          echo '--- non-browser references ---'
+          grep -Rnl --exclude='no-demo-entry.test.cjs' "garang_demo" tests | grep -v '/browser-' || true
