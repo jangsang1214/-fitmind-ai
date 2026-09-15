@@ -1,5 +1,9 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v21-20260909`;
+const CACHE=`${CACHE_PREFIX}v24-20260915`;
+const EXTRA_ASSETS=[
+  './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
+  './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0'
+];
 
 async function precache(){
   const cache=await caches.open(CACHE);
@@ -9,7 +13,7 @@ async function precache(){
   await cache.put('./',indexResponse.clone());
   const html=await indexResponse.text();
   const assets=[...html.matchAll(/(?:src|href)="(\.\/[^"#]+)"/g)].map(match=>match[1]);
-  const unique=[...new Set(assets)];
+  const unique=[...new Set([...assets,...EXTRA_ASSETS])];
   await Promise.allSettled(unique.map(async url=>{
     const response=await fetch(url,{cache:'reload'});
     if(response.ok)await cache.put(url,response.clone());
