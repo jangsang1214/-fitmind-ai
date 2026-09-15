@@ -10,7 +10,7 @@ const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
 function num(v,f=0){const n=window.GarangSchema?GarangSchema.numeric(v):(v==null||(typeof v==='string'&&!v.trim())?null:(Number.isFinite(Number(v))?Number(v):null));return n===null?f:n;}
 const SCHEMA_VERSION = 5;
 const LEGACY_KEY = 'garang_v99_state_v2';
-const DEMO_KEY = 'garang_demo_state_v3';
+const SIGNED_OUT_KEY = 'garang_signed_out_v1';
 const SERVICES = window.GARANG_SERVICES || {};
 const accountBootstrapSafe=(...args)=>window.GarangSchema?GarangSchema.accountBootstrap(...args):null;
 const mergeStatesSafe=(...args)=>window.GarangSchema?GarangSchema.mergeStates(...args):args[0];
@@ -30,7 +30,7 @@ let state = EMPTY();
 let db = {exercise:[],food:[]};
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
-let storageKey=DEMO_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
+let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
 window.GarangCloudHydrationReady=true;
 function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
 let workoutDraft=[], mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false;
@@ -153,8 +153,7 @@ function initFirebase(){
     if(firebaseReady)firebase.auth().onAuthStateChanged(u=>{
       currentUser=u;
       if(u){setCloudHydrationReady(false);cloudSyncPending=false;storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{setCloudHydrationReady(true);captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
-      else if(localStorage.getItem('garang_demo')==='1'){setCloudHydrationReady(true);storageKey=DEMO_KEY;loadLocal(storageKey);showApp();}
-      else{setCloudHydrationReady(true);showAuth();}
+      else{localStorage.removeItem('garang_demo');setCloudHydrationReady(true);storageKey=SIGNED_OUT_KEY;showAuth();}
     });
   }catch(e){firebaseReady=false;setCloudHydrationReady(true);captureError('firebase_init',e);}
 }
@@ -164,14 +163,13 @@ function bindAuth(){
   document.querySelectorAll('[data-auth-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-auth-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('loginForm').hidden=b.dataset.authTab!=='login';$('signupForm').hidden=b.dataset.authTab!=='signup';});
   $('loginForm').onsubmit=async e=>{e.preventDefault();await emailAuth(false)};$('signupForm').onsubmit=async e=>{e.preventDefault();await emailAuth(true)};
   $('resetPassword').onclick=resetPassword;$('googleBtn').onclick=()=>socialAuth('google');$('appleBtn').onclick=()=>socialAuth('apple');
-  $('demoBtn').onclick=()=>{localStorage.setItem('garang_demo','1');storageKey=DEMO_KEY;loadLocal(storageKey);state.profile=state.profile||{name:'GARANG 사용자',age:23,height:174,weight:67,goal:'퍼포먼스 향상'};saveState({event:'demo_started'});showApp();};
   $('logoutBtn').onclick=logout;$('profileTopBtn').onclick=()=>go('profile');$('settingsTopBtn').onclick=()=>go('settings');$('syncBadge').onclick=()=>{if(currentUser&&firebaseReady){toast('클라우드 동기화를 다시 확인합니다.');cloudSaveNow().then(ok=>ok&&toast('동기화가 완료되었습니다.'));}else toast('로그인하면 Firebase와 동기화됩니다.');};
 }
 async function emailAuth(signup){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const email=$(signup?'signupEmail':'loginEmail').value.trim(),pw=$(signup?'signupPassword':'loginPassword').value;if(signup){const c=await firebase.auth().createUserWithEmailAndPassword(email,pw);await c.user.updateProfile({displayName:email.split('@')[0]});trackEvent('signup_completed');}else await firebase.auth().signInWithEmailAndPassword(email,pw);toast(signup?'계정을 만들었습니다.':'로그인했습니다.');}catch(e){toast(firebaseError(e));}}
 async function socialAuth(kind){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');await firebase.auth().signInWithPopup(p);}catch(e){toast(firebaseError(e));}}
 async function resetPassword(){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');const email=$('loginEmail').value.trim();if(!email)return toast('이메일을 먼저 입력해 주세요.');try{await firebase.auth().sendPasswordResetEmail(email);toast('재설정 메일을 보냈습니다.');}catch(e){toast(firebaseError(e));}}
 function firebaseError(e){const c=e?.code||'';const map={'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.','auth/email-already-in-use':'이미 사용 중인 이메일입니다.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/popup-closed-by-user':'로그인이 취소되었습니다.','auth/operation-not-allowed':'Firebase Console에서 로그인 방식을 활성화해 주세요.','auth/unauthorized-domain':'Firebase 승인 도메인을 확인해 주세요.','auth/popup-blocked':'브라우저 팝업을 허용해 주세요.','permission-denied':'Firestore 권한 규칙을 확인해 주세요.'};return map[c]||e?.message||'인증 중 오류가 발생했습니다.';}
-function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});clearTimeout(syncTimer);cloudSyncPending=false;setCloudHydrationReady(true);localStorage.removeItem('garang_demo');currentUser=null;storageKey=DEMO_KEY;showAuth();}
+function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});clearTimeout(syncTimer);cloudSyncPending=false;setCloudHydrationReady(true);localStorage.removeItem('garang_demo');currentUser=null;storageKey=SIGNED_OUT_KEY;showAuth();}
 
 function nav(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));}
 function recordScreenView(page,from){trackEvent('screen_viewed',{screen:page,from:from||null,date:today()},true);if(firebaseReady&&currentUser)queueCloudSync();}

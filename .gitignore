@@ -6,3 +6,4 @@ node_modules/
 !.env.example
 .firebase/
 firebase-debug.log
+gha-creds-*.json
