@@ -14,7 +14,7 @@ const first=(row,keys)=>{for(const key of keys){const v=row?.[key];if(v!==undefi
 const dateText=v=>{const s=clean(v);return s||null;};
 const unitText=v=>clean(v).toLowerCase().replace(/\s+/g,'');
 function gramValue(value,unit){const n=finite(value);if(n===null)return null;const u=unitText(unit||'g');if(['g','gram','grams','그램'].includes(u))return n;if(['kg','kilogram','kilograms','킬로그램'].includes(u))return n*1000;if(['mg','milligram','milligrams'].includes(u))return n/1000;return null;}
-function parseBasis(value){if(typeof value==='number')return value>0?value:null;const s=clean(value);if(!s)return null;const m=s.match(/([\d,.]+)\s*(kg|g|그램|mg)\b/i);return m?gramValue(m[1],m[2]):finite(s);}
+function parseBasis(value){if(typeof value==='number')return value>0?value:null;const s=clean(value);if(!s)return null;const m=s.match(/([\d,.]+)\s*(kg|g|그램|mg)/i);return m?gramValue(m[1],m[2]):finite(s);}
 function hasCore(nutrients){return ['kcal','protein','carbs','fat'].every(k=>finite(nutrients?.[k])!==null);}
 function safeFoodId(prefix,dataset,recordId){return [prefix,clean(dataset),clean(recordId)].filter(Boolean).join(':');}
 
@@ -73,12 +73,13 @@ const USDA_NUTRIENTS=Object.freeze({
   saturatedFat:{ids:new Set([1258]),numbers:new Set(['606']),names:/fatty acids,? total saturated|saturated fat/i},
   transFat:{ids:new Set([1257]),numbers:new Set(['605']),names:/fatty acids,? total trans|trans fat/i}
 });
+function normalizeUsdaDataset(value){const raw=clean(value);const map={'Survey (FNDDS)':'FNDDS','Survey':'FNDDS','Foundation':'Foundation','Branded':'Branded','SR Legacy':'SR Legacy'};return map[raw]||raw||null;}
 function nutrientMeta(item={}){const n=item.nutrient||item;return {id:Number(n?.id??item?.nutrientId),number:clean(n?.number??item?.nutrientNumber),name:clean(n?.name??item?.nutrientName),unit:clean(n?.unitName??item?.unitName??item?.unit)};}
 function findUsdaNutrient(rows,key){const spec=USDA_NUTRIENTS[key];for(const row of list(rows)){const meta=nutrientMeta(row);if(spec.ids.has(meta.id)||spec.numbers.has(meta.number)||spec.names.test(meta.name)){const value=finite(row?.amount??row?.value);if(value===null)continue;return {value,unit:meta.unit};}}return {value:null,unit:null};}
 function normalizeEnergy(value,unit){const n=finite(value);if(n===null)return null;return /kj/i.test(clean(unit))?n/4.184:n;}
 function adaptUsda(raw={},options={}){
   const recordId=clean(raw.fdcId??raw.fdc_id);
-  const dataset=clean(raw.dataType||raw.data_type||options.dataset);
+  const dataset=normalizeUsdaDataset(raw.dataType||raw.data_type||options.dataset);
   const rows=raw.foodNutrients||raw.food_nutrients||[];
   const energy=findUsdaNutrient(rows,'kcal');
   const nutrients={kcal:normalizeEnergy(energy.value,energy.unit)};
@@ -120,5 +121,5 @@ function exactMatchProposal(existing=[],official=[]){
   }
   return {version:VERSION,proposals,review,unmatched,summary:{official:list(official).length,proposals:proposals.length,review:review.length,unmatched:unmatched.length}};
 }
-return Object.freeze({VERSION,KFIND_FIELDS,USDA_NUTRIENTS,parseBasis,adaptKfind,adaptUsda,adaptMany,unwrapRows,exactMatchProposal});
+return Object.freeze({VERSION,KFIND_FIELDS,USDA_NUTRIENTS,parseBasis,normalizeUsdaDataset,adaptKfind,adaptUsda,adaptMany,unwrapRows,exactMatchProposal});
 });
