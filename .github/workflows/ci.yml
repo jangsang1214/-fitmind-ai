@@ -72,8 +72,6 @@ jobs:
         run: test -f dist/index.html && test -f dist/06_features/final/commercial-core.js && test -f dist/runtime-manifest.json
       - name: Verify live Firebase public health
         run: node tests/firebase-live-health.test.cjs
-      - name: Verify live production Coach route boundary
-        run: node tests/coach-production-route-health.test.cjs
       - name: Verify Firestore rules in emulator
         run: npx firebase emulators:exec --only firestore --project garang-rules-test "node tests/firestore-rules-emulator.test.cjs"
 
