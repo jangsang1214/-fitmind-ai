@@ -31,6 +31,7 @@ function ensure(root){
 }
 function sync(){queued=false;const root=document.querySelector('.garang-coach-v2');if(root)ensure(root);}
 function queue(){if(queued)return;queued=true;requestAnimationFrame(sync);}
-window.addEventListener('garang:screen-rendered',event=>{if(event?.detail?.screen!=='coach')clear();queue();});window.addEventListener('garang:coach-mounted',queue);new MutationObserver(queue).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
+window.addEventListener('garang:screen-rendered',event=>{if(event?.detail?.screen!=='coach')clear();queue();});
+window.addEventListener('garang:coach-mounted',queue);
 window.GarangCoachPhotoDraft=Object.freeze({consumeForRequest,clear,hasDraft:()=>!!draft});queue();
 })();
