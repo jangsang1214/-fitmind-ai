@@ -10,7 +10,7 @@
     log: Object.freeze({key:'log',labelKo:'RECORD / 기록',labelEn:'RECORD',compactTitle:true,selectors:['.visual-log-grid'],patterns:[/\blog\b|record|기록/i]}),
     workout: Object.freeze({key:'workout',labelKo:'WORKOUT / 운동',labelEn:'WORKOUT',compactTitle:true,selectors:['#saveWorkoutSession','#wName'],patterns:[/\bworkout\b|log\s*\/\s*workout|운동/i]}),
     body: Object.freeze({key:'body',labelKo:'BODY / 체성분',labelEn:'BODY',compactTitle:true,selectors:['#saveBody'],patterns:[/body intelligence|log\s*\/\s*body|체성분/i]}),
-    progress: Object.freeze({key:'progress',labelKo:'PROGRESS / 흐름',labelEn:'PROGRESS',compactTitle:true,selectors:['.progress-tabs'],patterns:[/\bprogress\b|진행 상황|흐름/i]}),
+    progress: Object.freeze({key:'progress',labelKo:'PROGRESS / 누적.',labelEn:'PROGRESS',compactTitle:true,selectors:['.progress-tabs'],patterns:[/\bprogress\b|진행 상황|흐름|누적/i]}),
     running: Object.freeze({key:'running',labelKo:'RUNNING / 러닝',labelEn:'RUNNING',compactTitle:true,selectors:['#runStart','#runStop'],patterns:[/\brunning\b|log\s*\/\s*running|러닝/i]}),
     nutrition: Object.freeze({key:'nutrition',labelKo:'NUTRITION / 식단',labelEn:'NUTRITION',compactTitle:true,selectors:['#saveMeal','#foodSearch','#pickMealScan'],patterns:[/\bnutrition\b|식단/i]}),
     planner: Object.freeze({key:'planner',labelKo:'PLANNER / 실행',labelEn:'PLANNER',compactTitle:false,selectors:['#addPlan'],patterns:[/\bplanner\b|plan\s*\/\s*계획|계획 추가/i]}),
@@ -31,6 +31,11 @@
     const title=head.querySelector?.('h1')?.textContent||'';
     return `${eyebrow} ${title}`.trim();
   }
+  function explicitProgressHeader(main){
+    if(!main?.querySelector)return false;
+    const eyebrow=main.querySelector('.page-head')?.querySelector?.('.eyebrow')?.textContent||'';
+    return /\bprogress\b/i.test(eyebrow);
+  }
   function matchesSelectors(main,def){
     if(!main?.querySelector||!def?.selectors?.length)return false;
     return def.selectors.some(selector=>{try{return !!main.querySelector(selector);}catch{return false;}});
@@ -40,6 +45,7 @@
   function detect(main,doc=root.document){
     if(!main)return null;
     for(const key of DETECTION_ORDER)if(matchesSelectors(main,SCREENS[key]))return key;
+    if(explicitProgressHeader(main))return 'progress';
     const text=headerText(main);
     for(const key of DETECTION_ORDER)if(matchesHeader(text,SCREENS[key]))return key;
     return activeNavPage(doc)||null;

@@ -35,6 +35,8 @@ assert.equal(GarangScreens.label('planner','ko'),'PLANNER / 실행');
 assert.equal(GarangScreens.label('planner','en'),'PLANNER');
 assert.equal(GarangScreens.label('memory','ko'),'MEMORY / 장기 기억');
 assert.equal(GarangScreens.label('memory','en'),'MEMORY');
+assert.equal(GarangScreens.label('progress','ko'),'PROGRESS / 누적.');
+assert.equal(GarangScreens.label('progress','en'),'PROGRESS');
 assert.equal(GarangScreens.isCompact('profile'),true);
 assert.equal(GarangScreens.isCompact('planner'),false);
 assert.equal(GarangScreens.isCompact('memory'),false);
@@ -46,6 +48,24 @@ assert.equal(GarangScreens.isCompact('memory'),false);
   assert.equal(main._eyebrow.textContent,'RECORD / 기록');
   assert.equal(main._title.hidden,true,'Record overview keeps the compact title policy');
   assert.equal(main.dataset.garangScreen,'log');
+}
+
+{
+  const main=fakeMain({eyebrow:'PROGRESS / 흐름',title:'진행 상황'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'progress','Legacy Progress copy must still resolve to the canonical accumulation surface');
+  GarangScreens.applyHeader(main,fakeDoc('today','ko'));
+  assert.equal(main._eyebrow.textContent,'PROGRESS / 누적.');
+  assert.equal(main._title.hidden,true);
+}
+
+{
+  const main=fakeMain({eyebrow:'PROGRESS / 누적.',title:'누적 기록'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'progress','Accumulation brand copy must resolve to Progress');
+}
+
+{
+  const main=fakeMain({eyebrow:'RECORD / 기록',title:'누적 기록'});
+  assert.equal(GarangScreens.detect(main,fakeDoc('today')),'log','Accumulation wording inside Record must not steal the screen identity from Record');
 }
 
 {
