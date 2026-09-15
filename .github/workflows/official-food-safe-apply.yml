@@ -17,12 +17,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: agent/official-food-safe-overrides-v1-2026-09-15
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Restore canonical food DB from PR base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git show "$BASE_SHA:04_data/knowledge/food-db.json" > 04_data/knowledge/food-db.json
       - name: Verify pre-apply quality gate
         run: node tests/food-data-quality-gate.test.cjs
-      - name: Apply safe official overrides
+      - name: Apply safe official overrides without rewriting untouched rows
         run: node scripts/apply-official-food-overrides.cjs --write
       - name: Verify post-apply quality gate
         run: node tests/food-data-quality-gate.test.cjs
@@ -35,5 +40,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add 04_data/knowledge/food-db.json
-          git commit -m 'Apply provenance-safe K-FIND nutrition overrides'
+          git commit -m 'Apply minimal provenance-safe K-FIND overrides'
           git push
