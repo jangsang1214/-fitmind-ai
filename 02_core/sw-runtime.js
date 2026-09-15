@@ -1,6 +1,9 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v22-20260915`;
-const EXTRA_ASSETS=['./06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0'];
+const CACHE=`${CACHE_PREFIX}v23-20260915`;
+const EXTRA_ASSETS=[
+  './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.0.0',
+  './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0'
+];
 
 async function precache(){
   const cache=await caches.open(CACHE);
