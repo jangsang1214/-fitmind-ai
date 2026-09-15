@@ -27,7 +27,9 @@ function findObjectRange(text,foodId){
   }
   throw new Error(`FOOD_OBJECT_UNTERMINATED:${foodId}`);
 }
-function indentObject(value){return JSON.stringify(value,null,2).split('\n').map(line=>`  ${line}`).join('\n');}
+function indentObject(value){
+  return JSON.stringify(value,null,2).split('\n').map((line,index)=>index===0?line:`  ${line}`).join('\n');
+}
 function applyTargetedText(existingText,existingRows,plan){
   const proposals=[...(plan?.proposals||[])].sort((a,b)=>findObjectRange(existingText,b.targetFoodId).start-findObjectRange(existingText,a.targetFoodId).start);
   let output=existingText;
