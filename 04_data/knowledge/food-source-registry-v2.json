@@ -10,7 +10,8 @@
       "Preserve the source record identifier and dataset name at ingestion.",
       "Normalize nutrients to a declared gram basis before recommendation math.",
       "Treat serving text as display metadata; basisG owns nutrient scaling.",
-      "Do not expose API keys in repository files or client bundles."
+      "Do not expose API keys in repository files or client bundles.",
+      "Official records may generate replacement proposals, but existing GARANG food records are not overwritten automatically."
     ]
   },
   "sources": [
@@ -22,6 +23,7 @@
       "official": true,
       "apiKeyRequired": true,
       "apiPage": "https://various.foodsafetykorea.go.kr/nutrient/industry/openApi/info.do",
+      "dataPortal": "https://www.data.go.kr/data/15127578/openapi.do",
       "datasets": [
         {"id": "KDDB", "name": "식품의약품안전처 음식 DB"},
         {"id": "PFDB", "name": "식품의약품안전처 가공식품 DB"},
@@ -39,7 +41,8 @@
         "cholesterol": "A008",
         "protein": "A009"
       },
-      "adapterStatus": "normalized-boundary-ready_raw-payload-mapping-pending"
+      "adapterStatus": "implemented-contract-tested",
+      "liveImportStatus": "external-api-key-required"
     },
     {
       "id": "usda-fdc",
@@ -55,7 +58,8 @@
         {"id": "FNDDS", "name": "Food and Nutrient Database for Dietary Studies"},
         {"id": "Branded", "name": "Global Branded Food Products Database"}
       ],
-      "adapterStatus": "normalized-boundary-ready_raw-payload-mapping-pending"
+      "adapterStatus": "implemented-contract-tested",
+      "liveImportStatus": "api-key-required-cli-ready"
     }
   ]
 }
