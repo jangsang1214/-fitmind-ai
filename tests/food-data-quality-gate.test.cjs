@@ -1,7 +1,9 @@
 'use strict';
 const assert=require('node:assert/strict');
 const Food=require('../02_core/food-data-foundation-v2.js');
+const Safe=require('../02_core/food-corpus-safe-overrides-v1.js');
 const foods=require('../04_data/knowledge/food-db.json');
+const official=require('../04_data/knowledge/kfind-home-analyzed-v1.json');
 const registry=require('../04_data/knowledge/food-source-registry-v2.json');
 
 assert.ok(Array.isArray(foods)&&foods.length>0,'Food DB must contain rows');
@@ -14,5 +16,42 @@ assert.deepEqual(registry.policy.qualityStates,['verified','approximate','estima
 for(const row of foods){
   if(/임의\s*추정|estimated/i.test(String(row.source||'')))assert.notEqual(String(row.nutrition_status||'').toLowerCase(),'verified',`estimated source cannot be verified: ${row.food_id||row.name}`);
 }
-console.log(JSON.stringify({status:'PASS',total:report.total,statusCounts:report.statusCounts,warnings:report.warnings.length,duplicateNames:report.duplicateNames.length,aliasCollisions:report.aliasCollisions.length},null,2));
+
+assert.equal(foods.length,500,'GARANG canonical food corpus must remain 500 rows');
+assert.equal(official.source.eligibleSourceRows,482,'official K-FIND eligible source row count drifted');
+assert.equal(official.source.includedSafeBatchRows,5,'official safe batch row count drifted');
+assert.equal(official.source.sha256,'1ef3551f9a1d0ee87891d6306fa22bbd6a7ffcc90f2c70a4a184dbfe3fce6ea6');
+assert.equal(official.source.sha256,official.source.duplicateSha256,'duplicate Food DB upload must have identical hash');
+
+const merge=Safe.merge(foods,official),plan=merge.plan;
+assert.equal(merge.foods.length,foods.length,'safe merge cannot add or remove foods');
+assert.equal(plan.summary.officialRecords,5);
+assert.equal(plan.summary.rejectedOfficial,0,'all committed official rows must pass provenance/quality checks');
+assert.ok(plan.summary.safeProposals>=4,'expected at least four safe exact K-FIND upgrades');
+assert.equal(plan.summary.projectedAfter.verified,plan.summary.before.verified+plan.summary.safeProposals);
+assert.deepEqual(merge.foods.map(x=>x.food_id),foods.map(x=>x.food_id),'safe merge must preserve food IDs and order');
+assert.ok(!plan.proposals.some(p=>Food.normalizedName(p.targetName)===Food.normalizedName('라면')),'라면 may never auto-merge');
+
+const byId=new Map(merge.foods.map(x=>[x.food_id,x]));
+for(const proposal of plan.proposals){
+  const merged=byId.get(proposal.targetFoodId);
+  assert.ok(merged,`missing merged row ${proposal.targetFoodId}`);
+  assert.equal(Food.normalizedName(merged.name),Food.normalizedName(proposal.official.name),'only exact primary-name matches may auto-merge');
+  assert.equal(merged.nutrition_status,'verified');
+  assert.equal(merged.provenance.provider,'MFDS K-FIND');
+  assert.equal(merged.provenance.dataset,'KDDB_HOME_ANALYZED');
+  assert.equal(merged.provenance.recordId,proposal.official.provenance.recordId);
+  for(const key of Safe.NUTRIENT_KEYS){
+    const legacyKey=key==='saturatedFat'?'saturated_fat':key==='transFat'?'trans_fat':key;
+    assert.equal(merged[legacyKey],proposal.official.nutrients[key],`${proposal.targetName} ${key} must equal official value`);
+  }
+}
+
+for(const name of ['현미밥','잡곡밥','보리밥','하이라이스','카스텔라']){
+  const target=foods.find(x=>Food.normalizedName(x.name)===Food.normalizedName(name));
+  assert.ok(target,`${name} must exist in canonical food corpus`);
+  if(Food.canonicalize(target).quality!=='verified'&&!/(봉|팩|캔|병)/.test(String(target.serving||'')))assert.ok(plan.proposals.some(p=>p.targetFoodId===target.food_id),`${name} should be a safe official proposal`);
+}
+
+console.log(JSON.stringify({status:'PASS',total:report.total,statusCounts:report.statusCounts,warnings:report.warnings.length,duplicateNames:report.duplicateNames.length,aliasCollisions:report.aliasCollisions.length,officialSafeMerge:plan.summary},null,2));
 console.log('food-data-quality-gate: PASS');
