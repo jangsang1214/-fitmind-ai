@@ -37,7 +37,7 @@ html body #main[data-garang-screen="progress"]>#garangAccumulationOverview{margi
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview [data-gx-meaning-loop]{margin-top:14px!important}
 .garang-more-sheet [data-route="planner"],.garang-more-sheet [data-pagego="planner"],.garang-more-sheet [data-route="memory"],.garang-more-sheet [data-pagego="memory"]{display:none!important}
 .garang-more-sheet .garang-gpc-internalized[hidden]{display:none!important}
-html body #main .gx-drop-button.gpc-evidence-control{width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;border:1px solid rgba(242,239,233,.14)!important;border-radius:999px!important;background:transparent!important;color:rgba(242,239,233,.66)!important;box-shadow:none!important;display:grid!important;place-items:center!important}
+html body #main .gx-drop-button.gpc-evidence-control{width:44px!important;height:48px!important;min-width:44px!important;padding:0!important;border:1px solid rgba(242,239,233,.14)!important;border-radius:999px!important;background:transparent!important;color:rgba(242,239,233,.66)!important;box-shadow:none!important;display:grid!important;place-items:center!important}
 html body #main .gx-drop-button.gpc-evidence-control:hover{background:rgba(242,239,233,.035)!important;border-color:rgba(120,170,153,.34)!important;color:#8db5a7!important}
 html body #main .gx-drop-button.gpc-evidence-control:focus-visible{outline:1px solid rgba(120,170,153,.72)!important;outline-offset:3px!important}
 html body #main .gx-drop-button.gpc-evidence-control .gpc-evidence-icon{font:400 16px/1 "Noto Sans KR",system-ui,sans-serif!important;letter-spacing:0!important;transform:none!important}
