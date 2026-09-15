@@ -9,6 +9,7 @@
     "import:food:official": "node scripts/import-official-food-data.cjs",
     "plan:food:multisource": "node scripts/plan-multisource-food-upgrade.cjs",
     "staging:preflight": "node scripts/firebase-staging-preflight.cjs",
+    "preflight:coach:prod-route": "node tests/coach-production-route-health.test.cjs",
     "smoke:coach:staging": "node scripts/verify-staging-coach.cjs",
     "smoke:coach:prod": "node scripts/verify-production-coach.cjs",
     "lint": "node scripts/check.cjs",
