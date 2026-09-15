@@ -1,0 +1,18 @@
+name: Agent Scan Demo Fixtures
+on:
+  push:
+    branches:
+      - agent/coach-multimodal-hardening-2026-09-16
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: agent/coach-multimodal-hardening-2026-09-16
+      - name: Find legacy demo fixtures
+        run: |
+          echo '--- garang_demo test references ---'
+          grep -Rnl --exclude='no-demo-entry.test.cjs' "garang_demo" tests || true
+          echo '--- garang_demo_state_v3 test references ---'
+          grep -Rnl --exclude='no-demo-entry.test.cjs' "garang_demo_state_v3" tests || true
