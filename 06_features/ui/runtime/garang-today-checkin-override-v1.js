@@ -141,7 +141,7 @@
     observer?.disconnect();
     observedMain = m;
     observer = new MutationObserver(schedule);
-    observer.observe(m, {childList:true, subtree:true, attributes:true, attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen','aria-hidden','tabindex','hidden','style']});
+    observer.observe(m, {childList:true, subtree:true, attributes:true, attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen','aria-hidden','tabindex','hidden']});
   }
 
   for (const eventName of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','pageshow']) {
