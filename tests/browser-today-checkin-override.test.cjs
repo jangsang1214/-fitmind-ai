@@ -20,8 +20,13 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.0'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutPrepExecution==='1'&&document.querySelector('.garang-daily-workout')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:10000});
+  await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.1'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
+  try{
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutPrepExecution==='1'&&document.querySelector('.garang-daily-workout')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:10000});
+  }catch(error){
+    const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,800)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
+    throw new Error(error.message+'\nToday workout preparation diagnostic: '+JSON.stringify(diagnostic),{cause:error});
+  }
   await page.waitForTimeout(200);
   const execute=page.locator('#garangTodayFlow .gtf-next[data-garang-today-workout-execute="1"]');
   const prep=page.locator('.garang-daily-workout');
