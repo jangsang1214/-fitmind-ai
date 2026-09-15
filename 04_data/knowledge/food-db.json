@@ -26,7 +26,7 @@
     "source_date": null,
     "nutrition_status": "approximate"
   },
-    {
+  {
     "food_id": "F0002",
     "name": "현미밥",
     "category": "밥/곡류/면",
@@ -60,7 +60,7 @@
       "label": "K-FIND 음식 DB · 가정식(분석 함량)"
     }
   },
-    {
+  {
     "food_id": "F0003",
     "name": "잡곡밥",
     "category": "밥/곡류/면",
@@ -94,7 +94,7 @@
       "label": "K-FIND 음식 DB · 가정식(분석 함량)"
     }
   },
-    {
+  {
     "food_id": "F0004",
     "name": "보리밥",
     "category": "밥/곡류/면",
@@ -411,7 +411,7 @@
     "source_date": "2026-08-13",
     "nutrition_status": "estimated"
   },
-    {
+  {
     "food_id": "F0018",
     "name": "하이라이스",
     "category": "밥/곡류/면",
@@ -6734,7 +6734,7 @@
     "source_date": "2026-08-13",
     "nutrition_status": "estimated"
   },
-    {
+  {
     "food_id": "F0305",
     "name": "카스텔라",
     "category": "빵/디저트",
