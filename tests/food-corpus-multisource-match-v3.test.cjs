@@ -6,8 +6,8 @@ const Matcher=require('../02_core/food-corpus-multisource-match-v3.js');
 function target(id,name,{aliases=[],category='기타',serving='100g',quality='estimated'}={}){
   return {food_id:id,name,aliases,category,serving,basis_g:100,kcal:100,protein:5,carbs:15,fat:2,sugar:1,fiber:1,sodium:100,cholesterol:0,saturated_fat:0.5,trans_fat:0,nutrition_status:quality,source:'GARANG current value'};
 }
-function official(id,name,{dataset='KDDB',category='기타',aliases=[],kcal=200}={}){
-  return {foodId:`official:${dataset}:${id}`,name,aliases,category,serving:'100g',basisG:100,nutrients:{kcal,protein:10,carbs:20,fat:5,sugar:2,fiber:2,sodium:200,cholesterol:1,saturatedFat:1,transFat:0},quality:'verified',provenance:{provider:'MFDS K-FIND',dataset,recordId:id,url:'https://example.invalid/source',sourceDate:'2026-08-28',retrievedAt:'2026-09-15'}};
+function official(id,name,{dataset='KDDB',category='기타',aliases=[],kcal=200,basisG=100,nutrients={}}={}){
+  return {foodId:`official:${dataset}:${id}`,name,aliases,category,serving:`${basisG}g`,basisG,nutrients:{kcal,protein:10,carbs:20,fat:5,sugar:2,fiber:2,sodium:200,cholesterol:1,saturatedFat:1,transFat:0,...nutrients},quality:'verified',provenance:{provider:'MFDS K-FIND',dataset,recordId:id,url:'https://example.invalid/source',sourceDate:'2026-08-28',retrievedAt:'2026-09-15'}};
 }
 
 {
@@ -72,6 +72,26 @@ function official(id,name,{dataset='KDDB',category='기타',aliases=[],kcal=200}
   const plan=Matcher.buildPlan(foods,source);
   assert.equal(plan.summary.alreadyVerified,1);
   assert.equal(plan.summary.apply,0);
+}
+
+{
+  const foods=[target('F8','두부',{category:'콩류'})];
+  const source=[official('K8','두부',{dataset:'KFCT',category:'콩류',basisG:50,kcal:45,nutrients:{protein:4,carbs:2,fat:2,sugar:0.5,fiber:0.5,sodium:5,cholesterol:0,saturatedFat:0.3,transFat:0}})];
+  const plan=Matcher.buildPlan(foods,source);
+  assert.equal(plan.summary.apply,1);
+  const merged=Matcher.applyPlan(foods,plan);
+  assert.equal(merged[0].kcal,90);
+  assert.equal(merged[0].protein,8);
+  assert.equal(merged[0].nutrition_basis_g,100);
+}
+
+{
+  const foods=[target('F9','사과',{category:'과일'})];
+  const incomplete=official('K9','사과',{dataset:'KFCT',category:'과일',nutrients:{sugar:null}});
+  const plan=Matcher.buildPlan(foods,[incomplete]);
+  assert.equal(plan.summary.traceableOfficialRecords,0);
+  assert.equal(plan.summary.apply,0);
+  assert.equal(plan.preserveExisting[0].reason,'NO_TRACEABLE_MATCH');
 }
 
 console.log('food-corpus-multisource-match-v3: ok');
