@@ -20,7 +20,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today shows the deterministic judgment summary while Coach remains the canonical decision disclosure owner');
   assert.equal(await flow.getAttribute('data-decision-owner'),'coach');
-  assert.match(await flow.getAttribute('aria-label'),/GARANG 판단/);
+  assert.match(await flow.getAttribute('aria-label'),/오늘 상태/,'Morning Orchestrator remains the canonical Today accessibility owner');
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must answer what GARANG thinks today');
   assert.equal(await flow.locator('.gtf-disclosure').isHidden(),true,'detailed rationale must remain progressive and Coach-owned');
   assert.equal(await flow.locator('.gpc-coach-explain').isVisible(),true,'Today must offer one quiet explanation entry');
