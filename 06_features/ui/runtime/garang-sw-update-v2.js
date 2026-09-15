@@ -13,7 +13,7 @@ function loadProductConsolidation(){
 function loadTodayCheckinOverride(){
   if(window.GarangTodayCheckinOverrideV1||document.querySelector('script[data-garang-today-checkin-override-v1]'))return;
   const script=document.createElement('script');
-  script.src='./06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.1.0';
+  script.src='./06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0';
   script.dataset.garangTodayCheckinOverrideV1='1';
   script.async=false;
   document.head.appendChild(script);
