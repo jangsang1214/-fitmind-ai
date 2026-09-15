@@ -1,9 +1,10 @@
-/* GARANG State Event Durability v1
+/* GARANG State Event Durability v1.1
    Bridges the legacy app.js saveState ordering to the canonical Agent State Bridge.
    app.js emits `garang:state-updated` after adding its semantic event, but the legacy
    local write happens just before that event is added. This boundary commits the live
-   bridge object once more at the lifecycle boundary so subsequent routes cannot read
-   or persist a stale pre-event snapshot.
+   bridge object once more at the lifecycle boundary and then reuses the existing
+   app-state synchronization event so the next app-owned write cannot overwrite the
+   canonical bridge with a stale pre-event snapshot.
 */
 (() => {
 'use strict';
@@ -11,6 +12,19 @@ if(window.GarangStateEventDurabilityV1)return;
 
 let committing=false;
 const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+
+function publishAppStateSync(key,event){
+  try{
+    window.dispatchEvent(new CustomEvent('garang:agent-write',{detail:{
+      tool:'state_lifecycle_sync',
+      internalSync:true,
+      source:String(event?.detail?.source||'app'),
+      event:String(event?.detail?.event||'state_saved'),
+      storageKey:key,
+      at:new Date().toISOString()
+    }}));
+  }catch{}
+}
 
 function commitLifecycleEvent(event){
   if(committing)return false;
@@ -40,6 +54,10 @@ function commitLifecycleEvent(event){
   try{
     committing=true;
     localStorage.setItem(key,JSON.stringify(live));
+    /* app.js already treats garang:agent-write as its canonical "adopt bridge state"
+       boundary. Publishing only after the durable write keeps app state and bridge state
+       on the same object before a route transition can emit another persisted event. */
+    publishAppStateSync(key,event);
     return true;
   }catch(error){
     console.warn('[GARANG] state-event durability commit deferred',error?.message||error);
@@ -50,5 +68,5 @@ function commitLifecycleEvent(event){
 }
 
 window.addEventListener('garang:state-updated',commitLifecycleEvent);
-window.GarangStateEventDurabilityV1=Object.freeze({version:'1.0.0',commit:event=>commitLifecycleEvent(event),snapshot:()=>clone(window.GarangAgentStateBridge?.getState?.()||null)});
+window.GarangStateEventDurabilityV1=Object.freeze({version:'1.1.0',commit:event=>commitLifecycleEvent(event),snapshot:()=>clone(window.GarangAgentStateBridge?.getState?.()||null)});
 })();
