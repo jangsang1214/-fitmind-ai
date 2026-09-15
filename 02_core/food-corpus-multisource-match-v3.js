@@ -39,7 +39,7 @@ function categoryCompatible(target,official){
   if(!a||!b)return true;
   if(a===b||a.includes(b)||b.includes(a))return true;
   const groups=[
-    ['밥','곡류','죽'],['면','만두'],['국','탕','찌개','전골'],['육류','고기','가금'],['어패','수산','생선','어류'],
+    ['밥','곡류','죽'],['면','만두'],['국','탕','찌개','전골'],['육류','고기','가금','육가공'],['어패','수산','생선','어류'],
     ['채소','나물'],['과일'],['유제품','우유','치즈'],['빵','과자','디저트'],['음료'],['난류','달걀','계란']
   ];
   return groups.some(group=>group.some(x=>a.includes(x))&&group.some(x=>b.includes(x)));
