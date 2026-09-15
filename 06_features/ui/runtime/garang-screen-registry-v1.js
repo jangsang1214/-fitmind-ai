@@ -31,6 +31,11 @@
     const title=head.querySelector?.('h1')?.textContent||'';
     return `${eyebrow} ${title}`.trim();
   }
+  function explicitProgressHeader(main){
+    if(!main?.querySelector)return false;
+    const eyebrow=main.querySelector('.page-head')?.querySelector?.('.eyebrow')?.textContent||'';
+    return /\bprogress\b/i.test(eyebrow);
+  }
   function matchesSelectors(main,def){
     if(!main?.querySelector||!def?.selectors?.length)return false;
     return def.selectors.some(selector=>{try{return !!main.querySelector(selector);}catch{return false;}});
@@ -40,6 +45,7 @@
   function detect(main,doc=root.document){
     if(!main)return null;
     for(const key of DETECTION_ORDER)if(matchesSelectors(main,SCREENS[key]))return key;
+    if(explicitProgressHeader(main))return 'progress';
     const text=headerText(main);
     for(const key of DETECTION_ORDER)if(matchesHeader(text,SCREENS[key]))return key;
     return activeNavPage(doc)||null;
