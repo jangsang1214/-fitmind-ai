@@ -2,7 +2,7 @@
    Founder-directed UI fix for the Today workout-execution state:
    - canonical workout execution remains the Golden Path next action
    - a separate bottom Check-in affordance reuses the canonical app.js check-in owner
-   - dark Today actions use readable ivory-white text
+   - the bottom dark Check-in action always uses readable ivory-white text
    No state schema or write ownership changes.
 */
 (() => {
@@ -21,23 +21,21 @@
     const style = document.createElement('style');
     style.id = 'garang-today-checkin-override-v1-style';
     style.textContent = `
-      html body #main[data-garang-screen="today"] #garangTodayFlow .gtf-next{
-        background:#080908!important;
-        border-color:rgba(242,239,233,.22)!important;
-        color:#f7f5f1!important;
-        box-shadow:none!important;
-      }
-      html body #main[data-garang-screen="today"] #garangTodayFlow .gtf-next>span{color:#f7f5f1!important}
       html body #main[data-garang-screen="today"] ${executeSelector}[data-garang-today-workout-execute="1"]{
         min-height:48px!important;
+        background:#eee9df!important;
+        border-color:rgba(241,237,228,.86)!important;
+        color:#111210!important;
         font-size:0!important;
+        box-shadow:0 8px 28px rgba(0,0,0,.1)!important;
       }
       html body #main[data-garang-screen="today"] ${executeSelector}[data-garang-today-workout-execute="1"]::before{
         content:"오늘 운동 실행";
-        color:#f7f5f1!important;
-        font:600 11px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important;
+        color:#111210!important;
+        font:650 11px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important;
         letter-spacing:-.02em!important;
       }
+      html body #main[data-garang-screen="today"] ${executeSelector}[data-garang-today-workout-execute="1"]>span{color:#111210!important;font-size:15px!important}
       html[lang="en"] body #main[data-garang-screen="today"] ${executeSelector}[data-garang-today-workout-execute="1"]::before{content:"Start today's workout"}
       html body #main[data-garang-screen="today"]>[${BOTTOM_ATTR}="1"]{
         width:100%!important;
@@ -58,8 +56,8 @@
         font:650 12px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important;
         letter-spacing:-.02em!important;
       }
+      html body #main[data-garang-screen="today"]>[${BOTTOM_ATTR}="1"]>strong{color:#f7f5f1!important;font:650 12px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important}
       html body #main[data-garang-screen="today"]>[${BOTTOM_ATTR}="1"]>span{color:#f7f5f1!important;font:400 16px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important}
-      html body #main[data-garang-screen="today"] #garangTodayFlow .gtf-next:hover,
       html body #main[data-garang-screen="today"]>[${BOTTOM_ATTR}="1"]:hover{
         background:#101210!important;
         border-color:rgba(120,170,153,.46)!important;
@@ -74,10 +72,14 @@
     return /운동\s*기록\s*열기|Open\s+workout\s+log/i.test(button.textContent || '');
   }
 
-  function canonicalCheckin() {
+  function canonicalOwner() {
     const m = main();
-    if (!m || m.dataset.garangScreen !== 'today') return false;
-    const owner = m.querySelector('.status-visual-card [data-action="open-checkin"], [data-action="open-checkin"]');
+    if (!m || m.dataset.garangScreen !== 'today') return null;
+    return m.querySelector('.status-visual-card [data-action="open-checkin"], [data-action="open-checkin"]');
+  }
+
+  function canonicalCheckin() {
+    const owner = canonicalOwner();
     if (!owner) return false;
     if (typeof owner.onclick === 'function') {
       owner.onclick.call(owner,{type:'garang-bottom-checkin',target:owner,currentTarget:owner,preventDefault(){},stopPropagation(){}});
@@ -89,20 +91,19 @@
     main()?.querySelector(`[${BOTTOM_ATTR}="1"]`)?.remove();
   }
 
-  function ensureBottomCheckin(flow) {
+  function ensureBottomCheckin() {
     const m = main();
-    if (!m || !flow) return null;
+    if (!m || !canonicalOwner()) return null;
     let button = m.querySelector(`:scope > [${BOTTOM_ATTR}="1"]`);
     if (!button) {
       button = document.createElement('button');
       button.type = 'button';
       button.setAttribute(BOTTOM_ATTR,'1');
+      button.dataset.garangCheckinSecondary = '1';
       button.innerHTML = '<strong></strong><span aria-hidden="true">→</span>';
       button.onclick = event => { event.preventDefault(); event.stopPropagation(); canonicalCheckin(); };
-      flow.insertAdjacentElement('afterend',button);
-    } else if (button.previousElementSibling !== flow) {
-      flow.insertAdjacentElement('afterend',button);
     }
+    if (m.lastElementChild !== button) m.appendChild(button);
     const english = document.documentElement.lang === 'en';
     button.querySelector('strong').textContent = english ? 'Check-in' : '체크인';
     button.setAttribute('aria-label', english ? 'Check-in' : '체크인');
@@ -119,10 +120,12 @@
     const execute = flow.querySelector('.gtf-next[data-gsn-action="execute"]');
     const workout = isWorkoutExecute(execute);
     if (execute) {
-      if (workout) execute.dataset.garangTodayWorkoutExecute = '1';
-      else delete execute.dataset.garangTodayWorkoutExecute;
+      if (workout) {
+        execute.dataset.garangTodayWorkoutExecute = '1';
+        execute.setAttribute('aria-label', document.documentElement.lang === 'en' ? "Start today's workout" : '오늘 운동 실행');
+      } else delete execute.dataset.garangTodayWorkoutExecute;
     }
-    if (workout) ensureBottomCheckin(flow);
+    if (workout && canonicalOwner()) ensureBottomCheckin();
     else removeBottomCheckin();
   }
 
@@ -147,5 +150,5 @@
   observe();
   ensureStyle();
   schedule();
-  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.2.0',reconcile:schedule,openCheckin:canonicalCheckin});
+  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.0',reconcile:schedule,openCheckin:canonicalCheckin});
 })();
