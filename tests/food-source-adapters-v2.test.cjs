@@ -60,7 +60,8 @@ assert.equal(proposal.proposals[0].action,'replace-nutrition-after-review');
 assert.deepEqual(new Set(proposal.proposals.map(x=>x.targetFoodId)),new Set(['F0001','F1000']));
 
 const ambiguousExisting=[...existing,{food_id:'F2000',name:'밥',basis_g:100,kcal:100,protein:2,carbs:20,fat:0.2,nutrition_status:'estimated'}];
-const ambiguous=Adapters.exactMatchProposal(ambiguousExisting,[kfind]);
+const ambiguousOfficial=Adapters.adaptKfind(kfindFixture,{aliases:['밥']});
+const ambiguous=Adapters.exactMatchProposal(ambiguousExisting,[ambiguousOfficial]);
 assert.equal(ambiguous.proposals.length,0);
 assert.equal(ambiguous.review[0].reason,'AMBIGUOUS_EXACT_MATCH');
 
