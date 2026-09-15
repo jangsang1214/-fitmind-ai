@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_TIMEOUT_MS=8000;
+const DEFAULT_TIMEOUT_MS=20000;
 const DEFAULT_MODEL='gpt-5.6-luna';
 const DECISION_MODES=Object.freeze(['collect_data','caution','recover','reduce','maintain','progress','goal_focus']);
 const COACH_RESPONSE_SCHEMA=Object.freeze({type:'object',additionalProperties:false,required:['answer','decisionSummary','reasoningSummary','suggestedNextStep','confidence','alignment'],properties:{answer:{type:'string'},decisionSummary:{type:'string'},reasoningSummary:{type:'string'},suggestedNextStep:{type:'string'},confidence:{type:['number','null'],minimum:0,maximum:1},alignment:{type:'object',additionalProperties:false,required:['decisionId','decisionMode','reasonCodesUsed'],properties:{decisionId:{type:'string'},decisionMode:{type:'string',enum:[...DECISION_MODES]},reasonCodesUsed:{type:'array',items:{type:'string'},maxItems:8}}}}});
