@@ -143,10 +143,20 @@
     return button;
   }
 
+  function concealCanonical(button) {
+    if (!button) return;
+    if (!button.hidden) button.hidden = true;
+    if (button.style.getPropertyValue('display') !== 'none' || button.style.getPropertyPriority('display') !== 'important') {
+      button.style.setProperty('display','none','important');
+    }
+    if (button.getAttribute('aria-hidden') !== 'true') button.setAttribute('aria-hidden','true');
+    if (button.tabIndex !== -1) button.tabIndex = -1;
+  }
+
   function restorePresentation(m,card) {
-    m?.removeAttribute('data-garang-workout-prep-execution');
+    if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
     if (card) {
-      delete card.dataset.garangWorkoutPrepExecution;
+      if (card.hasAttribute('data-garang-workout-prep-execution')) delete card.dataset.garangWorkoutPrepExecution;
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('ghost');
@@ -155,10 +165,10 @@
     }
     const current = m?.querySelector('#garangTodayFlow .gtf-next[data-gsn-action]');
     if (current) {
-      current.hidden = false;
-      current.style.removeProperty('display');
-      current.removeAttribute('aria-hidden');
-      current.removeAttribute('tabindex');
+      if (current.hidden) current.hidden = false;
+      if (current.style.getPropertyValue('display')) current.style.removeProperty('display');
+      if (current.hasAttribute('aria-hidden')) current.removeAttribute('aria-hidden');
+      if (current.hasAttribute('tabindex')) current.removeAttribute('tabindex');
     }
   }
 
@@ -167,7 +177,7 @@
     ensureStyle();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') {
-      m?.removeAttribute('data-garang-workout-prep-execution');
+      if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
       return;
     }
 
@@ -177,12 +187,9 @@
     const integrated = !!(card && canonical && start);
 
     if (integrated) {
-      m.dataset.garangWorkoutPrepExecution = '1';
-      card.dataset.garangWorkoutPrepExecution = '1';
-      canonical.hidden = true;
-      canonical.style.setProperty('display','none','important');
-      canonical.setAttribute('aria-hidden','true');
-      canonical.tabIndex = -1;
+      if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
+      if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
+      concealCanonical(canonical);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('primary');
@@ -207,7 +214,17 @@
       childList:true,
       subtree:true,
       attributes:true,
-      attributeFilter:['data-gsn-action','data-gsn-step','data-garang-today-workout-execute','data-garang-screen']
+      attributeFilter:[
+        'data-gsn-action',
+        'data-gsn-step',
+        'data-garang-today-workout-execute',
+        'data-garang-screen',
+        'data-garang-workout-prep-execution',
+        'hidden',
+        'style',
+        'aria-hidden',
+        'tabindex'
+      ]
     });
   }
 
