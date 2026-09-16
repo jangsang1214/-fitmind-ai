@@ -3,7 +3,7 @@
    - keeps the canonical Today check-in inputs and #saveCheckin write owner
    - keeps the existing Planner route/persistence owner
    - makes the check-in action persistently reachable above mobile safe areas
-   - adds one compact Today-plan shortcut to the canonical Planner
+   - adds one compact Today-plan shortcut delegated only to GarangRouter
 */
 (() => {
 'use strict';
@@ -164,12 +164,7 @@ function schedule(){
 function openPlanner(event){
   event?.preventDefault?.();
   event?.stopImmediatePropagation?.();
-  let ok=false;
-  try{ok=window.GarangRouter?.navigate?.('planner',{source:'today-plan-shortcut',force:true})===true;}catch{}
-  if(!ok){
-    const fallback=document.querySelector('[data-page="planner"],[data-route="planner"],[data-pagego="planner"]');
-    fallback?.click?.();
-  }
+  try{return window.GarangRouter?.navigate?.('planner',{source:'today-plan-shortcut',force:true})===true;}catch{return false;}
 }
 
 document.addEventListener('click',event=>{
@@ -189,5 +184,5 @@ for(const name of ['garang:screen-rendered','garang:route-completed','garang:sta
 ensureStyle();
 reconcile();
 schedule();
-window.GarangMobileCheckinPlannerShortcutV1=Object.freeze({version:VERSION,reconcile:schedule,enhanceCheckin,ensurePlannerShortcut});
+window.GarangMobileCheckinPlannerShortcutV1=Object.freeze({version:VERSION,reconcile:schedule,enhanceCheckin,ensurePlannerShortcut,openPlanner});
 })();
