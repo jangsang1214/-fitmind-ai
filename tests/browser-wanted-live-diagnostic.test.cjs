@@ -1,7 +1,7 @@
 'use strict';
 const {webkit}=require('playwright');
 
-const URL='https://garang-wanted-2026-jangsang1214.vercel.app/?diag=live-browser-20260917-real-send';
+const URL='https://garang-wanted-2026-jangsang1214.vercel.app/';
 const TARGET='/wanted/coach';
 
 (async()=>{
@@ -39,11 +39,8 @@ const TARGET='/wanted/coach';
         endpoint:window.__GARANG_SERVICE_TRANSPORT_V2__.wantedCoachEndpoint,
         diagnostics:window.__GARANG_SERVICE_TRANSPORT_V2__.diagnostics
       }:null,
-      llmEndpoint:window.GARANG_LLM_ENDPOINT,
       demoActive:localStorage.getItem('garang_wanted_demo_active_v1'),
-      stateBytes:(localStorage.getItem('garang_signed_out_v1')||'').length,
-      composer:document.querySelector('.g2-composer')?.outerHTML?.slice(0,4000)||null,
-      sendOnclickType:typeof document.querySelector('.g2-send')?.onclick
+      stateBytes:(localStorage.getItem('garang_signed_out_v1')||'').length
     }));
     console.log('BEFORE',JSON.stringify(before));
 
@@ -58,24 +55,14 @@ const TARGET='/wanted/coach';
     await page.waitForTimeout(32000);
     const after=await page.evaluate(()=>({
       diagnostics:window.__GARANG_SERVICE_TRANSPORT_V2__?.diagnostics||null,
-      messages:[...document.querySelectorAll('.g2-message')].slice(-4).map(el=>({className:el.className,id:el.dataset.messageId,text:el.innerText?.slice(0,2500)})),
-      text:document.querySelector('#main')?.innerText?.slice(-6000)||''
+      messages:[...document.querySelectorAll('.g2-message')].slice(-4).map(el=>({className:el.className,id:el.dataset.messageId,text:el.innerText?.slice(0,2500)}))
     }));
     console.log('AFTER',JSON.stringify(after));
     console.log('EVENTS',JSON.stringify(events));
 
     const coachResponses=events.filter(e=>e.type==='response'&&e.url.includes(TARGET));
-    if(!coachResponses.length){
-      console.error('DIAG_NO_WANTED_RESPONSE');
-      process.exitCode=2;
-    }else if(coachResponses.at(-1).status!==200){
-      console.error('DIAG_WANTED_HTTP_FAILURE',JSON.stringify(coachResponses.at(-1)));
-      process.exitCode=3;
-    }else if(!/"source"\s*:\s*"llm"/i.test(coachResponses.at(-1).body)){
-      console.error('DIAG_WANTED_NON_LLM_RESPONSE',JSON.stringify(coachResponses.at(-1)));
-      process.exitCode=4;
-    }
-  } finally {
-    await browser.close();
-  }
+    if(!coachResponses.length){console.error('DIAG_NO_WANTED_RESPONSE');process.exitCode=2;}
+    else if(coachResponses.at(-1).status!==200){console.error('DIAG_WANTED_HTTP_FAILURE',JSON.stringify(coachResponses.at(-1)));process.exitCode=3;}
+    else if(!/"source"\s*:\s*"llm"/i.test(coachResponses.at(-1).body)){console.error('DIAG_WANTED_NON_LLM_RESPONSE',JSON.stringify(coachResponses.at(-1)));process.exitCode=4;}
+  } finally {await browser.close();}
 })().catch(error=>{console.error('DIAG_FATAL',error);process.exit(1);});
