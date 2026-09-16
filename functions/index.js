@@ -84,6 +84,7 @@ async function deleteUserData(uid){
 async function readAnalyticsConsent(uid){const snap=await getFirestore().collection('users').doc(uid).collection('app').doc('state').get();return snap.exists&&snap.data()?.privacy?.consent?.analytics===true;}
 async function writeTelemetry(uid,event){await getFirestore().collection('users').doc(uid).collection('telemetry').add({...event,createdAt:FieldValue.serverTimestamp()});}
 const providerConfig=()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||25000});
+const wantedProviderConfig=()=>({...providerConfig(),retryMalformed:true,maxAttempts:2,maxOutputTokens:1000});
 
 app.get('/agent/context',createAgentContextHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
@@ -109,7 +110,7 @@ app.post('/wanted/coach',async(request,response)=>{
   verifyIdToken:async token=>{if(token!==internalToken)throw new Error('WANTED_INTERNAL_AUTH_INVALID');return {uid:`wanted-${clientKey}`};},
   readUser:async()=>state,
   consumeRateLimit:async()=>consumeWantedDemoRateLimit(clientKey,{now:new Date()}),
-  getProviderConfig:providerConfig
+  getProviderConfig:wantedProviderConfig
  });
  request.headers=request.headers||{};request.headers.authorization=`Bearer ${internalToken}`;
  return handler(request,response);
