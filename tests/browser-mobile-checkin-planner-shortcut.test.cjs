@@ -32,7 +32,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   const shortcut=page.locator('[data-garang-planner-shortcut="1"]');
   assert.equal(await shortcut.getAttribute('aria-label'),'플래너 열기','Today plan shortcut must describe the canonical Planner destination');
   const shortcutBox=await shortcut.boundingBox();
-  assert.ok(shortcutBox&&shortcutBox.width>=28&&shortcutBox.height>=28,`Planner shortcut must remain compact but tappable: ${JSON.stringify(shortcutBox)}`);
+  assert.ok(shortcutBox&&shortcutBox.width>=44&&shortcutBox.height>=44,`Planner shortcut hit target must be touch-safe while the visible plus remains compact: ${JSON.stringify(shortcutBox)}`);
 
   await page.locator('#main > [data-garang-bottom-checkin="1"]').click();
   const save=page.locator('#saveCheckin');
