@@ -26,6 +26,7 @@
   }
 
   const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('03_styles/runtime/garang-wanted-submission-v1.css?v=1.0.0',assetRoot).href;document.head.appendChild(style);
+  const uxStyle=document.createElement('link');uxStyle.rel='stylesheet';uxStyle.href=new URL('03_styles/runtime/garang-wanted-ux-fixes-v1.css?v=1.0.0',assetRoot).href;document.head.appendChild(uxStyle);
 
   const NativeMutationObserver=typeof root.MutationObserver==='function'?root.MutationObserver:null;
   let restoreMutationObserver=null;
@@ -50,8 +51,14 @@
    restoreMutationObserver=()=>{if(root.MutationObserver===WantedSafeMutationObserver)root.MutationObserver=NativeMutationObserver;};
   }
 
+  const loadWantedUx=()=>{
+   if(root.__GARANG_WANTED_UX_V1_LOADING__)return;
+   root.__GARANG_WANTED_UX_V1_LOADING__=true;
+   const uxScript=document.createElement('script');uxScript.src=new URL('06_features/ui/runtime/garang-wanted-ux-fixes-v1.js?v=1.0.0',assetRoot).href;uxScript.defer=true;document.head.appendChild(uxScript);
+  };
+
   const script=document.createElement('script');script.src=new URL('06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1',assetRoot).href;script.defer=true;
-  if(restoreMutationObserver&&typeof script.addEventListener==='function')script.addEventListener('load',restoreMutationObserver,{once:true});
+  if(typeof script.addEventListener==='function')script.addEventListener('load',()=>{restoreMutationObserver?.();loadWantedUx();},{once:true});
   document.head.appendChild(script);
   if(restoreMutationObserver&&typeof root.setTimeout==='function')root.setTimeout(restoreMutationObserver,5000);
  }

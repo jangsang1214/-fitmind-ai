@@ -42,9 +42,10 @@ const vm=require('node:vm');
   vm.runInNewContext(source,sandbox,{filename:'version.js'});
 
   assert.equal(sandbox.GARANG_WANTED_ASSET_ROOT,'https://cdn.example.test/garang/frozen/');
-  assert.equal(appended.length,2);
+  assert.equal(appended.length,3);
   assert.equal(appended[0].href,'https://cdn.example.test/garang/frozen/03_styles/runtime/garang-wanted-submission-v1.css?v=1.0.0');
-  assert.equal(appended[1].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1');
+  assert.equal(appended[1].href,'https://cdn.example.test/garang/frozen/03_styles/runtime/garang-wanted-ux-fixes-v1.css?v=1.0.0');
+  assert.equal(appended[2].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1');
 
   await sandbox.fetch('./04_data/wanted/wanted-14day-synthetic-v1.json',{cache:'no-store'});
   assert.equal(fetched.input,'https://cdn.example.test/garang/frozen/04_data/wanted/wanted-14day-synthetic-v1.json');
@@ -67,8 +68,10 @@ const vm=require('node:vm');
   nativeObserver.callback([{type:'attributes',attributeName:'hidden',oldValue:null,target}]);
   assert.equal(calls,1,'real hidden state changes must still reach judge rendering');
 
-  appended[1].listeners.load?.();
+  appended[2].listeners.load?.();
   assert.equal(sandbox.MutationObserver,FakeNativeMutationObserver,'global MutationObserver must be restored after Wanted script loads');
+  assert.equal(appended.length,4,'Wanted UX script should load after the core judge runtime');
+  assert.equal(appended[3].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-ux-fixes-v1.js?v=1.0.0');
 
-  console.log('Wanted deployment-origin and observer compatibility: PASS');
+  console.log('Wanted deployment-origin, observer and UX asset compatibility: PASS');
 })().catch(error=>{console.error(error);process.exit(1);});
