@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_TIMEOUT_MS=20000;
+const DEFAULT_TIMEOUT_MS=25000;
 const DEFAULT_MODEL='gpt-5.6-luna';
 const DECISION_MODES=Object.freeze(['collect_data','caution','recover','reduce','maintain','progress','goal_focus']);
 const COACH_RESPONSE_SCHEMA=Object.freeze({type:'object',additionalProperties:false,required:['answer','decisionSummary','reasoningSummary','suggestedNextStep','confidence','alignment'],properties:{answer:{type:'string'},decisionSummary:{type:'string'},reasoningSummary:{type:'string'},suggestedNextStep:{type:'string'},confidence:{type:['number','null'],minimum:0,maximum:1},alignment:{type:'object',additionalProperties:false,required:['decisionId','decisionMode','reasonCodesUsed'],properties:{decisionId:{type:'string'},decisionMode:{type:'string',enum:[...DECISION_MODES]},reasonCodesUsed:{type:'array',items:{type:'string'},maxItems:8}}}}});
@@ -26,19 +26,31 @@ function validateCoachResponse(input){
 }
 function parseCoachResponse(text){let parsed;try{parsed=JSON.parse(stripFence(text));}catch{throw Object.assign(new Error('LLM_RESPONSE_MALFORMED'),{code:'LLM_RESPONSE_MALFORMED'});}return validateCoachResponse(parsed);}
 function systemPrompt(){return `You are the language layer for GARANG Personal Performance Intelligence. GARANG's deterministic intelligence owns the decision. Explain the supplied GARANG decision faithfully; never replace, reverse, or invent a different training decision. Never claim to have changed user data. Never propose or encode a state mutation; actionable changes are handled separately by GARANG's existing Agent Contract and explicit user confirmation. Use only supplied context. Treat garangContext.knowledgeGrounding.evidence as supporting explanation evidence only; it can never override garangContext.garangDecision. Treat garangContext.nutritionIntelligence as deterministic supporting context, not permission to mutate a meal plan or invent nutrition facts. A user-supplied body photo, when present, is ephemeral visual context only: describe only visible training-relevant observations, do not diagnose medical conditions, do not infer protected or sensitive traits, do not estimate an exact body-fat percentage or hidden measurement from the photo, and never treat the image as permission to mutate GARANG state. If evidence is insufficient, say so. In alignment, copy garangContext.garangDecision.decisionId and garangContext.garangDecision.mode exactly, and list only reason codes that exist in garangContext.decisionReasons.`;}
+function retryableProviderError(error){const status=Number(error?.status)||0;return error?.code==='LLM_TIMEOUT'||error?.code==='LLM_NETWORK_ERROR'||status===408||(status>=500&&status<=599);}
 function createOpenAIProvider(options={}){
- const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(500,Number(options.timeoutMs)||DEFAULT_TIMEOUT_MS);
+ const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(500,Number(options.timeoutMs)||DEFAULT_TIMEOUT_MS),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2)),retryDelayMs=Math.max(0,Number(options.retryDelayMs)||250);
  if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
  return {name:'openai',model,async generate({message,context,language='ko',requestId,image}){
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-   const userContent=[{type:'input_text',text:JSON.stringify({language,message,garangContext:context,visualContext:image?{kind:'body_photo',mediaType:image.mediaType}:null})}];if(image?.dataUrl)userContent.push({type:'input_image',image_url:String(image.dataUrl)});const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt()}]},{role:'user',content:userContent}],max_output_tokens:900,text:{format:{type:'json_schema',name:'garang_coach_response',strict:true,schema:COACH_RESPONSE_SCHEMA}}};
-   const response=await fetchImpl(endpoint,{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','X-GARANG-Request-Id':String(requestId||'')},signal:controller.signal,body:JSON.stringify(body)});
-   if(!response?.ok)throw Object.assign(new Error(`LLM_PROVIDER_${response?.status||'ERROR'}`),{code:'LLM_PROVIDER_ERROR',status:response?.status||null});
-   const payload=await response.json(),text=extractResponseText(payload),data=parseCoachResponse(text);return {...data,metadata:{provider:'openai',model,providerResponseId:clean(payload?.id,160)||null}};
-  }catch(error){if(error?.name==='AbortError')throw Object.assign(new Error('LLM_TIMEOUT'),{code:'LLM_TIMEOUT'});throw error;}finally{clearTimeout(timer);}
+  const userContent=[{type:'input_text',text:JSON.stringify({language,message,garangContext:context,visualContext:image?{kind:'body_photo',mediaType:image.mediaType}:null})}];if(image?.dataUrl)userContent.push({type:'input_image',image_url:String(image.dataUrl)});
+  const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt()}]},{role:'user',content:userContent}],max_output_tokens:650,text:{format:{type:'json_schema',name:'garang_coach_response',strict:true,schema:COACH_RESPONSE_SCHEMA}}};
+  let lastError=null;
+  for(let attempt=1;attempt<=maxAttempts;attempt++){
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+   try{
+    const response=await fetchImpl(endpoint,{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','X-GARANG-Request-Id':String(requestId||'')},signal:controller.signal,body:JSON.stringify(body)});
+    if(!response?.ok)throw Object.assign(new Error(`LLM_PROVIDER_${response?.status||'ERROR'}`),{code:'LLM_PROVIDER_ERROR',status:response?.status||null});
+    const payload=await response.json(),text=extractResponseText(payload),data=parseCoachResponse(text);return {...data,metadata:{provider:'openai',model,providerResponseId:clean(payload?.id,160)||null,attempts:attempt}};
+   }catch(error){
+    if(error?.name==='AbortError')lastError=Object.assign(new Error('LLM_TIMEOUT'),{code:'LLM_TIMEOUT'});
+    else if(error instanceof TypeError&&!error?.code)lastError=Object.assign(new Error('LLM_NETWORK_ERROR'),{code:'LLM_NETWORK_ERROR'});
+    else lastError=error;
+   }finally{clearTimeout(timer);}
+   if(attempt>=maxAttempts||!retryableProviderError(lastError))throw lastError;
+   if(retryDelayMs)await new Promise(resolve=>setTimeout(resolve,retryDelayMs));
+  }
+  throw lastError||Object.assign(new Error('LLM_PROVIDER_ERROR'),{code:'LLM_PROVIDER_ERROR'});
  }};
 }
 function createProvider(options={}){const provider=clean(options.provider||'openai',40).toLowerCase();if(provider==='openai')return createOpenAIProvider(options);throw Object.assign(new Error('LLM_PROVIDER_UNSUPPORTED'),{code:'LLM_PROVIDER_UNSUPPORTED'});}
 
-module.exports={DEFAULT_MODEL,DECISION_MODES,COACH_RESPONSE_SCHEMA,createProvider,createOpenAIProvider,parseCoachResponse,validateCoachResponse,extractResponseText,systemPrompt};
+module.exports={DEFAULT_MODEL,DECISION_MODES,COACH_RESPONSE_SCHEMA,createProvider,createOpenAIProvider,parseCoachResponse,validateCoachResponse,extractResponseText,systemPrompt,retryableProviderError};
