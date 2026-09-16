@@ -29,11 +29,10 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
     const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,1200)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
     throw new Error(error.message+'\nToday workout preparation diagnostic: '+JSON.stringify(diagnostic),{cause:error});
   }
-  await page.waitForTimeout(200);
   const execute=page.locator('#garangTodayFlow .gtf-next[data-garang-today-workout-execute="1"]');
   const prep=page.locator('.garang-daily-workout');
   const checkin=page.locator('#main > [data-garang-bottom-checkin="1"]');
-  await prep.locator('[data-daily-toggle]').waitFor({state:'visible',timeout:3000});
+  await page.waitForFunction(()=>{const root=document.querySelector('.garang-daily-workout'),toggle=root?.querySelector('[data-daily-toggle]');if(!root||!toggle)return false;const style=getComputedStyle(toggle),box=toggle.getBoundingClientRect();return document.getElementById('main')?.dataset?.garangWorkoutPrepExecution==='1'&&!toggle.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;},null,{timeout:10000});
   assert.equal(await execute.count(),1,'canonical workout execution owner must remain in the DOM');
   assert.equal(await execute.isHidden(),true,'standalone Today workout execution CTA must be visually removed');
   assert.equal(await execute.getAttribute('aria-hidden'),'true','hidden canonical CTA must not compete in accessibility order');
