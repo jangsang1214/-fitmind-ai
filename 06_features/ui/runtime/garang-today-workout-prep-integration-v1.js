@@ -17,6 +17,7 @@
   let queued = false;
   let observedMain = null;
   let mountObserver = null;
+  let mainIdentityObserver = null;
 
   function isEnglish() { return document.documentElement.lang === 'en'; }
   function readPlan() {
@@ -304,6 +305,18 @@
     });
   }
 
+  function observeMainIdentity() {
+    if (mainIdentityObserver || !document.body) return;
+    mainIdentityObserver = new MutationObserver(() => {
+      const current = main();
+      if (!current || current === observedMain) return;
+      observeMounts();
+      stabilizeExpectedPresentation(current);
+      schedule();
+    });
+    mainIdentityObserver.observe(document.body, {childList:true,subtree:true});
+  }
+
   for (const eventName of [
     'garang:workout-intelligence-rendered',
     'garang:screen-rendered',
@@ -314,6 +327,7 @@
   ]) window.addEventListener(eventName, () => { observeMounts(); stabilizeExpectedPresentation(); schedule(); });
 
   ensureStyle();
+  observeMainIdentity();
   observeMounts();
   stabilizeExpectedPresentation();
   schedule();

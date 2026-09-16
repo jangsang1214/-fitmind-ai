@@ -21,6 +21,15 @@ test('Daily Workout becomes compact by default and can expand/collapse again',()
   assert.match(runtime,/더보기/);
 });
 
+test('Daily Workout advanced generation controls remain structurally preserved behind disclosure',()=>{
+  assert.match(workoutUI,/data-daily-target/);
+  assert.match(workoutUI,/data-daily-generate/);
+  assert.match(workoutUI,/data-daily-intensity/);
+  assert.match(runtime,/enhanceDaily/);
+  assert.match(runtime,/wrapAfter\(card,head\)/);
+  assert.match(runtime,/body\.hidden=!open/);
+});
+
 test('set-by-set entry has one canonical app owner with reversible details behavior',()=>{
   assert.match(app,/workoutSetDetailsOpen/);
   assert.match(app,/data-set-weight/);
