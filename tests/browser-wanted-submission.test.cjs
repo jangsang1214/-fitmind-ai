@@ -14,6 +14,8 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     browser=await webkit.launch({headless:true});
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
     await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase intentionally unavailable for local judging mode */'}));
+    let judgeDatasetRequests=0;
+    await context.route('**/04_data/wanted/wanted-14day-synthetic-v1.json',route=>{judgeDatasetRequests++;return route.abort();});
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
 
@@ -37,6 +39,7 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     assert.equal(sample?.profile?.name,'GARANG Demo');
     assert.equal(sample?.meta?.judgeDataset?.synthetic,true);
     assert.equal(sample?.meta?.judgeDataset?.spanDays,14);
+    assert.equal(sample?.meta?.judgeDataset?.source,'embedded:garang-wanted-judge-data-v1','judge entry must not depend on a cross-origin JSON request');
     assert.equal(sample?.checkins?.length,14);
     assert.equal(sample?.meals?.length,42);
     assert.ok(sample?.workouts?.length>=16);
@@ -47,6 +50,7 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     assert.equal(sample?.checkins?.at(-1)?.soreness>=4,true);
     assert.equal(sample?.checkins?.at(-1)?.stress>=4,true);
     assert.ok(sample?.workouts?.some(workout=>workout.name==='바벨 스쿼트'&&workout.rpe>=9),'recent heavy lower-body evidence must be present');
+    assert.equal(judgeDatasetRequests,0,'60-second judge entry must not fetch the external JSON fixture');
 
     await page.locator('[data-wanted-route="today"]').tap();
     await page.waitForFunction(()=>document.querySelector('#bottomNav [data-page="today"]')?.classList.contains('active'),null,{timeout:7000});
@@ -67,6 +71,6 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     assert.match(progressText,/GARANG SCORE|진행 상황|Weekly Review/);
     assert.equal(errors.length,0,`Wanted judging journey browser errors: ${errors.join(' | ')}`);
 
-    console.log('Wanted 60-second judging journey with 14-day synthetic history: PASS');
+    console.log('Wanted 60-second judging journey with embedded 14-day synthetic history: PASS');
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exit(1);});
