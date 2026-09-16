@@ -12,12 +12,19 @@ async function installAuthenticatedFirebaseMock(context,options={}){
   await context.route('https://www.gstatic.com/firebasejs/**',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* firebase mocked by authenticated browser fixture */'}));
   if(mockCoachGateway){
     await context.route(COACH_ENDPOINT,async route=>{
-      if(route.request().method()!=='POST')return route.continue();
+      const method=route.request().method();
+      const corsHeaders={
+        'Access-Control-Allow-Origin':'*',
+        'Access-Control-Allow-Headers':'Authorization, Content-Type, X-Trace-Id, Idempotency-Key',
+        'Access-Control-Allow-Methods':'POST, OPTIONS'
+      };
+      if(method==='OPTIONS')return route.fulfill({status:204,headers:corsHeaders,body:''});
+      if(method!=='POST')return route.continue();
       const answer='GARANG TEST COACH: 저장된 기록과 현재 상태를 기준으로 다음 행동을 판단했습니다.';
       return route.fulfill({
         status:200,
         contentType:'application/json',
-        headers:{'Access-Control-Allow-Origin':'*'},
+        headers:corsHeaders,
         body:JSON.stringify({
           ok:true,
           answer,
