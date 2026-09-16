@@ -70,8 +70,9 @@ const vm=require('node:vm');
 
   appended[2].listeners.load?.();
   assert.equal(sandbox.MutationObserver,FakeNativeMutationObserver,'global MutationObserver must be restored after Wanted script loads');
-  assert.equal(appended.length,4,'Wanted UX script should load after the core judge runtime');
+  assert.equal(appended.length,5,'Wanted UX and Real AI presentation scripts should load after the core judge runtime');
   assert.equal(appended[3].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-ux-fixes-v1.js?v=1.0.0');
+  assert.equal(appended[4].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-real-llm-v1.js?v=1.0.0');
 
-  console.log('Wanted deployment-origin, observer and UX asset compatibility: PASS');
+  console.log('Wanted deployment-origin, observer and extra asset compatibility: PASS');
 })().catch(error=>{console.error(error);process.exit(1);});
