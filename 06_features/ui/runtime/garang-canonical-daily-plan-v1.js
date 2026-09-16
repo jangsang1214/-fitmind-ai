@@ -38,14 +38,15 @@ function persist(state,action,userConfirmed,detail={}){
   const bridge=stateBridge(),key=bridge?.getStorageKey?.();if(!key)throw new Error('CANONICAL_DAILY_PLAN_STORAGE_NOT_READY');
   state.meta=object(state.meta)?state.meta:{};state.meta.updatedAt=isoNow();
   state.actionLog=Array.isArray(state.actionLog)?state.actionLog:[];
-  state.actionLog.push({id:id('action'),action,args:clone(detail),userConfirmed:!!userConfirmed,at:state.meta.updatedAt});
+  const actionId=id('action');
+  state.actionLog.push({id:actionId,action,args:clone(detail),userConfirmed:!!userConfirmed,at:state.meta.updatedAt});
   if(state.actionLog.length>300)state.actionLog.splice(0,state.actionLog.length-300);
   localStorage.setItem(key,JSON.stringify(state));
-  window.dispatchEvent(new CustomEvent('garang:agent-write',{detail:{tool:'dailyPlan',action,args:clone(detail),storageKey:key,at:state.meta.updatedAt}}));
-  window.dispatchEvent(new CustomEvent('garang:state-updated',{detail:{source:'canonical-daily-plan',action}}));
+  window.dispatchEvent(new CustomEvent('garang:agent-write',{detail:{tool:'dailyPlan',action,actionId,args:clone(detail),storageKey:key,at:state.meta.updatedAt}}));
+  window.dispatchEvent(new CustomEvent('garang:state-updated',{detail:{source:'canonical-daily-plan',action,actionId}}));
   clearTimeout(window.__garangCanonicalDailyPlanSyncTimer);
   window.__garangCanonicalDailyPlanSyncTimer=setTimeout(()=>{try{if(window.firebase?.auth?.().currentUser)document.getElementById('syncBadge')?.click();}catch{}},180);
-  return true;
+  return actionId;
 }
 function ensureDraft(state,date){
   const Daily=daily();if(!Daily)throw new Error('GARANG_DAILY_PLAN_NOT_READY');
@@ -73,6 +74,8 @@ function applyProposalRevision(Daily,state,date,group,args={}){
 }
 function recommendationMetadata(args={}){
   const metadata={};
+  if(clean(args.decisionId))metadata.decisionId=clean(args.decisionId);
+  if(clean(args.decisionMode))metadata.decisionMode=clean(args.decisionMode);
   if(clean(args.recommendationId))metadata.recommendationId=clean(args.recommendationId);
   if(clean(args.recommendationSource))metadata.recommendationSource=clean(args.recommendationSource);
   if(clean(args.recommendationReason))metadata.recommendationReason=clean(args.recommendationReason);
@@ -106,15 +109,17 @@ function confirmToday(options={}){
   if(result.confirmed){
     list(result.rows).forEach((row,index)=>{row.order=Number(group?.items?.[index]?.order)||index+1;Object.assign(row,clone(metadata));});
     confirmedGroup.confirmationSource=source;
+    if(metadata.decisionId)confirmedGroup.decisionId=metadata.decisionId;
+    if(metadata.decisionMode)confirmedGroup.decisionMode=metadata.decisionMode;
     if(metadata.recommendationId)confirmedGroup.recommendationId=metadata.recommendationId;
     if(metadata.recommendationRevision)confirmedGroup.recommendationRevision=metadata.recommendationRevision;
     confirmedGroup.updatedAt=isoNow();
   }
-  persist(state,result.confirmed?'daily_plan_draft_confirmed':'daily_plan_draft_superseded',true,{
-    date,source,reason:result.reason,planIds:list(result.rows).map(row=>row.id),domains:list(result.rows).map(row=>row.domain),recommendationId:metadata.recommendationId||null,recommendationRevision:metadata.recommendationRevision||null,
+  const actionId=persist(state,result.confirmed?'daily_plan_draft_confirmed':'daily_plan_draft_superseded',true,{
+    date,source,reason:result.reason,planIds:list(result.rows).map(row=>row.id),domains:list(result.rows).map(row=>row.domain),decisionId:metadata.decisionId||null,decisionMode:metadata.decisionMode||null,recommendationId:metadata.recommendationId||null,recommendationRevision:metadata.recommendationRevision||null,
     created:report?.created===true,adapted:report?.adapted===true,revision:Number(confirmedGroup?.revision)||1
   });
-  const output={...result,date,source,existing:false,group:clone(confirmedGroup)};
+  const output={...result,date,source,existing:false,actionId,group:clone(confirmedGroup)};
   if(options.navigate===true)navigatePlanner(source);
   return output;
 }

@@ -1,6 +1,7 @@
 'use strict';
 
 const {summarizePlanOutcomes}=require('./outcome-intelligence.cjs');
+const {buildGraph:buildIntelligenceGraph,compactForContext:compactIntelligenceGraph}=require('./intelligence-learning-contract.cjs');
 
 const ENGINE_VERSION='outcome-learning-v2';
 const VALID=new Set(['completed','partial','missed','recovery_constrained']);
@@ -36,9 +37,9 @@ function summarizeLongitudinal(observations){
  return {classification,confidence,sampleDays,counts,completedShare:completedShare===null?null:round(completedShare,2),executionGapShare:executionGapShare===null?null:round(executionGapShare,2),recoveryConstraintShare:recoveryConstraintShare===null?null:round(recoveryConstraintShare,2),evidenceDays:observations.map(row=>row.date)};
 }
 function summarizeOutcomeLearning(stateInput,{now=new Date(),days=28,recentDays=7}={}){
- const recent=summarizePlanOutcomes(stateInput,{now,days:recentDays}),observations=longitudinalObservations(stateInput,{now,days}),longitudinal=summarizeLongitudinal(observations),suppressProgression=['fragile_execution','recovery_constrained_pattern'].includes(longitudinal.classification)&&longitudinal.confidence>=.5,preferReducedLoad=longitudinal.classification==='recovery_constrained_pattern'&&longitudinal.confidence>=.5;
- return {engineVersion:recent.engineVersion,learningVersion:ENGINE_VERSION,asOf:recent.asOf,classification:recent.classification,confidence:recent.confidence,evidenceDays:recent.evidenceDays,counts:recent.counts,recent:{engineVersion:recent.engineVersion,classification:recent.classification,confidence:recent.confidence,evidenceDays:recent.evidenceDays,counts:recent.counts,latest:recent.latest},longitudinal,decisionSupport:{suppressProgression,preferReducedLoad,automaticProgressionIncrease:false},guardrails:{readOnly:true,noSilentMutation:true,noAutomaticProgressionIncrease:true,longitudinalEvidenceOnly:true}};
+ const recent=summarizePlanOutcomes(stateInput,{now,days:recentDays}),observations=longitudinalObservations(stateInput,{now,days}),longitudinal=summarizeLongitudinal(observations),interventionLearning=buildIntelligenceGraph(stateInput,{now,days}),suppressProgression=['fragile_execution','recovery_constrained_pattern'].includes(longitudinal.classification)&&longitudinal.confidence>=.5,preferReducedLoad=longitudinal.classification==='recovery_constrained_pattern'&&longitudinal.confidence>=.5;
+ return {engineVersion:recent.engineVersion,learningVersion:ENGINE_VERSION,asOf:recent.asOf,classification:recent.classification,confidence:recent.confidence,evidenceDays:recent.evidenceDays,counts:recent.counts,recent:{engineVersion:recent.engineVersion,classification:recent.classification,confidence:recent.confidence,evidenceDays:recent.evidenceDays,counts:recent.counts,latest:recent.latest},longitudinal,interventionLearning,decisionSupport:{suppressProgression,preferReducedLoad,automaticProgressionIncrease:false},guardrails:{readOnly:true,noSilentMutation:true,noAutomaticProgressionIncrease:true,longitudinalEvidenceOnly:true,interventionLearningAdvisoryOnly:true}};
 }
-function compactForContext(value){if(!object(value))return null;return {engineVersion:value.engineVersion,learningVersion:value.learningVersion,asOf:value.asOf,classification:value.classification,confidence:value.confidence,evidenceDays:value.evidenceDays,counts:value.counts,recent:value.recent,longitudinal:value.longitudinal,decisionSupport:value.decisionSupport,guardrails:value.guardrails};}
+function compactForContext(value){if(!object(value))return null;return {engineVersion:value.engineVersion,learningVersion:value.learningVersion,asOf:value.asOf,classification:value.classification,confidence:value.confidence,evidenceDays:value.evidenceDays,counts:value.counts,recent:value.recent,longitudinal:value.longitudinal,interventionLearning:compactIntelligenceGraph(value.interventionLearning),decisionSupport:value.decisionSupport,guardrails:value.guardrails};}
 
 module.exports={ENGINE_VERSION,longitudinalObservations,summarizeLongitudinal,summarizeOutcomeLearning,compactForContext};
