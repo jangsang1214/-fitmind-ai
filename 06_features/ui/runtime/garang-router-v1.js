@@ -66,5 +66,31 @@ function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
   return true;
 }
+
+/*
+  Mobile WebKit can replace a presentation node between pointerdown and the
+  compatibility click generated after pointerup. Route intent is safe to keep
+  because it contains no data mutation: capture only canonical route controls,
+  reject scroll/drag gestures, and commit through this Router on pointerup.
+  This preserves the user's tap even if Today or the Record sheet remounts.
+*/
+let touchIntent=null;
+function touchRouteTarget(target){
+  const el=target?.closest?.('[data-gtf-route],[data-garang-record-route]');if(!el)return null;
+  const route=normalize(el.dataset.gtfRoute||el.dataset.garangRecordRoute);return valid(route)?route:null;
+}
+document.addEventListener('pointerdown',event=>{
+  if(event.pointerType!=='touch'||event.button!==0)return;
+  const route=touchRouteTarget(event.target);if(!route)return;
+  touchIntent={pointerId:event.pointerId,route,x:event.clientX,y:event.clientY};
+},true);
+document.addEventListener('pointercancel',event=>{if(touchIntent?.pointerId===event.pointerId)touchIntent=null;},true);
+document.addEventListener('pointerup',event=>{
+  const intent=touchIntent;if(!intent||event.pointerId!==intent.pointerId)return;touchIntent=null;
+  if(Math.hypot(event.clientX-intent.x,event.clientY-intent.y)>14)return;
+  event.preventDefault();event.stopImmediatePropagation();
+  navigate(intent.route,{source:'router-touch-intent',force:true});
+},true);
+
 window.GarangRouter=Object.freeze({version:VERSION,navigate,current,cleanup:removeTransient});
 })();
