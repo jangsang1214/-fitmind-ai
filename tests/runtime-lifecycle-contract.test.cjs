@@ -16,7 +16,8 @@ const files={
  privacy:read('06_features/ui/runtime/garang-privacy-security-v1.js'),
  today:read('06_features/ui/runtime/garang-today-anatomy-v1.js'),
  exp3:read('06_features/ui/runtime/garang-experience-v3.js'),
- exp4:read('06_features/ui/runtime/garang-experience-v4.js')
+ exp4:read('06_features/ui/runtime/garang-experience-v4.js'),
+ mobileShortcut:read('06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js')
 };
 assert.ok(app.includes("emitLifecycle('garang:screen-rendered'"),'screen render lifecycle missing');
 assert.ok(app.includes("emitLifecycle('garang:state-updated'"),'state lifecycle missing');
@@ -36,6 +37,9 @@ assert.ok(files.brand.includes('garang:coach-message-rendered'),'Coach owner mus
 assert.ok(files.decision.includes('garang:coach-decision-rendered'),'Decision owner must publish card lifecycle');
 assert.ok(files.router.includes('window.GarangRouter'),'canonical router missing');
 assert.ok(files.shell.includes("GarangRouter?.navigate"),'Coach shell must delegate routes');
+assert.ok(files.mobileShortcut.includes("GarangRouter?.navigate?.('planner'"),'Today Planner shortcut must delegate route mutation to GarangRouter');
+assert.equal(files.mobileShortcut.includes('fallback=document.querySelector'),false,'Today Planner shortcut must not synthesize a second DOM route owner');
+assert.equal(files.mobileShortcut.includes('[data-page="planner"]'),false,'Today Planner shortcut must not search for route-owner DOM controls');
 assert.equal(files.shell.includes(".garang-decision-card"),false,'Coach shell must not own decision subtree');
 assert.equal(files.shell.includes(".g4-prompt-strip"),false,'Coach shell must not own prompt subtree');
 assert.equal(files.shell.includes(".g2-message-text"),false,'Coach shell must not own message subtree');
