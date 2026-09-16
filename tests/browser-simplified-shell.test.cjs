@@ -22,7 +22,7 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await page.waitForFunction(()=>window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0'&&window.GarangSimplifiedShell&&window.GarangRouter,null,{timeout:8000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1',null,{timeout:8000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow .gpc-today-plan'),null,{timeout:8000});
 
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary product surfaces may remain');
   assert.deepEqual(await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page)),['today','log','coach','progress']);
