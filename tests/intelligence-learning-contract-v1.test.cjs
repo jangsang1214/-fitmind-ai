@@ -37,11 +37,11 @@ test('today without execution evidence remains pending and never invents an outc
   assert.equal(cycle.executionId,null);assert.equal(cycle.outcome.classification,'pending');assert.equal(cycle.outcomeId,null);assert.equal(cycle.attribution.complete,false);
 });
 
-test('past unexecuted plan is missed without fabricating execution evidence',()=>{
+test('past unexecuted plan records a finalized non-execution observation',()=>{
   const state=base();state.planner=[{id:'plan-missed',date:'2026-09-14',type:'workout',domain:'training',title:'Workout',decisionId:'d-missed',recommendationId:'r-missed'}];
   state.actionLog=[{id:'a-missed',action:'daily_plan_draft_confirmed',args:{date:'2026-09-14',planIds:['plan-missed'],decisionId:'d-missed',recommendationId:'r-missed'},at:'2026-09-14T08:00:00.000Z'}];
   const cycle=Learning.buildDayGraph(state,'2026-09-14',{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z')}).cycles[0];
-  assert.equal(cycle.executionId,null);assert.equal(cycle.outcome.classification,'missed');assert.ok(cycle.outcomeId);assert.equal(cycle.attribution.executionToOutcome,false);
+  assert.ok(cycle.executionId);assert.equal(cycle.execution.status,'not_observed_finalized');assert.equal(cycle.outcome.classification,'missed');assert.ok(cycle.outcomeId);assert.equal(cycle.attribution.complete,true);
 });
 
 test('contract graph is read-only and never mutates source state',()=>{
