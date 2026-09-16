@@ -53,7 +53,7 @@ html body>.modal-backdrop.garang-checkin-modal-backdrop>.modal.garang-checkin-mo
 }
 html body #main[data-garang-screen="today"] .gpc-today-plan-head:has([data-garang-planner-shortcut="1"]){
   justify-content:flex-start!important;
-  gap:6px!important;
+  gap:0!important;
 }
 html body #main[data-garang-screen="today"] .gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>small{
   margin-left:auto!important;
@@ -63,23 +63,34 @@ html body #main[data-garang-screen="today"] [data-garang-planner-shortcut="1"]{
   display:grid!important;
   place-items:center!important;
   flex:0 0 auto!important;
-  width:28px!important;
-  min-width:28px!important;
-  height:28px!important;
-  min-height:28px!important;
-  margin:0!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:-8px 0 -8px 0!important;
   padding:0!important;
-  border:1px solid rgba(120,152,140,.32)!important;
+  border:0!important;
   border-radius:999px!important;
   background:transparent!important;
   color:#78988c!important;
   box-shadow:none!important;
-  font:400 16px/1 system-ui,sans-serif!important;
+  font-size:0!important;
   cursor:pointer!important;
+}
+html body #main[data-garang-screen="today"] [data-garang-planner-shortcut="1"]::before{
+  content:"+";
+  display:grid!important;
+  place-items:center!important;
+  width:28px!important;
+  height:28px!important;
+  border:1px solid rgba(120,152,140,.32)!important;
+  border-radius:999px!important;
+  color:#78988c!important;
+  font:400 16px/1 system-ui,sans-serif!important;
 }
 html body #main[data-garang-screen="today"] [data-garang-planner-shortcut="1"]:focus-visible{
   outline:1px solid rgba(120,170,153,.78)!important;
-  outline-offset:2px!important;
+  outline-offset:1px!important;
 }
 @media(min-width:720px){
   html body>.modal-backdrop.garang-checkin-modal-backdrop{place-items:center!important;padding:24px!important}
