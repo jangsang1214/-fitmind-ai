@@ -8,6 +8,7 @@ const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=88
 const pad=n=>String(n).padStart(2,'0');
 const localDate=(offset=0)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('GARANG mobile Check-in/Planner preview server did not start');}
+async function waitForTouchSafeShortcut(page,timeout=10000){const deadline=Date.now()+timeout;let diagnostic=null;while(Date.now()<deadline){diagnostic=await page.evaluate(()=>{const button=document.querySelector('[data-garang-planner-shortcut="1"]'),head=button?.closest('.gpc-today-plan-head'),plan=button?.closest('.gpc-today-plan'),flow=button?.closest('#garangTodayFlow');const describe=node=>{if(!node)return null;const style=getComputedStyle(node),rect=node.getBoundingClientRect();return {tag:node.tagName,className:node.className||'',hidden:!!node.hidden,display:style.display,visibility:style.visibility,opacity:style.opacity,width:rect.width,height:rect.height,connected:node.isConnected};};return {button:describe(button),head:describe(head),plan:describe(plan),flow:describe(flow),screen:document.getElementById('main')?.dataset?.garangScreen||null};}).catch(()=>null);const box=diagnostic?.button;if(box?.connected&&box.display!=='none'&&box.visibility!=='hidden'&&Number(box.opacity)!==0&&box.width>=44&&box.height>=44)return diagnostic;await page.waitForTimeout(100);}throw new Error(`Planner shortcut did not reach a touch-safe stable render: ${JSON.stringify(diagnostic)}`);}
 function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().toISOString();return {meta:{schemaVersion:5,updatedAt:now},profile:{name:'Mobile UX',age:27,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[{id:'today-workout',date:today,time:'18:00',type:'workout',title:'전신 근력 36분',completed:false,source:'ai',createdAt:now}],workouts:[{id:'seed-workout',date:yesterday,name:'벤치프레스',sets:3,reps:8,weight:60,rpe:7,duration:45,createdAt:now}],meals:[],runs:[],body:[],checkins:[{id:'today-checkin',date:today,sleep:7.2,energy:4,stress:2,soreness:2,createdAt:now}],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,at:now,props:{screen:'coach',date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
@@ -29,16 +30,11 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
     throw new Error(error.message+'\nMobile UI diagnostic: '+JSON.stringify(diagnostic),{cause:error});
   }
 
+  const shortcutDiagnostic=await waitForTouchSafeShortcut(page);
   const shortcut=page.locator('[data-garang-planner-shortcut="1"]');
   await shortcut.waitFor({state:'visible',timeout:5000});
   assert.equal(await shortcut.getAttribute('aria-label'),'플래너 열기','Today plan shortcut must describe the canonical Planner destination');
-  const shortcutBox=await shortcut.boundingBox();
-  const shortcutDiagnostic=await page.evaluate(()=>{
-    const button=document.querySelector('[data-garang-planner-shortcut="1"]'),head=button?.closest('.gpc-today-plan-head'),plan=button?.closest('.gpc-today-plan'),flow=button?.closest('#garangTodayFlow');
-    const describe=node=>{if(!node)return null;const style=getComputedStyle(node),rect=node.getBoundingClientRect();return {tag:node.tagName,className:node.className||'',hidden:!!node.hidden,display:style.display,visibility:style.visibility,opacity:style.opacity,width:rect.width,height:rect.height,connected:node.isConnected};};
-    return {button:describe(button),head:describe(head),plan:describe(plan),flow:describe(flow),screen:document.getElementById('main')?.dataset?.garangScreen||null};
-  });
-  assert.ok(shortcutBox&&shortcutBox.width>=44&&shortcutBox.height>=44,`Planner shortcut hit target must be touch-safe while the visible plus remains compact: box=${JSON.stringify(shortcutBox)} diagnostic=${JSON.stringify(shortcutDiagnostic)}`);
+  assert.ok(shortcutDiagnostic.button?.width>=44&&shortcutDiagnostic.button?.height>=44,`Planner shortcut hit target must be touch-safe while the visible plus remains compact: diagnostic=${JSON.stringify(shortcutDiagnostic)}`);
 
   await page.locator('#main > [data-garang-bottom-checkin="1"]').click();
   const save=page.locator('#saveCheckin');
