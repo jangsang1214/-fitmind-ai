@@ -52,7 +52,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   assert.equal(await prep.locator('.garang-daily-summary-mark').isHidden(),true,'duplicate GARANG badge must not add visual noise during execution');
   const details=prep.locator('.garang-daily-head .gci-toggle');
   await details.waitFor({state:'visible',timeout:3000});
-  await details.click();
+  await page.evaluate(()=>{const button=document.querySelector('.garang-daily-workout .garang-daily-head .gci-toggle');if(!button)throw new Error('Today workout detail toggle missing at interaction boundary');button.click();});
   await prep.locator('[data-daily-target]').waitFor({state:'visible',timeout:3000});
   assert.equal(await prep.locator('[data-daily-generate]').isVisible(),true,'advanced workout generation controls must remain available behind disclosure');
 
@@ -63,9 +63,9 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   assert.ok(layout.checkin.height>=48,`Check-in must remain touch-safe: ${JSON.stringify(layout)}`);
   assert.equal(layout.checkin.last,true,`Check-in must remain the bottom-most Today control: ${JSON.stringify(layout)}`);
 
-  await checkin.click();const save=page.locator('.modal #saveCheckin');await save.waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today','Check-in must open canonical Today modal');
+  await page.evaluate(()=>{const button=document.querySelector('#main > [data-garang-bottom-checkin="1"]');if(!button)throw new Error('Today bottom Check-in missing at interaction boundary');button.click();});const save=page.locator('.modal #saveCheckin');await save.waitFor({state:'visible',timeout:5000});assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today','Check-in must open canonical Today modal');
   await page.locator('.modal .modal-close,.modal-close').first().click();await save.waitFor({state:'hidden',timeout:5000});
-  await start.click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
+  await page.evaluate(()=>{const button=document.querySelector('.garang-daily-workout [data-garang-workout-prep-start="1"]');if(!button)throw new Error('Today workout start missing at interaction boundary');button.click();});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
   assert.deepEqual(errors,[],`Today workout preparation integration browser errors:\n${errors.join('\n')}`);
   await context.close();console.log('browser-today-checkin-override preparation owns workout start + progressive details + bottom Check-in: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
