@@ -8,7 +8,7 @@ const clean=value=>String(value??'').trim();
 const finite=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const dateKey=value=>String(value||'').slice(0,10);
 function hash(value){let h=2166136261;const text=String(value||'');for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
-function stableId(prefix,parts){const values=list(parts).map(value=>clean(value)).filter(Boolean);return values.length?`${prefix}_${hash(values.join('|'))}`:null;}
+function stableId(prefix,parts){const values=(Array.isArray(parts)?parts:[]).map(value=>clean(value)).filter(Boolean);return values.length?`${prefix}_${hash(values.join('|'))}`:null;}
 function sameDate(row,date){return dateKey(row?.date||row?.day||row?.performedAt||row?.createdAt||row?.at)===date;}
 function inferDomain(plan){const explicit=clean(plan?.domain).toLowerCase();if(['training','recovery','nutrition'].includes(explicit))return explicit;const type=clean(plan?.type||plan?.category).toLowerCase();if(/meal|nutrition|food|식단|영양/.test(type))return 'nutrition';if(/recover|recovery|sleep|회복|수면/.test(type))return 'recovery';return 'training';}
 function actionForPlan(state,plan,date){
