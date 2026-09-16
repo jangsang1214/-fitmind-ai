@@ -8,7 +8,7 @@
 (() => {
 'use strict';
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
-const VERSION='1.0.1';
+const VERSION='1.0.0';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
 let bodyObserver=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
