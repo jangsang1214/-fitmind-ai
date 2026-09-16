@@ -18,6 +18,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0',{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:9000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach'&&document.querySelector('#garangTodayFlow')?.dataset?.decisionOwner==='coach',null,{timeout:5000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:5000});
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today shows the deterministic judgment summary while Coach remains the canonical decision disclosure owner');
