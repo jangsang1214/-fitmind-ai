@@ -68,13 +68,17 @@ function recommendationEvidence(call,request){
   const fromDecision=Array.isArray(request?.context?.decision?.reasonCodes)?request.context.decision.reasonCodes:[];
   return [...new Set([...fromArgs,...fromDecision].map(String).filter(Boolean))].slice(0,12);
 }
+function decisionIdentity(request){
+  const decision=object(request?.context?.decision)?request.context.decision:{};
+  return {decisionId:clean(decision.decisionId)||null,decisionMode:clean(decision.mode)||null};
+}
 function validateModifiedProposal(proposal,patch){
   const args={...clone(proposal.args),...clone(patch)};
   if(proposal.tool==='createRecord'||proposal.tool==='updateRecord')return validateCrud(proposal.tool,args);
   return Base.normalizeToolCall({id:proposal.id,tool:proposal.tool,args,reason:proposal.reason},{idFactory:()=>proposal.id}).args;
 }
 function linkedArgs(proposal){
-  const metadata={recommendationId:proposal.recommendationId,recommendationSource:proposal.source,recommendationReason:proposal.reason,recommendationEvidence:clone(proposal.evidence),recommendationConfidence:proposal.confidence,expectedOutcome:proposal.expectedOutcome,recommendationRevision:proposal.revision};
+  const metadata={decisionId:proposal.decisionId,decisionMode:proposal.decisionMode,recommendationId:proposal.recommendationId,recommendationSource:proposal.source,recommendationReason:proposal.reason,recommendationEvidence:clone(proposal.evidence),recommendationConfidence:proposal.confidence,expectedOutcome:proposal.expectedOutcome,recommendationRevision:proposal.revision};
   if(proposal.tool==='createRecord'&&proposal.args?.domain==='planner')return {...clone(proposal.args),record:{...clone(proposal.args.record),...metadata}};
   if(proposal.tool==='updateRecord'&&proposal.args?.domain==='planner')return {...clone(proposal.args),patch:{...clone(proposal.args.patch),...metadata}};
   return {...clone(proposal.args),...metadata};
@@ -95,10 +99,10 @@ function createSession({getState=()=>({}),readTool=null,applyWrite=()=>null,idFa
     contractVersion:CONTRACT_VERSION,actionLayerVersion:ACTION_LAYER_VERSION,audit,
     async run(input,{adapter=createMockAdapter({idFactory})}={}){
       const request=input?.contractVersion===CONTRACT_VERSION?clone(input):createRequest(input||{},{idFactory,clock});assert(adapter&&typeof adapter.respond==='function','INVALID_ADAPTER');
-      const raw=await adapter.respond(clone(request)),response=validateResponse(raw,request,{idFactory}),reads=[],pending=[];
+      const raw=await adapter.respond(clone(request)),response=validateResponse(raw,request,{idFactory}),reads=[],pending=[],identity=decisionIdentity(request);
       for(const call of response.toolCalls){
         if(call.kind==='read'){const result=read(call.tool,call.args);reads.push({call:clone(call),result});audit.push({event:'read_executed',callId:call.id,tool:call.tool,at:clock().toISOString()});}
-        else{const proposal={...clone(call),recommendationId:call.id,status:'pending',revision:1,source:clean(response?.meta?.provider)||'coach',evidence:recommendationEvidence(call,request),confidence:Number.isFinite(Number(request?.context?.decision?.confidence))?Math.max(0,Math.min(1,Number(request.context.decision.confidence))):null,expectedOutcome:expectedOutcome(call.tool,call.args),createdAt:clock().toISOString()};proposals.set(proposal.id,proposal);pending.push(clone(proposal));audit.push({event:'write_proposed',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,at:proposal.createdAt});}
+        else{const proposal={...clone(call),decisionId:identity.decisionId,decisionMode:identity.decisionMode,recommendationId:call.id,status:'pending',revision:1,source:clean(response?.meta?.provider)||'coach',evidence:recommendationEvidence(call,request),confidence:Number.isFinite(Number(request?.context?.decision?.confidence))?Math.max(0,Math.min(1,Number(request.context.decision.confidence))):null,expectedOutcome:expectedOutcome(call.tool,call.args),createdAt:clock().toISOString()};proposals.set(proposal.id,proposal);pending.push(clone(proposal));audit.push({event:'write_proposed',callId:proposal.id,decisionId:proposal.decisionId,recommendationId:proposal.recommendationId,tool:proposal.tool,at:proposal.createdAt});}
       }
       return {request,response,reads,proposals:pending};
     },
@@ -106,15 +110,15 @@ function createSession({getState=()=>({}),readTool=null,applyWrite=()=>null,idFa
       const proposal=proposals.get(proposalId);assert(proposal,'PROPOSAL_NOT_FOUND');assert(proposal.status==='pending','PROPOSAL_ALREADY_RESOLVED');assert(object(changes),'INVALID_TOOL_ARGS');
       const patch=object(changes.args)?changes.args:changes;proposal.args=validateModifiedProposal(proposal,patch);proposal.revision=Math.max(1,Number(proposal.revision)||1)+1;proposal.modifiedAt=clock().toISOString();
       if(clean(changes.reason))proposal.reason=clean(changes.reason);if(clean(changes.expectedOutcome))proposal.expectedOutcome=clean(changes.expectedOutcome);
-      audit.push({event:'write_modified',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.modifiedAt});return clone(proposal);
+      audit.push({event:'write_modified',callId:proposal.id,decisionId:proposal.decisionId,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.modifiedAt});return clone(proposal);
     },
     confirm(proposalId,approved){
       const proposal=proposals.get(proposalId);assert(proposal,'PROPOSAL_NOT_FOUND');assert(proposal.status==='pending','PROPOSAL_ALREADY_RESOLVED');proposal.status=approved?'confirmed':'rejected';proposal.resolvedAt=clock().toISOString();let result=null;
       if(approved){
-        const args=linkedArgs(proposal),meta={callId:proposal.id,idempotencyKey:proposal.id,recommendationId:proposal.recommendationId,recommendationRevision:proposal.revision,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)};
+        const args=linkedArgs(proposal),meta={callId:proposal.id,idempotencyKey:proposal.id,decisionId:proposal.decisionId,decisionMode:proposal.decisionMode,recommendationId:proposal.recommendationId,recommendationRevision:proposal.revision,userConfirmed:true,confirmedAt:proposal.resolvedAt,proposal:clone(proposal)};
         result=withConfirmedWriteScope(meta,()=>applyWrite(proposal.tool,args,meta));
       }
-      audit.push({event:proposal.status==='confirmed'?'write_confirmed':'write_rejected',callId:proposal.id,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.resolvedAt});return {proposal:clone(proposal),result:clone(result)};
+      audit.push({event:proposal.status==='confirmed'?'write_confirmed':'write_rejected',callId:proposal.id,decisionId:proposal.decisionId,recommendationId:proposal.recommendationId,tool:proposal.tool,revision:proposal.revision,at:proposal.resolvedAt});return {proposal:clone(proposal),result:clone(result)};
     },
     getProposal(id){const proposal=proposals.get(id);return proposal?clone(proposal):null;}
   });
