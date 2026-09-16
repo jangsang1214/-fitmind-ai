@@ -1,0 +1,38 @@
+name: GARANG Wanted Vercel package
+
+on:
+  push:
+    branches:
+      - agent/wanted-vercel-package-2026-09-17
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout frozen Wanted release
+        uses: actions/checkout@v4
+        with:
+          ref: 561d900b82b2ff5aa85769457e4f39c1b4c14767
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Build exact Wanted release
+        run: npm run build
+
+      - name: Upload Vercel-ready dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: garang-wanted-vercel-dist-561d900b
+          path: dist/
+          if-no-files-found: error
+          retention-days: 1
