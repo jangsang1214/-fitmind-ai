@@ -51,14 +51,15 @@
    restoreMutationObserver=()=>{if(root.MutationObserver===WantedSafeMutationObserver)root.MutationObserver=NativeMutationObserver;};
   }
 
-  const loadWantedUx=()=>{
-   if(root.__GARANG_WANTED_UX_V1_LOADING__)return;
-   root.__GARANG_WANTED_UX_V1_LOADING__=true;
+  const loadWantedExtras=()=>{
+   if(root.__GARANG_WANTED_EXTRAS_V1_LOADING__)return;
+   root.__GARANG_WANTED_EXTRAS_V1_LOADING__=true;
    const uxScript=document.createElement('script');uxScript.src=new URL('06_features/ui/runtime/garang-wanted-ux-fixes-v1.js?v=1.0.0',assetRoot).href;uxScript.defer=true;document.head.appendChild(uxScript);
+   const llmScript=document.createElement('script');llmScript.src=new URL('06_features/ui/runtime/garang-wanted-real-llm-v1.js?v=1.0.0',assetRoot).href;llmScript.defer=true;document.head.appendChild(llmScript);
   };
 
   const script=document.createElement('script');script.src=new URL('06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1',assetRoot).href;script.defer=true;
-  if(typeof script.addEventListener==='function')script.addEventListener('load',()=>{restoreMutationObserver?.();loadWantedUx();},{once:true});
+  if(typeof script.addEventListener==='function')script.addEventListener('load',()=>{restoreMutationObserver?.();loadWantedExtras();},{once:true});
   document.head.appendChild(script);
   if(restoreMutationObserver&&typeof root.setTimeout==='function')root.setTimeout(restoreMutationObserver,5000);
  }

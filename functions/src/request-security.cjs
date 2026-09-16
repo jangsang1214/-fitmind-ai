@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_ORIGINS=Object.freeze(['https://jangsang1214.github.io','http://localhost:8765','http://127.0.0.1:8765']);
+const DEFAULT_ORIGINS=Object.freeze(['https://jangsang1214.github.io','https://garang-wanted-2026-jangsang1214.vercel.app','http://localhost:8765','http://127.0.0.1:8765']);
 const LOOPBACK_ORIGIN=/^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/i;
 function parseAllowedOrigins(value=process.env.GARANG_ALLOWED_ORIGINS||''){
  const configured=String(value||'').split(',').map(x=>x.trim()).filter(Boolean);

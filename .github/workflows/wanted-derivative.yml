@@ -34,18 +34,23 @@ jobs:
         run: node tests/wanted-14day-dataset.test.cjs
       - name: Verify deployment-origin compatibility
         run: node tests/wanted-deployment-origin.test.cjs
+      - name: Verify Wanted Real AI transport isolation
+        run: node tests/wanted-llm-transport.test.cjs
       - name: Build Wanted derivative
         run: npm run build
       - name: Verify derivative assets ship
         run: |
           test -f dist/06_features/ui/runtime/garang-wanted-submission-v1.js
           test -f dist/06_features/ui/runtime/garang-wanted-ux-fixes-v1.js
+          test -f dist/06_features/ui/runtime/garang-wanted-real-llm-v1.js
           test -f dist/03_styles/runtime/garang-wanted-submission-v1.css
           test -f dist/03_styles/runtime/garang-wanted-ux-fixes-v1.css
           test -f dist/04_data/wanted/wanted-14day-synthetic-v1.json
           grep -q 'GARANG_WANTED_SUBMISSION' dist/07_config/version.js
           grep -q 'GARANG_WANTED_ASSET_ROOT' dist/07_config/version.js
           grep -q 'garang-wanted-ux-fixes-v1' dist/07_config/version.js
+          grep -q 'garang-wanted-real-llm-v1' dist/07_config/version.js
+          grep -q 'wantedCoachEndpoint' dist/07_config/garang-services-config.js
           grep -q 'garang-wanted-judge-data-v1' dist/04_data/wanted/wanted-14day-synthetic-v1.json
       - name: Verify 60-second judging journey
         run: node tests/browser-wanted-submission.test.cjs
