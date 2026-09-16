@@ -71,7 +71,7 @@
   }
 
   function ensureTodayPlannerPlus(){
-    if(!isActive()||currentScreen()!=='today')return;
+    if(currentScreen()!=='today')return;
     const root=main();if(!root||root.querySelector('[data-wanted-planner-plus]'))return;
     const label=planLabelNode();if(!label)return;
     const row=label.parentElement||label;
@@ -91,7 +91,6 @@
   }
 
   function sync(){
-    if(!isActive())return;
     ensureGuideControls();
     ensureTodayPlannerPlus();
   }
@@ -101,7 +100,7 @@
     window.addEventListener('garang:screen-rendered',()=>requestAnimationFrame(sync));
     window.addEventListener('garang:route-completed',()=>requestAnimationFrame(sync));
     const target=document.getElementById('appView')||document.body;
-    const observer=new MutationObserver(()=>{if(isActive())requestAnimationFrame(sync);});
+    const observer=new MutationObserver(()=>requestAnimationFrame(sync));
     if(target)observer.observe(target,{childList:true,subtree:true});
     setTimeout(sync,250);setTimeout(sync,900);
   }

@@ -24,7 +24,10 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:10000});
     await page.locator('.wanted-demo-guide').waitFor({state:'visible',timeout:10000});
 
-    await page.evaluate(()=>window.GarangRouter?.navigate?.('today',{source:'wanted-ux-test',force:true}));
+    await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'wanted-ux-test',force:true}));
+    await page.waitForFunction(()=>window.GarangRouter?.current?.()==='planner',null,{timeout:7000});
+    await page.evaluate(()=>localStorage.removeItem('garang_wanted_demo_active_v1'));
+    await page.evaluate(()=>window.GarangRouter?.navigate?.('today',{source:'wanted-ux-test-non-judge',force:true}));
     await page.waitForFunction(()=>window.GarangRouter?.current?.()==='today',null,{timeout:7000});
     const plannerPlus=page.locator('[data-wanted-planner-plus]');
     await plannerPlus.waitFor({state:'visible',timeout:7000});
@@ -32,6 +35,7 @@ async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<
     await plannerPlus.tap();
     await page.waitForFunction(()=>window.GarangRouter?.current?.()==='planner',null,{timeout:7000});
 
+    await page.evaluate(()=>localStorage.setItem('garang_wanted_demo_active_v1','1'));
     await page.evaluate(()=>window.GarangRouter?.navigate?.('coach',{source:'wanted-ux-test',force:true}));
     await page.waitForFunction(()=>window.GarangRouter?.current?.()==='coach',null,{timeout:7000});
     const guide=page.locator('.wanted-demo-guide');
