@@ -16,7 +16,7 @@ const Contract=require('../06_features/final/agent-contract-v2.js');
     language:'ko',
     context:{decision:{decisionId:'2026-09-16:reduce:LOW_ENERGY',mode:'reduce',confidence:.82,reasonCodes:['MODE_REDUCE','LOW_ENERGY']}}
   },{idFactory:prefix=>`${prefix}-request`,clock:()=>new Date('2026-09-16T08:59:00.000Z')});
-  const adapter={respond:async()=>({answer:'오늘은 볼륨을 낮춘 계획을 제안합니다.',meta:{provider:'openai'},toolCalls:[{id:'recommendation-1',tool:'createPlan',args:{type:'workout',duration:40,intensityScale:.7,volumeScale:.7,reasonCodes:['MODE_REDUCE','LOW_ENERGY']},reason:'LOW_ENERGY'}]})};
+  const adapter={respond:async()=>({answer:'오늘은 볼륨을 낮춘 계획을 제안합니다.',meta:{provider:'openai'},toolCalls:[{id:'recommendation-1',tool:'createPlan',args:{title:'회복 중심 세션',type:'workout',duration:40,intensityScale:.7,volumeScale:.7,reasonCodes:['MODE_REDUCE','LOW_ENERGY']},reason:'LOW_ENERGY'}]})};
   const run=await session.run(request,{adapter});
   assert.equal(run.proposals.length,1);
   const proposal=run.proposals[0];
