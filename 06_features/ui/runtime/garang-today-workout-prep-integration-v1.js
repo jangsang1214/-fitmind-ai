@@ -24,17 +24,22 @@
     catch { return null; }
   }
 
+  function workoutExpected(button) {
+    const model = window.GarangTodaySingleNextActionV1?.currentModel?.();
+    const type = model?.nextAction?.actionType || model?.nextPlan?.type || '';
+    if (type === 'workout') return true;
+    if (!button) return false;
+    const marked = button.dataset.garangTodayWorkoutExecute === '1';
+    const copy = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`;
+    const workoutCopy = /운동\s*기록\s*열기|오늘\s*운동\s*실행|Open\s+workout\s+log|Start\s+today(?:'|’)?s\s+workout/i.test(copy);
+    return marked || workoutCopy;
+  }
+
   function canonicalWorkoutExecute() {
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') return null;
     const button = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
-    if (!button) return null;
-    const model = window.GarangTodaySingleNextActionV1?.currentModel?.();
-    const type = model?.nextAction?.actionType || model?.nextPlan?.type || '';
-    const marked = button.dataset.garangTodayWorkoutExecute === '1';
-    const copy = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`;
-    const workoutCopy = /운동\s*기록\s*열기|오늘\s*운동\s*실행|Open\s+workout\s+log|Start\s+today(?:'|’)?s\s+workout/i.test(copy);
-    return type === 'workout' || marked || workoutCopy ? button : null;
+    return workoutExpected(button) ? button : null;
   }
 
   function ensureStyle() {
@@ -42,6 +47,18 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout{
+        display:grid!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+      }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-daily-toggle]{
+        display:grid!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-action{
         max-height:0!important;
         min-height:0!important;
@@ -55,7 +72,8 @@
         opacity:0!important;
         pointer-events:none!important;
       }
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-next[data-gsn-action="execute"]{
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-next[data-gsn-action="execute"],
+      html body #main[data-garang-screen="today"] #garangTodayFlow .gtf-next[data-gsn-action="execute"][data-garang-today-workout-execute="1"]{
         display:none!important;
         pointer-events:none!important;
       }
@@ -143,10 +161,73 @@
     return button;
   }
 
+  function setImportant(node, property, value) {
+    if (!node) return;
+    if (node.style.getPropertyValue(property) === value && node.style.getPropertyPriority(property) === 'important') return;
+    node.style.setProperty(property, value, 'important');
+  }
+
+  function revealPreparation(card) {
+    if (!card) return;
+    if (card.hidden) card.hidden = false;
+    if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
+    if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    setImportant(card,'display','grid');
+    setImportant(card,'visibility','visible');
+    setImportant(card,'opacity','1');
+    setImportant(card,'pointer-events','auto');
+    const toggle = card.querySelector('[data-daily-toggle]');
+    if (!toggle) return;
+    if (toggle.hidden) toggle.hidden = false;
+    if (toggle.getAttribute('aria-hidden') === 'true') toggle.removeAttribute('aria-hidden');
+    if (toggle.getAttribute('tabindex') === '-1') toggle.removeAttribute('tabindex');
+    if (toggle.dataset.garangWorkoutPrepVisibilityOwner !== '1') toggle.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    setImportant(toggle,'display','grid');
+    setImportant(toggle,'visibility','visible');
+    setImportant(toggle,'opacity','1');
+    setImportant(toggle,'pointer-events','auto');
+  }
+
+  function releasePreparationVisibility(card) {
+    if (!card) return;
+    if (card.dataset.garangWorkoutPrepVisibilityOwner === '1') {
+      delete card.dataset.garangWorkoutPrepVisibilityOwner;
+      for (const property of ['display','visibility','opacity','pointer-events']) card.style.removeProperty(property);
+    }
+    const toggle = card.querySelector('[data-daily-toggle]');
+    if (toggle?.dataset?.garangWorkoutPrepVisibilityOwner === '1') {
+      delete toggle.dataset.garangWorkoutPrepVisibilityOwner;
+      for (const property of ['display','visibility','opacity','pointer-events']) toggle.style.removeProperty(property);
+    }
+  }
+
+  function concealCanonical(button) {
+    if (!button) return;
+    if (!button.hidden) button.hidden = true;
+    if (button.style.getPropertyValue('display') !== 'none' || button.style.getPropertyPriority('display') !== 'important') {
+      button.style.setProperty('display','none','important');
+    }
+    if (button.getAttribute('aria-hidden') !== 'true') button.setAttribute('aria-hidden','true');
+    if (button.tabIndex !== -1) button.tabIndex = -1;
+  }
+
+  function stabilizeExpectedPresentation(m = main()) {
+    if (!m || m.dataset.garangScreen !== 'today') return false;
+    const card = m.querySelector('.garang-daily-workout');
+    const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    if (!card || !workoutExpected(execute)) return false;
+    if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
+    if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
+    revealPreparation(card);
+    concealCanonical(execute);
+    return true;
+  }
+
   function restorePresentation(m,card) {
-    m?.removeAttribute('data-garang-workout-prep-execution');
+    if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
     if (card) {
-      delete card.dataset.garangWorkoutPrepExecution;
+      releasePreparationVisibility(card);
+      if (card.hasAttribute('data-garang-workout-prep-execution')) delete card.dataset.garangWorkoutPrepExecution;
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('ghost');
@@ -155,8 +236,10 @@
     }
     const current = m?.querySelector('#garangTodayFlow .gtf-next[data-gsn-action]');
     if (current) {
-      current.removeAttribute('aria-hidden');
-      current.removeAttribute('tabindex');
+      if (current.hidden) current.hidden = false;
+      if (current.style.getPropertyValue('display')) current.style.removeProperty('display');
+      if (current.hasAttribute('aria-hidden')) current.removeAttribute('aria-hidden');
+      if (current.hasAttribute('tabindex')) current.removeAttribute('tabindex');
     }
   }
 
@@ -165,26 +248,26 @@
     ensureStyle();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') {
-      m?.removeAttribute('data-garang-workout-prep-execution');
+      if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
       return;
     }
 
     const card = m.querySelector('.garang-daily-workout');
-    const canonical = canonicalWorkoutExecute();
+    const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    const expected = workoutExpected(execute);
     const start = card ? ensureStartButton(card) : null;
-    const integrated = !!(card && canonical && start);
 
-    if (integrated) {
-      m.dataset.garangWorkoutPrepExecution = '1';
-      card.dataset.garangWorkoutPrepExecution = '1';
-      canonical.setAttribute('aria-hidden','true');
-      canonical.tabIndex = -1;
+    if (expected && card && start) {
+      stabilizeExpectedPresentation(m);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('primary');
         generate.classList.add('ghost');
       }
-    } else restorePresentation(m,card);
+      return;
+    }
+
+    restorePresentation(m,card);
   }
 
   function schedule() {
@@ -198,12 +281,26 @@
     if (!m || m === observedMain) return;
     mountObserver?.disconnect();
     observedMain = m;
-    mountObserver = new MutationObserver(schedule);
+    mountObserver = new MutationObserver(() => {
+      stabilizeExpectedPresentation(m);
+      schedule();
+    });
     mountObserver.observe(m, {
       childList:true,
       subtree:true,
       attributes:true,
-      attributeFilter:['data-gsn-action','data-gsn-step','data-garang-today-workout-execute','data-garang-screen']
+      attributeFilter:[
+        'class',
+        'data-gsn-action',
+        'data-gsn-step',
+        'data-garang-today-workout-execute',
+        'data-garang-screen',
+        'data-garang-workout-prep-execution',
+        'hidden',
+        'style',
+        'aria-hidden',
+        'tabindex'
+      ]
     });
   }
 
@@ -214,10 +311,11 @@
     'garang:state-updated',
     'garang:state-hydrated',
     'pageshow'
-  ]) window.addEventListener(eventName, () => { observeMounts(); schedule(); });
+  ]) window.addEventListener(eventName, () => { observeMounts(); stabilizeExpectedPresentation(); schedule(); });
 
   ensureStyle();
   observeMounts();
+  stabilizeExpectedPresentation();
   schedule();
   window.GarangTodayWorkoutPrepIntegrationV1 = Object.freeze({
     version:VERSION,

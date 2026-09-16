@@ -11,5 +11,7 @@ function response(){return {statusCode:0,headers:{},body:null,set(k,v){this.head
 let nextCalled=false;const middleware=securityMiddleware({allowedOrigins:origins});
 const ok=response();middleware({method:'GET',headers:{origin:'https://staging.garang.example'},get:key=>key==='origin'?'https://staging.garang.example':''},ok,()=>{nextCalled=true;});
 assert.equal(nextCalled,true);assert.equal(ok.headers['Access-Control-Allow-Origin'],'https://staging.garang.example');assert.equal(ok.headers['X-Frame-Options'],'DENY');
+let loopbackNext=false;const loopback=response();middleware({method:'POST',headers:{origin:'http://127.0.0.1:8786'},get:key=>key==='origin'?'http://127.0.0.1:8786':''},loopback,()=>{loopbackNext=true;});assert.equal(loopbackNext,true);assert.equal(loopback.headers['Access-Control-Allow-Origin'],'http://127.0.0.1:8786');
+const preflight=response();middleware({method:'OPTIONS',headers:{origin:'http://localhost:9999'},get:key=>key==='origin'?'http://localhost:9999':''},preflight,()=>{});assert.equal(preflight.statusCode,204);assert.equal(preflight.headers['Access-Control-Allow-Origin'],'http://localhost:9999');
 const blocked=response();middleware({method:'GET',headers:{origin:'https://evil.example'},get:key=>key==='origin'?'https://evil.example':''},blocked,()=>{});assert.equal(blocked.statusCode,403);assert.equal(blocked.body.error.code,'ORIGIN_NOT_ALLOWED');
 console.log('request-security: PASS');

@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -108,6 +109,7 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
       viewport:{width:390,height:844},isMobile:true,hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
+    await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
       const current={
@@ -120,9 +122,9 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
       backup.meta.updatedAt='2026-09-06T23:00:00Z';
       backup.workouts=[{id:'audit-w1',date:'2026-09-06',name:'Squat',updatedAt:'2026-09-06T23:00:00Z'}];
       backup.meals=[{id:'audit-m1',date:'2026-09-06',name:'Meal',updatedAt:'2026-09-06T23:00:00Z',items:[]}];
-      localStorage.setItem('garang_demo','1');
-      localStorage.setItem('garang_demo_state_v3',JSON.stringify(current));
-      localStorage.setItem('garang_state_recovery_backup_v1::garang_demo_state_v3::audit',JSON.stringify(backup));
+
+      localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(current));
+      localStorage.setItem('garang_state_recovery_backup_v1::garang_user_mock-user_v3::audit',JSON.stringify(backup));
     });
 
     const page=await context.newPage();

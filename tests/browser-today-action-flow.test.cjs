@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -12,10 +13,12 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},seed());
+  await installAuthenticatedFirebaseMock(context);
+  await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0',{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:9000});
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach'&&document.querySelector('#garangTodayFlow')?.dataset?.decisionOwner==='coach',null,{timeout:5000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:5000});
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
   assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today shows the deterministic judgment summary while Coach remains the canonical decision disclosure owner');

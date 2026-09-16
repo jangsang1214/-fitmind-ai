@@ -14,14 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install locked CI dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install locked Functions dependencies
+        run: npm ci --prefix functions --ignore-scripts --no-audit --no-fund
       - name: Verify locked dependency contract
         run: |
           node - <<'NODE'
@@ -37,12 +39,19 @@ jobs:
             if(d[k]!==v)throw new Error(`${k} lock mismatch: ${d[k]}`);
           }
           if(p.lockfileVersion!==3)throw new Error(`expected lockfileVersion 3, got ${p.lockfileVersion}`);
+          const f=require('./functions/package-lock.json');
+          if(f.lockfileVersion!==3)throw new Error(`expected functions lockfileVersion 3, got ${f.lockfileVersion}`);
+          for(const [k,v] of Object.entries(require('./functions/package.json').dependencies||{})){
+            if(f.packages?.['']?.dependencies?.[k]!==v)throw new Error(`functions ${k} lock mismatch: ${f.packages?.['']?.dependencies?.[k]}`);
+          }
           console.log('locked dependency contract: PASS');
           NODE
       - name: Verify browser test server portability
         run: node tests/browser-server-portability.test.cjs
       - name: Verify production dependency security
         run: timeout 90s npm audit --omit=dev --audit-level=high
+      - name: Verify Functions production dependency security
+        run: timeout 90s npm audit --prefix functions --omit=dev --audit-level=high
       - name: Report dev tooling audit
         run: |
           set +e
@@ -85,8 +94,8 @@ jobs:
     env:
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm

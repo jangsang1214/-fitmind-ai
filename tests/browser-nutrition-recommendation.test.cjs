@@ -1,4 +1,5 @@
 'use strict';
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const { startStaticServer } = require('./helpers/static-server.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
@@ -28,7 +29,8 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     await waitForServer();
     browser = await webkit.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-    await context.addInitScript(payload => { localStorage.setItem('garang_demo', '1'); localStorage.setItem('garang_demo_state_v3', JSON.stringify(payload)); }, state());
+    await installAuthenticatedFirebaseMock(context);
+    await context.addInitScript(payload => { localStorage.setItem('garang_user_mock-user_v3', JSON.stringify(payload)); }, state());
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(String(error?.stack || error?.message || error)));
@@ -37,6 +39,10 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     await route(page, 'nutrition');
     const surface = page.locator('[data-gnr-surface]');
     await surface.waitFor({ state: 'visible', timeout: 10000 });
+    await page.waitForFunction(() => {
+      const node = document.querySelector('[data-gnr-surface]');
+      return !!node && /근육 증가/.test(node.innerText || '') && !!node.querySelector('[data-gnr-add="0"]');
+    }, null, { timeout: 8000 });
     assert.equal(await page.locator('[data-gnr-surface]').count(), 1, 'Nutrition must expose one recommendation surface');
     assert.match(await surface.innerText(), /근육 증가/);
     assert.ok(await surface.locator('[data-gnr-add="0"]').count() === 1, 'the primary recommendation must be actionable');

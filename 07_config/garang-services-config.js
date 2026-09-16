@@ -41,6 +41,7 @@
   const urlOf=input=>typeof input==='string'?input:input?.url;
   const methodOf=(input,init)=>String(init?.method||input?.method||'GET').toUpperCase();
   const text=(value,limit=120)=>String(value??'').trim().slice(0,limit);
+  function coachImageFrom(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const mediaType=text(value.mediaType,40).toLowerCase(),dataUrl=String(value.dataUrl||'');if(!['image/jpeg','image/png','image/webp'].includes(mediaType))return null;if(!dataUrl.startsWith(`data:${mediaType};base64,`)||dataUrl.length>2600000)return null;return {kind:'body_photo',mediaType,dataUrl};}
   function currentUser(){try{return window.firebase?.auth?.().currentUser||null;}catch{return null;}}
   function analyticsConsent(){
     const user=currentUser();if(!user)return false;
@@ -75,10 +76,10 @@
       try{
         const user=currentUser();if(!user){const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;}
         let source={};try{source=typeof init.body==='string'?JSON.parse(init.body):{};}catch{}
-        const message=String(source?.message||source?.question||'').trim();if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
-        const language=source?.language==='en'||globalThis.document?.documentElement?.lang==='en'?'en':'ko',headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${await token()}`);
-        diag.lastRequest={url:coachEndpoint,method:'POST',language,messageLength:message.length,uid:String(user.uid||'')};diag.stage='coach-fetch';
-        const response=await nativeFetch(coachEndpoint,{...init,method:'POST',headers,body:JSON.stringify({message,language})});diag.stage='coach-response';return response;
+        const language=source?.language==='en'||globalThis.document?.documentElement?.lang==='en'?'en':'ko',draft=source?.image||globalThis.GarangCoachPhotoDraft?.consumeForRequest?.()||null,image=coachImageFrom(draft),messageRaw=String(source?.message||source?.question||'').trim(),message=messageRaw||(image?(language==='en'?'Review this photo with my GARANG records and explain what is visibly relevant to my training.':'이 사진을 내 GARANG 기록과 함께 보고 훈련 관점에서 보이는 점을 알려줘.'):'');if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
+        const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${await token()}`);
+        diag.lastRequest={url:coachEndpoint,method:'POST',language,messageLength:message.length,hasImage:!!image,uid:String(user.uid||'')};diag.stage='coach-fetch';
+        const response=await nativeFetch(coachEndpoint,{...init,method:'POST',headers,body:JSON.stringify({message,language,...(image?{image}: {})})});diag.stage='coach-response';return response;
       }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
     }
     if((services.analyticsEndpoint&&url===services.analyticsEndpoint)||(services.telemetryErrorEndpoint&&url===services.telemetryErrorEndpoint)){

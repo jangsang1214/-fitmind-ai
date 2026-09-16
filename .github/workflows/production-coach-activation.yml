@@ -23,10 +23,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Check out approved revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -34,8 +34,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Install Functions runtime dependencies
-        run: npm install --prefix functions --omit=dev --no-audit --no-fund
+      - name: Install locked Functions runtime dependencies
+        run: npm ci --prefix functions --omit=dev --no-audit --no-fund
 
       - name: Select fail-closed Firebase authentication
         id: auth

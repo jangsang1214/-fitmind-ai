@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -12,7 +13,8 @@ function demoState(){const date=today();return {meta:{schemaVersion:5,updatedAt:
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},demoState());
+  await installAuthenticatedFirebaseMock(context);
+  await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},demoState());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangDailyPlanV1?.VERSION==='garang-daily-plan-v1.1.0'&&window.GarangDailyPlanV1?.STRATEGY_VERSION==='garang-three-track-adaptive-v1'&&window.GarangDailyPlanV1?.DOMAIN_STRATEGY_VERSION==='garang-domain-execution-adaptive-v1'&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:10000});
@@ -23,10 +25,8 @@ function demoState(){const date=today();return {meta:{schemaVersion:5,updatedAt:
   const adaptive=await page.evaluate(date=>{const s=structuredClone(window.GarangAgentStateBridge.getLiveState()),before=s.meta.dailyPlanDrafts[date],beforeRevision=before.revision||1;s.dailyCheckins.push({date,availableMinutes:30,soreness:5,sleepHours:5.5,stress:4,energy:2});const report=window.GarangDailyPlanV1.ensureDailyDraft(s,{date,decision:{mode:'recover'},performance:{components:{recovery:{score:35}}}});return {adapted:report.adapted,reason:report.reason,revision:report.group.revision,beforeRevision,domains:report.group.items.map(x=>x.domain),training:report.group.items.find(x=>x.domain==='training'),recovery:report.group.items.find(x=>x.domain==='recovery'),nutrition:report.group.items.find(x=>x.domain==='nutrition')};},date);
   assert.equal(adaptive.adapted,true,'an untouched draft must adapt to a new check-in');assert.ok(adaptive.revision>adaptive.beforeRevision);assert.deepEqual(adaptive.domains,['training','recovery','nutrition']);assert.ok(adaptive.training.duration<=30,'training must respect newly available time');assert.match(adaptive.recovery.title,/수면|회복|호흡/);assert.match(adaptive.nutrition.title,/단백질|수분/);
 
-  await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset.dailyDraft==='1',null,{timeout:5000});
-  assert.match(await page.locator('#garangTodayFlow .gtf-next').innerText(),/3영역 초안 확인/);
-  await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:5000});
-  assert.equal(await page.locator('#garangTodayFlow .gtf-action').isHidden(),true,'morning check-in must own Today before plan navigation');
+  await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:7000});
+  assert.equal(await page.evaluate(()=>window.GarangAgentStateBridge.getLiveState().planner.length),0,'Today presentation must not silently confirm the draft before Planner review');
   await page.evaluate(()=>window.GarangRouter.navigate('planner',{source:'daily-plan-browser-direct',force:true}));await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:5000});
   const draft=page.locator('[data-garang-daily-plan-draft="1"]');await draft.waitFor({state:'visible',timeout:5000});await page.waitForTimeout(350);assert.match(await draft.innerText(),/운동 · 회복 · 식단/);assert.equal(await draft.locator('[data-gdp-item]').count(),3);for(const domain of ['training','recovery','nutrition'])assert.equal(await draft.locator(`[data-gdp-domain="${domain}"]`).count(),1,domain+' track must be visible');
   const firstItem=draft.locator('[data-gdp-domain="training"]');await firstItem.locator('[data-gdp-title]').fill('사용자 수정 근력 42분');await firstItem.locator('[data-gdp-time]').fill('19:20');await firstItem.locator('[data-gdp-duration]').fill('42');

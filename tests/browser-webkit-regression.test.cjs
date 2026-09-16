@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -129,10 +130,11 @@ async function assertCoachSettles(page){
       hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
+    await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
-      localStorage.setItem('garang_demo','1');
-      localStorage.setItem('garang_demo_state_v3',JSON.stringify({
+
+      localStorage.setItem('garang_user_mock-user_v3',JSON.stringify({
         meta:{schemaVersion:5,updatedAt:'2026-09-06T00:00:00Z'},
         profile:{name:'WebKit',weight:70},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},

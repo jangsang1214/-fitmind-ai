@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -121,10 +122,11 @@ async function waitForStabilityRuntimes(page,errors){
       viewport:{width:390,height:844},isMobile:true,hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
+    await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
-      localStorage.setItem('garang_demo','1');
-      localStorage.setItem('garang_demo_state_v3',JSON.stringify({
+
+      localStorage.setItem('garang_user_mock-user_v3',JSON.stringify({
         meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},
         profile:{name:'Stress',age:23,height:174,weight:67,goal:'퍼포먼스 향상'},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},

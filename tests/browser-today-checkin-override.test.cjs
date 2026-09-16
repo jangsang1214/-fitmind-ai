@@ -1,5 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
+const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -18,7 +19,8 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await context.addInitScript(payload=>{localStorage.setItem('garang_demo','1');localStorage.setItem('garang_demo_state_v3',JSON.stringify(payload));},seed());
+  await installAuthenticatedFirebaseMock(context);
+  await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.2'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
   try{
@@ -31,6 +33,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   const execute=page.locator('#garangTodayFlow .gtf-next[data-garang-today-workout-execute="1"]');
   const prep=page.locator('.garang-daily-workout');
   const checkin=page.locator('#main > [data-garang-bottom-checkin="1"]');
+  await prep.locator('[data-daily-toggle]').waitFor({state:'visible',timeout:3000});
   assert.equal(await execute.count(),1,'canonical workout execution owner must remain in the DOM');
   assert.equal(await execute.isHidden(),true,'standalone Today workout execution CTA must be visually removed');
   assert.equal(await execute.getAttribute('aria-hidden'),'true','hidden canonical CTA must not compete in accessibility order');

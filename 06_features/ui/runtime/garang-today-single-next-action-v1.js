@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.1.2';
+  const VERSION = 'garang-today-single-next-action-v1.1.3';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -102,13 +102,21 @@
     return actionFor(model);
   }
 
+  function workoutPrepOwnsExecution(model, action) {
+    if (action?.id !== 'execute' || main.dataset.garangWorkoutPrepExecution !== '1') return false;
+    const type = action?.canonical?.actionType || model?.nextAction?.actionType || model?.nextPlan?.type || '';
+    return type === 'workout';
+  }
+
   function flowOwnsExpectedAction(flow, model, snapshot) {
     if (!flow || !model || !snapshot) return true;
     const action = todayActionFor(model);
     const button = flow.querySelector('.gtf-next');
     if (!action) return true;
     if (action.id === 'checkin') return main.dataset.gsnAction === 'checkin' && !button?.dataset?.gsnAction;
-    return main.dataset.gsnAction === action.id && button?.dataset?.gsnAction === action.id && button?.dataset?.gsnStep === model.step;
+    if (main.dataset.gsnAction !== action.id || button?.dataset?.gsnAction !== action.id || button?.dataset?.gsnStep !== model.step) return false;
+    if (workoutPrepOwnsExecution(model, action)) return true;
+    return !!button && !button.hidden && button.getAttribute('aria-hidden') !== 'true' && button.style.getPropertyValue('display') !== 'none';
   }
 
   function ensureFlowObserver(flow) {
@@ -127,7 +135,7 @@
       childList:true,
       subtree:true,
       attributes:true,
-      attributeFilter:['data-gtf-route','data-gtf-action','data-golden-path','data-gsn-action','data-gsn-step','style']
+      attributeFilter:['data-gtf-route','data-gtf-action','data-golden-path','data-gsn-action','data-gsn-step','style','hidden','aria-hidden','tabindex']
     });
   }
 
@@ -172,6 +180,16 @@
     if (button.dataset.gsnNativeAction) button.setAttribute('data-gtf-action', button.dataset.gsnNativeAction); else button.removeAttribute('data-gtf-action');
     if (button.dataset.gsnNativeGoldenPath) button.setAttribute('data-golden-path', button.dataset.gsnNativeGoldenPath); else button.removeAttribute('data-golden-path');
     writeButtonLabel(button, button.dataset.gsnNativeLabel || '');
+  }
+
+  function restoreCanonicalButtonVisibility(button, model, action) {
+    if (!button || workoutPrepOwnsExecution(model, action)) return;
+    if (button.hidden) button.hidden = false;
+    if (button.getAttribute('aria-hidden') === 'true') button.removeAttribute('aria-hidden');
+    if (button.hasAttribute('tabindex') && button.tabIndex === -1) button.removeAttribute('tabindex');
+    if (button.style.getPropertyValue('display') === 'none') button.style.removeProperty('display');
+    if (button.style.getPropertyValue('visibility') === 'hidden') button.style.removeProperty('visibility');
+    if (button.style.getPropertyValue('opacity') === '0') button.style.removeProperty('opacity');
   }
 
   function suppressLegacyCheckin(flow, suppress) {
@@ -252,6 +270,7 @@
     button.dataset.gsnStep = model.step;
     button.setAttribute('aria-label', action.label);
     writeButtonLabel(button, action.label);
+    restoreCanonicalButtonVisibility(button, model, action);
     if (actionWrap) actionWrap.style.setProperty('display','block','important');
     suppressLegacyCheckin(flow, true);
   }
