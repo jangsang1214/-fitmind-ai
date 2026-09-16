@@ -155,6 +155,8 @@
     }
     const current = m?.querySelector('#garangTodayFlow .gtf-next[data-gsn-action]');
     if (current) {
+      current.hidden = false;
+      current.style.removeProperty('display');
       current.removeAttribute('aria-hidden');
       current.removeAttribute('tabindex');
     }
@@ -177,6 +179,8 @@
     if (integrated) {
       m.dataset.garangWorkoutPrepExecution = '1';
       card.dataset.garangWorkoutPrepExecution = '1';
+      canonical.hidden = true;
+      canonical.style.setProperty('display','none','important');
       canonical.setAttribute('aria-hidden','true');
       canonical.tabIndex = -1;
       const generate = card.querySelector('[data-daily-generate]');
