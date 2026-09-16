@@ -47,12 +47,14 @@ GARANG은 중요한 의사결정의 책임을 LLM에 넘기지 않습니다.
 
 ## 60-second judging path
 
-The competition derivative provides a clearly labeled synthetic-data experience. It does not use a real user's data and does not pretend its sample Coach response is a live GPT call.
+The competition derivative provides a clearly labeled **14-day synthetic judging dataset**. It never uses a real user's data and it does not pretend its sample Coach response is a live GPT call.
 
-1. **`60초 심사 체험`** — enter without creating an account; synthetic local records are loaded.
-2. **Today** — see signals become an interpreted GARANG decision and next action.
-3. **Coach** — see why the deterministic decision was made and how it is explained.
-4. **Progress / 누적** — see how workout, nutrition, running and body evidence accumulate over time.
+The dataset is date-relative, so whenever a judge opens the service they see a coherent recent two-week history rather than stale fixed dates. It includes 14 recovery check-ins, 42 meal records, repeated strength sessions, running, body-composition trend points, planned actions, and examples where recovery signals change the next action.
+
+1. **`60초 심사 체험`** — enter without creating an account; the recent 14-day synthetic history is loaded locally.
+2. **Today** — see two weeks of signals become an interpreted GARANG decision and next action. The current scenario intentionally contrasts a planned high-intensity lower-body session with recent heavy lower-body load, soreness, lower sleep and higher stress.
+3. **Coach** — see why the deterministic decision was made and how GARANG explains the evidence.
+4. **Progress / 누적** — see workout, nutrition, running and body evidence accumulate across the two-week story.
 5. **Production AI** — create/sign in to an account to use the real authenticated GPT Coach and photo input path.
 
 ## What is already verified in the commercial source snapshot
@@ -65,17 +67,26 @@ The competition derivative provides a clearly labeled synthetic-data experience.
 - GitHub Pages deployment: GREEN
 - Raw Coach image persistence to GARANG user state / Firestore / telemetry / conversation text history: prohibited by the released multimodal contract
 
+## Wanted derivative verification
+
+- `04_data/wanted/wanted-14day-synthetic-v1.json` is explicitly marked synthetic and contains a complete relative 14-day judging scenario.
+- A dedicated dataset contract test verifies 14 check-ins, 42 meals, repeated workout/running exposure, body trend points, plausible value ranges and the final recovery trade-off.
+- Playwright WebKit verifies the account-free 60-second path and confirms that the materialized local state spans all 14 days before checking Today → Coach → Progress.
+- The Wanted derivative workflow verifies that the dataset is included in the built `dist` artifact.
+
 ## Submission positioning
 
-GARANG is not positioned as “ChatGPT for fitness.” The core product value is the connected decision loop: **the system turns accumulated behavior signals into a next action, then learns from what the user actually did and what happened next.**
+GARANG is not positioned as “ChatGPT for fitness.” The core product value is the connected decision loop: **the system turns accumulated behavior signals into a next action, then connects what the user actually did and what happened next back into later decisions.**
+
+For judging, avoid saying the product has already learned an unconstrained self-improving policy. The accurate claim is that GARANG links state, recommendation, action, execution and outcome so subsequent decisions can use accumulated evidence while deterministic safety/decision contracts remain authoritative.
 
 ## Judge-facing screenshots / demo sequence
 
 Use only three core scenes in the submission material:
 
-1. **Today** — signal → interpretation → next action
+1. **Today** — two-week signal → interpretation → next action
 2. **Coach** — explanation + `+` photo input
-3. **Progress** — accumulated evidence and change
+3. **Progress** — accumulated two-week evidence and change
 
 Avoid feature-catalog screenshots. The submission should make the causal loop understandable before showing secondary capabilities.
 
@@ -83,7 +94,10 @@ Avoid feature-catalog screenshots. The submission should make the causal loop un
 
 - [ ] Wanted participation registration is completed before the registration deadline.
 - [ ] The derivative is deployed to its own public URL, separate from commercial GARANG.
-- [ ] `60초 심사 체험` works in a fresh private/incognito browser.
+- [ ] `60초 심사 체험` works in a fresh private/incognito browser and clearly says the 14-day history is synthetic.
+- [ ] Today shows a clear evidence → interpretation → next-action trade-off from the 14-day scenario.
+- [ ] Coach explains the same decision without implying the synthetic demo is a live GPT call.
+- [ ] Progress visibly communicates accumulated workout, nutrition, running and body evidence.
 - [ ] Mobile viewport has no clipping/overlap and the judge guide does not block bottom navigation.
 - [ ] Real signup/login remains available for production GPT/photo Coach verification.
 - [ ] No personal data, secrets, company-confidential information or real-user sample data is included.
