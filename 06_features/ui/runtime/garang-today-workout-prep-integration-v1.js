@@ -18,6 +18,8 @@
   let observedMain = null;
   let mountObserver = null;
   let mainIdentityObserver = null;
+  let mountRecoveryTimer = null;
+  let mountRecoveryUntil = 0;
 
   function isEnglish() { return document.documentElement.lang === 'en'; }
   function readPlan() {
@@ -224,6 +226,44 @@
     return true;
   }
 
+  function stopMountRecovery() {
+    if (mountRecoveryTimer) clearTimeout(mountRecoveryTimer);
+    mountRecoveryTimer = null;
+    mountRecoveryUntil = 0;
+  }
+
+  function recoverMissingPreparation() {
+    if (mountRecoveryTimer) return;
+    if (!mountRecoveryUntil) mountRecoveryUntil = Date.now() + 4000;
+    const tick = () => {
+      mountRecoveryTimer = null;
+      const m = main();
+      if (!m || m.dataset.garangScreen !== 'today') {
+        stopMountRecovery();
+        return;
+      }
+      const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+      const expected = workoutExpected(execute);
+      const card = m.querySelector('.garang-daily-workout');
+      const start = card ? ensureStartButton(card) : null;
+      if (!expected || (card && start)) {
+        stopMountRecovery();
+        if (card && start) stabilizeExpectedPresentation(m);
+        schedule();
+        return;
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('garang:screen-rendered', {
+          detail:{screen:'today',source:'workout-prep-remount-recovery'}
+        }));
+      } catch {}
+      schedule();
+      if (Date.now() < mountRecoveryUntil) mountRecoveryTimer = setTimeout(tick, 120);
+      else stopMountRecovery();
+    };
+    mountRecoveryTimer = setTimeout(tick, 0);
+  }
+
   function restorePresentation(m,card) {
     if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
     if (card) {
@@ -249,6 +289,7 @@
     ensureStyle();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') {
+      stopMountRecovery();
       if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
       return;
     }
@@ -259,6 +300,7 @@
     const start = card ? ensureStartButton(card) : null;
 
     if (expected && card && start) {
+      stopMountRecovery();
       stabilizeExpectedPresentation(m);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
@@ -268,6 +310,8 @@
       return;
     }
 
+    if (expected) recoverMissingPreparation();
+    else stopMountRecovery();
     restorePresentation(m,card);
   }
 
