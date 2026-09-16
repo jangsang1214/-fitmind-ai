@@ -20,7 +20,7 @@
   const english=()=>document.documentElement.lang==='en';
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const baselineKey=date=>`garang_today_checkin_baseline_v1:${date}`;
-  let timer=null;
+  let timer=null,observedMain=null,mountObserver=null;
 
   function state(){try{return bridge()?.getLiveState?.()||bridge()?.getState?.()||null;}catch{return null;}}
   function todayCheckin(s,date){return [...list(s?.dailyCheckins),...list(s?.checkins)].filter(row=>sameDate(row,date)).at(-1)||null;}
@@ -115,8 +115,19 @@
     });
   }
 
+  function observeMounts(){
+    const m=main();if(!m||m===observedMain)return;
+    mountObserver?.disconnect();observedMain=m;
+    mountObserver=new MutationObserver(()=>{
+      if(m.dataset.garangScreen!=='today')return;
+      const f=flow();
+      if(!f||m.dataset.garangDecisionOwner!=='coach'||f.dataset.decisionOwner!=='coach')schedule(0);
+    });
+    mountObserver.observe(m,{childList:true,subtree:true});
+  }
+
   function render(){
-    timer=null;injectStyle();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin,next=canonicalNext(s,date),needsCheckin=!checked&&next?.action==='collect_data'&&next?.intent==='checkin';
+    timer=null;injectStyle();observeMounts();const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return;const s=state();if(!s)return;const date=dateKey(),checkin=todayCheckin(s,date),checked=!!checkin,next=canonicalNext(s,date),needsCheckin=!checked&&next?.action==='collect_data'&&next?.intent==='checkin';
     m.dataset.gto='1';m.dataset.garangDecisionOwner='coach';delete m.dataset.gtfBodyOpen;
     f.dataset.gtoChecked=checked?'1':'0';f.dataset.gtoPhase=checked?'checked':(needsCheckin?'precheckin':'canonical');f.dataset.decisionOwner='coach';
     f.setAttribute('aria-label',english()?'Today state and next action':'오늘 상태와 다음 행동');
@@ -135,5 +146,6 @@
   ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:agent-write','garang:route-completed'].forEach(name=>window.addEventListener(name,()=>schedule(name==='garang:state-updated'?180:100)));
   window.addEventListener('pageshow',()=>schedule(80));
   window.GarangTodayMorningOrchestratorV1=Object.freeze({version:VERSION,render,schedule,snapshotBaseline,canonicalNext});
+  observeMounts();
   schedule(120);
 })();
