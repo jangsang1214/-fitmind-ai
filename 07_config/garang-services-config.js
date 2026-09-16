@@ -10,6 +10,7 @@
   const selectedProjectId=firebaseProjectId||productionProjectId;
   const apiBase=`https://asia-northeast3-${selectedProjectId}.cloudfunctions.net/api`;
   const coachEndpoint=`${apiBase}/coach`;
+  const wantedCoachEndpoint=`${apiBase}/wanted/coach`;
   const privilegedStagingEnabled=selectedProjectId===stagingProjectId;
   const analyticsSpec=Object.freeze({
     signup_completed:[],onboarding_completed:[],record_created:['recordType','source'],first_record_created:['recordType','source'],today_viewed:['source'],coach_opened:['source'],coach_recommendation_shown:['provider','source'],daily_plan_applied:['source'],planned_action_started:['actionType','source'],planned_action_completed:['actionType','source'],accumulation_viewed:['source']
@@ -23,6 +24,7 @@
     environmentProjectId:selectedProjectId,
     privilegedStagingEnabled,
     coachEndpoint,
+    wantedCoachEndpoint,
     accountDeleteEndpoint:privilegedStagingEnabled?`${apiBase}/account/delete`:null,
     accountExportEndpoint:privilegedStagingEnabled?`${apiBase}/account/export`:null,
     mealScanEndpoint:null,
@@ -43,6 +45,15 @@
   const text=(value,limit=120)=>String(value??'').trim().slice(0,limit);
   function coachImageFrom(value){if(!value||typeof value!=='object'||Array.isArray(value))return null;const mediaType=text(value.mediaType,40).toLowerCase(),dataUrl=String(value.dataUrl||'');if(!['image/jpeg','image/png','image/webp'].includes(mediaType))return null;if(!dataUrl.startsWith(`data:${mediaType};base64,`)||dataUrl.length>2600000)return null;return {kind:'body_photo',mediaType,dataUrl};}
   function currentUser(){try{return window.firebase?.auth?.().currentUser||null;}catch{return null;}}
+  function wantedDemoEnvelope(){
+    try{
+      if(globalThis.localStorage?.getItem?.('garang_wanted_demo_active_v1')!=='1')return null;
+      const state=JSON.parse(globalThis.localStorage?.getItem?.('garang_signed_out_v1')||'null');
+      const judge=state?.meta?.judgeDataset;
+      if(state?.wantedDemo!==true||judge?.contractVersion!=='garang-wanted-judge-data-v1'||judge?.synthetic!==true||Number(judge?.spanDays)!==14)return null;
+      return {contractVersion:'garang-wanted-judge-data-v1',synthetic:true,state};
+    }catch{return null;}
+  }
   function analyticsConsent(){
     const user=currentUser();if(!user)return false;
     try{const state=JSON.parse(globalThis.localStorage?.getItem?.(`garang_user_${user.uid}_v3`)||'null');return state?.privacy?.consent?.analytics===true;}catch{return false;}
@@ -74,12 +85,17 @@
     if(url===coachEndpoint&&method==='POST'){
       diag.stage='coach-auth';diag.lastError=null;
       try{
-        const user=currentUser();if(!user){const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;}
+        const user=currentUser(),wantedDemo=user?null:wantedDemoEnvelope();
+        if(!user&&!wantedDemo){const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;}
         let source={};try{source=typeof init.body==='string'?JSON.parse(init.body):{};}catch{}
         const language=source?.language==='en'||globalThis.document?.documentElement?.lang==='en'?'en':'ko',draft=source?.image||globalThis.GarangCoachPhotoDraft?.consumeForRequest?.()||null,image=coachImageFrom(draft),messageRaw=String(source?.message||source?.question||'').trim(),message=messageRaw||(image?(language==='en'?'Review this photo with my GARANG records and explain what is visibly relevant to my training.':'이 사진을 내 GARANG 기록과 함께 보고 훈련 관점에서 보이는 점을 알려줘.'):'');if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
-        const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${await token()}`);
-        diag.lastRequest={url:coachEndpoint,method:'POST',language,messageLength:message.length,hasImage:!!image,uid:String(user.uid||'')};diag.stage='coach-fetch';
-        const response=await nativeFetch(coachEndpoint,{...init,method:'POST',headers,body:JSON.stringify({message,language,...(image?{image}: {})})});diag.stage='coach-response';return response;
+        if(wantedDemo&&image){const error=new Error('WANTED_DEMO_IMAGE_REQUIRES_ACCOUNT');error.code='WANTED_DEMO_IMAGE_REQUIRES_ACCOUNT';throw error;}
+        const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');
+        const target=wantedDemo?wantedCoachEndpoint:coachEndpoint;
+        if(user)headers.set('Authorization',`Bearer ${await token()}`);else headers.delete('Authorization');
+        diag.lastRequest={url:target,method:'POST',language,messageLength:message.length,hasImage:!!image,uid:user?String(user.uid||''):'wanted-public',mode:wantedDemo?'wanted_synthetic':'authenticated'};diag.stage='coach-fetch';
+        const body=wantedDemo?{message,language,wantedDemo}:{message,language,...(image?{image}: {})};
+        const response=await nativeFetch(target,{...init,method:'POST',headers,body:JSON.stringify(body)});diag.stage='coach-response';return response;
       }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
     }
     if((services.analyticsEndpoint&&url===services.analyticsEndpoint)||(services.telemetryErrorEndpoint&&url===services.telemetryErrorEndpoint)){
@@ -99,7 +115,7 @@
     const endpoint=window.GARANG_SERVICES?.telemetryErrorEndpoint;if(!endpoint||!analyticsConsent())return;
     routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safeError(event?.detail||{}))}).catch(()=>{});
   });
-  const transport=Object.freeze({version:'garang-service-transport-v2',apiBase,coachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,diagnostics:diag});
+  const transport=Object.freeze({version:'garang-service-transport-v2.1-wanted',apiBase,coachEndpoint,wantedCoachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,wantedDemoEnvelope,diagnostics:diag});
   const legacyCoachTransport=Object.freeze({version:'garang-coach-gateway-transport-v1.1.1',endpoint:coachEndpoint,diagnostics:diag});
   window.__GARANG_SERVICE_TRANSPORT_V2__=transport;
   window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=legacyCoachTransport;
