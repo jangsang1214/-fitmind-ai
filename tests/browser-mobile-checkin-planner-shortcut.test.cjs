@@ -6,9 +6,9 @@ const path=require('node:path');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8897,baseURL=`http://127.0.0.1:${port}`;
 const pad=n=>String(n).padStart(2,'0');
-const localDate=()=>{const d=new Date();d.setHours(12,0,0,0);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const localDate=(offset=0)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('GARANG mobile Check-in/Planner preview server did not start');}
-function seed(){const today=localDate(),now=new Date().toISOString();return {meta:{schemaVersion:5,updatedAt:now},profile:{name:'Mobile UX',age:27,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[{id:'today-workout',date:today,time:'18:00',type:'workout',title:'전신 근력 36분',completed:false,source:'ai',createdAt:now}],workouts:[],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,at:now,props:{screen:'coach',date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
+function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().toISOString();return {meta:{schemaVersion:5,updatedAt:now},profile:{name:'Mobile UX',age:27,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[{id:'today-workout',date:today,time:'18:00',type:'workout',title:'전신 근력 36분',completed:false,source:'ai',createdAt:now}],workouts:[{id:'seed-workout',date:yesterday,name:'벤치프레스',sets:3,reps:8,weight:60,rpe:7,duration:45,createdAt:now}],meals:[],runs:[],body:[],checkins:[{id:'today-checkin',date:today,sleep:7.2,energy:4,stress:2,soreness:2,createdAt:now}],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,at:now,props:{screen:'coach',date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
@@ -21,7 +21,13 @@ function seed(){const today=localDate(),now=new Date().toISOString();return {met
   page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangMobileCheckinPlannerShortcutV1?.version==='1.0.0'&&document.getElementById('main')?.dataset?.garangScreen==='today'&&document.querySelector('[data-garang-planner-shortcut="1"]')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:12000});
+  try{
+    await page.waitForFunction(()=>window.GarangMobileCheckinPlannerShortcutV1?.version==='1.0.0',null,{timeout:8000});
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today'&&document.querySelector('[data-garang-planner-shortcut="1"]')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:10000});
+  }catch(error){
+    const diagnostic=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen||null,mobileRuntime:window.GarangMobileCheckinPlannerShortcutV1?.version||null,productConsolidation:window.GarangProductConsolidationV1?.version||null,checkinOverride:window.GarangTodayCheckinOverrideV1?.version||null,workoutPrep:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,planHead:!!document.querySelector('.gpc-today-plan-head'),shortcut:!!document.querySelector('[data-garang-planner-shortcut="1"]'),bottomCheckin:!!document.querySelector('#main > [data-garang-bottom-checkin="1"]'),scripts:[...document.querySelectorAll('script[src]')].map(x=>x.getAttribute('src')).filter(x=>/product-consolidation|checkin|planner-shortcut|workout-prep/.test(x||'')),errors:window.__GARANG_ERRORS__||null}));
+    throw new Error(error.message+'\nMobile UI diagnostic: '+JSON.stringify(diagnostic),{cause:error});
+  }
 
   const shortcut=page.locator('[data-garang-planner-shortcut="1"]');
   assert.equal(await shortcut.getAttribute('aria-label'),'플래너 열기','Today plan shortcut must describe the canonical Planner destination');
