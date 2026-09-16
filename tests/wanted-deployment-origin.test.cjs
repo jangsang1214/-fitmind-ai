@@ -8,15 +8,32 @@ const vm=require('node:vm');
   const source=fs.readFileSync(path.resolve(__dirname,'../07_config/version.js'),'utf8');
   const appended=[];
   let fetched=null;
+  let nativeObserver=null;
+
+  class FakeNativeMutationObserver{
+    constructor(callback){this.callback=callback;nativeObserver=this;}
+    observe(target,options){this.target=target;this.options=options;}
+    disconnect(){}
+    takeRecords(){return [];}
+  }
+
   const sandbox={
     URL,
     console,
+    MutationObserver:FakeNativeMutationObserver,
     fetch:(input,init)=>{fetched={input,init};return Promise.resolve({ok:true});},
     document:{
       documentElement:{dataset:{}},
       currentScript:{src:'https://cdn.example.test/garang/frozen/07_config/version.js?v=1'},
       baseURI:'https://shell.example.test/',
-      createElement(tag){return {tag};},
+      createElement(tag){
+        const listeners={};
+        return {
+          tag,
+          listeners,
+          addEventListener(type,callback){listeners[type]=callback;}
+        };
+      },
       head:{appendChild(node){appended.push(node);}}
     }
   };
@@ -27,7 +44,7 @@ const vm=require('node:vm');
   assert.equal(sandbox.GARANG_WANTED_ASSET_ROOT,'https://cdn.example.test/garang/frozen/');
   assert.equal(appended.length,2);
   assert.equal(appended[0].href,'https://cdn.example.test/garang/frozen/03_styles/runtime/garang-wanted-submission-v1.css?v=1.0.0');
-  assert.equal(appended[1].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.0');
+  assert.equal(appended[1].src,'https://cdn.example.test/garang/frozen/06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1');
 
   await sandbox.fetch('./04_data/wanted/wanted-14day-synthetic-v1.json',{cache:'no-store'});
   assert.equal(fetched.input,'https://cdn.example.test/garang/frozen/04_data/wanted/wanted-14day-synthetic-v1.json');
@@ -36,5 +53,22 @@ const vm=require('node:vm');
   await sandbox.fetch('./04_data/knowledge/food-db.json');
   assert.equal(fetched.input,'./04_data/knowledge/food-db.json','unrelated runtime fetches must remain untouched');
 
-  console.log('Wanted deployment-origin compatibility: PASS');
+  const SafeObserver=sandbox.MutationObserver;
+  assert.notEqual(SafeObserver,FakeNativeMutationObserver,'Wanted loader should temporarily wrap MutationObserver');
+  let calls=0;
+  const observer=new SafeObserver(()=>{calls++;});
+  const target={hasAttribute:()=>true};
+  observer.observe(target,{attributes:true,attributeFilter:['hidden']});
+  assert.equal(nativeObserver.options.attributeOldValue,true,'observer wrapper must request old attribute value');
+
+  nativeObserver.callback([{type:'attributes',attributeName:'hidden',oldValue:'',target}]);
+  assert.equal(calls,0,'redundant hidden=true writes must not recursively trigger judge rendering');
+
+  nativeObserver.callback([{type:'attributes',attributeName:'hidden',oldValue:null,target}]);
+  assert.equal(calls,1,'real hidden state changes must still reach judge rendering');
+
+  appended[1].listeners.load?.();
+  assert.equal(sandbox.MutationObserver,FakeNativeMutationObserver,'global MutationObserver must be restored after Wanted script loads');
+
+  console.log('Wanted deployment-origin and observer compatibility: PASS');
 })().catch(error=>{console.error(error);process.exit(1);});

@@ -26,6 +26,33 @@
   }
 
   const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('03_styles/runtime/garang-wanted-submission-v1.css?v=1.0.0',assetRoot).href;document.head.appendChild(style);
-  const script=document.createElement('script');script.src=new URL('06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.0',assetRoot).href;script.defer=true;document.head.appendChild(script);
+
+  const NativeMutationObserver=typeof root.MutationObserver==='function'?root.MutationObserver:null;
+  let restoreMutationObserver=null;
+  if(NativeMutationObserver){
+   const WantedSafeMutationObserver=class{
+    constructor(callback){
+     this._observer=new NativeMutationObserver((records)=>{
+      const meaningful=Array.from(records||[]).filter(record=>{
+       if(record?.type!=='attributes'||record.attributeName!=='hidden')return true;
+       const beforeHidden=record.oldValue!==null;
+       const afterHidden=!!record.target?.hasAttribute?.('hidden');
+       return beforeHidden!==afterHidden;
+      });
+      if(meaningful.length)callback(meaningful,this);
+     });
+    }
+    observe(target,options={}){this._observer.observe(target,{...options,attributeOldValue:true});}
+    disconnect(){return this._observer.disconnect();}
+    takeRecords(){return this._observer.takeRecords?.()||[];}
+   };
+   root.MutationObserver=WantedSafeMutationObserver;
+   restoreMutationObserver=()=>{if(root.MutationObserver===WantedSafeMutationObserver)root.MutationObserver=NativeMutationObserver;};
+  }
+
+  const script=document.createElement('script');script.src=new URL('06_features/ui/runtime/garang-wanted-submission-v1.js?v=1.0.1',assetRoot).href;script.defer=true;
+  if(restoreMutationObserver&&typeof script.addEventListener==='function')script.addEventListener('load',restoreMutationObserver,{once:true});
+  document.head.appendChild(script);
+  if(restoreMutationObserver&&typeof root.setTimeout==='function')root.setTimeout(restoreMutationObserver,5000);
  }
 })(typeof window==='undefined'?globalThis:window);
