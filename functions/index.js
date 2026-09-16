@@ -17,7 +17,7 @@ const History=require('./src/history-boundary.cjs');
 
 if(!getApps().length)initializeApp();
 const llmApiKey=defineSecret('GARANG_LLM_API_KEY');
-const COACH_WINDOW_MS=10*60*1000,COACH_WINDOW_LIMIT=20,COACH_DAILY_LIMIT=120;
+const COACH_WINDOW_MS=10*60*1000,COACH_WINDOW_LIMIT=40,COACH_DAILY_LIMIT=200;
 const USER_SUBCOLLECTIONS=['app','workoutHistory','mealHistory','runHistory','bodyHistory','recoverySnapshots','telemetry'];
 
 const app=express();
