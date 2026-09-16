@@ -40,6 +40,39 @@ async function installAuthenticatedFirebaseMock(context,options={}){
         })
       });
     });
+    /* WebKit can surface CORS/access-control errors before a routed cross-origin request
+       reaches Playwright's network interception. Install the deterministic Coach fixture
+       at page transport level as well, before GARANG captures native fetch. This keeps
+       browser regression tests fully local while Real LLM tests can opt out explicitly. */
+    await context.addInitScript(({endpoint})=>{
+      const nativeFetch=window.fetch.bind(window);
+      const answer='GARANG TEST COACH: 저장된 기록과 현재 상태를 기준으로 다음 행동을 판단했습니다.';
+      const headers={
+        'Content-Type':'application/json',
+        'Access-Control-Allow-Origin':'*',
+        'Access-Control-Allow-Headers':'Authorization, Content-Type, X-Trace-Id, Idempotency-Key',
+        'Access-Control-Allow-Methods':'POST, OPTIONS'
+      };
+      window.fetch=(input,init={})=>{
+        const url=typeof input==='string'?input:input?.url;
+        const method=String(init?.method||input?.method||'GET').toUpperCase();
+        if(url===endpoint&&method==='OPTIONS')return Promise.resolve(new Response('',{status:204,headers}));
+        if(url===endpoint&&method==='POST')return Promise.resolve(new Response(JSON.stringify({
+          ok:true,
+          answer,
+          data:{
+            answer,
+            decisionSummary:'GARANG의 결정 규칙을 유지합니다.',
+            reasoningSummary:'브라우저 회귀 테스트에서는 결정론적 Coach gateway fixture를 사용합니다.',
+            suggestedNextStep:'현재 Golden Path의 다음 행동을 진행하세요.',
+            confidence:.6,
+            source:'llm',
+            metadata:{provider:'authenticated-browser-fixture',model:'deterministic-test'}
+          }
+        }),{status:200,headers}));
+        return nativeFetch(input,init);
+      };
+    },{endpoint:COACH_ENDPOINT});
   }
   await context.addInitScript(({uid,displayName,email,standalone})=>{
     if(standalone){try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}}
