@@ -17,6 +17,8 @@
   let queued = false;
   let observedMain = null;
   let mountObserver = null;
+  let mountRetryTimer = null;
+  let mountRetryDeadline = 0;
 
   function isEnglish() { return document.documentElement.lang === 'en'; }
   function readPlan() {
@@ -40,6 +42,39 @@
     if (!m || m.dataset.garangScreen !== 'today') return null;
     const button = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     return workoutExpected(button) ? button : null;
+  }
+
+  function stopMountRetry() {
+    if (mountRetryTimer) clearTimeout(mountRetryTimer);
+    mountRetryTimer = null;
+    mountRetryDeadline = 0;
+  }
+
+  function requestWorkoutPreparationMount(m, execute) {
+    if (!m || m.dataset.garangScreen !== 'today' || m.querySelector('.garang-daily-workout') || !workoutExpected(execute)) {
+      stopMountRetry();
+      return;
+    }
+    const now = Date.now();
+    if (!mountRetryDeadline) mountRetryDeadline = now + 3000;
+    if (now >= mountRetryDeadline) {
+      stopMountRetry();
+      return;
+    }
+    if (mountRetryTimer) return;
+    mountRetryTimer = setTimeout(() => {
+      mountRetryTimer = null;
+      const current = main();
+      const currentExecute = current?.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+      if (!current || current.dataset.garangScreen !== 'today' || current.querySelector('.garang-daily-workout') || !workoutExpected(currentExecute)) {
+        stopMountRetry();
+        return;
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('garang:state-updated', { detail:{ source:'today-workout-prep-mount-retry' } }));
+      } catch {}
+      requestWorkoutPreparationMount(current,currentExecute);
+    },120);
   }
 
   function ensureStyle() {
@@ -216,6 +251,7 @@
     const card = m.querySelector('.garang-daily-workout');
     const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     if (!card || !workoutExpected(execute)) return false;
+    stopMountRetry();
     if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
     if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
     revealPreparation(card);
@@ -248,6 +284,7 @@
     ensureStyle();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') {
+      stopMountRetry();
       if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
       return;
     }
@@ -255,6 +292,8 @@
     const card = m.querySelector('.garang-daily-workout');
     const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     const expected = workoutExpected(execute);
+    if (expected && !card) requestWorkoutPreparationMount(m,execute);
+    else if (card || !expected) stopMountRetry();
     const start = card ? ensureStartButton(card) : null;
 
     if (expected && card && start) {
