@@ -1,0 +1,25 @@
+name: Wanted Live Browser Diagnostic
+
+on:
+  push:
+    branches:
+      - agent/wanted-live-browser-diag-2026-09-17
+    paths:
+      - tests/browser-wanted-live-diagnostic.test.cjs
+      - .github/workflows/wanted-live-browser-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node tests/browser-wanted-live-diagnostic.test.cjs
