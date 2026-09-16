@@ -161,25 +161,31 @@
     return button;
   }
 
+  function setImportant(node, property, value) {
+    if (!node) return;
+    if (node.style.getPropertyValue(property) === value && node.style.getPropertyPriority(property) === 'important') return;
+    node.style.setProperty(property, value, 'important');
+  }
+
   function revealPreparation(card) {
     if (!card) return;
     if (card.hidden) card.hidden = false;
     if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
-    card.dataset.garangWorkoutPrepVisibilityOwner = '1';
-    card.style.setProperty('display','grid','important');
-    card.style.setProperty('visibility','visible','important');
-    card.style.setProperty('opacity','1','important');
-    card.style.setProperty('pointer-events','auto','important');
+    if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    setImportant(card,'display','grid');
+    setImportant(card,'visibility','visible');
+    setImportant(card,'opacity','1');
+    setImportant(card,'pointer-events','auto');
     const toggle = card.querySelector('[data-daily-toggle]');
     if (!toggle) return;
     if (toggle.hidden) toggle.hidden = false;
     if (toggle.getAttribute('aria-hidden') === 'true') toggle.removeAttribute('aria-hidden');
     if (toggle.getAttribute('tabindex') === '-1') toggle.removeAttribute('tabindex');
-    toggle.dataset.garangWorkoutPrepVisibilityOwner = '1';
-    toggle.style.setProperty('display','grid','important');
-    toggle.style.setProperty('visibility','visible','important');
-    toggle.style.setProperty('opacity','1','important');
-    toggle.style.setProperty('pointer-events','auto','important');
+    if (toggle.dataset.garangWorkoutPrepVisibilityOwner !== '1') toggle.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    setImportant(toggle,'display','grid');
+    setImportant(toggle,'visibility','visible');
+    setImportant(toggle,'opacity','1');
+    setImportant(toggle,'pointer-events','auto');
   }
 
   function releasePreparationVisibility(card) {
@@ -203,6 +209,18 @@
     }
     if (button.getAttribute('aria-hidden') !== 'true') button.setAttribute('aria-hidden','true');
     if (button.tabIndex !== -1) button.tabIndex = -1;
+  }
+
+  function stabilizeExpectedPresentation(m = main()) {
+    if (!m || m.dataset.garangScreen !== 'today') return false;
+    const card = m.querySelector('.garang-daily-workout');
+    const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    if (!card || !workoutExpected(execute)) return false;
+    if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
+    if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
+    revealPreparation(card);
+    concealCanonical(execute);
+    return true;
   }
 
   function restorePresentation(m,card) {
@@ -239,12 +257,9 @@
     const expected = workoutExpected(execute);
     const start = card ? ensureStartButton(card) : null;
 
-    if (expected) {
-      if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
-      if (card && card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
-      revealPreparation(card);
-      concealCanonical(execute);
-      const generate = card?.querySelector('[data-daily-generate]');
+    if (expected && card && start) {
+      stabilizeExpectedPresentation(m);
+      const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('primary');
         generate.classList.add('ghost');
@@ -266,12 +281,16 @@
     if (!m || m === observedMain) return;
     mountObserver?.disconnect();
     observedMain = m;
-    mountObserver = new MutationObserver(schedule);
+    mountObserver = new MutationObserver(() => {
+      stabilizeExpectedPresentation(m);
+      schedule();
+    });
     mountObserver.observe(m, {
       childList:true,
       subtree:true,
       attributes:true,
       attributeFilter:[
+        'class',
         'data-gsn-action',
         'data-gsn-step',
         'data-garang-today-workout-execute',
@@ -292,10 +311,11 @@
     'garang:state-updated',
     'garang:state-hydrated',
     'pageshow'
-  ]) window.addEventListener(eventName, () => { observeMounts(); schedule(); });
+  ]) window.addEventListener(eventName, () => { observeMounts(); stabilizeExpectedPresentation(); schedule(); });
 
   ensureStyle();
   observeMounts();
+  stabilizeExpectedPresentation();
   schedule();
   window.GarangTodayWorkoutPrepIntegrationV1 = Object.freeze({
     version:VERSION,
