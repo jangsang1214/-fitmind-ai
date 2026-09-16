@@ -2,3 +2,4 @@ node_modules/
 *.log
 .env*
 !.env.example
+# Production Coach activation marker: conversational Coach contract approved 2026-09-17.
