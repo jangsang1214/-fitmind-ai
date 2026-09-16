@@ -6,7 +6,7 @@
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.3.1-touch-intent';
+const VERSION='garang-router-v1.3.0';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
