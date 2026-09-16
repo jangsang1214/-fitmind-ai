@@ -7,6 +7,7 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const index=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 const ui=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
+const consolidation=read('06_features/ui/runtime/garang-product-consolidation-v1.js');
 const coreLoop=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const css=read('03_styles/runtime/garang-plan-execution-v1.css');
 const tests=[];
@@ -64,7 +65,19 @@ test('accumulation explains accumulated evidence, change, and next action withou
   assert.match(ui,/data-gx-meaning-loop/);
   assert.match(ui,/쌓인 것/);assert.match(ui,/변화/);assert.match(ui,/다음 행동/);
   assert.match(ui,/classification!=='insufficient_evidence'/);
-  assert.match(ui,/의미 있는 변화를 단정하지 않습니다/);
+  assert.match(ui,/아직은 변화를 말하기보다, 당신의 흐름을 조금 더 지켜볼 때입니다/);
+});
+
+test('Progress uses GARANG rhythm language while preserving truthful uncertainty',()=>{
+  assert.match(consolidation,/오늘의 기록이 쌓일수록, GARANG은 당신의 리듬을 더 깊이 이해합니다/);
+  assert.match(consolidation,/쌓인 기록/);assert.match(consolidation,/GARANG이 배운 것/);assert.match(consolidation,/다음 선택/);
+  assert.match(ui,/이번 주의 첫 기록이 쌓였습니다\. 작은 시작도 변화의 일부입니다/);
+  assert.match(ui,/지금까지의 기록은 당신이 향하는 목표와 이어지고 있습니다/);
+  assert.match(ui,/오늘의 한 번도 변화의 일부가 됩니다/);
+  assert.match(ui,/아직은 목표와의 흐름을 읽어가는 중입니다/);
+  assert.doesNotMatch(consolidation,/기록이 패턴이 되고, 그 패턴이 GARANG의 다음 판단을 바꿉니다/);
+  assert.doesNotMatch(ui,/반복된 실행 근거가 아직 부족해 의미 있는 변화를 단정하지 않습니다/);
+  assert.doesNotMatch(ui,/이번 주 7일 중 \$\{recorded\}일에 실제 기록 근거가 쌓였습니다/);
 });
 
 test('goal fit is quiet by default and evidence stays behind the droplet',()=>{
