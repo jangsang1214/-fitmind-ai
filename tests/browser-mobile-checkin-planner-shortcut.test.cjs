@@ -30,9 +30,15 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   }
 
   const shortcut=page.locator('[data-garang-planner-shortcut="1"]');
+  await shortcut.waitFor({state:'visible',timeout:5000});
   assert.equal(await shortcut.getAttribute('aria-label'),'플래너 열기','Today plan shortcut must describe the canonical Planner destination');
   const shortcutBox=await shortcut.boundingBox();
-  assert.ok(shortcutBox&&shortcutBox.width>=44&&shortcutBox.height>=44,`Planner shortcut hit target must be touch-safe while the visible plus remains compact: ${JSON.stringify(shortcutBox)}`);
+  const shortcutDiagnostic=await page.evaluate(()=>{
+    const button=document.querySelector('[data-garang-planner-shortcut="1"]'),head=button?.closest('.gpc-today-plan-head'),plan=button?.closest('.gpc-today-plan'),flow=button?.closest('#garangTodayFlow');
+    const describe=node=>{if(!node)return null;const style=getComputedStyle(node),rect=node.getBoundingClientRect();return {tag:node.tagName,className:node.className||'',hidden:!!node.hidden,display:style.display,visibility:style.visibility,opacity:style.opacity,width:rect.width,height:rect.height,connected:node.isConnected};};
+    return {button:describe(button),head:describe(head),plan:describe(plan),flow:describe(flow),screen:document.getElementById('main')?.dataset?.garangScreen||null};
+  });
+  assert.ok(shortcutBox&&shortcutBox.width>=44&&shortcutBox.height>=44,`Planner shortcut hit target must be touch-safe while the visible plus remains compact: box=${JSON.stringify(shortcutBox)} diagnostic=${JSON.stringify(shortcutDiagnostic)}`);
 
   await page.locator('#main > [data-garang-bottom-checkin="1"]').click();
   const save=page.locator('#saveCheckin');
