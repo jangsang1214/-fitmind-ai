@@ -26,6 +26,10 @@ const prepFromUpdater=updater.match(/garang-today-workout-prep-integration-v1\.j
 const prepFromPrecache=sw.match(/garang-today-workout-prep-integration-v1\.js\?v=([0-9.]+)/)?.[1];
 assert.ok(prepFromUpdater&&prepFromPrecache,'Today workout preparation integration must expose a versioned dynamic asset');
 assert.equal(prepFromPrecache,prepFromUpdater,'Today workout preparation integration must be precached at the exact version requested by the app');
+const mobileFixFromUpdater=updater.match(/garang-mobile-checkin-planner-shortcut-v1\.js\?v=([0-9.]+)/)?.[1];
+const mobileFixFromPrecache=sw.match(/garang-mobile-checkin-planner-shortcut-v1\.js\?v=([0-9.]+)/)?.[1];
+assert.ok(mobileFixFromUpdater&&mobileFixFromPrecache,'Mobile Check-in/Planner runtime must expose a versioned dynamic asset');
+assert.equal(mobileFixFromPrecache,mobileFixFromUpdater,'Mobile Check-in/Planner runtime must be precached at the exact version requested by the app');
 assert.match(sw,/EXTRA_ASSETS/,'dynamically loaded critical runtimes must be explicitly available offline');
 assert.match(updater,/updateViaCache:'none'/);
 assert.match(updater,/registration\.update\(\)/);
