@@ -24,17 +24,22 @@
     catch { return null; }
   }
 
+  function workoutExpected(button) {
+    const model = window.GarangTodaySingleNextActionV1?.currentModel?.();
+    const type = model?.nextAction?.actionType || model?.nextPlan?.type || '';
+    if (type === 'workout') return true;
+    if (!button) return false;
+    const marked = button.dataset.garangTodayWorkoutExecute === '1';
+    const copy = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`;
+    const workoutCopy = /운동\s*기록\s*열기|오늘\s*운동\s*실행|Open\s+workout\s+log|Start\s+today(?:'|’)?s\s+workout/i.test(copy);
+    return marked || workoutCopy;
+  }
+
   function canonicalWorkoutExecute() {
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') return null;
     const button = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
-    if (!button) return null;
-    const model = window.GarangTodaySingleNextActionV1?.currentModel?.();
-    const type = model?.nextAction?.actionType || model?.nextPlan?.type || '';
-    const marked = button.dataset.garangTodayWorkoutExecute === '1';
-    const copy = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`;
-    const workoutCopy = /운동\s*기록\s*열기|오늘\s*운동\s*실행|Open\s+workout\s+log|Start\s+today(?:'|’)?s\s+workout/i.test(copy);
-    return type === 'workout' || marked || workoutCopy ? button : null;
+    return workoutExpected(button) ? button : null;
   }
 
   function ensureStyle() {
@@ -55,7 +60,8 @@
         opacity:0!important;
         pointer-events:none!important;
       }
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-next[data-gsn-action="execute"]{
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-next[data-gsn-action="execute"],
+      html body #main[data-garang-screen="today"] #garangTodayFlow .gtf-next[data-gsn-action="execute"][data-garang-today-workout-execute="1"]{
         display:none!important;
         pointer-events:none!important;
       }
@@ -182,14 +188,14 @@
     }
 
     const card = m.querySelector('.garang-daily-workout');
-    const canonical = canonicalWorkoutExecute();
+    const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     const start = card ? ensureStartButton(card) : null;
-    const integrated = !!(card && canonical && start);
+    const integrated = !!(card && start && workoutExpected(execute));
 
     if (integrated) {
       if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
       if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
-      concealCanonical(canonical);
+      concealCanonical(execute);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('primary');
