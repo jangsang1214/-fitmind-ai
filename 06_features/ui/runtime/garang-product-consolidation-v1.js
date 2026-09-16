@@ -7,7 +7,7 @@
 (() => {
 'use strict';
 if(window.GarangProductConsolidationV1)return;
-const VERSION='garang-product-consolidation-v1.1.1-brand-voice';
+const VERSION='garang-product-consolidation-v1.1.0';
 const main=()=>document.getElementById('main');
 const isKo=()=>document.documentElement.lang!=='en';
 const setText=(node,value)=>{const next=String(value??'');if(node&&node.textContent!==next)node.textContent=next;};
