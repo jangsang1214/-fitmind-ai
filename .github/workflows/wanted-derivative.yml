@@ -1,0 +1,40 @@
+name: GARANG Wanted derivative gate
+on:
+  push:
+    branches:
+      - 'wanted/**'
+  pull_request:
+    branches:
+      - 'wanted/**'
+permissions:
+  contents: read
+concurrency:
+  group: garang-wanted-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  judge-mode:
+    name: wanted-judge-mode-webkit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build Wanted derivative
+        run: npm run build
+      - name: Verify derivative assets ship
+        run: |
+          test -f dist/06_features/ui/runtime/garang-wanted-submission-v1.js
+          test -f dist/03_styles/runtime/garang-wanted-submission-v1.css
+          grep -q 'GARANG_WANTED_SUBMISSION' dist/07_config/version.js
+      - name: Verify 60-second judging journey
+        run: node tests/browser-wanted-submission.test.cjs
