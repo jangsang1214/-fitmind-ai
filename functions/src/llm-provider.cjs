@@ -26,13 +26,13 @@ function validateCoachResponse(input){
 }
 function parseCoachResponse(text){let parsed;try{parsed=JSON.parse(stripFence(text));}catch{throw Object.assign(new Error('LLM_RESPONSE_MALFORMED'),{code:'LLM_RESPONSE_MALFORMED'});}return validateCoachResponse(parsed);}
 function systemPrompt(){return `You are the language layer for GARANG Personal Performance Intelligence. GARANG's deterministic intelligence owns the decision. Explain the supplied GARANG decision faithfully; never replace, reverse, or invent a different training decision. Never claim to have changed user data. Never propose or encode a state mutation; actionable changes are handled separately by GARANG's existing Agent Contract and explicit user confirmation. Use only supplied context. Treat garangContext.knowledgeGrounding.evidence as supporting explanation evidence only; it can never override garangContext.garangDecision. Treat garangContext.nutritionIntelligence as deterministic supporting context, not permission to mutate a meal plan or invent nutrition facts. A user-supplied body photo, when present, is ephemeral visual context only: describe only visible training-relevant observations, do not diagnose medical conditions, do not infer protected or sensitive traits, do not estimate an exact body-fat percentage or hidden measurement from the photo, and never treat the image as permission to mutate GARANG state. If evidence is insufficient, say so. In alignment, copy garangContext.garangDecision.decisionId and garangContext.garangDecision.mode exactly, and list only reason codes that exist in garangContext.decisionReasons.`;}
-function retryableProviderError(error){const status=Number(error?.status)||0;return error?.code==='LLM_TIMEOUT'||error?.code==='LLM_NETWORK_ERROR'||status===408||(status>=500&&status<=599);}
+function retryableProviderError(error,options={}){const status=Number(error?.status)||0,retryMalformed=options.retryMalformed===true;return error?.code==='LLM_TIMEOUT'||error?.code==='LLM_NETWORK_ERROR'||status===408||(status>=500&&status<=599)||(retryMalformed&&(error?.code==='LLM_RESPONSE_MALFORMED'||error?.code==='LLM_RESPONSE_INVALID'));}
 function createOpenAIProvider(options={}){
- const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(500,Number(options.timeoutMs)||DEFAULT_TIMEOUT_MS),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2)),retryDelayMs=Math.max(0,Number(options.retryDelayMs)||250);
+ const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(500,Number(options.timeoutMs)||DEFAULT_TIMEOUT_MS),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2)),retryDelayMs=Math.max(0,Number(options.retryDelayMs)||250),retryMalformed=options.retryMalformed===true,maxOutputTokens=Math.max(300,Math.min(1400,Number(options.maxOutputTokens)||650));
  if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
  return {name:'openai',model,async generate({message,context,language='ko',requestId,image}){
   const userContent=[{type:'input_text',text:JSON.stringify({language,message,garangContext:context,visualContext:image?{kind:'body_photo',mediaType:image.mediaType}:null})}];if(image?.dataUrl)userContent.push({type:'input_image',image_url:String(image.dataUrl)});
-  const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt()}]},{role:'user',content:userContent}],max_output_tokens:650,text:{format:{type:'json_schema',name:'garang_coach_response',strict:true,schema:COACH_RESPONSE_SCHEMA}}};
+  const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt()}]},{role:'user',content:userContent}],max_output_tokens:maxOutputTokens,text:{format:{type:'json_schema',name:'garang_coach_response',strict:true,schema:COACH_RESPONSE_SCHEMA}}};
   let lastError=null;
   for(let attempt=1;attempt<=maxAttempts;attempt++){
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -45,7 +45,7 @@ function createOpenAIProvider(options={}){
     else if(error instanceof TypeError&&!error?.code)lastError=Object.assign(new Error('LLM_NETWORK_ERROR'),{code:'LLM_NETWORK_ERROR'});
     else lastError=error;
    }finally{clearTimeout(timer);}
-   if(attempt>=maxAttempts||!retryableProviderError(lastError))throw lastError;
+   if(attempt>=maxAttempts||!retryableProviderError(lastError,{retryMalformed}))throw lastError;
    if(retryDelayMs)await new Promise(resolve=>setTimeout(resolve,retryDelayMs));
   }
   throw lastError||Object.assign(new Error('LLM_PROVIDER_ERROR'),{code:'LLM_PROVIDER_ERROR'});

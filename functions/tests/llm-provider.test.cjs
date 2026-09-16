@@ -25,6 +25,14 @@ const valid=()=>JSON.stringify({answer:'오늘은 강도를 낮추세요.',decis
   let calls=0;const provider=createOpenAIProvider({apiKey:'secret',timeoutMs:20,retryDelayMs:0,fetchImpl:(_url,init)=>{calls++;if(calls===1)return new Promise((_resolve,reject)=>{init.signal.addEventListener('abort',()=>{const e=new Error('aborted');e.name='AbortError';reject(e);});});return Promise.resolve(response(valid()));}});
   const out=await provider.generate({message:'x',context:{garangDecision:{decisionId:'d1',mode:'reduce'},decisionReasons:['SHORT_SLEEP']}});assert.equal(calls,2);assert.equal(out.metadata.attempts,2);assert.equal(out.alignment.decisionId,'d1');
  });
+ await test('canonical malformed structured output remains fail-closed without retry',async()=>{
+  let calls=0;const provider=createOpenAIProvider({apiKey:'secret',retryDelayMs:0,fetchImpl:async()=>{calls++;return response('not-json');}});
+  await assert.rejects(()=>provider.generate({message:'x',context:{}}),error=>error?.code==='LLM_RESPONSE_MALFORMED');assert.equal(calls,1);
+ });
+ await test('Wanted opt-in retries malformed structured output and uses expanded output budget',async()=>{
+  let calls=0,bodies=[];const provider=createOpenAIProvider({apiKey:'secret',retryMalformed:true,maxAttempts:2,maxOutputTokens:1000,retryDelayMs:0,fetchImpl:async(_url,init)=>{calls++;bodies.push(JSON.parse(init.body));return calls===1?response('not-json'):response(valid());}});
+  const out=await provider.generate({message:'x',context:{garangDecision:{decisionId:'d1',mode:'reduce'},decisionReasons:['SHORT_SLEEP']}});assert.equal(calls,2);assert.equal(out.metadata.attempts,2);assert.equal(out.answer,'오늘은 강도를 낮추세요.');assert.equal(bodies[0].max_output_tokens,1000);assert.equal(bodies[1].max_output_tokens,1000);
+ });
  await test('non-transient provider auth failure is not retried',async()=>{
   let calls=0;const provider=createOpenAIProvider({apiKey:'secret',retryDelayMs:0,fetchImpl:async()=>{calls++;return {ok:false,status:401};}});await assert.rejects(()=>provider.generate({message:'x',context:{}}),error=>error?.code==='LLM_PROVIDER_ERROR'&&error?.status===401);assert.equal(calls,1);
  });
