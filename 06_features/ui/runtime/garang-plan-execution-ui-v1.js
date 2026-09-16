@@ -19,31 +19,31 @@
   function copy(lang){
     if(lang==='en')return {
       accumulation:'ACCUMULATION',planner:'PLAN EXECUTION',recordRhythm:'Recording rhythm',planRhythm:'Plan execution',
-      accumulationFlow:'Goal fit becomes clearer as your actual records accumulate.',planFlow:'This is how much of the planned rhythm was executed this week.',
-      accumulated:'WHAT ACCUMULATED',changed:'WHAT CHANGED',nextAction:'NEXT ACTION',insufficientTrend:'There is not enough repeated execution evidence yet to describe a meaningful change.',
-      accumulatedPlans:(executed,planned)=>planned?`${executed} of ${planned} planned actions have execution evidence this week.`:'No planned execution evidence has accumulated this week yet.',
-      accumulatedRecords:recorded=>`${recorded} of 7 days contain saved evidence this week.`,
+      accumulationFlow:'As your records build, your rhythm and goal direction become clearer.',planFlow:'This is how much of the planned rhythm was executed this week.',
+      accumulated:'WHAT ACCUMULATED',changed:'WHAT CHANGED',nextAction:'NEXT ACTION',insufficientTrend:'It is still early to call this a change. For now, GARANG is learning your rhythm.',
+      accumulatedPlans:(executed,planned)=>planned?(executed?`${executed} of ${planned} plans became real actions this week. Each follow-through adds to your rhythm.`:'Your plans are set for the week. The first follow-through will start the rhythm.'):'No plans are set for this week yet.',
+      accumulatedRecords:recorded=>recorded===0?'Your rhythm starts with the first record of the week.':recorded===1?'Your first record of the week is in. Small starts are part of the change.':`${recorded} days of records have built up this week. The days you kept showing up are becoming your rhythm.`,
       today:'Today',signals:'signals recorded',planned:'planned',executed:'executed',workout:'Workout',nutrition:'Nutrition',protein:'Protein',recovery:'Recovery',
-      insight:'GARANG INSIGHT',inside:'The saved signals are now part of your goal picture.',needsEnergy:'Energy intake is below the current target.',needsProtein:'Protein intake is below the current target.',needsExecution:'The remaining plan is the next useful step.',needsRecords:'More actual records are needed before GARANG judges goal fit.',
+      insight:'GARANG INSIGHT',inside:'Your records are forming a path toward the goal you chose.',needsEnergy:'Energy intake is below the current target.',needsProtein:'Protein intake is below the current target.',needsExecution:'The remaining plan is the next useful step.',needsRecords:'It is still early to read your goal direction. A few more records will make your rhythm clearer.',
       details:'Open details',close:'Close details',actual:'Actual',target:'Target',planEvidence:'Execution evidence',goalAlignment:'Goal fit',confidence:'Judgement confidence',
       weeks:'4-week plan execution',estimate:'Estimated target · not a medical prescription',targetUnknown:'Calorie target needs age, height and sex in Profile.',
       noPlan:'No plan for this day',actualMatch:'Matched from actual record',explicit:'Completed in Planner',notDone:'Not completed',checkin:'Check-in saved',sleep:'Sleep',
       calories:'Calories',missing:'Not recorded',recorded:'Recorded',openPlanner:'Open Planner',goalBasis:'Only saved records are used. Unrecorded domains stay unknown.',
-      noGoalJudgement:'At least two measured domains are needed to judge goal fit.',firstRecord:'Add your first record',closePlan:'Plan entry opens here after the droplet is opened.'
+      noGoalJudgement:'GARANG is still learning how your records relate to your goal. A little more history will make the direction clearer.',firstRecord:'Add your first record',closePlan:'Plan entry opens here after the droplet is opened.'
     };
     return {
       accumulation:'누적.',planner:'계획 실행',recordRhythm:'기록 리듬',planRhythm:'계획 실행',
-      accumulationFlow:'실제 기록이 쌓이면 처음 세운 목표와의 흐름이 더 선명해집니다.',planFlow:'이번 주 계획 중 실제로 실행된 흐름입니다.',
-      accumulated:'쌓인 것',changed:'변화',nextAction:'다음 행동',insufficientTrend:'반복된 실행 근거가 아직 부족해 의미 있는 변화를 단정하지 않습니다.',
-      accumulatedPlans:(executed,planned)=>planned?`이번 주 계획 ${planned}개 중 ${executed}개에 실제 실행 근거가 쌓였습니다.`:'이번 주는 아직 계획 실행 근거가 충분히 쌓이지 않았습니다.',
-      accumulatedRecords:recorded=>`이번 주 7일 중 ${recorded}일에 실제 기록 근거가 쌓였습니다.`,
+      accumulationFlow:'오늘의 기록이 쌓일수록, 당신의 흐름도 더 선명해집니다.',planFlow:'이번 주 계획 중 실제로 실행된 흐름입니다.',
+      accumulated:'쌓인 것',changed:'변화',nextAction:'다음 행동',insufficientTrend:'아직은 변화를 말하기보다, 당신의 흐름을 조금 더 지켜볼 때입니다.',
+      accumulatedPlans:(executed,planned)=>planned?(executed?`이번 주 ${planned}개의 계획 중 ${executed}개가 실행으로 이어졌습니다. 이어온 행동들이 하나의 흐름이 되어갑니다.`:'이번 주 계획은 준비되어 있습니다. 첫 실행부터 당신의 흐름이 시작됩니다.'):'이번 주 계획은 아직 비어 있습니다. 다음 한 가지부터 시작해보세요.',
+      accumulatedRecords:recorded=>recorded===0?'이번 주의 첫 기록부터 당신의 흐름이 시작됩니다.':recorded===1?'이번 주의 첫 기록이 쌓였습니다. 작은 시작도 변화의 일부입니다.':`이번 주 ${recorded}일의 기록이 쌓였습니다. 이어진 기록들이 당신만의 리듬을 만들어가고 있습니다.`,
       today:'오늘',signals:'신호 기록',planned:'계획',executed:'실행',workout:'운동',nutrition:'영양',protein:'단백질',recovery:'회복',
-      insight:'GARANG INSIGHT',inside:'저장된 기록이 현재 목표의 흐름에 연결되어 있습니다.',needsEnergy:'현재 목표 기준으로 에너지가 조금 부족합니다.',needsProtein:'현재 목표 기준으로 단백질이 조금 부족합니다.',needsExecution:'남은 계획 중 다음 한 가지를 이어가면 됩니다.',needsRecords:'목표 적합도를 판단하려면 실제 기록이 더 필요합니다.',
+      insight:'GARANG INSIGHT',inside:'지금까지의 기록은 당신이 향하는 목표와 이어지고 있습니다.',needsEnergy:'현재 목표 기준으로 에너지가 조금 부족합니다.',needsProtein:'현재 목표 기준으로 단백질이 조금 부족합니다.',needsExecution:'남은 계획 중 다음 한 가지를 이어가면 됩니다.',needsRecords:'아직은 목표와의 흐름을 말하기보다, 기록을 조금 더 쌓아볼 때입니다.',
       details:'상세 근거 열기',close:'상세 근거 닫기',actual:'실제',target:'목표',planEvidence:'수행 근거',goalAlignment:'목표 적합도',confidence:'판단 신뢰도',
       weeks:'4주 계획 실행',estimate:'추정 목표 · 의료 처방이 아닙니다',targetUnknown:'프로필에 나이·키·성별을 입력하면 목표 칼로리를 추정할 수 있습니다.',
       noPlan:'이 날의 계획이 없습니다',actualMatch:'실제 기록으로 수행 확인',explicit:'Planner에서 완료',notDone:'미수행',checkin:'체크인 완료',sleep:'수면',
       calories:'칼로리',missing:'미기록',recorded:'기록됨',openPlanner:'Planner 열기',goalBasis:'저장된 기록만 사용합니다. 기록이 없는 영역은 판단하지 않습니다.',
-      noGoalJudgement:'판단 가능한 영역이 두 개 이상 쌓이면 목표 적합도를 계산합니다.',firstRecord:'첫 기록 남기기',closePlan:'물방울을 열면 이곳에서 계획을 추가할 수 있습니다.'
+      noGoalJudgement:'아직은 목표와의 흐름을 읽어가는 중입니다. 기록이 조금 더 쌓이면 방향이 선명해집니다.',firstRecord:'첫 기록 남기기',closePlan:'물방울을 열면 이곳에서 계획을 추가할 수 있습니다.'
     };
   }
 
@@ -109,14 +109,14 @@
     try{return window.GarangPlanAdaptation?.weeklyReview?.(state,{date:today})||null;}catch{return null;}
   }
   function nextActionCopy(action,lang){
-    if(!action)return lang==='en'?'Keep recording the next real action.':'다음 실제 행동을 기록으로 이어가세요.';
-    if(action.action==='collect_data')return lang==='en'?'Add today’s recovery check-in before GARANG changes the plan.':'계획을 바꾸기 전에 오늘의 회복 체크인을 먼저 남기세요.';
-    if(action.action==='record')return lang==='en'?'Add one real record.':'실제 기록 하나를 남기세요.';
-    if(action.action==='coach')return lang==='en'?'Open Coach and get an evidence-backed interpretation.':'Coach에서 기록 근거가 있는 해석을 확인하세요.';
-    if(action.action==='plan')return lang==='en'?'Turn the interpretation into one executable plan.':'해석을 실제로 실행할 계획 하나로 연결하세요.';
-    if(action.action==='execute')return action.planId?(lang==='en'?`Execute the next planned action (${action.actionType||'plan'}).`:`다음 계획된 ${action.actionType==='nutrition'?'식단':action.actionType==='recovery'?'회복':action.actionType==='running'?'러닝':'운동'} 행동을 실행하세요.`):(lang==='en'?'Execute the next planned action.':'다음 계획을 실행하세요.');
-    if(action.action==='review_accumulation')return lang==='en'?'Review this evidence, then continue from the next useful action.':'이 근거를 확인한 뒤 다음 유용한 행동으로 이어가세요.';
-    return lang==='en'?'Continue the next daily loop from this evidence.':'이 근거에서 다음 하루의 루프를 이어가세요.';
+    if(!action)return lang==='en'?'Keep the next step moving. Today’s choice becomes part of what comes next.':'다음 한 걸음도 이어가 보세요. 오늘의 선택이 다음 흐름의 일부가 됩니다.';
+    if(action.action==='collect_data')return lang==='en'?'Start with today’s recovery check-in. Your current condition helps shape what comes next.':'오늘의 회복 상태부터 남겨보세요. 지금의 컨디션도 다음 계획을 만드는 중요한 기록입니다.';
+    if(action.action==='record')return lang==='en'?'Add one record from today. Your rhythm starts with small entries.':'오늘의 한 가지를 기록해보세요. 작은 기록부터 당신의 흐름이 시작됩니다.';
+    if(action.action==='coach')return lang==='en'?'Open Coach and make sense of the rhythm taking shape.':'Coach에서 지금의 흐름을 함께 풀어보세요.';
+    if(action.action==='plan')return lang==='en'?'Turn what you learned into one plan you can act on today.':'지금의 해석을 오늘 실행할 한 가지 계획으로 이어보세요.';
+    if(action.action==='execute')return action.planId?(lang==='en'?`Keep the next ${action.actionType||'planned'} step moving. Today’s follow-through becomes part of the change.`:`다음 ${action.actionType==='nutrition'?'식단':action.actionType==='recovery'?'회복':action.actionType==='running'?'러닝':'운동'} 계획을 이어가 보세요. 오늘의 한 번도 변화의 일부가 됩니다.`):(lang==='en'?'Keep the next plan moving. Today’s follow-through becomes part of the change.':'다음 계획을 이어가 보세요. 오늘의 한 번도 변화의 일부가 됩니다.');
+    if(action.action==='review_accumulation')return lang==='en'?'Look back at the rhythm so far, then carry it into the next useful step.':'지금까지의 흐름을 돌아보고, 다음 한 걸음으로 이어가 보세요.';
+    return lang==='en'?'Carry today’s rhythm into the next step.':'오늘의 흐름에서 다음 한 걸음을 이어가 보세요.';
   }
   function meaningLoop(state,today,lang,week){
     const c=copy(lang),review=weeklyReview(state,today),golden=window.GarangGoldenPath?.derive?.(state,{today}),action=golden?.nextAction||null,sufficient=!!review&&review.classification!=='insufficient_evidence'&&Number(review.plannedEvidenceDays||0)>=2;
