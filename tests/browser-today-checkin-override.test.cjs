@@ -20,15 +20,15 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await installAuthenticatedFirebaseMock(context);
-  await context.addInitScript(()=>{window.__garangTestHydrationEvents=0;window.addEventListener('garang:state-hydrated',()=>{window.__garangTestHydrationEvents=(window.__garangTestHydrationEvents||0)+1;});});
+  await context.addInitScript(()=>{window.__garangTestHydrationEvents=0;window.__garangPostHydrationScreens=0;let hydrated=false;window.addEventListener('garang:state-hydrated',()=>{window.__garangTestHydrationEvents=(window.__garangTestHydrationEvents||0)+1;hydrated=true;});window.addEventListener('garang:screen-rendered',()=>{if(hydrated)window.__garangPostHydrationScreens=(window.__garangPostHydrationScreens||0)+1;});});
   await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayCheckinOverrideV1?.version==='1.3.0'&&window.GarangTodayWorkoutPrepIntegrationV1?.version==='1.0.2'&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
-  await page.waitForFunction(()=>window.GarangCloudHydrationReady===true&&(window.__garangTestHydrationEvents||0)>=1&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:10000});
+  await page.waitForFunction(()=>window.GarangCloudHydrationReady===true&&(window.__garangTestHydrationEvents||0)>=1&&(window.__garangPostHydrationScreens||0)>=1&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:10000});
   try{
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangWorkoutPrepExecution==='1'&&document.querySelector('.garang-daily-workout')&&document.querySelector('#main > [data-garang-bottom-checkin="1"]'),null,{timeout:10000});
   }catch(error){
-    const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},hydrationReady:window.GarangCloudHydrationReady,hydrationEvents:window.__garangTestHydrationEvents||0,integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,1200)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
+    const diagnostic=await page.evaluate(()=>{const m=document.getElementById('main'),execute=document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]'),prep=document.querySelector('.garang-daily-workout'),checkin=document.querySelector('#main > [data-garang-bottom-checkin="1"]');return {screen:m?.dataset?.garangScreen||null,mainDataset:{...(m?.dataset||{})},hydrationReady:window.GarangCloudHydrationReady,hydrationEvents:window.__garangTestHydrationEvents||0,postHydrationScreens:window.__garangPostHydrationScreens||0,integration:window.GarangTodayWorkoutPrepIntegrationV1?.version||null,workoutUI:window.GarangWorkoutIntelligenceUI?.version||null,execute:execute?{text:execute.textContent,aria:execute.getAttribute('aria-label'),dataset:{...execute.dataset}}:null,prep:prep?{dataset:{...prep.dataset},html:prep.outerHTML.slice(0,1200)}:null,checkin:checkin?{dataset:{...checkin.dataset},aria:checkin.getAttribute('aria-label')}:null,model:window.GarangGoldenPath?.derive?.(window.GarangAgentStateBridge?.getState?.()||{},{today:window.GarangGoldenPath?.localDate?.()})||null};});
     throw new Error(error.message+'\nToday workout preparation diagnostic: '+JSON.stringify(diagnostic),{cause:error});
   }
   const execute=page.locator('#garangTodayFlow .gtf-next[data-garang-today-workout-execute="1"]');
@@ -43,7 +43,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   assert.equal(await checkin.getAttribute('aria-label'),'체크인','bottom utility must remain Check-in');
   assert.equal(await page.locator('#main').getAttribute('data-garang-workout-prep-execution'),'1');
 
-  await prep.locator('[data-daily-toggle]').click();
+  await page.evaluate(()=>{const toggle=document.querySelector('.garang-daily-workout [data-daily-toggle]');if(!toggle)throw new Error('Today workout preparation toggle missing at interaction boundary');toggle.click();});
   await page.waitForFunction(()=>document.querySelector('.garang-daily-workout')?.dataset?.expanded==='1',null,{timeout:3000});
   const start=prep.locator('[data-garang-workout-prep-start="1"]');
   await start.waitFor({state:'visible',timeout:3000});
