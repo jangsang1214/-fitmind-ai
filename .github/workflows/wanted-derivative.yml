@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'wanted/**'
+      - 'agent/wanted-*'
   pull_request:
     branches:
       - 'wanted/**'
@@ -29,12 +30,16 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify 14-day synthetic judging dataset
+        run: node tests/wanted-14day-dataset.test.cjs
       - name: Build Wanted derivative
         run: npm run build
       - name: Verify derivative assets ship
         run: |
           test -f dist/06_features/ui/runtime/garang-wanted-submission-v1.js
           test -f dist/03_styles/runtime/garang-wanted-submission-v1.css
+          test -f dist/04_data/wanted/wanted-14day-synthetic-v1.json
           grep -q 'GARANG_WANTED_SUBMISSION' dist/07_config/version.js
+          grep -q 'garang-wanted-judge-data-v1' dist/04_data/wanted/wanted-14day-synthetic-v1.json
       - name: Verify 60-second judging journey
         run: node tests/browser-wanted-submission.test.cjs
