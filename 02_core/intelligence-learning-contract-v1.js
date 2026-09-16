@@ -9,7 +9,6 @@ const CONTRACT_VERSION='intelligence-learning-contract-v1.0.0';
 const EDGE_TYPES=Object.freeze(['decision_recommendation','recommendation_action','action_plan','plan_execution','execution_outcome']);
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const list=value=>Array.isArray(value)?value:[];
-const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
 const clean=value=>String(value??'').trim();
 const finite=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const dateKey=value=>String(value||'').slice(0,10);
@@ -40,10 +39,11 @@ function outcomeFor(item,date,now){
 function cycleFor(state,plan,index,day,date,now){
   const action=actionForPlan(state,plan,date),execution=executionItemForPlan(day,plan,index),sourceRecordIds=list(execution?.sourceRecordIds).map(String).filter(Boolean),evidence=clean(execution?.evidence),evidenceAt=clean(execution?.evidenceAt),outcome=outcomeFor(execution,date,now);
   const decisionId=clean(plan?.decisionId||action?.args?.decisionId)||null,recommendationId=clean(plan?.recommendationId||action?.args?.recommendationId)||null,planId=clean(plan?.id)||null,actionId=clean(action?.id)||null;
-  const hasExecutionEvidence=execution&&(execution?.executed===true||(finite(execution?.executionScore)!==null&&finite(execution?.executionScore)>0)||(evidence&&evidence!=='NONE')||sourceRecordIds.length>0);
-  const executionId=hasExecutionEvidence?stableId('execution',[planId,evidence,...sourceRecordIds,evidenceAt||date]):null;
+  const hasExecutionEvidence=!!(execution&&(execution?.executed===true||(finite(execution?.executionScore)!==null&&finite(execution?.executionScore)>0)||(evidence&&evidence!=='NONE')||sourceRecordIds.length>0)),finalizedMissed=outcome.classification==='missed';
+  const executionStatus=hasExecutionEvidence?'observed':finalizedMissed?'not_observed_finalized':'not_observed';
+  const executionId=(hasExecutionEvidence||finalizedMissed)?stableId('execution',[planId,hasExecutionEvidence?(evidence||'OBSERVED'):'NO_EXECUTION_OBSERVED',...sourceRecordIds,evidenceAt||date]):null;
   const outcomeId=outcome.classification!=='pending'?stableId('outcome',[planId,executionId||'no_execution',outcome.classification,date]):null;
-  const cycle={contractVersion:CONTRACT_VERSION,date,decisionId,recommendationId,actionId,planId,executionId,outcomeId,decisionMode:clean(plan?.decisionMode||action?.args?.decisionMode)||null,recommendationRevision:finite(plan?.recommendationRevision??action?.args?.recommendationRevision),execution:{status:hasExecutionEvidence?'observed':'not_observed',score:finite(execution?.executionScore),evidence:evidence||null,evidenceAt:evidenceAt||null,sourceRecordIds},outcome,guardrails:{readOnly:true,noSilentMutation:true,noAutomaticProgressionIncrease:true}};
+  const cycle={contractVersion:CONTRACT_VERSION,date,decisionId,recommendationId,actionId,planId,executionId,outcomeId,decisionMode:clean(plan?.decisionMode||action?.args?.decisionMode)||null,recommendationRevision:finite(plan?.recommendationRevision??action?.args?.recommendationRevision),execution:{status:executionStatus,score:finite(execution?.executionScore),evidence:evidence||null,evidenceAt:evidenceAt||null,sourceRecordIds},outcome,guardrails:{readOnly:true,noSilentMutation:true,noAutomaticProgressionIncrease:true}};
   cycle.attribution={decisionToRecommendation:!!(decisionId&&recommendationId),recommendationToAction:!!(recommendationId&&actionId),actionToPlan:!!(actionId&&planId),planToExecution:!!(planId&&executionId),executionToOutcome:!!(executionId&&outcomeId),complete:!!(decisionId&&recommendationId&&actionId&&planId&&executionId&&outcomeId)};
   return cycle;
 }
