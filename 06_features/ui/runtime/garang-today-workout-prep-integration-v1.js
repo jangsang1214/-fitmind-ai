@@ -189,19 +189,22 @@
 
     const card = m.querySelector('.garang-daily-workout');
     const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
+    const expected = workoutExpected(execute);
     const start = card ? ensureStartButton(card) : null;
-    const integrated = !!(card && start && workoutExpected(execute));
 
-    if (integrated) {
+    if (expected) {
       if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
-      if (card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
+      if (card && card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
       concealCanonical(execute);
-      const generate = card.querySelector('[data-daily-generate]');
+      const generate = card?.querySelector('[data-daily-generate]');
       if (generate) {
         generate.classList.remove('primary');
         generate.classList.add('ghost');
       }
-    } else restorePresentation(m,card);
+      return;
+    }
+
+    restorePresentation(m,card);
   }
 
   function schedule() {
