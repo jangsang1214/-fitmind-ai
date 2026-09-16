@@ -1,43 +1,82 @@
-# GARANG V9.9 FINAL FEATURE UPGRADE — QA BUILD
+# GARANG — Personal Performance Intelligence
 
-This package is based on the supplied GARANG V9.9 feature build and preserves the existing data assets. It is intended to be copied over the V9.9 project root.
+GARANG is a personal performance product built around one connected loop:
 
-## Fixed in this QA build
-- Meal builder supports repeated additions plus batch input (`음식명, g`) and automatic DB nutrition totals.
-- Meal draft items support edit/remove before saving.
-- Workout builder supports multiple exercises per session and edit/remove before saving.
-- Workout kcal uses the exercise DB `met_default` when available, then applies a small RPE adjustment with body weight and duration.
-- Running kcal remains weight/distance based and GPS route points are rendered on the in-app route preview.
-- Certification images are composited onto a canvas before save/share, so the downloaded/shared image contains the GARANG overlay rather than the original image only.
-- Video certification attempts real-time canvas + MediaRecorder compositing when the browser supports it; unsupported browsers fall back to original-file sharing.
-- AI input auto-grows and is substantially larger on mobile.
-- Local coach knowledge assets are actually loaded for retrieval context.
-- Existing workout DB, food DB, Korean dialogue assets, FitMind rules/SFT, AI rules and certification SVG assets are preserved.
+**Goal → Plan → Action → Record → Interpretation → Feedback → Next Action → Long-term Change**
 
-## Important architecture finding
-The supplied build is **not connected to an external web-search system or remote LLM**.
-The AI answer path is local JavaScript (`generateAnswer`) and the included JSON/JSONL assets are loaded locally. Loading local knowledge files is not the same thing as external search.
+The product is not intended to be a generic fitness logger or an LLM chatbot. GARANG's deterministic intelligence reads the user's own records, estimates current state, makes a bounded performance decision, and uses the Coach to explain that decision and help the user act on it.
 
-If a future build is supposed to use a remote LLM or search provider, that requires an explicit backend/API integration. This package does not pretend that one exists.
+## Current product model
 
-## Firebase
-`firebase-config.js` contains the browser Firebase configuration. Browser Firebase config is not a service-account secret, but Authentication providers and the GitHub Pages domain still must be enabled in Firebase Console. This package cannot verify Firebase Console settings from static files alone.
+The commercial Golden Path is:
 
-## Static QA performed
-- `node --check app.js`
-- `node --check sw.js`
-- `node --check firebase-config.js`
-- Parsed `exercise-db.json` and `food-db.json` successfully.
-- Verified all preserved knowledge/data assets remain in the package.
-- Searched source for external search/Maps/remote-AI integration; none exists in this build.
+**Onboarding → Today → Record → Coach → Plan → Confirmation → Execution → Record → Progress**
 
-## Files intentionally deleted
-None.
+Core data domains include workouts, running, nutrition, body records, recovery check-ins, plans, execution evidence, memory, recommendations, actions and outcomes.
 
-## Remaining environment-dependent tests
-These require the actual deployed GitHub Pages/Firebase environment and cannot be truthfully certified from a ZIP alone:
-- Firebase email/Google/Apple authentication against the live project.
-- Firestore permission behavior against the live project.
-- iOS Safari GPS permission and background behavior.
-- iOS Safari file share/download policy.
-- Video MediaRecorder codec support on the target iPhone/Safari version.
+The current intelligence stack includes:
+
+- **State Intelligence** for readiness, fatigue, load, trends, goal alignment and evidence coverage.
+- **Decision Intelligence** for deterministic decision modes and reason codes.
+- **Adaptive planning / execution** with explicit user confirmation and canonical write ownership.
+- **Nutrition Intelligence v2** and traceable food-data foundations.
+- **Coach knowledge grounding** that can support an explanation but cannot override the GARANG decision.
+- **Intelligence Learning Contract v1** linking `decisionId → recommendationId → actionId → planId → executionId → outcomeId`.
+- **Outcome Learning** that can conservatively constrain future recommendations without silently mutating user state or automatically increasing progression.
+
+## AI Coach architecture
+
+Production Coach requests use an authenticated server gateway. The browser does not receive the model-provider secret and does not choose another user's context.
+
+At a high level:
+
+1. The authenticated server loads the canonical GARANG user state.
+2. GARANG State / Decision Intelligence computes the current deterministic decision.
+3. Curated knowledge and deterministic nutrition signals may be attached as supporting grounding.
+4. The remote LLM produces the natural-language explanation.
+5. Server-side alignment checks require the LLM to preserve GARANG's exact `decisionId`, `decisionMode` and supported reason codes before an LLM success is returned.
+
+The ownership rule is deliberately strict:
+
+**GARANG decides → LLM explains → User confirms → GARANG acts.**
+
+The production Coach supports authenticated text and body-photo context. Photo input is ephemeral context for the request; the released path does not persist the raw photo into GARANG state, Firestore, telemetry or conversation text history. The Coach is constrained from medical diagnosis, sensitive-trait inference and hidden body-composition estimation from an image.
+
+## Food and nutrition data
+
+GARANG includes deterministic nutrition interpretation plus tooling for traceable official-food ingestion. K-FIND / USDA source records are not allowed to overwrite canonical GARANG foods automatically: provenance, core macro completeness and mapping quality are checked first, and ambiguous replacements remain reviewable rather than becoming confidently wrong product data.
+
+## Learning and personalization
+
+The released causal learning contract attributes confirmed recommendations through execution and outcome. Current personalization remains evidence-conservative: longitudinal outcome evidence may suppress or reduce progression, but it cannot silently increase progression.
+
+The next personalization layer is **User Performance Model v1**: common user dimensions should be derived from attributable behavioral evidence with `value`, `confidence`, `sampleSize`, `lastUpdated` and `evidenceIds`, including future explicit rejection/dismissal evidence. This is roadmap work, not claimed as released functionality here.
+
+## Validation and release discipline
+
+The repository uses a broad automated release gate covering core contracts, Golden Path behavior, browser/WebKit regressions, authenticated Coach boundaries, intelligence alignment, persistence, Firebase rules and production dependency security.
+
+Useful local commands:
+
+```bash
+npm test
+npm run lint
+npm run build
+npm run audit:prod
+```
+
+As of **2026-09-17**, the commercial `main` baseline at `fab7fba387fcbf1235af0163dff0f169314b88d7` passed GARANG Release Gate #1477 and GitHub Pages #802. A separate authenticated production Coach live smoke previously verified text and photo responses with `source=llm`. These run references are evidence for that snapshot, not a substitute for re-running the gate after later changes.
+
+## Repository and release boundaries
+
+This repository is the GARANG **PRODUCT** source of truth for application code, product tests/CI, UX and releases. GARANG's orchestration, durable project state and project graph live separately in the CONTROL repository.
+
+Commercial GARANG remains canonical. Competition/demo derivatives are isolated release channels and do not automatically redefine or merge back into the commercial product.
+
+## Current engineering debt
+
+Known non-blocking hardening work includes server-enforced main-branch protection, migration of production deployment authentication from a long-lived JSON credential toward OIDC / Workload Identity Federation, a dedicated Firebase Functions dependency-family upgrade, and continued simplification of UI runtime ownership. These are tracked separately from current commercial functionality.
+
+## Product principle
+
+New features are secondary to the quality of the connected loop. GARANG should become more useful because it understands the relationship between a user's state, recommendation, action and outcome over time—not because it accumulates more screens or chatbot behavior.
