@@ -30,6 +30,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   }
 
   const shortcut=page.locator('[data-garang-planner-shortcut="1"]');
+  await shortcut.waitFor({state:'visible',timeout:5000});
   assert.equal(await shortcut.getAttribute('aria-label'),'플래너 열기','Today plan shortcut must describe the canonical Planner destination');
   const shortcutBox=await shortcut.boundingBox();
   const shortcutDiagnostic=await page.evaluate(()=>{
