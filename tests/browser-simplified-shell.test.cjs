@@ -11,7 +11,7 @@ function demoState(){const today=dateOffset(0),yesterday=dateOffset(-1),older=da
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-test',force:true}),screen);assert.equal(ok,true,`${screen} must remain canonically routable`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:6000});await page.waitForTimeout(600);}
 async function waitControl(page,screen,selector){await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached`);}
 async function openRecord(page){await page.locator('#bottomNav [data-page="log"]').click();const sheet=page.locator('[data-garang-record-sheet="1"]');await sheet.waitFor({state:'visible',timeout:4000});await page.waitForFunction(()=>document.querySelectorAll('.garang-record-sheet [data-garang-record-route]').length===4&&document.querySelector('.garang-record-sheet [data-garang-record-action="recovery"]'),null,{timeout:4000});return sheet;}
-async function verifyCapabilityRoute(context,screen,selector){const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));try{await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});await page.waitForFunction(()=>window.GarangRouter&&window.GarangScreens,{timeout:8000});const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-capability-preservation',force:true}),screen);assert.equal(ok,true,`${screen} capability route must remain available`);await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:6000});await page.waitForTimeout(700);assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),screen,`${screen} must remain the active capability screen after runtime reconciliation`);assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached after runtime reconciliation`);assert.deepEqual(errors,[],`${screen} capability route browser errors:\n${errors.join('\n')}`);}finally{await page.close();}}
+async function verifyCapabilityRoute(page,screen,selector){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'product-consolidation-capability-preservation',force:true}),screen);assert.equal(ok,true,`${screen} capability route must remain available`);await page.waitForFunction(({screen,selector})=>document.getElementById('main')?.dataset?.garangScreen===screen&&!!document.querySelector(selector),{screen,selector},{timeout:6000});await page.waitForTimeout(700);assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),screen,`${screen} must remain the active capability screen after runtime reconciliation`);assert.equal(await page.locator(selector).count(),1,`${screen} canonical control ${selector} must remain attached after runtime reconciliation`);}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
@@ -20,8 +20,8 @@ async function verifyCapabilityRoute(context,screen,selector){const page=await c
   await installAuthenticatedFirebaseMock(context);
   await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},demoState());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));
-  await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0'&&window.GarangSimplifiedShell&&window.GarangRouter,{timeout:8000});
+  await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
+  await page.waitForFunction(()=>window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0'&&window.GarangSimplifiedShell&&window.GarangRouter,null,{timeout:8000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1',null,{timeout:8000});
 
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary product surfaces may remain');
@@ -40,7 +40,7 @@ async function verifyCapabilityRoute(context,screen,selector){const page=await c
   assert.equal(await today.locator('.gpc-coach-explain').count(),1,'Today must provide one natural entry to Coach rationale');
   assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today may show a judgment summary while Coach remains the canonical decision disclosure owner');
   assert.equal(await today.locator('.gtf-disclosure').isHidden(),true,'detailed rationale stays out of Today');
-  await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});
+  await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:5000});
   assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');
   await route(page,'today');
 
@@ -56,9 +56,9 @@ async function verifyCapabilityRoute(context,screen,selector){const page=await c
   }
   await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
 
-  await verifyCapabilityRoute(context,'planner','#addPlan');
-  await verifyCapabilityRoute(context,'memory','#saveMemory');
-  await verifyCapabilityRoute(context,'settings','#savePreferences');
+  await verifyCapabilityRoute(page,'planner','#addPlan');
+  await verifyCapabilityRoute(page,'memory','#saveMemory');
+  await verifyCapabilityRoute(page,'settings','#savePreferences');
 
   await route(page,'today');await page.locator('#menuBtn').click();await page.waitForTimeout(250);
   assert.equal(await page.locator('.garang-more-sheet [data-route="planner"]:visible,.garang-more-sheet [data-pagego="planner"]:visible').count(),0,'Planner must not compete as a first-level product');
