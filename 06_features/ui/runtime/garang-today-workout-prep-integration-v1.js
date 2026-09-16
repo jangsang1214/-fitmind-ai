@@ -47,6 +47,18 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout{
+        display:grid!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+      }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-daily-toggle]{
+        display:grid!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-action{
         max-height:0!important;
         min-height:0!important;
@@ -149,6 +161,40 @@
     return button;
   }
 
+  function revealPreparation(card) {
+    if (!card) return;
+    if (card.hidden) card.hidden = false;
+    if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
+    card.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    card.style.setProperty('display','grid','important');
+    card.style.setProperty('visibility','visible','important');
+    card.style.setProperty('opacity','1','important');
+    card.style.setProperty('pointer-events','auto','important');
+    const toggle = card.querySelector('[data-daily-toggle]');
+    if (!toggle) return;
+    if (toggle.hidden) toggle.hidden = false;
+    if (toggle.getAttribute('aria-hidden') === 'true') toggle.removeAttribute('aria-hidden');
+    if (toggle.getAttribute('tabindex') === '-1') toggle.removeAttribute('tabindex');
+    toggle.dataset.garangWorkoutPrepVisibilityOwner = '1';
+    toggle.style.setProperty('display','grid','important');
+    toggle.style.setProperty('visibility','visible','important');
+    toggle.style.setProperty('opacity','1','important');
+    toggle.style.setProperty('pointer-events','auto','important');
+  }
+
+  function releasePreparationVisibility(card) {
+    if (!card) return;
+    if (card.dataset.garangWorkoutPrepVisibilityOwner === '1') {
+      delete card.dataset.garangWorkoutPrepVisibilityOwner;
+      for (const property of ['display','visibility','opacity','pointer-events']) card.style.removeProperty(property);
+    }
+    const toggle = card.querySelector('[data-daily-toggle]');
+    if (toggle?.dataset?.garangWorkoutPrepVisibilityOwner === '1') {
+      delete toggle.dataset.garangWorkoutPrepVisibilityOwner;
+      for (const property of ['display','visibility','opacity','pointer-events']) toggle.style.removeProperty(property);
+    }
+  }
+
   function concealCanonical(button) {
     if (!button) return;
     if (!button.hidden) button.hidden = true;
@@ -162,6 +208,7 @@
   function restorePresentation(m,card) {
     if (m?.hasAttribute('data-garang-workout-prep-execution')) m.removeAttribute('data-garang-workout-prep-execution');
     if (card) {
+      releasePreparationVisibility(card);
       if (card.hasAttribute('data-garang-workout-prep-execution')) delete card.dataset.garangWorkoutPrepExecution;
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
@@ -195,6 +242,7 @@
     if (expected) {
       if (m.dataset.garangWorkoutPrepExecution !== '1') m.dataset.garangWorkoutPrepExecution = '1';
       if (card && card.dataset.garangWorkoutPrepExecution !== '1') card.dataset.garangWorkoutPrepExecution = '1';
+      revealPreparation(card);
       concealCanonical(execute);
       const generate = card?.querySelector('[data-daily-generate]');
       if (generate) {
