@@ -33,6 +33,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   const execute=page.locator('#garangTodayFlow .gtf-next[data-garang-today-workout-execute="1"]');
   const prep=page.locator('.garang-daily-workout');
   const checkin=page.locator('#main > [data-garang-bottom-checkin="1"]');
+  await prep.locator('[data-daily-toggle]').waitFor({state:'visible',timeout:3000});
   assert.equal(await execute.count(),1,'canonical workout execution owner must remain in the DOM');
   assert.equal(await execute.isHidden(),true,'standalone Today workout execution CTA must be visually removed');
   assert.equal(await execute.getAttribute('aria-hidden'),'true','hidden canonical CTA must not compete in accessibility order');
