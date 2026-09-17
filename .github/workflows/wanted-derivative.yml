@@ -36,6 +36,8 @@ jobs:
         run: node tests/wanted-deployment-origin.test.cjs
       - name: Verify Wanted Real AI transport isolation
         run: node tests/wanted-llm-transport.test.cjs
+      - name: Verify Wanted browser CORS contract
+        run: node tests/wanted-browser-cors-contract.test.cjs
       - name: Build Wanted derivative
         run: npm run build
       - name: Verify derivative assets ship

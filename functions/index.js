@@ -27,6 +27,23 @@ const USER_SUBCOLLECTIONS=['app','workoutHistory','mealHistory','runHistory','bo
 
 const app=express();
 app.disable('x-powered-by');
+function wantedCoachCors(request,response,next){
+ if(request.path!=='/wanted/coach')return next();
+ const origin=request.get?.('origin')||request.headers?.origin||'';
+ if(origin===WANTED_PUBLIC_ORIGIN){
+  response.set('Access-Control-Allow-Origin',WANTED_PUBLIC_ORIGIN);
+  response.set('Vary','Origin');
+  response.set('Access-Control-Allow-Methods','POST, OPTIONS');
+  response.set('Access-Control-Allow-Headers','Content-Type');
+  response.set('Access-Control-Max-Age','600');
+ }
+ if(request.method==='OPTIONS'){
+  if(origin!==WANTED_PUBLIC_ORIGIN)return response.status(403).end();
+  return response.status(204).end();
+ }
+ return next();
+}
+app.use(wantedCoachCors);
 const smallJson=express.json({limit:'64kb'}),coachJson=express.json({limit:'3mb'});
 app.use((request,response,next)=>(request.path==='/coach'||request.path==='/wanted/coach'?coachJson:smallJson)(request,response,next));
 app.use(securityMiddleware());
