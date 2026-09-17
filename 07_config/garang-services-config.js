@@ -39,7 +39,7 @@
 
   if(typeof window.fetch!=='function'||window.__GARANG_SERVICE_TRANSPORT_V2__)return;
   const nativeFetch=window.fetch.bind(window);
-  const diag={stage:'installed',lastError:null,lastRequest:null,analyticsSuppressed:0,errorSuppressed:0};
+  const diag={stage:'installed',lastError:null,lastRequest:null,lastResponse:null,analyticsSuppressed:0,errorSuppressed:0};
   const urlOf=input=>typeof input==='string'?input:input?.url;
   const methodOf=(input,init)=>String(init?.method||input?.method||'GET').toUpperCase();
   const text=(value,limit=120)=>String(value??'').trim().slice(0,limit);
@@ -82,20 +82,20 @@
   }
   async function routedFetch(input,init={}){
     const url=urlOf(input),method=methodOf(input,init),services=window.GARANG_SERVICES||{};
-    if(url===coachEndpoint&&method==='POST'){
-      diag.stage='coach-auth';diag.lastError=null;
+    if((url===coachEndpoint||url===wantedCoachEndpoint)&&method==='POST'){
+      diag.stage='coach-auth';diag.lastError=null;diag.lastResponse=null;
       try{
         const user=currentUser(),wantedDemo=user?null:wantedDemoEnvelope();
         if(!user&&!wantedDemo){const error=new Error('COACH_AUTH_REQUIRED');error.code='COACH_AUTH_REQUIRED';throw error;}
         let source={};try{source=typeof init.body==='string'?JSON.parse(init.body):{};}catch{}
         const language=source?.language==='en'||globalThis.document?.documentElement?.lang==='en'?'en':'ko',draft=source?.image||globalThis.GarangCoachPhotoDraft?.consumeForRequest?.()||null,image=coachImageFrom(draft),messageRaw=String(source?.message||source?.question||'').trim(),message=messageRaw||(image?(language==='en'?'Review this photo with my GARANG records and explain what is visibly relevant to my training.':'이 사진을 내 GARANG 기록과 함께 보고 훈련 관점에서 보이는 점을 알려줘.'):'');if(!message){const error=new Error('COACH_MESSAGE_REQUIRED');error.code='COACH_MESSAGE_REQUIRED';throw error;}
         if(wantedDemo&&image){const error=new Error('WANTED_DEMO_IMAGE_REQUIRES_ACCOUNT');error.code='WANTED_DEMO_IMAGE_REQUIRES_ACCOUNT';throw error;}
-        const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');
         const target=wantedDemo?wantedCoachEndpoint:coachEndpoint;
-        if(user)headers.set('Authorization',`Bearer ${await token()}`);else headers.delete('Authorization');
-        diag.lastRequest={url:target,method:'POST',language,messageLength:message.length,hasImage:!!image,uid:user?String(user.uid||''):'wanted-public',mode:wantedDemo?'wanted_synthetic':'authenticated'};diag.stage='coach-fetch';
+        const headers=wantedDemo?new Headers({'Content-Type':'application/json'}):new Headers(init.headers||{});
+        if(user){headers.set('Content-Type','application/json');headers.set('Authorization',`Bearer ${await token()}`);}else headers.delete('Authorization');
+        diag.lastRequest={url:target,method:'POST',language,messageLength:message.length,hasImage:!!image,uid:user?String(user.uid||''):'wanted-public',mode:wantedDemo?'wanted_synthetic':'authenticated',headerNames:[...headers.keys()]};diag.stage='coach-fetch';
         const body=wantedDemo?{message,language,wantedDemo}:{message,language,...(image?{image}: {})};
-        const response=await nativeFetch(target,{...init,method:'POST',headers,body:JSON.stringify(body)});diag.stage='coach-response';return response;
+        const response=await nativeFetch(target,{...init,method:'POST',headers,body:JSON.stringify(body)});diag.stage='coach-response';diag.lastResponse={status:Number(response?.status||0),ok:response?.ok===true,url:String(response?.url||target)};return response;
       }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
     }
     if((services.analyticsEndpoint&&url===services.analyticsEndpoint)||(services.telemetryErrorEndpoint&&url===services.telemetryErrorEndpoint)){
@@ -115,7 +115,7 @@
     const endpoint=window.GARANG_SERVICES?.telemetryErrorEndpoint;if(!endpoint||!analyticsConsent())return;
     routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safeError(event?.detail||{}))}).catch(()=>{});
   });
-  const transport=Object.freeze({version:'garang-service-transport-v2.1-wanted',apiBase,coachEndpoint,wantedCoachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,wantedDemoEnvelope,diagnostics:diag});
+  const transport=Object.freeze({version:'garang-service-transport-v2.2-wanted-browser',apiBase,coachEndpoint,wantedCoachEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,wantedDemoEnvelope,diagnostics:diag});
   const legacyCoachTransport=Object.freeze({version:'garang-coach-gateway-transport-v1.1.1',endpoint:coachEndpoint,diagnostics:diag});
   window.__GARANG_SERVICE_TRANSPORT_V2__=transport;
   window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=legacyCoachTransport;
