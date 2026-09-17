@@ -9,8 +9,8 @@ class MockStorage{
  setItem(k,v){if(this.failNext){this.failNext=false;throw new Error('quota');}this.map.set(String(k),String(v));}
  removeItem(k){this.map.delete(String(k));}
 }
-const localStorage=new MockStorage();
-const context={console,setTimeout,clearTimeout,Storage:MockStorage,localStorage,CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;}},document:{getElementById(){return null;}},crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},dispatchEvent(){}};
+const localStorage=new MockStorage(),listeners=new Map();
+const context={console,setTimeout,clearTimeout,Storage:MockStorage,localStorage,CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;}},document:{getElementById(){return null;}},crypto:{randomUUID:()=>`id_${Math.random().toString(36).slice(2)}`},addEventListener(type,handler){const list=listeners.get(type)||[];list.push(handler);listeners.set(type,list);},dispatchEvent(event){for(const handler of listeners.get(event?.type)||[])handler(event);return true;}};
 context.window=context;context.globalThis=context;vm.createContext(context);
 for(const file of ['02_core/sync-durability.js','02_core/memory-intelligence-v1.js','02_core/action-data-reliability-v1.js','06_features/final/agent-state-hook-v1.js','06_features/final/action-data-bridge-v1.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
 const state={meta:{schemaVersion:5,updatedAt:'2026-09-08T00:00:00.000Z'},profile:{goal:'performance'},onboarding:{goal:'performance'},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[],runs:[],body:[],memory:{entries:[],deletedIds:[]},actionLog:[]};
@@ -32,6 +32,31 @@ test('same confirmed call id cannot create a duplicate',()=>{
 });
 
 test('unconfirmed bridge writes are rejected',()=>{assert.throws(()=>bridge.applyWrite('createRecord',{domain:'runs',record:{id:'r-no',distance:1,duration:6}},{callId:'no-confirm'}),code('CONFIRMATION_REQUIRED'));assert.equal(state.runs.length,0);});
+
+test('Coach proposal resolution events persist accepted and dismissed evidence exactly once',()=>{
+ const accepted={id:'proposal-a',recommendationId:'recommendation-a',tool:'createPlan',status:'confirmed',revision:2};
+ context.dispatchEvent(new context.CustomEvent('garang:agent-proposal-resolved',{detail:accepted}));
+ context.dispatchEvent(new context.CustomEvent('garang:agent-proposal-resolved',{detail:accepted}));
+ const acceptedRows=state.actionLog.filter(row=>row?.event==='recommendation_accepted'&&row?.recommendationId==='recommendation-a');
+ assert.equal(acceptedRows.length,1);assert.equal(acceptedRows[0].id,'recommendation:recommendation-a:r2:accepted');assert.equal(acceptedRows[0].proposalId,'proposal-a');
+ context.dispatchEvent(new context.CustomEvent('garang:agent-proposal-resolved',{detail:{id:'proposal-b',recommendationId:'recommendation-b',tool:'updatePlan',status:'rejected',revision:1}}));
+ const dismissed=state.actionLog.find(row=>row?.recommendationId==='recommendation-b');assert.equal(dismissed?.event,'recommendation_dismissed');assert.equal(dismissed?.resolution,'dismissed');
+ const stored=JSON.parse(localStorage.getItem('garang_demo_state_v3'));assert.equal(stored.actionLog.filter(row=>row?.id==='recommendation:recommendation-a:r2:accepted').length,1);assert.ok(stored.actionLog.some(row=>row?.event==='recommendation_dismissed'));
+});
+
+test('explicit resolution API supports rejected and ignored learning evidence',()=>{
+ const rejected=bridge.recordRecommendationResolution({recommendationId:'recommendation-r',decisionId:'decision-r',resolution:'rejected',revision:3,source:'test'});
+ const ignored=bridge.recordRecommendationResolution({recommendationId:'recommendation-i',resolution:'ignored',revision:1,source:'test'});
+ assert.equal(rejected.event,'recommendation_rejected');assert.equal(rejected.id,'recommendation:recommendation-r:r3:rejected');assert.equal(rejected.decisionId,'decision-r');
+ assert.equal(ignored.event,'recommendation_ignored');assert.equal(state.actionLog.some(row=>row?.id===ignored.id),true);
+ assert.throws(()=>bridge.recordRecommendationResolution({recommendationId:'recommendation-invalid',resolution:'maybe'}),code('RECOMMENDATION_RESOLUTION_INVALID'));
+});
+
+test('recommendation evidence persistence failure rolls the live object back atomically',()=>{
+ const before=JSON.stringify(state);localStorage.failNext=true;
+ assert.throws(()=>bridge.recordRecommendationResolution({recommendationId:'recommendation-fail',resolution:'dismissed',revision:1}),/quota/);
+ assert.equal(JSON.stringify(state),before);assert.equal(JSON.parse(localStorage.getItem('garang_demo_state_v3')).actionLog.some(row=>row?.recommendationId==='recommendation-fail'),false);
+});
 
 test('legacy Agent State Bridge facade routes writes into the new reliability core',()=>{compat.applyWrite('createPlan',{title:'Recovery',duration:30},{userConfirmed:true,callId:'legacy-plan'});assert.equal(state.planner.length,1);assert.ok(state.meta.actionReceipts.some(x=>x.key==='legacy-plan'));});
 
