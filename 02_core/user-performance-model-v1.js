@@ -34,7 +34,7 @@ function recentRows(rows,{days=28,asOf=new Date()}={}){
 }
 function trainingConsistency(state,opts){
   const rows=recentRows(state?.workouts,opts),days=unique(rows.map(rowDate)),target=Math.max(1,Math.min(7,finite(state?.onboarding?.weeklyFrequency)||4));
-  const weeks=Math.max(1,(opts?.days||28)/7),expected=target*weeks,value=expected?clamp(days.length/expected*100,0,100):null;
+  const weeks=Math.max(1,(opts?.days||28)/7),expected=target*weeks,value=days.length&&expected?clamp(days.length/expected*100,0,100):null;
   return dimension(value,{confidence:clamp(days.length/8,0,1),sampleSize:days.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function recoveryStability(state,opts){
@@ -44,7 +44,7 @@ function recoveryStability(state,opts){
   return dimension(value,{confidence:clamp(scores.length/7,0,1),sampleSize:scores.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function nutritionConsistency(state,opts){
-  const rows=recentRows(state?.meals,opts),days=unique(rows.map(rowDate)),windowDays=Math.max(7,opts?.days||28),value=clamp(days.length/windowDays*100,0,100);
+  const rows=recentRows(state?.meals,opts),days=unique(rows.map(rowDate)),windowDays=Math.max(7,opts?.days||28),value=days.length?clamp(days.length/windowDays*100,0,100):null;
   return dimension(value,{confidence:clamp(days.length/14,0,1),sampleSize:days.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function planAdherence(state,opts){
