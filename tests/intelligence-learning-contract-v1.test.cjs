@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const Learning=require('../02_core/intelligence-learning-contract-v1.js');
 const PlanExecution=require('../02_core/plan-execution-v1.js');
+const UserPerformance=require('../02_core/user-performance-model-v1.js');
 
 const tests=[];
 function test(name,fn){fn();tests.push(name);console.log(`PASS ${name}`);}
@@ -51,6 +52,23 @@ test('contract graph is read-only and never mutates source state',()=>{
 test('validateCycle reports missing causal links',()=>{
   assert.deepEqual(Learning.validateCycle({decisionId:'d'}),{valid:false,reasons:['MISSING_RECOMMENDATION_ID','MISSING_ACTION_ID','MISSING_PLAN_ID']});
   assert.deepEqual(Learning.validateCycle({decisionId:'d',recommendationId:'r',actionId:'a',planId:'p'}),{valid:true,reasons:[]});
+});
+
+test('User Performance Model exposes evidence-aware dimensions without mutating decisions',()=>{
+  const state=base();
+  state.onboarding={weeklyFrequency:4};
+  state.workouts=[{id:'w1',date:'2026-09-15'},{id:'w2',date:'2026-09-13'},{id:'w3',date:'2026-09-10'},{id:'w4',date:'2026-09-08'}];
+  state.checkins=[{id:'c1',date:'2026-09-15',sleep:7.5,energy:4,stress:2,soreness:2},{id:'c2',date:'2026-09-13',sleep:7,energy:3,stress:2,soreness:2}];
+  state.meals=[{id:'m1',date:'2026-09-15'},{id:'m2',date:'2026-09-14'},{id:'m3',date:'2026-09-13'}];
+  state.planner=[{id:'p1',date:'2026-09-15',completed:true},{id:'p2',date:'2026-09-14',status:'missed'},{id:'p3',date:'2026-09-13',status:'completed'}];
+  state.actionLog=[{id:'a1',at:'2026-09-15T08:00:00Z',event:'write_confirmed',recommendationId:'r1'},{id:'a2',at:'2026-09-14T08:00:00Z',event:'write_rejected',recommendationId:'r2'},{id:'a3',at:'2026-09-13T08:00:00Z',event:'recommendation_dismissed',recommendationId:'r3'}];
+  const before=JSON.stringify(state),model=UserPerformance.build(state,{days:28,asOf:new Date('2026-09-17T12:00:00+09:00')});
+  assert.equal(JSON.stringify(state),before);
+  assert.equal(model.guardrails.readOnly,true);assert.equal(model.guardrails.noDecisionMutation,true);
+  assert.equal(model.dimensions.planAdherence.value,66.67);assert.equal(model.dimensions.recommendationResponsiveness.value,33.33);
+  assert.equal(model.dimensions.recommendationResponsiveness.sampleSize,3);
+  for(const row of Object.values(model.dimensions))for(const key of ['value','confidence','sampleSize','lastUpdated','evidenceIds'])assert.ok(Object.prototype.hasOwnProperty.call(row,key));
+  assert.deepEqual(UserPerformance.validate(model),{valid:true,reasons:[]});
 });
 
 console.log(`PASS intelligence-learning-contract-v1 ${tests.length} tests`);
