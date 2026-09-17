@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   activate:
-    if: contains(github.event.head_commit.message, 'Enable Wanted Real AI Coach')
+    if: contains(github.event.head_commit.message, 'Enable Wanted Real AI Coach') || contains(github.event.head_commit.message, 'Fix Wanted Coach browser CORS')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
