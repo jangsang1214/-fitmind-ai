@@ -6,6 +6,7 @@
 'use strict';
 
 const MODEL_VERSION='user-performance-model-v1.0.0';
+const DEFAULT_CONTEXT_MIN_CONFIDENCE=0.5;
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const list=v=>Array.isArray(v)?v:[];
 const clean=v=>String(v??'').trim();
@@ -72,5 +73,23 @@ function validate(model){
   if(!object(model)||model.modelVersion!==MODEL_VERSION)return {valid:false,reasons:['MODEL_VERSION_INVALID']};
   const reasons=[];for(const [name,row] of Object.entries(model.dimensions||{})){for(const key of ['value','confidence','sampleSize','lastUpdated','evidenceIds'])if(!Object.prototype.hasOwnProperty.call(row||{},key))reasons.push(`${name}:${key}:missing`);if(Number(row?.confidence)<0||Number(row?.confidence)>1)reasons.push(`${name}:confidence:range`);if(!Array.isArray(row?.evidenceIds))reasons.push(`${name}:evidenceIds:type`);}return {valid:reasons.length===0,reasons};
 }
-return Object.freeze({MODEL_VERSION,build,validate});
+function compactForContext(modelInput,{minConfidence=DEFAULT_CONTEXT_MIN_CONFIDENCE}={}){
+  const check=validate(modelInput);if(!check.valid){const error=new Error('USER_PERFORMANCE_MODEL_INVALID');error.reasons=check.reasons;throw error;}
+  const parsed=finite(minConfidence),threshold=round(clamp(parsed===null?DEFAULT_CONTEXT_MIN_CONFIDENCE:parsed,0,1),2),dimensions={},withheldDimensions=[];
+  for(const [name,row] of Object.entries(modelInput.dimensions||{})){
+    const trusted=row?.value!==null&&row?.value!==undefined&&Number(row?.confidence)>=threshold;
+    if(trusted){dimensions[name]=Object.freeze({...row,evidenceIds:Object.freeze([...list(row?.evidenceIds)])});continue;}
+    withheldDimensions.push(Object.freeze({name,reason:row?.value===null||row?.value===undefined?'NO_VALUE':'LOW_CONFIDENCE',confidence:round(Number(row?.confidence)||0,2),sampleSize:Math.max(0,Number(row?.sampleSize)||0)}));
+  }
+  return Object.freeze({
+    modelVersion:modelInput.modelVersion,
+    asOf:modelInput.asOf,
+    windowDays:modelInput.windowDays,
+    minConfidence:threshold,
+    dimensions:Object.freeze(dimensions),
+    withheldDimensions:Object.freeze(withheldDimensions),
+    guardrails:Object.freeze({readOnly:true,affectsDecision:false,noDecisionMutation:true,noAutomaticProgression:true})
+  });
+}
+return Object.freeze({MODEL_VERSION,DEFAULT_CONTEXT_MIN_CONFIDENCE,build,validate,compactForContext});
 });
