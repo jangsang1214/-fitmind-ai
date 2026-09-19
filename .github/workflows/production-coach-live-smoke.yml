@@ -1,4 +1,5 @@
 name: Production Coach Live Smoke
+# Manual verification trigger: 2026-09-20 external AI connection diagnosis
 
 on:
   push:
