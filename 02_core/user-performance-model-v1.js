@@ -6,6 +6,7 @@
 'use strict';
 
 const MODEL_VERSION='user-performance-model-v1.0.0';
+const DEFAULT_CONTEXT_MIN_CONFIDENCE=0.5;
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const list=v=>Array.isArray(v)?v:[];
 const clean=v=>String(v??'').trim();
@@ -33,17 +34,17 @@ function recentRows(rows,{days=28,asOf=new Date()}={}){
 }
 function trainingConsistency(state,opts){
   const rows=recentRows(state?.workouts,opts),days=unique(rows.map(rowDate)),target=Math.max(1,Math.min(7,finite(state?.onboarding?.weeklyFrequency)||4));
-  const weeks=Math.max(1,(opts?.days||28)/7),expected=target*weeks,value=expected?clamp(days.length/expected*100,0,100):null;
+  const weeks=Math.max(1,(opts?.days||28)/7),expected=target*weeks,value=days.length&&expected?clamp(days.length/expected*100,0,100):null;
   return dimension(value,{confidence:clamp(days.length/8,0,1),sampleSize:days.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function recoveryStability(state,opts){
-  const rows=recentRows(state?.dailyCheckins||state?.checkins,opts),scores=[];
+  const rows=recentRows((Array.isArray(state?.dailyCheckins)&&state.dailyCheckins.length)?state.dailyCheckins:state?.checkins,opts),scores=[];
   for(const row of rows){const energy=finite(row?.energy),stress=finite(row?.stress),sleep=finite(row?.sleepHours??row?.sleep);const sorenessValues=object(row?.soreness)?Object.values(row.soreness).map(finite).filter(v=>v!==null):[];const soreness=sorenessValues.length?Math.max(...sorenessValues):finite(row?.soreness);const parts=[];if(energy!==null)parts.push(clamp((energy-1)/4*100,0,100));if(stress!==null)parts.push(clamp((5-stress)/4*100,0,100));if(sleep!==null)parts.push(clamp(sleep/8*100,0,100));if(soreness!==null)parts.push(clamp((5-soreness)/5*100,0,100));if(parts.length)scores.push(parts.reduce((a,b)=>a+b,0)/parts.length);}
   const value=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:null;
   return dimension(value,{confidence:clamp(scores.length/7,0,1),sampleSize:scores.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function nutritionConsistency(state,opts){
-  const rows=recentRows(state?.meals,opts),days=unique(rows.map(rowDate)),windowDays=Math.max(7,opts?.days||28),value=clamp(days.length/windowDays*100,0,100);
+  const rows=recentRows(state?.meals,opts),days=unique(rows.map(rowDate)),windowDays=Math.max(7,opts?.days||28),value=days.length?clamp(days.length/windowDays*100,0,100):null;
   return dimension(value,{confidence:clamp(days.length/14,0,1),sampleSize:days.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function planAdherence(state,opts){
@@ -72,5 +73,23 @@ function validate(model){
   if(!object(model)||model.modelVersion!==MODEL_VERSION)return {valid:false,reasons:['MODEL_VERSION_INVALID']};
   const reasons=[];for(const [name,row] of Object.entries(model.dimensions||{})){for(const key of ['value','confidence','sampleSize','lastUpdated','evidenceIds'])if(!Object.prototype.hasOwnProperty.call(row||{},key))reasons.push(`${name}:${key}:missing`);if(Number(row?.confidence)<0||Number(row?.confidence)>1)reasons.push(`${name}:confidence:range`);if(!Array.isArray(row?.evidenceIds))reasons.push(`${name}:evidenceIds:type`);}return {valid:reasons.length===0,reasons};
 }
-return Object.freeze({MODEL_VERSION,build,validate});
+function compactForContext(modelInput,{minConfidence=DEFAULT_CONTEXT_MIN_CONFIDENCE}={}){
+  const check=validate(modelInput);if(!check.valid){const error=new Error('USER_PERFORMANCE_MODEL_INVALID');error.reasons=check.reasons;throw error;}
+  const parsed=finite(minConfidence),threshold=round(clamp(parsed===null?DEFAULT_CONTEXT_MIN_CONFIDENCE:parsed,0,1),2),dimensions={},withheldDimensions=[];
+  for(const [name,row] of Object.entries(modelInput.dimensions||{})){
+    const trusted=row?.value!==null&&row?.value!==undefined&&Number(row?.confidence)>=threshold;
+    if(trusted){dimensions[name]=Object.freeze({...row,evidenceIds:Object.freeze([...list(row?.evidenceIds)])});continue;}
+    withheldDimensions.push(Object.freeze({name,reason:row?.value===null||row?.value===undefined?'NO_VALUE':'LOW_CONFIDENCE',confidence:round(Number(row?.confidence)||0,2),sampleSize:Math.max(0,Number(row?.sampleSize)||0)}));
+  }
+  return Object.freeze({
+    modelVersion:modelInput.modelVersion,
+    asOf:modelInput.asOf,
+    windowDays:modelInput.windowDays,
+    minConfidence:threshold,
+    dimensions:Object.freeze(dimensions),
+    withheldDimensions:Object.freeze(withheldDimensions),
+    guardrails:Object.freeze({readOnly:true,affectsDecision:false,noDecisionMutation:true,noAutomaticProgression:true})
+  });
+}
+return Object.freeze({MODEL_VERSION,DEFAULT_CONTEXT_MIN_CONFIDENCE,build,validate,compactForContext});
 });
