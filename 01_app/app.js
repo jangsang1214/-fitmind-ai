@@ -468,7 +468,25 @@ function buildContext(){return {profile:state.profile,onboarding:state.onboardin
 function bindCoach(){const send=$('askAI'),input=$('aiQuestion');if(send)send.onclick=askAI;if(input){input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askAI();}};input.oninput=()=>{input.style.height='auto';input.style.height=Math.min(120,input.scrollHeight)+'px';};}requestAnimationFrame(scrollCoachToBottom);}
 function scrollCoachToBottom(){const c=$('coachChat');if(c)c.scrollTop=c.scrollHeight;}
 function pushChat(role,text,extra={}){state.aiChat.push({id:uid(),role,text:String(text||''),at:isoNow(),...extra});if(state.aiChat.length>80)state.aiChat=state.aiChat.slice(-80);writeLocal();}
-async function askAI(){const input=$('aiQuestion'),q=input?.value.trim();if(!q)return toast('질문을 입력해 주세요.');pushChat('user',q);if(input){input.value='';input.style.height='auto';}render();trackEvent('ai_chat_started',{provider:SERVICES.coachEndpoint?'gateway':'local'});let answer='',local=!SERVICES.coachEndpoint;if(SERVICES.coachEndpoint){try{const r=await fetch(SERVICES.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,context:buildContext()})});if(!r.ok)throw new Error(`AI Gateway ${r.status}`);const data=await r.json();answer=data.answer||data.output||'AI Gateway 응답 형식을 확인해 주세요.';local=false;}catch(e){captureError('coach_gateway',e);answer=`외부 AI 연결에 실패했습니다. 가짜 응답으로 처리하지 않고 로컬 Coach Engine 분석을 표시합니다.\n\n${generateLocalAnswer(q)}`;local=true;}}else answer=generateLocalAnswer(q);pushChat('assistant',answer,{local});saveState({event:'ai_chat_answered',source:local?'local':'gateway'});render();requestAnimationFrame(scrollCoachToBottom);}
+async function readCoachGatewayResponse(response){
+ let data={};try{data=await response.json();}catch{}
+ if(!response.ok||data?.ok===false){
+  const code=String(data?.error?.code||`HTTP_${response.status}`),error=new Error(code);
+  error.code=code;error.status=Number(response.status)||0;error.retryAfterSec=Number(data?.retryAfterSec||response.headers?.get?.('Retry-After'))||null;throw error;
+ }
+ const answer=String(data?.data?.answer||data?.answer||data?.output||'').trim();
+ if(!answer){const error=new Error('COACH_RESPONSE_INVALID');error.code='COACH_RESPONSE_INVALID';throw error;}
+ return {answer,source:String(data?.data?.source||data?.source||'llm')};
+}
+function coachGatewayFallbackLead(error){
+ const code=String(error?.code||''),status=Number(error?.status)||0,retry=Math.max(0,Number(error?.retryAfterSec)||0);
+ if(code==='COACH_RATE_LIMITED'||status===429)return retry?`지금 요청이 조금 많아요. ${retry}초 뒤에 다시 물어봐 주세요. 우선 GARANG 기록 기준으로는 이렇게 볼게요.`:'지금 요청이 조금 많아요. 잠깐 뒤에 다시 물어봐 주세요. 우선 GARANG 기록 기준으로는 이렇게 볼게요.';
+ if(code==='COACH_AUTH_REQUIRED'||code==='AUTH_REQUIRED'||status===401)return '로그인 연결이 잠깐 끊겼어요. 새로고침하거나 다시 로그인한 뒤 물어봐 주세요. 우선 GARANG 기록 기준으로는 이렇게 볼게요.';
+ if(code==='LLM_TIMEOUT')return 'AI 응답이 조금 늦어졌어요. 다시 연결하는 동안 GARANG 기록 기준으로 먼저 답할게요.';
+ if(code==='LLM_SECRET_MISSING'||code==='LLM_PROVIDER_ERROR'||status===502||status===503)return 'AI 응답 경로가 잠깐 불안정해요. GARANG 기록 기준으로 먼저 답하고, 연결 상태는 별도로 확인할게요.';
+ return '네트워크 연결이 잠깐 불안정해요. GARANG 기록 기준으로 먼저 답할게요.';
+}
+async function askAI(){const input=$('aiQuestion'),q=input?.value.trim();if(!q)return toast('질문을 입력해 주세요.');pushChat('user',q);if(input){input.value='';input.style.height='auto';}render();trackEvent('ai_chat_started',{provider:SERVICES.coachEndpoint?'gateway':'local'});let answer='',local=!SERVICES.coachEndpoint;if(SERVICES.coachEndpoint){try{const r=await fetch(SERVICES.coachEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,context:buildContext()})}),payload=await readCoachGatewayResponse(r);answer=payload.answer;local=payload.source!=='llm';}catch(e){captureError('coach_gateway',e);answer=`${coachGatewayFallbackLead(e)}\n\n${generateLocalAnswer(q)}`;local=true;}}else answer=generateLocalAnswer(q);pushChat('assistant',answer,{local});saveState({event:'ai_chat_answered',source:local?'local':'gateway'});render();requestAnimationFrame(scrollCoachToBottom);}
 function generateLocalAnswer(q){const lower=q.toLowerCase(),d=coachDecision(),t=totalsMeals(),last=state.workouts.at(-1);if(/식단|단백질|먹|영양/.test(lower)){const gap=Math.max(0,proteinTarget()-t.protein);return `로컬 Coach Engine V1 분석\n오늘 단백질 ${Math.round(t.protein)}g / 목표 약 ${proteinTarget()}g입니다. ${Math.round(gap)}g 정도 여유가 있습니다. 오늘 섭취는 ${Math.round(t.kcal)} kcal입니다. 사진 자동 인식은 Vision API 연결 전까지 실제 인식했다고 표시하지 않습니다.`;}if(/운동|강도|오늘|회복|상태/.test(lower))return localCoachSummary(d,performanceScore());if(/최근|기록/.test(lower))return `로컬 Coach Engine V1 분석\n운동 ${state.workouts.length}개, 식사 ${state.meals.length}개, 러닝 ${state.runs.length}개, Body ${state.body.length}개 기록을 현재 사용자 Context로 보고 있습니다.${last?` 최근 운동은 ${last.name} ${last.weight}kg × ${last.reps} × ${last.sets}세트입니다.`:''}`;return `외부 LLM은 현재 연결되지 않았습니다. GARANG의 실제 데이터 기반 규칙 엔진으로 답할 수 있는 범위는 운동 강도, 오늘 상태, 식단 목표, 최근 기록 분석입니다.`;}
 
 function currentGoalLabel(){return String(state.profile?.goal||state.onboarding?.goal||'퍼포먼스 향상').trim()||'퍼포먼스 향상';}
