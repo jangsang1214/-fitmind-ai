@@ -13,6 +13,7 @@ function boot(user){calls=[];const window={fetch:nativeFetch,firebase:{auth:()=>
  await window.fetch('https://example.com/health',{method:'GET'});assert.equal(calls.at(-1).input,'https://example.com/health','non-Coach fetch must remain untouched');
  const noAuth=boot(null),countBefore=calls.length;await assert.rejects(()=>noAuth.fetch(noAuth.GARANG_SERVICES.coachEndpoint,{method:'POST',body:JSON.stringify({message:'x',context:{secret:true}})}),error=>error?.code==='COACH_AUTH_REQUIRED');assert.equal(calls.length,countBefore,'unauthenticated Coach call must not hit network');
  const appSource=fs.readFileSync(path.join(__dirname,'..','01_app/app.js'),'utf8');assert.match(appSource,/catch\(e\)[\s\S]{0,1200}generateLocalAnswer\(q\)/,'existing deterministic fallback must remain reachable after gateway failure');
+ assert.match(appSource,/data\?\.error\?\.code/,'Coach UI must preserve the server failure code');assert.match(appSource,/COACH_RATE_LIMITED/,'Coach UI must distinguish rate limiting from connection failure');assert.doesNotMatch(appSource,/외부 AI 연결에 실패했습니다/,'Coach UI must not collapse all gateway failures into a false connection-failure claim');
  assert.equal(JSON.stringify(window.GARANG_SERVICES).includes('API_KEY'),false,'browser config must contain no provider secret');
  console.log('coach gateway browser transport: PASS');
 })().catch(error=>{console.error(error);process.exitCode=1;});
