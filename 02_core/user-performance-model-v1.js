@@ -38,7 +38,7 @@ function trainingConsistency(state,opts){
   return dimension(value,{confidence:clamp(days.length/8,0,1),sampleSize:days.length,lastUpdated:newestDate(rows),evidence:rows});
 }
 function recoveryStability(state,opts){
-  const rows=recentRows(state?.dailyCheckins||state?.checkins,opts),scores=[];
+  const rows=recentRows((Array.isArray(state?.dailyCheckins)&&state.dailyCheckins.length)?state.dailyCheckins:state?.checkins,opts),scores=[];
   for(const row of rows){const energy=finite(row?.energy),stress=finite(row?.stress),sleep=finite(row?.sleepHours??row?.sleep);const sorenessValues=object(row?.soreness)?Object.values(row.soreness).map(finite).filter(v=>v!==null):[];const soreness=sorenessValues.length?Math.max(...sorenessValues):finite(row?.soreness);const parts=[];if(energy!==null)parts.push(clamp((energy-1)/4*100,0,100));if(stress!==null)parts.push(clamp((5-stress)/4*100,0,100));if(sleep!==null)parts.push(clamp(sleep/8*100,0,100));if(soreness!==null)parts.push(clamp((5-soreness)/5*100,0,100));if(parts.length)scores.push(parts.reduce((a,b)=>a+b,0)/parts.length);}
   const value=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:null;
   return dimension(value,{confidence:clamp(scores.length/7,0,1),sampleSize:scores.length,lastUpdated:newestDate(rows),evidence:rows});
