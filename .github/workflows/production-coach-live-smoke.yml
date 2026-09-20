@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/production-coach-live-smoke-trigger
     paths:
       - .github/workflows/production-coach-live-smoke.yml
   workflow_run:
