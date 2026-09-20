@@ -113,21 +113,56 @@ jobs:
       - name: Verify public Coach auth and method boundaries
         run: npm run preflight:coach:prod-route
 
-      - name: Run authenticated live Coach smoke when a token is available
-        id: live_smoke
+      - name: Mint disposable Firebase ID token
         shell: bash
-        env:
-          GARANG_FIREBASE_ID_TOKEN: ${{ secrets.GARANG_FIREBASE_ID_TOKEN }}
-          GARANG_FIREBASE_ID_TOKEN_ALT: ${{ secrets.GARANG_FIREBASE_ID_TOKEN_ALT }}
         run: |
           set -euo pipefail
-          if [[ -n "${GARANG_FIREBASE_ID_TOKEN:-}" ]]; then
-            npm run smoke:coach:prod
-            echo "status=PASS" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Production route is deployed and fail-closed boundaries passed, but authenticated live LLM smoke is pending because no GARANG_FIREBASE_ID_TOKEN GitHub secret is available."
-            echo "status=SKIPPED_NO_TOKEN" >> "$GITHUB_OUTPUT"
-          fi
+          node <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const config=fs.readFileSync('07_config/firebase-config.js','utf8');
+          const apiKey=config.match(/apiKey:\s*"([^"]+)"/)?.[1];
+          if(!apiKey)throw new Error('FIREBASE_WEB_API_KEY_NOT_FOUND');
+          const email=`garang.smoke.${process.env.GITHUB_RUN_ID}.${process.env.GITHUB_RUN_ATTEMPT}.${crypto.randomUUID()}@example.com`;
+          const password=`Gg!${crypto.randomBytes(18).toString('hex')}Aa1`;
+          (async()=>{
+            const response=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${encodeURIComponent(apiKey)}`,{
+              method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,returnSecureToken:true})
+            });
+            const body=await response.json().catch(()=>({}));
+            if(!response.ok||!body.idToken)throw new Error(`FIREBASE_SMOKE_SIGNUP_FAILED:${body?.error?.message||response.status}`);
+            console.log(`::add-mask::${body.idToken}`);
+            if(body.refreshToken)console.log(`::add-mask::${body.refreshToken}`);
+            fs.appendFileSync(process.env.GITHUB_ENV,`GARANG_FIREBASE_ID_TOKEN=${body.idToken}\nGARANG_FIREBASE_WEB_API_KEY=${apiKey}\n`);
+            console.log('Disposable Firebase smoke identity created.');
+          })().catch(error=>{console.error(error.message||error);process.exit(1);});
+          NODE
+
+      - name: Run authenticated live Coach smoke
+        id: live_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run smoke:coach:prod
+          echo "status=PASS" >> "$GITHUB_OUTPUT"
+
+      - name: Delete disposable Firebase smoke identity
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          node <<'NODE'
+          const token=String(process.env.GARANG_FIREBASE_ID_TOKEN||'').trim();
+          const apiKey=String(process.env.GARANG_FIREBASE_WEB_API_KEY||'').trim();
+          if(!token||!apiKey){console.log('No disposable Firebase identity to delete.');process.exit(0);}
+          (async()=>{
+            const response=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${encodeURIComponent(apiKey)}`,{
+              method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:token})
+            });
+            if(!response.ok){const body=await response.json().catch(()=>({}));console.error(`Disposable Firebase identity cleanup failed: ${body?.error?.message||response.status}`);process.exit(1);}
+            console.log('Disposable Firebase smoke identity deleted.');
+          })().catch(error=>{console.error(error.message||error);process.exit(1);});
+          NODE
 
       - name: Remove temporary Firebase credential material
         if: always()
