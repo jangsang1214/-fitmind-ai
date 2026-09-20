@@ -8,7 +8,7 @@ const valid=()=>JSON.stringify({answer:'오늘은 강도를 낮추세요.',decis
 (async()=>{
  await test('Coach language contract is direct conversational and concrete without moving GARANG decision ownership',()=>{
   const prompt=systemPrompt();
-  assert.match(prompt,/GARANG's deterministic intelligence owns the decision/);assert.match(prompt,/GARANG's server policy owns all state mutations/);
+  assert.match(prompt,/GARANG's deterministic intelligence owns the decision/);assert.match(prompt,/GARANG's server policy owns all state mutations/);assert.match(prompt,/you MUST emit the appropriate toolCall/);assert.match(prompt,/MUST emit createPlan/);
   assert.match(prompt,/Answer the user's actual question in the first sentence/);
   assert.match(prompt,/capable human coach/);
   assert.match(prompt,/collect_data decision is not permission to become evasive/);
