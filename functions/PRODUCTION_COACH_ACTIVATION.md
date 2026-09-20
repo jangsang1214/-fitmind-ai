@@ -14,3 +14,5 @@ Scope:
 - do not change billing, secrets, auth architecture, Firestore schema, or unrelated production resources
 
 Success requires deployment plus authenticated live LLM smoke. A skipped authenticated smoke is not considered success.
+
+Activation trigger authorized by Founder for this exact merged revision. The activation marker commit must change no runtime code; it exists only to invoke the fail-closed production workflow after the verified merge.
