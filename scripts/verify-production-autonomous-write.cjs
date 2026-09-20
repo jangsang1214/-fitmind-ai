@@ -1,6 +1,7 @@
 'use strict';
 
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 
 const origin=String(process.env.GARANG_COACH_ORIGIN||'https://asia-northeast3-fitfind-ai.cloudfunctions.net/api').replace(/\/$/,'');
 const token=String(process.env.GARANG_FIREBASE_ID_TOKEN||'').trim();
@@ -32,7 +33,7 @@ async function context(){
 }
 async function deleteDisposableAccount(){
  const {response,payload}=await jsonRequest('/account/delete',{method:'POST',body:{}});
- if(response.ok)return {deleted:true};
+ if(response.ok){if(process.env.GITHUB_ENV)fs.appendFileSync(process.env.GITHUB_ENV,'GARANG_SMOKE_ACCOUNT_DELETED=1\n');return {deleted:true};}
  throw new Error(`Disposable account cleanup failed HTTP ${response.status} code=${payload?.error?.code||'unknown'}`);
 }
 
