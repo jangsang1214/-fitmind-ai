@@ -40,7 +40,7 @@ async function deleteDisposableAccount(){
 (async()=>{
  let cleanup=null;
  try{
-  const write=await coach(planMessage),toolResults=Array.isArray(write.toolResults)?write.toolResults:[];
+  const write=await coach(planMessage),toolResults=Array.isArray(write.toolResults)?write.toolResults:[];console.log(JSON.stringify({writeSmokeDiagnostic:{toolResults:toolResults.map(row=>({name:row?.name,status:row?.status,code:row?.code||null,executed:row?.executed===true,targetId:row?.targetId||null})),answer:String(write?.answer||'').slice(0,220)}},null,2));
   const planWrite=toolResults.find(row=>row?.name==='createPlan'&&row?.executed===true);
   assert.ok(planWrite,'Explicit plan-save request did not execute bounded createPlan tool');
   assert.ok(planWrite.targetId,'Executed createPlan tool did not return a target id');
