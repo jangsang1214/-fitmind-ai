@@ -32,6 +32,18 @@ async function readRawUser(uid){
  const legacy=await root.get();return legacy.exists?legacy.data()||{}:{};
 }
 async function readCanonicalUser(uid){return normalizeForServer(await readRawUser(uid));}
+async function mutateCanonicalUser(uid,mutator){
+ const safeUid=String(uid||'').trim();if(!safeUid||typeof mutator!=='function')throw Object.assign(new Error('AUTONOMOUS_WRITE_INVALID'),{code:'AUTONOMOUS_WRITE_INVALID'});
+ const db=getFirestore(),ref=db.collection('users').doc(safeUid).collection('app').doc('state');
+ return db.runTransaction(async tx=>{
+  const snap=await tx.get(ref),raw=snap.exists?snap.data()||{}:{},state=normalizeForServer(raw),outcome=await mutator(state);
+  if(!outcome||typeof outcome!=='object'||!outcome.state||typeof outcome.state!=='object')throw Object.assign(new Error('AUTONOMOUS_WRITE_RESULT_INVALID'),{code:'AUTONOMOUS_WRITE_RESULT_INVALID'});
+  if(outcome.changed===true){
+   const next=normalizeForServer(outcome.state);next.updatedAtMs=Date.now();tx.set(ref,next,{merge:false});return {...outcome,state:next};
+  }
+  return {...outcome,state};
+ });
+}
 
 async function consumeCoachRateLimit(uid,{now=new Date()}={}){
  const db=getFirestore(),safeUid=String(uid||'').trim();if(!safeUid)return {allowed:false,retryAfterSec:60,reason:'missing_uid'};
@@ -70,6 +82,7 @@ app.all('/agent/context',(request,response)=>response.status(405).set('Allow','G
 app.post('/coach',createCoachGatewayHandler({
  verifyIdToken:token=>getAuth().verifyIdToken(token,true),
  readUser:readCanonicalUser,
+ mutateUser:mutateCanonicalUser,
  consumeRateLimit:consumeCoachRateLimit,
  getProviderConfig:()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||25000})
 }));
