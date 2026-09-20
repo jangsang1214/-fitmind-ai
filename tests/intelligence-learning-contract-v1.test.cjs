@@ -64,6 +64,12 @@ test('contract graph is read-only and never mutates source state',()=>{
   const state=completedState(),before=JSON.stringify(state);Learning.buildGraph(state,{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z'),days:28});assert.equal(JSON.stringify(state),before);
 });
 
+test('contract graph enforces calendar lookback instead of counting old plan days',()=>{
+  const state=completedState();state.planner.push({id:'old-plan',date:'2026-07-01',decisionId:'old-d',recommendationId:'old-r'});
+  const graph=Learning.buildGraph(state,{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z'),days:28});
+  assert.equal(graph.cycles.some(row=>row.planId==='old-plan'),false);
+});
+
 test('validateCycle reports missing causal links',()=>{
   assert.deepEqual(Learning.validateCycle({decisionId:'d'}),{valid:false,reasons:['MISSING_RECOMMENDATION_ID','MISSING_ACTION_ID','MISSING_PLAN_ID']});
   assert.deepEqual(Learning.validateCycle({decisionId:'d',recommendationId:'r',actionId:'a',planId:'p'}),{valid:true,reasons:[]});
