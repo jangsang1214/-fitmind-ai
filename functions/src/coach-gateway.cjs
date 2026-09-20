@@ -5,6 +5,7 @@ const {createProvider}=require('./llm-provider.cjs');
 const Nutrition=require('./nutrition-intelligence-v2.cjs');
 const Grounding=require('./coach-knowledge-grounding-v2.cjs');
 const {RULES:COACH_KNOWLEDGE}=require('./coach-knowledge-v2.cjs');
+const AutonomousTools=require('./autonomous-data-tools-v1.cjs');
 const crypto=require('node:crypto');
 
 const rows=value=>Array.isArray(value)?value:[];
@@ -43,7 +44,7 @@ function minimalContext(full,state={}){
  const body=rows(full?.body).slice(0,6).map(row=>select(row,['date','weight','fatPercent','muscle']));
  const planner=rows(full?.planner).slice(0,6).map(row=>select(row,['date','domain','type','title','status','completed','executionScore']));
  const checkin=select(latestCheckin(state)||{},['date','sleep','sleepHours','energy','energyLevel','stress','stressLevel','soreness','muscleSoreness','availableMinutes','painCaution']);
- return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,bodyTrend:bodyTrend(body),planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),userPerformance:clone(full?.userPerformance||null),outcomeLearning:clone(full?.outcome||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
+ return {goal:clone(full?.goal??null),confirmedMemory:memory,recent:{workouts,meals,runs,body,bodyTrend:bodyTrend(body),planner,recoveryCheckin:Object.keys(checkin).length?checkin:null},stateIntelligence:clone(full?.userState||null),performance:clone(full?.performanceScore||null),userPerformance:clone(full?.userPerformance||null),longitudinalLearning:clone(full?.longitudinalLearning||null),personalizationPolicy:clone(full?.personalizationPolicy||null),outcomeLearning:clone(full?.outcome||null),garangDecision:clone(full?.decision||null),decisionReasons:rows(full?.decision?.reasonCodes).slice(0,8),actionProposalAllowed:!!full?.decision?.actionProposal};
 }
 function compactNutrition(value={}){return {version:value?.version||null,date:value?.date||null,mode:value?.mode||null,goal:value?.goal||null,priority:value?.priority||null,confidence:finite(value?.confidence),evidence:clone(value?.evidence||{}),reasonCodes:rows(value?.reasonCodes).slice(0,8),guardrails:rows(value?.guardrails).slice(0,8)};}
 function groundingFailure(code){return Object.assign(new Error(code),{code});}
@@ -54,7 +55,7 @@ function validateGroundingContext(context={}){
  return true;
 }
 function buildGroundedContext(full,state={},options={}){
- const context=minimalContext(full,state),nutrition=Nutrition.interpret(state,{now:options.now}),knowledgeGrounding=Grounding.ground({decision:context.garangDecision,userState:context.stateIntelligence,nutrition,query:redactText(options.query,500),coachRules:COACH_KNOWLEDGE,limit:5}),grounded={...context,nutritionIntelligence:compactNutrition(nutrition),knowledgeGrounding};
+ const context=minimalContext(full,state),nutrition=Nutrition.interpret(state,{now:options.now}),knowledgeGrounding=Grounding.ground({decision:context.garangDecision,userState:context.stateIntelligence,nutrition,query:redactText(options.query,500),coachRules:COACH_KNOWLEDGE,limit:5}),grounded={...context,nutritionIntelligence:compactNutrition(nutrition),knowledgeGrounding,autonomousTools:AutonomousTools.publicToolRegistry()};
  validateGroundingContext(grounded);return grounded;
 }
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
@@ -74,9 +75,44 @@ function alignGenerated(generated,context){
  const providerAlignment=verifyGeneratedAlignment(generated,context),decisionConfidence=finite(context?.garangDecision?.confidence),llmConfidence=finite(generated?.confidence),effective=decisionConfidence===null?llmConfidence:llmConfidence===null?decisionConfidence:Math.min(llmConfidence,decisionConfidence),capped=decisionConfidence!==null&&llmConfidence!==null&&llmConfidence>decisionConfidence;
  return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',outcomeLongitudinalClassification:clean(context?.outcomeLearning?.longitudinal?.classification,80)||'insufficient_longitudinal_evidence',contractVerified:providerAlignment.verified,reasonCodesUsed:providerAlignment.reasonCodesUsed},grounding:context?.knowledgeGrounding?{version:clean(context?.knowledgeGrounding?.version,80)||null,evidenceCount:Math.max(0,Number(context?.knowledgeGrounding?.evidenceCount)||0),nutritionMode:clean(context?.nutritionIntelligence?.mode,60)||null,decisionOwnedBy:'GARANG',contractVerified:true}:undefined}};
 }
+function toolCallForExecution(row,index,context,requestId){
+ const call={name:clean(row?.name,80),callId:clean(row?.callId,180)||`${requestId}:tool:${index+1}`,args:row?.args&&typeof row.args==='object'&&!Array.isArray(row.args)?clone(row.args):{},evidenceQuote:clean(row?.evidenceQuote,500),evidenceSource:clean(row?.evidenceSource,40).toLowerCase()||'inferred',reason:clean(row?.reason,500)||null};
+ if(['createPlan','updatePlan'].includes(call.name)){
+  call.args={...call.args,decisionId:clean(context?.garangDecision?.decisionId,320)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,recommendationId:clean(call.args?.recommendationId,180)||`coach:${requestId}`};
+ }
+ return call;
+}
+function toolResultPublic(call,outcome){
+ const policy=outcome?.policy||{},result=outcome?.result||null;
+ return {name:call.name,callId:call.callId,status:outcome?.executed===true?'executed':clean(policy.status,40)||'not_executed',code:clean(policy.code,100)||null,executed:outcome?.executed===true,duplicate:outcome?.duplicate===true,targetId:clean(result?.id,180)||null};
+}
+async function executeGeneratedTools({toolCalls,uid,message,context,mutateUser,now,requestId}){
+ const calls=rows(toolCalls).slice(0,4).map((row,index)=>toolCallForExecution(row,index,context,requestId));
+ if(!calls.length)return [];
+ if(typeof mutateUser!=='function')return calls.map(call=>({name:call.name,callId:call.callId,status:'unavailable',code:'AUTONOMOUS_WRITE_UNAVAILABLE',executed:false,duplicate:false,targetId:null}));
+ const transaction=await mutateUser(uid,state=>{
+  let next=state,changed=false;const results=[];
+  for(const call of calls){
+   try{
+    const outcome=AutonomousTools.executeOnState(next,call,{uid,message,verifiedSource:false,now,personalizationPolicy:context?.personalizationPolicy});
+    next=outcome.state;changed=changed||(outcome.executed===true&&outcome.duplicate!==true);results.push(toolResultPublic(call,outcome));
+   }catch(error){results.push({name:call.name,callId:call.callId,status:'denied',code:errorCode(error),executed:false,duplicate:false,targetId:null});}
+  }
+  return {state:next,changed,results};
+ });
+ return rows(transaction?.results);
+}
+function answerWithToolStatus(answer,toolResults,language='ko'){
+ const results=rows(toolResults);if(!results.length)return answer;
+ const executed=results.filter(row=>row.executed===true).length,needsConfirmation=results.some(row=>row.status==='confirmation_required');
+ if(executed===results.length)return `${answer}\n\n${language==='en'?'The requested GARANG changes were applied.':'요청한 변경을 GARANG에 반영했어요.'}`;
+ if(executed>0)return `${answer}\n\n${language==='en'?'Some requested changes were applied; the remaining changes need confirmation or more evidence.':'일부 변경은 반영했고, 나머지는 확인이나 근거가 더 필요해요.'}`;
+ if(needsConfirmation)return `${answer}\n\n${language==='en'?'This change needs confirmation or stronger evidence before GARANG can apply it.':'이 변경은 반영 전에 확인이나 더 명확한 근거가 필요해요.'}`;
+ return `${answer}\n\n${language==='en'?'No GARANG data was changed.':'GARANG 데이터는 변경하지 않았어요.'}`;
+}
 function defaultObserve(event){try{console.info('[GARANG_COACH_EVENT]',JSON.stringify(event));}catch{}}
 function createCoachGatewayHandler(deps={}){
- const verifyIdToken=deps.verifyIdToken,readUser=deps.readUser,consumeRateLimit=deps.consumeRateLimit||(async()=>({allowed:true})),clock=deps.clock||(()=>new Date()),providerFactory=deps.providerFactory||createProvider,getProviderConfig=deps.getProviderConfig||(()=>({provider:'openai',apiKey:process.env.GARANG_LLM_API_KEY||'',model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna'})),observe=typeof deps.observe==='function'?deps.observe:defaultObserve;
+ const verifyIdToken=deps.verifyIdToken,readUser=deps.readUser,mutateUser=deps.mutateUser,consumeRateLimit=deps.consumeRateLimit||(async()=>({allowed:true})),clock=deps.clock||(()=>new Date()),providerFactory=deps.providerFactory||createProvider,getProviderConfig=deps.getProviderConfig||(()=>({provider:'openai',apiKey:process.env.GARANG_LLM_API_KEY||'',model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna'})),observe=typeof deps.observe==='function'?deps.observe:defaultObserve;
  if(typeof verifyIdToken!=='function'||typeof readUser!=='function')throw new Error('COACH_GATEWAY_DEPENDENCIES_REQUIRED');
  return async function coachGateway(req,res){
   if(String(req?.method||'POST').toUpperCase()!=='POST')return res.status(405).json({ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
@@ -91,12 +127,12 @@ function createCoachGatewayHandler(deps={}){
   let context;try{const normalizedState=normalizeStateForIntelligence(state||{}),full=buildAgentContext(normalizedState,{ownerUid:uid,query:message,now,limit:12,memoryLimit:10});context=buildGroundedContext(full,normalizedState,{query:message,now});}catch(error){const code=errorCode(error);observe({event:'llm_fallback',requestId:id,code,providerStatus:null,decisionMode:null});return res.status(503).json({ok:false,error:{code},fallbackRequired:true,requestId:id});}
   try{
    const config=getProviderConfig();observe({event:'llm_request',requestId:id,provider:clean(config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',nutritionMode:clean(context?.nutritionIntelligence?.mode,60)||null,groundingEvidenceCount:Number(context?.knowledgeGrounding?.evidenceCount)||0,hasImage:!!image});
-   const provider=providerFactory(config),generated=alignGenerated(await provider.generate({message,context,language,requestId:id,image}),context),safe=safeProviderData(generated),data={...safe,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),actionProposalAllowed:context.actionProposalAllowed};
-   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true,alignmentVerified:safe?.metadata?.alignment?.contractVerified===true,groundingVerified:safe?.metadata?.grounding?.contractVerified===true});
-   return res.status(200).json({ok:true,answer:safe.answer,data});
+   const provider=providerFactory(config),generated=alignGenerated(await provider.generate({message,context,language,requestId:id,image}),context),toolResults=await executeGeneratedTools({toolCalls:generated?.toolCalls,uid,message,context,mutateUser,now,requestId:id}),safe=safeProviderData(generated),answer=answerWithToolStatus(safe.answer,toolResults,language),data={...safe,answer,source:'llm',requestId:id,garangDecision:clone(context.garangDecision),personalizationPolicy:clone(context.personalizationPolicy),longitudinalLearning:clone(context.longitudinalLearning),actionProposalAllowed:context.actionProposalAllowed,toolResults};
+   observe({event:'llm_success',requestId:id,provider:clean(safe?.metadata?.provider||config?.provider||'openai',40),decisionMode:clean(context?.garangDecision?.mode,40)||null,confidenceCapped:safe?.metadata?.alignment?.confidenceCapped===true,alignmentVerified:safe?.metadata?.alignment?.contractVerified===true,groundingVerified:safe?.metadata?.grounding?.contractVerified===true,toolCalls:Number(rows(generated?.toolCalls).length)||0,toolWrites:toolResults.filter(row=>row.executed===true).length});
+   return res.status(200).json({ok:true,answer,data});
   }catch(error){
    const code=errorCode(error);observe({event:'llm_fallback',requestId:id,code,providerStatus:finite(error?.status),decisionMode:clean(context?.garangDecision?.mode,40)||null});return res.status(code==='LLM_SECRET_MISSING'?503:502).json({ok:false,error:{code},fallbackRequired:true,requestId:id,garangDecision:clone(context.garangDecision)});
   }
  };
 }
-module.exports={createCoachGatewayHandler,minimalContext,buildGroundedContext,compactNutrition,validateGroundingContext,redactText,parseCoachImage,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,verifyGeneratedAlignment,alignGenerated};
+module.exports={createCoachGatewayHandler,minimalContext,buildGroundedContext,compactNutrition,validateGroundingContext,redactText,parseCoachImage,latestCheckin,normalizeCheckin,normalizeStateForIntelligence,bodyTrend,safeProviderData,verifyGeneratedAlignment,alignGenerated,toolCallForExecution,executeGeneratedTools,answerWithToolStatus};
