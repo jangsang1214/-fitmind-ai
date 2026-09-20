@@ -50,7 +50,7 @@ function normalizeCall(input={}){
  if(!['explicit_user','verified_source','inferred'].includes(evidenceSource))fail('TOOL_EVIDENCE_SOURCE_INVALID');
  return {name,callId,args,evidenceQuote,evidenceSource,reason:clean(input.reason,500)||null};
 }
-function policyFor(callInput,{message='',verifiedSource=false}={}){
+function policyFor(callInput,{message='',verifiedSource=false,personalizationPolicy=null}={}){
  let call;
  try{call=normalizeCall(callInput);}catch(error){return {status:'denied',code:error.code||'TOOL_CALL_INVALID',call:null};}
  if(!writeIntent(message))return {status:'confirmation_required',code:'EXPLICIT_WRITE_INTENT_REQUIRED',call};
@@ -59,6 +59,12 @@ function policyFor(callInput,{message='',verifiedSource=false}={}){
  if(call.evidenceSource==='inferred')return {status:'confirmation_required',code:'INFERRED_WRITE_REQUIRES_CONFIRMATION',call};
  if(FACTUAL_TOOLS.has(call.name)&&call.evidenceSource==='explicit_user'&&!numbersGrounded(message,call.args))return {status:'confirmation_required',code:'FACTUAL_VALUES_NOT_GROUNDED',call};
  if(call.name==='saveMemory'&&DIRECT_IDENTIFIER.test(clean(call.args.key,120)))return {status:'denied',code:'SENSITIVE_MEMORY_KEY_BLOCKED',call};
+ if(['createPlan','updatePlan'].includes(call.name)&&object(personalizationPolicy?.adjustments)){
+  const adjustments=personalizationPolicy.adjustments,intensity=finite(call.args.intensityScale),volume=finite(call.args.volumeScale),intensityCap=finite(adjustments.intensityCap),volumeCap=finite(adjustments.volumeCap);
+  if(adjustments.suppressProgression===true&&clean(call.args.decisionMode,40)==='progress')return {status:'confirmation_required',code:'PERSONALIZATION_SUPPRESSES_AUTONOMOUS_PROGRESS',call};
+  if(intensity!==null&&intensityCap!==null&&intensity>intensityCap)return {status:'confirmation_required',code:'PERSONALIZATION_INTENSITY_CAP',call};
+  if(volume!==null&&volumeCap!==null&&volume>volumeCap)return {status:'confirmation_required',code:'PERSONALIZATION_VOLUME_CAP',call};
+ }
  return {status:'autonomous',code:'AUTONOMOUS_WRITE_ALLOWED',call};
 }
 function ensureState(stateInput,uid){
@@ -103,7 +109,7 @@ function normalizePlan(call,now,existing=null){
   completed:existing?.completed===true,
   createdAt:existing?.createdAt||now,
   updatedAt:now,
-  revision:Math.max(1,Number(existing?.revision)||0)+1
+  revision:existing?Math.max(1,Number(existing?.revision)||1)+1:1
  };
 }
 function normalizeFactualRecord(call,now){
@@ -126,8 +132,8 @@ function normalizeFactualRecord(call,now){
  const sleepHours=finite(record.sleepHours??record.sleep),energy=finite(record.energy??record.energyLevel),stress=finite(record.stress??record.stressLevel);
  return {domain:'dailyCheckins',row:{...record,id:clean(record.id,180)||stableId(call,'checkin'),sleepHours,energy,stress,createdAt:clean(record.createdAt)||now,updatedAt:now,revision:Math.max(1,Number(record.revision)||1),source:'coach_agent'}};
 }
-function executeOnState(stateInput,callInput,{uid=null,message='',verifiedSource=false,now=new Date()}={}){
- const policy=policyFor(callInput,{message,verifiedSource});if(policy.status!=='autonomous')return {executed:false,policy,state:clone(stateInput),result:null,inverse:null,duplicate:false};
+function executeOnState(stateInput,callInput,{uid=null,message='',verifiedSource=false,now=new Date(),personalizationPolicy=null}={}){
+ const policy=policyFor(callInput,{message,verifiedSource,personalizationPolicy});if(policy.status!=='autonomous')return {executed:false,policy,state:clone(stateInput),result:null,inverse:null,duplicate:false};
  const call=policy.call,state=ensureState(stateInput,uid),fp=receiptFingerprint(call),prior=existingReceipt(state,call);
  if(prior){if(prior.fingerprint!==fp)fail('IDEMPOTENCY_KEY_REUSE');return {executed:true,policy,state,result:clone(prior.result),inverse:clone(prior.inverse),duplicate:true};}
  const at=nowIso(now);let result=null,inverse=null;
