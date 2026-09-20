@@ -58,7 +58,7 @@ function recommendationResponsiveness(state,opts){
   const value=audit.length?accepted/audit.length*100:null;
   return dimension(value,{confidence:clamp(audit.length/8,0,1),sampleSize:audit.length,lastUpdated:newestDate(audit),evidence:audit});
 }
-function recommendationOutcomeEffectiveness(opts){
+function attributedOutcomeScore(opts){
   const cycles=list(opts?.learningGraph?.cycles).filter(row=>row?.attribution?.complete===true&&object(row?.outcome)&&clean(row.outcome.classification)!=='pending');
   const scored=cycles.map(row=>{const direct=finite(row?.outcome?.rate??row?.outcome?.score),classification=clean(row?.outcome?.classification).toLowerCase(),score=direct!==null?clamp(direct,0,100):classification==='completed'?100:classification==='partial'?50:classification==='missed'?0:null;return score===null?null:{row,score};}).filter(Boolean);
   const value=scored.length?scored.reduce((sum,item)=>sum+item.score,0)/scored.length:null;
@@ -72,7 +72,7 @@ function build(stateInput,{days=28,asOf=new Date(),learningGraph=null}={}){
     nutritionConsistency:nutritionConsistency(state,opts),
     planAdherence:planAdherence(state,opts),
     recommendationResponsiveness:recommendationResponsiveness(state,opts),
-    recommendationOutcomeEffectiveness:recommendationOutcomeEffectiveness(opts)
+    attributedOutcomeScore:attributedOutcomeScore(opts)
   };
   return Object.freeze({modelVersion:MODEL_VERSION,asOf:new Date(asOf).toISOString(),windowDays:opts.days,dimensions,guardrails:Object.freeze({readOnly:true,noDecisionMutation:true,noAutomaticProgression:true})});
 }
