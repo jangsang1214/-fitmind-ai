@@ -55,7 +55,7 @@ function validateGroundingContext(context={}){
  return true;
 }
 function buildGroundedContext(full,state={},options={}){
- const context=minimalContext(full,state),nutrition=Nutrition.interpret(state,{now:options.now}),knowledgeGrounding=Grounding.ground({decision:context.garangDecision,userState:context.stateIntelligence,nutrition,query:redactText(options.query,500),coachRules:COACH_KNOWLEDGE,limit:5}),grounded={...context,nutritionIntelligence:compactNutrition(nutrition),knowledgeGrounding,autonomousTools:AutonomousTools.publicToolRegistry()};
+ const context=minimalContext(full,state),nutrition=Nutrition.interpret(state,{now:options.now}),knowledgeGrounding=Grounding.ground({decision:context.garangDecision,userState:context.stateIntelligence,nutrition,query:redactText(options.query,500),coachRules:COACH_KNOWLEDGE,limit:5}),grounded={...context,nutritionIntelligence:compactNutrition(nutrition),knowledgeGrounding,autonomousTools:AutonomousTools.publicToolRegistry(),autonomousWriteRequested:AutonomousTools.writeIntent(options.query)};
  validateGroundingContext(grounded);return grounded;
 }
 function requestId(){return crypto.randomUUID?.()||`coach_${Date.now()}_${Math.random().toString(36).slice(2)}`;}
