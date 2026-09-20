@@ -12,6 +12,7 @@
     "preflight:coach:prod-route": "node tests/coach-production-route-health.test.cjs",
     "smoke:coach:staging": "node scripts/verify-staging-coach.cjs",
     "smoke:coach:prod": "node scripts/verify-production-coach.cjs",
+    "smoke:coach:prod-write": "node scripts/verify-production-autonomous-write.cjs",
     "lint": "node scripts/check.cjs",
     "build": "node scripts/check.cjs --build",
     "start": "python -m http.server 8765",
