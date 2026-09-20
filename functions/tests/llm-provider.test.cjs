@@ -11,6 +11,9 @@ const valid=()=>JSON.stringify({answer:'오늘은 강도를 낮추세요.',decis
   assert.match(prompt,/GARANG's deterministic intelligence owns the decision/);
   assert.match(prompt,/Answer the user's actual question in the first sentence/);
   assert.match(prompt,/capable human coach/);
+  assert.match(prompt,/collect_data decision is not permission to become evasive/);
+  assert.match(prompt,/Never use 'Data Required'/);
+  assert.match(prompt,/one conservative, reversible suggestion/);
   assert.match(prompt,/make one concrete recommendation instead of refusing/);
   assert.match(prompt,/어디 할까\?/);
   assert.match(prompt,/body part or training focus/);
