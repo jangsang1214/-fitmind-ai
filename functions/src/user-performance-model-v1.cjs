@@ -17,7 +17,7 @@ const dateKey=v=>{const s=clean(v);const m=s.match(/^\d{4}-\d{2}-\d{2}/);return 
 const rowDate=row=>dateKey(row?.date||row?.performedAt||row?.createdAt||row?.at||row?.updatedAt||row?.resolvedAt);
 const newestDate=rows=>list(rows).map(rowDate).filter(Boolean).sort().at(-1)||null;
 const unique=values=>[...new Set(list(values).map(String).filter(Boolean))];
-const evidenceId=row=>clean(row?.id||row?.recommendationId||row?.decisionId||row?.callId)||null;
+const evidenceId=row=>clean(row?.id||row?.outcomeId||row?.executionId||row?.recommendationId||row?.decisionId||row?.planId||row?.callId)||null;
 const evidenceIds=rows=>unique(list(rows).map(evidenceId).filter(Boolean)).slice(-24);
 
 function dimension(value,{confidence=0,sampleSize=0,lastUpdated=null,evidence=[]}={}){
@@ -69,14 +69,21 @@ function recommendationResponsiveness(state,opts){
   const value=audit.length?accepted/audit.length*100:null;
   return dimension(value,{confidence:clamp(audit.length/8,0,1),sampleSize:audit.length,lastUpdated:newestDate(audit),evidence:audit});
 }
-function build(stateInput,{days=28,asOf=new Date()}={}){
-  const state=object(stateInput)?stateInput:{},opts={days:Math.max(7,Math.min(56,Number(days)||28)),asOf};
+function recommendationOutcomeEffectiveness(opts){
+  const cycles=list(opts?.learningGraph?.cycles).filter(row=>row?.attribution?.complete===true&&object(row?.outcome)&&clean(row.outcome.classification)!=='pending');
+  const scored=cycles.map(row=>{const direct=finite(row?.outcome?.rate??row?.outcome?.score),classification=clean(row?.outcome?.classification).toLowerCase(),score=direct!==null?clamp(direct,0,100):classification==='completed'?100:classification==='partial'?50:classification==='missed'?0:null;return score===null?null:{row,score};}).filter(Boolean);
+  const value=scored.length?scored.reduce((sum,item)=>sum+item.score,0)/scored.length:null;
+  return dimension(value,{confidence:clamp(scored.length/6,0,1),sampleSize:scored.length,lastUpdated:newestDate(scored.map(item=>item.row)),evidence:scored.map(item=>item.row)});
+}
+function build(stateInput,{days=28,asOf=new Date(),learningGraph=null}={}){
+  const state=object(stateInput)?stateInput:{},opts={days:Math.max(7,Math.min(56,Number(days)||28)),asOf,learningGraph};
   const dimensions={
     trainingConsistency:trainingConsistency(state,opts),
     recoveryStability:recoveryStability(state,opts),
     nutritionConsistency:nutritionConsistency(state,opts),
     planAdherence:planAdherence(state,opts),
-    recommendationResponsiveness:recommendationResponsiveness(state,opts)
+    recommendationResponsiveness:recommendationResponsiveness(state,opts),
+    recommendationOutcomeEffectiveness:recommendationOutcomeEffectiveness(opts)
   };
   return Object.freeze({modelVersion:MODEL_VERSION,asOf:new Date(asOf).toISOString(),windowDays:opts.days,dimensions,guardrails:Object.freeze({readOnly:true,noDecisionMutation:true,noAutomaticProgression:true})});
 }
