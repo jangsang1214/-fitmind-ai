@@ -64,6 +64,12 @@ test('contract graph is read-only and never mutates source state',()=>{
   const state=completedState(),before=JSON.stringify(state);Learning.buildGraph(state,{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z'),days:28});assert.equal(JSON.stringify(state),before);
 });
 
+test('contract graph enforces calendar lookback instead of counting old plan days',()=>{
+  const state=completedState();state.planner.push({id:'old-plan',date:'2026-07-01',decisionId:'old-d',recommendationId:'old-r'});
+  const graph=Learning.buildGraph(state,{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z'),days:28});
+  assert.equal(graph.cycles.some(row=>row.planId==='old-plan'),false);
+});
+
 test('validateCycle reports missing causal links',()=>{
   assert.deepEqual(Learning.validateCycle({decisionId:'d'}),{valid:false,reasons:['MISSING_RECOMMENDATION_ID','MISSING_ACTION_ID','MISSING_PLAN_ID']});
   assert.deepEqual(Learning.validateCycle({decisionId:'d',recommendationId:'r',actionId:'a',planId:'p'}),{valid:true,reasons:[]});
@@ -96,22 +102,24 @@ test('User Performance context supports explicit thresholds without inventing mi
   assert.equal(Object.keys(emptyContext.dimensions).length,0);assert.ok(emptyContext.withheldDimensions.every(row=>row.reason==='NO_VALUE'));
 });
 
-test('production boot loads User Performance Model before the Intelligence Bridge',()=>{
+test('production boot loads User Performance and attribution contracts before the Intelligence Bridge',()=>{
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
-  const modelScript='02_core/user-performance-model-v1.js',bridgeScript='06_features/final/intelligence-state-bridge-v1.js';
-  const htmlModel=html.indexOf(`./${modelScript}`),htmlBridge=html.indexOf(`./${bridgeScript}`),manifestModel=manifest.scripts.indexOf(modelScript),manifestBridge=manifest.scripts.indexOf(bridgeScript);
+  const modelScript='02_core/user-performance-model-v1.js',planScript='02_core/plan-execution-v1.js',learningScript='02_core/intelligence-learning-contract-v1.js',bridgeScript='06_features/final/intelligence-state-bridge-v1.js';
+  const htmlModel=html.indexOf(`./${modelScript}`),htmlPlan=html.indexOf(`./${planScript}`),htmlLearning=html.indexOf(`./${learningScript}`),htmlBridge=html.indexOf(`./${bridgeScript}`),manifestModel=manifest.scripts.indexOf(modelScript),manifestPlan=manifest.scripts.indexOf(planScript),manifestLearning=manifest.scripts.indexOf(learningScript),manifestBridge=manifest.scripts.indexOf(bridgeScript);
   assert.ok(htmlModel>=0&&htmlBridge>htmlModel,'index.html must boot User Performance Model before Intelligence Bridge');
+  assert.ok(htmlPlan>=0&&htmlLearning>htmlPlan&&htmlBridge>htmlLearning,'index.html must boot Plan Execution then Learning Contract before Intelligence Bridge');
   assert.ok(manifestModel>=0&&manifestBridge>manifestModel,'runtime-manifest must track User Performance Model before Intelligence Bridge');
+  assert.ok(manifestPlan>=0&&manifestLearning>manifestPlan&&manifestBridge>manifestLearning,'runtime-manifest must track Plan Execution then Learning Contract before Intelligence Bridge');
 });
 
 test('Intelligence Bridge exposes confidence-gated User Performance context without Decision ownership',()=>{
   const state=performanceState(),before=JSON.stringify(state),bridgeSource=fs.readFileSync(path.join(root,'06_features/final/intelligence-state-bridge-v1.js'),'utf8');
   assert.equal(bridgeSource.includes('GarangDecisionIntelligence'),false,'bridge must not acquire Decision Intelligence ownership');
   assert.equal(bridgeSource.includes('.decide('),false,'bridge must not call deterministic decision selection from performance context');
-  const sandbox={console,JSON,window:null};sandbox.window=sandbox;sandbox.GarangAgentStateBridge={ready:()=>true,getState:()=>state,getUserState:()=>null,getDecision:()=>null,getMemoryContext:()=>null};sandbox.GarangIntelligenceCore={run:()=>({ok:true}),compactForContext:value=>value,diagnostics:()=>({})};sandbox.GarangPerformanceScore={compute:()=>({})};sandbox.GarangAdaptivePlanner={adaptWeek:()=>({})};sandbox.GarangPlanAdaptation={derive:()=>null,compactForContext:value=>value,weeklyReview:()=>null,compactWeeklyReview:value=>value};sandbox.GarangUserPerformanceModelV1=UserPerformance;
+  const sandbox={console,JSON,window:null};sandbox.window=sandbox;sandbox.GarangAgentStateBridge={ready:()=>true,getState:()=>state,getUserState:()=>null,getDecision:()=>null,getMemoryContext:()=>null};sandbox.GarangIntelligenceCore={run:()=>({ok:true}),compactForContext:value=>value,diagnostics:()=>({})};sandbox.GarangPerformanceScore={compute:()=>({})};sandbox.GarangAdaptivePlanner={adaptWeek:()=>({})};sandbox.GarangPlanAdaptation={derive:()=>null,compactForContext:value=>value,weeklyReview:()=>null,compactWeeklyReview:value=>value};sandbox.GarangUserPerformanceModelV1=UserPerformance;sandbox.GarangIntelligenceLearningContractV1=Learning;sandbox.GarangPlanExecution=PlanExecution;
   vm.runInNewContext(bridgeSource,sandbox,{filename:'intelligence-state-bridge-v1.js'});
   const bridge=sandbox.GarangIntelligenceBridge,context=bridge.getUserPerformanceContext({days:28,asOf:new Date('2026-09-17T12:00:00+09:00'),minConfidence:0.5});
-  assert.equal(bridge.userPerformanceReady(),true);assert.equal(context.minConfidence,0.5);assert.equal(Object.keys(context.dimensions).join(','),'trainingConsistency');assert.equal(context.guardrails.affectsDecision,false);assert.equal(JSON.stringify(state),before);
+  assert.equal(bridge.userPerformanceReady(),true);assert.equal(context.minConfidence,0.5);assert.equal(Object.keys(context.dimensions).join(','),'trainingConsistency');assert.ok(context.withheldDimensions.some(row=>row.name==='attributedOutcomeScore'&&row.reason==='NO_VALUE'));assert.equal(context.guardrails.affectsDecision,false);assert.equal(JSON.stringify(state),before);
 });
 
 console.log(`PASS intelligence-learning-contract-v1 ${tests.length} tests`);

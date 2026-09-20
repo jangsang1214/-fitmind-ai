@@ -46,6 +46,7 @@
     "02_core/intelligence-core-v1.js",
     "02_core/user-performance-model-v1.js",
     "02_core/plan-execution-v1.js",
+    "02_core/intelligence-learning-contract-v1.js",
     "02_core/plan-adaptation-v1.js",
     "02_core/nutrition-recommendation-v1.js",
     "02_core/golden-path-v1.js",
