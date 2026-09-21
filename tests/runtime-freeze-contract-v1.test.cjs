@@ -15,7 +15,7 @@ assert.equal(new Set(localScripts).size,localScripts.length,'active scripts must
 assert.equal(new Set(localStyles).size,localStyles.length,'active styles must not be duplicated');
 assert.equal(localScripts.some(p=>/(^|\/)archive\//i.test(p)),false,'archive scripts must never boot');
 assert.equal(localStyles.some(p=>/(^|\/)archive\//i.test(p)),false,'archive styles must never boot');
-for(const [capability,owner] of Object.entries(contract.singleOwners||{}))assert.ok(localScripts.includes(owner),`${capability} owner must be an active script: ${owner}`);
+const activeOwners=new Set([...localScripts,...localStyles]);for(const [capability,owner] of Object.entries(contract.singleOwners||{}))assert.ok(activeOwners.has(owner),`${capability} owner must be an active runtime asset: ${owner}`);
 assert.equal(new Set(Object.keys(contract.singleOwners||{})).size,Object.keys(contract.singleOwners||{}).length);
 assert.equal(new Set(contract.lifecycleEvents||[]).size,(contract.lifecycleEvents||[]).length,'lifecycle events must be unique');
 const riskyName=/(?:^|\/)[^/]*(?:hotfix|(?:^|-)fix(?:-|\.)|safety|stability|final)[^/]*\.(?:js|css)$/i;
