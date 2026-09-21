@@ -30,7 +30,7 @@ const tests=[];const test=async(name,fn)=>{await fn();tests.push(name);console.l
   const source=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-agent-v4.js'),'utf8');
   for(const phrase of ['Based on today’s records:','There are ${count} saved workout records.',"Today’s recovery score is about",'The external AI is not connected yet, so GARANG is responding with its local Coach Engine.'])assert.ok(source.includes(phrase),phrase);
   for(const token of ['threadMessageById','promptByKo.has(source)','translateKnownCoachText','repairMessageLanguage(root)'])assert.ok(source.includes(token),token);
-  assert.ok(source.includes("version:'garang-coach-agent-v4.8'"));
+  assert.ok(source.includes("version:'garang-coach-agent-v4.9'"));
   assert.equal(fs.existsSync(path.join(root,'06_features/ui/runtime/garang-coach-item4-final.js')),false,'retired item4 overlay must stay deleted');
  });
  console.log(`${tests.length} Agent E2E tests passed`);
