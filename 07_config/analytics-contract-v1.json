@@ -17,35 +17,142 @@
     "failureMayBlockUserAction": false
   },
   "canonicalEvents": {
-    "signup_completed": {"stage": "activation", "allowedProperties": []},
-    "onboarding_completed": {"stage": "activation", "allowedProperties": []},
-    "record_created": {"stage": "activation", "allowedProperties": ["recordType", "source"]},
-    "first_record_created": {"stage": "activation", "allowedProperties": ["recordType", "source"]},
-    "today_viewed": {"stage": "engagement", "allowedProperties": ["source"]},
-    "coach_opened": {"stage": "engagement", "allowedProperties": ["source"]},
-    "coach_recommendation_shown": {"stage": "intelligence", "allowedProperties": ["provider", "source"]},
-    "daily_plan_applied": {"stage": "activation", "allowedProperties": ["source"]},
-    "planned_action_started": {"stage": "execution", "allowedProperties": ["actionType", "source"]},
-    "planned_action_completed": {"stage": "execution", "allowedProperties": ["actionType", "source"]},
-    "accumulation_viewed": {"stage": "retention", "allowedProperties": ["source"]}
+    "signup_completed": {
+      "stage": "activation",
+      "allowedProperties": []
+    },
+    "onboarding_completed": {
+      "stage": "activation",
+      "allowedProperties": []
+    },
+    "record_created": {
+      "stage": "activation",
+      "allowedProperties": [
+        "recordType",
+        "source"
+      ]
+    },
+    "first_record_created": {
+      "stage": "activation",
+      "allowedProperties": [
+        "recordType",
+        "source"
+      ]
+    },
+    "today_viewed": {
+      "stage": "engagement",
+      "allowedProperties": [
+        "source"
+      ]
+    },
+    "coach_opened": {
+      "stage": "engagement",
+      "allowedProperties": [
+        "source"
+      ]
+    },
+    "coach_recommendation_shown": {
+      "stage": "intelligence",
+      "allowedProperties": [
+        "provider",
+        "source",
+        "episodeId",
+        "decisionId",
+        "decisionMode",
+        "recommendationId",
+        "policyVersion"
+      ]
+    },
+    "daily_plan_applied": {
+      "stage": "activation",
+      "allowedProperties": [
+        "source",
+        "episodeId",
+        "decisionId",
+        "recommendationId",
+        "policyVersion"
+      ]
+    },
+    "planned_action_started": {
+      "stage": "execution",
+      "allowedProperties": [
+        "actionType",
+        "source",
+        "episodeId",
+        "recommendationId"
+      ]
+    },
+    "planned_action_completed": {
+      "stage": "execution",
+      "allowedProperties": [
+        "actionType",
+        "source",
+        "episodeId",
+        "recommendationId"
+      ]
+    },
+    "accumulation_viewed": {
+      "stage": "retention",
+      "allowedProperties": [
+        "source"
+      ]
+    },
+    "coach_recommendation_resolved": {
+      "stage": "intelligence",
+      "allowedProperties": [
+        "source",
+        "episodeId",
+        "decisionId",
+        "recommendationId",
+        "policyVersion",
+        "resolution"
+      ]
+    }
   },
   "derivedMetrics": {
     "day2_return": "Compute from consented activity timestamps; do not rely on a client-authored day2 event.",
     "day7_active": "Compute from consented activity timestamps; do not rely on a client-authored day7 event.",
     "signup_to_first_record": "signup_completed -> first_record_created",
     "first_record_to_coach": "first_record_created -> coach_opened",
-    "coach_to_plan_apply": "coach_opened -> daily_plan_applied"
+    "coach_to_plan_apply": "coach_opened -> daily_plan_applied",
+    "recommendation_resolution_rate": "coach_recommendation_shown -> coach_recommendation_resolved",
+    "recommendation_to_execution": "coach_recommendation_resolved(accepted|edited) -> planned_action_completed",
+    "closed_loop_episode_rate": "episodeId-linked recommendation -> resolution -> execution -> outcome -> later recommendation"
   },
   "legacyEventMapping": {
-    "workout_saved": {"canonical": "record_created", "recordType": "workout"},
-    "meal_saved": {"canonical": "record_created", "recordType": "nutrition"},
-    "run_saved": {"canonical": "record_created", "recordType": "running"},
-    "inbody_saved": {"canonical": "record_created", "recordType": "body"},
-    "ai_chat_answered": {"canonical": "coach_recommendation_shown"},
-    "ai_plan_applied": {"canonical": "daily_plan_applied"},
-    "planner_completed": {"canonical": "planned_action_completed"},
-    "screen_viewed:today": {"canonical": "today_viewed"},
-    "screen_viewed:coach": {"canonical": "coach_opened"},
-    "screen_viewed:progress": {"canonical": "accumulation_viewed"}
+    "workout_saved": {
+      "canonical": "record_created",
+      "recordType": "workout"
+    },
+    "meal_saved": {
+      "canonical": "record_created",
+      "recordType": "nutrition"
+    },
+    "run_saved": {
+      "canonical": "record_created",
+      "recordType": "running"
+    },
+    "inbody_saved": {
+      "canonical": "record_created",
+      "recordType": "body"
+    },
+    "ai_chat_answered": {
+      "canonical": "coach_recommendation_shown"
+    },
+    "ai_plan_applied": {
+      "canonical": "daily_plan_applied"
+    },
+    "planner_completed": {
+      "canonical": "planned_action_completed"
+    },
+    "screen_viewed:today": {
+      "canonical": "today_viewed"
+    },
+    "screen_viewed:coach": {
+      "canonical": "coach_opened"
+    },
+    "screen_viewed:progress": {
+      "canonical": "accumulation_viewed"
+    }
   }
 }
