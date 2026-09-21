@@ -15,7 +15,7 @@ function trustedDimension(model,name,minConfidence=DEFAULT_MIN_CONFIDENCE){
  return {name,value,confidence:clamp(confidence,0,1),sampleSize:Math.max(0,Number(row.sampleSize)||0),evidenceIds:list(row.evidenceIds).map(String).filter(Boolean)};
 }
 function build(modelInput={},outcomeInput={},options={}){
- const minConfidence=clamp(finite(options.minConfidence)??DEFAULT_MIN_CONFIDENCE,0,1);
+ const minConfidence=clamp(finite(options.minConfidence)??DEFAULT_MIN_CONFIDENCE,0,1),responseModel=object(options.responseModel)?options.responseModel:{},candidatePolicy=object(options.candidatePolicy)?options.candidatePolicy:{};
  const reasons=[],evidenceIds=[],confidences=[];
  let durationScale=1,intensityCap=1,volumeCap=1,presentation='standard',planComplexity='standard',suppressProgression=false;
  const use=(row,reason)=>{
@@ -46,6 +46,13 @@ function build(modelInput={},outcomeInput={},options={}){
  if(support.suppressProgression===true){
   suppressProgression=true;reasons.push('PERSONALIZATION_OUTCOME_EXECUTION_GAP');
  }
+ const responseConfidence=clamp(finite(responseModel.confidence)??0,0,1),selected=object(candidatePolicy.selected)?candidatePolicy.selected:null;
+ if(responseConfidence>=.35&&selected){
+  const scale=finite(selected.durationScale),candidateIntensity=finite(selected.intensityScale),candidateVolume=finite(selected.volumeScale);
+  if(scale!==null&&scale<1){durationScale=Math.min(durationScale,scale);reasons.push('PERSONALIZATION_RESPONSE_DURATION_FIT');confidences.push(responseConfidence);}
+  if(candidateIntensity!==null&&candidateIntensity<1){intensityCap=Math.min(intensityCap,candidateIntensity);reasons.push('PERSONALIZATION_RESPONSE_INTENSITY_CONSTRAINT');confidences.push(responseConfidence);}
+  if(candidateVolume!==null&&candidateVolume<1){volumeCap=Math.min(volumeCap,candidateVolume);reasons.push('PERSONALIZATION_RESPONSE_VOLUME_CONSTRAINT');confidences.push(responseConfidence);}
+ }
  const active=reasons.length>0;
  const confidence=active?round(confidences.length?confidences.reduce((a,b)=>a+b,0)/confidences.length:clamp(finite(outcomeInput?.longitudinal?.confidence)??finite(outcomeInput?.confidence)??0,0,1)):0;
  return Object.freeze({
@@ -68,7 +75,8 @@ function build(modelInput={},outcomeInput={},options={}){
    canConstrainOnly:true,
    noAutomaticProgressionIncrease:true,
    noSilentDataMutation:true,
-   llmCannotOverride:true
+   llmCannotOverride:true,
+   responseLearningCanConstrainOnly:true
   })
  });
 }
@@ -88,7 +96,7 @@ function compactForContext(policyInput={}){
    planComplexity:String(policy?.adjustments?.planComplexity||'standard'),
    suppressProgression:policy?.adjustments?.suppressProgression===true
   },
-  guardrails:{deterministic:true,evidenceGated:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,noSilentDataMutation:true,llmCannotOverride:true}
+  guardrails:{deterministic:true,evidenceGated:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,noSilentDataMutation:true,llmCannotOverride:true,responseLearningCanConstrainOnly:true}
  };
 }
 module.exports=Object.freeze({VERSION,DEFAULT_MIN_CONFIDENCE,trustedDimension,build,compactForContext});

@@ -1,0 +1,47 @@
+'use strict';
+
+const VERSION='user-response-model-v1.0.0';
+const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const list=v=>Array.isArray(v)?v.filter(object):[];
+const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
+const round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
+function mean(values){const v=values.filter(x=>Number.isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+function band(duration){if(!Number.isFinite(duration))return null;if(duration<=35)return 'short';if(duration<=55)return 'medium';return 'long';}
+function scoreEpisode(ep){
+ const outcome=finite(ep?.outcome?.score);
+ if(outcome!==null)return clamp(outcome,0,100);
+ const c=String(ep?.outcome?.classification||'').toLowerCase();
+ return c==='completed'?100:c==='partial'?50:c==='missed'?0:null;
+}
+function build(episodesInput={},options={}){
+ const episodes=list(episodesInput?.episodes||episodesInput).filter(ep=>ep?.attribution?.confidence>=.5);
+ const accepted=episodes.filter(ep=>['accepted','edited'].includes(String(ep?.userResponse?.status||''))).length;
+ const resolved=episodes.filter(ep=>!['unresolved',''].includes(String(ep?.userResponse?.status||''))).length;
+ const executed=episodes.filter(ep=>ep?.execution?.executionId||ep?.execution?.status==='observed');
+ const completed=episodes.filter(ep=>scoreEpisode(ep)!==null);
+ const buckets={short:[],medium:[],long:[]};
+ for(const ep of episodes){const d=finite(ep?.recommendation?.duration),b=band(d);if(!b)continue;buckets[b].push({duration:d,score:scoreEpisode(ep),executed:!!(ep?.execution?.executionId||ep?.execution?.status==='observed')});}
+ const durationStats={};
+ for(const [name,rows] of Object.entries(buckets)){
+  const sampleSize=rows.length,executionRate=sampleSize?rows.filter(r=>r.executed).length/sampleSize:null,outcomeScore=mean(rows.map(r=>r.score));
+  durationStats[name]={sampleSize,executionRate:executionRate===null?null:round(executionRate,3),outcomeScore:outcomeScore===null?null:round(outcomeScore,1),confidence:round(clamp(sampleSize/6,0,1),2)};
+ }
+ const ranked=Object.entries(durationStats).filter(([,v])=>v.sampleSize>=2).map(([name,v])=>({name,utility:(v.executionRate??0)*.6+((v.outcomeScore??50)/100)*.4,confidence:v.confidence})).sort((a,b)=>b.utility-a.utility);
+ const preferredDurationBand=ranked[0]?.name||null;
+ return Object.freeze({
+  version:VERSION,
+  asOf:String(options.asOf||episodesInput?.asOf||new Date().toISOString().slice(0,10)),
+  sampleSize:episodes.length,
+  behavior:Object.freeze({
+   planAcceptanceRate:resolved?round(accepted/resolved,3):null,
+   executionRate:episodes.length?round(executed.length/episodes.length,3):null,
+   outcomeObservedRate:episodes.length?round(completed.length/episodes.length,3):null
+  }),
+  training:Object.freeze({preferredDurationBand,durationStats:Object.freeze(durationStats)}),
+  confidence:round(clamp(episodes.length/12,0,1),2),
+  guardrails:Object.freeze({derivedOnly:true,noCausalClaim:true,confidenceWeighted:true,noAutomaticProgressionIncrease:true})
+ });
+}
+function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),asOf:String(v.asOf||''),sampleSize:Number(v.sampleSize)||0,behavior:object(v.behavior)?v.behavior:{},training:object(v.training)?v.training:{},confidence:clamp(finite(v.confidence)??0,0,1),guardrails:{derivedOnly:true,noCausalClaim:true,confidenceWeighted:true,noAutomaticProgressionIncrease:true}};}
+module.exports=Object.freeze({VERSION,build,compactForContext,band});
