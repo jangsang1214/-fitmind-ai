@@ -13,7 +13,7 @@ function sameDate(row,date){return dateKey(row?.date||row?.day||row?.performedAt
 function inferDomain(plan){const explicit=clean(plan?.domain).toLowerCase();if(['training','recovery','nutrition'].includes(explicit))return explicit;const type=clean(plan?.type||plan?.category).toLowerCase();if(/meal|nutrition|food|식단|영양/.test(type))return 'nutrition';if(/recover|recovery|sleep|회복|수면/.test(type))return 'recovery';return 'training';}
 function actionForPlan(state,plan,date){
  const planId=clean(plan?.id),recommendationId=clean(plan?.recommendationId),rows=list(state?.actionLog).filter(row=>sameDate(row,date)||dateKey(row?.args?.date)===date).slice().reverse();
- return rows.find(row=>{const ids=Array.isArray(row?.args?.planIds)?row.args.planIds.map(String):[],rid=clean(row?.args?.recommendationId);return (planId&&ids.includes(planId))||(recommendationId&&rid===recommendationId);})||null;
+ return rows.find(row=>{const ids=Array.isArray(row?.args?.planIds)?row.args.planIds.map(String):[],rid=clean(row?.recommendationId||row?.args?.recommendationId),targetId=clean(row?.targetId);return (planId&&(ids.includes(planId)||targetId===planId))||(recommendationId&&rid===recommendationId);})||null;
 }
 function groupFor(state,date){const group=object(state?.meta?.dailyPlanDrafts?.[date])?state.meta.dailyPlanDrafts[date]:null;return group&&String(group.status||'')==='finalized'?group:null;}
 function outcomeForPlan(group,plan){
