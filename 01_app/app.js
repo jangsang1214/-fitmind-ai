@@ -113,7 +113,8 @@ function reconcileAfterHydration(status){
   if(interactiveCoach){applyLanguageChrome();updateSyncUI();return;}
   render();
 }
-async function cloudLoadAndMerge({preferRemote=false}={}){
+async function cloudLoadAndMerge(){
+  const {preferRemote=false}=arguments[0]||{};
   if(!firebaseReady||!currentUser)return;
   setCloudHydrationReady(false);setSync('syncing');
   try{
