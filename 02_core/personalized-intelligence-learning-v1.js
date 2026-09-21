@@ -81,7 +81,7 @@ function episodeForGroup(state,cycles,index){
   userResponse:Object.freeze(response),
   execution:Object.freeze({started:cycles.some(row=>row?.execution?.status==='observed'),completionRatio,executionIds:Object.freeze(uniq(cycles.map(row=>clean(row?.executionId)).filter(Boolean)))}),
   outcome:Object.freeze({classification,score,outcomeIds:Object.freeze(uniq(cycles.map(row=>clean(row?.outcomeId)).filter(Boolean)))}),
-  learning:Object.freeze({attributionConfidence,label,eligibleForLearning:responseKnown&&score!==null&&completeLinks>0,noCausalClaim:true})
+  learning:Object.freeze({attributionConfidence,label,eligibleForLearning:responseKnown&&score!==null&&attributionConfidence>=0.7,noCausalClaim:true})
  });
 }
 function buildEpisodes(stateInput={},graphInput={}){
@@ -101,7 +101,7 @@ function bestBucket(rows){
 }
 function buildResponseModel(episodesInput=[]){
  const episodes=rows(episodesInput),eligible=episodes.filter(row=>row?.learning?.eligibleForLearning===true),resolved=episodes.filter(row=>row?.userResponse?.resolution!=='unknown'),accepted=resolved.filter(row=>['accepted','edited'].includes(row.userResponse.resolution)),edited=resolved.filter(row=>row.userResponse.resolution==='edited'),executed=episodes.filter(row=>row.execution?.started===true||finite(row.execution?.completionRatio)>0);
- const duration=Object.freeze(['short','standard','long'].map(band=>summarizeBucket(episodes,row=>durationBand(row?.recommendation?.duration),band))),intensity=Object.freeze(['reduced','standard','high'].map(band=>summarizeBucket(episodes,row=>intensityBand(row?.recommendation?.intensityScale),band))),bestDuration=bestBucket(duration),bestIntensity=bestBucket(intensity);
+ const duration=Object.freeze(['short','standard','long'].map(band=>summarizeBucket(eligible,row=>durationBand(row?.recommendation?.duration),band))),intensity=Object.freeze(['reduced','standard','high'].map(band=>summarizeBucket(eligible,row=>intensityBand(row?.recommendation?.intensityScale),band))),bestDuration=bestBucket(duration),bestIntensity=bestBucket(intensity);
  return Object.freeze({
   version:RESPONSE_MODEL_VERSION,
   sampleSize:eligible.length,
