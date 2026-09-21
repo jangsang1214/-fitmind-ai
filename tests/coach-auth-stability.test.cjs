@@ -22,7 +22,8 @@ assert.ok(readyGuard>=0&&seenAfterReady>readyGuard,'an assistant must not be mar
 assert.ok(agent.includes('processingAssistantIds'),'Agent proposal generation must deduplicate concurrent lifecycle retries');
 assert.ok(agent.includes("window.addEventListener('garang:cloud-state-ready'"),'cloud hydration must explicitly retry a pending Coach proposal');
 assert.ok(agent.includes("messageEl.dataset.g4AgentPending='1'"),'unhydrated Agent work must remain retryable');
-assert.ok(html.includes('garang-brand-runtime-v2.js?v=2.2.0-lifecycle'),'shell must publish the authenticated Coach runtime with a fresh cache key');
+assert.ok(html.includes('garang-brand-runtime-v2.js?v=2.2.1-server-action-owner'),'shell must publish the authenticated Coach runtime with a fresh cache key');
 assert.ok(html.includes('agent-state-hook-v1.js?v=1.5.0-auth-write-pinned'),'authenticated Agent state pinning must be cache-busted');
-assert.ok(html.includes('garang-coach-agent-v4.js?v=4.7.0'),'canonical hydration-safe Coach Agent must be cache-busted');
+assert.ok(html.includes('app.js?v=0.11.0-beta.6-coach-server-sync'),'server-action state convergence owner must be cache-busted');
+assert.ok(html.includes('garang-coach-agent-v4.js?v=4.9.0-server-action-owner'),'canonical hydration-safe Coach Agent must be cache-busted');
 console.log('coach-auth-stability: PASS');
