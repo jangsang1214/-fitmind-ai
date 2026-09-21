@@ -124,9 +124,20 @@ function candidateBand(c,type){
  return c.intensityCap<.9?'reduced':'standard';
 }
 function scoreCandidate(c,responseModel,decisionMode){
- const behavior=object(responseModel?.behavior)?responseModel.behavior:{},baseAdherence=finite(behavior.executionRate)??.5,bestDuration=clean(responseModel?.training?.observedBestDurationBand),bestIntensity=clean(responseModel?.training?.observedBestIntensityBand),durationMatch=bestDuration?(candidateBand(c,'duration')===bestDuration ? .16:-.04):0,intensityMatch=bestIntensity?(candidateBand(c,'intensity')===bestIntensity ? .14:-.04):0;
- const adherence=clamp(baseAdherence+durationMatch+intensityMatch,0,1),recoveryMode=['caution','recover','reduce'].includes(decisionMode),progressMode=decisionMode==='progress',safety=clamp(c.id==='conservative_load'?(recoveryMode?1:.98):(c.id==='simplified_duration'? .98:(progressMode? .9:.96)),0,1),goalAlignment=c.id==='baseline'?1:(c.id==='simplified_duration'? .96:(recoveryMode? .98:.9)),recoveryCost=clamp(c.id==='conservative_load'?1:(c.id==='simplified_duration'? .96:(progressMode? .86:.94)),0,1);
- const outcomeProxy=clamp((adherence+.5)/1.5,0,1),score=round(safety*.3+adherence*.3+outcomeProxy*.2+goalAlignment*.1+recoveryCost*.1,3);
+ const behavior=object(responseModel?.behavior)?responseModel.behavior:{};
+ const baseAdherence=finite(behavior.executionRate)??0.5;
+ const bestDuration=clean(responseModel?.training?.observedBestDurationBand);
+ const bestIntensity=clean(responseModel?.training?.observedBestIntensityBand);
+ let durationMatch=0,intensityMatch=0;
+ if(bestDuration)durationMatch=candidateBand(c,'duration')===bestDuration?0.16:-0.04;
+ if(bestIntensity)intensityMatch=candidateBand(c,'intensity')===bestIntensity?0.14:-0.04;
+ const adherence=clamp(baseAdherence+durationMatch+intensityMatch,0,1);
+ const recoveryMode=['caution','recover','reduce'].includes(decisionMode),progressMode=decisionMode==='progress';
+ let safety=progressMode?0.9:0.96,goalAlignment=1,recoveryCost=progressMode?0.86:0.94;
+ if(c.id==='simplified_duration'){safety=0.98;goalAlignment=0.96;recoveryCost=0.96;}
+ if(c.id==='conservative_load'){safety=recoveryMode?1:0.98;goalAlignment=recoveryMode?0.98:0.9;recoveryCost=1;}
+ const outcomeProxy=clamp((adherence+0.5)/1.5,0,1);
+ const score=round(safety*0.3+adherence*0.3+outcomeProxy*0.2+goalAlignment*0.1+recoveryCost*0.1,3);
  return Object.freeze({...c,score,components:Object.freeze({safety:round(safety),adherenceProbability:round(adherence),expectedOutcomeProxy:round(outcomeProxy),goalAlignment:round(goalAlignment),recoveryCost:round(recoveryCost)})});
 }
 function evaluateCandidates(decisionInput={},responseModelInput={},options={}){
