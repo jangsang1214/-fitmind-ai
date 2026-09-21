@@ -75,10 +75,11 @@ function alignGenerated(generated,context){
  const providerAlignment=verifyGeneratedAlignment(generated,context),decisionConfidence=finite(context?.garangDecision?.confidence),llmConfidence=finite(generated?.confidence),effective=decisionConfidence===null?llmConfidence:llmConfidence===null?decisionConfidence:Math.min(llmConfidence,decisionConfidence),capped=decisionConfidence!==null&&llmConfidence!==null&&llmConfidence>decisionConfidence;
  return {...generated,confidence:effective===null?null:round(Math.max(0,Math.min(1,effective)),2),metadata:{...(clone(generated?.metadata)||{}),alignment:{decisionId:clean(context?.garangDecision?.decisionId,240)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,decisionConfidence,llmConfidence,confidenceCapped:capped,outcomeClassification:clean(context?.outcomeLearning?.classification,60)||'insufficient_evidence',outcomeLongitudinalClassification:clean(context?.outcomeLearning?.longitudinal?.classification,80)||'insufficient_longitudinal_evidence',contractVerified:providerAlignment.verified,reasonCodesUsed:providerAlignment.reasonCodesUsed},grounding:context?.knowledgeGrounding?{version:clean(context?.knowledgeGrounding?.version,80)||null,evidenceCount:Math.max(0,Number(context?.knowledgeGrounding?.evidenceCount)||0),nutritionMode:clean(context?.nutritionIntelligence?.mode,60)||null,decisionOwnedBy:'GARANG',contractVerified:true}:undefined}};
 }
-function toolCallForExecution(row,index,context,requestId){
+function toolCallForExecution(row,index,context,requestId,message=''){
  const call={name:clean(row?.name,80),callId:clean(row?.callId,180)||`${requestId}:tool:${index+1}`,args:row?.args&&typeof row.args==='object'&&!Array.isArray(row.args)?clone(row.args):{},evidenceQuote:clean(row?.evidenceQuote,500),evidenceSource:clean(row?.evidenceSource,40).toLowerCase()||'inferred',reason:clean(row?.reason,500)||null};
  if(['createPlan','updatePlan'].includes(call.name)){
-  call.args={...call.args,decisionId:clean(context?.garangDecision?.decisionId,320)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,recommendationId:clean(call.args?.recommendationId,180)||`coach:${requestId}`};
+  const fallbackTitle=call.name==='createPlan'&&!clean(call.args?.title,160)?(/[가-힣]/.test(String(message||''))?'GARANG 훈련 계획':'GARANG training plan'):null;
+  call.args={...call.args,...(fallbackTitle?{title:fallbackTitle}:{}),decisionId:clean(context?.garangDecision?.decisionId,320)||null,decisionMode:clean(context?.garangDecision?.mode,40)||null,recommendationId:clean(call.args?.recommendationId,180)||`coach:${requestId}`};
  }
  return call;
 }
@@ -87,7 +88,7 @@ function toolResultPublic(call,outcome){
  return {name:call.name,callId:call.callId,status:outcome?.executed===true?'executed':clean(policy.status,40)||'not_executed',code:clean(policy.code,100)||null,executed:outcome?.executed===true,duplicate:outcome?.duplicate===true,targetId:clean(result?.id,180)||null};
 }
 async function executeGeneratedTools({toolCalls,uid,message,context,mutateUser,now,requestId}){
- const calls=rows(toolCalls).slice(0,4).map((row,index)=>toolCallForExecution(row,index,context,requestId));
+ const calls=rows(toolCalls).slice(0,4).map((row,index)=>toolCallForExecution(row,index,context,requestId,message));
  if(!calls.length)return [];
  if(typeof mutateUser!=='function')return calls.map(call=>({name:call.name,callId:call.callId,status:'unavailable',code:'AUTONOMOUS_WRITE_UNAVAILABLE',executed:false,duplicate:false,targetId:null}));
  const transaction=await mutateUser(uid,state=>{

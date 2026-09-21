@@ -132,6 +132,22 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.throws(()=>parseCoachResponse(JSON.stringify({...raw,toolCalls:[{...raw.toolCalls[0],name:'deleteAccount'}]})),error=>error?.code==='LLM_TOOL_CALL_INVALID');
  });
 
+ await test('gateway fills only a safe display title when generated createPlan omits title',async()=>{
+  let saved=null;
+  const message='내일 상체 45분 계획 만들어서 저장해줘';
+  const results=await executeGeneratedTools({
+   toolCalls:[{name:'createPlan',callId:'gateway-plan-no-title',args:{duration:45},evidenceQuote:message,evidenceSource:'explicit_user',reason:'사용자 요청'}],
+   uid:'user-1',message,requestId:'req-no-title',now:new Date('2026-09-21T12:00:00Z'),
+   context:{garangDecision:{decisionId:'decision-collect',mode:'collect_data'},personalizationPolicy:{adjustments:{suppressProgression:false,intensityCap:1,volumeCap:1}}},
+   mutateUser:async(uid,mutator)=>{const outcome=mutator(baseState());saved=outcome.state;return outcome;}
+  });
+  assert.equal(results[0].executed,true);
+  assert.equal(saved.planner.length,1);
+  assert.equal(saved.planner[0].title,'GARANG 훈련 계획');
+  assert.equal(saved.planner[0].duration,45);
+  assert.equal(saved.planner[0].decisionMode,'collect_data');
+ });
+
  await test('gateway executes generated writes only through authenticated transaction boundary',async()=>{
   let saved=null,uidSeen=null;
   const message='내일 상체 계획 만들어서 저장해줘';
