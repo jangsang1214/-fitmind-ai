@@ -1,4 +1,4 @@
-/* GARANG Coach Agent v4.8
+/* GARANG Coach Agent v4.9
    Canonical owner for Coach recommended prompts, proposal cards and Coach message display localization.
    Proposal cards expose the recommendation lifecycle without creating a second write owner.
 */
@@ -64,6 +64,35 @@ function threadMessageById(id){
  }catch{}
  return null;
 }
+function serverOwnedMessage(message){
+ if(!message||message.role!=='assistant'||message.local===true)return false;
+ const source=clean(message.source).toLowerCase();
+ return !!source&&source!=='local';
+}
+function normalizedServerToolResults(message){
+ return (Array.isArray(message?.toolResults)?message.toolResults:[]).slice(0,4).map(row=>({name:clean(row?.name),callId:clean(row?.callId),status:clean(row?.status).toLowerCase(),code:clean(row?.code),executed:row?.executed===true,duplicate:row?.duplicate===true,targetId:clean(row?.targetId)})).filter(row=>row.name||row.status);
+}
+function serverResultCopy(row){
+ const isEn=english();
+ if(row.executed&&row.duplicate)return isEn?'Already applied. GARANG kept the existing result.':'이미 반영된 요청이라 기존 결과를 유지했습니다.';
+ if(row.executed)return isEn?'Applied by GARANG through the authenticated server action path.':'GARANG이 인증된 서버 실행 경로로 반영했습니다.';
+ if(row.status==='confirmation_required')return isEn?'Not applied yet. This change needs clearer confirmation or evidence.':'아직 반영하지 않았습니다. 더 명확한 확인이나 근거가 필요합니다.';
+ if(row.status==='denied')return isEn?'Not applied because it is outside the permitted action boundary.':'허용된 실행 범위를 벗어나 반영하지 않았습니다.';
+ if(row.status==='unavailable')return isEn?'Not applied because the action path is temporarily unavailable.':'실행 경로를 사용할 수 없어 반영하지 않았습니다.';
+ return isEn?'No data change was applied.':'데이터 변경은 적용되지 않았습니다.';
+}
+function renderServerToolResults(messageEl,message){
+ const body=messageEl?.querySelector?.('.g2-message-body');if(!body)return false;
+ const rows=normalizedServerToolResults(message),existing=body.querySelector('.g4-agent-proposals[data-g4-server-results="1"]');
+ if(!rows.length){existing?.remove();return false;}
+ let wrap=existing;if(!wrap){wrap=document.createElement('div');wrap.className='g4-agent-proposals';wrap.dataset.g4ServerResults='1';body.appendChild(wrap);}
+ const key=(english()?'en':'ko')+':'+rows.map(row=>[row.name,row.status,row.executed?'1':'0',row.duplicate?'1':'0',row.targetId].join(':')).join('|');
+ if(wrap.dataset.renderKey===key)return true;
+ wrap.dataset.renderKey=key;
+ wrap.innerHTML=rows.map((row,index)=>`<section class="g4-agent-proposal g4-server-result" data-g4-server-result="${index}" data-status="${esc(row.status||'result')}"><div class="g4-agent-proposal-head"><span>${english()?'ACTION RESULT':'실행 결과'}</span><b>${esc(toolLabel(row.name))}</b></div><p>${esc(serverResultCopy(row))}</p>${row.executed&&row.name==='createPlan'?'<div class="g4-proposal-actions"><button type="button" class="approve" data-g4-server-open-plan>'+(english()?'Open plan':'계획 보기')+'</button></div>':''}</section>`).join('');
+ wrap.querySelectorAll('[data-g4-server-open-plan]').forEach(button=>button.onclick=()=>window.GarangRouter?.navigate?.('planner',{source:'coach-server-action',force:true}));
+ return true;
+}
 function repairMessageLanguage(root){
  if(!english())return;
  root.querySelectorAll('.g2-message[data-message-id]').forEach(messageEl=>{
@@ -76,7 +105,7 @@ function repairMessageLanguage(root){
  });
 }
 function contextFromState(state){const s=state||{};return {profile:clone(s.profile||null),userModel:clone(s.userModel||s.onboarding||null),recent:{workouts:clone((s.workouts||[]).slice(-30)),meals:clone((s.meals||[]).slice(-30)),runs:clone((s.runs||[]).slice(-20)),body:clone((s.body||[]).slice(-20)),planner:clone((s.planner||[]).slice(-30))},memory:{entries:clone((s.memory?.entries||[]).filter(x=>x?.userConfirmed!==false&&(!x?.expiresAt||Date.parse(x.expiresAt)>Date.now())).slice(-40))}};}
-function toolLabel(tool){const ko={createPlan:'계획 생성',updatePlan:'계획 수정',saveMemory:'기억 저장',deleteRecord:'기록 삭제',updateGoal:'목표 변경'},en={createPlan:'Create plan',updatePlan:'Update plan',saveMemory:'Save memory',deleteRecord:'Delete record',updateGoal:'Update goal'};return (english()?en:ko)[tool]||tool;}
+function toolLabel(tool){const ko={createPlan:'계획 생성',updatePlan:'계획 수정',saveMemory:'기억 저장',updateGoal:'목표 변경',recordWorkout:'운동 기록',recordMeal:'식단 기록',recordBody:'체성분 기록',recordCheckin:'체크인 기록',deleteRecord:'기록 삭제'},en={createPlan:'Create plan',updatePlan:'Update plan',saveMemory:'Save memory',updateGoal:'Update goal',recordWorkout:'Record workout',recordMeal:'Record meal',recordBody:'Record body',recordCheckin:'Record check-in',deleteRecord:'Delete record'};return (english()?en:ko)[tool]||tool;}
 function proposalSummary(proposal){const a=proposal.args||{};if(proposal.tool==='createPlan'){try{const summary=window.GarangCanonicalDailyPlanV1?.summaryToday?.({lang:english()?'en':'ko'});if(summary)return summary;}catch{}return a.title||'';}if(proposal.tool==='updatePlan')return `${a.id||''}${a.title?` · ${a.title}`:''}`;if(proposal.tool==='saveMemory')return `${a.key||''}${a.value?` · ${a.value}`:''}`;if(proposal.tool==='deleteRecord')return `${a.domain||''} · ${a.id||''}`;if(proposal.tool==='updateGoal')return a.goal||'';return JSON.stringify(a);}
 function canModify(proposal,entry){return typeof entry?.session?.modify==='function'&&['createPlan','updatePlan'].includes(proposal?.tool);}
 function saveProposalEdit(messageEl,entry,card){const input=card.querySelector('[data-g4-edit-title]'),title=clean(input?.value);if(!title)return;try{const updated=entry.session.modify(entry.proposal.id,{title});entry.proposal=updated;entry.status='pending';entry.editing=false;renderProposalCard(messageEl,entry);window.dispatchEvent(new CustomEvent('garang:agent-proposal-modified',{detail:{id:updated.id,recommendationId:updated.recommendationId||updated.id,tool:updated.tool,revision:updated.revision||1}}));}catch(error){entry.error=String(error?.message||error);entry.editing=false;renderProposalCard(messageEl,entry);}}
@@ -86,6 +115,10 @@ function attachStoredProposals(messageEl,messageId){const entries=sessionsByMess
 async function processAssistant(messageEl){
  if(messageEl.dataset.thinking==='1')return;
  const messageId=messageEl.dataset.messageId||'';if(!messageId)return;
+ const stored=threadMessageById(messageId);
+ if(serverOwnedMessage(stored)){
+  renderServerToolResults(messageEl,stored);seenAssistantIds.add(messageId);messageEl.dataset.g4AgentProcessed='1';messageEl.dataset.g4ActionOwner='server';return;
+ }
  if(attachStoredProposals(messageEl,messageId))return;
  if(seenAssistantIds.has(messageId)||processingAssistantIds.has(messageId))return;
  const siblings=[...messageEl.parentElement.children],index=siblings.indexOf(messageEl);let userEl=null;
@@ -119,7 +152,7 @@ function syncPromptStrip(root){
  const isEn=english();strip.innerHTML=PROMPTS.map(item=>`<button type="button" data-g4-prompt="${esc(isEn?item.enPrompt:item.koPrompt)}" data-garang-canonical-prompt="${esc(item.koPrompt)}" data-garang-prompt-id="${item.id}">${esc(isEn?item.enLabel:item.koLabel)}</button>`).join('');strip.dataset.garangPromptSignature=wanted;
  strip.querySelectorAll('[data-garang-canonical-prompt]').forEach(button=>{button.onclick=()=>submitPrompt(root,input,button.dataset.garangCanonicalPrompt||'');});
 }
-function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
+function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const stored=threadMessageById(message.dataset.messageId);if(serverOwnedMessage(stored))renderServerToolResults(message,stored);const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
 function syncRoot(root){if(root!==activeRoot||!root.isConnected)return;syncPromptStrip(root);repairMessageLanguage(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);}
 function queueRootSync(root=activeRoot){if(!root||root!==activeRoot||rootQueued)return;rootQueued=true;requestAnimationFrame(()=>{rootQueued=false;syncRoot(root);});}
 function activateRoot(root){if(!root||!root.isConnected)return;if(activeRoot===root){queueRootSync(root);return;}activeRoot=root;rootQueued=false;root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>seenAssistantIds.add(message.dataset.messageId));syncPromptStrip(root);repairMessageLanguage(root);queueRootSync(root);}
@@ -131,6 +164,6 @@ window.addEventListener('garang:state-hydrated',()=>queueRootSync(activeRoot));
 new MutationObserver(()=>queueRootSync(activeRoot)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.addEventListener('garang:cloud-state-ready',()=>queueRootSync(activeRoot));
 window.addEventListener('garang:agent-write',()=>queueRootSync(activeRoot));
-window.GarangCoachAgentV4=Object.freeze({version:'garang-coach-agent-v4.8',prompts:PROMPTS,translateCoachText:translateKnownCoachText});
+window.GarangCoachAgentV4=Object.freeze({version:'garang-coach-agent-v4.9',prompts:PROMPTS,translateCoachText:translateKnownCoachText});
 loadConversationalIntelligence();syncLifecycleRoot();
 })();
