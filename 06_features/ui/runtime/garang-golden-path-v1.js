@@ -48,6 +48,9 @@ function actionFor(model){
   return {id:'today',label:isKo()?'Today로 돌아가기':'Back to Today'};
 }
 function surface(model){
+  /* Today Single Next Action is the canonical visible CTA owner when present.
+     Golden Path UI keeps orchestration/routing state but must not render a sibling card. */
+  if(window.GarangTodaySingleNextActionV1)return '';
   if(model.step==='complete'&&!model.revisitAvailable)return '';
   const action=actionFor(model);
   /* Today has one state-entry owner. The compact Today check-in stays visible; Golden Path stays silent here. */
@@ -135,5 +138,5 @@ for(const eventName of ['garang:screen-rendered','garang:state-updated','garang:
 doc.documentElement.addEventListener('garang:language-changed',schedule);
 window.addEventListener('pageshow',schedule);
 schedule();
-window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.2',refresh:schedule});
+window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.3',refresh:schedule});
 })();
