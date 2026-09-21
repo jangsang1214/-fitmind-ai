@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION='personalization-policy-v1.0.0';
+const VERSION='personalization-policy-v1.1.0';
 const DEFAULT_MIN_CONFIDENCE=0.5;
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const list=value=>Array.isArray(value)?value:[];
