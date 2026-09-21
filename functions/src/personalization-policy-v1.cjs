@@ -46,6 +46,15 @@ function build(modelInput={},outcomeInput={},options={}){
  if(support.suppressProgression===true){
   suppressProgression=true;reasons.push('PERSONALIZATION_OUTCOME_EXECUTION_GAP');
  }
+ const personalized=object(options.personalizedLearning)?options.personalizedLearning:{},evaluation=object(personalized.evaluation)?personalized.evaluation:{},learningConfidence=finite(evaluation.confidence),constraints=object(evaluation.constraints)?evaluation.constraints:{};
+ if(evaluation.active===true&&learningConfidence!==null&&learningConfidence>=minConfidence){
+  durationScale=Math.min(durationScale,clamp(finite(constraints.durationScale)??1,.6,1));
+  intensityCap=Math.min(intensityCap,clamp(finite(constraints.intensityCap)??1,.6,1));
+  volumeCap=Math.min(volumeCap,clamp(finite(constraints.volumeCap)??1,.6,1));
+  suppressProgression=suppressProgression||constraints.suppressProgression===true;
+  reasons.push('PERSONALIZATION_RESPONSE_MODEL');confidences.push(clamp(learningConfidence,0,1));
+  for(const id of list(evaluation.evidenceEpisodeIds))evidenceIds.push(String(id));
+ }
  const active=reasons.length>0;
  const confidence=active?round(confidences.length?confidences.reduce((a,b)=>a+b,0)/confidences.length:clamp(finite(outcomeInput?.longitudinal?.confidence)??finite(outcomeInput?.confidence)??0,0,1)):0;
  return Object.freeze({
@@ -68,7 +77,8 @@ function build(modelInput={},outcomeInput={},options={}){
    canConstrainOnly:true,
    noAutomaticProgressionIncrease:true,
    noSilentDataMutation:true,
-   llmCannotOverride:true
+   llmCannotOverride:true,
+   responseLearningConstrainOnly:true
   })
  });
 }
@@ -88,7 +98,7 @@ function compactForContext(policyInput={}){
    planComplexity:String(policy?.adjustments?.planComplexity||'standard'),
    suppressProgression:policy?.adjustments?.suppressProgression===true
   },
-  guardrails:{deterministic:true,evidenceGated:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,noSilentDataMutation:true,llmCannotOverride:true}
+  guardrails:{deterministic:true,evidenceGated:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,noSilentDataMutation:true,llmCannotOverride:true,responseLearningConstrainOnly:true}
  };
 }
 module.exports=Object.freeze({VERSION,DEFAULT_MIN_CONFIDENCE,trustedDimension,build,compactForContext});
