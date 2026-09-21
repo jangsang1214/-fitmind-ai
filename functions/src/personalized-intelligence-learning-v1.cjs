@@ -4,7 +4,7 @@ const VERSION='personalized-intelligence-learning-v1.0.0';
 const RESPONSE_MODEL_VERSION='user-response-model-v1.0.0';
 const POLICY_VERSION='candidate-policy-evaluation-v1.0.0';
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
-const list=value=>Array.isArray(value)?value.filter(object):[];
+const rows=value=>Array.isArray(value)?value.filter(object):[];\nconst array=value=>Array.isArray(value)?value:[];
 const clean=value=>String(value??'').trim();
 const finite=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
@@ -14,7 +14,7 @@ function hash(value){let h=2166136261;for(const ch of String(value||'')){h^=ch.c
 function eventName(row){return clean(row?.event||row?.action).toLowerCase();}
 function eventAt(row){return Date.parse(row?.at||row?.updatedAt||row?.createdAt||'')||0;}
 function recommendationId(row){return clean(row?.recommendationId||row?.args?.recommendationId||row?.callId)||null;}
-function planIds(row){return list(row?.args?.planIds).map(item=>clean(item)).filter(Boolean);}
+function planIds(row){return array(row?.args?.planIds).map(item=>clean(item)).filter(Boolean);}
 function outcomeScore(cycle){
  const direct=finite(cycle?.outcome?.score??cycle?.outcome?.rate);
  if(direct!==null)return clamp(direct,0,100);
@@ -25,7 +25,7 @@ function outcomeScore(cycle){
  return null;
 }
 function responseFor(state,recommendation,plans=[]){
- const ids=new Set(plans.map(row=>clean(row?.id)).filter(Boolean)),events=list(state?.actionLog).filter(row=>{
+ const ids=new Set(plans.map(row=>clean(row?.id)).filter(Boolean)),events=rows(state?.actionLog).filter(row=>{
   const rid=recommendationId(row),target=clean(row?.targetId);
   return (recommendation&&rid===recommendation)||(target&&ids.has(target))||planIds(row).some(id=>ids.has(id));
  }).sort((a,b)=>eventAt(a)-eventAt(b));
@@ -51,7 +51,7 @@ function stateFeatures(plan){
 }
 function groupCycles(graph){
  const groups=new Map();
- for(const cycle of list(graph?.cycles)){
+ for(const cycle of rows(graph?.cycles)){
   const key=clean(cycle?.recommendationId)||clean(cycle?.planId)||`cycle_${groups.size}`;
   if(!groups.has(key))groups.set(key,[]);
   groups.get(key).push(cycle);
@@ -60,18 +60,18 @@ function groupCycles(graph){
 }
 function primaryPlan(plans){return plans.find(row=>clean(row?.domain)==='training'||clean(row?.type)==='workout')||plans[0]||null;}
 function episodeForGroup(state,cycles,index){
- const planSet=new Set(cycles.map(row=>clean(row?.planId)).filter(Boolean)),plans=list(state?.planner).filter(row=>planSet.has(clean(row?.id))),plan=primaryPlan(plans),first=cycles[0]||{},recommendation=clean(first?.recommendationId)||clean(plan?.recommendationId)||null,decisionId=clean(first?.decisionId)||clean(plan?.decisionId)||null,date=clean(first?.date||plan?.date)||null,response=responseFor(state,recommendation,plans);
+ const planSet=new Set(cycles.map(row=>clean(row?.planId)).filter(Boolean)),plans=rows(state?.planner).filter(row=>planSet.has(clean(row?.id))),plan=primaryPlan(plans),first=cycles[0]||{},recommendation=clean(first?.recommendationId)||clean(plan?.recommendationId)||null,decisionId=clean(first?.decisionId)||clean(plan?.decisionId)||null,date=clean(first?.date||plan?.date)||null,response=responseFor(state,recommendation,plans);
  const scores=cycles.map(outcomeScore).filter(value=>value!==null),completion=cycles.map(row=>finite(row?.execution?.score)).filter(value=>value!==null),completeLinks=cycles.filter(row=>row?.attribution?.complete===true).length;
  const score=scores.length?round(scores.reduce((sum,value)=>sum+value,0)/scores.length,1):null,completionRatio=completion.length?round(completion.reduce((sum,value)=>sum+value,0)/completion.length/100,3):null;
- const classification=score===null?'pending':score>=80?'completed':score>=40?'partial':'missed',linkConfidence=cycles.length?completeLinks/cycles.length:0,responseKnown=response.resolution!=='unknown',attributionConfidence=round(clamp(linkConfidence*.85+(responseKnown?.15:0),0,1),2);
- const duration=finite(plan?.duration),intensityScale=finite(plan?.intensityScale),volumeScale=finite(plan?.volumeScale),reasonCodes=uniq(list(plan?.learningContext?.decisionReasonCodes).map(clean).filter(Boolean));
+ const classification=score===null?'pending':score>=80?'completed':score>=40?'partial':'missed',linkConfidence=cycles.length?completeLinks/cycles.length:0,responseKnown=response.resolution!=='unknown',attributionConfidence=round(clamp(linkConfidence*.85+(responseKnown?0.15:0),0,1),2);
+ const duration=finite(plan?.duration),intensityScale=finite(plan?.intensityScale),volumeScale=finite(plan?.volumeScale),reasonCodes=uniq(array(plan?.learningContext?.decisionReasonCodes).map(clean).filter(Boolean));
  const episodeId=clean(plan?.episodeId)||`episode_${hash([date,decisionId,recommendation,...planSet].join('|')||String(index))}`;
  const label=!responseKnown?'unresolved':['rejected','dismissed','ignored'].includes(response.resolution)?'negative':score===null?'pending':score>=70?'positive':score<40?'negative':'mixed';
  return Object.freeze({
   version:VERSION,episodeId,date,
-  context:Object.freeze({stateFeatures:Object.freeze(stateFeatures(plan)),goal:clean(plan?.learningContext?.goal,160)||null,relevantMemoryIds:Object.freeze(uniq(list(plan?.learningContext?.relevantMemoryIds).map(clean)).slice(0,12))}),
+  context:Object.freeze({stateFeatures:Object.freeze(stateFeatures(plan)),goal:clean(plan?.learningContext?.goal,160)||null,relevantMemoryIds:Object.freeze(uniq(array(plan?.learningContext?.relevantMemoryIds).map(clean)).slice(0,12))}),
   decision:Object.freeze({decisionId,mode:clean(first?.decisionMode||plan?.decisionMode)||null,confidence:finite(plan?.learningContext?.decisionConfidence),reasonCodes:Object.freeze(reasonCodes),policyVersion:clean(plan?.policyVersion||plan?.learningContext?.policyVersion)||null}),
-  recommendation:Object.freeze({recommendationId,type:clean(plan?.type)||null,duration:duration===null?null:duration,intensityScale:intensityScale===null?null:intensityScale,volumeScale:volumeScale===null?null:volumeScale,candidateId:clean(plan?.candidateId||plan?.learningContext?.candidateId)||null,knowledgeEvidenceIds:Object.freeze(uniq(list(plan?.learningContext?.knowledgeEvidenceIds).map(clean)).slice(0,12))}),
+  recommendation:Object.freeze({recommendationId,type:clean(plan?.type)||null,duration:duration===null?null:duration,intensityScale:intensityScale===null?null:intensityScale,volumeScale:volumeScale===null?null:volumeScale,candidateId:clean(plan?.candidateId||plan?.learningContext?.candidateId)||null,knowledgeEvidenceIds:Object.freeze(uniq(array(plan?.learningContext?.knowledgeEvidenceIds).map(clean)).slice(0,12))}),
   userResponse:Object.freeze(response),
   execution:Object.freeze({started:cycles.some(row=>row?.execution?.status==='observed'),completionRatio,executionIds:Object.freeze(uniq(cycles.map(row=>clean(row?.executionId)).filter(Boolean)))}),
   outcome:Object.freeze({classification,score,outcomeIds:Object.freeze(uniq(cycles.map(row=>clean(row?.outcomeId)).filter(Boolean)))}),
@@ -94,7 +94,7 @@ function bestBucket(rows){
  return eligible[0]||null;
 }
 function buildResponseModel(episodesInput=[]){
- const episodes=list(episodesInput),eligible=episodes.filter(row=>row?.learning?.eligibleForLearning===true),resolved=episodes.filter(row=>row?.userResponse?.resolution!=='unknown'),accepted=resolved.filter(row=>['accepted','edited'].includes(row.userResponse.resolution)),edited=resolved.filter(row=>row.userResponse.resolution==='edited'),executed=episodes.filter(row=>row.execution?.started===true||finite(row.execution?.completionRatio)>0);
+ const episodes=rows(episodesInput),eligible=episodes.filter(row=>row?.learning?.eligibleForLearning===true),resolved=episodes.filter(row=>row?.userResponse?.resolution!=='unknown'),accepted=resolved.filter(row=>['accepted','edited'].includes(row.userResponse.resolution)),edited=resolved.filter(row=>row.userResponse.resolution==='edited'),executed=episodes.filter(row=>row.execution?.started===true||finite(row.execution?.completionRatio)>0);
  const duration=Object.freeze(['short','standard','long'].map(band=>summarizeBucket(episodes,row=>durationBand(row?.recommendation?.duration),band))),intensity=Object.freeze(['reduced','standard','high'].map(band=>summarizeBucket(episodes,row=>intensityBand(row?.recommendation?.intensityScale),band))),bestDuration=bestBucket(duration),bestIntensity=bestBucket(intensity);
  return Object.freeze({
   version:RESPONSE_MODEL_VERSION,
@@ -140,7 +140,7 @@ function evaluateCandidates(decisionInput={},responseModelInput={},options={}){
  return Object.freeze({
   version:POLICY_VERSION,active,confidence:round(conf,2),decisionMode:mode,selectedCandidate:chosen||null,scoreDelta:active?delta:0,candidates:Object.freeze(candidates),
   constraints:Object.freeze({durationScale:active?chosen.durationScale:1,intensityCap:active?chosen.intensityCap:1,volumeCap:active?chosen.volumeCap:1,suppressProgression:active?chosen.suppressProgression:false}),
-  evidenceEpisodeIds:Object.freeze(list(responseModel.evidenceEpisodeIds).map(clean).filter(Boolean).slice(-24)),
+  evidenceEpisodeIds:Object.freeze(array(responseModel.evidenceEpisodeIds).map(clean).filter(Boolean).slice(-24)),
   guardrails:Object.freeze({deterministic:true,advisoryOnly:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,painCautionCannotBeOverridden:true,noCausalClaim:true})
  });
 }
@@ -152,7 +152,7 @@ function compactForContext(valueInput={}){
  const value=object(valueInput)?valueInput:{},model=object(value.responseModel)?value.responseModel:{},evaluation=object(value.evaluation)?value.evaluation:{};
  return {
   version:clean(value.version)||VERSION,asOf:clean(value.asOf)||null,
-  episodeSummary:{count:list(value.episodes).length,learningEligible:list(value.episodes).filter(row=>row?.learning?.eligibleForLearning===true).length,evidenceEpisodeIds:list(model.evidenceEpisodeIds).map(clean).filter(Boolean).slice(-12)},
+  episodeSummary:{count:rows(value.episodes).length,learningEligible:rows(value.episodes).filter(row=>row?.learning?.eligibleForLearning===true).length,evidenceEpisodeIds:array(model.evidenceEpisodeIds).map(clean).filter(Boolean).slice(-12)},
   responseModel:{version:clean(model.version)||RESPONSE_MODEL_VERSION,sampleSize:Number(model.sampleSize)||0,confidence:clamp(finite(model.confidence)??0,0,1),behavior:object(model.behavior)?{...model.behavior}:{},training:object(model.training)?{observedBestDurationBand:model.training.observedBestDurationBand||null,observedBestIntensityBand:model.training.observedBestIntensityBand||null}:{},guardrails:{derivedOnly:true,noCausalClaim:true,noAutomaticProgressionIncrease:true}},
   evaluation:{version:clean(evaluation.version)||POLICY_VERSION,active:evaluation.active===true,confidence:clamp(finite(evaluation.confidence)??0,0,1),selectedCandidate:evaluation.selectedCandidate?{id:evaluation.selectedCandidate.id,score:evaluation.selectedCandidate.score,components:evaluation.selectedCandidate.components}:null,scoreDelta:finite(evaluation.scoreDelta)??0,constraints:object(evaluation.constraints)?{...evaluation.constraints}:{durationScale:1,intensityCap:1,volumeCap:1,suppressProgression:false},guardrails:{deterministic:true,advisoryOnly:true,canConstrainOnly:true,noAutomaticProgressionIncrease:true,noCausalClaim:true}},
   guardrails:{readOnly:true,noSilentMutation:true,noCausalClaim:true,noAutomaticProgressionIncrease:true}
