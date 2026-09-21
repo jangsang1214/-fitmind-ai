@@ -9,6 +9,8 @@
 .photo-evidence-empty small,.photo-evidence-note{font-size:12px;line-height:1.55;color:var(--muted)}
 .photo-evidence-actions{margin-top:12px}
 .photo-evidence-history{white-space:nowrap}
+.workout-history-row>.photo-evidence-history{grid-column:2/-1;justify-self:end;margin-top:-4px}
+.meal-visual-card>.photo-evidence-history{grid-column:2;justify-self:start;margin-top:3px}
 .photo-evidence-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 .photo-evidence-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
 .garang-photo-evidence-lightbox{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));background:rgba(3,4,3,.88);backdrop-filter:blur(18px)}
