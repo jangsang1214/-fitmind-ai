@@ -25,6 +25,7 @@
     "03_styles/runtime/garang-simplified-shell-v1.css",
     "03_styles/runtime/garang-app-shell-v1.css",
     "03_styles/runtime/garang-nutrition-recommendation-v1.css",
+    "03_styles/runtime/garang-photo-evidence-v1.css",
     "03_styles/runtime/garang-coach-quiet-surface-v1.css"
   ],
   "scripts": [
@@ -63,6 +64,7 @@
     "06_features/final/intelligence-state-bridge-v1.js",
     "06_features/ui/runtime/garang-screen-registry-v1.js",
     "06_features/ui/runtime/garang-auth-bootstrap.js",
+    "06_features/ui/runtime/garang-photo-evidence-v1.js",
     "01_app/app.js",
     "06_features/ui/runtime/garang-router-v1.js",
     "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
@@ -139,7 +141,8 @@
       "schema": "02_core/data-schema.js",
       "errors": "01_app/app.js",
       "todayNextAction": "06_features/ui/runtime/garang-today-single-next-action-v1.js",
-      "coreLoopStyle": "03_styles/runtime/garang-core-loop-v1.css"
+      "coreLoopStyle": "03_styles/runtime/garang-core-loop-v1.css",
+      "photoEvidence": "06_features/ui/runtime/garang-photo-evidence-v1.js"
     },
     "documentWideObserverAllowlist": [
       "06_features/ui/i18n/entities-v1.js",
