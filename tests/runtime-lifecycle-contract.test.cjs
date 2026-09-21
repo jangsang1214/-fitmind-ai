@@ -17,7 +17,9 @@ const files={
  today:read('06_features/ui/runtime/garang-today-anatomy-v1.js'),
  exp3:read('06_features/ui/runtime/garang-experience-v3.js'),
  exp4:read('06_features/ui/runtime/garang-experience-v4.js'),
- mobileShortcut:read('06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js')
+ mobileShortcut:read('06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js'),
+ workoutPrep:read('06_features/ui/runtime/garang-today-workout-prep-integration-v1.js'),
+ swUpdater:read('06_features/ui/runtime/garang-sw-update-v2.js')
 };
 assert.ok(app.includes("emitLifecycle('garang:screen-rendered'"),'screen render lifecycle missing');
 assert.ok(app.includes("emitLifecycle('garang:state-updated'"),'state lifecycle missing');
@@ -32,7 +34,10 @@ assert.equal(files.brand.includes('setTimeout(jump'),false,'Coach scroll owner m
 assert.equal(files.brand.includes('[32,80,160,320,600]'),false,'legacy repeated scroll cascade must be absent');
 assert.equal(files.polish.includes('hardBottom'),false,'polish must not own Coach scrolling');
 assert.equal(files.polish.includes('.g2-chat-scroll'),false,'polish must not touch Coach scroller');
-for(const name of ['brand','shell','agent','decision','profile','privacy','today','exp3','exp4'])assert.ok(files[name].includes('garang:screen-rendered')||files[name].includes('garang:coach-mounted'),`${name} must use lifecycle ownership`);
+for(const name of ['brand','shell','agent','decision','profile','privacy','today','exp3','exp4','workoutPrep'])assert.ok(files[name].includes('garang:screen-rendered')||files[name].includes('garang:coach-mounted'),`${name} must use lifecycle ownership`);
+assert.equal(files.workoutPrep.includes('new MutationObserver'),false,'Today Workout Prep must be lifecycle-owned, not broad DOM-observer-owned');
+assert.equal(files.swUpdater.includes("createElement('script')"),false,'service worker updater must never inject product/UI runtimes');
+for(const hiddenOwner of ['garang-product-consolidation-v1.js','garang-state-event-durability-v1.js','garang-today-checkin-override-v1.js','garang-today-workout-prep-integration-v1.js','garang-mobile-checkin-planner-shortcut-v1.js'])assert.equal(files.swUpdater.includes(hiddenOwner),false,`service worker updater must not own ${hiddenOwner}`);
 assert.ok(files.brand.includes('garang:coach-message-rendered'),'Coach owner must publish message lifecycle');
 assert.ok(files.decision.includes('garang:coach-decision-rendered'),'Decision owner must publish card lifecycle');
 assert.ok(files.router.includes('window.GarangRouter'),'canonical router missing');
