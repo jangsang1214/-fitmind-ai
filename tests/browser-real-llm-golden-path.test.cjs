@@ -21,8 +21,9 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
     if(url!==coachEndpoint||method!=='POST')return nativeFetch(input,init);
     const headers=Object.fromEntries(new Headers(init.headers||{}).entries()),body=JSON.parse(init.body||'{}');
     gatewayCalls.push({url,headers,body});
-    const answer='REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.';
-    return new Response(JSON.stringify({ok:true,answer,data:{answer,decisionSummary:'GARANG은 오늘 강도 감소를 권장합니다.',reasoningSummary:'낮은 수면과 에너지 신호를 우선 반영했습니다.',suggestedNextStep:'오늘 계획의 운동 볼륨을 조정하세요.',confidence:.86,source:'llm',metadata:{provider:'mock-openai',model:'gpt-test'},garangDecision:{mode:'reduce',reasonCodes:['SHORT_SLEEP','LOW_ENERGY']}}}),{status:200,headers:{'Content-Type':'application/json'}});
+    const planIntent=/계획|plan/i.test(String(body.message||'')),answer=planIntent?'SERVER PLAN: 요청한 오늘 계획을 GARANG 서버에서 반영했습니다.':'REAL LLM: 최근 훈련량은 있지만 오늘 회복과 수면 신호가 낮아 강도를 낮추는 편이 좋습니다.';
+    const toolResults=planIntent?[{name:'createPlan',callId:'server-plan-1',status:'executed',code:null,executed:true,duplicate:false,targetId:'plan-server-1'}]:[];
+    return new Response(JSON.stringify({ok:true,answer,data:{answer,decisionSummary:'GARANG은 오늘 강도 감소를 권장합니다.',reasoningSummary:'낮은 수면과 에너지 신호를 우선 반영했습니다.',suggestedNextStep:'오늘 계획의 운동 볼륨을 조정하세요.',confidence:.86,source:'llm',requestId:planIntent?'req-server-plan':'req-analysis',toolResults,metadata:{provider:'mock-openai',model:'gpt-test'},garangDecision:{mode:'reduce',reasonCodes:['SHORT_SLEEP','LOW_ENERGY']}}}),{status:200,headers:{'Content-Type':'application/json'}});
    };
    const date=new Date().toISOString().slice(0,10),remote={meta:{schemaVersion:5,updatedAt:new Date().toISOString(),syncOwnerUid:'llm-user'},profile:{name:'LLM User',age:29,height:175,weight:75,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:50},preferences:{language:'ko',unit:'metric'},checkins:[{id:'ci1',date,sleep:5.5,energy:2,stress:3,soreness:3,availableMinutes:50}],dailyCheckins:[],planner:[],workouts:[{id:'w1',date,name:'벤치프레스',weight:80,reps:5,sets:5,duration:45}],meals:[{id:'m1',date,name:'아침',kcal:550,protein:35}],runs:[],body:[{id:'b1',date,weight:75}],aiChat:[],memory:{entries:[{id:'mem1',type:'preference',key:'training_time',value:'evening',userConfirmed:true,confidence:.9,importance:4}],facts:[],preferences:[],goals:[],events:[]},actionLog:[],errors:[],analytics:{events:[]},plan:'FREE'};
    localStorage.removeItem('garang_demo');
@@ -48,11 +49,25 @@ async function tap(page,selector,label=selector){const loc=page.locator(selector
   assert.equal(gatewayCalls.length>=1,true,`authenticated Coach must call the real gateway transport; assistant=${latestAssistant}; transport=${JSON.stringify(transport)}; gatewayDiag=${JSON.stringify(result.diag)}`);assert.match(latestAssistant,/REAL LLM:/,`successful gateway response must be rendered as the Coach answer; assistant=${latestAssistant}`);
   const first=gatewayCalls[0];assert.equal(first.url,endpoint);assert.match(first.headers.authorization||'',/^Bearer firebase-id-token-llm-user$/);assert.deepEqual(Object.keys(first.body).sort(),['language','message']);assert.equal(first.body.message,'오늘 벤치 세게 해도 돼?');assert.equal('context' in first.body,false);
   let state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'LLM explanation alone must never mutate Planner');
+  const beforePlanAssistant=await page.locator('.g2-message.assistant:not([data-thinking="1"]) .g2-message-text').count();
   await tap(page,'.gcl-context-actions [data-gcl-actions-toggle]','open Coach actions');await page.locator('.gcl-context-actions [data-gcl-actions-panel]').waitFor({state:'visible',timeout:2500});await tap(page,'.gcl-context-actions [data-gcl-actions-panel] [data-gcl-coach="0"]','request plan');
-  await page.waitForSelector('.g4-agent-proposal [data-g4-approve]',{state:'visible',timeout:10000});state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(state.planner.length,0,'action proposal must still wait for user approval');
-  await tap(page,'.g4-agent-proposal [data-g4-approve]','approve canonical plan');await page.waitForFunction(()=>window.GarangAgentStateBridge.getState().planner?.length===3,null,{timeout:8000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',null,{timeout:8000});
-  state=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.deepEqual([...new Set(state.planner.map(row=>row.domain))].sort(),['nutrition','recovery','training']);assert.ok(state.planner.every(row=>row.origin==='garang-daily-plan'),'approval must use canonical Daily Plan');
-  assert.ok((state.actionLog||[]).some(row=>row.action==='daily_plan_draft_confirmed'),'approved Real LLM-assisted flow must persist through canonical audited write path');assert.deepEqual(errors,[],`real LLM Golden Path browser errors:\n${errors.join('\n')}`);
-  console.log('browser Real LLM -> Agent confirmation -> canonical Planner: PASS');
+  await page.waitForFunction(before=>document.querySelectorAll('.g2-message.assistant:not([data-thinking="1"]) .g2-message-text').length>before,beforePlanAssistant,{timeout:10000});
+  await page.waitForFunction(()=>document.querySelector('.g2-message.assistant:not([data-thinking="1"]):last-of-type')?.dataset?.g4ActionOwner==='server',null,{timeout:8000}).catch(()=>{});
+  const ownership=await page.evaluate(()=>{
+    const assistants=[...document.querySelectorAll('.g2-message.assistant:not([data-thinking="1"])')],latestEl=assistants.at(-1);
+    const key=Object.keys(localStorage).find(k=>k.startsWith('garang_coach_threads_v2::garang_user_llm-user_v3'));
+    const store=key?JSON.parse(localStorage.getItem(key)||'null'):null,thread=store?.threads?.find(t=>t.id===store.activeId)||store?.threads?.[0],latest=(thread?.messages||[]).filter(m=>m.role==='assistant').at(-1)||null;
+    return {owner:latestEl?.dataset?.g4ActionOwner||null,proposalCount:document.querySelectorAll('.g4-agent-proposal').length,latest,key};
+  });
+  assert.equal(ownership.owner,'server',`successful gateway response must mark the server as canonical action owner: ${JSON.stringify(ownership)}`);
+  assert.equal(ownership.proposalCount,0,`server-owned plan action must not create a browser mock proposal: ${JSON.stringify(ownership)}`);
+  assert.equal(ownership.latest?.actionOwner,'server');assert.equal(ownership.latest?.source,'llm');assert.equal(ownership.latest?.requestId,'req-server-plan');
+  assert.equal(ownership.latest?.toolResults?.length,1);assert.equal(ownership.latest.toolResults[0].name,'createPlan');assert.equal(ownership.latest.toolResults[0].executed,true);assert.equal(ownership.latest.toolResults[0].targetId,'plan-server-1');
+  const afterPlan=await page.evaluate(()=>({calls:structuredClone(window.__GARANG_TEST_GATEWAY_CALLS__||[]),state:window.GarangAgentStateBridge.getState()}));
+  assert.ok(afterPlan.calls.length>=2,`plan request must use the authenticated gateway: ${JSON.stringify(afterPlan.calls)}`);assert.match(String(afterPlan.calls.at(-1)?.body?.message||''),/계획/);
+  assert.equal(afterPlan.state.planner.length,0,'browser must not perform a second local Planner write after a server-owned createPlan result');
+  assert.equal((afterPlan.state.actionLog||[]).some(row=>row.action==='daily_plan_draft_confirmed'),false,'server-owned createPlan must not be mirrored by the local confirmation path');
+  assert.deepEqual(errors,[],`real LLM ownership browser errors:\n${errors.join('\n')}`);
+  console.log('browser Real LLM -> server-owned action -> no duplicate browser proposal: PASS');
  }finally{clearTimeout(watchdog);if(browser)await browser.close().catch(()=>{});if(server.exitCode===null)server.kill('SIGTERM');}
 })().catch(error=>{clearTimeout(watchdog);console.error(error);process.exit(1);});
