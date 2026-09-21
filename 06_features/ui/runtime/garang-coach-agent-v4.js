@@ -91,6 +91,8 @@ async function processAssistant(messageEl){
  const siblings=[...messageEl.parentElement.children],index=siblings.indexOf(messageEl);let userEl=null;
  for(let i=index-1;i>=0;i--){if(siblings[i].classList?.contains('user')){userEl=siblings[i];break;}}
  const text=userEl?.querySelector('.g2-message-text')?.textContent?.trim();if(!text)return;
+ const storedAssistant=threadMessageById(messageId),serverOwned=storedAssistant?.role==='assistant'&&storedAssistant?.local!==true&&(storedAssistant?.actionOwner==='server'||storedAssistant?.source==='llm'||Array.isArray(storedAssistant?.toolResults));
+ if(serverOwned){seenAssistantIds.add(messageId);messageEl.dataset.g4AgentProcessed='1';messageEl.dataset.g4ActionOwner='server';return;}
  const Contract=window.GarangAgentContract,Bridge=window.GarangAgentStateBridge;
  if(!cloudReady()){messageEl.dataset.g4AgentPending='1';return;}
  if(!Contract||!Bridge?.ready?.()){messageEl.dataset.g4AgentPending='1';return;}

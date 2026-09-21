@@ -1,6 +1,6 @@
 'use strict';
 const {startStaticServer}=require('./helpers/static-server.cjs');
-const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
+const {COACH_ENDPOINT,installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
@@ -87,8 +87,17 @@ async function singleTodayOwner(page,label){
   try{
     await waitForServer();browser=await webkit.launch({headless:true});
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-    await installAuthenticatedFirebaseMock(context);
-    await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},freshState());
+    await installAuthenticatedFirebaseMock(context,{mockCoachGateway:false});
+    await context.route(COACH_ENDPOINT,route=>route.abort('failed'));
+    await context.addInitScript(({endpoint,state})=>{
+      const nativeFetch=window.fetch.bind(window);
+      window.fetch=(input,init={})=>{
+        const url=typeof input==='string'?input:input?.url,method=String(init?.method||input?.method||'GET').toUpperCase();
+        if(url===endpoint&&method==='POST')return Promise.reject(Object.assign(new Error('GOLDEN_PATH_LOCAL_FALLBACK'),{code:'GOLDEN_PATH_LOCAL_FALLBACK'}));
+        return nativeFetch(input,init);
+      };
+      localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(state));
+    },{endpoint:COACH_ENDPOINT,state:freshState()});
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});await page.waitForFunction(()=>window.GarangGoldenPath&&window.GarangRouter&&window.GarangAgentStateBridge?.ready?.(),null,{timeout:7000});
 

@@ -109,7 +109,18 @@
   }
 
   function threadStoreKey(){return `garang_coach_threads_v2::${activeAppRecord().key}`;}
-  function cleanMessage(m){return {id:m.id||uid(),role:m.role==='user'?'user':'assistant',text:String(m.text||''),at:m.at||now(),local:!!m.local};}
+  function cleanToolResults(value){
+    const allowed=new Set(['executed','confirmation_required','denied','unavailable','not_executed']);
+    return (Array.isArray(value)?value:[]).slice(0,4).map(row=>{
+      const status=String(row?.status||'');
+      return {name:String(row?.name||'').slice(0,80),callId:String(row?.callId||'').slice(0,180)||null,status:allowed.has(status)?status:'not_executed',code:String(row?.code||'').slice(0,100)||null,executed:row?.executed===true,duplicate:row?.duplicate===true,targetId:String(row?.targetId||'').slice(0,180)||null};
+    }).filter(row=>row.name);
+  }
+  function cleanMessage(m){
+    const toolResults=cleanToolResults(m?.toolResults);
+    const local=m?.local===true,source=String(m?.source||'').slice(0,40)||null,requestId=String(m?.requestId||'').slice(0,180)||null;
+    return {id:m?.id||uid(),role:m?.role==='user'?'user':'assistant',text:String(m?.text||''),at:m?.at||now(),local,source,requestId,toolResults,actionOwner:m?.actionOwner==='server'||(!local&&source==='llm')?'server':null};
+  }
   function newThread(title='새 대화'){return {id:uid(),title,createdAt:now(),updatedAt:now(),messages:[]};}
   function loadThreadStore(){
     const key=threadStoreKey();
@@ -156,7 +167,8 @@
       try{
         const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,context:buildContext(),conversation:thread.messages.slice(-24).map(({role,text})=>({role,text}))})});
         if(!response.ok)throw new Error(`Coach ${response.status}`);
-        const data=await response.json();return {text:String(data.answer||data.output||'응답 형식을 확인해 주세요.'),local:false};
+        const data=await response.json(),payload=data?.data&&typeof data.data==='object'&&!Array.isArray(data.data)?data.data:data,source=String(payload?.source||data?.source||'llm'),toolResults=cleanToolResults(payload?.toolResults);
+        return {text:String(payload?.answer||data?.answer||data?.output||'응답 형식을 확인해 주세요.'),local:source!=='llm',source,requestId:String(payload?.requestId||data?.requestId||'').slice(0,180)||null,toolResults,actionOwner:source==='llm'?'server':null};
       }catch(e){return {text:`외부 AI 연결에 실패해 로컬 데이터 분석으로 전환했습니다.\n\n${localCoachAnswer(message)}`,local:true};}
     }
     return {text:localCoachAnswer(message),local:true};
@@ -237,7 +249,7 @@
     let result;
     try{result=await getCoachAnswer(text,thread);}catch{result={text:localCoachAnswer(text),local:true};}
     if(!runtime.root.isConnected)return;
-    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
+    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local===true,source:String(result.source||'').slice(0,40)||null,requestId:String(result.requestId||'').slice(0,180)||null,toolResults:cleanToolResults(result.toolResults),actionOwner:result.actionOwner==='server'?'server':null};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
   }
 
   function mountCoach(){
