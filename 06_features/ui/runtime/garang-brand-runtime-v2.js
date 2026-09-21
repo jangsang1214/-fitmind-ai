@@ -1,4 +1,4 @@
-/* GARANG BRAND RUNTIME v2.1
+/* GARANG BRAND RUNTIME v2.2
    - exact GARANG mark uses the user-approved PNG asset
    - workout body model rendered from interactive SVG code
    - ChatGPT-like multi-thread Coach with authenticated account-pinned context
@@ -109,7 +109,21 @@
   }
 
   function threadStoreKey(){return `garang_coach_threads_v2::${activeAppRecord().key}`;}
-  function cleanMessage(m){return {id:m.id||uid(),role:m.role==='user'?'user':'assistant',text:String(m.text||''),at:m.at||now(),local:!!m.local};}
+  function cleanToolResults(value){
+    return (Array.isArray(value)?value:[]).slice(0,4).map(row=>({
+      name:String(row?.name||'').trim().slice(0,80),
+      callId:String(row?.callId||'').trim().slice(0,180),
+      status:String(row?.status||'').trim().slice(0,80),
+      code:String(row?.code||'').trim().slice(0,120)||null,
+      executed:row?.executed===true,
+      duplicate:row?.duplicate===true,
+      targetId:String(row?.targetId||'').trim().slice(0,180)||null
+    })).filter(row=>row.name||row.status);
+  }
+  function cleanMessage(m){
+    const local=!!m.local,source=String(m.source||'').trim().toLowerCase()||(local?'local':'');
+    return {id:m.id||uid(),role:m.role==='user'?'user':'assistant',text:String(m.text||''),at:m.at||now(),local,source,requestId:String(m.requestId||'').trim().slice(0,180)||null,toolResults:cleanToolResults(m.toolResults)};
+  }
   function newThread(title='새 대화'){return {id:uid(),title,createdAt:now(),updatedAt:now(),messages:[]};}
   function loadThreadStore(){
     const key=threadStoreKey();
@@ -156,10 +170,18 @@
       try{
         const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,context:buildContext(),conversation:thread.messages.slice(-24).map(({role,text})=>({role,text}))})});
         if(!response.ok)throw new Error(`Coach ${response.status}`);
-        const data=await response.json();return {text:String(data.answer||data.output||'응답 형식을 확인해 주세요.'),local:false};
-      }catch(e){return {text:`외부 AI 연결에 실패해 로컬 데이터 분석으로 전환했습니다.\n\n${localCoachAnswer(message)}`,local:true};}
+        const payload=await response.json(),data=payload?.data&&typeof payload.data==='object'?payload.data:{};
+        const source=String(data.source||payload?.source||'gateway').trim().toLowerCase();
+        return {
+          text:String(payload?.answer||data?.answer||payload?.output||'응답 형식을 확인해 주세요.'),
+          local:source!=='llm',
+          source,
+          requestId:String(data.requestId||payload?.requestId||'').trim().slice(0,180)||null,
+          toolResults:cleanToolResults(data.toolResults)
+        };
+      }catch(e){return {text:`외부 AI 연결에 실패해 로컬 데이터 분석으로 전환했습니다.\n\n${localCoachAnswer(message)}`,local:true,source:'local',requestId:null,toolResults:[]};}
     }
-    return {text:localCoachAnswer(message),local:true};
+    return {text:localCoachAnswer(message),local:true,source:'local',requestId:null,toolResults:[]};
   }
 
   function threadListHTML(runtime){
@@ -237,7 +259,11 @@
     let result;
     try{result=await getCoachAnswer(text,thread);}catch{result={text:localCoachAnswer(text),local:true};}
     if(!runtime.root.isConnected)return;
-    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
+    thinking.remove();
+    const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local,source:result.source|| (result.local?'local':'gateway'),requestId:result.requestId||null,toolResults:cleanToolResults(result.toolResults)};
+    thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);
+    if(a.toolResults.length)emit('garang:coach-server-action',{root:runtime.root,threadId:thread.id,messageId:a.id,uid:currentAuthUid(),source:a.source,requestId:a.requestId,toolResults:a.toolResults});
+    forceBottom(runtime);
   }
 
   function mountCoach(){
