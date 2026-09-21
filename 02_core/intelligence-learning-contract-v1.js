@@ -19,8 +19,8 @@ function sameDate(row,date){return dateKey(row?.date||row?.day||row?.performedAt
 function actionForPlan(state,plan,date){
   const planId=clean(plan?.id),recommendationId=clean(plan?.recommendationId),rows=list(state?.actionLog).filter(row=>sameDate(row,date)||dateKey(row?.args?.date)===date).slice().reverse();
   return rows.find(row=>{
-    const ids=list(row?.args?.planIds).map(String),rid=clean(row?.args?.recommendationId);
-    return (planId&&ids.includes(planId))||(recommendationId&&rid===recommendationId);
+    const ids=list(row?.args?.planIds).map(String),rid=clean(row?.recommendationId||row?.args?.recommendationId),targetId=clean(row?.targetId);
+    return (planId&&(ids.includes(planId)||targetId===planId))||(recommendationId&&rid===recommendationId);
   })||null;
 }
 function executionItemForPlan(day,plan,index){
