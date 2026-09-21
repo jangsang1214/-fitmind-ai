@@ -1,0 +1,20 @@
+/* GARANG Photo Evidence v1 */
+.photo-evidence-card{overflow:hidden}
+.photo-evidence-card .visual-section-head{align-items:flex-start}
+.photo-evidence-stage{position:relative;display:grid;place-items:center;min-height:210px;margin-top:12px;border:1px solid rgba(242,238,231,.12);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));overflow:hidden}
+.photo-evidence-stage img{width:100%;height:100%;max-height:380px;object-fit:cover;display:block}
+.photo-evidence-empty{display:grid;gap:7px;place-items:center;text-align:center;padding:30px 18px;color:var(--muted)}
+.photo-evidence-empty .camera-glyph{font-size:32px;color:rgba(242,238,231,.74)}
+.photo-evidence-empty strong{color:var(--text);font-size:15px;letter-spacing:.02em}
+.photo-evidence-empty small,.photo-evidence-note{font-size:12px;line-height:1.55;color:var(--muted)}
+.photo-evidence-actions{margin-top:12px}
+.photo-evidence-history{white-space:nowrap}
+.photo-evidence-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.photo-evidence-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
+.garang-photo-evidence-lightbox{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));background:rgba(3,4,3,.88);backdrop-filter:blur(18px)}
+.garang-photo-evidence-dialog{width:min(720px,100%);max-height:100%;overflow:auto;border:1px solid rgba(242,238,231,.16);border-radius:26px;background:#0a0b0a;padding:14px;box-shadow:0 28px 80px rgba(0,0,0,.5)}
+.garang-photo-evidence-dialog-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:3px 2px 12px}
+.garang-photo-evidence-dialog-head>div{display:grid;gap:3px}.garang-photo-evidence-dialog-head strong{font-size:16px}
+.garang-photo-evidence-full{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:18px;background:#050605}
+.garang-photo-evidence-local-note{display:block;padding:11px 4px 2px;color:var(--muted);text-align:center}
+@media(max-width:640px){.photo-evidence-stage{min-height:180px;border-radius:18px}.photo-evidence-stage img{max-height:320px}.garang-photo-evidence-dialog{border-radius:22px;padding:10px}.garang-photo-evidence-full{max-height:70vh}}
