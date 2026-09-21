@@ -11,10 +11,11 @@ module.exports=Object.freeze({
   first_record_created:{stage:'activation',allowedProperties:['recordType','source']},
   today_viewed:{stage:'engagement',allowedProperties:['source']},
   coach_opened:{stage:'engagement',allowedProperties:['source']},
-  coach_recommendation_shown:{stage:'intelligence',allowedProperties:['provider','source']},
-  daily_plan_applied:{stage:'activation',allowedProperties:['source']},
-  planned_action_started:{stage:'execution',allowedProperties:['actionType','source']},
-  planned_action_completed:{stage:'execution',allowedProperties:['actionType','source']},
+  coach_recommendation_shown:{stage:'intelligence',allowedProperties:['provider','source','episodeId','decisionId','decisionMode','recommendationId','policyVersion']},
+  coach_recommendation_resolved:{stage:'intelligence',allowedProperties:['source','episodeId','decisionId','recommendationId','policyVersion','resolution']},
+  daily_plan_applied:{stage:'activation',allowedProperties:['source','episodeId','decisionId','recommendationId','policyVersion']},
+  planned_action_started:{stage:'execution',allowedProperties:['actionType','source','episodeId','recommendationId']},
+  planned_action_completed:{stage:'execution',allowedProperties:['actionType','source','episodeId','recommendationId']},
   accumulation_viewed:{stage:'retention',allowedProperties:['source']}
  }),
  legacyEventMapping:Object.freeze({
