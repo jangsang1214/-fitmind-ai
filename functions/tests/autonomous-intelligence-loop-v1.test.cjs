@@ -80,7 +80,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
  await test('Agent Context exposes longitudinal learning and deterministic personalization',()=>{
   const context=buildAgentContext(baseState(),{ownerUid:'user-1',now:new Date('2026-09-20T12:00:00Z')});
   assert.equal(context.longitudinalLearning.version,'longitudinal-learning-metrics-v1.0.0');
-  assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.0.0');
+  assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.1.0');
   assert.equal(context.personalizationPolicy.guardrails.deterministic,true);
   assert.equal(context.personalizationPolicy.guardrails.llmCannotOverride,true);
  });
