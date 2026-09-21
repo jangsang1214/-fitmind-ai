@@ -13,7 +13,7 @@ assert.match(runtime,/localOnly:true/);
 assert.match(runtime,/userConfirmed:true/);
 assert.doesNotMatch(runtime,/fetch\s*\(/,'Photo Evidence v1 must not upload binary media over the network');
 assert.match(app,/photoEvidence:evidence/,'workout and meal records must retain evidence metadata');
-assert.match(app,/GarangPhotoEvidence\.store/,'record save must persist evidence bytes outside JSON state');
+assert.ok((app.match(/api\.store\(evidenceId,draft\.file\)/g)||[]).length>=2,'workout and nutrition saves must persist evidence bytes outside JSON state');
 assert.match(app,/data-photo-evidence=/,'saved records must expose a photo retrieval action');
 assert.match(html,/id="workoutPhotoPicker"[^>]+capture="environment"/);
 assert.match(html,/garang-photo-evidence-v1\.css/);
