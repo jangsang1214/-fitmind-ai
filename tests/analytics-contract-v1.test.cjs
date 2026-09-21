@@ -15,7 +15,7 @@ for(const key of ['rawHealthPayloads','rawChatPayloads','email','displayName','p
   assert.equal(contract.privacy[key],false,`${key} must remain excluded from analytics`);
 }
 
-for(const name of ['signup_completed','onboarding_completed','record_created','first_record_created','today_viewed','coach_opened','coach_recommendation_shown','daily_plan_applied','planned_action_started','planned_action_completed','accumulation_viewed']){
+for(const name of ['signup_completed','onboarding_completed','record_created','first_record_created','today_viewed','coach_opened','coach_recommendation_shown','coach_recommendation_resolved','daily_plan_applied','planned_action_started','planned_action_completed','accumulation_viewed']){
   assert.ok(contract.canonicalEvents[name],`missing canonical analytics event: ${name}`);
 }
 
@@ -30,6 +30,9 @@ assert.match(app,/event:'onboarding_completed'/);
 assert.match(app,/trackEvent\('screen_viewed'/);
 assert.match(services,/analyticsConsent:\s*false/,'remote analytics consent must default to false');
 assert.match(services,/analyticsContractVersion:\s*'garang-analytics-v1'/);
+assert.ok(contract.canonicalEvents.coach_recommendation_shown.allowedProperties.includes('episodeId'));
+assert.ok(contract.canonicalEvents.coach_recommendation_resolved.allowedProperties.includes('resolution'));
+assert.ok(contract.canonicalEvents.daily_plan_applied.allowedProperties.includes('policyVersion'));
 
 const forbiddenProperty=/email|displayName|message|prompt|answer|latitude|longitude|token|raw/i;
 for(const [eventName,event] of Object.entries(contract.canonicalEvents)){
