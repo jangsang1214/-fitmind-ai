@@ -122,4 +122,10 @@ test('Intelligence Bridge exposes confidence-gated User Performance context with
   assert.equal(bridge.userPerformanceReady(),true);assert.equal(context.minConfidence,0.5);assert.equal(Object.keys(context.dimensions).join(','),'trainingConsistency');assert.ok(context.withheldDimensions.some(row=>row.name==='attributedOutcomeScore'&&row.reason==='NO_VALUE'));assert.equal(context.guardrails.affectsDecision,false);assert.equal(JSON.stringify(state),before);
 });
 
+test('server-owned autonomous plan action links into attribution graph',()=>{
+  const state=completedState();state.actionLog=[{id:'auto-action',event:'autonomous_tool_executed',targetId:'plan-1',recommendationId:'recommendation-1',at:'2026-09-15T09:00:00.000Z'}];
+  const cycle=Learning.buildDayGraph(state,'2026-09-15',{planExecution:PlanExecution,now:new Date('2026-09-16T12:00:00Z')}).cycles[0];
+  assert.equal(cycle.actionId,'auto-action');assert.equal(cycle.attribution.recommendationToAction,true);assert.equal(cycle.attribution.actionToPlan,true);assert.equal(cycle.attribution.complete,true);
+});
+
 console.log(`PASS intelligence-learning-contract-v1 ${tests.length} tests`);
