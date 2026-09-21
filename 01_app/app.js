@@ -30,7 +30,7 @@ let state = EMPTY();
 let db = {exercise:[],food:[]};
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
-let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
+let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false, serverStateRefreshPromise=null;
 window.GarangCloudHydrationReady=true;
 function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
 let workoutDraft=[], mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false;
@@ -42,6 +42,8 @@ function toast(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classLis
 function clone(x){return JSON.parse(JSON.stringify(x));}
 function daysAgo(n){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d;}
 function dateMs(s){const d=new Date(`${s||today()}T00:00:00`);return Number.isFinite(d.getTime())?d.getTime():0;}
+function instantMs(value){if(value===null||value===undefined||value==='')return 0;const numeric=Number(value);if(Number.isFinite(numeric)&&numeric>100000000000)return numeric;const parsed=Date.parse(String(value));return Number.isFinite(parsed)?parsed:0;}
+function stateModifiedMs(value){const row=value&&typeof value==='object'?value:{};return Math.max(instantMs(row.updatedAtMs),instantMs(row.clientUpdatedAt),instantMs(row.meta?.updatedAt));}
 function withinDays(s,n){return dateMs(s)>=daysAgo(Math.max(0,n-1)).getTime();}
 function sum(a,fn){return a.reduce((x,y)=>x+fn(y),0);}
 function uniqueDays(a){return new Set(a.map(x=>x.date).filter(Boolean)).size;}
@@ -112,6 +114,7 @@ function reconcileAfterHydration(status){
   render();
 }
 async function cloudLoadAndMerge(){
+  const {preferRemote=false}=arguments[0]||{};
   if(!firebaseReady||!currentUser)return;
   setCloudHydrationReady(false);setSync('syncing');
   try{
@@ -120,9 +123,12 @@ async function cloudLoadAndMerge(){
     let shouldSaveLocal=false;
     if(remote){
       const local=readLocal(storageKey);
-      const localUpdated=dateMs((state.meta?.updatedAt||'').slice(0,10))||new Date(state.meta?.updatedAt||0).getTime();
-      const remoteUpdated=new Date(remote.clientUpdatedAt||remote.meta?.updatedAt||0).getTime();
-      if(!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
+      const localUpdated=stateModifiedMs(local||state),remoteUpdated=stateModifiedMs(remote);
+      if(preferRemote&&local){
+        const merge=window.GarangSyncDurability?.mergeActiveStates;
+        const reconciled=typeof merge==='function'?merge(local,remote,{ownerUid:currentUser?.uid||null,clock:Date.now()}):remote;
+        state={...EMPTY(),...reconciled};normalizeState();writeLocal();
+      }else if(!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
       else shouldSaveLocal=true;
     }else if(readLocal(storageKey))shouldSaveLocal=true;
     cloudSyncPending=false;
@@ -139,7 +145,16 @@ async function cloudLoadAndMerge(){
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}
 function trackEvent(name,props={},persist=true){try{state.analytics.events.push({id:uid(),name,props,at:isoNow()});if(state.analytics.events.length>500)state.analytics.events=state.analytics.events.slice(-500);if(persist)writeLocal();if(SERVICES.analyticsEndpoint)fetch(SERVICES.analyticsEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,props,at:isoNow(),userId:currentUser?.uid||null})}).catch(()=>{});}catch{}}
 function syncStateFromAgent(){try{const bridge=window.GarangAgentStateBridge;if(!bridge?.ready?.())return;const live=bridge.getLiveState?.();if(live)state=live;}catch{}}
+async function refreshAfterCoachServerAction(detail={}){
+  const results=Array.isArray(detail?.toolResults)?detail.toolResults:[];if(!results.some(row=>row?.executed===true))return false;
+  if(!firebaseReady||!currentUser)return false;
+  const owner=String(detail?.uid||'').trim();if(owner&&owner!==String(currentUser.uid||''))return false;
+  if(serverStateRefreshPromise)return serverStateRefreshPromise;
+  serverStateRefreshPromise=(async()=>{await cloudLoadAndMerge({preferRemote:true});return true;})().finally(()=>{serverStateRefreshPromise=null;});
+  return serverStateRefreshPromise;
+}
 window.addEventListener('garang:agent-write',syncStateFromAgent);
+window.addEventListener('garang:coach-server-action',event=>{refreshAfterCoachServerAction(event?.detail||{}).catch(error=>captureError('coach_server_state_refresh',error));});
 window.addEventListener('error',e=>captureError('frontend_error',e.error||e.message));window.addEventListener('unhandledrejection',e=>captureError('unhandled_rejection',e.reason));
 
 async function loadJSON(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path} ${r.status}`);return r.json();}
