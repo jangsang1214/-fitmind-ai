@@ -9,6 +9,7 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.ok(app.includes("currentCert={workout:null,workoutRecordId:null,running:null,meal:null,mealRecordId:null}"),'Certification media must keep explicit record bindings');
 assert.ok(app.includes("currentCert.workoutRecordId=latestWorkoutRecord.id||null"),'Workout photo proof must pin the selected media to the saved workout record');
 assert.ok(app.includes("function workoutSessionSummary(record)"),'Workout certification must summarize the anchored record instead of silently switching to the newest session');
+assert.ok(app.includes("!currentCert.mealRecordId&&currentCert.meal&&mealScanDraft?.url===currentCert.meal.url"),'Meal photo proof must only bind while it is unconsumed');
 assert.ok(app.includes("currentCert.mealRecordId=meal.id"),'Meal photo proof must bind to the meal that was actually saved');
 assert.ok(app.includes("function mountMealCert()"),'Meal Scan must expose a certification surface after photo selection');
 assert.ok(app.includes("kind==='meal'")&&app.includes("NUTRITION VERIFIED"),'Certification rendering must support nutrition proof');
