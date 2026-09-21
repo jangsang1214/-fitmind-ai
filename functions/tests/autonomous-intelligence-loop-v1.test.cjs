@@ -6,6 +6,12 @@ const Metrics=require('../src/longitudinal-learning-metrics-v1.cjs');
 const Policy=require('../src/personalization-policy-v1.cjs');
 const BrowserMetrics=require('../../02_core/longitudinal-learning-metrics-v1.js');
 const BrowserPolicy=require('../../02_core/personalization-policy-v1.js');
+const Episodes=require('../src/intelligence-episode-v1.cjs');
+const ResponseModel=require('../src/user-response-model-v1.cjs');
+const RecommendationPolicy=require('../src/recommendation-policy-eval-v1.cjs');
+const BrowserEpisodes=require('../../02_core/intelligence-episode-v1.js');
+const BrowserResponseModel=require('../../02_core/user-response-model-v1.js');
+const BrowserRecommendationPolicy=require('../../02_core/recommendation-policy-eval-v1.js');
 const {buildAgentContext}=require('../src/agent-context.cjs');
 const {executeGeneratedTools}=require('../src/coach-gateway.cjs');
 const {parseCoachResponse,systemPrompt,COACH_RESPONSE_SCHEMA}=require('../src/llm-provider.cjs');
@@ -77,12 +83,44 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   const policy=Policy.build(model,outcome);assert.equal(policy.adjustments.suppressProgression,true);assert.ok(policy.adjustments.intensityCap<=.85);assert.equal(policy.guardrails.noAutomaticProgressionIncrease,true);
  });
 
+ await test('episode response model and candidate policy close the learning loop conservatively',()=>{
+  const state=baseState();
+  state.planner=[
+   {id:'p1',recommendationId:'r1',duration:30,intensityScale:1,volumeScale:1,decisionEngineVersion:'decision-intelligence-v1'},
+   {id:'p2',recommendationId:'r2',duration:30,intensityScale:1,volumeScale:1,decisionEngineVersion:'decision-intelligence-v1'},
+   {id:'p3',recommendationId:'r3',duration:30,intensityScale:1,volumeScale:1,decisionEngineVersion:'decision-intelligence-v1'},
+   {id:'p4',recommendationId:'r4',duration:60,intensityScale:1,volumeScale:1,decisionEngineVersion:'decision-intelligence-v1'},
+   {id:'p5',recommendationId:'r5',duration:60,intensityScale:1,volumeScale:1,decisionEngineVersion:'decision-intelligence-v1'}
+  ];
+  state.actionLog=[1,2,3,4,5].map(i=>({id:'a'+i,event:'recommendation_accepted',recommendationId:'r'+i,at:'2026-09-'+String(10+i).padStart(2,'0')+'T08:00:00Z'}));
+  const graph={asOf:'2026-09-20',lookbackDays:28,cycles:[
+   {date:'2026-09-11',decisionId:'d1',decisionMode:'maintain',recommendationId:'r1',planId:'p1',executionId:'e1',outcomeId:'o1',execution:{status:'observed',score:100},outcome:{classification:'completed',score:90},attribution:{complete:true}},
+   {date:'2026-09-12',decisionId:'d2',decisionMode:'maintain',recommendationId:'r2',planId:'p2',executionId:'e2',outcomeId:'o2',execution:{status:'observed',score:100},outcome:{classification:'completed',score:95},attribution:{complete:true}},
+   {date:'2026-09-13',decisionId:'d3',decisionMode:'maintain',recommendationId:'r3',planId:'p3',executionId:'e3',outcomeId:'o3',execution:{status:'observed',score:90},outcome:{classification:'completed',score:85},attribution:{complete:true}},
+   {date:'2026-09-14',decisionId:'d4',decisionMode:'maintain',recommendationId:'r4',planId:'p4',executionId:null,outcomeId:'o4',execution:{status:'not_observed',score:0},outcome:{classification:'missed',score:0},attribution:{complete:false}},
+   {date:'2026-09-15',decisionId:'d5',decisionMode:'maintain',recommendationId:'r5',planId:'p5',executionId:null,outcomeId:'o5',execution:{status:'not_observed',score:0},outcome:{classification:'missed',score:0},attribution:{complete:false}}
+  ]};
+  const episodes=Episodes.build(state,graph,{asOf:'2026-09-20'}),browserEpisodes=BrowserEpisodes.build(state,graph,{asOf:'2026-09-20'});
+  assert.deepEqual(episodes,browserEpisodes);assert.equal(episodes.episodes.length,5);assert.equal(episodes.episodes[0].userResponse.status,'accepted');
+  const response=ResponseModel.build(episodes,{asOf:'2026-09-20'}),browserResponse=BrowserResponseModel.build(browserEpisodes,{asOf:'2026-09-20'});
+  assert.deepEqual(response,browserResponse);assert.equal(response.training.preferredDurationBand,'short');assert.ok(response.confidence>=.35);
+  const decision={decisionId:'d-next',mode:'maintain',recommendation:{duration:50,intensityScale:1,volumeScale:1}};
+  const policy=RecommendationPolicy.build(decision,response),browserPolicy=BrowserRecommendationPolicy.build(decision,browserResponse);
+  assert.deepEqual(policy,browserPolicy);assert.ok(policy.selected.durationScale<=1);assert.ok(policy.selected.intensityScale<=1);assert.ok(policy.selected.volumeScale<=1);assert.equal(policy.guardrails.neverExceedsDeterministicDecision,true);
+  const personalized=Policy.build({dimensions:{}},{},{responseModel:response,candidatePolicy:policy});
+  assert.ok(personalized.adjustments.durationScale<=1);assert.ok(personalized.adjustments.intensityCap<=1);assert.ok(personalized.adjustments.volumeCap<=1);assert.equal(personalized.guardrails.responseLearningCanConstrainOnly,true);
+ });
+
  await test('Agent Context exposes longitudinal learning and deterministic personalization',()=>{
   const context=buildAgentContext(baseState(),{ownerUid:'user-1',now:new Date('2026-09-20T12:00:00Z')});
   assert.equal(context.longitudinalLearning.version,'longitudinal-learning-metrics-v1.0.0');
   assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.0.0');
   assert.equal(context.personalizationPolicy.guardrails.deterministic,true);
   assert.equal(context.personalizationPolicy.guardrails.llmCannotOverride,true);
+  assert.equal(context.intelligenceEpisodes.version,'intelligence-episode-v1.0.0');
+  assert.equal(context.userResponseModel.version,'user-response-model-v1.0.0');
+  assert.equal(context.recommendationPolicy.version,'recommendation-policy-eval-v1.0.0');
+  assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
  });
 
  await test('LLM structured response accepts only bounded typed tool calls',()=>{
