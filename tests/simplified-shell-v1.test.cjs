@@ -12,6 +12,7 @@ const registry=read('06_features/ui/runtime/garang-screen-registry-v1.js');
 const runtime=read('06_features/ui/runtime/garang-simplified-shell-v1.js');
 const experienceV4=read('06_features/ui/runtime/garang-experience-v4.js');
 const nextAction=read('06_features/ui/runtime/garang-today-single-next-action-v1.js');
+const goldenPathUi=read('06_features/ui/runtime/garang-golden-path-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
 const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const planSurface=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
@@ -60,6 +61,7 @@ assert.equal(manifest.runtimeContract.singleOwners.coreLoopStyle,'03_styles/runt
 assert.doesNotMatch(runtime,/createElement\('script'\)|garang-core-loop-v1\.js|goal-alignment-v1\.js/,'Simplified Shell must not dynamically own runtime boot dependencies');
 assert.doesNotMatch(experienceV4,/createElement\('script'\)|data-garang-today-single-next-action-v1|garang-today-single-next-action-v1\.js/,'Experience v4 must not dynamically own Today Next Action boot');
 assert.match(nextAction,/window\.GarangTodaySingleNextActionV1/,'Today Next Action must remain a first-class runtime');
+assert.match(goldenPathUi,/if\(window\.GarangTodaySingleNextActionV1\)return '';/,'Golden Path UI must stay orchestration-only when Today Next Action owns the visible CTA');
 assert.doesNotMatch(nextAction,/rootObserver\.observe\(main|observe\(main,\s*\{\s*childList:true,\s*subtree:true/,'Today Next Action must rely on canonical lifecycle events instead of a broad #main observer');
 const experienceIndex=manifest.scripts.indexOf('06_features/ui/runtime/garang-experience-v4.js'),nextActionIndex=manifest.scripts.indexOf('06_features/ui/runtime/garang-today-single-next-action-v1.js'),goalIndex=manifest.scripts.indexOf('02_core/goal-alignment-v1.js'),shellIndex=manifest.scripts.indexOf('06_features/ui/runtime/garang-simplified-shell-v1.js'),coreIndex=manifest.scripts.indexOf('06_features/ui/runtime/garang-core-loop-v1.js');
 assert.ok(experienceIndex>=0&&experienceIndex<nextActionIndex&&nextActionIndex<goalIndex&&goalIndex<shellIndex&&shellIndex<coreIndex,'manifest must explicitly own deterministic Experience v4 -> Today Next Action -> Goal Alignment -> Simplified Shell -> Core Loop boot order');
@@ -70,6 +72,7 @@ assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.3-explicit-style-own
 assert.match(html,/goal-alignment-v1\.js\?v=1\.0\.0-explicit-boot/,'Goal Alignment must ship as an explicit parser-owned runtime dependency');
 assert.match(html,/garang-experience-v4\.js\?v=1\.6\.1-explicit-next-action-boot/,'Experience v4 cache key must ship without dynamic Today boot ownership');
 assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.1\.4-explicit-boot-lifecycle/,'Today Next Action must ship as an explicit parser-owned lifecycle runtime');
+assert.match(html,/garang-golden-path-v1\.js\?v=1\.0\.3-single-visible-owner/,'Golden Path UI cache key must ship the single visible next-action owner contract');
 assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.4-explicit-boot-owner/,'Simplified Shell runtime cache key must ship explicit boot ownership');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
