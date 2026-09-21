@@ -53,7 +53,10 @@ assert.match(router,/route==='profile'[\s\S]*profileTopBtn/,'Profile must use it
 assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose four primary axes');
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
-assert.match(css,/@import url\('\.\/garang-core-loop-v1\.css\?v=1\.0\.1'\)/,'Simplified Shell must own the subordinate Core Loop stylesheet');
+assert.doesNotMatch(css,/@import[^;]*garang-core-loop-v1\.css/,'Simplified Shell must not own Core Loop stylesheet loading through a hidden import');
+const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
+assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
+assert.equal(manifest.runtimeContract.singleOwners.coreLoopStyle,'03_styles/runtime/garang-core-loop-v1.css','runtime contract must name one Core Loop stylesheet owner');
 assert.doesNotMatch(runtime,/createElement\('script'\)|garang-core-loop-v1\.js|goal-alignment-v1\.js/,'Simplified Shell must not dynamically own runtime boot dependencies');
 assert.doesNotMatch(experienceV4,/createElement\('script'\)|data-garang-today-single-next-action-v1|garang-today-single-next-action-v1\.js/,'Experience v4 must not dynamically own Today Next Action boot');
 assert.match(nextAction,/window\.GarangTodaySingleNextActionV1/,'Today Next Action must remain a first-class runtime');
@@ -62,7 +65,8 @@ const experienceIndex=manifest.scripts.indexOf('06_features/ui/runtime/garang-ex
 assert.ok(experienceIndex>=0&&experienceIndex<nextActionIndex&&nextActionIndex<goalIndex&&goalIndex<shellIndex&&shellIndex<coreIndex,'manifest must explicitly own deterministic Experience v4 -> Today Next Action -> Goal Alignment -> Simplified Shell -> Core Loop boot order');
 assert.equal(manifest.runtimeContract.singleOwners.todayNextAction,'06_features/ui/runtime/garang-today-single-next-action-v1.js','runtime contract must name one Today Next Action owner');
 assert.match(html,/garang-screen-registry-v1\.js\?v=1\.2\.2/,'Screen Registry cache key must ship the Record identity fix');
-assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.2/,'Simplified Shell stylesheet cache key must ship the current product loop');
+assert.match(html,/garang-core-loop-v1\.css\?v=1\.0\.2-explicit-boot/,'Core Loop stylesheet must ship as an explicit boot asset');
+assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.3-explicit-style-owner/,'Simplified Shell stylesheet cache key must ship explicit style ownership');
 assert.match(html,/goal-alignment-v1\.js\?v=1\.0\.0-explicit-boot/,'Goal Alignment must ship as an explicit parser-owned runtime dependency');
 assert.match(html,/garang-experience-v4\.js\?v=1\.6\.1-explicit-next-action-boot/,'Experience v4 cache key must ship without dynamic Today boot ownership');
 assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.1\.4-explicit-boot-lifecycle/,'Today Next Action must ship as an explicit parser-owned lifecycle runtime');

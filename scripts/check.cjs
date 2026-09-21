@@ -17,7 +17,7 @@ if([...bootScripts,...bootStyles].some(x=>/(^|\/)archive\//i.test(x)))failures.p
 if((manifest.scripts||[]).some(x=>/v8|v9|v99|integrated/i.test(x)))failures.push({file:'runtime-manifest.json',error:'Historical runtime source is active'});
 const runtimeContract=manifest.runtimeContract||{};
 if(runtimeContract.status!=='frozen'||runtimeContract.version!==2)failures.push({file:'runtime-manifest.json',error:'Runtime contract must be frozen v2'});
-for(const [capability,owner] of Object.entries(runtimeContract.singleOwners||{}))if(!(manifest.scripts||[]).includes(owner))failures.push({file:'runtime-manifest.json',error:`Missing active owner for ${capability}: ${owner}`});
+const activeRuntimeOwners=new Set([...(manifest.scripts||[]),...(manifest.styles||[])]);for(const [capability,owner] of Object.entries(runtimeContract.singleOwners||{}))if(!activeRuntimeOwners.has(owner))failures.push({file:'runtime-manifest.json',error:`Missing active runtime owner for ${capability}: ${owner}`});
 if(Object.hasOwn(runtimeContract,'legacyNamedCanonical'))failures.push({file:'runtime-manifest.json',error:'Legacy owner-name allowlist is forbidden in runtime contract v2'});
 const riskyName=/(?:^|\/)[^/]*(?:hotfix|(?:^|-)fix(?:-|\.)|safety|stability|final)[^/]*\.(?:js|css)$/i;
 for(const asset of [...(manifest.scripts||[]),...(manifest.styles||[])].filter(x=>riskyName.test(x)))failures.push({file:'runtime-manifest.json',error:`Legacy overlay name must not be active: ${asset}`});
