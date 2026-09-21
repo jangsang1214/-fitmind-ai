@@ -124,7 +124,11 @@ async function cloudLoadAndMerge(){
     if(remote){
       const local=readLocal(storageKey);
       const localUpdated=stateModifiedMs(local||state),remoteUpdated=stateModifiedMs(remote);
-      if(preferRemote||!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
+      if(preferRemote&&local){
+        const merge=window.GarangSyncDurability?.mergeActiveStates;
+        const reconciled=typeof merge==='function'?merge(local,remote,{ownerUid:currentUser?.uid||null,clock:Date.now()}):remote;
+        state={...EMPTY(),...reconciled};normalizeState();writeLocal();
+      }else if(!local||remoteUpdated>=localUpdated){state={...EMPTY(),...remote};normalizeState();writeLocal();}
       else shouldSaveLocal=true;
     }else if(readLocal(storageKey))shouldSaveLocal=true;
     cloudSyncPending=false;
