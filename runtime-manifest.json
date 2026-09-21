@@ -67,6 +67,11 @@
     "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
     "06_features/ui/runtime/garang-mobile-auth-v1.js",
     "06_features/ui/runtime/garang-sw-update-v2.js",
+    "06_features/ui/runtime/garang-product-consolidation-v1.js",
+    "06_features/ui/runtime/garang-state-event-durability-v1.js",
+    "06_features/ui/runtime/garang-today-checkin-override-v1.js",
+    "06_features/ui/runtime/garang-today-workout-prep-integration-v1.js",
+    "06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js",
     "06_features/ui/runtime/garang-data-migration-v2.js",
     "06_features/ui/runtime/garang-sync-quiet-ux-v1.js",
     "06_features/ui/runtime/garang-functional-recovery.js",
@@ -134,7 +139,11 @@
       "functionalRecovery": "06_features/ui/runtime/garang-functional-recovery.js",
       "settingsPrivacy": "06_features/ui/runtime/garang-privacy-security-v1.js",
       "schema": "02_core/data-schema.js",
-      "errors": "01_app/app.js"
+      "errors": "01_app/app.js",
+      "stateEventDurability": "06_features/ui/runtime/garang-state-event-durability-v1.js",
+      "todayBottomCheckin": "06_features/ui/runtime/garang-today-checkin-override-v1.js",
+      "todayWorkoutPrepExecution": "06_features/ui/runtime/garang-today-workout-prep-integration-v1.js",
+      "todayMobileShortcut": "06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js"
     },
     "documentWideObserverAllowlist": [
       "06_features/ui/i18n/entities-v1.js",
