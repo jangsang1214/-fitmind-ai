@@ -10,14 +10,11 @@
   'use strict';
   if (window.GarangTodayWorkoutPrepIntegrationV1) return;
 
-  const VERSION = '1.0.2';
+  const VERSION = '1.1.0';
   const STYLE_ID = 'garang-today-workout-prep-integration-v1-style';
   const PLAN_KEY = 'garang_daily_workout_plan_v1';
   const main = () => document.getElementById('main');
   let queued = false;
-  let observedMain = null;
-  let mountObserver = null;
-  let mainIdentityObserver = null;
   let mountRecoveryTimer = null;
   let mountRecoveryUntil = 0;
 
@@ -321,46 +318,6 @@
     requestAnimationFrame(() => requestAnimationFrame(reconcile));
   }
 
-  function observeMounts() {
-    const m = main();
-    if (!m || m === observedMain) return;
-    mountObserver?.disconnect();
-    observedMain = m;
-    mountObserver = new MutationObserver(() => {
-      stabilizeExpectedPresentation(m);
-      schedule();
-    });
-    mountObserver.observe(m, {
-      childList:true,
-      subtree:true,
-      attributes:true,
-      attributeFilter:[
-        'class',
-        'data-gsn-action',
-        'data-gsn-step',
-        'data-garang-today-workout-execute',
-        'data-garang-screen',
-        'data-garang-workout-prep-execution',
-        'hidden',
-        'style',
-        'aria-hidden',
-        'tabindex'
-      ]
-    });
-  }
-
-  function observeMainIdentity() {
-    if (mainIdentityObserver || !document.body) return;
-    mainIdentityObserver = new MutationObserver(() => {
-      const current = main();
-      if (!current || current === observedMain) return;
-      observeMounts();
-      stabilizeExpectedPresentation(current);
-      schedule();
-    });
-    mainIdentityObserver.observe(document.body, {childList:true,subtree:true});
-  }
-
   for (const eventName of [
     'garang:workout-intelligence-rendered',
     'garang:screen-rendered',
@@ -368,11 +325,9 @@
     'garang:state-updated',
     'garang:state-hydrated',
     'pageshow'
-  ]) window.addEventListener(eventName, () => { observeMounts(); stabilizeExpectedPresentation(); schedule(); });
+  ]) window.addEventListener(eventName, () => { stabilizeExpectedPresentation(); schedule(); });
 
   ensureStyle();
-  observeMainIdentity();
-  observeMounts();
   stabilizeExpectedPresentation();
   schedule();
   window.GarangTodayWorkoutPrepIntegrationV1 = Object.freeze({
