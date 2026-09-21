@@ -124,13 +124,3 @@
   schedule();
 })();
 
-/* Subordinate Design/Brand integration: keep Golden Path logic, but give Today one visible next-action owner. */
-(() => {
-  'use strict';
-  if (window.GarangTodaySingleNextActionV1 || document.querySelector('script[data-garang-today-single-next-action-v1]')) return;
-  const script = document.createElement('script');
-  script.src = './06_features/ui/runtime/garang-today-single-next-action-v1.js?v=1.0.13';
-  script.dataset.garangTodaySingleNextActionV1 = '1';
-  script.async = false;
-  document.head.appendChild(script);
-})();
