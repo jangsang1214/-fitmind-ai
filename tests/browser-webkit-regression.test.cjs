@@ -217,6 +217,14 @@ async function assertCoachSettles(page){
     await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
+    await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('.workout-set-table-head').isVisible(),true,'workout execution must expose set-first table hierarchy');
+    assert.equal(await page.locator('#workoutSetDetails').isVisible(),true,'per-set execution rows must be visible by default');
+    await tap(page,'[data-execution-set-complete]');
+    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
+    assert.equal(await page.locator('[data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
+    assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\\d{2}:\\d{2}$/,'live session timer must be visible');
+    await tap(page,'#skipWorkoutRest');
     await tapRecordRoute(page,'body');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
