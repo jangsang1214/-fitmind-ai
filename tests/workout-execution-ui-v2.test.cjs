@@ -34,6 +34,8 @@ assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remo
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
 assert.ok(runtime.includes("liveSetDraft")&&runtime.includes("captureLiveSetRows"),'live set values must survive incidental rerenders during execution');
+assert.ok(app.includes("toMetricWeight(value){return metricWeight(value);}")&&app.includes("displayWeight(value,digits=1){return shownWeight(value,digits);}"),'execution bridge must expose canonical/display weight conversion');
+assert.ok(runtime.includes("weightMetric:metricBufferedWeight")&&runtime.includes("displayBufferedWeight(saved.weightMetric"),'live set buffer must store weight canonically and convert on display restoration');
 assert.ok(runtime.includes("liveSetCount")&&runtime.includes("restoringLiveSetCount"),'active set count must survive Workout remounts without truncating buffered rows');
 assert.ok(runtime.includes("summary.exercises>liveDraftCount")&&!runtime.includes("summary.exercises!==liveDraftCount"),'removing an unrelated draft exercise must not invalidate active execution rows');
 assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.includes("setsInput.dispatchEvent(new Event('input'"),'remount must restore the saved set count before enhancing rows');
