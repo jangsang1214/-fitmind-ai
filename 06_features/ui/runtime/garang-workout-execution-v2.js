@@ -35,7 +35,8 @@ function cueText(rows){
 }
 function enhanceRows(){
   const host=document.getElementById('workoutSetDetails');if(!host)return;
-  host.hidden=false;host.classList.add('workout-execution-sets');
+  if(host.hidden){window.dispatchEvent(new CustomEvent('garang:set-options-toggled',{detail:{open:true,source:VERSION}}));if(host.hidden)return;}
+  host.classList.add('workout-execution-sets');
   const prev=previous();
   currentRows().forEach((row,i)=>{
     if(row.dataset.executionEnhanced==='true')return;
