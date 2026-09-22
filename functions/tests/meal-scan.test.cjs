@@ -8,6 +8,8 @@ assert.throws(()=>parseMealImage({...image,mediaType:'image/heic'}),e=>e?.code==
 assert.deepEqual(validateMealScan({items:[{name:'흰쌀밥',aliases:['밥'],grams:180,confidence:.86}],overallConfidence:.82,uncertain:false,notes:''}).items[0],{name:'흰쌀밥',aliases:['밥'],grams:180,confidence:.86});
 assert.equal(JSON.stringify(MEAL_SCAN_SCHEMA).includes('kcal'),false,'Vision schema must not own nutrition values');
 assert.equal(JSON.stringify(MEAL_SCAN_SCHEMA).includes('protein'),false,'Vision schema must not own nutrition values');
+assert.equal(MEAL_SCAN_SCHEMA.properties.items.minItems,0,'Vision schema must allow an explicit no-food result instead of forcing fabrication');
+assert.throws(()=>validateMealScan({items:[],overallConfidence:0,uncertain:true,notes:'not food'}),e=>e?.code==='MEAL_SCAN_NO_FOOD_DETECTED');
 
 (async()=>{
  let request;
