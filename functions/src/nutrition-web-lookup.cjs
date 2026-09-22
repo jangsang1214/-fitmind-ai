@@ -78,7 +78,7 @@ function normalizeLookupItems(value,input,citations){
   items.push({
    inputIndex,name:clean(row?.matchedName,MAX_NAME)||input[inputIndex].name,grams:input[inputIndex].grams,
    kcal,protein,carbs,fat,confidence:Math.max(0,Math.min(1,confidence)),
-   nutritionStatus:'estimated_web',
+   nutritionStatus:'estimated',
    nutritionSource:{
     source:'web_search',provider:'OpenAI web_search',sourceType:clean(row?.sourceType,40),
     title:clean(row?.sourceTitle,180),url:sourceUrl,basis:clean(row?.basisNote,240)
