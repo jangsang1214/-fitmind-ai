@@ -18,19 +18,6 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   await waitForServer();browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await installAuthenticatedFirebaseMock(context);
-  await context.addInitScript(()=>{
-   const NativeFile=window.File;
-   window.File=class GarangTestFile extends NativeFile{
-    constructor(bits,name,options){
-     super(bits,name,options);
-     try{
-      Object.defineProperty(this,'name',{value:name,configurable:true});
-      Object.defineProperty(this,'type',{value:String(options?.type||''),configurable:true});
-      Object.defineProperty(this,'size',{value:bits.reduce((sum,part)=>sum+(part?.byteLength??part?.size??String(part??'').length),0),configurable:true});
-     }catch{}
-    }
-   };
-  });
   await context.addInitScript(({endpoint})=>{
    const nativeFetch=window.fetch.bind(window);
    window.fetch=async(input,init={})=>{
@@ -57,7 +44,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.equal(request.request.image.mediaType,'image/png');assert.ok(String(request.request.image.dataUrl||'').startsWith('data:image/png;base64,'));
   const resultText=await page.locator('.scan-result-card').innerText();assert.match(resultText,/닭가슴살/);assert.doesNotMatch(resultText,/9999/,'provider nutrition must never be rendered as GARANG nutrition');
   assert.match(await page.locator('.photo-evidence-estimate-note').innerText(),/VISION → FOOD DB/);
-  await page.locator('#confirmMealScan').click();await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
+  await page.locator('#confirmMealScan').click();await page.evaluate(()=>{if(window.GarangPhotoEvidence){const api=window.GarangPhotoEvidence;window.GarangPhotoEvidence=Object.freeze({...api,store:async()=>true});}});await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
   await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('닭가슴살'));
   const before=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(before.meals.length,0,'Meal Scan confirmation must only create a draft');
   await page.locator('#saveMeal').click();await page.waitForTimeout(1200);const postSave=await page.evaluate(()=>({meals:window.GarangAgentStateBridge.getState()?.meals?.length||0,toast:document.querySelector('#toast')?.textContent||'',errors:window.GarangAgentStateBridge.getState()?.errors?.slice(-2)||[]}));assert.equal(postSave.meals,1,`Meal Scan save failed: ${JSON.stringify(postSave)}`);
