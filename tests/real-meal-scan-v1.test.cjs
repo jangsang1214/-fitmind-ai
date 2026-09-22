@@ -1,0 +1,27 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const services=fs.readFileSync('07_config/garang-services-config.js','utf8');
+const app=fs.readFileSync('01_app/app.js','utf8');
+const index=fs.readFileSync('functions/index.js','utf8');
+const html=fs.readFileSync('index.html','utf8');
+const css=fs.readFileSync('03_styles/runtime/garang-photo-evidence-v1.css','utf8');
+
+assert.match(services,/const mealScanEndpoint=`\$\{apiBase\}\/meal\/scan`/);
+assert.match(services,/mealScanEndpoint,/);
+assert.match(services,/url===mealScanEndpoint&&method==='POST'/);
+assert.match(services,/authenticatedFetch\(mealScanEndpoint/);
+assert.match(index,/createMealScanHandler/);
+assert.match(index,/app\.post\('\/meal\/scan'/);
+assert.match(index,/request\.path==='\/coach'\|\|request\.path==='\/meal\/scan'\?coachJson:smallJson/);
+assert.match(app,/async function prepareMealScanImage/);
+assert.match(app,/function mealScanMatch/);
+assert.match(app,/JSON\.stringify\(\{image,language:/);
+assert.match(app,/scanEvidence:\{visionName:/);
+assert.match(app,/mealScanDraft\.unmatched=unmatched/);
+assert.match(app,/VISION → FOOD DB/);
+assert.match(app,/Food DB에 자동 매칭되지 않은 항목/);
+assert.doesNotMatch(app,/data\.items\.map\(i=>\(\{id:uid\(\),name:String\(i\.name\|\|'음식'\),grams:num\(i\.grams,100\),kcal:num\(i\.kcal\)/,'Vision response must not directly supply nutrition');
+assert.match(css,/\.meal-scan-unmatched/);
+assert.match(html,/garang-services-config\.js\?v=1\.1\.0-meal-scan/);
+assert.match(html,/app\.js\?v=0\.11\.0-beta\.6-real-meal-scan/);
+console.log('Real Meal Scan client contract: PASS');
