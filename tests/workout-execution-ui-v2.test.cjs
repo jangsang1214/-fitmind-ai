@@ -14,6 +14,7 @@ assert.ok(app.includes("execution=rows.some(row=>row.dataset.executionEnhanced==
 assert.ok(app.includes("executionMode&&!executionImport&&!details.length"),'manual execution must reject adding an exercise with zero completed sets while preserving explicit imports');
 assert.ok(intelligence.includes("add.dataset.executionImport='true';add.click()"),'programmatic workout imports must use an explicit execution bypass');
 assert.ok(runtime.includes("garang:set-options-toggled"),'execution UI must open set details through the canonical state event');
+assert.ok(runtime.includes("host.closest('details')")&&runtime.includes("disclosure.open=true"),'execution set table disclosure must be visibly open on Log entry');
 assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refresh when the exercise changes');
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
 assert.ok(runtime.includes("executionImport!=='true'"),'programmatic imports must not start the live session timer');
