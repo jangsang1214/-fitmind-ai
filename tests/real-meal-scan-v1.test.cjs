@@ -20,6 +20,8 @@ assert.match(app,/scanEvidence:\{visionName:/);
 assert.match(app,/mealScanDraft\.unmatched=unmatched/);
 assert.match(app,/VISION → FOOD DB/);
 assert.match(app,/Food DB에 자동 매칭되지 않은 항목/);
+assert.match(app,/MEAL_SCAN_NO_FOOD_DETECTED/);
+assert.match(app,/사진에서 음식을 찾지 못했습니다\. 음식이 잘 보이는 사진으로 다시 촬영해 주세요\./);
 assert.doesNotMatch(app,/data\.items\.map\(i=>\(\{id:uid\(\),name:String\(i\.name\|\|'음식'\),grams:num\(i\.grams,100\),kcal:num\(i\.kcal\)/,'Vision response must not directly supply nutrition');
 assert.match(css,/\.meal-scan-unmatched/);
 assert.match(html,/garang-services-config\.js\?v=1\.1\.0-meal-scan/);
