@@ -238,6 +238,7 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails [data-set-row]').count(),5,'visible execution rows must stay synchronized with the set count');
     await tap(page,'#addWorkout');
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),0,'zero completed sets must not be serialized into the workout draft');
+    assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','rejected Add must not start or contaminate live session elapsed time');
     await tap(page,'.gws-panel:not([hidden]) [data-execution-set-complete]');
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
     assert.equal(await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
