@@ -217,6 +217,7 @@ async function assertCoachSettles(page){
     await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
+    await tap(page,'[data-gws-step="log"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('.workout-set-table-head').isVisible(),true,'workout execution must expose set-first table hierarchy');
     assert.equal(await page.locator('#workoutSetDetails').isVisible(),true,'per-set execution rows must be visible by default');
