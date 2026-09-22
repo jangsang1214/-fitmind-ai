@@ -143,7 +143,7 @@ function createNutritionLookupHandler(deps={}){
  return async function nutritionLookup(request,response){
   if(String(request?.method||'POST').toUpperCase()!=='POST')return response.status(405).json({ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
   const token=parseBearer(request?.headers?.authorization||request?.get?.('authorization'));if(!token)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
-  let decoded;try{decoded=await verifyIdToken(token);}catch{return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'});}
+  let decoded;try{decoded=await verifyIdToken(token);}catch{return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
   const uid=clean(decoded?.uid,180);if(!uid)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
   let items;try{items=parseInput(request?.body?.items);}catch(error){return response.status(400).json({ok:false,error:{code:error?.code||'NUTRITION_LOOKUP_ITEMS_INVALID'}});}
   const language=request?.body?.language==='en'?'en':'ko',id=requestId();
