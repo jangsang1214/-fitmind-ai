@@ -31,6 +31,7 @@ assert.ok(app.includes("if(workoutEditForm){const edit=workoutEditForm;workoutEd
 assert.ok(app.includes("data-execution-completed=\"'+(row.executionCompleted===true?'true':'false')+'\""),'set renderer must preserve execution completion metadata');
 assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must preserve pre-rendered completion state');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
+assert.ok(workoutFlow.includes("state.active==='log'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Log activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
