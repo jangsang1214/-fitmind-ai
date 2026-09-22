@@ -89,7 +89,7 @@
   function polishWorkoutCertification() {
     if (currentScreen() !== 'workout') return;
     const card = main.querySelector('.cert-entry-card');
-    if (!card) return;
+    if (!card || card.classList.contains('photo-evidence-card')) return;
     const ko = document.documentElement.lang !== 'en';
     card.classList.add('garang-cert-minimal');
     const eyebrow = card.querySelector('.visual-section-head .eyebrow');
