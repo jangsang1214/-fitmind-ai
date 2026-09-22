@@ -1,7 +1,7 @@
 /* GARANG external service endpoints.
    Provider secrets stay on the server. Browser code receives public HTTPS endpoints only.
-   Authenticated read-only account export is available in production. Destructive account,
-   analytics and telemetry browser endpoints remain fail-closed to verified staging only. */
+   Authenticated account lifecycle, consent-gated analytics and redacted telemetry are active
+   in production; server auth/consent remain the authority and client transport still fails closed. */
 (() => {
   'use strict';
   const productionProjectId='fitfind-ai';
@@ -23,11 +23,11 @@
     environmentProjectId:selectedProjectId,
     privilegedStagingEnabled,
     coachEndpoint,
-    accountDeleteEndpoint:privilegedStagingEnabled?`${apiBase}/account/delete`:null,
+    accountDeleteEndpoint:`${apiBase}/account/delete`,
     accountExportEndpoint:`${apiBase}/account/export`,
     mealScanEndpoint:null,
-    analyticsEndpoint:privilegedStagingEnabled?`${apiBase}/analytics/events`:null,
-    telemetryErrorEndpoint:privilegedStagingEnabled?`${apiBase}/telemetry/errors`:null,
+    analyticsEndpoint:`${apiBase}/analytics/events`,
+    telemetryErrorEndpoint:`${apiBase}/telemetry/errors`,
     analyticsConsent:false,
     analyticsContractVersion:'garang-analytics-v1',
     paymentCheckoutEndpoint:null,
