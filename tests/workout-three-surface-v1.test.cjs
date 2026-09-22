@@ -3,6 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const flow=read('06_features/ui/runtime/garang-workout-flow-v1.js');
+const library=read('06_features/ui/runtime/garang-workout-library-v2.js');
 const html=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 
@@ -23,6 +24,8 @@ assert.ok(flow.includes('data-gws-next'), 'Workout surfaces must provide a circu
 assert.ok(flow.includes('node.hidden=!on'),'inactive workout pages must stay hidden while preserving the existing feature nodes');
 assert.ok(flow.includes('data-garang-workout-attached'),'Workout pages must expose which functional page is attached');
 assert.equal(flow.includes('new MutationObserver'),false,'Workout structural flow must not add a broad observer');
+assert.ok(library.includes('document.createDocumentFragment()'),'Workout library async hydration must batch exercise cards into one DOM insertion');
+assert.ok(library.includes('library.appendChild(additions)'),'Workout library must commit batched exercise cards once after hydration');
 assert.ok(flow.includes('GarangAgentStateBridge.getState()'),'Recent workout reuse must read through the account-pinned read-only state bridge');
 assert.ok(flow.includes('data-gws-reuse-latest'),'Workout Log must expose one explicit recent-record prefill action');
 assert.ok(flow.includes("field('wName',record.name)"),'Recent reuse must prefill the existing workout name field');
