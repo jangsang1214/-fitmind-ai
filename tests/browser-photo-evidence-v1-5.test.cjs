@@ -69,6 +69,8 @@ async function choosePhoto(page,buttonSelector,inputName){
     assert.ok(workoutButton&&workoutButton.height>=44,'workout evidence photo action must remain touch-safe');
 
     await page.locator('[data-gws-step="overview"]').click();
+    const history=page.locator('details.compact-history').first();
+    await history.locator('summary').click();
     const workoutEvidence=page.locator('.workout-history-row .photo-evidence-record').first();
     await workoutEvidence.waitFor({state:'visible'});
     assert.match(await workoutEvidence.innerText(),/PHOTO EVIDENCE/);
