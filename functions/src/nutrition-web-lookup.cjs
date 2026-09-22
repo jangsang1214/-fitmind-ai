@@ -107,8 +107,8 @@ function createNutritionLookupProvider(options={}){
  return {name:'openai-web-search',model,async lookup({items,language='ko',requestId:id}){
   const body={
    model,store:false,
-   tools:[{type:'web_search',search_context_size:'low',external_web_access:true,user_location:{type:'approximate',country:'KR',timezone:'Asia/Seoul'}}],
-   tool_choice:'required',reasoning:{effort:'low'},max_output_tokens:1400,
+   tools:[{type:'web_search',search_context_size:'low',external_web_access:true,user_location:{type:'approximate',country:'KR',timezone:'Asia/Seoul'},filters:{blocked_domains:['reddit.com','quora.com','wikipedia.org','namu.wiki','blog.naver.com','instagram.com','facebook.com','tiktok.com','youtube.com']}}],
+   tool_choice:'required',include:['web_search_call.action.sources'],reasoning:{effort:'low'},max_output_tokens:1400,
    input:[
     {role:'system',content:[{type:'input_text',text:systemPrompt(language)}]},
     {role:'user',content:[{type:'input_text',text:JSON.stringify({items:items.map((row,inputIndex)=>({inputIndex,...row}))})}]}
