@@ -21,6 +21,7 @@ assert.ok(runtime.includes("executionImport!=='true'"),'programmatic imports mus
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
+assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remounting an active workout must restart elapsed/rest ticking');
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
 assert.ok(runtime.includes("liveSetDraft")&&runtime.includes("captureLiveSetRows"),'live set values must survive incidental rerenders during execution');
