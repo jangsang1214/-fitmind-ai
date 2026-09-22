@@ -36,10 +36,17 @@ function updateLive(){
   if(restClock)restClock.textContent=clock(left);
   if(restUntil&&left<=0)restUntil=0;
 }
+function targetFor(row){
+  if(!row)return null;
+  const rpe=num(row.rpe,8),rir=Math.max(0,10-rpe),base=num(row.weight);
+  const step=base>=100?2.5:base>=40?1.25:0.5;
+  const weightMetric=Math.max(0,base+(rpe<=8&&rir>=2?step:rpe>=9.5?-step:0));
+  return {weightMetric,reps:Math.max(1,Math.round(num(row.reps,8))),reason:rpe<=8&&rir>=2?'지난 세트 여유 반영':rpe>=9.5?'피로도 반영':'지난 수행 유지'};
+}
 function cueText(rows){
   if(!rows.length)return '첫 기록 · 오늘의 기준을 만드세요';
-  const best=rows.reduce((a,b)=>num(b.estimated1RM)>num(a.estimated1RM)?b:a,rows[0]);
-  return '지난 기록 '+num(best.weight).toFixed(1)+' × '+Math.round(num(best.reps))+' · 오늘 세트와 바로 비교';
+  const best=rows.reduce((a,b)=>num(b.estimated1RM)>num(a.estimated1RM)?b:a,rows[0]),target=targetFor(best);
+  return '지난 '+num(best.weight).toFixed(1)+' × '+Math.round(num(best.reps))+' → GARANG '+displayBufferedWeight(target.weightMetric)+' × '+target.reps+' · '+target.reason;
 }
 function previousText(row){return row?(num(row.weight).toFixed(1)+' × '+Math.round(num(row.reps))):'—';}
 function refreshPrevious(rows=previous()){
@@ -55,9 +62,9 @@ function enhanceRows(){
   const prev=previous();
   currentRows().forEach((row,i)=>{
     if(row.dataset.executionEnhanced==='true')return;
-    const saved=liveSetDraft[i]||null,initiallyComplete=saved?saved.completed:row.dataset.executionCompleted==='true',reps=saved?.reps??row.querySelector('[data-set-reps]')?.value??10,weight=saved?displayBufferedWeight(saved.weightMetric??metricBufferedWeight(saved.weight??0)):(row.querySelector('[data-set-weight]')?.value??0),rpe=saved?.rpe??row.querySelector('[data-set-rpe]')?.value??8,previousValue=previousText(prev[i]);
+    const saved=liveSetDraft[i]||null,initiallyComplete=saved?saved.completed:row.dataset.executionCompleted==='true',target=targetFor(prev[i]),reps=saved?.reps??row.querySelector('[data-set-reps]')?.value??target?.reps??10,weight=saved?displayBufferedWeight(saved.weightMetric??metricBufferedWeight(saved.weight??0)):(target?displayBufferedWeight(target.weightMetric):(row.querySelector('[data-set-weight]')?.value??0)),rpe=saved?.rpe??row.querySelector('[data-set-rpe]')?.value??8,previousValue=previousText(prev[i]),targetValue=target?(displayBufferedWeight(target.weightMetric)+' × '+target.reps):'—';
     row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');row.classList.toggle('completed',initiallyComplete);
-    row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
+    row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><span class="execution-target">'+esc(targetValue)+'</span><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
     const initialButton=row.querySelector('[data-execution-set-complete]');if(initialButton){initialButton.classList.toggle('is-complete',initiallyComplete);initialButton.textContent=initiallyComplete?'✓':'○';}
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
@@ -67,14 +74,14 @@ function enhanceRows(){
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
   const headerScope=host.closest('.gws-panel[data-garang-workout-surface="log"]')||host.parentElement;
   [...headerScope.querySelectorAll('.workout-set-table-head')].forEach(node=>node.remove());
-  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
+  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>TARGET</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
 }
 function resultCard(){
   if(!lastResult||document.querySelector('.workout-result-card'))return;
   const builder=document.querySelector('.workout-execution-v2');if(!builder)return;
   const card=document.createElement('section');card.className='card workout-result-card';
-  card.innerHTML='<div class="workout-result-kicker"><span>SESSION COMPLETE</span><b>GARANG RECORDED</b></div><h2>오늘의 운동이 기록됐습니다.</h2><div class="workout-result-grid"><div><span>TIME</span><strong>'+clock(lastResult.elapsedMs)+'</strong></div><div><span>SETS</span><strong>'+Math.round(num(lastResult.sets))+'</strong></div><div><span>VOLUME</span><strong>'+Math.round(num(lastResult.volume)).toLocaleString()+'<small> '+esc(String(lastResult.unit||'kg').toUpperCase())+'</small></strong></div><div><span>EXERCISES</span><strong>'+Math.round(num(lastResult.exercises))+'</strong></div></div><p>오늘 기록은 다음 Coach 판단과 Progress 해석의 근거가 됩니다.</p>';
-  const log=builder.closest('.gws-panel[data-garang-workout-surface="log"]');if(!log)return;log.appendChild(card);lastResult=null;
+  card.innerHTML='<div class="workout-result-kicker"><span>SESSION COMPLETE</span><b>GARANG RECORDED</b></div><h2>오늘의 운동이 기록됐습니다.</h2><div class="workout-result-grid"><div><span>TIME</span><strong>'+clock(lastResult.elapsedMs)+'</strong></div><div><span>SETS</span><strong>'+Math.round(num(lastResult.sets))+'</strong></div><div><span>VOLUME</span><strong>'+Math.round(num(lastResult.volume)).toLocaleString()+'<small> '+esc(String(lastResult.unit||'kg').toUpperCase())+'</small></strong></div><div><span>EXERCISES</span><strong>'+Math.round(num(lastResult.exercises))+'</strong></div></div><p>오늘 기록은 다음 Coach 판단과 Progress 해석의 근거가 됩니다.</p><div class="workout-result-pr" id="workoutResultPr"></div>';
+  const log=builder.closest('.gws-panel[data-garang-workout-surface="log"]');if(!log)return;log.appendChild(card);const pr=card.querySelector('#workoutResultPr'),rows=previous();if(pr&&rows.length){const best=rows.reduce((a,b)=>num(b.estimated1RM)>num(a.estimated1RM)?b:a,rows[0]);pr.textContent='PR 기준 · estimated 1RM '+num(best.estimated1RM).toFixed(1)+' '+displayUnit();}lastResult=null;
 }
 function enhance(){
   const builder=document.querySelector('.workout-builder-v2');if(!builder)return;
