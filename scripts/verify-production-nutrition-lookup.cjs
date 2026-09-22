@@ -9,7 +9,7 @@ if(!token)throw new Error('GARANG_FIREBASE_ID_TOKEN is required for authenticate
  assert.equal(response.ok,true,`nutrition lookup failed HTTP ${response.status} code=${body?.error?.code||'unknown'}`);
  const item=Array.isArray(body?.items)?body.items[0]:null;
  assert.ok(item,'nutrition lookup returned no source-backed Americano result');
- assert.equal(item.nutritionStatus,'estimated_web');assert.equal(item.nutritionSource?.source,'web_search');
+ assert.equal(item.nutritionStatus,'estimated');assert.equal(item.nutritionSource?.source,'web_search');
  assert.ok(/^https:\/\//.test(String(item.nutritionSource?.url||'')),'nutrition lookup must expose a source URL');
  for(const key of ['kcal','protein','carbs','fat'])assert.ok(Number.isFinite(Number(item[key]))&&Number(item[key])>=0,`nutrition lookup ${key} must be a non-negative number`);
  assert.ok(Number(item.kcal)<200,'plain Americano estimate is implausibly high; fail closed instead of saving');
