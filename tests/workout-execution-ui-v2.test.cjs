@@ -21,7 +21,9 @@ assert.ok(runtime.includes("bridge()?.resetExerciseRows?.()"),'exercise changes 
 assert.ok(runtime.includes("host.closest('details')")&&runtime.includes("disclosure.open=true"),'execution set table disclosure must be visibly open on Log entry');
 assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refresh when the exercise changes');
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
-assert.ok(runtime.includes("executionImport!=='true'"),'programmatic imports must not start the live session timer');
+assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported}"),'successful exercise add must publish whether it was a programmatic import');
+assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("event.detail?.imported!==true")&&runtime.includes("ensureSession()"),'live timer must start only from a successful manual exercise add');
+assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
