@@ -49,9 +49,10 @@ function enhanceRows(){
   const prev=previous();
   currentRows().forEach((row,i)=>{
     if(row.dataset.executionEnhanced==='true')return;
-    const reps=row.querySelector('[data-set-reps]')?.value||10,weight=row.querySelector('[data-set-weight]')?.value||0,rpe=row.querySelector('[data-set-rpe]')?.value||8,previousValue=previousText(prev[i]);
-    row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');
+    const initiallyComplete=row.dataset.executionCompleted==='true',reps=row.querySelector('[data-set-reps]')?.value||10,weight=row.querySelector('[data-set-weight]')?.value||0,rpe=row.querySelector('[data-set-rpe]')?.value||8,previousValue=previousText(prev[i]);
+    row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');row.classList.toggle('completed',initiallyComplete);
     row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
+    const initialButton=row.querySelector('[data-execution-set-complete]');if(initialButton){initialButton.classList.toggle('is-complete',initiallyComplete);initialButton.textContent=initiallyComplete?'✓':'○';}
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
       if(!done){ensureSession();startRest();}updateLive();
