@@ -1,0 +1,81 @@
+name: Production Meal Scan Activation
+
+on:
+  workflow_dispatch:
+    inputs:
+      approved_sha:
+        description: 'Exact PRODUCT main SHA approved by Founder for production deployment'
+        required: true
+        type: string
+      confirmation:
+        description: 'Type DEPLOY REAL MEAL SCAN'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-meal-scan-activation
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY REAL MEAL SCAN'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GARANG_MEAL_SCAN_ENDPOINT: https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/meal/scan
+      GARANG_COACH_ENDPOINT: https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach
+    steps:
+      - name: Check out approved main revision
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Require exact approved current main SHA
+        shell: bash
+        env:
+          APPROVED_SHA: ${{ inputs.approved_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --no-tags
+          head_sha="$(git rev-parse HEAD)"
+          main_sha="$(git rev-parse origin/main)"
+          [[ "$head_sha" == "$main_sha" ]] || { echo "::error::Workflow must run from current PRODUCT main."; exit 51; }
+          [[ "$head_sha" == "$APPROVED_SHA" ]] || { echo "::error::Approved SHA does not match checked-out main."; exit 52; }
+          echo "Approved production revision: $head_sha"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install locked Functions dependencies
+        run: npm ci --prefix functions --ignore-scripts --no-audit --no-fund
+
+      - name: Verify Meal Scan contracts before deploy
+        run: node functions/tests/meal-scan.test.cjs && node tests/real-meal-scan-v1.test.cjs
+
+      - name: Validate Workload Identity Federation configuration
+        id: wif_config
+        shell: bash
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          [[ -n "${WIF_PROVIDER:-}" && -n "${WIF_SERVICE_ACCOUNT:-}" ]] || { echo "::error::Production Meal Scan activation requires configured WIF variables."; exit 53; }
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate with Google Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fitfind-ai
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEÄõõ4U%d4Uô44õTåB×Ð¢7&VFUö7&VFVçFÇ5öfÆS¢G'VP¢W÷'EöVçf&öæÖVçE÷f&&ÆW3¢G'VP ¢ÒæÖS¢fW&g&öGV7Föâ&ö¦V7BæBW7FærÄÄÒ6V7&W@¢6VÆÃ¢&6¢'Vã¢À¢6WBÖWVòVfÀ¢çf&V&6R&ö¦V7G3¦Æ7BÒÖ§6öââ"E%TääU%õDTÕöf&V&6R×&ö¦V7G2æ§6öâ ¢æöFRÒ"E%TääU%õDTÕöf&V&6R×&ö¦V7G2æ§6öâ"ÃÂtäôDRp¢6öç7Bg3×&WV&Rvg2r¶6öç7B&sÔ¥4ôâç'6Rg2ç&VDfÆU7æ2&ö6W72æ&we³%ÒÂwWFcr¶6öç7B&÷w3Ô'&æ4'&&r÷&s¤'&æ4'&&rç&W7VÇB÷&rç&W7VÇC¥µÓ°¢b&÷w2ç6öÖR&ö¦V7CÓç&ö¦V7Bç&ö¦V7DCÓÓÒvfFfæBÖr&ö6W72æWBC2°¢äôDP¢çf&V&6RgVæ7Föç3§6V7&WG3¦vWBt$äuôÄÄÕôô´UÒ×&ö¦V7BfFfæBÖâöFWböçVÆÀ¢V6ò%&öGV7Föâ&ö¦V7B66W72æBW7Fært$äuôÄÄÕôô´UÖWFFFfW&fVBâ  ¢ÒæÖS¢FWÆ÷&÷fVBgVæ7FöâöæÇ¢'Vã¢çf&V&6RFWÆ÷ÒÖöæÇgVæ7Föç3¦Ò×&ö¦V7BfFfæBÖÒÖæöâÖçFW&7FfP ¢ÒæÖS¢fW&gV&Æ2&÷WFR&÷VæF&W0¢'Vã¢çÒ'Vâ&VfÆvC¦6ö6§&öB×&÷WFRbbçÒ'Vâ&VfÆvC¦ÖVÂ×66ã§&öB×&÷WFP ¢ÒæÖS¢ÖçBF7÷6&ÆRf&V&6RBFö¶Và¢6VÆÃ¢&6¢'Vã¢À¢6WBÖWVòVfÀ¢æöFRÃÂtäôDRp¢6öç7Bg3×&WV&RvæöFS¦g2rÆ7'Fó×&WV&RvæöFS¦7'Fòr¶6öç7B6öæfsÖg2ç&VDfÆU7æ2suö6öæfröf&V&6RÖ6öæfræ§2rÂwWFcr¶6öç7B¶WÖ6öæfræÖF6ö¶W¥ÅÇ2¢"µâ%Ò²"òòå³Ó¶b¶WF&÷ræWrW'&÷"td$T$4UõtT%ôô´UôäõEôdõTäBr°¢6öç7BVÖÃÖv&æræÖVÂç66âç6Öö¶RâG·&ö6W72æVçbätDT%õ%TåôGÒâG¶7'Fòç&æFöÕUTBÔW×ÆRæ6öÖÇ77v÷&CÖvrG¶7'Fòç&æFöÔ'FW2çFõ7G&ærvWrÔ°¢7æ2Óç¶6öç7B&W7öç6SÖvBfWF6GG3¢òöFVçFGFööÆ¶BævöövÆV2æ6öÒ÷cö66÷VçG3§6våWö¶WÒG¶Væ6öFUU$6ö×öæVçB¶WÖÇ¶ÖWFöC¢uõ5BbÆVFW'3§²t6öçFVçBÕGRs¢vÆ6Föâö§6öâwÒÆ&öG¤¥4ôâç7G&ævg¶VÖÂÇ77v÷&BÇ&WGW&å6V7W&UFö¶Vã§G'VWÒÒ¶6öç7B&öGÖvB&W7öç6Ræ§6öâæ6F6Óâ·Ò¶b&W7öç6Ræö·ÇÂ&öGæEFö¶VâF&÷ræWrW'&÷"d$T$4Uõ4Ôô´Uõ4tåUôdÄTC¢G¶&öGòæW'&÷#òæÖW76vWÇÇ&W7öç6Rç7FGW7Ö¶6öç6öÆRæÆör£¦FBÖÖ6³£¢G¶&öGæEFö¶VçÖ¶g2æVæDfÆU7æ2&ö6W72æVçbätDT%ôTåbÆt$äuôd$T$4UôEõDô´TãÒC¶&öGæEFö¶VçÕÆät$äuôd$T$4UõtT%ôô´UÒG¶¶WÕÆæ·Òæ6F6W'&÷#Óç¶6öç6öÆRæW'&÷"W'&÷"æÖW76vWÇÆW'&÷"·&ö6W72æWB·Ò°¢äôDP ¢ÒæÖS¢fW&gWFVçF6FVB&öGV7Föâ6ö6&Vw&W76öà¢'Vã¢çÒ'Vâ6Öö¶S¦6ö6§&ö@ ¢ÒæÖS¢fW&gWFVçF6FVB&öGV7FöâÖVÂ66âf6öâ&÷VæF'¢'Vã¢çÒ'Vâ6Öö¶S¦ÖVÂ×66ã§&ö@ ¢ÒæÖS¢FVÆWFRF7÷6&ÆRf&V&6R6Öö¶RFVçFG¢c¢Çv2¢6VÆÃ¢&6¢'Vã¢À¢6WB¶P¢æöFRÃÂtäôDRp¢6öç7BFö¶VãÕ7G&ær&ö6W72æVçbät$äuôd$T$4UôEõDô´TçÇÂrrçG&ÒÆ¶WÕ7G&ær&ö6W72æVçbät$äuôd$T$4UõtT%ôô´UÇÂrrçG&Ò¶bFö¶VçÇÂ¶W&ö6W72æWB°¢7æ2Óç¶6öç7B&W7öç6SÖvBfWF6GG3¢òöFVçFGFööÆ¶BævöövÆV2æ6öÒ÷cö66÷VçG3¦FVÆWFSö¶WÒG¶Væ6öFUU$6ö×öæVçB¶WÖÇ¶ÖWFöC¢uõ5BrÆVFW'3§²t6öçFVçBÕGRs¢vÆ6Föâö§6öâwÒÆ&öG¤¥4ôâç7G&ævg¶EFö¶Vã§Fö¶VçÒÒ¶b&W7öç6Ræö²&ö6W72æWB¶6öç6öÆRæÆörtF7÷6&ÆRf&V&6R6Öö¶RFVçFGFVÆWFVBâr·Òæ6F6Óç&ö6W72æWB°¢äôDP ¢ÒæÖS¢&V6÷&B7FfFöâWfFVæ6P¢c¢Çv2¢6VÆÃ¢&6¢'Vã¢À¢°¢V6ò"22t$är&öGV7FöâÖVÂ66â7FfFöâ ¢V6ò"Ò&ö¦V7C¢ÆfFfæBÖÆ ¢V6ò"ÒgVæ7Föã¢ÆÆòÆ6Öæ÷'FV7C5Æ ¢V6ò"Ò&÷fVB&Wf6öã¢ÆG·²çWG2æ&÷fVE÷6×ÕÆ ¢V6ò"ÒFWÆ÷ÖVçB2ÖçVÂæBf÷VæFW"Ö6öæf&ÖVBâ ¢V6ò"ÒÆfRfW&f6Föâ6÷fW'2ÖVÂ66âWFõf6öâ&÷VæF'æB6ö6&Vw&W76öââ ¢Òãâ"DtDT%õ5DUõ5TÔÔ%  
