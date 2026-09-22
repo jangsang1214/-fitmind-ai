@@ -69,7 +69,7 @@ function resultCard(){
   const builder=document.querySelector('.workout-execution-v2');if(!builder)return;
   const card=document.createElement('section');card.className='card workout-result-card';
   card.innerHTML='<div class="workout-result-kicker"><span>SESSION COMPLETE</span><b>GARANG RECORDED</b></div><h2>오늘의 운동이 기록됐습니다.</h2><div class="workout-result-grid"><div><span>TIME</span><strong>'+clock(lastResult.elapsedMs)+'</strong></div><div><span>SETS</span><strong>'+Math.round(num(lastResult.sets))+'</strong></div><div><span>VOLUME</span><strong>'+Math.round(num(lastResult.volume)).toLocaleString()+'<small> '+esc(String(lastResult.unit||'kg').toUpperCase())+'</small></strong></div><div><span>EXERCISES</span><strong>'+Math.round(num(lastResult.exercises))+'</strong></div></div><p>오늘 기록은 다음 Coach 판단과 Progress 해석의 근거가 됩니다.</p>';
-  builder.after(card);lastResult=null;
+  const log=builder.closest('.gws-panel[data-garang-workout-surface="log"]');if(!log)return;log.appendChild(card);lastResult=null;
 }
 function enhance(){
   const builder=document.querySelector('.workout-builder-v2');if(!builder)return;
