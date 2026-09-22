@@ -27,6 +27,7 @@ assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{i
 assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("event.detail?.imported!==true")&&runtime.includes("ensureSession()"),'live timer must start only from a successful manual exercise add');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
+assert.ok(runtime.includes("headerScope.querySelectorAll('.workout-set-table-head')")&&runtime.includes("forEach(node=>node.remove())"),'active Log enhancement must collapse duplicate set-table headers to exactly one');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("sessionStartedAt=0")&&runtime.includes("restUntil=0"),'clearing a session must reset live execution timing state before rerender');
 assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remounting an active workout must restart elapsed/rest ticking');
