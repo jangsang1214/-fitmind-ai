@@ -4,7 +4,7 @@
 (function(root){
   'use strict';
 
-  const VERSION='garang-photo-evidence-v1';
+  const VERSION='garang-photo-evidence-v1.5';
   const DB_NAME='garang_photo_evidence_v1';
   const STORE='evidence';
   const MAX_FILE_BYTES=8*1024*1024;
@@ -85,7 +85,7 @@
     });
   }
 
-  async function show(id,title='기록 사진'){
+  async function show(id,title='기록 사진',meta=''){
     let file=null;
     try{file=await read(id);}catch{return {ok:false,reason:'READ_FAILED'};}
     if(!file)return {ok:false,reason:'MISSING_DEVICE_MEDIA'};
@@ -94,10 +94,10 @@
     shade.className='garang-photo-evidence-lightbox';
     const dialog=root.document.createElement('div');dialog.className='garang-photo-evidence-dialog';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
     const head=root.document.createElement('div');head.className='garang-photo-evidence-dialog-head';
-    const label=root.document.createElement('div');const eyebrow=root.document.createElement('span');eyebrow.className='eyebrow';eyebrow.textContent='GARANG EVIDENCE';const strong=root.document.createElement('strong');strong.textContent=title;label.append(eyebrow,strong);
+    const label=root.document.createElement('div');const eyebrow=root.document.createElement('span');eyebrow.className='eyebrow';eyebrow.textContent='GARANG EVIDENCE';const strong=root.document.createElement('strong');strong.textContent=title;label.append(eyebrow,strong);if(meta){const detail=root.document.createElement('span');detail.className='garang-photo-evidence-dialog-meta';detail.textContent=meta;label.append(detail);}
     const close=root.document.createElement('button');close.className='ghost small';close.type='button';close.textContent='닫기';
     const img=root.document.createElement('img');img.src=url;img.alt=title;img.className='garang-photo-evidence-full';
-    const note=root.document.createElement('small');note.className='garang-photo-evidence-local-note';note.textContent='이 사진은 현재 기기에만 저장됩니다.';
+    const note=root.document.createElement('small');note.className='garang-photo-evidence-local-note';note.textContent='사진 원본은 현재 기기에 저장됩니다.';
     head.append(label,close);dialog.append(head,img,note);shade.append(dialog);root.document.body.append(shade);
     const dispose=()=>{try{URL.revokeObjectURL(url);}catch{}shade.remove();};
     close.onclick=dispose;shade.onclick=e=>{if(e.target===shade)dispose();};
