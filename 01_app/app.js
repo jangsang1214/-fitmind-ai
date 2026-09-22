@@ -624,7 +624,7 @@ function pickRunningEvidence(){
 }
 async function deleteRunRecord(id){
   const record=state.runs.find(x=>x.id===id);if(!record||!confirm('이 러닝 기록을 삭제할까요?'))return;
-  const photoId=record.photoEvidence?.id||null;state.runs=state.runs.filter(x=>x.id!==id);
+  const photoId=record.photoEvidence?.id||null,isLatest=state.runs.at(-1)?.id===id;if(isLatest){window.GarangPhotoEvidence?.revoke(currentCert.running);currentCert.running=null;}state.runs=state.runs.filter(x=>x.id!==id);
   if(photoId)window.GarangPhotoEvidence?.deleteMany?.([photoId]).catch(e=>captureError('run_photo_evidence_delete',e));
   saveState({event:'run_deleted',source:'running'});toast('러닝 기록을 삭제했습니다.');render();
 }
