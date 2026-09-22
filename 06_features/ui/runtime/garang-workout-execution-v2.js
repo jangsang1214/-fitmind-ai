@@ -3,7 +3,7 @@
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
 const VERSION='workout-execution-v2';
-let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null;
+let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[];
 
 function num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -13,6 +13,9 @@ function previous(){return bridge()?.previousSets?.(document.getElementById('wNa
 function currentRows(){return [...document.querySelectorAll('#workoutSetDetails [data-set-row]')];}
 function completedCurrent(){return currentRows().filter(row=>row.dataset.executionCompleted==='true').length;}
 function refreshSetStates(){let currentClaimed=false;currentRows().forEach(row=>{const done=row.dataset.executionCompleted==='true',current=!done&&!currentClaimed;if(current)currentClaimed=true;row.classList.toggle('current-set',current);row.classList.toggle('upcoming-set',!done&&!current);row.dataset.executionState=done?'completed':current?'current':'upcoming';if(current)row.setAttribute('aria-current','step');else row.removeAttribute('aria-current');});}
+function snapshotSetRows(){setSnapshot=currentRows().map(row=>({weight:row.querySelector('[data-set-weight]')?.value||'',reps:row.querySelector('[data-set-reps]')?.value||'',rpe:row.querySelector('[data-set-rpe]')?.value||'',completed:row.dataset.executionCompleted==='true'}));}
+function restoreSetRows(){if(!setSnapshot.length)return;currentRows().forEach((row,i)=>{const saved=setSnapshot[i];if(!saved)return;const weight=row.querySelector('[data-set-weight]'),reps=row.querySelector('[data-set-reps]'),rpe=row.querySelector('[data-set-rpe]'),button=row.querySelector('[data-execution-set-complete]');if(weight)weight.value=saved.weight;if(reps)reps.value=saved.reps;if(rpe)rpe.value=saved.rpe;row.dataset.executionCompleted=saved.completed?'true':'false';row.classList.toggle('completed',saved.completed);if(button){button.classList.toggle('is-complete',saved.completed);button.textContent=saved.completed?'✓':'○';}});setSnapshot=[];refreshSetStates();}
+function applyPrefill({details=[],weight,reps,rpe}={}){currentRows().forEach((row,i)=>{const source=details[i]||details[0]||{};const values={weight:source.weight??source.w??weight,reps:source.reps??source.r??reps,rpe:source.rpe??rpe};for(const [key,value] of Object.entries(values)){if(value===undefined||value===null||value==='')continue;const input=row.querySelector('[data-set-'+key+']');if(input)input.value=String(value);}row.dataset.executionCompleted='false';row.classList.remove('completed');const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.remove('is-complete');button.textContent='○';}});setSnapshot=[];refreshSetStates();updateLive();}
 function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
 function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();startTicker();}
@@ -80,7 +83,7 @@ function enhance(){
     const finish=document.getElementById('saveWorkoutSession');if(finish){finish.classList.add('workout-finish');finish.textContent='운동 완료';bar.appendChild(finish);}
   }
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
-  const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');for(const id of ['wReps','wWeight','wRpe','wDuration','wBody'])mark(id,'execution-default-field');}
+  const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
   document.querySelector('.one-rm-panel')?.classList.add('execution-secondary-metric');
   const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='세트 완료 시 휴식 타이머가 자동 시작됩니다.';}
   enhanceRows();
@@ -89,7 +92,7 @@ function enhance(){
   const add=document.getElementById('addWorkout');if(add){add.textContent='이 운동 세션에 추가';if(!add.dataset.executionSessionBound){add.dataset.executionSessionBound='true';add.addEventListener('click',()=>{if(add.dataset.executionImport!=='true')ensureSession();});}}
   const clear=document.getElementById('clearWorkoutDraft');if(clear){clear.textContent='세션 초기화';if(!clear.dataset.executionResetBound){clear.dataset.executionResetBound='true';clear.addEventListener('click',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;stopRest();updateLive();});}}
   const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>setTimeout(enhance,0));}
-  const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',()=>setTimeout(enhance,0));}
+  const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
   updateLive();resultCard();
 }
 document.addEventListener('click',event=>{
@@ -103,5 +106,5 @@ window.addEventListener('garang:state-updated',event=>{
 });
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
 if(document.querySelector('.workout-builder-v2'))enhance();
-window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance});
+window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance,applyPrefill});
 })();
