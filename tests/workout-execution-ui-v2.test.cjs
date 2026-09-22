@@ -39,7 +39,7 @@ assert.ok(runtime.includes("weightMetric:metricBufferedWeight")&&runtime.include
 assert.ok(runtime.includes("liveSetCount")&&runtime.includes("restoringLiveSetCount"),'active set count must survive Workout remounts without truncating buffered rows');
 assert.ok(runtime.includes("summary.exercises>liveDraftCount")&&!runtime.includes("summary.exercises!==liveDraftCount"),'removing an unrelated draft exercise must not invalidate active execution rows');
 assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.includes("setsInput.dispatchEvent(new Event('input'"),'remount must restore the saved set count before enhancing rows');
-assert.ok(runtime.includes("saved?.weight")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
+assert.ok(runtime.includes("saved?displayBufferedWeight(saved.weightMetric")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
