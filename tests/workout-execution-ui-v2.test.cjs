@@ -30,6 +30,8 @@ assert.ok(app.includes("workoutEditForm={name:x.name"),'draft edit must persist 
 assert.ok(app.includes("if(workoutEditForm){const edit=workoutEditForm;workoutEditForm=null"),'bindWorkout must restore persisted edit form state after render');
 assert.ok(app.includes("data-execution-completed=\"'+(row.executionCompleted===true?'true':'false')+'\""),'set renderer must preserve execution completion metadata');
 assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must preserve pre-rendered completion state');
+assert.ok(runtime.includes("builder.closest('.gws-panel[data-garang-workout-surface=\"log\"]')")&&runtime.includes("log.appendChild(card)"),'session completion card must stay owned by the Log surface');
+assert.ok(!runtime.includes("builder.after(card)"),'session completion card must not escape the Log surface');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
 assert.ok(workoutFlow.includes("state.active==='log'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Log activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
