@@ -53,7 +53,7 @@ function normalizedNutritionSource(value){
 }
 function normalizeMealItem(i={}){
   const quality=String(i.nutritionStatus||i.nutrition_status||'unknown').toLowerCase();
-  return {...i,id:i.id||uid(),foodId:i.foodId||i.food_id?String(i.foodId||i.food_id):null,name:String(i.name||'음식'),grams:num(i.grams,100),kcal:num(i.kcal),protein:num(i.protein),carbs:num(i.carbs??i.carbohydrate),fat:num(i.fat),nutritionStatus:['verified','approximate','estimated','estimated_web','unknown'].includes(quality)?quality:'unknown',nutritionSource:normalizedNutritionSource(i.nutritionSource||i.provenance||(i.source?{source:i.source}:null)),userOverride:i.userOverride===true};
+  return {...i,id:i.id||uid(),foodId:i.foodId||i.food_id?String(i.foodId||i.food_id):null,name:String(i.name||'음식'),grams:num(i.grams,100),kcal:num(i.kcal),protein:num(i.protein),carbs:num(i.carbs??i.carbohydrate),fat:num(i.fat),nutritionStatus:['verified','approximate','estimated','unknown'].includes(quality)?quality:'unknown',nutritionSource:normalizedNutritionSource(i.nutritionSource||i.provenance||(i.source?{source:i.source}:null)),userOverride:i.userOverride===true};
 }
 function normalizeMeals(){
   state.meals=(Array.isArray(state.meals)?state.meals:[]).map(m=>{
@@ -420,7 +420,7 @@ function bindPhotoEvidenceHistory(){document.querySelectorAll('[data-photo-evide
 function workoutPage(){return workoutPageBase()+renderWorkoutInsights();}
 function renderWorkoutDraft(){return workoutDraft.length?`<div class="list">${workoutDraft.map((x,i)=>`<div class="list-item"><div><strong>${esc(x.name)}</strong><div class="muted">${x.setDetails?.length?x.setDetails.map(row=>shownWeight(row.weight,1)+weightUnit()+" × "+row.reps+" · RPE "+row.rpe).join(" / "):x.sets+"×"+x.reps+" · "+shownWeight(x.weight,1)+weightUnit()} · 예상 1RM ${Number(shownWeight(x.estimated1RM,1)).toFixed(1)}${weightUnit()}</div></div><div class="actions"><button class="ghost small" data-edit-workout="${i}">수정</button><button class="ghost small" data-remove-workout="${i}">삭제</button></div></div>`).join('')}</div>`:'<div class="empty">운동을 추가하면 세션 초안이 여기에 표시됩니다.</div>';}
 function mealNutritionSourceView(item){
- const source=item?.nutritionSource||{},web=item?.nutritionStatus==='estimated_web'||source?.source==='web_search';
+ const source=item?.nutritionSource||{},web=source?.source==='web_search';
  const label=web?'WEB ESTIMATE':'GARANG DB';
  const link=web&&source?.url?`<a class="meal-source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">출처</a>`:'';
  return `<span class="meal-source-chip ${web?'is-web':'is-db'}">${label}</span>${link}`;
@@ -612,7 +612,7 @@ async function lookupMealScanNutrition(rows=[]){
   const items=(Array.isArray(payload?.items)?payload.items:[]).map((row,index)=>({
    id:uid(),foodId:null,name:String(row?.name||input[row?.inputIndex??index]?.name||'음식'),grams:Math.max(5,num(row?.grams,input[row?.inputIndex??index]?.grams||100)),
    kcal:num(row?.kcal),protein:num(row?.protein),carbs:num(row?.carbs),fat:num(row?.fat),
-   nutritionStatus:'estimated_web',nutritionSource:normalizedNutritionSource(row?.nutritionSource||{source:'web_search'}),
+   nutritionStatus:'estimated',nutritionSource:normalizedNutritionSource(row?.nutritionSource||{source:'web_search'}),
    userOverride:false,scanEvidence:{visionName:String(input[row?.inputIndex??index]?.name||row?.name||'음식'),confidence:clamp(num(input[row?.inputIndex??index]?.confidence,0),0,1),source:'vision+web'}
   })).filter(item=>[item.kcal,item.protein,item.carbs,item.fat].every(Number.isFinite));
   const unresolved=(Array.isArray(payload?.unresolved)?payload.unresolved:[]).map(row=>({name:String(row?.name||input[row?.inputIndex]?.name||'음식'),grams:Math.max(5,num(input[row?.inputIndex]?.grams,100)),confidence:clamp(num(input[row?.inputIndex]?.confidence,0),0,1)}));
