@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: production-coach-activation
@@ -37,6 +38,44 @@ jobs:
       - name: Install locked Functions runtime dependencies
         run: npm ci --prefix functions --omit=dev --no-audit --no-fund
 
+      - name: Validate Workload Identity Federation configuration
+        id: wif_config
+        shell: bash
+        env:
+          REQUIRE_WIF: ${{ contains(github.event.head_commit.message, 'via WIF') }}
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          provider_set=0
+          service_account_set=0
+          [[ -n "${WIF_PROVIDER:-}" ]] && provider_set=1
+          [[ -n "${WIF_SERVICE_ACCOUNT:-}" ]] && service_account_set=1
+          if [[ "$provider_set" != "$service_account_set" ]]; then
+            echo "::error::WIF configuration is partial. Configure both GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_DEPLOY_SERVICE_ACCOUNT."
+            exit 45
+          fi
+          if [[ "${REQUIRE_WIF:-false}" == "true" && "$provider_set" != "1" ]]; then
+            echo "::error::This activation requires Workload Identity Federation, but repository WIF variables are not configured."
+            exit 46
+          fi
+          if [[ "$provider_set" == "1" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate with Google Workload Identity Federation
+        if: ${{ steps.wif_config.outputs.configured == 'true' }}
+        id: google_auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fitfind-ai
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Select fail-closed Firebase authentication
         id: auth
         shell: bash
@@ -47,7 +86,12 @@ jobs:
         run: |
           set -euo pipefail
           cred_file="$RUNNER_TEMP/firebase-service-account.json"
-          if [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
+          if [[ -n "${GOOGLE_GHA_CREDS_PATH:-}" && -f "${GOOGLE_GHA_CREDS_PATH}" ]]; then
+            echo "mode=wif-service-account" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ contains(github.event.head_commit.message, 'via WIF') }}" == "true" ]]; then
+            echo "::error::WIF-required activation did not produce a Google federated credential. Refusing long-lived credential fallback."
+            exit 47
+          elif [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
             printf '%s' "$FIREBASE_SERVICE_ACCOUNT_FITFIND_AI" > "$cred_file"
             node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$cred_file"
             echo "GOOGLE_APPLICATION_CREDENTIALS=$cred_file" >> "$GITHUB_ENV"
@@ -60,7 +104,7 @@ jobs:
           elif [[ -n "${FIREBASE_TOKEN:-}" ]]; then
             echo "mode=legacy-firebase-token" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::No Firebase deployment credential is configured. Expected FIREBASE_SERVICE_ACCOUNT_FITFIND_AI, GOOGLE_APPLICATION_CREDENTIALS_JSON, or FIREBASE_TOKEN."
+            echo "::error::No Firebase deployment credential is configured. Expected configured Workload Identity Federation or FIREBASE_SERVICE_ACCOUNT_FITFIND_AI, GOOGLE_APPLICATION_CREDENTIALS_JSON, or FIREBASE_TOKEN."
             exit 42
           fi
 

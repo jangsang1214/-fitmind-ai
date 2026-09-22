@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const workflow=fs.readFileSync(path.join(root,'.github/workflows/production-coach-activation.yml'),'utf8');
+const ignore=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
+assert.match(workflow,/id-token:\s*write/,'production activation must allow GitHub OIDC tokens');
+assert.match(workflow,/google-github-actions\/auth@v3/,'production activation must use Google WIF auth');
+assert.match(workflow,/GCP_WORKLOAD_IDENTITY_PROVIDER/);
+assert.match(workflow,/GCP_DEPLOY_SERVICE_ACCOUNT/);
+assert.match(workflow,/mode=wif-service-account/,'WIF must be a first-class auth mode');
+assert.match(workflow,/requires Workload Identity Federation/,'explicit WIF activation must fail closed without WIF config');
+assert.match(workflow,/Refusing long-lived credential fallback/,'WIF-required activation must not silently fall back to JSON credentials');
+assert.ok(workflow.indexOf('mode=wif-service-account') < workflow.indexOf('mode=adc-service-account-fitfind'),'WIF must be preferred over JSON key fallback');
+assert.match(ignore,/gha-creds-\*\.json/,'generated WIF credential files must never be committed');
+console.log('production-wif-auth-contract: PASS');
