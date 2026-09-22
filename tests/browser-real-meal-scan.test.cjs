@@ -44,7 +44,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.equal(request.request.image.mediaType,'image/png');assert.ok(String(request.request.image.dataUrl||'').startsWith('data:image/png;base64,'));
   const resultText=await page.locator('.scan-result-card').innerText();assert.match(resultText,/닭가슴살/);assert.doesNotMatch(resultText,/9999/,'provider nutrition must never be rendered as GARANG nutrition');
   assert.match(await page.locator('.photo-evidence-estimate-note').innerText(),/VISION → FOOD DB/);
-  await page.locator('#confirmMealScan').click();await page.locator('.manual-entry summary').click();
+  await page.locator('#confirmMealScan').click();await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
   await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('닭가슴살'));
   const before=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(before.meals.length,0,'Meal Scan confirmation must only create a draft');
   await page.locator('#saveMeal').click();await page.waitForFunction(()=>window.GarangAgentStateBridge.getState()?.meals?.length===1,null,{timeout:7000});
