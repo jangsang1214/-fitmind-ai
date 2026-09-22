@@ -157,6 +157,9 @@ jobs:
       - name: Verify public Coach auth and method boundaries
         run: npm run preflight:coach:prod-route
 
+      - name: Verify public Meal Scan auth and method boundaries
+        run: npm run preflight:meal-scan:prod-route
+
       - name: Mint disposable Firebase ID token
         shell: bash
         run: |
@@ -181,6 +184,14 @@ jobs:
             console.log('Disposable Firebase smoke identity created.');
           })().catch(error=>{console.error(error.message||error);process.exit(1);});
           NODE
+
+      - name: Run authenticated live Meal Scan smoke
+        id: live_meal_scan_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run smoke:meal-scan:prod
+          echo "status=PASS" >> "$GITHUB_OUTPUT"
 
       - name: Run authenticated live Coach smoke
         id: live_smoke
@@ -233,5 +244,6 @@ jobs:
             echo "- Repository revision: \`${GITHUB_SHA}\`"
             echo "- Firebase auth mode: \`${{ steps.auth.outputs.mode || 'unavailable' }}\`"
             echo "- Authenticated live smoke: \`${{ steps.live_smoke.outputs.status || 'NOT_REACHED' }}\`"
+            echo "- Authenticated Meal Scan smoke: \`${{ steps.live_meal_scan_smoke.outputs.status || 'NOT_REACHED' }}\`"
             echo "- Secret values were scoped to the minimum required steps and were not printed or persisted to repository files."
           } >> "$GITHUB_STEP_SUMMARY"
