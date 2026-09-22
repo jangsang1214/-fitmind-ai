@@ -200,12 +200,13 @@
       let cards = [...library.querySelectorAll('.exercise-visual-card[data-exercise-pick]')];
       cards.forEach((card, index) => { card.classList.toggle('garang-library-extra', index >= 4); card.hidden = index >= 4; });
       const existing = new Set(cards.map(card => card.dataset.exercisePick));
-      const template = cards[0];
+      const template = cards[0], additions = document.createDocumentFragment();
       matching.forEach(ex => {
         const name = String(ex.exercise_name || '').trim(); if (!name || existing.has(name)) return;
         existing.add(name); const clone = template.cloneNode(true); setCardContent(clone, ex, filterKey); clone.classList.add('garang-library-extra'); clone.hidden = true;
-        clone.addEventListener('click', () => selectExpandedExercise(clone)); library.appendChild(clone);
+        clone.addEventListener('click', () => selectExpandedExercise(clone)); additions.appendChild(clone);
       });
+      if (additions.childNodes.length) library.appendChild(additions);
       cards = [...library.querySelectorAll('.exercise-visual-card[data-exercise-pick]')];
       const extras = cards.slice(4); main.querySelector('.garang-library-more-wrap')?.remove();
       if (extras.length) {
