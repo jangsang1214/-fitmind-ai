@@ -84,6 +84,7 @@ function enhance(){
   updateLive();resultCard();
 }
 document.addEventListener('click',event=>{
+  if(event.target.closest?.('[data-gws-step="log"]'))setTimeout(enhance,0);
   const target=event.target.closest?.('#saveWorkoutSession');if(!target)return;
   const s=draftSummary();pendingResult={...s,elapsedMs:sessionStartedAt?Date.now()-sessionStartedAt:0};
 },true);
