@@ -36,9 +36,25 @@ Purpose:
 Source/runtime behavior is the already-verified PR #186 code. This documentation-only activation commit exists solely to satisfy the fail-closed production activation trigger without changing runtime logic.
 
 
-## Real Meal Scan v1 activation checkpoint — 2026-09-22
+## Real Meal Scan v1 production activation — 2026-09-22
 
-- Approved source revision: `834e48764821eae7f092b1e95ece77c279fcc367`.
-- Production activation must deploy only Firebase Function `api` to `fitfind-ai` and preserve the existing `GARANG_LLM_API_KEY` secret.
-- Post-deploy evidence must include authenticated live Coach smoke, bounded autonomous-write smoke, sensitive-write boundary checks, and disposable-user cleanup.
-- Real Meal Scan v1 remains confirmation-first: Vision proposes visible-food candidates only; GARANG Food DB owns nutrition values; unmatched foods fail closed for user review.
+Founder authorized final production activation in this session.
+
+Verified source/web baseline:
+- PRODUCT main: `d926b12a35105c02e240e2c0e677432b53c99d76`.
+- Real Meal Scan v1 merged through PR #206.
+- PR #206 exact-head Release Gate #1634: GREEN.
+- Post-merge Real Meal Scan release Gate #1635: GREEN.
+- Current commercial main Release Gate #1650: GREEN.
+- Current Pages #844: SUCCESS.
+
+Activation scope:
+- deploy only Firebase Function `api` to `fitfind-ai`
+- preserve `GARANG_LLM_API_KEY`
+- include authenticated `POST /meal/scan` on the production API
+- keep Vision limited to visible-food identity/portion/confidence; GARANG Food DB remains nutrition authority
+- keep user confirmation before meal mutation
+- run authenticated live Coach + bounded autonomous-write smoke and disposable-user cleanup
+- use Workload Identity Federation automatically when repository WIF variables are configured; otherwise retain the currently verified fail-closed credential fallback
+
+Production activation is complete only when the activation workflow reports SUCCESS and records its non-secret Firebase authentication mode.
