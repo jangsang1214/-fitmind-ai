@@ -150,6 +150,7 @@ function trackEvent(name,props={},persist=true){try{state.analytics.events.push(
 function syncStateFromAgent(){try{const bridge=window.GarangAgentStateBridge;if(!bridge?.ready?.())return;const live=bridge.getLiveState?.();if(live)state=live;}catch{}}
 window.addEventListener('garang:agent-write',syncStateFromAgent);
 window.addEventListener('error',e=>captureError('frontend_error',e.error||e.message));window.addEventListener('unhandledrejection',e=>captureError('unhandled_rejection',e.reason));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseRunForBackground('visibility_hidden');else syncRunPauseUI();});window.addEventListener('pagehide',()=>pauseRunForBackground('pagehide'));
 
 async function loadJSON(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path} ${r.status}`);return r.json();}
 async function loadJSONL(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path} ${r.status}`);const text=await r.text();return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);}
@@ -159,6 +160,7 @@ function initFirebase(){
   try{
     const cfg=window.GARANG_FIREBASE_CONFIG;if(!cfg?.apiKey||!window.firebase?.apps){firebaseReady=false;return;}
     if(!firebase.apps.length)firebase.initializeApp(cfg);firebaseReady=!!firebase.apps.length;
+    if(firebaseReady&&typeof firebase.auth().getRedirectResult==='function')firebase.auth().getRedirectResult().catch(e=>{captureError('social_auth_redirect',e);toast(firebaseError(e));});
     if(firebaseReady)firebase.auth().onAuthStateChanged(u=>{
       currentUser=u;
       if(u){setCloudHydrationReady(false);cloudSyncPending=false;storageKey=`garang_user_${u.uid}_v3`;loadLocal(storageKey);showApp();cloudLoadAndMerge().catch(e=>{setCloudHydrationReady(true);captureError('cloud_load_after_auth',e);toast('클라우드 동기화는 백그라운드에서 다시 시도합니다.');});}
@@ -175,7 +177,26 @@ function bindAuth(){
   $('logoutBtn').onclick=logout;$('profileTopBtn').onclick=()=>go('profile');$('settingsTopBtn').onclick=()=>go('settings');$('syncBadge').onclick=()=>{if(currentUser&&firebaseReady){toast('클라우드 동기화를 다시 확인합니다.');cloudSaveNow().then(ok=>ok&&toast('동기화가 완료되었습니다.'));}else toast('로그인하면 Firebase와 동기화됩니다.');};
 }
 async function emailAuth(signup){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const email=$(signup?'signupEmail':'loginEmail').value.trim(),pw=$(signup?'signupPassword':'loginPassword').value;if(signup){const c=await firebase.auth().createUserWithEmailAndPassword(email,pw);await c.user.updateProfile({displayName:email.split('@')[0]});trackEvent('signup_completed');}else await firebase.auth().signInWithEmailAndPassword(email,pw);toast(signup?'계정을 만들었습니다.':'로그인했습니다.');}catch(e){toast(firebaseError(e));}}
-async function socialAuth(kind){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');try{const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');await firebase.auth().signInWithPopup(p);}catch(e){toast(firebaseError(e));}}
+function prefersRedirectAuth(){
+  const ua=String(navigator.userAgent||'');
+  const mobile=/iPhone|iPad|iPod|Android/i.test(ua);
+  const standalone=window.matchMedia?.('(display-mode: standalone)')?.matches||navigator.standalone===true;
+  return mobile||standalone;
+}
+async function socialAuth(kind){
+  if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');
+  const p=kind==='google'?new firebase.auth.GoogleAuthProvider():new firebase.auth.OAuthProvider('apple.com');
+  try{
+    if(prefersRedirectAuth()){trackEvent('social_auth_redirect_started',{provider:kind},false);await firebase.auth().signInWithRedirect(p);return;}
+    await firebase.auth().signInWithPopup(p);
+  }catch(e){
+    if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/cancelled-popup-request'].includes(e?.code)&&firebase.auth().signInWithRedirect){
+      trackEvent('social_auth_redirect_fallback',{provider:kind,code:e?.code||null},false);
+      try{await firebase.auth().signInWithRedirect(p);return;}catch(redirectError){return toast(firebaseError(redirectError));}
+    }
+    toast(firebaseError(e));
+  }
+}
 async function resetPassword(){if(!firebaseReady)return toast('Firebase 설정을 확인해 주세요.');const email=$('loginEmail').value.trim();if(!email)return toast('이메일을 먼저 입력해 주세요.');try{await firebase.auth().sendPasswordResetEmail(email);toast('재설정 메일을 보냈습니다.');}catch(e){toast(firebaseError(e));}}
 function firebaseError(e){const c=e?.code||'';const map={'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.','auth/email-already-in-use':'이미 사용 중인 이메일입니다.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/popup-closed-by-user':'로그인이 취소되었습니다.','auth/operation-not-allowed':'Firebase Console에서 로그인 방식을 활성화해 주세요.','auth/unauthorized-domain':'Firebase 승인 도메인을 확인해 주세요.','auth/popup-blocked':'브라우저 팝업을 허용해 주세요.','permission-denied':'Firestore 권한 규칙을 확인해 주세요.'};return map[c]||e?.message||'인증 중 오류가 발생했습니다.';}
 function logout(){if(firebaseReady&&currentUser)firebase.auth().signOut().catch(()=>{});clearTimeout(syncTimer);cloudSyncPending=false;setCloudHydrationReady(true);localStorage.removeItem('garang_demo');currentUser=null;storageKey=SIGNED_OUT_KEY;showAuth();}
@@ -404,8 +425,8 @@ ${scan?.url?`<section class="card scan-confirm-panel"><div class="visual-section
 <details class="card manual-entry"><summary><span><b>직접 입력</b><small>사진 대신 검색해서 기록</small></span><span>＋</span></summary><div class="manual-entry-body"><div class="field"><label>음식 / 메뉴</label><input id="foodSearch" list="foodList" placeholder="닭가슴살"><datalist id="foodList">${db.food.slice(0,1500).map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist></div><div class="form-grid compact-fields" style="margin-top:10px"><div class="field"><label>섭취량 g</label><input id="foodGram" type="number" min="1" value="100"></div><div class="field"><label>kcal</label><input id="foodKcal" type="number" value="0"></div><div class="field"><label>단백질 g</label><input id="foodProtein" type="number" value="0"></div><div class="field"><label>탄수화물 g</label><input id="foodCarb" type="number" value="0"></div><div class="field"><label>지방 g</label><input id="foodFat" type="number" value="0"></div></div><div class="actions" style="margin-top:10px"><button id="fillFood" class="ghost">DB 불러오기</button><button id="addFood" class="primary">추가</button></div><div id="mealDraftArea" class="draft-area" style="margin-top:12px">${renderMealDraft()}</div><button id="saveMeal" class="primary wide" style="margin-top:10px" ${mealDraft.length?'':'disabled'}>한 끼 저장</button></div></details>
 <div class="section-title"><h2>오늘 먹은 것</h2><span class="pill">${dayMeals().length} meals</span></div><div class="meal-visual-list">${dayMeals().slice().reverse().map((x,i)=>`<article class="meal-visual-card"><div class="meal-index">${String(dayMeals().length-i).padStart(2,'0')}</div><div class="meal-visual-copy"><strong>${esc(x.name)}</strong><span>${x.items.slice(0,3).map(i=>esc(i.name)).join(' · ')}</span><div class="meal-macro-line"><b>${Math.round(x.kcal)} kcal</b><small>P ${Math.round(x.protein)} · C ${Math.round(x.carbs)} · F ${Math.round(x.fat)}</small></div></div>${photoEvidenceButton(x,'식단 사진')}</article>`).join('')||'<div class="empty">첫 식사를 사진으로 남겨보세요.</div>'}</div>`;}
 function renderMealDraft(){return mealDraft.length?`<div class="list">${mealDraft.map((x,i)=>`<div class="list-item"><div><strong>${esc(x.name)}</strong><div class="muted">${x.grams}g · ${Math.round(x.kcal)} kcal · P ${Math.round(x.protein)}g</div></div><div class="actions"><button class="ghost small" data-edit-food="${i}">수정</button><button class="ghost small" data-remove-food="${i}">삭제</button></div></div>`).join('')}</div>`:'<div class="empty">음식 또는 Meal Scan 초안을 추가하세요.</div>';}
-function runningPageBase(){return `${pageHead('LOG / RUNNING','러닝','GPS 기반 거리·시간·페이스를 기록합니다.')}
-<div class="grid grid-2"><section class="card"><div class="grid grid-3"><div><div class="stat" id="runDistance">0.00</div><div class="stat-label">${distanceUnit()}</div></div><div><div class="stat" id="runTime">00:00</div><div class="stat-label">시간</div></div><div><div class="stat" id="runPace">—</div><div class="stat-label">${paceUnit()}</div></div></div><div class="map-box" style="margin-top:16px"><div class="map-grid"></div><svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline id="routeLine" points=""></polyline></svg><div class="map-note" id="gpsStatus">GPS 대기 중</div></div><div class="actions" style="margin-top:12px"><button id="runStart" class="primary">러닝 시작</button><button id="runStop" class="ghost">정지 & 저장</button><button id="runCert" class="ghost">사진첩에서 불러오기</button><button id="runOverlayOnly" class="ghost">투명 오버레이 PNG</button></div></section><section class="card"><h3>러닝 인증</h3><div id="runCertArea" class="empty">미디어를 선택하면 인증 오버레이를 생성합니다.</div></section></div>
+function runningPageBase(){return `${pageHead('LOG / RUNNING','러닝','전면 실행 중 GPS 기반 거리·시간·페이스를 기록합니다.')}
+<div class="grid grid-2"><section class="card"><div class="grid grid-3"><div><div class="stat" id="runDistance">0.00</div><div class="stat-label">${distanceUnit()}</div></div><div><div class="stat" id="runTime">00:00</div><div class="stat-label">시간</div></div><div><div class="stat" id="runPace">—</div><div class="stat-label">${paceUnit()}</div></div></div><div class="map-box" style="margin-top:16px"><div class="map-grid"></div><svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline id="routeLine" points=""></polyline></svg><div class="map-note" id="gpsStatus">GPS 대기 중</div></div><div class="helper" id="runForegroundNotice">웹/PWA에서는 화면 잠금·백그라운드 GPS 지속을 보장하지 않습니다. 러닝 중 GARANG을 전면에 두고 사용하세요.</div><div class="actions" style="margin-top:12px"><button id="runStart" class="primary">러닝 시작</button><button id="runResume" class="primary" hidden>러닝 재개</button><button id="runStop" class="ghost">정지 & 저장</button><button id="runCert" class="ghost">사진첩에서 불러오기</button><button id="runOverlayOnly" class="ghost">투명 오버레이 PNG</button></div></section><section class="card"><h3>러닝 인증</h3><div id="runCertArea" class="empty">미디어를 선택하면 인증 오버레이를 생성합니다.</div></section></div>
 <div class="section-title"><h2>최근 기록</h2></div><section class="card"><div class="list">${state.runs.slice().reverse().slice(0,30).map(x=>`<div class="list-item"><div><strong>${num(x.distance).toFixed(2)} km</strong><div class="muted">${x.date} · ${num(x.duration).toFixed(1)}분 · ${x.pace||'—'} /km</div></div><span class="pill">${Math.round(x.kcal||0)} kcal</span></div>`).join('')||'<div class="empty">러닝 기록이 없습니다.</div>'}</div></section>`;}
 function runningPage(){return runningPageBase()+renderRunningInsights();}
 function bodyDerived(weight,height,fatPct){weight=num(weight);height=num(height);fatPct=num(fatPct);const fatMass=weight&&fatPct?weight*fatPct/100:0,leanMass=weight&&fatMass?weight-fatMass:0,bmi=height&&weight?weight/Math.pow(height/100,2):0,age=num(state.profile?.age,30),sex=userGender(),bmr=height&&weight?Math.round(10*weight+6.25*height-5*age+(sex==='female'?-161:5)):0;return {fatMass,leanMass,bmi,bmr};}
@@ -569,11 +590,78 @@ function installNutritionDraftBridge(){if(window.GarangNutritionDraftBridge?.ver
 async function analyzeMealScan(){if(!mealScanDraft?.file)return toast('먼저 음식 사진을 선택해 주세요.');mealScanDraft.manualName=$('scanFoodName').value.trim();mealScanDraft.grams=Math.max(1,num($('scanFoodGram').value,100));if(SERVICES.mealScanEndpoint){try{toast('사진을 분석 중입니다.');const fd=new FormData();fd.append('image',mealScanDraft.file);fd.append('userId',currentUser?.uid||'demo');const r=await fetch(SERVICES.mealScanEndpoint,{method:'POST',body:fd});if(!r.ok)throw new Error(`Meal Scan ${r.status}`);const data=await r.json();if(!Array.isArray(data.items)||!data.items.length)throw new Error('Meal Scan response has no items');mealScanDraft.items=data.items.map(i=>({id:uid(),name:String(i.name||'음식'),grams:num(i.grams,100),kcal:num(i.kcal),protein:num(i.protein),carbs:num(i.carbs),fat:num(i.fat)}));trackEvent('meal_scan_draft_created',{provider:'vision'});render();return;}catch(e){captureError('meal_scan',e);toast('Vision 분석에 실패했습니다. 임의 결과를 만들지 않습니다.');return;}}
   if(!mealScanDraft.manualName)return toast('Vision API 미연결 상태입니다. 음식명을 입력하면 DB 기반 초안을 만들 수 있습니다.');const x=foodItem(mealScanDraft.manualName,mealScanDraft.grams);if(!x)return toast('Food DB에서 해당 음식을 찾지 못했습니다. 직접 입력을 사용해 주세요.');mealScanDraft.items=[x];trackEvent('meal_scan_draft_created',{provider:'local_db'});render();}
 
-function bindRunning(){$('runStart').onclick=startRun;$('runStop').onclick=stopRun;$('runCert').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');});$('runOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('running'));}
-function startRun(){if(runState)return toast('이미 러닝 중입니다.');if(!navigator.geolocation)return toast('이 기기에서는 GPS를 사용할 수 없습니다.');runState={started:Date.now(),distance:0,coords:[],watchId:null};$('gpsStatus').textContent='GPS 연결 중…';runState.watchId=navigator.geolocation.watchPosition(pos=>{const p=pos.coords;runState.coords.push([p.latitude,p.longitude,pos.timestamp]);if(runState.coords.length>1){const a=runState.coords.at(-2),b=runState.coords.at(-1);runState.distance+=haversine(a[0],a[1],b[0],b[1]);}updateRoute();updateRunUI();$('gpsStatus').textContent=`GPS 연결 · 정확도 ${Math.round(p.accuracy)}m`;},()=>{$('gpsStatus').textContent='GPS 권한 또는 신호를 확인해 주세요.';},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});runTimer=setInterval(updateRunUI,1000);trackEvent('run_started');}
-function updateRunUI(){if(!runState)return;const sec=Math.floor((Date.now()-runState.started)/1000),min=Math.floor(sec/60),s=String(sec%60).padStart(2,'0');if($('runDistance'))$('runDistance').textContent=Number(shownDistance(runState.distance,2)||0).toFixed(2);if($('runTime'))$('runTime').textContent=`${String(min).padStart(2,'0')}:${s}`;if($('runPace'))$('runPace').textContent=runState.distance>0?Number(shownPace(sec/60/runState.distance,2)).toFixed(2):'—';}
-function updateRoute(){const line=$('routeLine');if(!line||!runState?.coords.length)return;const pts=runState.coords;if(pts.length<2){line.setAttribute('points','50,50');return;}const lats=pts.map(p=>p[0]),lons=pts.map(p=>p[1]),minLat=Math.min(...lats),maxLat=Math.max(...lats),minLon=Math.min(...lons),maxLon=Math.max(...lons),dLat=maxLat-minLat||1e-6,dLon=maxLon-minLon||1e-6;line.setAttribute('points',pts.map(p=>`${8+84*(p[1]-minLon)/dLon},${92-84*(p[0]-minLat)/dLat}`).join(' '));}
-function stopRun(){if(!runState)return toast('진행 중인 러닝이 없습니다.');if(runState.watchId!=null)navigator.geolocation.clearWatch(runState.watchId);clearInterval(runTimer);const sec=Math.max(1,Math.floor((Date.now()-runState.started)/1000)),duration=sec/60,d=runState.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036),stamp=isoNow();state.runs.push({id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:runState.coords,createdAt:stamp,updatedAt:stamp});runState=null;saveState({event:'run_saved',source:'running'});toast('러닝을 저장했습니다.');render();}
+function bindRunning(){
+  $('runStart').onclick=startRun;$('runResume').onclick=resumeRun;$('runStop').onclick=stopRun;
+  $('runCert').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');});
+  $('runOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('running'));
+  syncRunPauseUI();
+}
+function activeRunElapsedMs(){
+  if(!runState)return 0;
+  return Math.max(0,num(runState.elapsedMs)+(runState.paused?0:Math.max(0,Date.now()-num(runState.activeStartedAt,Date.now()))));
+}
+function clearRunWatch(){
+  if(runState?.watchId!=null&&navigator.geolocation?.clearWatch)navigator.geolocation.clearWatch(runState.watchId);
+  if(runState)runState.watchId=null;
+  clearInterval(runTimer);runTimer=null;
+}
+function beginRunWatch(){
+  if(!runState||runState.paused||!navigator.geolocation)return;
+  clearRunWatch();
+  runState.watchId=navigator.geolocation.watchPosition(pos=>{
+    if(!runState||runState.paused)return;
+    const p=pos.coords;runState.coords.push([p.latitude,p.longitude,pos.timestamp]);
+    if(runState.coords.length>1){const a=runState.coords.at(-2),b=runState.coords.at(-1);runState.distance+=haversine(a[0],a[1],b[0],b[1]);}
+    updateRoute();updateRunUI();if($('gpsStatus'))$('gpsStatus').textContent=`GPS 연결 · 정확도 ${Math.round(p.accuracy)}m`;
+  },()=>{if($('gpsStatus'))$('gpsStatus').textContent='GPS 권한 또는 신호를 확인해 주세요.';},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});
+  runTimer=setInterval(updateRunUI,1000);
+}
+function syncRunPauseUI(){
+  const resume=$('runResume'),status=$('gpsStatus');
+  if(resume)resume.hidden=!runState?.paused;
+  if(runState?.paused&&status)status.textContent='백그라운드 전환으로 GPS를 일시중지했습니다. 전면으로 돌아와 러닝 재개를 눌러주세요.';
+}
+function startRun(){
+  if(runState)return toast('이미 러닝 중입니다.');
+  if(!navigator.geolocation)return toast('이 기기에서는 GPS를 사용할 수 없습니다.');
+  runState={started:Date.now(),activeStartedAt:Date.now(),elapsedMs:0,distance:0,coords:[],watchId:null,paused:false,foregroundPauseCount:0,trackingMode:'foreground_only'};
+  if($('gpsStatus'))$('gpsStatus').textContent='GPS 연결 중…';
+  beginRunWatch();trackEvent('run_started',{trackingMode:'foreground_only'});syncRunPauseUI();
+}
+function pauseRunForBackground(reason='background'){
+  if(!runState||runState.paused)return false;
+  runState.elapsedMs=activeRunElapsedMs();runState.paused=true;runState.pausedAt=Date.now();runState.foregroundPauseCount=Math.max(0,num(runState.foregroundPauseCount))+1;
+  clearRunWatch();trackEvent('run_foreground_paused',{reason,count:runState.foregroundPauseCount},false);syncRunPauseUI();return true;
+}
+function resumeRun(){
+  if(!runState)return toast('진행 중인 러닝이 없습니다.');
+  if(!runState.paused)return toast('러닝이 이미 진행 중입니다.');
+  if(document.hidden)return toast('GARANG을 전면에 둔 뒤 재개해 주세요.');
+  runState.paused=false;runState.activeStartedAt=Date.now();runState.pausedAt=null;
+  if($('gpsStatus'))$('gpsStatus').textContent='GPS 재연결 중…';
+  beginRunWatch();trackEvent('run_foreground_resumed',{count:runState.foregroundPauseCount},false);syncRunPauseUI();updateRunUI();
+}
+function updateRunUI(){
+  if(!runState)return;
+  const sec=Math.floor(activeRunElapsedMs()/1000),min=Math.floor(sec/60),s=String(sec%60).padStart(2,'0');
+  if($('runDistance'))$('runDistance').textContent=Number(shownDistance(runState.distance,2)||0).toFixed(2);
+  if($('runTime'))$('runTime').textContent=`${String(min).padStart(2,'0')}:${s}`;
+  if($('runPace'))$('runPace').textContent=runState.distance>0?Number(shownPace(sec/60/runState.distance,2)).toFixed(2):'—';
+}
+function updateRoute(){
+  const line=$('routeLine');if(!line||!runState?.coords.length)return;const pts=runState.coords;
+  if(pts.length<2){line.setAttribute('points','50,50');return;}
+  const lats=pts.map(p=>p[0]),lons=pts.map(p=>p[1]),minLat=Math.min(...lats),maxLat=Math.max(...lats),minLon=Math.min(...lons),maxLon=Math.max(...lons),dLat=maxLat-minLat||1e-6,dLon=maxLon-minLon||1e-6;
+  line.setAttribute('points',pts.map(p=>`${8+84*(p[1]-minLon)/dLon},${92-84*(p[0]-minLat)/dLat}`).join(' '));
+}
+function stopRun(){
+  if(!runState)return toast('진행 중인 러닝이 없습니다.');
+  if(!runState.paused)runState.elapsedMs=activeRunElapsedMs();
+  clearRunWatch();
+  const sec=Math.max(1,Math.floor(num(runState.elapsedMs)/1000)),duration=sec/60,d=runState.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036),stamp=isoNow();
+  state.runs.push({id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:runState.coords,trackingMode:'foreground_only',foregroundPauseCount:Math.max(0,num(runState.foregroundPauseCount)),createdAt:stamp,updatedAt:stamp});
+  runState=null;saveState({event:'run_saved',source:'running'});toast('러닝을 저장했습니다.');render();
+}
 function haversine(a,b,c,d){const R=6371,rad=Math.PI/180,da=(c-a)*rad,db=(d-b)*rad,x=Math.sin(da/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin(db/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 
 function updateBodyDerivedPreview(){const box=$('bodyDerived');if(!box)return;const d=bodyDerived(metricWeight($('bWeight')?.value),metricLength($('bHeight')?.value)||state.profile?.height,$('bFatPct')?.value);box.innerHTML=`<div><span>체지방량</span><b>${d.fatMass?Number(shownWeight(d.fatMass,1)).toFixed(1):'—'} ${weightUnit()}</b></div><div><span>제지방량</span><b>${d.leanMass?Number(shownWeight(d.leanMass,1)).toFixed(1):'—'} ${weightUnit()}</b></div><div><span>BMI</span><b>${d.bmi?d.bmi.toFixed(1):'—'}</b></div><div><span>BMR</span><b>${d.bmr||'—'} kcal</b></div>`;}
