@@ -601,7 +601,7 @@ function bindRunning(){
   $('runShareCert')?.addEventListener('click',()=>pickMedia('mediaPicker',m=>{window.GarangPhotoEvidence?.revoke(currentCert.running);currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');}));
   $('runOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('running'));
   document.querySelectorAll('[data-run-delete]').forEach(button=>button.onclick=()=>deleteRunRecord(button.dataset.runDelete));
-  bindPhotoEvidenceHistory();syncRunPauseUI();updateRunUI();
+  bindPhotoEvidenceHistory();syncRunPauseUI();updateRunUI();updateRoute();
   if(currentCert.running&&state.runs.at(-1))showCert('runCertArea',currentCert.running,state.runs.at(-1),'running');
 }
 async function attachRunningEvidence(record,draft){
