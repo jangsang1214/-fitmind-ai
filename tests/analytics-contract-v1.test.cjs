@@ -28,6 +28,11 @@ for(const legacy of expectedLegacy){
 assert.match(app,/trackEvent\('signup_completed'\)/);
 assert.match(app,/event:'onboarding_completed'/);
 assert.match(app,/trackEvent\('screen_viewed'/);
+assert.match(app,/privacy:\{consent:\{analytics:false\}\}/,'analytics consent must default to false in canonical user state');
+assert.match(app,/analyticsConsentSetting/,'Settings must expose an explicit analytics consent control');
+assert.match(app,/delete out\.analytics;delete out\.errors/,'analytics and local error logs must not piggyback on general Cloud Sync');
+assert.match(app,/FIRST_RECORD_EVENT_TYPES/);
+assert.match(app,/trackEvent\('first_record_created',\{recordType,source\},true\)/,'first record must be emitted exactly through the guarded first-record path');
 assert.match(services,/analyticsConsent:\s*false/,'remote analytics consent must default to false');
 assert.match(services,/analyticsContractVersion:\s*'garang-analytics-v1'/);
 
