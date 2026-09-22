@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const app=fs.readFileSync(path.join(__dirname,'..','01_app/app.js'),'utf8');
+assert.match(app,/function prefersRedirectAuth\(\)/);
+assert.match(app,/signInWithRedirect/,'mobile social auth must support redirect');
+assert.match(app,/getRedirectResult/,'redirect auth result errors must be observed');
+assert.match(app,/trackingMode:'foreground_only'/,'running records must declare foreground-only tracking');
+assert.match(app,/function pauseRunForBackground/,'background transition must pause GPS tracking');
+assert.match(app,/visibilitychange/,'document backgrounding must be observed');
+assert.match(app,/clearRunWatch\(\)/,'background pause must clear geolocation watch');
+assert.match(app,/activeRunElapsedMs\(\)/,'duration must count active foreground time rather than wall-clock hidden time');
+assert.match(app,/runResume/,'user must explicitly resume after a background interruption');
+assert.match(app,/백그라운드 GPS 지속을 보장하지 않습니다/,'running UI must state the web/PWA capability boundary');
+console.log('mobile-auth-running-safety-v1: PASS');
