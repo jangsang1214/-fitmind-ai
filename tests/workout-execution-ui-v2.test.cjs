@@ -24,6 +24,9 @@ assert.ok(runtime.includes("previousValue"),'Previous values must render from th
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
+assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
+assert.ok(app.includes("data-execution-completed=\"'+(row.executionCompleted===true?'true':'false')+'\""),'set renderer must preserve execution completion metadata');
+assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must preserve pre-rendered completion state');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
