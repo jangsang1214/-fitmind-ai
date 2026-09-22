@@ -139,7 +139,7 @@ async function assertCoachSettles(page){
         profile:{name:'WebKit',weight:70},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},
         preferences:{language:'ko',unit:'metric'},
-        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat'}],
+        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat',sets:3,reps:6,weight:50,rpe:7,duration:30,setDetails:[{set:1,weight:50,reps:6,rpe:7},{set:2,weight:50,reps:6,rpe:7},{set:3,weight:50,reps:6,rpe:7}]}],
         meals:[null,{id:'m1',date:'2026-09-06',name:'Meal',items:[null,{id:'f1',name:'Egg',grams:100,kcal:150,protein:13,carbs:1,fat:10}]}],
         runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
         memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
@@ -217,6 +217,85 @@ async function assertCoachSettles(page){
     await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
+    await tap(page,'[data-gws-step="log"]');
+    await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
+    const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
+    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
+    assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
+    assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
+    assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
+    assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
+    assert.equal(await page.locator('#saveWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-bar')),true,'Finish must live in the top-level live session bar');
+    assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');
+    assert.match(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').innerText(),/SET\s+PREVIOUS\s+KG\s+REPS\s+RPE\s+✓/,'set-first table must expose the commercial execution hierarchy');
+    assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
+    await tap(page,'[data-gws-reuse-latest]');
+    await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50'&&document.querySelector('#workoutSetDetails [data-set-reps]')?.value==='6',{timeout:3000});
+    assert.equal(await page.locator('#wDuration').inputValue(),'30','recent workout reuse must preserve duration');
+    assert.deepEqual(await page.locator('#workoutSetDetails [data-set-weight]').evaluateAll(nodes=>nodes.map(node=>node.value)),['50','50','50'],'recent workout reuse must populate all visible set weights');
+    assert.deepEqual(await page.locator('#workoutSetDetails [data-set-rpe]').evaluateAll(nodes=>nodes.map(node=>node.value)),['7','7','7'],'recent workout reuse must populate all visible set RPE values');
+    await page.locator('#settingsTopBtn').click();
+    await page.locator('#unitSetting').selectOption('imperial');await page.locator('#savePreferences').click();
+    await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'workout-unit-regression',force:true}));
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
+    await page.waitForFunction(()=>Math.abs(Number(document.querySelector('#workoutSetDetails [data-set-weight]')?.value)-110.2)<0.2,{timeout:5000});
+    assert.ok(Math.abs(Number(await page.locator('#workoutSetDetails [data-set-weight]').first().inputValue())-110.2)<0.2,'active 50 kg set must restore as about 110.2 lb after unit change');
+    await page.locator('#settingsTopBtn').click();await page.locator('#unitSetting').selectOption('metric');await page.locator('#savePreferences').click();
+    await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'workout-unit-regression-return',force:true}));
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
+    await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50',{timeout:5000});
+    assert.equal(await page.locator('#workoutSetDetails [data-set-weight]').first().inputValue(),'50','unit round-trip must preserve canonical active-set weight');
+    await page.locator('#wSets').fill('5');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-set-row]').count(),5,'visible execution rows must stay synchronized with the set count');
+    await page.locator('#addWorkout').scrollIntoViewIfNeeded();
+    await tap(page,'#addWorkout');
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),0,'zero completed sets must not be serialized into the workout draft');
+    assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','rejected Add must not start or contaminate live session elapsed time');
+    await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().click();
+    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
+    assert.equal(await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
+    assert.equal(await page.locator('#workoutSetDetails .completed').count(),1,'completed set must have an explicit completed state');
+    assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'completion must advance exactly one current set');
+    assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\d{2}:\d{2}$/,'live session timer must be visible');
+    await tap(page,'#skipWorkoutRest');
+    await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
+    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
+    await tap(page,'#skipWorkoutRest');
+    await page.locator('#wSets').fill('6');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===6,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'increasing set count must preserve completed set state');
+    await page.locator('#wSets').fill('5');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'decreasing set count must preserve surviving completed sets');
+    await tap(page,'#addWorkout');
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
+    await tap(page,'[data-edit-workout="0"]');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===2,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'draft edit must reopen previously completed sets as completed');
+    assert.equal(await page.locator('#wSets').inputValue(),'2','draft edit must preserve the accepted completed-set count across render');
+    assert.equal(await page.locator('#wDuration').inputValue(),'30','draft edit must preserve workout duration across render');
+    await page.locator('#wName').fill('Squat');await page.locator('#wName').dispatchEvent('change');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2&&document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===0,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'changing exercise must reset completion state and establish a fresh current set');
+    await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2,{timeout:3000});
+    await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
+    for(let i=0;i<2;i++){await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(i).click();await tap(page,'#skipWorkoutRest');}
+    await tap(page,'#addWorkout');
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'draft edit must re-add without forcing completed sets to be checked again');
+    await tap(page,'#clearWorkoutDraft');
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===0,{timeout:3000});
+    assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','session reset must clear live elapsed time');
+    assert.equal(await page.locator('#workoutExecutionRest').isHidden(),true,'session reset must clear the rest state');
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),0,'session reset must not restore stale completed rows');
+    assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'session reset must return execution to one fresh current set');
+    const importExerciseName=await page.locator('#wName').inputValue();
+    await page.evaluate(name=>window.GarangWorkoutIntelligenceUI?.queueImport?.([{name,sets:3,reps:8,weight:60,rpe:7,duration:15,body:70}],'browser_regression'),importExerciseName);
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===3,{timeout:5000});
+    assert.deepEqual(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()),{exercises:1,sets:3,volume:1440,unit:'kg'},'programmatic Daily Workout-style import must remain compatible with execution mode');
     await tapRecordRoute(page,'body');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
