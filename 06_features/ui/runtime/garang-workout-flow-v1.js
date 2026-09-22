@@ -130,6 +130,8 @@ function prefillLatest(button){
   field('wWeight',displayWeight(record.weight??first.weight??first.w,current));
   field('wRpe',record.rpe??first.rpe);
   field('wDuration',record.duration);
+  const visibleDetails=details.map(row=>({weight:displayWeight(row.weight??row.w,current),reps:row.reps??row.r,rpe:row.rpe}));
+  requestAnimationFrame(()=>root.GarangWorkoutExecutionV2?.applyPrefill?.({details:visibleDetails,weight:displayWeight(record.weight??first.weight??first.w,current),reps:record.reps??first.reps??first.r,rpe:record.rpe??first.rpe}));
   button.textContent=isKo()?'최근 기록 적용됨':'Recent values applied';
   button.dataset.gwsReuseApplied='1';
 }
