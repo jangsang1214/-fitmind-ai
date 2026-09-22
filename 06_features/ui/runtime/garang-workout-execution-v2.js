@@ -47,10 +47,9 @@ function enhanceRows(){
       if(!done){ensureSession();startRest();}updateLive();
     });
   });
-  let head=host.previousElementSibling;
-  if(!head?.classList?.contains('workout-set-table-head')){
-    head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
-  }
+  const heads=[...host.parentElement.querySelectorAll('.workout-set-table-head')];let head=heads.shift()||null;heads.forEach(node=>node.remove());
+  if(!head){head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';}
+  if(head.nextElementSibling!==host)host.before(head);
 }
 function resultCard(){
   if(!lastResult||document.querySelector('.workout-result-card'))return;
