@@ -21,3 +21,6 @@ assert.equal(runtime.includes('new MutationObserver'),false,'privacy settings mo
 assert.ok(runtime.includes("garang:screen-rendered"),'privacy settings mount must follow the app screen lifecycle');
 assert.ok(runtime.includes("garang:state-hydrated"),'privacy settings mount must remain correct after authenticated hydration');
 console.log('privacy-security: PASS');
+
+assert.ok(runtime.includes('deleteIndexedDbPhotoEvidence'),'account deletion must purge workout/meal Photo Evidence');
+assert.ok(runtime.includes('photoEvidenceIdsFromState'),'account deletion must collect Photo Evidence ownership from canonical state');
