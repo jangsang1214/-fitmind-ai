@@ -16,6 +16,13 @@ assert.ok(runtime.includes("garang:set-options-toggled"),'execution UI must open
 assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refresh when the exercise changes');
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
 assert.ok(runtime.includes("executionImport!=='true'"),'programmatic imports must not start the live session timer');
+assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
+assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
+assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
+assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
+assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
+assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
+assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
 for(const token of ['LIVE SESSION','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
