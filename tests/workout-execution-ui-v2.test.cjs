@@ -65,3 +65,9 @@ assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-work
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-execution-v2.js'),'runtime manifest must include execution JS');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-workout-execution-v2.css'),'runtime manifest must include execution CSS');
 console.log('workout-execution-ui-v2: PASS');
+assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.includes('value="drop"')&&app.includes('value="failure"'),'workout must support warm-up, drop and failure set semantics');
+assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
+assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
+assert.ok(exec.includes('GARANG ')&&exec.includes('execution-target')&&exec.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
+assert.ok(exec.includes('targetFor(row)')&&exec.includes('지난 세트 여유 반영')&&exec.includes('피로도 반영'),'GARANG target must adapt from prior performance instead of copying Previous');
+assert.ok(exec.includes('workout-result-pr')&&exec.includes('estimated 1RM'),'session result must surface a PR benchmark');
