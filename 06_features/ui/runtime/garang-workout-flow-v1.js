@@ -165,6 +165,7 @@ function apply(shell){
   renderNext(shell);
   const main=shell.parentElement;
   if(main)main.dataset.garangWorkoutSurface=state.active;
+  if(state.active==='log')root.requestAnimationFrame(()=>root.requestAnimationFrame(()=>root.GarangWorkoutExecutionV2?.enhance?.()));
 }
 function findWorkoutAnalysis(main){
   const section=direct(main,'.record-insights');
