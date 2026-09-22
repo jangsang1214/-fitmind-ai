@@ -43,6 +43,7 @@ assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.incl
 assert.ok(runtime.includes("saved?displayBufferedWeight(saved.weightMetric")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
+assert.ok(runtime.includes("durationInput.value=liveDuration"),'recent-workout prefill must own duration before live-state recapture');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
 assert.ok(app.includes("workoutEditForm={name:x.name"),'draft edit must persist scalar form state across render');
 assert.ok(app.includes("if(workoutEditForm){const edit=workoutEditForm;workoutEditForm=null"),'bindWorkout must restore persisted edit form state after render');
