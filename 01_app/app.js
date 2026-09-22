@@ -567,7 +567,7 @@ function bindWorkout(){
   $('toggleSetDetails')?.addEventListener('click',()=>{workoutSetDetailsOpen=!workoutSetDetailsOpen;$('toggleSetDetails').setAttribute('aria-expanded',String(workoutSetDetailsOpen));renderWorkoutSetDetails();update1RM();});
   $('wSets')?.addEventListener('input',()=>{if(workoutSetDetailsOpen){workoutSetDraft=[];renderWorkoutSetDetails();update1RM();}});
   $('addWorkout').onclick=()=>{const x=buildWorkout();if(x){const imported=$('addWorkout')?.dataset.executionImport==='true';workoutDraft.push(x);window.dispatchEvent(new CustomEvent('garang:workout-exercise-added',{detail:{imported}}));workoutSetDraft=[];workoutSetDetailsOpen=false;workoutSelectedExercise=x.name;toast(x.name+' 추가');render();}};
-  $('clearWorkoutDraft').onclick=()=>{workoutDraft=[];workoutSetDraft=[];workoutSetDetailsOpen=false;render();};
+  $('clearWorkoutDraft').onclick=()=>{window.dispatchEvent(new CustomEvent('garang:workout-session-clearing'));workoutDraft=[];workoutSetDraft=[];workoutSetDetailsOpen=false;render();};
   renderWorkoutSetDetails();$('saveWorkoutSession').onclick=saveWorkoutSession;
   $('certWorkout').onclick=()=>{const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');api.pick($('workoutPhotoPicker'),'workout',draft=>{api.revoke(workoutEvidenceDraft);api.revoke(currentCert.workout);workoutEvidenceDraft=draft;currentCert.workout=null;render();},message=>toast(message));};
   $('clearWorkoutEvidence')?.addEventListener('click',()=>{window.GarangPhotoEvidence?.revoke(workoutEvidenceDraft);workoutEvidenceDraft=null;render();});
