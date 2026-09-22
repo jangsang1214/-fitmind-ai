@@ -3,7 +3,7 @@
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
 const VERSION='workout-execution-v2';
-let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[];
+let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveDraftCount=-1,liveExercise='';
 
 function num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -13,9 +13,10 @@ function previous(){return bridge()?.previousSets?.(document.getElementById('wNa
 function currentRows(){return [...document.querySelectorAll('#workoutSetDetails [data-set-row]')];}
 function completedCurrent(){return currentRows().filter(row=>row.dataset.executionCompleted==='true').length;}
 function refreshSetStates(){let currentClaimed=false;currentRows().forEach(row=>{const done=row.dataset.executionCompleted==='true',current=!done&&!currentClaimed;if(current)currentClaimed=true;row.classList.toggle('current-set',current);row.classList.toggle('upcoming-set',!done&&!current);row.dataset.executionState=done?'completed':current?'current':'upcoming';if(current)row.setAttribute('aria-current','step');else row.removeAttribute('aria-current');});}
-function snapshotSetRows(){setSnapshot=currentRows().map(row=>({weight:row.querySelector('[data-set-weight]')?.value||'',reps:row.querySelector('[data-set-reps]')?.value||'',rpe:row.querySelector('[data-set-rpe]')?.value||'',completed:row.dataset.executionCompleted==='true'}));}
-function restoreSetRows(){if(!setSnapshot.length)return;currentRows().forEach((row,i)=>{const saved=setSnapshot[i];if(!saved)return;const weight=row.querySelector('[data-set-weight]'),reps=row.querySelector('[data-set-reps]'),rpe=row.querySelector('[data-set-rpe]'),button=row.querySelector('[data-execution-set-complete]');if(weight)weight.value=saved.weight;if(reps)reps.value=saved.reps;if(rpe)rpe.value=saved.rpe;row.dataset.executionCompleted=saved.completed?'true':'false';row.classList.toggle('completed',saved.completed);if(button){button.classList.toggle('is-complete',saved.completed);button.textContent=saved.completed?'✓':'○';}});setSnapshot=[];refreshSetStates();}
-function applyPrefill({details=[],weight,reps,rpe}={}){currentRows().forEach((row,i)=>{const source=details[i]||details[0]||{};const values={weight:source.weight??source.w??weight,reps:source.reps??source.r??reps,rpe:source.rpe??rpe};for(const [key,value] of Object.entries(values)){if(value===undefined||value===null||value==='')continue;const input=row.querySelector('[data-set-'+key+']');if(input)input.value=String(value);}row.dataset.executionCompleted='false';row.classList.remove('completed');const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.remove('is-complete');button.textContent='○';}});setSnapshot=[];refreshSetStates();updateLive();}
+function captureLiveSetRows(){liveSetDraft=currentRows().map(row=>({weight:row.querySelector('[data-set-weight]')?.value||'',reps:row.querySelector('[data-set-reps]')?.value||'',rpe:row.querySelector('[data-set-rpe]')?.value||'',completed:row.dataset.executionCompleted==='true'}));}
+function snapshotSetRows(){captureLiveSetRows();setSnapshot=liveSetDraft.map(row=>({...row}));}
+function restoreSetRows(){if(!setSnapshot.length)return;currentRows().forEach((row,i)=>{const saved=setSnapshot[i];if(!saved)return;const weight=row.querySelector('[data-set-weight]'),reps=row.querySelector('[data-set-reps]'),rpe=row.querySelector('[data-set-rpe]'),button=row.querySelector('[data-execution-set-complete]');if(weight)weight.value=saved.weight;if(reps)reps.value=saved.reps;if(rpe)rpe.value=saved.rpe;row.dataset.executionCompleted=saved.completed?'true':'false';row.classList.toggle('completed',saved.completed);if(button){button.classList.toggle('is-complete',saved.completed);button.textContent=saved.completed?'✓':'○';}});setSnapshot=[];captureLiveSetRows();refreshSetStates();}
+function applyPrefill({details=[],weight,reps,rpe}={}){currentRows().forEach((row,i)=>{const source=details[i]||details[0]||{};const values={weight:source.weight??source.w??weight,reps:source.reps??source.r??reps,rpe:source.rpe??rpe};for(const [key,value] of Object.entries(values)){if(value===undefined||value===null||value==='')continue;const input=row.querySelector('[data-set-'+key+']');if(input)input.value=String(value);}row.dataset.executionCompleted='false';row.classList.remove('completed');const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.remove('is-complete');button.textContent='○';}});setSnapshot=[];captureLiveSetRows();refreshSetStates();updateLive();}
 function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
 function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();startTicker();}
@@ -47,19 +48,20 @@ function enhanceRows(){
   const disclosure=host.closest('details');if(disclosure&&!disclosure.open)disclosure.open=true;
   if(host.hidden){window.dispatchEvent(new CustomEvent('garang:set-options-toggled',{detail:{open:true,source:VERSION}}));if(host.hidden)return;}
   host.classList.add('workout-execution-sets');
+  const summary=draftSummary(),exercise=document.getElementById('wName')?.value||'';if(summary.exercises!==liveDraftCount||liveExercise&&exercise!==liveExercise){liveSetDraft=[];liveDraftCount=summary.exercises;}liveExercise=exercise;
   const prev=previous();
   currentRows().forEach((row,i)=>{
     if(row.dataset.executionEnhanced==='true')return;
-    const initiallyComplete=row.dataset.executionCompleted==='true',reps=row.querySelector('[data-set-reps]')?.value||10,weight=row.querySelector('[data-set-weight]')?.value||0,rpe=row.querySelector('[data-set-rpe]')?.value||8,previousValue=previousText(prev[i]);
+    const saved=liveSetDraft[i]||null,initiallyComplete=saved?saved.completed:row.dataset.executionCompleted==='true',reps=saved?.reps??row.querySelector('[data-set-reps]')?.value??10,weight=saved?.weight??row.querySelector('[data-set-weight]')?.value??0,rpe=saved?.rpe??row.querySelector('[data-set-rpe]')?.value??8,previousValue=previousText(prev[i]);
     row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');row.classList.toggle('completed',initiallyComplete);
     row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
     const initialButton=row.querySelector('[data-execution-set-complete]');if(initialButton){initialButton.classList.toggle('is-complete',initiallyComplete);initialButton.textContent=initiallyComplete?'✓':'○';}
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
-      if(!done){ensureSession();startRest();}updateLive();
+      if(!done){ensureSession();startRest();}captureLiveSetRows();updateLive();
     });
   });
-  refreshPrevious(prev);refreshSetStates();
+  refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
   const heads=[...host.parentElement.querySelectorAll('.workout-set-table-head')];let head=heads.shift()||null;heads.forEach(node=>node.remove());
   if(!head){head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';}
   if(head.nextElementSibling!==host)host.before(head);
@@ -92,9 +94,10 @@ function enhance(){
   if(!document.getElementById('workoutExecutionRest')){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
   const add=document.getElementById('addWorkout');if(add){add.textContent='이 운동 세션에 추가';if(!add.dataset.executionSessionBound){add.dataset.executionSessionBound='true';add.addEventListener('click',()=>{if(add.dataset.executionImport!=='true')ensureSession();});}}
-  const clear=document.getElementById('clearWorkoutDraft');if(clear){clear.textContent='세션 초기화';if(!clear.dataset.executionResetBound){clear.dataset.executionResetBound='true';clear.addEventListener('click',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;stopRest();updateLive();});}}
-  const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>setTimeout(enhance,0));}
+  const clear=document.getElementById('clearWorkoutDraft');if(clear){clear.textContent='세션 초기화';if(!clear.dataset.executionResetBound){clear.dataset.executionResetBound='true';clear.addEventListener('click',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveDraftCount=0;stopRest();updateLive();});}}
+  const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>{liveSetDraft=[];liveExercise=name.value||'';setTimeout(enhance,0);});}
   const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
+  const setHost=document.getElementById('workoutSetDetails');if(setHost&&!setHost.dataset.executionLiveBound){setHost.dataset.executionLiveBound='true';setHost.addEventListener('input',captureLiveSetRows);}
   updateLive();resultCard();
 }
 document.addEventListener('click',event=>{
