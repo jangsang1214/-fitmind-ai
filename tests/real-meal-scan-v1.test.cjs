@@ -25,6 +25,8 @@ assert.match(app,/lookupMealScanNutrition/);
 assert.match(app,/estimated/);
 assert.match(app,/meal_scan_web_nutrition_resolved/);
 assert.match(app,/WEB ESTIMATE/);
+assert.match(app,/MEAL_SCAN_NO_FOOD_DETECTED/);
+assert.match(app,/사진에서 음식을 찾지 못했습니다\\. 음식이 잘 보이는 사진으로 다시 촬영해 주세요\\./);
 assert.match(app,/GARANG DB/);
 assert.match(app,/신뢰 가능한 웹 출처/);
 assert.match(app,/Food DB에 자동 매칭되지 않은 항목/);
