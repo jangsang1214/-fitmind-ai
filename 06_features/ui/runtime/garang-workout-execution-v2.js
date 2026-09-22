@@ -12,7 +12,8 @@ function bridge(){return window.GarangWorkoutExecutionBridge||null;}
 function previous(){return bridge()?.previousSets?.(document.getElementById('wName')?.value)||[];}
 function currentRows(){return [...document.querySelectorAll('#workoutSetDetails [data-set-row]')];}
 function completedCurrent(){return currentRows().filter(row=>row.dataset.executionCompleted==='true').length;}
-function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0};}
+function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
+function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();startTicker();}
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
 function stopRest(){restUntil=0;updateLive();}
@@ -48,7 +49,7 @@ function enhanceRows(){
   });
   let head=host.previousElementSibling;
   if(!head?.classList?.contains('workout-set-table-head')){
-    head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>KG</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
+    head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
   }
 }
 function resultCard(){
