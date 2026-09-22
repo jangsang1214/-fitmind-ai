@@ -103,57 +103,138 @@ function systemPrompt(language='ko'){
  return `You are GARANG Nutrition Source Resolver. Search the live web for nutrition facts only when GARANG's internal food database could not match an identified meal item. Use one trustworthy primary source per item. Priority: official government food databases, the food or beverage manufacturer's official nutrition page, then reputable institutional nutrition databases. Never use blogs, forums, social media, user posts, SEO pages, crowdsourced wikis, or unsourced snippets. Return nutrition for the requested gram amount. If the source uses a serving size, scale only when the conversion is reasonable and explain the basis. Never fabricate a missing macro. If a trustworthy source with calories, protein, carbs, and fat cannot be found, omit that item. sourceUrl must be the exact URL you used from web search. Keep generic and branded products distinct. For zero-calorie or near-zero drinks, preserve legitimate zeros. Output language for labels: ${language==='en'?'English':'Korean'}. This is an estimate that requires user confirmation before GARANG saves it.`;
 }
 function createNutritionLookupProvider(options={}){
- const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(1000,Number(options.timeoutMs)||25000),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2));
- if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
- return {name:'openai-web-search',model,async lookup({items,language='ko',requestId:id}){
-  const body={
-   model,store:false,
-   tools:[{type:'web_search',search_context_size:'low',external_web_access:true,user_location:{type:'approximate',country:'KR',timezone:'Asia/Seoul'},filters:{blocked_domains:['reddit.com','quora.com','wikipedia.org','namu.wiki','blog.naver.com','instagram.com','facebook.com','tiktok.com','youtube.com']}}],
-   tool_choice:'required',include:['web_search_call.action.sources'],reasoning:{effort:'low'},max_output_tokens:1400,
-   input:[
-    {role:'system',content:[{type:'input_text',text:systemPrompt(language)}]},
-    {role:'user',content:[{type:'input_text',text:JSON.stringify({items:items.map((row,inputIndex)=>({inputIndex,...row}))})}]}
-   ],
-   text:{format:{type:'json_schema',name:'garang_nutrition_web_lookup',strict:true,schema:WEB_NUTRITION_SCHEMA}}
-  };
-  let lastError=null;
-  for(let attempt=1;attempt<=maxAttempts;attempt++){
-   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
-   try{
-    const response=await fetchImpl(endpoint,{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','X-GARANG-Request-Id':String(id||'')},signal:controller.signal,body:JSON.stringify(body)});
-    if(!response?.ok)throw Object.assign(new Error(`NUTRITION_LOOKUP_PROVIDER_${response?.status||'ERROR'}`),{code:'NUTRITION_LOOKUP_PROVIDER_ERROR',status:response?.status||null});
-    const payload=await response.json(),payloadError=providerPayloadError(payload);if(payloadError)throw payloadError;
-    const text=extractResponseText(payload);if(!text)throw Object.assign(new Error('NUTRITION_LOOKUP_RESPONSE_INVALID'),{code:'NUTRITION_LOOKUP_RESPONSE_INVALID'});
-    let parsed;try{parsed=JSON.parse(text);}catch{throw Object.assign(new Error('NUTRITION_LOOKUP_RESPONSE_INVALID'),{code:'NUTRITION_LOOKUP_RESPONSE_INVALID'});}
-    const citations=collectCitationUrls(payload),normalized=normalizeLookupItems(parsed,items,citations);
-    return {...normalized,provider:'openai',model,attempts:attempt,citationCount:citations.length};
-   }catch(error){
-    if(error?.name==='AbortError')lastError=Object.assign(new Error('NUTRITION_LOOKUP_TIMEOUT'),{code:'NUTRITION_LOOKUP_TIMEOUT'});
-    else if(error instanceof TypeError&&!error?.code)lastError=Object.assign(new Error('NUTRITION_LOOKUP_NETWORK_ERROR'),{code:'NUTRITION_LOOKUP_NETWORK_ERROR'});
-    else lastError=error;
-   }finally{clearTimeout(timer);}
-   if(attempt>=maxAttempts||!retryableProviderError(lastError))throw lastError;
+ const fetchImpl=options.fetchImpl||globalThis.fetch;
+ const apiKey=clean(options.apiKey,1000);
+ const model=clean(options.model||DEFAULT_MODEL,120);
+ const endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500);
+ const timeoutMs=Math.max(1000,Number(options.timeoutMs)||25000);
+ const maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2));
+ if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});
+ if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
+
+ return {
+  name:'openai-web-search',
+  model,
+  async lookup({items,language='ko',requestId:id}){
+   const body={
+    model,
+    store:false,
+    tools:[{
+     type:'web_search',
+     search_context_size:'low',
+     external_web_access:true,
+     user_location:{type:'approximate',country:'KR',timezone:'Asia/Seoul'},
+     filters:{blocked_domains:['reddit.com','quora.com','wikipedia.org','namu.wiki','blog.naver.com','instagram.com','facebook.com','tiktok.com','youtube.com']}
+    }],
+    tool_choice:'required',
+    include:['web_search_call.action.sources'],
+    reasoning:{effort:'low'},
+    max_output_tokens:1400,
+    input:[
+     {role:'system',content:[{type:'input_text',text:systemPrompt(language)}]},
+     {role:'user',content:[{type:'input_text',text:JSON.stringify({items:items.map((row,inputIndex)=>({inputIndex,...row}))})}]}
+    ],
+    text:{format:{type:'json_schema',name:'garang_nutrition_web_lookup',strict:true,schema:WEB_NUTRITION_SCHEMA}}
+   };
+
+   let lastError=null;
+   for(let attempt=1;attempt<=maxAttempts;attempt++){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+     const response=await fetchImpl(endpoint,{
+      method:'POST',
+      headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','X-GARANG-Request-Id':String(id||'')},
+      signal:controller.signal,
+      body:JSON.stringify(body)
+     });
+     if(!response?.ok){
+      throw Object.assign(new Error(`NUTRITION_LOOKUP_PROVIDER_${response?.status||'ERROR'}`),{
+       code:'NUTRITION_LOOKUP_PROVIDER_ERROR',
+       status:response?.status||null
+      });
+     }
+     const payload=await response.json();
+     const payloadError=providerPayloadError(payload);
+     if(payloadError)throw payloadError;
+     const outputText=extractResponseText(payload);
+     if(!outputText)throw Object.assign(new Error('NUTRITION_LOOKUP_RESPONSE_INVALID'),{code:'NUTRITION_LOOKUP_RESPONSE_INVALID'});
+     let parsed;
+     try{parsed=JSON.parse(outputText);}
+     catch(error){throw Object.assign(new Error('NUTRITION_LOOKUP_RESPONSE_INVALID'),{code:'NUTRITION_LOOKUP_RESPONSE_INVALID',cause:error});}
+     const citations=collectCitationUrls(payload);
+     const normalized=normalizeLookupItems(parsed,items,citations);
+     return {...normalized,provider:'openai',model,attempts:attempt,citationCount:citations.length};
+    }catch(error){
+     if(error?.name==='AbortError')lastError=Object.assign(new Error('NUTRITION_LOOKUP_TIMEOUT'),{code:'NUTRITION_LOOKUP_TIMEOUT'});
+     else if(error instanceof TypeError&&!error?.code)lastError=Object.assign(new Error('NUTRITION_LOOKUP_NETWORK_ERROR'),{code:'NUTRITION_LOOKUP_NETWORK_ERROR'});
+     else lastError=error;
+    }finally{
+     clearTimeout(timer);
+    }
+    if(attempt>=maxAttempts||!retryableProviderError(lastError))throw lastError;
+   }
+   throw lastError||Object.assign(new Error('NUTRITION_LOOKUP_PROVIDER_ERROR'),{code:'NUTRITION_LOOKUP_PROVIDER_ERROR'});
   }
-  throw lastError||Object.assign(new Error('NUTRITION_LOOKUP_PROVIDER_ERROR'),{code:'NUTRITION_LOOKUP_PROVIDER_ERROR'});
- }};
+ };
 }
+
 function createNutritionLookupHandler(deps={}){
- const verifyIdToken=deps.verifyIdToken,consumeRateLimit=deps.consumeRateLimit||(async()=>({allowed:true})),providerFactory=deps.providerFactory||createNutritionLookupProvider,getProviderConfig=deps.getProviderConfig||(()=>({apiKey:process.env.GARANG_LLM_API_KEY||'',model:process.env.GARANG_NUTRITION_LOOKUP_MODEL||process.env.GARANG_LLM_MODEL||DEFAULT_MODEL})),clock=deps.clock||(()=>new Date());
+ const verifyIdToken=deps.verifyIdToken;
+ const consumeRateLimit=deps.consumeRateLimit||(async()=>({allowed:true}));
+ const providerFactory=deps.providerFactory||createNutritionLookupProvider;
+ const getProviderConfig=deps.getProviderConfig||(()=>({
+  apiKey:process.env.GARANG_LLM_API_KEY||'',
+  model:process.env.GARANG_NUTRITION_LOOKUP_MODEL||process.env.GARANG_LLM_MODEL||DEFAULT_MODEL
+ }));
+ const clock=deps.clock||(()=>new Date());
+
  if(typeof verifyIdToken!=='function')throw new Error('NUTRITION_LOOKUP_DEPENDENCIES_REQUIRED');
+
  return async function nutritionLookup(request,response){
-  if(String(request?.method||'POST').toUpperCase()!=='POST')return response.status(405).json({ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
-  const token=parseBearer(request?.headers?.authorization||request?.get?.('authorization'));if(!token)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
-  let decoded;try{decoded=await verifyIdToken(token);}catch{return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
-  const uid=clean(decoded?.uid,180);if(!uid)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
-  let items;try{items=parseInput(request?.body?.items);}catch(error){return response.status(400).json({ok:false,error:{code:error?.code||'NUTRITION_LOOKUP_ITEMS_INVALID'}});}
-  const language=request?.body?.language==='en'?'en':'ko',id=requestId();
-  let rate;try{rate=await consumeRateLimit(uid,{now:clock(),route:'nutrition_lookup'});}catch{return response.status(503).json({ok:false,error:{code:'NUTRITION_LOOKUP_RATE_LIMIT_UNAVAILABLE'},requestId:id});}
-  if(rate?.allowed===false){const retry=Math.max(1,Number(rate.retryAfterSec)||60);response.set?.('Retry-After',String(retry));return response.status(429).json({ok:false,error:{code:'NUTRITION_LOOKUP_RATE_LIMITED'},retryAfterSec:retry,requestId:id});}
+  if(String(request?.method||'POST').toUpperCase()!=='POST'){
+   return response.status(405).json({ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
+  }
+
+  const token=parseBearer(request?.headers?.authorization||request?.get?.('authorization'));
+  if(!token)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
+
+  let decoded;
+  try{decoded=await verifyIdToken(token);}
+  catch(error){return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
+
+  const uid=clean(decoded?.uid,180);
+  if(!uid)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
+
+  let items;
+  try{items=parseInput(request?.body?.items);}
+  catch(error){return response.status(400).json({ok:false,error:{code:error?.code||'NUTRITION_LOOKUP_ITEMS_INVALID'}});}
+
+  const language=request?.body?.language==='en'?'en':'ko';
+  const id=requestId();
+
+  let rate;
+  try{rate=await consumeRateLimit(uid,{now:clock(),route:'nutrition_lookup'});}
+  catch(error){return response.status(503).json({ok:false,error:{code:'NUTRITION_LOOKUP_RATE_LIMIT_UNAVAILABLE'},requestId:id});}
+
+  if(rate?.allowed===false){
+   const retry=Math.max(1,Number(rate.retryAfterSec)||60);
+   response.set?.('Retry-After',String(retry));
+   return response.status(429).json({ok:false,error:{code:'NUTRITION_LOOKUP_RATE_LIMITED'},retryAfterSec:retry,requestId:id});
+  }
+
   try{
-   const provider=providerFactory(getProviderConfig()),result=await provider.lookup({items,language,requestId:id});
-   return response.status(200).json({ok:true,items:result.items,unresolved:result.unresolved,data:{source:'web_search',provider:result.provider,model:result.model,requestId:id,citationCount:result.citationCount}});
+   const provider=providerFactory(getProviderConfig());
+   const result=await provider.lookup({items,language,requestId:id});
+   return response.status(200).json({
+    ok:true,
+    items:result.items,
+    unresolved:result.unresolved,
+    data:{source:'web_search',provider:result.provider,model:result.model,requestId:id,citationCount:result.citationCount}
+   });
   }catch(error){
-   const code=clean(error?.code,100)||'NUTRITION_LOOKUP_PROVIDER_ERROR',status=code==='LLM_SECRET_MISSING'?503:502;
+   const code=clean(error?.code,100)||'NUTRITION_LOOKUP_PROVIDER_ERROR';
+   const status=code==='LLM_SECRET_MISSING'?503:502;
    return response.status(status).json({ok:false,error:{code},requestId:id});
   }
  };
