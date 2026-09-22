@@ -133,6 +133,13 @@ async function assertCoachSettles(page){
     await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
+      try{
+        let geoIndex=0,geoWatch=0;const active=new Map();
+        Object.defineProperty(navigator,'geolocation',{configurable:true,value:{
+          watchPosition(success){const id=++geoWatch;active.set(id,true);const tick=()=>{if(!active.get(id))return;const i=geoIndex++,lat=37+Math.min(i,240)*.000002;success({coords:{latitude:lat,longitude:127,accuracy:8},timestamp:Date.now()});if(i<240)setTimeout(tick,20);};setTimeout(tick,20);return id;},
+          clearWatch(id){active.delete(id);}
+        }});
+      }catch{}
 
       localStorage.setItem('garang_user_mock-user_v3',JSON.stringify({
         meta:{schemaVersion:5,updatedAt:'2026-09-06T00:00:00Z'},
@@ -218,6 +225,23 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
     await tapRecordRoute(page,'body');
+    await tapRecordRoute(page,'running');
+    await tap(page,'#runStart');
+    await page.waitForFunction(()=>Number(document.querySelector('#runDistance')?.textContent||0)>0,{timeout:7000});
+    const chooserPromise=page.waitForEvent('filechooser');
+    await tap(page,'#runCert');
+    const chooser=await chooserPromise;
+    await chooser.setFiles({name:'garang-run.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nWQAAAAASUVORK5CYII=','base64')});
+    await page.locator('.photo-evidence-stage.has-photo').waitFor({state:'visible',timeout:5000});
+    await tap(page,'#runPause');
+    await page.locator('#runResume').waitFor({state:'visible',timeout:3000});
+    await tap(page,'#runResume');
+    await tap(page,'#runStop');
+    await page.waitForFunction(()=>document.querySelector('[data-run-delete]')&&document.querySelector('[data-photo-evidence]'),{timeout:7000});
+    const runPersisted=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}'),r=s.runs?.at(-1)||null;return r?{kind:r.photoEvidence?.kind||null,manualPauseCount:r.manualPauseCount||0,gpsAccepted:r.gpsQuality?.accepted||0,gpsRejected:r.gpsQuality?.rejected||0}:null;});
+    assert.equal(runPersisted?.kind,'running','saved run must retain RUN EVIDENCE metadata');
+    assert.ok(runPersisted?.manualPauseCount>=1,'manual pause must persist on the run record');
+    assert.ok(runPersisted?.gpsAccepted>=2,'accepted GPS fixes must persist as quality evidence');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="coach"]');
