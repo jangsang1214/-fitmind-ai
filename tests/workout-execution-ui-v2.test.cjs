@@ -28,7 +28,7 @@ assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("e
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
-assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
+assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("sessionStartedAt=0")&&runtime.includes("restUntil=0"),'clearing a session must reset live execution timing state before rerender');
 assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remounting an active workout must restart elapsed/rest ticking');
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
