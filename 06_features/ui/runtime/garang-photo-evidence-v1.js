@@ -1,10 +1,10 @@
-/* GARANG Photo Evidence v1
+/* GARANG Photo Evidence v1.5
    Device-local binary storage for user-confirmed workout and nutrition evidence.
    State records store metadata only; raw image bytes never enter Firestore/local JSON. */
 (function(root){
   'use strict';
 
-  const VERSION='garang-photo-evidence-v1';
+  const VERSION='garang-photo-evidence-v1.5';
   const DB_NAME='garang_photo_evidence_v1';
   const STORE='evidence';
   const MAX_FILE_BYTES=8*1024*1024;
@@ -85,22 +85,33 @@
     });
   }
 
-  async function show(id,title='기록 사진'){
+  async function show(id,title="기록 사진",context={}){
     let file=null;
-    try{file=await read(id);}catch{return {ok:false,reason:'READ_FAILED'};}
-    if(!file)return {ok:false,reason:'MISSING_DEVICE_MEDIA'};
+    try{file=await read(id);}catch{return {ok:false,reason:"READ_FAILED"};}
+    if(!file)return {ok:false,reason:"MISSING_DEVICE_MEDIA"};
     if(!root.document)return {ok:true,file};
-    const url=URL.createObjectURL(file),shade=root.document.createElement('div');
-    shade.className='garang-photo-evidence-lightbox';
-    const dialog=root.document.createElement('div');dialog.className='garang-photo-evidence-dialog';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
-    const head=root.document.createElement('div');head.className='garang-photo-evidence-dialog-head';
-    const label=root.document.createElement('div');const eyebrow=root.document.createElement('span');eyebrow.className='eyebrow';eyebrow.textContent='GARANG EVIDENCE';const strong=root.document.createElement('strong');strong.textContent=title;label.append(eyebrow,strong);
-    const close=root.document.createElement('button');close.className='ghost small';close.type='button';close.textContent='닫기';
-    const img=root.document.createElement('img');img.src=url;img.alt=title;img.className='garang-photo-evidence-full';
-    const note=root.document.createElement('small');note.className='garang-photo-evidence-local-note';note.textContent='이 사진은 현재 기기에만 저장됩니다.';
-    head.append(label,close);dialog.append(head,img,note);shade.append(dialog);root.document.body.append(shade);
-    const dispose=()=>{try{URL.revokeObjectURL(url);}catch{}shade.remove();};
-    close.onclick=dispose;shade.onclick=e=>{if(e.target===shade)dispose();};
+    const url=URL.createObjectURL(file),shade=root.document.createElement("div");
+    shade.className="garang-photo-evidence-lightbox";
+    const dialog=root.document.createElement("div");dialog.className="garang-photo-evidence-dialog";dialog.setAttribute("role","dialog");dialog.setAttribute("aria-modal","true");dialog.setAttribute("aria-label",title);
+    const head=root.document.createElement("div");head.className="garang-photo-evidence-dialog-head";
+    const label=root.document.createElement("div"),eyebrow=root.document.createElement("span"),strong=root.document.createElement("strong");
+    eyebrow.className="eyebrow";eyebrow.textContent="GARANG EVIDENCE";strong.textContent=title;label.append(eyebrow,strong);
+    const close=root.document.createElement("button");close.className="ghost small";close.type="button";close.textContent="닫기";close.setAttribute("aria-label","사진 닫기");
+    const frame=root.document.createElement("div");frame.className="garang-photo-evidence-viewer-frame";
+    const img=root.document.createElement("img");img.src=url;img.alt=title;img.className="garang-photo-evidence-full";frame.append(img);
+    const meta=root.document.createElement("div");meta.className="garang-photo-evidence-meta";
+    const metaTop=root.document.createElement("div");metaTop.className="garang-photo-evidence-meta-top";
+    const kind=root.document.createElement("span");kind.textContent=String(context.kind||"evidence").toLowerCase()==="nutrition"?"MEAL EVIDENCE":"WORKOUT EVIDENCE";
+    const date=root.document.createElement("span");date.textContent=String(context.date||"");
+    metaTop.append(kind,date);
+    const detail=root.document.createElement("strong");detail.textContent=String(context.meta||"기록과 함께 저장된 사진");
+    const note=root.document.createElement("small");note.className="garang-photo-evidence-local-note";note.textContent="사진 원본은 현재 기기에 저장됩니다.";
+    meta.append(metaTop,detail,note);
+    head.append(label,close);dialog.append(head,frame,meta);shade.append(dialog);root.document.body.append(shade);
+    const onKey=event=>{if(event.key==="Escape")dispose();};
+    const dispose=()=>{root.removeEventListener?.("keydown",onKey);try{URL.revokeObjectURL(url);}catch{}shade.remove();};
+    close.onclick=dispose;shade.onclick=event=>{if(event.target===shade)dispose();};root.addEventListener?.("keydown",onKey);
+    close.focus?.();
     return {ok:true,file};
   }
 
