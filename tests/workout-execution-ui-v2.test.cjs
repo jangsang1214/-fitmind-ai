@@ -25,6 +25,9 @@ assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remo
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
 assert.ok(runtime.includes("liveSetDraft")&&runtime.includes("captureLiveSetRows"),'live set values must survive incidental rerenders during execution');
+assert.ok(runtime.includes("liveSetCount")&&runtime.includes("restoringLiveSetCount"),'active set count must survive Workout remounts without truncating buffered rows');
+assert.ok(runtime.includes("summary.exercises>liveDraftCount")&&!runtime.includes("summary.exercises!==liveDraftCount"),'removing an unrelated draft exercise must not invalidate active execution rows');
+assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.includes("setsInput.dispatchEvent(new Event('input'"),'remount must restore the saved set count before enhancing rows');
 assert.ok(runtime.includes("saved?.weight")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
