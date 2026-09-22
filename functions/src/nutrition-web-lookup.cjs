@@ -70,8 +70,9 @@ function normalizeLookupItems(value,input,citations){
   if(!Number.isInteger(inputIndex)||inputIndex<0||inputIndex>=input.length||seen.has(inputIndex))continue;
   const sourceUrl=normalizeUrl(row?.sourceUrl),confidence=finite(row?.confidence);
   const kcal=finite(row?.kcal),protein=finite(row?.protein),carbs=finite(row?.carbs),fat=finite(row?.fat);
-  const values=[kcal,protein,carbs,fat];
-  if(!sourceUrl||blockedSource(sourceUrl)||!cited(sourceUrl,citations)||confidence===null||confidence<0.55||values.some(v=>v===null||v<0)){
+  const values=[kcal,protein,carbs,fat],grams=input[inputIndex].grams;
+  const implausible=values.some(v=>v===null||v<0)||kcal>Math.max(120,grams*10)||protein>grams*1.15||carbs>grams*1.15||fat>grams*1.15||(protein+carbs+fat)>grams*1.35;
+  if(!sourceUrl||blockedSource(sourceUrl)||!cited(sourceUrl,citations)||confidence===null||confidence<0.55||implausible){
    unresolved.push({inputIndex,name:input[inputIndex].name,reason:'UNVERIFIED_WEB_RESULT'});seen.add(inputIndex);continue;
   }
   items.push({
