@@ -1,0 +1,96 @@
+(function(){
+'use strict';
+if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
+window.__GARANG_WORKOUT_EXECUTION_V2__=true;
+const VERSION='workout-execution-v2';
+let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null;
+
+function num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function clock(ms){const total=Math.max(0,Math.ceil(num(ms)/1000)),m=Math.floor(total/60),s=String(total%60).padStart(2,'0');return String(m).padStart(2,'0')+':'+s;}
+function bridge(){return window.GarangWorkoutExecutionBridge||null;}
+function previous(){return bridge()?.previousSets?.(document.getElementById('wName')?.value)||[];}
+function currentRows(){return [...document.querySelectorAll('#workoutSetDetails [data-set-row]')];}
+function completedCurrent(){return currentRows().filter(row=>row.dataset.executionCompleted==='true').length;}
+function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0};}
+function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();startTicker();}
+function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
+function stopRest(){restUntil=0;updateLive();}
+function startRest(){const seconds=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90));restUntil=Date.now()+seconds*1000;updateLive();}
+function updateLive(){
+  const elapsed=document.getElementById('workoutExecutionElapsed');
+  if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
+  const summary=draftSummary(),progress=document.getElementById('workoutExecutionProgress');
+  if(progress)progress.textContent=(summary.sets+completedCurrent())+' SETS';
+  const rest=document.getElementById('workoutExecutionRest'),restClock=document.getElementById('workoutExecutionRestClock'),left=Math.max(0,restUntil-Date.now());
+  if(rest){rest.hidden=!left;rest.classList.toggle('active',!!left);}
+  if(restClock)restClock.textContent=clock(left);
+  if(restUntil&&left<=0)restUntil=0;
+}
+function cueText(rows){
+  if(!rows.length)return '첫 기록 · 오늘의 기준을 만드세요';
+  const best=rows.reduce((a,b)=>num(b.estimated1RM)>num(a.estimated1RM)?b:a,rows[0]);
+  return '지난 기록 '+num(best.weight).toFixed(1)+' × '+Math.round(num(best.reps))+' · 오늘 세트와 바로 비교';
+}
+function enhanceRows(){
+  const host=document.getElementById('workoutSetDetails');if(!host)return;
+  host.hidden=false;host.classList.add('workout-execution-sets');
+  const prev=previous();
+  currentRows().forEach((row,i)=>{
+    if(row.dataset.executionEnhanced==='true')return;
+    const reps=row.querySelector('[data-set-reps]')?.value||10,weight=row.querySelector('[data-set-weight]')?.value||0,rpe=row.querySelector('[data-set-rpe]')?.value||8,p=prev[i],previousText=p?(num(p.weight).toFixed(1)+' × '+Math.round(num(p.reps))):'—';
+    row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');
+    row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousText)+'</span><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
+    row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
+      const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
+      if(!done){ensureSession();startRest();}updateLive();
+    });
+  });
+  let head=host.previousElementSibling;
+  if(!head?.classList?.contains('workout-set-table-head')){
+    head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>KG</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
+  }
+}
+function resultCard(){
+  if(!lastResult||document.querySelector('.workout-result-card'))return;
+  const builder=document.querySelector('.workout-execution-v2');if(!builder)return;
+  const card=document.createElement('section');card.className='card workout-result-card';
+  card.innerHTML='<div class="workout-result-kicker"><span>SESSION COMPLETE</span><b>GARANG RECORDED</b></div><h2>오늘의 운동이 기록됐습니다.</h2><div class="workout-result-grid"><div><span>TIME</span><strong>'+clock(lastResult.elapsedMs)+'</strong></div><div><span>SETS</span><strong>'+Math.round(num(lastResult.sets))+'</strong></div><div><span>VOLUME</span><strong>'+Math.round(num(lastResult.volume)).toLocaleString()+'<small> kg</small></strong></div><div><span>EXERCISES</span><strong>'+Math.round(num(lastResult.exercises))+'</strong></div></div><p>오늘 기록은 다음 Coach 판단과 Progress 해석의 근거가 됩니다.</p>';
+  builder.after(card);lastResult=null;
+}
+function enhance(){
+  const builder=document.querySelector('.workout-builder-v2');if(!builder)return;
+  builder.classList.add('workout-execution-v2');
+  document.querySelector('.workout-visual-hero')?.classList.add('workout-execution-hero');
+  const oldHead=builder.querySelector('.visual-section-head');
+  if(oldHead){oldHead.classList.add('workout-exercise-head');if(!oldHead.querySelector('.workout-previous-cue')){const p=document.createElement('p');p.className='workout-previous-cue';p.textContent=cueText(previous());oldHead.querySelector('div')?.appendChild(p);}}
+  let bar=builder.querySelector('.workout-session-bar');
+  if(!bar){
+    bar=document.createElement('div');bar.className='workout-session-bar';
+    bar.innerHTML='<div class="workout-session-live"><span><i></i> LIVE SESSION</span><strong id="workoutExecutionElapsed">00:00</strong></div><div class="workout-session-progress"><small>COMPLETED</small><b id="workoutExecutionProgress">0 SETS</b></div>';
+    builder.prepend(bar);
+    const finish=document.getElementById('saveWorkoutSession');if(finish){finish.classList.add('workout-finish');finish.textContent='운동 완료';bar.appendChild(finish);}
+  }
+  const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
+  const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='세트 완료 시 휴식 타이머가 자동 시작됩니다.';}
+  enhanceRows();
+  if(!document.getElementById('workoutExecutionRest')){
+    const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
+  const add=document.getElementById('addWorkout');if(add){add.textContent='이 운동 세션에 추가';add.addEventListener('click',ensureSession,{once:true});}
+  const clear=document.getElementById('clearWorkoutDraft');if(clear)clear.textContent='세션 초기화';
+  const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>setTimeout(enhance,0));}
+  const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',()=>setTimeout(enhance,0));}
+  updateLive();resultCard();
+}
+document.addEventListener('click',event=>{
+  const target=event.target.closest?.('#saveWorkoutSession');if(!target)return;
+  const s=draftSummary();pendingResult={...s,elapsedMs:sessionStartedAt?Date.now()-sessionStartedAt:0};
+},true);
+window.addEventListener('garang:state-updated',event=>{
+  if(event.detail?.event!=='workout_saved'||!pendingResult)return;
+  lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;
+});
+window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
+if(document.querySelector('.workout-builder-v2'))enhance();
+window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance});
+})();
