@@ -46,6 +46,10 @@
 .photo-evidence-estimate-note{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}
 .photo-evidence-estimate-note span{font-size:9px;font-weight:800;letter-spacing:.08em;color:rgba(186,161,111,.82)}
 .photo-evidence-estimate-note small{font-size:10px;color:var(--muted)}
+.meal-scan-unmatched{display:grid;gap:5px;margin-top:12px;padding:12px 13px;border:1px solid rgba(186,161,111,.18);border-radius:14px;background:rgba(186,161,111,.05)}
+.meal-scan-unmatched strong{font-size:11px;color:rgba(242,238,231,.88)}
+.meal-scan-unmatched span{font-size:11px;color:rgba(242,238,231,.72)}
+.meal-scan-unmatched small{font-size:10px;line-height:1.5;color:var(--muted)}
 .garang-photo-evidence-lightbox{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));background:rgba(3,4,3,.92);backdrop-filter:blur(20px)}
 .garang-photo-evidence-dialog{width:min(760px,100%);max-height:100%;overflow:auto;border:1px solid rgba(242,238,231,.12);border-radius:26px;background:#090a09;padding:14px;box-shadow:0 30px 90px rgba(0,0,0,.54)}
 .garang-photo-evidence-dialog-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:5px 3px 13px}
