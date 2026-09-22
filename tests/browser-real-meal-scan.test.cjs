@@ -7,7 +7,7 @@ const {webkit}=require('playwright');
 
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8794,baseURL=`http://127.0.0.1:${port}`;
 const MEAL_ENDPOINT='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/meal/scan';
-const pad=value=>String(value).padStart(2,'0');
+const LOOKUP_ENDPOINT='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/nutrition/lookup';
 const state=()=>({meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Meal Scan',age:29,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'});
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const response=await fetch(baseURL);if(response.ok)return;}catch{}await new Promise(resolve=>setTimeout(resolve,180));}throw new Error('real meal scan preview server did not start');}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'real-meal-scan-browser',force:true}),screen);assert.equal(ok,true);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});}
@@ -18,39 +18,63 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   await waitForServer();browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await installAuthenticatedFirebaseMock(context);
-  await context.addInitScript(({endpoint})=>{
+  await context.addInitScript(({mealEndpoint,lookupEndpoint})=>{
    const nativeFetch=window.fetch.bind(window);
    window.fetch=async(input,init={})=>{
     const url=typeof input==='string'?input:input?.url,method=String(init?.method||input?.method||'GET').toUpperCase();
-    if(url===endpoint&&method==='POST'){
+    if(url===mealEndpoint&&method==='POST'){
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
      window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
-     return new Response(JSON.stringify({ok:true,items:[{name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,kcal:9999}],data:{items:[{name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,kcal:9999}],overallConfidence:.91,uncertain:false,notes:'fixture',source:'vision',provider:'fixture',model:'fixture-vision',requestId:'meal-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+     const items=[
+      {name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,kcal:9999},
+      {name:'아메리카노',aliases:['Americano','black coffee'],grams:355,confidence:.91,kcal:7777}
+     ];
+     return new Response(JSON.stringify({ok:true,items,data:{items,overallConfidence:.91,uncertain:false,notes:'fixture',source:'vision',provider:'fixture',model:'fixture-vision',requestId:'meal-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+    }
+    if(url===lookupEndpoint&&method==='POST'){
+     const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
+     window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
+     return new Response(JSON.stringify({ok:true,items:[{
+      inputIndex:0,name:'아메리카노',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated_web',
+      nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official Americano nutrition',url:'https://example.com/official-americano',basis:'355g serving'}
+     }],unresolved:[],data:{source:'web_search',provider:'fixture',model:'fixture-search',requestId:'lookup-browser-1',citationCount:1}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
     return nativeFetch(input,init);
    };
-  },{endpoint:MEAL_ENDPOINT});
+  },{mealEndpoint:MEAL_ENDPOINT,lookupEndpoint:LOOKUP_ENDPOINT});
   await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),state());
   const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error?.stack||error?.message||error)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await route(page,'nutrition');
+  assert.equal(await page.locator('#pickMealScan').count(),1,'Meal Scan should expose one clear photo entry');
   const chooserPromise=page.waitForEvent('filechooser');await page.locator('#pickMealScan').click();const chooser=await chooserPromise;
   await chooser.setFiles({name:'meal.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
-  await page.waitForFunction(()=>!!document.querySelector('.meal-camera-stage.has-photo'));
+  await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
-  await page.waitForFunction(()=>document.querySelector('.scan-result-card')?.innerText.includes('닭가슴살'),null,{timeout:7000});
-  const request=await page.evaluate(()=>window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__);
-  assert.equal(request.authorization,'Bearer mock-id-token-mock-user','Meal Scan must use authenticated transport');
-  assert.equal(request.request.image.mediaType,'image/png');assert.ok(String(request.request.image.dataUrl||'').startsWith('data:image/png;base64,'));
-  const resultText=await page.locator('.scan-result-card').innerText();assert.match(resultText,/닭가슴살/);assert.doesNotMatch(resultText,/9999/,'provider nutrition must never be rendered as GARANG nutrition');
-  assert.match(await page.locator('.photo-evidence-estimate-note').innerText(),/VISION → FOOD DB/);
-  await page.locator('#confirmMealScan').click();await page.evaluate(()=>{if(window.GarangPhotoEvidence){const api=window.GarangPhotoEvidence;window.GarangPhotoEvidence=Object.freeze({...api,store:async()=>true});}});await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
-  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('닭가슴살'));
+  await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('아메리카노'),null,{timeout:7000});
+  const requests=await page.evaluate(()=>({meal:window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__,lookup:window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__}));
+  assert.equal(requests.meal.authorization,'Bearer mock-id-token-mock-user','Meal Scan must use authenticated transport');
+  assert.equal(requests.lookup.authorization,'Bearer mock-id-token-mock-user','Nutrition lookup must use authenticated transport');
+  assert.equal(requests.lookup.request.items.length,1,'Only DB-unmatched foods should use web lookup');
+  assert.equal(requests.lookup.request.items[0].name,'아메리카노');
+  const resultText=await page.locator('.meal-scan-results').innerText();
+  assert.match(resultText,/닭가슴살/);assert.match(resultText,/아메리카노/);assert.match(resultText,/GARANG DB/);assert.match(resultText,/WEB ESTIMATE/);
+  assert.doesNotMatch(resultText,/9999|7777/,'Vision provider nutrition must never be rendered as GARANG nutrition');
+  assert.equal(await page.locator('.meal-source-link').count(),1,'Web-estimated nutrition should expose its source');
+  await page.locator('#confirmMealScan').click();
+  await page.evaluate(()=>{if(window.GarangPhotoEvidence){const api=window.GarangPhotoEvidence;window.GarangPhotoEvidence=Object.freeze({...api,store:async()=>true});}});
+  await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
+  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('아메리카노'));
   const before=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(before.meals.length,0,'Meal Scan confirmation must only create a draft');
-  await page.locator('#saveMeal').click();await page.waitForTimeout(1200);const postSave=await page.evaluate(()=>({meals:window.GarangAgentStateBridge.getState()?.meals?.length||0,toast:document.querySelector('#toast')?.textContent||'',errors:window.GarangAgentStateBridge.getState()?.errors?.slice(-2)||[]}));assert.equal(postSave.meals,1,`Meal Scan save failed: ${JSON.stringify(postSave)}`);
-  const saved=await page.evaluate(()=>window.GarangAgentStateBridge.getState());const item=saved.meals[0].items[0];
-  assert.equal(item.foodId,'F0486','Vision identity must resolve to canonical GARANG Food DB record');assert.equal(item.nutritionStatus,'verified');assert.ok(item.kcal>120&&item.kcal<140,'nutrition must be calculated from Food DB basis, not provider output');assert.equal(item.scanEvidence?.source,'vision');assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
+  await page.locator('#saveMeal').click();await page.waitForTimeout(1200);
+  const saved=await page.evaluate(()=>window.GarangAgentStateBridge.getState());
+  assert.equal(saved.meals.length,1);assert.equal(saved.meals[0].items.length,2);
+  const chicken=saved.meals[0].items.find(x=>x.name==='닭가슴살'),americano=saved.meals[0].items.find(x=>x.name==='아메리카노');
+  assert.equal(chicken.foodId,'F0486','Vision identity must resolve to canonical GARANG Food DB record');assert.equal(chicken.nutritionStatus,'verified');assert.ok(chicken.kcal>120&&chicken.kcal<140);
+  assert.equal(americano.foodId,null);assert.equal(americano.nutritionStatus,'estimated_web');assert.equal(americano.nutritionSource.source,'web_search');assert.match(americano.nutritionSource.url,/official-americano/);assert.equal(americano.scanEvidence.source,'vision+web');
+  assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
-  assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);await context.close();console.log('browser-real-meal-scan WebKit mobile: PASS');
+  assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);
+  await context.close();console.log('browser-real-meal-scan WebKit mobile + web fallback: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
