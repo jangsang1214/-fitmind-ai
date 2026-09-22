@@ -1,0 +1,19 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.join(__dirname,'..');
+const app=fs.readFileSync(path.join(root,'01_app','app.js'),'utf8');
+const runtime=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-execution-v2.js'),'utf8');
+const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-execution-v2.css'),'utf8');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
+
+assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
+for(const token of ['LIVE SESSION','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
+assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
+for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
+assert.ok(html.includes('garang-workout-execution-v2.css'),'execution CSS must load');
+assert.ok(html.includes('garang-workout-execution-v2.js'),'execution runtime must load');
+assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-workout-execution-v2.js'),'execution layer must load after the workout library layer');
+assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-execution-v2.js'),'runtime manifest must include execution JS');
+assert.ok(manifest.styles.includes('03_styles/runtime/garang-workout-execution-v2.css'),'runtime manifest must include execution CSS');
+console.log('workout-execution-ui-v2: PASS');
