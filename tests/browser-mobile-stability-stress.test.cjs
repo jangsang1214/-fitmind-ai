@@ -62,11 +62,10 @@ async function settle(page,label,limit=12){
   await page.waitForTimeout(120);
   const result=await Promise.race([
     page.evaluate(()=>new Promise(resolve=>{
-      const main=document.getElementById('main');let child=0,chars=0;const samples=[];
-      const labelOf=node=>{if(!node)return 'unknown';if(node.nodeType===3)node=node.parentElement;if(!node?.tagName)return String(node?.nodeName||'unknown');const cls=String(node.className||'').trim().split(/\\s+/).slice(0,3).join('.');return `${node.tagName.toLowerCase()}${node.id?'#'+node.id:''}${cls?'.'+cls:''}`;};
-      const ob=new MutationObserver(rs=>rs.forEach(r=>{if(r.type==='childList')child++;if(r.type==='characterData')chars++;if(samples.length<24)samples.push({type:r.type,target:labelOf(r.target),added:r.addedNodes?.length||0,removed:r.removedNodes?.length||0});}));
+      const main=document.getElementById('main');let child=0,chars=0;
+      const ob=new MutationObserver(rs=>rs.forEach(r=>{if(r.type==='childList')child++;if(r.type==='characterData')chars++;}));
       ob.observe(main,{childList:true,subtree:true,characterData:true});
-      setTimeout(()=>{ob.disconnect();resolve({child,chars,samples});},550);
+      setTimeout(()=>{ob.disconnect();resolve({child,chars});},550);
     })),
     timeout(2500,`${label}: mutation observer window stalled`)
   ]);
