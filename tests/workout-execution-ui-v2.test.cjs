@@ -4,6 +4,7 @@ const root=path.join(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'01_app','app.js'),'utf8');
 const runtime=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-execution-v2.js'),'utf8');
 const intelligence=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-intelligence-ui-v1.js'),'utf8');
+const workoutFlow=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-flow-v1.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-execution-v2.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
@@ -20,6 +21,10 @@ assert.ok(runtime.includes("current-set"),'execution surface must visually own a
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
+assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
+assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
+assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
+assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
