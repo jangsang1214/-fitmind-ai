@@ -269,6 +269,7 @@ async function assertCoachSettles(page){
     await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2,{timeout:3000});
     await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
+    for(let i=0;i<2;i++){await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(i).click();await tap(page,'#skipWorkoutRest');}
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'draft edit must re-add without forcing completed sets to be checked again');
@@ -276,6 +277,8 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===0,{timeout:3000});
     assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','session reset must clear live elapsed time');
     assert.equal(await page.locator('#workoutExecutionRest').isHidden(),true,'session reset must clear the rest state');
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),0,'session reset must not restore stale completed rows');
+    assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'session reset must return execution to one fresh current set');
     const importExerciseName=await page.locator('#wName').inputValue();
     await page.evaluate(name=>window.GarangWorkoutIntelligenceUI?.queueImport?.([{name,sets:3,reps:8,weight:60,rpe:7,duration:15,body:70}],'browser_regression'),importExerciseName);
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===3,{timeout:5000});
