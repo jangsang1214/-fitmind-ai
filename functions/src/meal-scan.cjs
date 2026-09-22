@@ -8,7 +8,7 @@ const MAX_IMAGE_DATA_URL=2600000;
 const IMAGE_TYPES=Object.freeze(['image/jpeg','image/png','image/webp']);
 const MEAL_SCAN_SCHEMA=Object.freeze({
  type:'object',additionalProperties:false,required:['items','overallConfidence','uncertain','notes'],properties:{
-  items:{type:'array',minItems:1,maxItems:6,items:{type:'object',additionalProperties:false,required:['name','aliases','grams','confidence'],properties:{
+  items:{type:'array',minItems:0,maxItems:6,items:{type:'object',additionalProperties:false,required:['name','aliases','grams','confidence'],properties:{
    name:{type:'string',minLength:1,maxLength:80},
    aliases:{type:'array',maxItems:5,items:{type:'string',minLength:1,maxLength:80}},
    grams:{type:'number',minimum:5,maximum:1500},
