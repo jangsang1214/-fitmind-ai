@@ -257,7 +257,7 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
     assert.equal(await page.locator('#workoutSetDetails .completed').count(),1,'completed set must have an explicit completed state');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'completion must advance exactly one current set');
-    assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\\d{2}:\\d{2}$/,'live session timer must be visible');
+    assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\d{2}:\d{2}$/,'live session timer must be visible');
     await tap(page,'#skipWorkoutRest');
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
