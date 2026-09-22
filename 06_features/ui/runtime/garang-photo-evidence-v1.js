@@ -60,6 +60,22 @@
     return true;
   }
 
+  async function deleteMany(ids){
+    const keys=[...new Set((Array.isArray(ids)?ids:[]).map(value=>String(value||'').trim()).filter(Boolean))];
+    if(!keys.length)return 0;
+    const db=await openDb();
+    try{
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);
+        keys.forEach(id=>store.delete(id));
+        tx.oncomplete=resolve;
+        tx.onerror=()=>reject(tx.error||new Error('PHOTO_DELETE_FAILED'));
+        tx.onabort=()=>reject(tx.error||new Error('PHOTO_DELETE_ABORTED'));
+      });
+    }finally{db.close();}
+    return keys.length;
+  }
+
   async function read(id){
     const db=await openDb();
     try{
@@ -104,5 +120,5 @@
     return {ok:true,file};
   }
 
-  root.GarangPhotoEvidence=Object.freeze({VERSION,MAX_FILE_BYTES,IMAGE_TYPES,validateFile,pick,store,read,metadata,show,revoke});
+  root.GarangPhotoEvidence=Object.freeze({VERSION,MAX_FILE_BYTES,IMAGE_TYPES,validateFile,pick,store,read,deleteMany,metadata,show,revoke});
 })(typeof window==='undefined'?globalThis:window);
