@@ -237,6 +237,12 @@ async function assertCoachSettles(page){
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
+    await tap(page,'#clearWorkoutDraft');
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===0,{timeout:3000});
+    const importExerciseName=await page.locator('#wName').inputValue();
+    await page.evaluate(name=>window.GarangWorkoutIntelligenceUI?.queueImport?.([{name,sets:3,reps:8,weight:60,rpe:7,duration:15,body:70}],'browser_regression'),importExerciseName);
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===3,{timeout:5000});
+    assert.deepEqual(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()),{exercises:1,sets:3,volume:1440,unit:'kg'},'programmatic Daily Workout-style import must remain compatible with execution mode');
     await tapRecordRoute(page,'body');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
