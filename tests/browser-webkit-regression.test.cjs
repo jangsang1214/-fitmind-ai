@@ -228,6 +228,7 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'running');
     await tap(page,'#runStart');
     await page.waitForFunction(()=>Number(document.querySelector('#runDistance')?.textContent||0)>0,{timeout:7000});
+    await page.evaluate(()=>{const input=document.getElementById('runPhotoPicker');if(input)input.click=()=>{};document.getElementById('runCert')?.click();});
     await page.locator('#runPhotoPicker').setInputFiles({name:'garang-run.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nWQAAAAASUVORK5CYII=','base64')});
     await page.locator('.photo-evidence-stage.has-photo').waitFor({state:'visible',timeout:5000});
     await tap(page,'#runPause');
