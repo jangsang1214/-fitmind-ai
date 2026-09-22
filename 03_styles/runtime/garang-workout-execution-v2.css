@@ -32,12 +32,12 @@
 
 /* v2.1 commercial execution density */
 .workout-execution-v2 .execution-secondary-metric{display:none!important}
-.workout-execution-v2 .execution-compact-fields{display:grid!important;grid-template-columns:minmax(0,1fr) 86px!important;gap:10px!important;margin:0 20px 10px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.workout-execution-v2 .execution-compact-fields{display:grid!important;grid-template-columns:minmax(0,1fr) 76px 90px!important;gap:10px!important;margin:0 20px 10px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
 .workout-execution-v2 .execution-compact-fields .execution-default-field{display:none!important}
-.workout-execution-v2 .execution-exercise-field,.workout-execution-v2 .execution-sets-field{display:grid!important;gap:5px!important}
-.workout-execution-v2 .execution-exercise-field label,.workout-execution-v2 .execution-sets-field label{font-size:8px!important;font-weight:850!important;letter-spacing:.12em!important;text-transform:uppercase;color:#969087!important}
-.workout-execution-v2 .execution-exercise-field input,.workout-execution-v2 .execution-sets-field input{height:46px!important;min-height:46px!important;border-radius:11px!important;background:#fff!important;border:1px solid rgba(24,22,19,.12)!important;font-size:15px!important;font-weight:780!important}
-.workout-execution-v2 .execution-sets-field input{text-align:center!important;font-variant-numeric:tabular-nums}
+.workout-execution-v2 .execution-exercise-field,.workout-execution-v2 .execution-sets-field,.workout-execution-v2 .execution-duration-field{display:grid!important;gap:5px!important}
+.workout-execution-v2 .execution-exercise-field label,.workout-execution-v2 .execution-sets-field label,.workout-execution-v2 .execution-duration-field label{font-size:8px!important;font-weight:850!important;letter-spacing:.12em!important;text-transform:uppercase;color:#969087!important}
+.workout-execution-v2 .execution-exercise-field input,.workout-execution-v2 .execution-sets-field input,.workout-execution-v2 .execution-duration-field input{height:46px!important;min-height:46px!important;border-radius:11px!important;background:#fff!important;border:1px solid rgba(24,22,19,.12)!important;font-size:15px!important;font-weight:780!important}
+.workout-execution-v2 .execution-sets-field input,.workout-execution-v2 .execution-duration-field input{text-align:center!important;font-variant-numeric:tabular-nums}
 .workout-execution-v2 .workout-exercise-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(24,22,19,.08)}
 .workout-execution-v2 .workout-exercise-head .eyebrow{font-size:8px;letter-spacing:.16em;color:#9a8056}
 .workout-execution-v2 .workout-exercise-head h3{font-size:28px;line-height:1.02}
@@ -65,7 +65,7 @@
  .workout-set-table-head{top:calc(env(safe-area-inset-top,0px) + 124px)}
  .workout-execution-v2>.visual-section-head{padding:12px 2px 10px!important}
  .workout-execution-v2 .workout-exercise-head h3{font-size:23px}
- .workout-execution-v2 .execution-compact-fields{margin:0 0 8px!important;grid-template-columns:minmax(0,1fr) 76px!important}
+ .workout-execution-v2 .execution-compact-fields{margin:0 0 8px!important;grid-template-columns:minmax(0,1fr) 68px 82px!important}
  .workout-execution-v2 .workout-entry-actions{margin-top:6px}
  .workout-execution-v2 .workout-set-toolbar{padding:6px 2px}
  .workout-execution-v2 .execution-set-row{min-height:60px}
