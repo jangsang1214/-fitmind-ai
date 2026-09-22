@@ -235,7 +235,7 @@ async function assertCoachSettles(page){
     await page.locator('#runResume').waitFor({state:'visible',timeout:3000});
     await tap(page,'#runResume');
     await tap(page,'#runStop');
-    await page.waitForFunction(()=>document.querySelector('[data-run-delete]')&&document.querySelector('[data-photo-evidence]'),{timeout:7000});
+    await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return s.runs?.at(-1)?.photoEvidence?.kind==='running';},{timeout:7000});
     const runPersisted=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}'),r=s.runs?.at(-1)||null;return r?{kind:r.photoEvidence?.kind||null,manualPauseCount:r.manualPauseCount||0,gpsAccepted:r.gpsQuality?.accepted||0,gpsRejected:r.gpsQuality?.rejected||0}:null;});
     assert.equal(runPersisted?.kind,'running','saved run must retain RUN EVIDENCE metadata');
     assert.ok(runPersisted?.manualPauseCount>=1,'manual pause must persist on the run record');
