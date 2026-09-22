@@ -98,6 +98,7 @@ function enhance(){
   const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>{liveSetDraft=[];liveExercise=name.value||'';setTimeout(enhance,0);});}
   const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
   const setHost=document.getElementById('workoutSetDetails');if(setHost&&!setHost.dataset.executionLiveBound){setHost.dataset.executionLiveBound='true';setHost.addEventListener('input',captureLiveSetRows);}
+  if(sessionStartedAt||restUntil)startTicker();
   updateLive();resultCard();
 }
 document.addEventListener('click',event=>{
