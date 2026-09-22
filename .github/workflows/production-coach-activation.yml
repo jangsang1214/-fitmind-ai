@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: production-coach-activation
@@ -25,6 +26,7 @@ jobs:
       - name: Check out approved revision
         uses: actions/checkout@v7
 
+
       - name: Set up Node 22
         uses: actions/setup-node@v7
         with:
@@ -37,6 +39,17 @@ jobs:
       - name: Install locked Functions runtime dependencies
         run: npm ci --prefix functions --omit=dev --no-audit --no-fund
 
+      - name: Authenticate with Google Workload Identity Federation
+        if: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_DEPLOY_SERVICE_ACCOUNT != '' }}
+        id: google_auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fitfind-ai
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Select fail-closed Firebase authentication
         id: auth
         shell: bash
@@ -47,7 +60,9 @@ jobs:
         run: |
           set -euo pipefail
           cred_file="$RUNNER_TEMP/firebase-service-account.json"
-          if [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
+          if [[ -n "${GOOGLE_GHA_CREDS_PATH:-}" && -f "${GOOGLE_GHA_CREDS_PATH}" ]]; then
+            echo "mode=wif-service-account" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
             printf '%s' "$FIREBASE_SERVICE_ACCOUNT_FITFIND_AI" > "$cred_file"
             node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$cred_file"
             echo "GOOGLE_APPLICATION_CREDENTIALS=$cred_file" >> "$GITHUB_ENV"
@@ -60,7 +75,7 @@ jobs:
           elif [[ -n "${FIREBASE_TOKEN:-}" ]]; then
             echo "mode=legacy-firebase-token" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::No Firebase deployment credential is configured. Expected FIREBASE_SERVICE_ACCOUNT_FITFIND_AI, GOOGLE_APPLICATION_CREDENTIALS_JSON, or FIREBASE_TOKEN."
+            echo "::error::No Firebase deployment credential is configured. Expected configured Workload Identity Federation or FIREBASE_SERVICE_ACCOUNT_FITFIND_AI, GOOGLE_APPLICATION_CREDENTIALS_JSON, or FIREBASE_TOKEN."
             exit 42
           fi
 
