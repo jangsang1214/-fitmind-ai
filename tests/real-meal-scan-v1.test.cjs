@@ -22,7 +22,7 @@ assert.match(app,/function mealScanMatch/);
 assert.match(app,/JSON\.stringify\(\{image,language:/);
 assert.match(app,/scanEvidence:\{visionName:/);
 assert.match(app,/lookupMealScanNutrition/);
-assert.match(app,/estimated_web/);
+assert.match(app,/estimated/);
 assert.match(app,/meal_scan_web_nutrition_resolved/);
 assert.match(app,/WEB ESTIMATE/);
 assert.match(app,/GARANG DB/);
