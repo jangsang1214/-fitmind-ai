@@ -35,7 +35,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
      window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
      return new Response(JSON.stringify({ok:true,items:[{
-      inputIndex:0,name:'아메리카노',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated_web',
+      inputIndex:0,name:'아메리카노',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated',
       nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official Americano nutrition',url:'https://example.com/official-americano',basis:'355g serving'}
      }],unresolved:[],data:{source:'web_search',provider:'fixture',model:'fixture-search',requestId:'lookup-browser-1',citationCount:1}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
@@ -71,7 +71,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.equal(saved.meals.length,1);assert.equal(saved.meals[0].items.length,2);
   const chicken=saved.meals[0].items.find(x=>x.name==='닭가슴살'),americano=saved.meals[0].items.find(x=>x.name==='아메리카노');
   assert.equal(chicken.foodId,'F0486','Vision identity must resolve to canonical GARANG Food DB record');assert.equal(chicken.nutritionStatus,'verified');assert.ok(chicken.kcal>120&&chicken.kcal<140);
-  assert.equal(americano.foodId,null);assert.equal(americano.nutritionStatus,'estimated_web');assert.equal(americano.nutritionSource.source,'web_search');assert.match(americano.nutritionSource.url,/official-americano/);assert.equal(americano.scanEvidence.source,'vision+web');
+  assert.equal(americano.foodId,null);assert.equal(americano.nutritionStatus,'estimated');assert.equal(americano.nutritionSource.source,'web_search');assert.match(americano.nutritionSource.url,/official-americano/);assert.equal(americano.scanEvidence.source,'vision+web');
   assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
   assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);
