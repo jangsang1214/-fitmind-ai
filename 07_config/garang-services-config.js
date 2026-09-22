@@ -11,6 +11,7 @@
   const apiBase=`https://asia-northeast3-${selectedProjectId}.cloudfunctions.net/api`;
   const coachEndpoint=`${apiBase}/coach`;
   const mealScanEndpoint=`${apiBase}/meal/scan`;
+  const nutritionLookupEndpoint=`${apiBase}/nutrition/lookup`;
   const privilegedStagingEnabled=selectedProjectId===stagingProjectId;
   const analyticsSpec=Object.freeze({
     signup_completed:[],onboarding_completed:[],record_created:['recordType','source'],first_record_created:['recordType','source'],today_viewed:['source'],coach_opened:['source'],coach_recommendation_shown:['provider','source'],daily_plan_applied:['source'],planned_action_started:['actionType','source'],planned_action_completed:['actionType','source'],accumulation_viewed:['source']
@@ -27,6 +28,7 @@
     accountDeleteEndpoint:`${apiBase}/account/delete`,
     accountExportEndpoint:`${apiBase}/account/export`,
     mealScanEndpoint,
+    nutritionLookupEndpoint,
     analyticsEndpoint:`${apiBase}/analytics/events`,
     telemetryErrorEndpoint:`${apiBase}/telemetry/errors`,
     analyticsConsent:false,
@@ -90,6 +92,13 @@
         const response=await authenticatedFetch(mealScanEndpoint,{...init,method:'POST',headers});diag.stage='meal-scan-response';return response;
       }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
     }
+    if(url===nutritionLookupEndpoint&&method==='POST'){
+      diag.stage='nutrition-lookup-auth';diag.lastError=null;
+      try{
+        const headers=new Headers(init.headers||{});headers.set('Content-Type','application/json');
+        const response=await authenticatedFetch(nutritionLookupEndpoint,{...init,method:'POST',headers});diag.stage='nutrition-lookup-response';return response;
+      }catch(error){diag.lastError={name:String(error?.name||'Error'),message:String(error?.message||error),code:String(error?.code||'')};throw error;}
+    }
     if((services.analyticsEndpoint&&url===services.analyticsEndpoint)||(services.telemetryErrorEndpoint&&url===services.telemetryErrorEndpoint)){
       if(!analyticsConsent()){
         if(url===services.analyticsEndpoint)diag.analyticsSuppressed++;else diag.errorSuppressed++;
@@ -107,7 +116,7 @@
     const endpoint=window.GARANG_SERVICES?.telemetryErrorEndpoint;if(!endpoint||!analyticsConsent())return;
     routedFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(safeError(event?.detail||{}))}).catch(()=>{});
   });
-  const transport=Object.freeze({version:'garang-service-transport-v2.1',apiBase,coachEndpoint,mealScanEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,diagnostics:diag});
+  const transport=Object.freeze({version:'garang-service-transport-v2.2',apiBase,coachEndpoint,mealScanEndpoint,nutritionLookupEndpoint,authenticatedFetch,analyticsConsent,canonicalAnalytics,safeError,diagnostics:diag});
   const legacyCoachTransport=Object.freeze({version:'garang-coach-gateway-transport-v1.1.1',endpoint:coachEndpoint,diagnostics:diag});
   window.__GARANG_SERVICE_TRANSPORT_V2__=transport;
   window.__GARANG_COACH_GATEWAY_TRANSPORT_V1__=legacyCoachTransport;

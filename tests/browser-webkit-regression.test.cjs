@@ -133,6 +133,13 @@ async function assertCoachSettles(page){
     await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
+      try{
+        let geoIndex=0,geoWatch=0;const active=new Map();
+        Object.defineProperty(navigator,'geolocation',{configurable:true,value:{
+          watchPosition(success){const id=++geoWatch;active.set(id,true);const tick=()=>{if(!active.get(id))return;const i=geoIndex++,lat=37+Math.min(i,240)*.000002;success({coords:{latitude:lat,longitude:127,accuracy:8},timestamp:Date.now()});if(i<240)setTimeout(tick,20);};setTimeout(tick,20);return id;},
+          clearWatch(id){active.delete(id);}
+        }});
+      }catch{}
 
       localStorage.setItem('garang_user_mock-user_v3',JSON.stringify({
         meta:{schemaVersion:5,updatedAt:'2026-09-06T00:00:00Z'},
@@ -297,6 +304,17 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===3,{timeout:5000});
     assert.deepEqual(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()),{exercises:1,sets:3,volume:1440,unit:'kg'},'programmatic Daily Workout-style import must remain compatible with execution mode');
     await tapRecordRoute(page,'body');
+    await tapRecordRoute(page,'running');
+    await tap(page,'#runStart');
+    await page.waitForFunction(()=>Number(document.querySelector('#runDistance')?.textContent||0)>0,{timeout:7000});
+    await tap(page,'#runPause');
+    await page.locator('#runResume').waitFor({state:'visible',timeout:3000});
+    await tap(page,'#runResume');
+    await tap(page,'#runStop');
+    await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.runs?.length||0)>0;});
+    const runPersisted=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}'),r=s.runs?.at(-1)||null;return r?{manualPauseCount:r.manualPauseCount||0,gpsAccepted:r.gpsQuality?.accepted||0,gpsRejected:r.gpsQuality?.rejected||0,splits:Array.isArray(r.splits)?r.splits.length:0}:null;});
+    assert.ok(runPersisted?.manualPauseCount>=1,'manual pause must persist on the run record');
+    assert.ok(runPersisted?.gpsAccepted>=2,'accepted GPS fixes must persist as quality evidence');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='progress',{timeout:5000});
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="coach"]');

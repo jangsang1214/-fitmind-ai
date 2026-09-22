@@ -34,7 +34,7 @@ let firebaseReady=false, currentUser=null, currentPage='today';
 let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
 window.GarangCloudHydrationReady=true;
 function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
-let workoutDraft=[], workoutEvidenceDraft=null, mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false, workoutEditForm=null;
+let workoutDraft=[], workoutEvidenceDraft=null, runEvidenceDraft=null, mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false, workoutEditForm=null;
 let workoutMuscleFilter='all', workoutSelectedExercise='';
 let currentCert={workout:null,running:null};
 let progressRangeDays=30, bodyRangeDays=90, bodyTrendMetric='weight', memoryEditId=null;
@@ -49,7 +49,7 @@ function uniqueDays(a){return new Set(a.map(x=>x.date).filter(Boolean)).size;}
 
 function normalizedNutritionSource(value){
   const source=value&&typeof value==='object'&&!Array.isArray(value)?value:null;if(!source)return null;
-  const out={};for(const key of ['source','provider','dataset','recordId','matchRule']){const raw=source[key];if(raw!==undefined&&raw!==null&&String(raw).trim())out[key]=String(raw).trim().slice(0,240);}
+  const out={};for(const key of ['source','provider','dataset','recordId','matchRule','sourceType','title','url','basis']){const raw=source[key];if(raw!==undefined&&raw!==null&&String(raw).trim())out[key]=String(raw).trim().slice(0,key==='url'?500:240);}
   return Object.keys(out).length?out:null;
 }
 function normalizeMealItem(i={}){
@@ -418,19 +418,35 @@ function workoutPageBase(){
 <section class='card cert-entry-card photo-evidence-card photo-evidence-card-workout'><div class='photo-evidence-head'><div><span class='eyebrow'>GARANG EVIDENCE</span><h3>오늘의 운동을 남겨보세요</h3><p>사진은 운동 기록과 함께 저장됩니다.</p></div><span class='photo-evidence-optional'>${workoutEvidenceDraft?.file?'저장 준비됨':'선택 사항'}</span></div><div class='photo-evidence-stage ${workoutEvidenceDraft?.url?'has-photo':''}'>${workoutEvidenceDraft?.url?`<img src='${workoutEvidenceDraft.url}' alt='운동 인증 사진 미리보기'><div class='photo-evidence-draft-mark'><span>PHOTO EVIDENCE</span><b>저장 준비됨</b></div>`:`<div class='photo-evidence-empty'><span class='camera-glyph' aria-hidden='true'>◎</span><strong>운동 사진 추가</strong><small>카메라 또는 사진 보관함</small></div>`}</div><div class='actions photo-evidence-actions'><button id='certWorkout' class='${workoutEvidenceDraft?.file?'ghost':'primary'}'>${workoutEvidenceDraft?.file?'사진 변경':'사진 촬영 / 선택'}</button>${workoutEvidenceDraft?.file?`<button id='clearWorkoutEvidence' class='ghost'>사진 제거</button>`:''}</div><div class='photo-evidence-foot'><span>${workoutEvidenceDraft?.file?'세션 저장 시 사진도 함께 기록됩니다.':'사진 없이도 운동 기록을 저장할 수 있습니다.'}</span><small>원본은 현재 기기에 저장됩니다.</small></div>${currentCert.workout?`<div class='photo-evidence-share'><div><span class='eyebrow'>GARANG VERIFIED</span><b>저장한 기록으로 인증 이미지 만들기</b></div><div class='actions'><button id='workoutOverlayOnly' class='ghost small'>오버레이 PNG</button></div><div id='workoutCertArea' class='empty'></div></div>`:`<div id='workoutCertArea' hidden></div>`}</section>
 <details class="card compact-history"><summary><span><b>최근 운동 기록</b><small>${state.workouts.length} records · 필요할 때 펼치기</small></span><span>⌄</span></summary><div class="history-collapse-body"><div class="list">${state.workouts.slice().reverse().slice(0,30).map(w=>{const m=exerciseMuscle(w.name),one=workoutRecordEstimated1RM(w),details=workoutDetailRows(w),setLabel=details.length?details.map(s=>shownWeight(s.weight??s.w,1)+weightUnit()+'×'+(s.reps??s.r)+' · RPE '+(s.rpe??'—')).join(' / '):w.sets+'×'+w.reps+' · '+shownWeight(w.weight,1)+weightUnit();return `<div class="workout-history-row"><div class="history-mini-figure" data-muscle="${m.key}">${miniBodySvg(m.key)}</div><div><strong>${esc(w.name)}</strong><div class="muted">${esc(m.label)} · ${setLabel} · 1RM ${one?Number(shownWeight(one,1)).toFixed(1):'—'}${weightUnit()}</div></div><div class="history-volume"><b>${Math.round(shownWeight(workoutRecordVolume(w),0)||0).toLocaleString()}</b><span>${weightUnit()}</span></div>${photoEvidenceButton(w,'운동 사진')}</div>`}).join('')||'<div class="empty">운동 기록이 없습니다.</div>'}</div></div></details>`;
 }
-function photoEvidenceButton(record,label='사진 보기'){const e=record?.photoEvidence;if(!e?.id)return '';const nutrition=e.kind==='nutrition',meta=nutrition?`${record.date||''} · ${Math.round(num(record.kcal))} kcal`:`${record.date||''} · ${Math.round(num(record.duration))} min · ${Math.round(shownWeight(workoutRecordVolume(record),0)||0).toLocaleString()} ${weightUnit()}`,copy=nutrition?'이 식사의 분석 기준 사진':'오늘의 운동 사진이 함께 기록됨';return `<div class='photo-evidence-record'><div class='photo-evidence-record-copy'><span class='photo-evidence-chip'>PHOTO EVIDENCE</span><small>${esc(copy)}</small></div><button type='button' class='photo-evidence-history' data-photo-evidence='${esc(e.id)}' data-photo-evidence-title='${esc(label)}' data-photo-evidence-meta='${esc(meta)}'>사진 보기</button></div>`;}
+function photoEvidenceButton(record,label='사진 보기'){const e=record?.photoEvidence;if(!e?.id)return '';const nutrition=e.kind==='nutrition',running=e.kind==='running';const meta=nutrition?`${record.date||''} · ${Math.round(num(record.kcal))} kcal`:running?`${record.date||''} · ${Number(shownDistance(num(record.distance),2)).toFixed(2)} ${distanceUnit()} · ${paceText(record)} /${distanceUnit()}`:`${record.date||''} · ${Math.round(num(record.duration))} min · ${Math.round(shownWeight(workoutRecordVolume(record),0)||0).toLocaleString()} ${weightUnit()}`,copy=nutrition?'이 식사의 분석 기준 사진':running?'이 러닝의 기록 사진':'오늘의 운동 사진이 함께 기록됨';return `<div class='photo-evidence-record'><div class='photo-evidence-record-copy'><span class='photo-evidence-chip'>PHOTO EVIDENCE</span><small>${esc(copy)}</small></div><button type='button' class='photo-evidence-history' data-photo-evidence='${esc(e.id)}' data-photo-evidence-title='${esc(label)}' data-photo-evidence-meta='${esc(meta)}'>사진 보기</button></div>`;}
 function bindPhotoEvidenceHistory(){document.querySelectorAll('[data-photo-evidence]').forEach(button=>button.onclick=async()=>{const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');const result=await api.show(button.dataset.photoEvidence,button.dataset.photoEvidenceTitle||'기록 사진',button.dataset.photoEvidenceMeta||'');if(!result?.ok)toast(result?.reason==='MISSING_DEVICE_MEDIA'?'이 사진은 다른 기기에 저장되어 있습니다.':'사진을 불러오지 못했습니다.');});}
 function workoutPage(){return workoutPageBase()+renderWorkoutInsights();}
 function renderWorkoutDraft(){return workoutDraft.length?`<div class="list">${workoutDraft.map((x,i)=>`<div class="list-item"><div><strong>${esc(x.name)}</strong><div class="muted">${x.setDetails?.length?x.setDetails.map(row=>shownWeight(row.weight,1)+weightUnit()+" × "+row.reps+" · RPE "+row.rpe).join(" / "):x.sets+"×"+x.reps+" · "+shownWeight(x.weight,1)+weightUnit()} · 예상 1RM ${Number(shownWeight(x.estimated1RM,1)).toFixed(1)}${weightUnit()}</div></div><div class="actions"><button class="ghost small" data-edit-workout="${i}">수정</button><button class="ghost small" data-remove-workout="${i}">삭제</button></div></div>`).join('')}</div>`:'<div class="empty">운동을 추가하면 세션 초안이 여기에 표시됩니다.</div>';}
-function nutritionPage(){const t=totalsMeals(),scan=mealScanDraft,proteinPct=clamp(Math.round(t.protein/Math.max(1,proteinTarget())*100),0,100);return `${pageHead('LOG / NUTRITION','식단','')}
-<section class="card nutrition-visual-hero"><div class="meal-evidence-shell"><div class="photo-evidence-head"><div><span class="eyebrow">MEAL EVIDENCE</span><h3>식사를 사진으로 기록하세요</h3><p>분석 후 저장 전에 직접 확인할 수 있습니다.</p></div><span class="photo-evidence-optional">${scan?.url?'분석 준비됨':'선택 사항'}</span></div><div class="meal-camera-stage photo-evidence-stage ${scan?.url?'has-photo':''}">${scan?.url?`<img src="${scan.url}" alt="식사 사진 미리보기"><div class="photo-evidence-draft-mark"><span>MEAL EVIDENCE</span><b>${scan?.items?.length?'분석 초안':'분석 전'}</b></div>`:`<div class="meal-camera-empty photo-evidence-empty"><span class="camera-glyph">◎</span><strong>식사 사진 추가</strong><small>카메라 또는 사진 보관함</small></div>`}<button id="pickMealScan" class="meal-camera-button">${scan?.url?'사진 다시 선택':'사진 촬영 / 선택'}</button></div><small class="meal-evidence-note">사진은 식사 분석의 기준이 되며, 저장 전 직접 확인합니다.</small></div><div class="nutrition-today"><span class="eyebrow">TODAY</span><div class="nutrition-kcal"><strong>${Math.round(t.kcal)}</strong><span>kcal</span></div><div class="macro-visual"><div><span>PROTEIN</span><b>${Math.round(t.protein)}g</b><i><em style="width:${proteinPct}%"></em></i></div><div><span>CARBS</span><b>${Math.round(t.carbs)}g</b><i><em style="width:${clamp(t.carbs/300*100,0,100)}%"></em></i></div><div><span>FAT</span><b>${Math.round(t.fat)}g</b><i><em style="width:${clamp(t.fat/80*100,0,100)}%"></em></i></div></div><div class="protein-target">단백질 목표 ${proteinTarget()}g · ${proteinPct}%</div></div></section>
-${scan?.url?`<section class="card scan-confirm-panel photo-evidence-analysis"><div class="photo-evidence-head"><div><span class="eyebrow">MEAL EVIDENCE</span><h3>${scan?.items?.length||scan?.unmatched?.length?'분석 초안':'사진 분석'}</h3><p>${scan?.items?.length||scan?.unmatched?.length?'사진 인식 결과를 Food DB와 연결했습니다. 저장 전 음식과 양을 확인하세요.':'사진에서 음식 후보를 만든 뒤 Food DB와 연결합니다.'}</p></div><span class="photo-evidence-optional">${SERVICES.mealScanEndpoint?'VISION':'DB ASSIST'}</span></div><div class="form-grid"><div class="field"><label>음식명 / 보정</label><input id="scanFoodName" value="${esc(scan?.manualName||'')}" placeholder="예: 닭가슴살 샐러드"></div><div class="field"><label>예상 중량 g</label><input id="scanFoodGram" type="number" min="1" value="${scan?.grams||100}"></div></div><div class="actions photo-evidence-analysis-actions"><button id="analyzeMealScan" class="primary">${SERVICES.mealScanEndpoint?'사진 분석':'DB 초안 생성'}</button><button id="clearMealScan" class="ghost">사진 제거</button></div>${scan?.items?.length?`<div class="scan-result-card photo-evidence-result">${scan.items.map(i=>`<div><strong>${esc(i.name)}</strong><span>${i.grams}g</span><b>${Math.round(i.kcal)} kcal</b><small>P ${Math.round(i.protein)} · C ${Math.round(i.carbs)} · F ${Math.round(i.fat)} · DB ${esc(i.nutritionStatus||'unknown')}</small></div>`).join('')}</div><div class="photo-evidence-estimate-note"><span>VISION → FOOD DB</span><small>음식·양은 사진 추정, 영양값은 매칭된 Food DB 기준입니다.</small></div><button id="confirmMealScan" class="primary wide">확인하고 식사에 추가</button>`:''}${scan?.unmatched?.length?`<div class="meal-scan-unmatched"><strong>직접 확인 필요</strong>${scan.unmatched.map(i=>`<span>${esc(i.name)} · 약 ${Math.round(i.grams)}g</span>`).join('')}<small>Food DB에 자동 매칭되지 않은 항목입니다. 아래 직접 입력에서 검색해 주세요.</small></div>`:''}</section>`:''}
-<details class="card manual-entry"><summary><span><b>직접 입력</b><small>사진 대신 검색해서 기록</small></span><span>＋</span></summary><div class="manual-entry-body"><div class="field"><label>음식 / 메뉴</label><input id="foodSearch" list="foodList" placeholder="닭가슴살"><datalist id="foodList">${db.food.slice(0,1500).map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist></div><div class="form-grid compact-fields" style="margin-top:10px"><div class="field"><label>섭취량 g</label><input id="foodGram" type="number" min="1" value="100"></div><div class="field"><label>kcal</label><input id="foodKcal" type="number" value="0"></div><div class="field"><label>단백질 g</label><input id="foodProtein" type="number" value="0"></div><div class="field"><label>탄수화물 g</label><input id="foodCarb" type="number" value="0"></div><div class="field"><label>지방 g</label><input id="foodFat" type="number" value="0"></div></div><div class="actions" style="margin-top:10px"><button id="fillFood" class="ghost">DB 불러오기</button><button id="addFood" class="primary">추가</button></div><div id="mealDraftArea" class="draft-area" style="margin-top:12px">${renderMealDraft()}</div><button id="saveMeal" class="primary wide" style="margin-top:10px" ${mealDraft.length?'':'disabled'}>한 끼 저장</button></div></details>
-<div class="section-title"><h2>오늘 먹은 것</h2><span class="pill">${dayMeals().length} meals</span></div><div class="meal-visual-list">${dayMeals().slice().reverse().map((x,i)=>`<article class="meal-visual-card"><div class="meal-index">${String(dayMeals().length-i).padStart(2,'0')}</div><div class="meal-visual-copy"><strong>${esc(x.name)}</strong><span>${x.items.slice(0,3).map(i=>esc(i.name)).join(' · ')}</span><div class="meal-macro-line"><b>${Math.round(x.kcal)} kcal</b><small>P ${Math.round(x.protein)} · C ${Math.round(x.carbs)} · F ${Math.round(x.fat)}</small></div></div>${photoEvidenceButton(x,'식단 사진')}</article>`).join('')||'<div class="empty">첫 식사를 사진으로 남겨보세요.</div>'}</div>`;}
+function mealNutritionSourceView(item){
+ const source=item?.nutritionSource||{},web=source?.source==='web_search';
+ const label=web?'WEB ESTIMATE':'GARANG DB';
+ const link=web&&source?.url?`<a class="meal-source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">출처</a>`:'';
+ return `<span class="meal-source-chip ${web?'is-web':'is-db'}">${label}</span>${link}`;
+}
+function nutritionPage(){
+ const t=totalsMeals(),scan=mealScanDraft,proteinPct=clamp(Math.round(t.protein/Math.max(1,proteinTarget())*100),0,100);
+ const scanItems=Array.isArray(scan?.items)?scan.items:[],unmatched=Array.isArray(scan?.unmatched)?scan.unmatched:[];
+ return `${pageHead('LOG / NUTRITION','식단','')}
+<section class="card nutrition-quick-summary"><div class="nutrition-summary-main"><span class="eyebrow">TODAY</span><strong>${Math.round(t.kcal)}<small> kcal</small></strong><span>단백질 ${Math.round(t.protein)}g / ${proteinTarget()}g</span></div><div class="nutrition-summary-macros"><span><b>P</b>${Math.round(t.protein)}g</span><span><b>C</b>${Math.round(t.carbs)}g</span><span><b>F</b>${Math.round(t.fat)}g</span></div><div class="nutrition-summary-progress"><i><em style="width:${proteinPct}%"></em></i><small>단백질 목표 ${proteinPct}%</small></div></section>
+<section class="card meal-scan-card">
+ <div class="meal-scan-header"><div><span class="eyebrow">MEAL SCAN</span><h3>식사를 사진으로 기록하세요</h3><p>분석 후 저장 전에 직접 확인할 수 있습니다. GARANG DB를 먼저 쓰고, 없으면 신뢰 가능한 웹 출처를 찾아 계산합니다.</p></div>${scan?.url?'<button id="pickMealScan" class="ghost">사진 변경</button>':''}</div>
+ ${scan?.url?`<div class="meal-scan-workspace"><div class="meal-scan-preview"><img src="${scan.url}" alt="식사 사진 미리보기"><button id="clearMealScan" class="meal-scan-remove" aria-label="식사 사진 제거">×</button></div><div class="meal-scan-actions"><button id="analyzeMealScan" class="primary">${scanItems.length||unmatched.length?'다시 분석':'AI로 분석'}</button><small>사진 인식 결과를 Food DB와 연결했습니다. 저장 전 음식과 양을 확인하세요. 미매칭만 웹 검색하고 확인 후 저장합니다.</small></div>
+ ${scanItems.length?`<div class="meal-scan-results">${scanItems.map(i=>`<div class="meal-scan-result-row"><div><strong>${esc(i.name)}</strong><small>약 ${Math.round(i.grams)}g · P ${Math.round(i.protein)} · C ${Math.round(i.carbs)} · F ${Math.round(i.fat)}</small></div><div class="meal-scan-result-meta"><b>${Math.round(i.kcal)} kcal</b><span>${mealNutritionSourceView(i)}</span></div></div>`).join('')}</div><div class="meal-scan-confirm-note">추정값을 확인한 뒤 식사 초안에 추가합니다. WEB ESTIMATE는 출처 기반 참고값입니다.</div><button id="confirmMealScan" class="primary wide">확인하고 식사에 추가</button>`:''}
+ ${unmatched.length?`<div class="meal-scan-unmatched"><strong>자동 계산 보류</strong>${unmatched.map(i=>`<span>${esc(i.name)} · 약 ${Math.round(i.grams)}g</span>`).join('')}<small>Food DB에 자동 매칭되지 않은 항목이며 신뢰할 수 있는 웹 출처도 확인하지 못했습니다. 아래 직접 입력으로 보정해 주세요.</small></div>`:''}</div>`:`<button id="pickMealScan" class="meal-scan-empty"><span class="camera-glyph">◎</span><strong>식사 사진 추가</strong><small>촬영하면 음식 인식과 영양 계산을 한 번에 시작합니다.</small></button>`}
+</section>
+<details class="card manual-entry"><summary><span><b>직접 입력</b><small>사진 없이 검색·보정</small></span><span>＋</span></summary><div class="manual-entry-body"><div class="field"><label>음식 / 메뉴</label><input id="foodSearch" list="foodList" placeholder="닭가슴살"><datalist id="foodList">${db.food.slice(0,1500).map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist></div><div class="form-grid compact-fields" style="margin-top:10px"><div class="field"><label>섭취량 g</label><input id="foodGram" type="number" min="1" value="100"></div><div class="field"><label>kcal</label><input id="foodKcal" type="number" value="0"></div><div class="field"><label>단백질 g</label><input id="foodProtein" type="number" value="0"></div><div class="field"><label>탄수화물 g</label><input id="foodCarb" type="number" value="0"></div><div class="field"><label>지방 g</label><input id="foodFat" type="number" value="0"></div></div><div class="actions" style="margin-top:10px"><button id="fillFood" class="ghost">DB 불러오기</button><button id="addFood" class="primary">추가</button></div><div id="mealDraftArea" class="draft-area" style="margin-top:12px">${renderMealDraft()}</div><button id="saveMeal" class="primary wide" style="margin-top:10px" ${mealDraft.length?'':'disabled'}>한 끼 저장</button></div></details>
+<div class="section-title"><h2>오늘 먹은 것</h2><span class="pill">${dayMeals().length} meals</span></div><div class="meal-visual-list">${dayMeals().slice().reverse().map((x,i)=>`<article class="meal-visual-card"><div class="meal-index">${String(dayMeals().length-i).padStart(2,'0')}</div><div class="meal-visual-copy"><strong>${esc(x.name)}</strong><span>${x.items.slice(0,3).map(i=>esc(i.name)).join(' · ')}</span><div class="meal-macro-line"><b>${Math.round(x.kcal)} kcal</b><small>P ${Math.round(x.protein)} · C ${Math.round(x.carbs)} · F ${Math.round(x.fat)}</small></div></div>${photoEvidenceButton(x,'식단 사진')}</article>`).join('')||'<div class="empty">첫 식사를 사진으로 남겨보세요.</div>'}</div>`;
+}
 function renderMealDraft(){return mealDraft.length?`<div class="list">${mealDraft.map((x,i)=>`<div class="list-item"><div><strong>${esc(x.name)}</strong><div class="muted">${x.grams}g · ${Math.round(x.kcal)} kcal · P ${Math.round(x.protein)}g</div></div><div class="actions"><button class="ghost small" data-edit-food="${i}">수정</button><button class="ghost small" data-remove-food="${i}">삭제</button></div></div>`).join('')}</div>`:'<div class="empty">음식 또는 Meal Scan 초안을 추가하세요.</div>';}
-function runningPageBase(){return `${pageHead('LOG / RUNNING','러닝','전면 실행 중 GPS 기반 거리·시간·페이스를 기록합니다.')}
-<div class="grid grid-2"><section class="card"><div class="grid grid-3"><div><div class="stat" id="runDistance">0.00</div><div class="stat-label">${distanceUnit()}</div></div><div><div class="stat" id="runTime">00:00</div><div class="stat-label">시간</div></div><div><div class="stat" id="runPace">—</div><div class="stat-label">${paceUnit()}</div></div></div><div class="map-box" style="margin-top:16px"><div class="map-grid"></div><svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline id="routeLine" points=""></polyline></svg><div class="map-note" id="gpsStatus">GPS 대기 중</div></div><div class="helper" id="runForegroundNotice">웹/PWA에서는 화면 잠금·백그라운드 GPS 지속을 보장하지 않습니다. 러닝 중 GARANG을 전면에 두고 사용하세요.</div><div class="actions" style="margin-top:12px"><button id="runStart" class="primary">러닝 시작</button><button id="runResume" class="primary" hidden>러닝 재개</button><button id="runStop" class="ghost">정지 & 저장</button><button id="runCert" class="ghost">사진첩에서 불러오기</button><button id="runOverlayOnly" class="ghost">투명 오버레이 PNG</button></div></section><section class="card"><h3>러닝 인증</h3><div id="runCertArea" class="empty">미디어를 선택하면 인증 오버레이를 생성합니다.</div></section></div>
-<div class="section-title"><h2>최근 기록</h2></div><section class="card"><div class="list">${state.runs.slice().reverse().slice(0,30).map(x=>`<div class="list-item"><div><strong>${num(x.distance).toFixed(2)} km</strong><div class="muted">${x.date} · ${num(x.duration).toFixed(1)}분 · ${x.pace||'—'} /km</div></div><span class="pill">${Math.round(x.kcal||0)} kcal</span></div>`).join('')||'<div class="empty">러닝 기록이 없습니다.</div>'}</div></section>`;}
+function runningPageBase(){const latest=state.runs.at(-1),draft=runEvidenceDraft,latestHasPhoto=!!latest?.photoEvidence?.id;return `${pageHead('LOG / RUNNING','러닝','전면 실행 중 GPS 기반 거리·시간·페이스를 기록합니다.')}
+<div class="grid grid-2"><section class="card"><div class="grid grid-3"><div><div class="stat" id="runDistance">0.00</div><div class="stat-label">${distanceUnit()}</div></div><div><div class="stat" id="runTime">00:00</div><div class="stat-label">이동 시간</div></div><div><div class="stat" id="runPace">—</div><div class="stat-label">${paceUnit()}</div></div></div><div class="map-box" style="margin-top:16px"><div class="map-grid"></div><svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline id="routeLine" points=""></polyline></svg><div class="map-note" id="gpsStatus">GPS 대기 중</div></div><div class="helper" id="runForegroundNotice">웹/PWA에서는 화면 잠금·백그라운드 GPS 지속을 보장하지 않습니다. GARANG은 백그라운드 전환 시 기록을 안전하게 일시중지하고, 전면에서 명시적으로 재개합니다.</div><div class="actions" style="margin-top:12px"><button id="runStart" class="primary">러닝 시작</button><button id="runPause" class="ghost" hidden>일시정지</button><button id="runResume" class="primary" hidden>러닝 재개</button><button id="runStop" class="ghost">정지 & 저장</button></div><div class="helper" id="runQuality">GPS 정확도 50m 이내 위치만 거리 계산에 사용하며 비정상 점프는 제외합니다.</div></section>
+<section class="card photo-evidence-card photo-evidence-card-running"><div class="photo-evidence-head"><div><span class="eyebrow">RUN EVIDENCE</span><h3>러닝을 사진과 함께 남겨보세요</h3><p>러닝 기록과 사진을 하나의 Evidence로 저장합니다.</p></div><span class="photo-evidence-optional">${draft?.file?'저장 준비됨':latestHasPhoto?'최근 기록에 저장됨':'선택 사항'}</span></div><div class="photo-evidence-stage ${draft?.url?'has-photo':''}">${draft?.url?`<img src="${draft.url}" alt="러닝 인증 사진 미리보기"><div class="photo-evidence-draft-mark"><span>RUN EVIDENCE</span><b>저장 준비됨</b></div>`:`<div class="photo-evidence-empty"><span class="camera-glyph" aria-hidden="true">◎</span><strong>러닝 사진 추가</strong><small>카메라 또는 사진 보관함</small></div>`}</div><div class="actions photo-evidence-actions"><button id="runCert" class="${draft?.file?'ghost':'primary'}">${draft?.file?'사진 변경':latest?.date===today()&&!runState?'최근 러닝에 사진 추가':'사진 촬영 / 선택'}</button>${draft?.file?`<button id="clearRunEvidence" class="ghost">사진 제거</button>`:''}</div><div class="photo-evidence-foot"><span>${runState?'정지 & 저장 시 러닝 기록과 함께 저장됩니다.':latest?.date===today()?'사진을 선택하면 오늘의 최근 러닝에 연결됩니다.':'러닝 시작 전에도 사진을 준비할 수 있습니다.'}</span><small>원본은 현재 기기에 저장됩니다.</small></div>${latest?`<div class="photo-evidence-share"><div><span class="eyebrow">GARANG VERIFIED</span><b>최근 러닝 기록으로 인증 이미지 만들기</b></div><div class="actions"><button id="runShareCert" class="ghost small">사진첩에서 불러오기</button><button id="runOverlayOnly" class="ghost small">오버레이 PNG</button></div><div id="runCertArea" class="empty"></div></div>`:`<div id="runCertArea" hidden></div>`}</section></div>
+<div class="section-title"><h2>최근 기록</h2></div><section class="card"><div class="list">${state.runs.slice().reverse().slice(0,30).map(x=>`<div class="list-item run-history-row"><div><strong>${num(x.distance).toFixed(2)} km</strong><div class="muted">${x.date} · ${formatRunMinutes(num(x.duration))} · ${paceText(x)} /km${x.splits?.length?` · ${x.splits.length} km splits`:''}</div>${x.splits?.length?`<div class="actions run-split-pills">${x.splits.slice(0,6).map(split=>`<span class="pill">${split.km}K · ${paceText({duration:split.paceMinPerKm,distance:1})}</span>`).join('')}</div>`:''}${photoEvidenceButton(x,'러닝 사진')}</div><div class="actions"><span class="pill">${Math.round(x.kcal||0)} kcal</span><button class="ghost small" data-run-delete="${esc(x.id)}">삭제</button></div></div>`).join('')||'<div class="empty">러닝 기록이 없습니다.</div>'}</div></section>`;}
 function runningPage(){return runningPageBase()+renderRunningInsights();}
 function bodyDerived(weight,height,fatPct){weight=num(weight);height=num(height);fatPct=num(fatPct);const fatMass=weight&&fatPct?weight*fatPct/100:0,leanMass=weight&&fatMass?weight-fatMass:0,bmi=height&&weight?weight/Math.pow(height/100,2):0,age=num(state.profile?.age,30),sex=userGender(),bmr=height&&weight?Math.round(10*weight+6.25*height-5*age+(sex==='female'?-161:5)):0;return {fatMass,leanMass,bmi,bmr};}
 function bodyMetricConfig(){return {weight:{label:'체중',unit:'kg'},muscle:{label:'골격근량',unit:'kg'},fatPercent:{label:'체지방률',unit:'%'},fatMass:{label:'체지방량',unit:'kg'}};}
@@ -593,16 +609,92 @@ function editMeal(i){const x=mealDraft[i];if(!x)return;$('foodSearch').value=x.n
 async function saveMealGroup(){if(!mealDraft.length)return toast('음식을 먼저 추가해 주세요.');const draft=mealScanDraft;let evidence=null;if(draft?.file){const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');const evidenceId=uid();try{await api.store(evidenceId,draft.file);evidence=api.metadata(evidenceId,draft.file,'nutrition');}catch(e){captureError('meal_photo_evidence_save',e);return toast('식단 사진 저장에 실패했습니다. 식사는 아직 저장하지 않았습니다.');}}const totals=mealDraft.reduce((a,x)=>({kcal:a.kcal+x.kcal,protein:a.protein+x.protein,carbs:a.carbs+x.carbs,fat:a.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0}),stamp=isoNow();const meal={id:uid(),date:today(),name:mealDraft.map(x=>x.name).slice(0,2).join(' + ')+(mealDraft.length>2?` 외 ${mealDraft.length-2}종`:''),items:mealDraft.map(x=>({...x})),...totals,photoEvidence:evidence,createdAt:stamp,updatedAt:stamp};state.meals.push(meal);state.memory.events.push({type:'meal',date:today(),text:`${meal.items.length}종 · ${Math.round(meal.kcal)} kcal`});mealDraft=[];window.GarangPhotoEvidence?.revoke(mealScanDraft);mealScanDraft=null;saveState({event:'meal_saved',source:'nutrition'});trackEvent('photo_evidence_recorded',{kind:'nutrition',attached:!!evidence});toast(evidence?'식사와 인증 사진을 저장했습니다.':'식사를 저장했습니다.');render();}
 function installNutritionDraftBridge(){if(window.GarangNutritionDraftBridge?.version==='garang-nutrition-draft-v1')return;window.GarangNutritionDraftBridge=Object.freeze({version:'garang-nutrition-draft-v1',add(items){const rows=(Array.isArray(items)?items:[]).map(item=>({id:uid(),foodId:item?.foodId||item?.id||null,name:String(item?.name||'').trim(),grams:Math.max(1,num(item?.grams,100)),kcal:num(item?.kcal),protein:num(item?.protein),carbs:num(item?.carbs??item?.carbohydrate),fat:num(item?.fat),nutritionStatus:item?.nutritionStatus||'unknown',nutritionSource:normalizedNutritionSource(item?.nutritionSource||item?.provenance||(item?.source?{source:item.source}:null)),userOverride:item?.userOverride===true})).filter(item=>item.name&&[item.kcal,item.protein,item.carbs,item.fat].every(value=>Number.isFinite(value)));if(!rows.length)return {ok:false,added:0,reason:'INVALID_RECOMMENDATION'};mealDraft.push(...rows);trackEvent('nutrition_recommendation_draft_added',{items:rows.length});render();return {ok:true,added:rows.length};},count:()=>mealDraft.length});}
 function mealScanMatch(row){const names=[row?.name,...(Array.isArray(row?.aliases)?row.aliases:[])].map(x=>String(x||'').trim()).filter(Boolean);let food=null;for(const name of names){food=findFood(name);if(food)break;}if(!food)return null;const item=foodItem(food.name,Math.max(5,num(row?.grams,100)));return item?{...item,scanEvidence:{visionName:String(row?.name||food.name),confidence:clamp(num(row?.confidence,0),0,1),source:'vision'}}:null;}
+async function lookupMealScanNutrition(rows=[]){
+ const input=(Array.isArray(rows)?rows:[]).slice(0,6);if(!input.length||!SERVICES.nutritionLookupEndpoint)return {items:[],unresolved:input};
+ try{
+  toast('DB에 없는 음식의 영양정보를 확인 중입니다.');
+  const r=await fetch(SERVICES.nutritionLookupEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:input.map(row=>({name:row.name,aliases:row.aliases||[],grams:row.grams})),language:document.documentElement.lang==='en'?'en':'ko'})});
+  const payload=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(payload?.error?.code||`Nutrition Lookup ${r.status}`),{code:payload?.error?.code||'NUTRITION_LOOKUP_FAILED'});
+  const items=(Array.isArray(payload?.items)?payload.items:[]).map((row,index)=>({
+   id:uid(),foodId:null,name:String(row?.name||input[row?.inputIndex??index]?.name||'음식'),grams:Math.max(5,num(row?.grams,input[row?.inputIndex??index]?.grams||100)),
+   kcal:num(row?.kcal),protein:num(row?.protein),carbs:num(row?.carbs),fat:num(row?.fat),
+   nutritionStatus:'estimated',nutritionSource:normalizedNutritionSource(row?.nutritionSource||{source:'web_search'}),
+   userOverride:false,scanEvidence:{visionName:String(input[row?.inputIndex??index]?.name||row?.name||'음식'),confidence:clamp(num(input[row?.inputIndex??index]?.confidence,0),0,1),source:'vision+web'}
+  })).filter(item=>[item.kcal,item.protein,item.carbs,item.fat].every(Number.isFinite));
+  const unresolved=(Array.isArray(payload?.unresolved)?payload.unresolved:[]).map(row=>({name:String(row?.name||input[row?.inputIndex]?.name||'음식'),grams:Math.max(5,num(input[row?.inputIndex]?.grams,100)),confidence:clamp(num(input[row?.inputIndex]?.confidence,0),0,1)}));
+  trackEvent('meal_scan_web_nutrition_resolved',{resolved:items.length,unresolved:unresolved.length});
+  return {items,unresolved};
+ }catch(error){captureError('meal_scan_nutrition_lookup',error);return {items:[],unresolved:input};}
+}
 function fileDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('MEAL_SCAN_FILE_READ_FAILED'));reader.readAsDataURL(file);});}
 async function prepareMealScanImage(file){const allowed=['image/jpeg','image/png','image/webp'],type=String(file?.type||'').toLowerCase(),direct=await fileDataUrl(file);if(allowed.includes(type)&&direct.length<=2400000)return {mediaType:type,dataUrl:direct};let url='';try{url=URL.createObjectURL(file);const image=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('MEAL_SCAN_IMAGE_DECODE_FAILED'));im.src=url;});const maxSide=1280,scale=Math.min(1,maxSide/Math.max(image.naturalWidth||image.width,image.naturalHeight||image.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round((image.naturalWidth||image.width)*scale));canvas.height=Math.max(1,Math.round((image.naturalHeight||image.height)*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);let dataUrl=canvas.toDataURL('image/jpeg',.82);if(dataUrl.length>2400000){const shrink=.72,w=Math.max(1,Math.round(canvas.width*shrink)),h=Math.max(1,Math.round(canvas.height*shrink)),small=document.createElement('canvas');small.width=w;small.height=h;small.getContext('2d').drawImage(canvas,0,0,w,h);dataUrl=small.toDataURL('image/jpeg',.72);}if(dataUrl.length>2400000)throw new Error('MEAL_SCAN_IMAGE_TOO_LARGE');return {mediaType:'image/jpeg',dataUrl};}finally{if(url)URL.revokeObjectURL(url);}}
-async function analyzeMealScan(){if(!mealScanDraft?.file)return toast('먼저 음식 사진을 선택해 주세요.');mealScanDraft.manualName=$('scanFoodName').value.trim();mealScanDraft.grams=Math.max(1,num($('scanFoodGram').value,100));if(SERVICES.mealScanEndpoint){try{toast('사진에서 음식을 확인 중입니다.');const image=await prepareMealScanImage(mealScanDraft.file),r=await fetch(SERVICES.mealScanEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,language:document.documentElement.lang==='en'?'en':'ko'})}),payload=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(payload?.error?.code||`Meal Scan ${r.status}`),{code:payload?.error?.code||'MEAL_SCAN_FAILED'});const rows=Array.isArray(payload?.data?.items)?payload.data.items:(Array.isArray(payload?.items)?payload.items:[]);if(!rows.length)throw new Error('MEAL_SCAN_NO_ITEMS');const matched=[],unmatched=[];for(const row of rows){const item=mealScanMatch(row);if(item)matched.push(item);else unmatched.push({name:String(row?.name||'음식'),grams:Math.max(5,num(row?.grams,100)),confidence:clamp(num(row?.confidence,0),0,1)});}mealScanDraft.items=matched;mealScanDraft.unmatched=unmatched;mealScanDraft.scanMeta={overallConfidence:num(payload?.data?.overallConfidence,0),uncertain:payload?.data?.uncertain===true,requestId:payload?.data?.requestId||null};trackEvent('meal_scan_draft_created',{provider:'vision',matched:matched.length,unmatched:unmatched.length});render();if(!matched.length)return toast('음식은 인식했지만 Food DB에서 매칭하지 못했습니다. 직접 입력으로 확인해 주세요.');if(unmatched.length)toast(`${matched.length}개 매칭 · ${unmatched.length}개는 직접 확인이 필요합니다.`);else toast('사진 분석 초안을 만들었습니다. 저장 전 확인해 주세요.');return;}catch(e){captureError('meal_scan',e);mealScanDraft.items=[];mealScanDraft.unmatched=[];if(e?.code==='MEAL_SCAN_NO_FOOD_DETECTED'||e?.message==='MEAL_SCAN_NO_FOOD_DETECTED'){render();toast('사진에서 음식을 찾지 못했습니다. 음식이 잘 보이는 사진으로 다시 촬영해 주세요.');return;}toast(e?.message==='MEAL_SCAN_IMAGE_DECODE_FAILED'?'이 사진 형식은 분석용으로 변환하지 못했습니다. JPG/PNG 사진을 사용해 주세요.':'Vision 분석에 실패했습니다. 임의 결과를 만들지 않습니다.');return;}}
-  if(!mealScanDraft.manualName)return toast('Vision API 미연결 상태입니다. 음식명을 입력하면 DB 기반 초안을 만들 수 있습니다.');const x=foodItem(mealScanDraft.manualName,mealScanDraft.grams);if(!x)return toast('Food DB에서 해당 음식을 찾지 못했습니다. 직접 입력을 사용해 주세요.');mealScanDraft.items=[x];mealScanDraft.unmatched=[];trackEvent('meal_scan_draft_created',{provider:'local_db'});render();}
+async function analyzeMealScan(){
+ if(!mealScanDraft?.file)return toast('먼저 음식 사진을 선택해 주세요.');
+ mealScanDraft.manualName=$('scanFoodName')?.value?.trim?.()||mealScanDraft.manualName||'';
+ mealScanDraft.grams=Math.max(1,num($('scanFoodGram')?.value,mealScanDraft.grams||100));
+ if(SERVICES.mealScanEndpoint){
+  try{
+   toast('사진에서 음식을 확인 중입니다.');
+   const image=await prepareMealScanImage(mealScanDraft.file),r=await fetch(SERVICES.mealScanEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,language:document.documentElement.lang==='en'?'en':'ko'})}),payload=await r.json().catch(()=>({}));
+   if(!r.ok)throw Object.assign(new Error(payload?.error?.code||`Meal Scan ${r.status}`),{code:payload?.error?.code||'MEAL_SCAN_FAILED'});
+   const rows=Array.isArray(payload?.data?.items)?payload.data.items:(Array.isArray(payload?.items)?payload.items:[]);if(!rows.length)throw new Error('MEAL_SCAN_NO_ITEMS');
+   const matched=[],needsLookup=[];
+   for(const row of rows){const item=mealScanMatch(row);if(item)matched.push(item);else needsLookup.push({name:String(row?.name||'음식'),aliases:Array.isArray(row?.aliases)?row.aliases:[],grams:Math.max(5,num(row?.grams,100)),confidence:clamp(num(row?.confidence,0),0,1)});}
+   const web=await lookupMealScanNutrition(needsLookup);
+   mealScanDraft.items=[...matched,...web.items];mealScanDraft.unmatched=web.unresolved;
+   mealScanDraft.scanMeta={overallConfidence:num(payload?.data?.overallConfidence,0),uncertain:payload?.data?.uncertain===true,requestId:payload?.data?.requestId||null,dbMatched:matched.length,webResolved:web.items.length};
+   trackEvent('meal_scan_draft_created',{provider:'vision',matched:matched.length,webResolved:web.items.length,unmatched:web.unresolved.length});
+   render();
+   if(!mealScanDraft.items.length)return toast('음식은 인식했지만 신뢰할 수 있는 영양 출처를 찾지 못했습니다.');
+   if(web.unresolved.length)toast(`${mealScanDraft.items.length}개 계산 · ${web.unresolved.length}개는 직접 확인이 필요합니다.`);
+   else toast(web.items.length?'DB와 웹 출처를 확인해 식사 초안을 만들었습니다.':'사진 분석 초안을 만들었습니다.');
+   return;
+  }catch(e){
+   captureError('meal_scan',e);mealScanDraft.items=[];mealScanDraft.unmatched=[];
+   const noFood=e?.code==='MEAL_SCAN_NO_FOOD_DETECTED'||e?.message==='MEAL_SCAN_NO_FOOD_DETECTED';
+   if(noFood){render();toast('사진에서 음식을 찾지 못했습니다. 음식이 잘 보이는 사진으로 다시 촬영해 주세요.');return;}
+   toast(e?.message==='MEAL_SCAN_IMAGE_DECODE_FAILED'?'이 사진 형식은 분석용으로 변환하지 못했습니다. JPG/PNG 사진을 사용해 주세요.':'Vision 분석에 실패했습니다. 임의 결과를 만들지 않습니다.');
+   return;
+  }
+ }
+ if(!mealScanDraft.manualName)return toast('Vision API 미연결 상태입니다. 음식명을 입력하면 DB 기반 초안을 만들 수 있습니다.');
+ const x=foodItem(mealScanDraft.manualName,mealScanDraft.grams);if(!x)return toast('Food DB에서 해당 음식을 찾지 못했습니다.');
+ mealScanDraft.items=[x];mealScanDraft.unmatched=[];trackEvent('meal_scan_draft_created',{provider:'local_db'});render();
+}
 
 function bindRunning(){
-  $('runStart').onclick=startRun;$('runResume').onclick=resumeRun;$('runStop').onclick=stopRun;
-  $('runCert').onclick=()=>pickMedia('mediaPicker',m=>{currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');});
+  $('runStart').onclick=startRun;$('runPause')?.addEventListener('click',()=>pauseRun('manual'));$('runResume').onclick=resumeRun;$('runStop').onclick=stopRun;
+  $('runCert').onclick=pickRunningEvidence;
+  $('clearRunEvidence')?.addEventListener('click',()=>{window.GarangPhotoEvidence?.revoke(runEvidenceDraft);runEvidenceDraft=null;render();});
+  $('runShareCert')?.addEventListener('click',()=>pickMedia('mediaPicker',m=>{window.GarangPhotoEvidence?.revoke(currentCert.running);currentCert.running=m;showCert('runCertArea',m,state.runs.at(-1),'running');}));
   $('runOverlayOnly')?.addEventListener('click',()=>saveTransparentOverlay('running'));
-  syncRunPauseUI();
+  document.querySelectorAll('[data-run-delete]').forEach(button=>button.onclick=()=>deleteRunRecord(button.dataset.runDelete));
+  bindPhotoEvidenceHistory();syncRunPauseUI();updateRunUI();updateRoute();
+  if(currentCert.running&&state.runs.at(-1))showCert('runCertArea',currentCert.running,state.runs.at(-1),'running');
+}
+async function attachRunningEvidence(record,draft){
+  const api=window.GarangPhotoEvidence;if(!api||!record||!draft?.file)return false;
+  const id=uid(),oldId=record.photoEvidence?.id||null;
+  await api.store(id,draft.file);record.photoEvidence=api.metadata(id,draft.file,'running');record.updatedAt=isoNow();
+  if(oldId&&oldId!==id)api.deleteMany?.([oldId]).catch(()=>{});
+  return true;
+}
+function pickRunningEvidence(){
+  const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');
+  api.pick($('runPhotoPicker'),'running',async draft=>{
+    if(runState||state.runs.at(-1)?.date!==today()){
+      api.revoke(runEvidenceDraft);runEvidenceDraft=draft;render();return;
+    }
+    const record=state.runs.at(-1);
+    try{await attachRunningEvidence(record,draft);api.revoke(currentCert.running);currentCert.running=draft;saveState({event:'run_photo_evidence_saved',source:'running'});toast('최근 러닝에 사진을 연결했습니다.');render();}
+    catch(e){api.revoke(draft);captureError('run_photo_evidence_save',e);toast('러닝 사진 저장에 실패했습니다.');}
+  },message=>toast(message));
+}
+async function deleteRunRecord(id){
+  const record=state.runs.find(x=>x.id===id);if(!record||!confirm('이 러닝 기록을 삭제할까요?'))return;
+  const photoId=record.photoEvidence?.id||null,isLatest=state.runs.at(-1)?.id===id;if(isLatest){window.GarangPhotoEvidence?.revoke(currentCert.running);currentCert.running=null;}state.runs=state.runs.filter(x=>x.id!==id);
+  if(photoId)window.GarangPhotoEvidence?.deleteMany?.([photoId]).catch(e=>captureError('run_photo_evidence_delete',e));
+  saveState({event:'run_deleted',source:'running'});toast('러닝 기록을 삭제했습니다.');render();
 }
 function activeRunElapsedMs(){
   if(!runState)return 0;
@@ -618,43 +710,59 @@ function beginRunWatch(){
   clearRunWatch();
   runState.watchId=navigator.geolocation.watchPosition(pos=>{
     if(!runState||runState.paused)return;
-    const p=pos.coords;runState.coords.push([p.latitude,p.longitude,pos.timestamp]);
-    if(runState.coords.length>1){const a=runState.coords.at(-2),b=runState.coords.at(-1);runState.distance+=haversine(a[0],a[1],b[0],b[1]);}
-    updateRoute();updateRunUI();if($('gpsStatus'))$('gpsStatus').textContent=`GPS 연결 · 정확도 ${Math.round(p.accuracy)}m`;
+    const p=pos.coords,elapsedMs=activeRunElapsedMs(),point={latitude:p.latitude,longitude:p.longitude,timestamp:pos.timestamp||Date.now(),elapsedMs,accuracy:p.accuracy};
+    const previous=runState.coords.length?{latitude:runState.coords.at(-1)[0],longitude:runState.coords.at(-1)[1],timestamp:runState.coords.at(-1)[2],elapsedMs:runState.coords.at(-1)[3],accuracy:runState.coords.at(-1)[4]}:null;
+    const verdict=window.GarangRunningIntegrity?.assessPosition?.(previous,point)||{accepted:true,segmentKm:previous?haversine(previous.latitude,previous.longitude,point.latitude,point.longitude):0,point};
+    if(!verdict.accepted){
+      if(verdict.ignored)runState.gpsIgnored++;else runState.gpsRejected++;
+      if($('gpsStatus'))$('gpsStatus').textContent=verdict.reason==='LOW_ACCURACY'?`GPS 신호 보정 중 · 정확도 ${Math.round(num(p.accuracy))}m`:'GPS 이상값 제외 중';
+      updateRunQualityUI();return;
+    }
+    runState.coords.push([point.latitude,point.longitude,point.timestamp,point.elapsedMs,point.accuracy]);runState.distance+=Math.max(0,num(verdict.segmentKm));runState.gpsAccepted++;runState.accuracySum+=Math.max(0,num(point.accuracy));
+    updateRoute();updateRunUI();updateRunQualityUI();if($('gpsStatus'))$('gpsStatus').textContent=`GPS 연결 · 정확도 ${Math.round(p.accuracy)}m`;
   },()=>{if($('gpsStatus'))$('gpsStatus').textContent='GPS 권한 또는 신호를 확인해 주세요.';},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});
   runTimer=setInterval(updateRunUI,1000);
 }
+function updateRunQualityUI(){
+  const box=$('runQuality');if(!box||!runState)return;
+  const avg=runState.gpsAccepted?Math.round(runState.accuracySum/runState.gpsAccepted):null;
+  box.textContent=`GPS 유효 ${runState.gpsAccepted} · 제외 ${runState.gpsRejected} · 미세 흔들림 ${runState.gpsIgnored}${avg!==null?` · 평균 정확도 ${avg}m`:''}`;
+}
 function syncRunPauseUI(){
-  const resume=$('runResume'),status=$('gpsStatus');
-  if(resume)resume.hidden=!runState?.paused;
-  if(runState?.paused&&status)status.textContent='백그라운드 전환으로 GPS를 일시중지했습니다. 전면으로 돌아와 러닝 재개를 눌러주세요.';
+  const start=$('runStart'),pause=$('runPause'),resume=$('runResume'),status=$('gpsStatus');
+  if(start)start.disabled=!!runState;
+  if(pause)pause.hidden=!runState||runState.paused;
+  if(resume)resume.hidden=!runState||!runState.paused;
+  if(runState?.paused&&status)status.textContent=runState.pauseReason==='manual'?'사용자가 러닝을 일시중지했습니다.':'백그라운드 전환으로 GPS를 일시중지했습니다. 전면으로 돌아와 러닝 재개를 눌러주세요.';
 }
 function startRun(){
   if(runState)return toast('이미 러닝 중입니다.');
   if(!navigator.geolocation)return toast('이 기기에서는 GPS를 사용할 수 없습니다.');
-  runState={started:Date.now(),activeStartedAt:Date.now(),elapsedMs:0,distance:0,coords:[],watchId:null,paused:false,foregroundPauseCount:0,trackingMode:'foreground_only'};
+  runState={started:Date.now(),activeStartedAt:Date.now(),elapsedMs:0,distance:0,coords:[],watchId:null,paused:false,pauseReason:null,foregroundPauseCount:0,manualPauseCount:0,gpsAccepted:0,gpsRejected:0,gpsIgnored:0,accuracySum:0,trackingMode:'foreground_only'};
   if($('gpsStatus'))$('gpsStatus').textContent='GPS 연결 중…';
-  beginRunWatch();trackEvent('run_started',{trackingMode:'foreground_only'});syncRunPauseUI();
+  beginRunWatch();trackEvent('run_started',{trackingMode:'foreground_only'});syncRunPauseUI();updateRunQualityUI();
 }
-function pauseRunForBackground(reason='background'){
+function pauseRun(reason='manual'){
   if(!runState||runState.paused)return false;
-  runState.elapsedMs=activeRunElapsedMs();runState.paused=true;runState.pausedAt=Date.now();runState.foregroundPauseCount=Math.max(0,num(runState.foregroundPauseCount))+1;
-  clearRunWatch();trackEvent('run_foreground_paused',{reason,count:runState.foregroundPauseCount},false);syncRunPauseUI();return true;
+  runState.elapsedMs=activeRunElapsedMs();runState.paused=true;runState.pausedAt=Date.now();runState.pauseReason=reason;
+  if(reason==='manual')runState.manualPauseCount=Math.max(0,num(runState.manualPauseCount))+1;else runState.foregroundPauseCount=Math.max(0,num(runState.foregroundPauseCount))+1;
+  clearRunWatch();trackEvent(reason==='manual'?'run_manual_paused':'run_foreground_paused',{reason,count:reason==='manual'?runState.manualPauseCount:runState.foregroundPauseCount},false);syncRunPauseUI();updateRunUI();return true;
 }
+function pauseRunForBackground(reason='background'){return pauseRun(reason);}
 function resumeRun(){
   if(!runState)return toast('진행 중인 러닝이 없습니다.');
   if(!runState.paused)return toast('러닝이 이미 진행 중입니다.');
   if(document.hidden)return toast('GARANG을 전면에 둔 뒤 재개해 주세요.');
-  runState.paused=false;runState.activeStartedAt=Date.now();runState.pausedAt=null;
+  const reason=runState.pauseReason;runState.paused=false;runState.activeStartedAt=Date.now();runState.pausedAt=null;runState.pauseReason=null;
   if($('gpsStatus'))$('gpsStatus').textContent='GPS 재연결 중…';
-  beginRunWatch();trackEvent('run_foreground_resumed',{count:runState.foregroundPauseCount},false);syncRunPauseUI();updateRunUI();
+  beginRunWatch();trackEvent('run_resumed',{reason,manualPauseCount:runState.manualPauseCount,foregroundPauseCount:runState.foregroundPauseCount},false);syncRunPauseUI();updateRunUI();
 }
 function updateRunUI(){
   if(!runState)return;
   const sec=Math.floor(activeRunElapsedMs()/1000),min=Math.floor(sec/60),s=String(sec%60).padStart(2,'0');
   if($('runDistance'))$('runDistance').textContent=Number(shownDistance(runState.distance,2)||0).toFixed(2);
   if($('runTime'))$('runTime').textContent=`${String(min).padStart(2,'0')}:${s}`;
-  if($('runPace'))$('runPace').textContent=runState.distance>0?Number(shownPace(sec/60/runState.distance,2)).toFixed(2):'—';
+  if($('runPace')){const pace=runState.distance>0?sec/60/runState.distance:0;$('runPace').textContent=pace?paceText({duration:sec/60,distance:runState.distance}):'—';}
 }
 function updateRoute(){
   const line=$('routeLine');if(!line||!runState?.coords.length)return;const pts=runState.coords;
@@ -662,13 +770,16 @@ function updateRoute(){
   const lats=pts.map(p=>p[0]),lons=pts.map(p=>p[1]),minLat=Math.min(...lats),maxLat=Math.max(...lats),minLon=Math.min(...lons),maxLon=Math.max(...lons),dLat=maxLat-minLat||1e-6,dLon=maxLon-minLon||1e-6;
   line.setAttribute('points',pts.map(p=>`${8+84*(p[1]-minLon)/dLon},${92-84*(p[0]-minLat)/dLat}`).join(' '));
 }
-function stopRun(){
+async function stopRun(){
   if(!runState)return toast('진행 중인 러닝이 없습니다.');
   if(!runState.paused)runState.elapsedMs=activeRunElapsedMs();
   clearRunWatch();
-  const sec=Math.max(1,Math.floor(num(runState.elapsedMs)/1000)),duration=sec/60,d=runState.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036),stamp=isoNow();
-  state.runs.push({id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:runState.coords,trackingMode:'foreground_only',foregroundPauseCount:Math.max(0,num(runState.foregroundPauseCount)),createdAt:stamp,updatedAt:stamp});
-  runState=null;saveState({event:'run_saved',source:'running'});toast('러닝을 저장했습니다.');render();
+  const finished=runState;runState=null;
+  const sec=Math.max(1,Math.floor(num(finished.elapsedMs)/1000)),duration=sec/60,d=finished.distance,pace=d?duration/d:0,body=num(state.profile?.weight,67),kcal=Math.round(d*body*1.036),stamp=isoNow(),splits=window.GarangRunningIntegrity?.buildSplits?.(finished.coords)||[];
+  const record={id:uid(),date:today(),distance:d,duration,pace:pace?pace.toFixed(2):'—',kcal,coords:finished.coords,splits,trackingMode:'foreground_only',foregroundPauseCount:Math.max(0,num(finished.foregroundPauseCount)),manualPauseCount:Math.max(0,num(finished.manualPauseCount)),gpsQuality:{accepted:finished.gpsAccepted,rejected:finished.gpsRejected,ignored:finished.gpsIgnored,averageAccuracyM:finished.gpsAccepted?Math.round(finished.accuracySum/finished.gpsAccepted):null},createdAt:stamp,updatedAt:stamp};
+  let photoSaved=false;
+  if(runEvidenceDraft?.file){try{photoSaved=await attachRunningEvidence(record,runEvidenceDraft);if(photoSaved){window.GarangPhotoEvidence?.revoke(currentCert.running);currentCert.running=runEvidenceDraft;}}catch(e){captureError('run_photo_evidence_save',e);}}
+  runEvidenceDraft=null;state.runs.push(record);saveState({event:'run_saved',source:'running'});toast(photoSaved?'러닝과 사진을 함께 저장했습니다.':'러닝을 저장했습니다.');render();
 }
 function haversine(a,b,c,d){const R=6371,rad=Math.PI/180,da=(c-a)*rad,db=(d-b)*rad,x=Math.sin(da/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin(db/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 
