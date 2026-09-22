@@ -139,7 +139,7 @@ async function assertCoachSettles(page){
         profile:{name:'WebKit',weight:70},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},
         preferences:{language:'ko',unit:'metric'},
-        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat'}],
+        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat',sets:3,reps:6,weight:50,rpe:7,duration:30,setDetails:[{set:1,weight:50,reps:6,rpe:7},{set:2,weight:50,reps:6,rpe:7},{set:3,weight:50,reps:6,rpe:7}]}],
         meals:[null,{id:'m1',date:'2026-09-06',name:'Meal',items:[null,{id:'f1',name:'Egg',grams:100,kcal:150,protein:13,carbs:1,fat:10}]}],
         runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
         memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
@@ -224,6 +224,10 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
+    assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
+    await tap(page,'[data-gws-reuse-latest]');
+    await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50'&&document.querySelector('#workoutSetDetails [data-set-reps]')?.value==='6',{timeout:3000});
+    assert.equal(await page.locator('#wDuration').inputValue(),'30','recent workout reuse must preserve duration');
     await page.locator('#wSets').fill('5');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails [data-set-row]').count(),5,'visible execution rows must stay synchronized with the set count');
@@ -237,6 +241,12 @@ async function assertCoachSettles(page){
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
     await tap(page,'#skipWorkoutRest');
+    await page.locator('#wSets').fill('6');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===6,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'increasing set count must preserve completed set state');
+    await page.locator('#wSets').fill('5');
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
+    assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'decreasing set count must preserve surviving completed sets');
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
