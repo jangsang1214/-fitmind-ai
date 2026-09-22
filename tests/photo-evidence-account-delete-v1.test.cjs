@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const photo=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-photo-evidence-v1.js'),'utf8');
+const privacy=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-privacy-security-v1.js'),'utf8');
+assert.match(photo,/async function deleteMany\(ids\)/);
+assert.match(photo,/store\.delete\(id\)/);
+assert.match(privacy,/photoEvidenceIdsFromState/);
+assert.match(privacy,/GarangPhotoEvidence\?\.deleteMany/);
+assert.match(privacy,/state\?\.workouts/);
+assert.match(privacy,/state\?\.meals/);
+console.log('photo-evidence-account-delete-v1: PASS');
