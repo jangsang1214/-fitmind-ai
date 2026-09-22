@@ -57,7 +57,9 @@
   function mount(model) {
     if (main.dataset.garangScreen !== 'nutrition') return;
     removeSurface();
-    const hero = main.querySelector('.nutrition-visual-hero');
+    const hero = main.querySelector('.nutrition-visual-hero')
+      || main.querySelector('.nutrition-quick-summary')
+      || main.querySelector('.meal-scan-card');
     if (!hero) return;
     const surface = document.createElement('div');
     surface.innerHTML = surfaceMarkup(model || { status: 'loading', message: ko() ? '저장된 기록을 기준으로 다음 한 끼를 계산하고 있습니다.' : 'Calculating the next meal from saved records.' });

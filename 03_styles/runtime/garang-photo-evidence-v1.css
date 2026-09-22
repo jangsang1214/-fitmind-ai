@@ -67,3 +67,61 @@
   .meal-camera-stage.photo-evidence-stage,.meal-camera-stage.photo-evidence-stage>img{min-height:270px}
   .garang-photo-evidence-dialog{border-radius:22px;padding:10px}.garang-photo-evidence-full{max-height:68vh;border-radius:16px}
 }
+
+
+/* Meal Scan v1.1 — compact scan-first nutrition flow */
+.nutrition-quick-summary{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.9fr);gap:16px;align-items:center}
+.nutrition-summary-main{display:grid;gap:4px}
+.nutrition-summary-main>strong{font-size:34px;line-height:1;letter-spacing:-.04em}
+.nutrition-summary-main>strong small{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
+.nutrition-summary-main>span:last-child{font-size:11px;color:var(--muted)}
+.nutrition-summary-macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.nutrition-summary-macros span{display:grid;gap:3px;padding:9px 10px;border:1px solid rgba(242,238,231,.08);border-radius:12px;background:rgba(255,255,255,.018);font-size:12px}
+.nutrition-summary-macros b{font-size:9px;letter-spacing:.08em;color:rgba(186,161,111,.82)}
+.nutrition-summary-progress{grid-column:1/-1;display:grid;gap:6px}
+.nutrition-summary-progress i{height:4px;border-radius:999px;background:rgba(242,238,231,.08);overflow:hidden}
+.nutrition-summary-progress em{display:block;height:100%;border-radius:inherit;background:currentColor}
+.nutrition-summary-progress small{font-size:10px;color:var(--muted)}
+.meal-scan-card{display:grid;gap:14px}
+.meal-scan-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.meal-scan-header>div{min-width:0}
+.meal-scan-header h3{margin:4px 0;font-size:19px;letter-spacing:-.025em}
+.meal-scan-header p{margin:0;max-width:520px;color:var(--muted);font-size:11px;line-height:1.5}
+.meal-scan-header button{flex:0 0 auto;min-height:40px}
+.meal-scan-empty{width:100%;min-height:150px;display:grid;place-items:center;gap:5px;padding:22px;border:1px dashed rgba(186,161,111,.24);border-radius:18px;background:rgba(186,161,111,.025);color:inherit}
+.meal-scan-empty .camera-glyph{font-size:25px;color:rgba(186,161,111,.8)}
+.meal-scan-empty strong{font-size:14px}
+.meal-scan-empty small{font-size:10px;color:var(--muted)}
+.meal-scan-workspace{display:grid;grid-template-columns:minmax(150px,.72fr) minmax(0,1.28fr);gap:14px;align-items:start}
+.meal-scan-preview{position:relative;overflow:hidden;min-height:180px;border-radius:18px;background:#070807;border:1px solid rgba(242,238,231,.08)}
+.meal-scan-preview img{display:block;width:100%;height:100%;min-height:180px;max-height:280px;object-fit:cover}
+.meal-scan-remove{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:999px;border:1px solid rgba(242,238,231,.13);background:rgba(5,6,5,.72);color:#f2eee7;font-size:20px;line-height:1}
+.meal-scan-actions{display:grid;gap:7px}
+.meal-scan-actions button{min-height:44px}
+.meal-scan-actions small{font-size:10px;line-height:1.45;color:var(--muted)}
+.meal-scan-results{grid-column:1/-1;display:grid;gap:8px}
+.meal-scan-result-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid rgba(242,238,231,.08);border-radius:14px;background:rgba(255,255,255,.018)}
+.meal-scan-result-row>div:first-child{display:grid;gap:3px;min-width:0}
+.meal-scan-result-row strong{font-size:13px}
+.meal-scan-result-row small{font-size:10px;color:var(--muted)}
+.meal-scan-result-meta{display:grid;justify-items:end;gap:5px;flex:0 0 auto}
+.meal-scan-result-meta b{font-size:13px}
+.meal-scan-result-meta>span{display:flex;align-items:center;gap:7px}
+.meal-source-chip{display:inline-flex;align-items:center;min-height:20px;padding:0 7px;border-radius:999px;font-size:8px;font-weight:800;letter-spacing:.08em}
+.meal-source-chip.is-db{border:1px solid rgba(186,161,111,.22);background:rgba(186,161,111,.06);color:rgba(220,197,147,.92)}
+.meal-source-chip.is-web{border:1px solid rgba(242,238,231,.14);background:rgba(242,238,231,.045);color:rgba(242,238,231,.74)}
+.meal-source-link{font-size:9px;color:rgba(242,238,231,.72);text-decoration:underline;text-underline-offset:2px}
+.meal-scan-confirm-note{grid-column:1/-1;font-size:10px;line-height:1.5;color:var(--muted)}
+.meal-scan-workspace>.wide{grid-column:1/-1}
+
+@media(max-width:640px){
+  .nutrition-quick-summary{grid-template-columns:1fr;gap:12px}
+  .nutrition-summary-progress{grid-column:1}
+  .meal-scan-header{align-items:center}
+  .meal-scan-header p{max-width:250px}
+  .meal-scan-workspace{grid-template-columns:1fr}
+  .meal-scan-preview{min-height:165px}
+  .meal-scan-preview img{min-height:165px;max-height:230px}
+  .meal-scan-results,.meal-scan-confirm-note,.meal-scan-workspace>.wide{grid-column:1}
+  .meal-scan-result-row{align-items:flex-start}
+}
