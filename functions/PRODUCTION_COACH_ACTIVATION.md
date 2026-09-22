@@ -35,3 +35,10 @@ Purpose:
 
 Source/runtime behavior is the already-verified PR #186 code. This documentation-only activation commit exists solely to satisfy the fail-closed production activation trigger without changing runtime logic.
 
+
+## Real Meal Scan v1 activation checkpoint — 2026-09-22
+
+- Approved source revision: `834e48764821eae7f092b1e95ece77c279fcc367`.
+- Production activation must deploy only Firebase Function `api` to `fitfind-ai` and preserve the existing `GARANG_LLM_API_KEY` secret.
+- Post-deploy evidence must include authenticated live Coach smoke, bounded autonomous-write smoke, sensitive-write boundary checks, and disposable-user cleanup.
+- Real Meal Scan v1 remains confirmation-first: Vision proposes visible-food candidates only; GARANG Food DB owns nutrition values; unmatched foods fail closed for user review.
