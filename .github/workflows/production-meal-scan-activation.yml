@@ -1,0 +1,95 @@
+name: Production Meal Scan Activation
+
+on:
+  workflow_dispatch:
+    inputs:
+      approved_sha:
+        description: Exact PRODUCT main SHA approved by Founder
+        required: true
+        type: string
+      confirmation:
+        description: Type DEPLOY REAL MEAL SCAN
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-meal-scan-activation
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY REAL MEAL SCAN'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GARANG_MEAL_SCAN_ENDPOINT: https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/meal/scan
+      GARANG_COACH_ENDPOINT: https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/coach
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Require exact approved current main SHA
+        env:
+          APPROVED_SHA: ${{ inputs.approved_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --no-tags
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+          test "$(git rev-parse HEAD)" = "$APPROVED_SHA"
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install locked Functions dependencies
+        run: npm ci --prefix functions --ignore-scripts --no-audit --no-fund
+      - name: Verify Meal Scan contracts
+        run: node functions/tests/meal-scan.test.cjs && node tests/real-meal-scan-v1.test.cjs
+      - name: Require WIF configuration
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "$WIF_PROVIDER"
+          test -n "$WIF_SERVICE_ACCOUNT"
+      - name: Authenticate with Google WIF
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fitfind-ai
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Verify project and existing LLM secret
+        run: |
+          set -euo pipefail
+          npx firebase projects:list --json > "$RUNNER_TEMP/firebase-projects.json"
+          grep -q '"projectId":"fitfind-ai"' "$RUNNER_TEMP/firebase-projects.json" || grep -q '"projectId": "fitfind-ai"' "$RUNNER_TEMP/firebase-projects.json"
+          npx firebase functions:secrets:get GARANG_LLM_API_KEY --project fitfind-ai > /dev/null
+      - name: Deploy approved api Function only
+        run: npx firebase deploy --only functions:api --project fitfind-ai --non-interactive
+      - name: Verify public route boundaries
+        run: npm run preflight:coach:prod-route && npm run preflight:meal-scan:prod-route
+      - name: Mint disposable Firebase smoke identity
+        run: node scripts/production-smoke-identity.cjs mint
+      - name: Verify authenticated production Coach regression
+        run: npm run smoke:coach:prod
+      - name: Verify authenticated production Meal Scan Vision boundary
+        run: npm run smoke:meal-scan:prod
+      - name: Delete disposable Firebase smoke identity
+        if: always()
+        run: node scripts/production-smoke-identity.cjs delete
+      - name: Record activation evidence
+        if: always()
+        run: |
+          echo "## GARANG Production Meal Scan Activation" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project: fitfind-ai" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Function: api / asia-northeast3" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Approved revision: ${{ inputs.approved_sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Live checks: Meal Scan auth/Vision boundary + Coach regression" >> "$GITHUB_STEP_SUMMARY"

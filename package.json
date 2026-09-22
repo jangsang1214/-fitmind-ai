@@ -16,7 +16,9 @@
     "lint": "node scripts/check.cjs",
     "build": "node scripts/check.cjs --build",
     "start": "python -m http.server 8765",
-    "audit:prod": "npm audit --omit=dev --audit-level=high"
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "preflight:meal-scan:prod-route": "node tests/meal-scan-production-route-health.test.cjs",
+    "smoke:meal-scan:prod": "node scripts/verify-production-meal-scan.cjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "3.0.3",
