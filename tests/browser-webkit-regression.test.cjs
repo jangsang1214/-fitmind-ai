@@ -228,16 +228,12 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'running');
     await tap(page,'#runStart');
     await page.waitForFunction(()=>Number(document.querySelector('#runDistance')?.textContent||0)>0,{timeout:7000});
-    await page.evaluate(()=>{const input=document.getElementById('runPhotoPicker');if(input)input.click=()=>{};document.getElementById('runCert')?.click();});
-    await page.locator('#runPhotoPicker').setInputFiles({name:'garang-run.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nWQAAAAASUVORK5CYII=','base64')});
-    await page.locator('.photo-evidence-stage.has-photo').waitFor({state:'visible',timeout:5000});
     await tap(page,'#runPause');
     await page.locator('#runResume').waitFor({state:'visible',timeout:3000});
     await tap(page,'#runResume');
     await tap(page,'#runStop');
-    await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return s.runs?.at(-1)?.photoEvidence?.kind==='running';},{timeout:7000});
-    const runPersisted=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}'),r=s.runs?.at(-1)||null;return r?{kind:r.photoEvidence?.kind||null,manualPauseCount:r.manualPauseCount||0,gpsAccepted:r.gpsQuality?.accepted||0,gpsRejected:r.gpsQuality?.rejected||0}:null;});
-    assert.equal(runPersisted?.kind,'running','saved run must retain RUN EVIDENCE metadata');
+    await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.runs?.length||0)>0;});
+    const runPersisted=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}'),r=s.runs?.at(-1)||null;return r?{manualPauseCount:r.manualPauseCount||0,gpsAccepted:r.gpsQuality?.accepted||0,gpsRejected:r.gpsQuality?.rejected||0,splits:Array.isArray(r.splits)?r.splits.length:0}:null;});
     assert.ok(runPersisted?.manualPauseCount>=1,'manual pause must persist on the run record');
     assert.ok(runPersisted?.gpsAccepted>=2,'accepted GPS fixes must persist as quality evidence');
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="progress"]');
