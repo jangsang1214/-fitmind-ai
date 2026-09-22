@@ -219,11 +219,11 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="log"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
-    assert.equal(await page.locator('.workout-set-table-head').isVisible(),true,'workout execution must expose set-first table hierarchy');
-    assert.equal(await page.locator('#workoutSetDetails').isVisible(),true,'per-set execution rows must be visible by default');
-    await tap(page,'[data-execution-set-complete]');
+    assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
+    assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
+    await tap(page,'.gws-panel:not([hidden]) [data-execution-set-complete]');
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
-    assert.equal(await page.locator('[data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
+    assert.equal(await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
     assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\\d{2}:\\d{2}$/,'live session timer must be visible');
     await tap(page,'#skipWorkoutRest');
     await tapRecordRoute(page,'body');
