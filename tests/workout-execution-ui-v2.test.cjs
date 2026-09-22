@@ -14,6 +14,10 @@ assert.ok(app.includes("execution=rows.some(row=>row.dataset.executionEnhanced==
 assert.ok(app.includes("executionMode&&!executionImport&&!details.length"),'manual execution must reject adding an exercise with zero completed sets while preserving explicit imports');
 assert.ok(intelligence.includes("add.dataset.executionImport='true';add.click()"),'programmatic workout imports must use an explicit execution bypass');
 assert.ok(runtime.includes("garang:set-options-toggled"),'execution UI must open set details through the canonical state event');
+assert.ok(app.includes("garang:workout-set-rows-rendered"),'app row renderer must publish an explicit execution lifecycle event');
+assert.ok(runtime.includes("garang:workout-set-rows-rendered")&&runtime.includes("enhanceRows();updateLive()"),'execution layer must synchronously re-enhance every canonical row render');
+assert.ok(app.includes("resetExerciseRows(){workoutSetDraft=[];workoutSetDetailsOpen=true;renderWorkoutSetDetails()"),'execution bridge must reset canonical rows on explicit exercise change');
+assert.ok(runtime.includes("bridge()?.resetExerciseRows?.()"),'exercise changes must discard prior exercise completion/value state before re-enhancement');
 assert.ok(runtime.includes("host.closest('details')")&&runtime.includes("disclosure.open=true"),'execution set table disclosure must be visibly open on Log entry');
 assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refresh when the exercise changes');
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
