@@ -8,6 +8,9 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
 assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
+assert.ok(app.includes("execution=rows.some(row=>row.dataset.executionEnhanced==='true')"),'execution mode must save completed set rows only');
+assert.ok(app.includes("executionMode&&!details.length"),'execution mode must reject adding an exercise with zero completed sets');
+assert.ok(runtime.includes("garang:set-options-toggled"),'execution UI must open set details through the canonical state event');
 for(const token of ['LIVE SESSION','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
