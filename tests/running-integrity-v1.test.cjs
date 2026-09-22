@@ -23,7 +23,7 @@ const splits=Core.buildSplits([
 assert.ok(splits.length>=1,'filtered GPS track must produce kilometer splits');
 assert.ok(splits[0].durationMin>8&&splits[0].durationMin<12,'split time must use active elapsed time');
 
-for(const token of ['runPause','pauseRun(\'manual\')','GarangRunningIntegrity?.assessPosition','gpsQuality','buildSplits','runEvidenceDraft','attachRunningEvidence','run_photo_evidence_saved','data-run-delete','RUN EVIDENCE'])assert.ok(app.includes(token),token);
+for(const token of ['runPause','pauseRun(\'manual\')','GarangRunningIntegrity?.assessPosition','gpsQuality','buildSplits','runEvidenceDraft','attachRunningEvidence','run_photo_evidence_saved','data-run-delete','run-split-pills','RUN EVIDENCE'])assert.ok(app.includes(token),token);
 assert.ok(html.includes('id="runPhotoPicker"'),'running must have a camera-capable photo picker');
 assert.ok(html.indexOf('02_core/running-integrity-v1.js')<html.indexOf('01_app/app.js'),'running integrity core must load before app');
 assert.ok(manifest.scripts.includes('02_core/running-integrity-v1.js'),'runtime manifest must include running integrity core');
