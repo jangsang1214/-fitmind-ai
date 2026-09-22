@@ -14,11 +14,12 @@ assert.match(functionsIndex,/\/telemetry\/errors/);
 assert.match(functionsIndex,/securityMiddleware/);
 assert.match(services,/const stagingProjectId='garang-staging'/);
 assert.match(services,/const privilegedStagingEnabled=selectedProjectId===stagingProjectId/);
-for(const [key,pathSuffix] of [['accountDeleteEndpoint','account/delete'],['accountExportEndpoint','account/export'],['analyticsEndpoint','analytics/events'],['telemetryErrorEndpoint','telemetry/errors']]){
+for(const [key,pathSuffix] of [['accountDeleteEndpoint','account/delete'],['analyticsEndpoint','analytics/events'],['telemetryErrorEndpoint','telemetry/errors']]){
  assert.match(services,new RegExp(`${key}:privilegedStagingEnabled\\?`),`${key} must be gated by verified staging project identity`);
  assert.match(services,new RegExp(pathSuffix.replace('/','\\/')));
 }
+assert.match(services,/accountExportEndpoint:`\$\{apiBase\}\/account\/export`/,'authenticated read-only account export must be available in production');
 assert.match(services,/serverReadinessVersion:'server-readiness-stage0-v1'/);
 assert.match(doc,/Production activation remains a separate explicit release decision/);
 assert.doesNotMatch(services,/GARANG_LLM_API_KEY\s*[:=]\s*['"][^'"]+/,'browser config must never contain provider secrets');
-console.log('server-readiness-stage0 staging-only activation boundary: PASS');
+console.log('server-readiness-stage0 authenticated export + staging privileged boundary: PASS');

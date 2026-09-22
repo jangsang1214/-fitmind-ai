@@ -4,5 +4,8 @@ const root=path.resolve(__dirname,'..'),pkg=require('../package.json'),manifest=
 const versionJs=fs.readFileSync(path.join(root,'07_config/version.js'),'utf8'),app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
 assert.equal(pkg.version,manifest.version);
 assert.ok(versionJs.includes(`version:'${pkg.version}'`),`version.js must use ${pkg.version}`);
-assert.ok(app.includes(`<span>Version</span><b>${pkg.version}</b>`),`Settings UI must display ${pkg.version}`);
+assert.match(versionJs,/buildId:'[^']+'/,'version.js must publish a supportable build identifier');
+assert.ok(app.includes("window.GARANG_BUILD?.version"),'Settings UI must read version from canonical GARANG_BUILD');
+assert.ok(app.includes("window.GARANG_BUILD?.buildId"),'Settings UI must expose the canonical build identifier');
+assert.equal(app.includes(`<span>Version</span><b>${pkg.version}</b>`),false,'Settings must not hardcode a stale package version');
 console.log('version-ui-contract: PASS');

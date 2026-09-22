@@ -1,7 +1,7 @@
 /* GARANG external service endpoints.
    Provider secrets stay on the server. Browser code receives public HTTPS endpoints only.
-   Privileged browser endpoints are fail-closed and activate only when the loaded Firebase
-   browser config targets the verified staging project `garang-staging`. Production stays off. */
+   Authenticated read-only account export is available in production. Destructive account,
+   analytics and telemetry browser endpoints remain fail-closed to verified staging only. */
 (() => {
   'use strict';
   const productionProjectId='fitfind-ai';
@@ -24,7 +24,7 @@
     privilegedStagingEnabled,
     coachEndpoint,
     accountDeleteEndpoint:privilegedStagingEnabled?`${apiBase}/account/delete`:null,
-    accountExportEndpoint:privilegedStagingEnabled?`${apiBase}/account/export`:null,
+    accountExportEndpoint:`${apiBase}/account/export`,
     mealScanEndpoint:null,
     analyticsEndpoint:privilegedStagingEnabled?`${apiBase}/analytics/events`:null,
     telemetryErrorEndpoint:privilegedStagingEnabled?`${apiBase}/telemetry/errors`:null,
