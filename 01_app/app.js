@@ -566,7 +566,7 @@ function bindWorkout(){
   document.querySelectorAll('[data-exercise-pick]').forEach(b=>b.onclick=()=>{workoutSelectedExercise=b.dataset.exercisePick||'';const m=exerciseMuscle(workoutSelectedExercise);workoutMuscleFilter=m.key;render();});
   $('toggleSetDetails')?.addEventListener('click',()=>{workoutSetDetailsOpen=!workoutSetDetailsOpen;$('toggleSetDetails').setAttribute('aria-expanded',String(workoutSetDetailsOpen));renderWorkoutSetDetails();update1RM();});
   $('wSets')?.addEventListener('input',()=>{if(workoutSetDetailsOpen){workoutSetDraft=[];renderWorkoutSetDetails();update1RM();}});
-  $('addWorkout').onclick=()=>{const x=buildWorkout();if(x){workoutDraft.push(x);workoutSetDraft=[];workoutSetDetailsOpen=false;workoutSelectedExercise=x.name;toast(x.name+' 추가');render();}};
+  $('addWorkout').onclick=()=>{const x=buildWorkout();if(x){const imported=$('addWorkout')?.dataset.executionImport==='true';workoutDraft.push(x);window.dispatchEvent(new CustomEvent('garang:workout-exercise-added',{detail:{imported}}));workoutSetDraft=[];workoutSetDetailsOpen=false;workoutSelectedExercise=x.name;toast(x.name+' 추가');render();}};
   $('clearWorkoutDraft').onclick=()=>{workoutDraft=[];workoutSetDraft=[];workoutSetDetailsOpen=false;render();};
   renderWorkoutSetDetails();$('saveWorkoutSession').onclick=saveWorkoutSession;
   $('certWorkout').onclick=()=>{const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');api.pick($('workoutPhotoPicker'),'workout',draft=>{api.revoke(workoutEvidenceDraft);api.revoke(currentCert.workout);workoutEvidenceDraft=draft;currentCert.workout=null;render();},message=>toast(message));};
