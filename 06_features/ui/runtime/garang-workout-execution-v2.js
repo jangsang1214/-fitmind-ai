@@ -95,7 +95,7 @@ function enhance(){
   if(!document.getElementById('workoutExecutionRest')){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
   const add=document.getElementById('addWorkout');if(add)add.textContent='이 운동 세션에 추가';
-  const clear=document.getElementById('clearWorkoutDraft');if(clear){clear.textContent='세션 초기화';if(!clear.dataset.executionResetBound){clear.dataset.executionResetBound='true';clear.addEventListener('click',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDraftCount=0;liveExercise='';stopRest();updateLive();});}}
+  const clear=document.getElementById('clearWorkoutDraft');if(clear)clear.textContent='세션 초기화';
   const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>{liveSetDraft=[];liveSetCount=0;setSnapshot=[];liveExercise=name.value||'';bridge()?.resetExerciseRows?.();setTimeout(enhance,0);});}
   const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
   const setHost=document.getElementById('workoutSetDetails');if(setHost&&!setHost.dataset.executionLiveBound){setHost.dataset.executionLiveBound='true';setHost.addEventListener('input',captureLiveSetRows);}
@@ -111,6 +111,7 @@ window.addEventListener('garang:state-updated',event=>{
   if(event.detail?.event!=='workout_saved'||!pendingResult)return;
   lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDraftCount=0;liveExercise='';
 });
+window.addEventListener('garang:workout-session-clearing',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDraftCount=0;liveExercise='';stopRest();updateLive();});
 window.addEventListener('garang:workout-exercise-added',event=>{if(event.detail?.imported!==true)ensureSession();});
 window.addEventListener('garang:workout-set-rows-rendered',()=>{enhanceRows();updateLive();});
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
