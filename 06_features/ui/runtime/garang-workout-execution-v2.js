@@ -63,9 +63,9 @@ function enhanceRows(){
     });
   });
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
-  const heads=[...host.parentElement.querySelectorAll('.workout-set-table-head')];let head=heads.shift()||null;heads.forEach(node=>node.remove());
-  if(!head){head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';}
-  if(head.nextElementSibling!==host)host.before(head);
+  const headerScope=host.closest('.gws-panel[data-garang-workout-surface="log"]')||host.parentElement;
+  [...headerScope.querySelectorAll('.workout-set-table-head')].forEach(node=>node.remove());
+  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>✓</span>';host.before(head);
 }
 function resultCard(){
   if(!lastResult||document.querySelector('.workout-result-card'))return;
