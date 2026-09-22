@@ -23,6 +23,8 @@ assert.ok(runtime.includes("execution-compact-fields"),'execution surface must c
 assert.ok(runtime.includes("executionResetBound"),'clearing a session must reset live execution timing state');
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
+assert.ok(runtime.includes("liveSetDraft")&&runtime.includes("captureLiveSetRows"),'live set values must survive incidental rerenders during execution');
+assert.ok(runtime.includes("saved?.weight")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
