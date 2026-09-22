@@ -44,6 +44,7 @@ function refreshPrevious(rows=previous()){
 }
 function enhanceRows(){
   const host=document.getElementById('workoutSetDetails');if(!host)return;
+  const disclosure=host.closest('details');if(disclosure&&!disclosure.open)disclosure.open=true;
   if(host.hidden){window.dispatchEvent(new CustomEvent('garang:set-options-toggled',{detail:{open:true,source:VERSION}}));if(host.hidden)return;}
   host.classList.add('workout-execution-sets');
   const prev=previous();
