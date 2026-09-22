@@ -10,6 +10,7 @@ const {createAgentContextHandler}=require('./src/http-handler.cjs');
 const {createDeleteAccountHandler}=require('./src/account-security.cjs');
 const {createAccountExportHandler}=require('./src/account-export.cjs');
 const {createCoachGatewayHandler}=require('./src/coach-gateway.cjs');
+const {createMealScanHandler}=require('./src/meal-scan.cjs');
 const {normalizeForServer,canonicalTransport}=require('./src/server-state-boundary.cjs');
 const {securityMiddleware}=require('./src/request-security.cjs');
 const {createTelemetryHandler}=require('./src/telemetry.cjs');
@@ -23,7 +24,7 @@ const USER_SUBCOLLECTIONS=['app','workoutHistory','mealHistory','runHistory','bo
 const app=express();
 app.disable('x-powered-by');
 const smallJson=express.json({limit:'64kb'}),coachJson=express.json({limit:'3mb'});
-app.use((request,response,next)=>(request.path==='/coach'?coachJson:smallJson)(request,response,next));
+app.use((request,response,next)=>(request.path==='/coach'||request.path==='/meal/scan'?coachJson:smallJson)(request,response,next));
 app.use(securityMiddleware());
 
 async function readRawUser(uid){
@@ -87,6 +88,13 @@ app.post('/coach',createCoachGatewayHandler({
  getProviderConfig:()=>({provider:process.env.GARANG_LLM_PROVIDER||'openai',apiKey:llmApiKey.value(),model:process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||25000})
 }));
 app.all('/coach',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
+
+app.post('/meal/scan',createMealScanHandler({
+ verifyIdToken:token=>getAuth().verifyIdToken(token,true),
+ consumeRateLimit:consumeCoachRateLimit,
+ getProviderConfig:()=>({apiKey:llmApiKey.value(),model:process.env.GARANG_MEAL_SCAN_MODEL||process.env.GARANG_LLM_MODEL||'gpt-5.6-luna',timeoutMs:Number(process.env.GARANG_LLM_TIMEOUT_MS)||25000})
+}));
+app.all('/meal/scan',(request,response)=>response.status(405).set('Allow','POST').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POST requests only.'}}));
 
 app.get('/account/export',createAccountExportHandler({verifyIdToken:token=>getAuth().verifyIdToken(token,true),readExport:readAccountExport}));
 app.all('/account/export',(request,response)=>response.status(405).set('Allow','GET').json({ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'GET requests only.'}}));
