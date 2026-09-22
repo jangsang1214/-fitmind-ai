@@ -253,6 +253,8 @@ async function assertCoachSettles(page){
     await tap(page,'[data-edit-workout="0"]');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===2,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'draft edit must reopen previously completed sets as completed');
+    assert.equal(await page.locator('#wSets').inputValue(),'2','draft edit must preserve the accepted completed-set count across render');
+    assert.equal(await page.locator('#wDuration').inputValue(),'30','draft edit must preserve workout duration across render');
     await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
