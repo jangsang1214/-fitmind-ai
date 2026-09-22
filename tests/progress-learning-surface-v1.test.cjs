@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const app=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
+assert.match(app,/function progressLearningSnapshot\(\)/,'Progress must expose a longitudinal learning snapshot');
+assert.match(app,/GarangIntelligenceBridge/,'Progress learning must use the canonical Intelligence Bridge');
+assert.match(app,/getUserPerformanceModel/,'Progress must read the User Performance Model');
+assert.match(app,/getWeeklyReview/,'Progress must read outcome-aware weekly review evidence');
+assert.match(app,/GARANG이 배운 것/,'Progress must explain accumulated learning to the user');
+assert.match(app,/추천 → 사용자 반응 → 실행 → 결과/,'Progress must expose the closed intelligence loop');
+assert.match(app,/자동 증량이나 무단 변경은 하지 않습니다/,'Progress must keep the no-silent-mutation guardrail visible');
+console.log('progress-learning-surface-v1: PASS');
