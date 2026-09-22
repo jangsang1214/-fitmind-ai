@@ -17,7 +17,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
  try{
   await waitForServer();browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await installAuthenticatedFirebaseMock(context);
+  await installAuthenticatedFirebaseMock(context);\n  await context.addInitScript(()=>{\n   const NativeFile=window.File;\n   window.File=class GarangTestFile extends NativeFile{\n    constructor(bits,name,options){super(bits,name,options);try{Object.defineProperty(this,'name',{value:name,configurable:true});Object.defineProperty(this,'type',{value:String(options?.type||''),configurable:true});Object.defineProperty(this,'size',{value:bits.reduce((sum,part)=>sum+(part?.byteLength??part?.size??String(part??'').length),0),configurable:true});}catch{}\n   };\n  });
   await context.addInitScript(({endpoint})=>{
    const nativeFetch=window.fetch.bind(window);
    window.fetch=async(input,init={})=>{
