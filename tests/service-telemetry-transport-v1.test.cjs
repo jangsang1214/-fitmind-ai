@@ -11,14 +11,14 @@ function boot(projectId,consent){
  const production=boot('fitfind-ai',true),prodServices=production.window.GARANG_SERVICES;
  assert.equal(prodServices.apiBase,'https://asia-northeast3-fitfind-ai.cloudfunctions.net/api');
  assert.equal(prodServices.privilegedStagingEnabled,false);
- assert.equal(prodServices.accountDeleteEndpoint,null);
+ assert.equal(prodServices.accountDeleteEndpoint,`${prodServices.apiBase}/account/delete`);
  assert.equal(prodServices.accountExportEndpoint,`${prodServices.apiBase}/account/export`);
- assert.equal(prodServices.analyticsEndpoint,null);
- assert.equal(prodServices.telemetryErrorEndpoint,null);
+ assert.equal(prodServices.analyticsEndpoint,`${prodServices.apiBase}/analytics/events`);
+ assert.equal(prodServices.telemetryErrorEndpoint,`${prodServices.apiBase}/telemetry/errors`);
 
- const enabled=boot('garang-staging',true),services=enabled.window.GARANG_SERVICES,analytics=services.analyticsEndpoint;
- assert.equal(services.apiBase,'https://asia-northeast3-garang-staging.cloudfunctions.net/api');
- assert.equal(services.privilegedStagingEnabled,true);
+ const enabled=production,services=enabled.window.GARANG_SERVICES,analytics=services.analyticsEndpoint;
+ assert.equal(services.apiBase,'https://asia-northeast3-fitfind-ai.cloudfunctions.net/api');
+ assert.equal(services.privilegedStagingEnabled,false);
  assert.equal(services.accountDeleteEndpoint,`${services.apiBase}/account/delete`);
  assert.equal(services.accountExportEndpoint,`${services.apiBase}/account/export`);
  assert.equal(services.analyticsEndpoint,`${services.apiBase}/analytics/events`);
@@ -29,6 +29,6 @@ function boot(projectId,consent){
  const errorEndpoint=services.telemetryErrorEndpoint;
  await enabled.window.fetch(errorEndpoint,{method:'POST',body:JSON.stringify({category:'runtime',code:'GARANG_RUNTIME',internalMessage:'private details',context:{feature:'coach',token:'secret',email:'hidden@example.com'}})});
  const errorBody=JSON.parse(enabled.calls.at(-1).init.body);assert.deepEqual(errorBody,{category:'runtime',code:'GARANG_RUNTIME',sourceCode:null,retryable:false,fingerprint:null,context:{feature:'coach'}});assert.equal(JSON.stringify(errorBody).includes('private details'),false);
- const disabled=boot('garang-staging',false),before=disabled.calls.length;const suppressed=await disabled.window.fetch(disabled.window.GARANG_SERVICES.analyticsEndpoint,{method:'POST',body:JSON.stringify({name:'today_viewed',props:{source:'nav'}})});assert.equal(suppressed.status,202);assert.equal(disabled.calls.length,before,'analytics without consent must not cross the network');
- console.log('service-telemetry-transport-v1 production export + staging privileged activation: PASS');
+ const disabled=boot('fitfind-ai',false),before=disabled.calls.length;const suppressed=await disabled.window.fetch(disabled.window.GARANG_SERVICES.analyticsEndpoint,{method:'POST',body:JSON.stringify({name:'today_viewed',props:{source:'nav'}})});assert.equal(suppressed.status,202);assert.equal(disabled.calls.length,before,'analytics without consent must not cross the network');
+ console.log('service-telemetry-transport-v1 production account + consent-gated observability activation: PASS');
 })().catch(error=>{console.error(error);process.exit(1);});

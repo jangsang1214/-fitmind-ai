@@ -15,8 +15,7 @@ assert.match(functionsIndex,/securityMiddleware/);
 assert.match(services,/const stagingProjectId='garang-staging'/);
 assert.match(services,/const privilegedStagingEnabled=selectedProjectId===stagingProjectId/);
 for(const [key,pathSuffix] of [['accountDeleteEndpoint','account/delete'],['analyticsEndpoint','analytics/events'],['telemetryErrorEndpoint','telemetry/errors']]){
- assert.match(services,new RegExp(`${key}:privilegedStagingEnabled\\?`),`${key} must be gated by verified staging project identity`);
- assert.match(services,new RegExp(pathSuffix.replace('/','\\/')));
+ assert.match(services,new RegExp(`${key}:\x60\\$\\{apiBase\\}/${pathSuffix.replace('/','\\/') }\x60`),`${key} must be explicitly wired to the authenticated production API`);
 }
 assert.match(services,/accountExportEndpoint:`\$\{apiBase\}\/account\/export`/,'authenticated read-only account export must be available in production');
 assert.match(services,/serverReadinessVersion:'server-readiness-stage0-v1'/);
