@@ -58,3 +58,17 @@ Activation scope:
 - use Workload Identity Federation automatically when repository WIF variables are configured; otherwise retain the currently verified fail-closed credential fallback
 
 Production activation is complete only when the activation workflow reports SUCCESS and records its non-secret Firebase authentication mode.
+
+## Real Meal Scan live Vision verification retry — 2026-09-22
+
+Founder approved the production verification retry after PRODUCT PR #213 merged as `c002389ff7e6811994e2547ee86e675181ea1857`.
+
+Trigger-only checkpoint:
+- runtime Meal Scan logic is unchanged by this checkpoint
+- PR #213 replaced only the production smoke image with a provider-valid 128×128 RGB PNG
+- PR #213 exact-head Release Gate #1655 / `35717702324` was FULL GREEN
+- deploy only Firebase Function `api` to `fitfind-ai`
+- preserve the existing `GARANG_LLM_API_KEY`
+- require authenticated live Meal Scan smoke before production Vision is considered VERIFIED
+- retain existing authenticated Coach, autonomous-write, sensitive-write boundary, and disposable-user cleanup checks
+
