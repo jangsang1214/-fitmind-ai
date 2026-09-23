@@ -92,3 +92,15 @@ Success requires the Production Coach Activation workflow to complete successful
 Activation #29 successfully deployed Firebase Function `api` and passed Coach / Meal Scan / nutrition lookup public auth-method boundaries, but the newly added synthetic negative Meal Scan fixture was visually ambiguous to the live Vision provider and returned a false-positive food candidate before the nutrition smoke could run.
 
 This retry keeps the no-food assertion strict, replaces only the synthetic negative fixture with an unambiguous solid-color RGB PNG, and preserves the same Founder-approved production activation scope. No runtime Meal Scan, nutrition lookup, Coach, or data mutation logic changes in this retry.
+
+## Nutrition fallback activation retry 2 — 2026-09-23
+
+Activations #29 and #30 both deployed the approved `api` Function and passed public auth/method boundaries, but the newly introduced live negative-image semantic assertion proved unsuitable as a production gate: one synthetic fixture produced a Vision false-positive food candidate and a solid-color replacement was rejected by the provider with `MEAL_SCAN_PROVIDER_ERROR`.
+
+Boundary correction:
+- keep no-food behavior fail-closed and strict in deterministic server/browser CI contracts;
+- keep production Meal Scan smoke focused on an authenticated real-food image and live provider reachability;
+- run authenticated live nutrition lookup smoke before the independent Meal Scan provider smoke so nutrition activation evidence is not hidden by unrelated multimodal provider semantics;
+- require the activation workflow overall to PASS, including nutrition lookup, positive Meal Scan, Coach, bounded write, and cleanup.
+
+No production runtime logic is relaxed or changed by this retry.
