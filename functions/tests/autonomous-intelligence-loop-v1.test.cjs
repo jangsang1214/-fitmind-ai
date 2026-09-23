@@ -18,6 +18,8 @@ const WorkoutPrescriptionShadow=require('../src/workout-prescription-shadow-v1.c
 const BrowserWorkoutPrescriptionShadow=require('../../02_core/workout-prescription-shadow-v1.js');
 const AdaptiveNutritionLearning=require('../src/adaptive-nutrition-learning-v1.cjs');
 const BrowserAdaptiveNutritionLearning=require('../../02_core/adaptive-nutrition-learning-v1.js');
+const PhysiologicalSignals=require('../src/physiological-signal-intelligence-v1.cjs');
+const BrowserPhysiologicalSignals=require('../../02_core/physiological-signal-intelligence-v1.js');
 const {buildAgentContext}=require('../src/agent-context.cjs');
 const {executeGeneratedTools}=require('../src/coach-gateway.cjs');
 const {parseCoachResponse,systemPrompt,COACH_RESPONSE_SCHEMA}=require('../src/llm-provider.cjs');
@@ -129,9 +131,22 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   state.meals=Array.from({length:14},(_,i)=>({id:'m'+i,date:'2026-09-'+String(i+1).padStart(2,'0'),name:'기록 식사',kcal:2400,protein:140}));
   state.body=[{date:'2026-09-01',weight:70},{date:'2026-09-07',weight:70.2},{date:'2026-09-14',weight:70.4}];
   const workout=WorkoutPrescriptionShadow.build(state,{asOf:'2026-09-14'}),browserWorkout=BrowserWorkoutPrescriptionShadow.build(state,{asOf:'2026-09-14'});
-  assert.deepEqual(workout,browserWorkout);assert.equal(workout.exercises[0].shadow.action,'review_progression');assert.equal(workout.exercises[0].shadow.progressionEligibleForReview,true);assert.equal(workout.exercises[0].shadow.suggested.weight,60);assert.equal(workout.guardrails.neverAutoIncrease,true);
+  assert.deepEqual(workout,browserWorkout);assert.equal(workout.version,'workout-prescription-shadow-v1.1.0');assert.equal(workout.exercises[0].prescription.action,'review_progression');assert.equal(workout.exercises[0].prescription.progressionEligibleForReview,true);assert.ok(workout.exercises[0].prescription.recommended.weight>60);assert.equal(workout.exercises[0].prescription.requiresConfirmation,true);assert.equal(workout.guardrails.exactDoseProposal,true);assert.equal(workout.guardrails.neverAutoIncrease,true);
   const nutrition=AdaptiveNutritionLearning.build(state,{asOf:'2026-09-14',days:14}),browserNutrition=BrowserAdaptiveNutritionLearning.build(state,{asOf:'2026-09-14',days:14});
-  assert.deepEqual(nutrition,browserNutrition);assert.equal(nutrition.estimate.eligible,true);assert.ok(nutrition.estimate.estimatedMaintenanceKcal>0);assert.ok(Math.abs(nutrition.shadowRecommendation.maxDailyAdjustmentKcal)<=100);assert.equal(nutrition.guardrails.noAutomaticTargetMutation,true);
+  assert.deepEqual(nutrition,browserNutrition);assert.equal(nutrition.version,'adaptive-nutrition-learning-v1.1.0');assert.equal(nutrition.estimate.eligible,true);assert.ok(nutrition.estimate.estimatedMaintenanceKcal>0);assert.ok(Math.abs(nutrition.recommendation.targetProposal.deltaKcal)<=100);assert.ok(nutrition.recommendation.targetProposal.proposedDailyKcal>0);assert.equal(nutrition.guardrails.exactTargetProposal,true);assert.equal(nutrition.guardrails.noAutomaticTargetMutation,true);
+ });
+
+ await test('physiological signal intelligence normalizes optional wearable-grade inputs without inventing health state',()=>{
+  const state=baseState();
+  state.healthSignals=[
+   {id:'h1',source:'test-wearable',capturedAt:'2026-09-18T07:00:00Z',hrvMs:48,restingHeartRateBpm:59,sleepHours:7.5,sleepScore:82,steps:9000},
+   {id:'h2',source:'test-wearable',capturedAt:'2026-09-19T07:00:00Z',hrvMs:50,restingHeartRateBpm:58,sleepHours:7.8,sleepScore:85,steps:10000},
+   {id:'h3',source:'test-wearable',capturedAt:'2026-09-20T07:00:00Z',hrvMs:46,restingHeartRateBpm:61,sleepHours:6.8,sleepScore:74,steps:7000}
+  ];
+  const options={now:new Date('2026-09-20T12:00:00Z')};
+  const server=PhysiologicalSignals.build(state,options),browser=BrowserPhysiologicalSignals.build(state,options);
+  assert.deepEqual(server,browser);assert.equal(server.version,'physiological-signal-intelligence-v1.0.0');assert.equal(server.quality,'usable');assert.ok(server.derived.readinessScore!==null);assert.equal(server.latest.source,'test-wearable');assert.equal(server.guardrails.noMedicalDiagnosis,true);
+  const empty=PhysiologicalSignals.build(baseState(),options);assert.equal(empty.quality,'insufficient');assert.equal(empty.derived.readinessScore,null);assert.equal(empty.guardrails.missingSignalsDoNotImplyNormal,true);
  });
 
  await test('Agent Context exposes longitudinal learning and deterministic personalization',()=>{
@@ -145,11 +160,13 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.recommendationPolicy.version,'recommendation-policy-eval-v1.1.0');
   assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
   assert.equal(context.offlinePolicyEvaluation.version,'offline-policy-evaluation-v1.0.0');
-  assert.equal(context.workoutPrescriptionShadow.version,'workout-prescription-shadow-v1.0.0');
-  assert.equal(context.adaptiveNutritionLearning.version,'adaptive-nutrition-learning-v1.0.0');
+  assert.equal(context.workoutPrescriptionShadow.version,'workout-prescription-shadow-v1.1.0');
+  assert.equal(context.adaptiveNutritionLearning.version,'adaptive-nutrition-learning-v1.1.0');
   assert.equal(context.offlinePolicyEvaluation.guardrails.noCounterfactualClaim,true);
   assert.equal(context.workoutPrescriptionShadow.guardrails.neverAutoIncrease,true);
   assert.equal(context.adaptiveNutritionLearning.guardrails.noAutomaticTargetMutation,true);
+  assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.0.0');
+  assert.equal(context.physiologicalSignals.guardrails.missingSignalsDoNotImplyNormal,true);
  });
 
  await test('LLM structured response accepts only bounded typed tool calls',()=>{

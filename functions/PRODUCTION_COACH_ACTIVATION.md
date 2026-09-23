@@ -118,3 +118,19 @@ Final trigger-only checkpoint:
 - then require authenticated positive Meal Scan, Coach, bounded write, sensitive-write boundary, and disposable-user cleanup PASS.
 - production completion requires the activation workflow itself to finish SUCCESS.
 
+## Commercial Intelligence Reach v1 production activation — 2026-09-24
+
+Founder explicitly approved production activation and the non-UI AI/Data reach uplift in this session.
+
+Activation scope:
+- deploy only Firebase Function `api` to project `fitfind-ai`
+- preserve the existing `GARANG_LLM_API_KEY`
+- activate Personalized Response Learning v2 server context plus the approved Commercial Intelligence Reach v1 additions
+- expose exact exercise-dose advisory from observed sets/reps/load/RPE while keeping progression confirmation-gated and never silently increasing load
+- expose exact adaptive nutrition target proposals from observed intake + weight trend while keeping target mutation confirmation-gated
+- support optional physiological-signal intelligence with source preservation, freshness/coverage confidence, no diagnosis, and missing-signal fail-open-to-unknown semantics
+- retain deterministic GARANG Decision ownership, authenticated bounded writes, sensitive-write denial/confirmation, Meal Scan, nutrition lookup and disposable-user cleanup
+- do not change billing, secrets, auth architecture, Firestore schema, or unrelated production resources
+
+Success requires the standard Production Coach Activation workflow to finish SUCCESS, including authenticated nutrition lookup, Meal Scan, Coach, bounded-write and cleanup smoke. No new intelligence output is considered production-live before that evidence.
+

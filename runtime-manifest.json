@@ -42,6 +42,7 @@
     "02_core/legacy-migration-v2.js",
     "02_core/privacy-security.js",
     "02_core/memory-intelligence-v1.js",
+    "02_core/physiological-signal-intelligence-v1.js",
     "02_core/state-intelligence-v1.js",
     "02_core/decision-intelligence-v1.js",
     "02_core/performance-score-v1.js",
