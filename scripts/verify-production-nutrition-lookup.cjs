@@ -10,8 +10,10 @@ if(!token)throw new Error('GARANG_FIREBASE_ID_TOKEN is required for authenticate
  const item=Array.isArray(body?.items)?body.items[0]:null;
  assert.ok(item,'nutrition lookup returned no source-backed Starbucks Grande Caffè Americano result');
  assert.equal(item.nutritionStatus,'estimated');assert.equal(item.nutritionSource?.source,'web_search');
- assert.ok(/^https:\/\//.test(String(item.nutritionSource?.url||'')),'nutrition lookup must expose a source URL');\n const sourceHost=new URL(item.nutritionSource.url).hostname.toLowerCase();assert.ok(sourceHost==='starbucks.com'||sourceHost.endsWith('.starbucks.com'),`nutrition lookup smoke must use an official Starbucks source, got ${sourceHost}`);
+ assert.ok(/^https:\/\//.test(String(item.nutritionSource?.url||'')),'nutrition lookup must expose a source URL');
+ const sourceHost=new URL(item.nutritionSource.url).hostname.toLowerCase();assert.ok(sourceHost==='starbucks.com'||sourceHost.endsWith('.starbucks.com'),`nutrition lookup smoke must use an official Starbucks source, got ${sourceHost}`);
  for(const key of ['kcal','protein','carbs','fat'])assert.ok(Number.isFinite(Number(item[key]))&&Number(item[key])>=0,`nutrition lookup ${key} must be a non-negative number`);
- assert.ok(Number(item.kcal)>=0&&Number(item.kcal)<100,'Starbucks Grande Caffè Americano estimate is implausible; fail closed instead of saving');\n assert.ok(Number(item.carbs)<20&&Number(item.fat)<10&&Number(item.protein)<10,'Starbucks Grande Caffè Americano macros are implausible');
+ assert.ok(Number(item.kcal)>=0&&Number(item.kcal)<100,'Starbucks Grande Caffè Americano estimate is implausible; fail closed instead of saving');
+ assert.ok(Number(item.carbs)<20&&Number(item.fat)<10&&Number(item.protein)<10,'Starbucks Grande Caffè Americano macros are implausible');
  console.log(JSON.stringify({status:'PASS',endpoint:new URL(endpoint).pathname,item:{name:item.name,grams:item.grams,kcal:item.kcal,protein:item.protein,carbs:item.carbs,fat:item.fat,status:item.nutritionStatus,source:item.nutritionSource?.url,title:item.nutritionSource?.title}},null,2));
 })().catch(error=>{console.error(`production nutrition lookup smoke: FAIL ${error?.message||error}`);process.exit(1);});
