@@ -12,9 +12,9 @@ function clock(ms){const total=Math.max(0,Math.ceil(num(ms)/1000)),m=Math.floor(
 function bridge(){return window.GarangWorkoutExecutionBridge||null;}
 function metricBufferedWeight(value){const converted=bridge()?.toMetricWeight?.(value),n=Number(converted);return Number.isFinite(n)?n:num(value);}
 function displayBufferedWeight(value){const shown=bridge()?.displayWeight?.(value,1);return shown===null||shown===undefined?'':String(shown);}
-function persistSessionState(){try{const draft=bridge()?.sessionDraft?.()||[];const active=!!(sessionStartedAt||restUntil||liveSetDraft.length||draft.length);if(!active){sessionStorage.removeItem(SESSION_KEY);return;}sessionStorage.setItem(SESSION_KEY,JSON.stringify({sessionStartedAt,restUntil,liveSetDraft,liveSetCount,liveDuration,liveDraftCount,liveExercise,draft,updatedAt:Date.now()}));}catch{}}
+function persistSessionState(){try{const draft=bridge()?.sessionDraft?.()||[],context=bridge()?.sessionContext?.()||null;const active=!!(sessionStartedAt||restUntil||liveSetDraft.length||draft.length);if(!active){sessionStorage.removeItem(SESSION_KEY);return;}sessionStorage.setItem(SESSION_KEY,JSON.stringify({sessionStartedAt,restUntil,liveSetDraft,liveSetCount,liveDuration,liveDraftCount,liveExercise,draft,context,updatedAt:Date.now()}));}catch{}}
 function clearPersistedSession(){try{sessionStorage.removeItem(SESSION_KEY);}catch{}}
-function hydrateSessionState(){if(sessionHydrated)return false;sessionHydrated=true;try{const raw=sessionStorage.getItem(SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(!saved||Date.now()-num(saved.updatedAt)>1000*60*60*24){clearPersistedSession();return false;}sessionStartedAt=num(saved.sessionStartedAt);restUntil=num(saved.restUntil);liveSetDraft=Array.isArray(saved.liveSetDraft)?saved.liveSetDraft.map(x=>({...x})):[];liveSetCount=Math.max(0,num(saved.liveSetCount,liveSetDraft.length));liveDuration=String(saved.liveDuration||'');liveDraftCount=num(saved.liveDraftCount,-1);liveExercise=String(saved.liveExercise||'');const existing=draftSummary();if(Array.isArray(saved.draft)&&saved.draft.length&&!existing.exercises){bridge()?.restoreSessionDraft?.(saved.draft);return true;}return false;}catch{clearPersistedSession();return false;}}
+function hydrateSessionState(){if(sessionHydrated)return false;sessionHydrated=true;try{const raw=sessionStorage.getItem(SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(!saved||Date.now()-num(saved.updatedAt)>1000*60*60*24){clearPersistedSession();return false;}sessionStartedAt=num(saved.sessionStartedAt);restUntil=num(saved.restUntil);liveSetDraft=Array.isArray(saved.liveSetDraft)?saved.liveSetDraft.map(x=>({...x})):[];liveSetCount=Math.max(0,num(saved.liveSetCount,liveSetDraft.length));liveDuration=String(saved.liveDuration||'');liveDraftCount=num(saved.liveDraftCount,-1);liveExercise=String(saved.liveExercise||'');bridge()?.restoreSessionContext?.(saved.context||null);const existing=draftSummary();if(Array.isArray(saved.draft)&&saved.draft.length&&!existing.exercises){bridge()?.restoreSessionDraft?.(saved.draft);return true;}return false;}catch{clearPersistedSession();return false;}}
 function estimated1RMMetric(weight,reps){const w=Math.max(0,num(weight)),r=Math.max(1,num(reps,1));return w?r===1?w:w*(1+Math.min(r,12)/30):0;}
 function updateLivePR(){const builder=document.querySelector('.workout-execution-v2');if(!builder)return;let chip=builder.querySelector('.workout-live-pr');if(!chip){chip=document.createElement('div');chip.className='workout-live-pr';const head=builder.querySelector('.workout-exercise-head');head?.appendChild(chip);}if(!chip)return;const exercise=document.getElementById('wName')?.value||'',baseline=num(bridge()?.exercisePRBaseline?.(exercise));let best=0;currentRows().forEach(row=>{const w=metricBufferedWeight(row.querySelector('[data-set-weight]')?.value||0),r=num(row.querySelector('[data-set-reps]')?.value);best=Math.max(best,estimated1RMMetric(w,r));});if(baseline>0&&best>baseline+.05){chip.textContent='NEW PR · e1RM '+displayBufferedWeight(best)+' '+displayUnit();chip.hidden=false;}else chip.hidden=true;}
 function previous(){return bridge()?.previousSets?.(document.getElementById('wName')?.value)||[];}
@@ -30,7 +30,7 @@ function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();persistSessionState();startTicker();}
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
 function stopRest(){restUntil=0;persistSessionState();updateLive();}
-function startRest(){const seconds=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90));restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
+function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
@@ -44,10 +44,17 @@ function updateLive(){
 }
 function targetFor(row){
   if(!row)return null;
-  const rpe=num(row.rpe,8),rir=num(row.rir,Math.max(0,10-rpe)),base=num(row.weightMetric,metricBufferedWeight(row.weight));
-  const step=base>=100?2.5:base>=40?1.25:0.5;
-  const weightMetric=Math.max(0,base+(rpe<=8&&rir>=2?step:rpe>=9.5?-step:0));
-  return {weightMetric,reps:Math.max(1,Math.round(num(row.reps,8))),reason:rpe<=8&&rir>=2?'지난 세트 여유 반영':rpe>=9.5?'피로도 반영':'지난 수행 유지'};
+  const exercise=document.getElementById('wName')?.value||'',context=bridge()?.progressionContext?.(exercise)||{},readinessScore=context?.readiness?.score,readiness=readinessScore===null||readinessScore===undefined?NaN:num(readinessScore,NaN),recent=Array.isArray(context?.recent)?context.recent:[],rpe=num(row.rpe,8),rir=num(row.rir,Math.max(0,10-rpe)),base=num(row.weightMetric,metricBufferedWeight(row.weight)),setType=String(row.setType||'working'),step=base>=100?2.5:base>=40?1.25:0.5;
+  const recentTrend=recent.length>=2&&num(recent[1].estimated1RMMetric)>0?(num(recent[0].estimated1RMMetric)-num(recent[1].estimated1RMMetric))/num(recent[1].estimated1RMMetric):0;
+  let delta=0,reason='지난 수행 유지';
+  if(setType==='warmup'){reason='워밍업 기준 유지';}
+  else if(setType==='drop'){reason='드롭 세트 유지';}
+  else if(setType==='failure'||rpe>=9.5||rir<=0){delta=-step;reason='실패/고강도 피로 반영';}
+  else if(Number.isFinite(readiness)&&readiness<50){delta=-step;reason='오늘 readiness 보호';}
+  else if(rpe<=8&&rir>=2&&recentTrend>=-.03){delta=step;reason=recent.length>=2?'최근 추세 + 여유 반영':'지난 세트 여유 반영';}
+  else if(recentTrend<-.05){delta=-step;reason='최근 성능 하락 반영';}
+  const weightMetric=Math.max(0,base+delta),reps=Math.max(1,Math.round(num(row.reps,8)+(Number.isFinite(readiness)&&readiness>=80&&rpe<=7.5&&rir>=3?1:0)));
+  return {weightMetric,reps,reason};
 }
 function cueText(rows){
   if(!rows.length)return '첫 기록 · 오늘의 기준을 만드세요';
@@ -76,7 +83,7 @@ function enhanceRows(){
     row.querySelector('[data-execution-set-delete]')?.addEventListener('click',()=>{if(currentRows().length<=1)return;changeSetCount(currentRows().length-1,i);});
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
-      if(!done){ensureSession();startRest();}captureLiveSetRows();updateLive();
+      if(!done){ensureSession();startRest(row.querySelector('[data-set-type]')?.value||'working');}captureLiveSetRows();updateLive();
     });
   });
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
@@ -97,7 +104,7 @@ function enhance(){
   builder.classList.add('workout-execution-v2');
   document.querySelector('.workout-visual-hero')?.classList.add('workout-execution-hero');
   const oldHead=builder.querySelector('.visual-section-head');
-  if(oldHead){oldHead.classList.add('workout-exercise-head');const title=oldHead.querySelector('h3'),eyebrow=oldHead.querySelector('.eyebrow');if(eyebrow)eyebrow.textContent='CURRENT EXERCISE';if(title)title.textContent=document.getElementById('wName')?.value||'운동';let cue=oldHead.querySelector('.workout-previous-cue');if(!cue){cue=document.createElement('p');cue.className='workout-previous-cue';oldHead.querySelector('div')?.appendChild(cue);}cue.textContent=cueText(previous());}
+  if(oldHead){oldHead.classList.add('workout-exercise-head');const exerciseName=document.getElementById('wName')?.value||'운동',title=oldHead.querySelector('h3'),eyebrow=oldHead.querySelector('.eyebrow');if(eyebrow)eyebrow.textContent='CURRENT EXERCISE';if(title)title.textContent=exerciseName;let cue=oldHead.querySelector('.workout-previous-cue');if(!cue){cue=document.createElement('p');cue.className='workout-previous-cue';oldHead.querySelector('div')?.appendChild(cue);}cue.textContent=cueText(previous());let note=oldHead.querySelector('.workout-previous-note');const previousNote=String(bridge()?.previousContext?.(exerciseName)?.notes||'').trim();if(previousNote&&!note){note=document.createElement('p');note.className='workout-previous-note';oldHead.querySelector('div')?.appendChild(note);}if(note){note.hidden=!previousNote;note.textContent=previousNote?('LAST NOTE · '+previousNote):'';}}
   let bar=builder.querySelector('.workout-session-bar');
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';

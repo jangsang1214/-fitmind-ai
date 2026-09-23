@@ -63,6 +63,7 @@ function navigate(route,{source='runtime',force=false,cleanup=true}={}){
   if(!ok)ok=callAppBridge(next);
   if(!ok)return false;
   if(cleanup)removeTransient();
+  try{window.scrollTo({top:0,left:0,behavior:'auto'});}catch{}
   try{window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:next,source}}));}catch{}
   return true;
 }
