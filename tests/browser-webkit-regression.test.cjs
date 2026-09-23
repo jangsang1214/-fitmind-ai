@@ -228,14 +228,14 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="log"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
+    const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
+    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
     assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
     assert.equal(await page.locator('#wPlateProfile').isVisible(),true,'plate inventory profile must be available in-session');
     await page.locator('#wBarPreset').selectOption('20');await page.locator('#wPlateProfile').selectOption('basic');await page.locator('#wPlateRounding').selectOption('2.5');await page.locator('#wPlateTarget').fill('101');await tap(page,'#calcWorkoutPlates');
     assert.match(await page.locator('#workoutPlateResult').textContent(),/실제/,'plate calculator must resolve a rounded load from the selected inventory');
     assert.equal(await page.locator('.workout-trend-grid').count(),1,'Workout must expose 7/30-day load analytics alongside PR history');
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.healthExport?.()?.schema),'garang-health-workout-v1','Health interoperability must expose the canonical workout export schema');
-    const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
-    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
