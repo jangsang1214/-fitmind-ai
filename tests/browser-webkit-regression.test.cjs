@@ -148,7 +148,7 @@ async function assertCoachSettles(page){
         profile:{name:'WebKit',weight:70},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',weeklyFrequency:4,availableMinutes:60},
         preferences:{language:'ko',unit:'metric'},
-        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat',sets:3,reps:6,weight:50,rpe:7,duration:30,setDetails:[{set:1,weight:50,reps:6,rpe:7},{set:2,weight:50,reps:6,rpe:7},{set:3,weight:50,reps:6,rpe:7}]}],
+        workouts:[null,{id:'w1',date:'2026-09-06',name:'Squat',sets:3,reps:6,weight:50,rpe:7,duration:30,notes:'무릎 정렬 유지 · 다음 세션에도 체크',setDetails:[{set:1,weight:50,reps:6,rpe:7},{set:2,weight:50,reps:6,rpe:7},{set:3,weight:50,reps:6,rpe:7}]}],
         meals:[null,{id:'m1',date:'2026-09-06',name:'Meal',items:[null,{id:'f1',name:'Egg',grams:100,kcal:150,protein:13,carbs:1,fat:10}]}],
         runs:[],body:[],planner:[],checkins:[],aiChat:[],actionLog:[],errors:[],
         memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
@@ -228,6 +228,12 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="log"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
+    assert.equal(await page.locator('#wPlateProfile').isVisible(),true,'plate inventory profile must be available in-session');
+    await page.locator('#wBarPreset').selectOption('20');await page.locator('#wPlateProfile').selectOption('basic');await page.locator('#wPlateRounding').selectOption('2.5');await page.locator('#wPlateTarget').fill('101');await tap(page,'#calcWorkoutPlates');
+    assert.match(await page.locator('#workoutPlateResult').textContent(),/실제/,'plate calculator must resolve a rounded load from the selected inventory');
+    assert.equal(await page.locator('.workout-trend-grid').count(),1,'Workout must expose 7/30-day load analytics alongside PR history');
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.healthExport?.()?.schema),'garang-health-workout-v1','Health interoperability must expose the canonical workout export schema');
     const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
     assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
@@ -261,15 +267,17 @@ async function assertCoachSettles(page){
     await tap(page,'#addWorkout');
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),0,'zero completed sets must not be serialized into the workout draft');
     assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','rejected Add must not start or contaminate live session elapsed time');
+    await page.locator('#workoutSetDetails [data-set-type]').first().selectOption('drop');
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().click();
-    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
+    assert.equal(await page.locator('#workoutExecutionRest').isHidden(),true,'drop sets must advance without forcing a rest timer');
     assert.equal(await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').first().textContent(),'✓','set completion must have an immediate visual state');
     assert.equal(await page.locator('#workoutSetDetails .completed').count(),1,'completed set must have an explicit completed state');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'completion must advance exactly one current set');
     assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\d{2}:\d{2}$/,'live session timer must be visible');
-    await tap(page,'#skipWorkoutRest');
+    await page.locator('#workoutSetDetails [data-set-type]').nth(1).selectOption('warmup');
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
+    assert.match(await page.locator('#workoutExecutionRestClock').textContent(),/^00:[0-5]\d$/,'warm-up rest must be capped below the default working-set rest');
     await tap(page,'#skipWorkoutRest');
     await page.locator('#wSets').fill('6');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===6,{timeout:3000});
@@ -296,6 +304,14 @@ async function assertCoachSettles(page){
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'draft edit must re-add without forcing completed sets to be checked again');
+    const beforeReplace=await page.locator('#workoutDraftArea .list-item strong').first().textContent();
+    await tap(page,'[data-replace-workout="0"]');
+    const replacement=page.locator('[data-exercise-pick]').filter({hasNotText:beforeReplace}).first();await replacement.scrollIntoViewIfNeeded();const replacementName=await replacement.getAttribute('data-exercise-pick');await replacement.tap();
+    await page.waitForFunction(name=>document.querySelector('#workoutDraftArea .list-item strong')?.textContent===name,replacementName,{timeout:4000});
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'direct exercise replacement must preserve completed set count');
+    await page.locator('#wProgramName').fill('WebKit Strength');await page.locator('#wProgramWeeks').fill('2');await page.locator('#wProgramFrequency').fill('2');await tap(page,'#scheduleWorkoutProgram');
+    await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length===4;},{timeout:4000});
+    assert.equal(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length;}),4,'two-week twice-weekly Program Builder must create four Planner executions');
     await tap(page,'#clearWorkoutDraft');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===0,{timeout:3000});
     assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','session reset must clear live elapsed time');
