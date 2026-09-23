@@ -24,9 +24,9 @@ async function tap(page,selector){
   assert.ok(box,`${selector} must have touch box`);
   const hit=await loc.evaluate(el=>{
     const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,h=document.elementFromPoint(x,y);
-    return !!h&&(h===el||el.contains(h));
+    return {ok:!!h&&(h===el||el.contains(h)),owner:h?{tag:h.tagName,id:h.id||'',className:String(h.className||''),text:String(h.textContent||'').trim().slice(0,80)}:null,rect:{x:r.x,y:r.y,width:r.width,height:r.height},point:{x,y}};
   });
-  assert.equal(hit,true,`${selector} must own hit point`);
+  assert.equal(hit.ok,true,`${selector} must own hit point: ${JSON.stringify(hit)}`);
   // Locator.tap preserves real touch semantics while waiting for the target to be stable
   // between hit-testing and dispatch. Raw coordinate taps can race lifecycle-driven layout.
   await loc.tap({timeout:7000});
