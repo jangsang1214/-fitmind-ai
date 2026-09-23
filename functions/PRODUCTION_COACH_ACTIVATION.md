@@ -134,3 +134,23 @@ Activation scope:
 
 Success requires the standard Production Coach Activation workflow to finish SUCCESS, including authenticated nutrition lookup, Meal Scan, Coach, bounded-write and cleanup smoke. No new intelligence output is considered production-live before that evidence.
 
+## Intelligence Hardening v1 production activation — 2026-09-24
+
+Founder explicitly approved production activation in the AI/Data workstream.
+
+Approved revision:
+- PRODUCT main `71de869744a533f8f492b93cec79e4a2745cd6e8`
+- PR #242 Intelligence Hardening v1
+- Release Gate #1822 FULL GREEN
+- Post-merge Release Gate #1824 FULL GREEN
+- Pages #864 SUCCESS
+
+Activation scope:
+- deploy only Firebase Function `api` to `fitfind-ai`;
+- preserve the existing `GARANG_LLM_API_KEY`;
+- activate User Response Model v1.2, Recommendation Policy v1.2, Offline Policy Evaluation v1.1, Workout Prescription v1.2, Adaptive Nutrition v1.2, Intelligence Data Quality v1, Recommendation Quality Eval v1, and deterministic bilingual hybrid semantic retrieval;
+- preserve deterministic Decision ownership, confirmation-gated workout progression, confirmation-gated nutrition target changes, authenticated bounded writes, Meal Scan and nutrition lookup;
+- do not change billing, secrets, auth architecture, Firestore schema, native wearable/provider integrations, or unrelated production resources.
+
+Success requires the standard Production Coach Activation workflow to finish SUCCESS with public route boundary checks and authenticated nutrition lookup, Meal Scan, Coach, bounded-write, and disposable-user cleanup smokes.
+
