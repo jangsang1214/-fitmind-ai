@@ -109,6 +109,7 @@ assert.ok(app.includes("v==='20kg'")&&app.includes("v==='15kg'")&&app.includes("
 assert.ok(app.includes('function workoutWarmupPlan()')&&app.includes("{pct:.5,reps:8}")&&app.includes("{pct:.7,reps:5}")&&app.includes("{pct:.85,reps:3}")&&app.includes("setType:'warmup'"),'warm-up calculator must derive typed warm-up sets from working weight percentages');
 assert.ok(app.includes("rounding?Math.round(display/rounding)*rounding:display")&&app.includes("metricWeight(rounded)"),'warm-up calculator must reuse active plate rounding without corrupting canonical metric weight');
 assert.ok(app.includes("querySelector('[data-execution-completed=\"true\"]')")&&app.includes("진행 중인 세트를 초기화한 뒤 워밍업을 생성해 주세요."),'warm-up generation must refuse to overwrite completed live sets');
+assert.ok(app.includes("GarangWorkoutExecutionV2?.replaceSetPlan?.(plan)")&&runtime.includes('function replaceSetPlan(rows=[])')&&runtime.includes('liveSetCount=liveSetDraft.length')&&runtime.includes('applyPrefill,replaceSetPlan'),'warm-up generation must hand expanded set plans to the live execution state owner');
 
 // Workout grouped execution polish v1
 assert.ok(app.includes("weightUnit()==='lb'?45:20"),'imperial plate calculator must default to a standard 45 lb bar');
