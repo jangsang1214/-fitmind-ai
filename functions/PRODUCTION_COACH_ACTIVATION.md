@@ -86,3 +86,9 @@ Activation scope:
 - do not change billing, secrets, auth architecture, Firestore schema, or unrelated production resources
 
 Success requires the Production Coach Activation workflow to complete successfully with the live nutrition lookup smoke PASS. A skipped or failed nutrition smoke is not success.
+
+## Nutrition fallback activation retry — 2026-09-23
+
+Activation #29 successfully deployed Firebase Function `api` and passed Coach / Meal Scan / nutrition lookup public auth-method boundaries, but the newly added synthetic negative Meal Scan fixture was visually ambiguous to the live Vision provider and returned a false-positive food candidate before the nutrition smoke could run.
+
+This retry keeps the no-food assertion strict, replaces only the synthetic negative fixture with an unambiguous solid-color RGB PNG, and preserves the same Founder-approved production activation scope. No runtime Meal Scan, nutrition lookup, Coach, or data mutation logic changes in this retry.
