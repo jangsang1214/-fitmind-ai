@@ -118,6 +118,7 @@ assert.ok(app.includes('workout-group-chip')&&app.includes('is-workout-grouped')
 assert.ok(app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'group execution metadata must be published on successful add');
 assert.ok(app.includes('data-execute-workout')&&app.includes('stageWorkoutDraftExecution'),'grouped draft exercises must expose an explicit execution entry point');
 assert.ok(app.includes('function workoutGroupExecutionContext()')&&app.includes('function nextWorkoutGroupTarget(setIndex)'),'app bridge must model grouped round context and deterministic next targets');
+assert.ok(app.includes('function workoutGroupStartIndex(index)')&&app.includes('member.rows[round]?.executionCompleted!==true'),'starting any grouped member must normalize to the earliest incomplete round/member');
 assert.ok(app.includes('executionDraftId:workoutExecutionDraftId||null')&&app.includes('workoutExecutionDraftId=value?.executionDraftId'),'active grouped exercise identity must survive session recovery');
 assert.ok(app.includes('persistExecutionRows(rows)')&&runtime.includes('persistExecutionRows?.(liveSetDraft)'),'live row completion state must persist back into the grouped draft owner');
 assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('activateGroupedExercise?.(grouped.target.index)'),'set completion must auto-advance to the next grouped exercise');
