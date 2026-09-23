@@ -1,0 +1,26 @@
+'use strict';
+const ResponseModel=require('./user-response-model-v1.cjs');
+const Policy=require('./recommendation-policy-eval-v1.cjs');
+const VERSION='offline-policy-evaluation-v1.0.0';
+const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const list=v=>Array.isArray(v)?v.filter(object):[];
+const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
+const round=(v,d=3)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
+const mean=v=>{const x=v.filter(Number.isFinite);return x.length?x.reduce((a,b)=>a+b,0)/x.length:null;};
+function positive(ep){const status=String(ep?.userResponse?.status||''),executed=!!(ep?.execution?.executionId||ep?.execution?.status==='observed'||finite(ep?.execution?.completionRatio)>0),score=finite(ep?.outcome?.score);return ['accepted','edited'].includes(status)&&executed&&(score===null||score>=60);}
+function reconstruct(ep){return {decisionId:String(ep?.decision?.decisionId||ep?.episodeId||''),mode:String(ep?.decision?.mode||''),recommendation:{duration:finite(ep?.recommendation?.duration),intensityScale:finite(ep?.recommendation?.intensityScale),volumeScale:finite(ep?.recommendation?.volumeScale)}};}
+function build(episodesInput={},options={}){
+ const episodes=list(episodesInput?.episodes||episodesInput).slice().sort((a,b)=>String(a?.date||'').localeCompare(String(b?.date||''))||String(a?.episodeId||'').localeCompare(String(b?.episodeId||''))),minHistory=Math.max(2,Math.min(12,Number(options.minHistory)||3)),rows=[],positiveScores=[],negativeScores=[];
+ for(let i=0;i<episodes.length;i++){
+  const ep=episodes[i],prior=episodes.slice(0,i).filter(x=>(finite(x?.attribution?.confidence)??0)>=.5);if(prior.length<minHistory)continue;
+  const response=ResponseModel.build({episodes:prior,asOf:ep.date},{asOf:ep.date}),policy=Policy.build(reconstruct(ep),response,{asOf:ep.date}),base=policy.candidates.find(x=>x.id==='base'),selected=policy.selected;
+  if(!selected||!base)continue;
+  const safe=selected.durationScale<=1&&(finite(selected.intensityScale)===null||finite(ep?.recommendation?.intensityScale)===null||selected.intensityScale<=ep.recommendation.intensityScale)&&(finite(selected.volumeScale)===null||finite(ep?.recommendation?.volumeScale)===null||selected.volumeScale<=ep.recommendation.volumeScale),isPositive=positive(ep);
+  if(isPositive)positiveScores.push(base.score);else negativeScores.push(base.score);
+  rows.push({episodeId:ep.episodeId,date:ep.date,historySize:prior.length,responseConfidence:response.confidence,selectedCandidate:selected.id,wouldConstrain:selected.durationScale<1||(finite(selected.intensityScale)!==null&&finite(ep?.recommendation?.intensityScale)!==null&&selected.intensityScale<ep.recommendation.intensityScale)||(finite(selected.volumeScale)!==null&&finite(ep?.recommendation?.volumeScale)!==null&&selected.volumeScale<ep.recommendation.volumeScale),guardrailSafe:safe,observedPositive:isPositive,observedBaseScore:base.score});
+ }
+ const evaluated=rows.length,pos=mean(positiveScores),neg=mean(negativeScores),counts={};for(const row of rows)counts[row.selectedCandidate]=(counts[row.selectedCandidate]||0)+1;
+ return Object.freeze({version:VERSION,status:evaluated>=3?'diagnostic_ready':'insufficient_history',asOf:String(options.asOf||episodesInput?.asOf||new Date().toISOString().slice(0,10)),inputEpisodes:episodes.length,minHistory,evaluatedEpisodes:evaluated,warmupSkipped:Math.min(episodes.length,minHistory),coverage:episodes.length?round(evaluated/episodes.length):0,wouldConstrainShare:evaluated?round(rows.filter(x=>x.wouldConstrain).length/evaluated):0,guardrailViolations:rows.filter(x=>!x.guardrailSafe).length,selectedCandidateCounts:Object.freeze(counts),observedPositiveRate:evaluated?round(rows.filter(x=>x.observedPositive).length/evaluated):null,calibration:{baseScorePositiveAvg:pos===null?null:round(pos),baseScoreNegativeAvg:neg===null?null:round(neg),directionalSeparation:pos===null||neg===null?null:round(pos-neg)},replayRows:Object.freeze(rows.slice(-24)),guardrails:Object.freeze({offlineOnly:true,chronologicalReplay:true,leaveFutureOut:true,noCounterfactualClaim:true,noProductionMutation:true,noAutomaticProgressionIncrease:true})});
+}
+function compactForContext(v={}){return {version:String(v.version||VERSION),status:String(v.status||'insufficient_history'),asOf:String(v.asOf||''),inputEpisodes:Number(v.inputEpisodes)||0,evaluatedEpisodes:Number(v.evaluatedEpisodes)||0,coverage:finite(v.coverage)??0,wouldConstrainShare:finite(v.wouldConstrainShare)??0,guardrailViolations:Number(v.guardrailViolations)||0,selectedCandidateCounts:object(v.selectedCandidateCounts)?v.selectedCandidateCounts:{},observedPositiveRate:finite(v.observedPositiveRate),calibration:object(v.calibration)?v.calibration:{},guardrails:{offlineOnly:true,chronologicalReplay:true,leaveFutureOut:true,noCounterfactualClaim:true,noProductionMutation:true,noAutomaticProgressionIncrease:true}};}
+module.exports=Object.freeze({VERSION,build,compactForContext});
