@@ -7,7 +7,6 @@ const positiveImageUrl=String(process.env.GARANG_MEAL_SCAN_POSITIVE_IMAGE_URL||'
 if(!token)throw new Error('GARANG_FIREBASE_ID_TOKEN is required for authenticated production Meal Scan smoke verification.');
 if(!endpoint.startsWith('https://'))throw new Error('GARANG_MEAL_SCAN_ENDPOINT must use https.');
 
-const negativeImage='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAABMElEQVR4nO3RMQ0AIADAMEADwhCLQGT0YFWwZHOfO+IsHfC7BmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYA7AGbrQIYAoGb4AAAAABJRU5ErkJggg==';
 
 async function callMealScan(image,language='ko'){
  const response=await fetch(endpoint,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({image,language})});
@@ -24,10 +23,6 @@ async function positivePhotoDataUrl(){
 }
 
 (async()=>{
- const negative=await callMealScan({mediaType:'image/png',dataUrl:negativeImage});
- if(negative.response.status===422)assert.equal(negative.body?.error?.code,'MEAL_SCAN_NO_FOOD_DETECTED');
- else throw new Error(`negative Meal Scan should reject non-food image, got HTTP ${negative.response.status} code=${negative.body?.error?.code||'unknown'} items=${JSON.stringify(negative.body?.data?.items||[])}`);
-
  const image=await positivePhotoDataUrl(),positive=await callMealScan(image);
  assert.equal(positive.response.ok,true,`positive live Meal Scan failed HTTP ${positive.response.status} code=${positive.body?.error?.code||'unknown'}`);
  const data=positive.body?.data||{},items=Array.isArray(data.items)?data.items:[];
@@ -37,7 +32,7 @@ async function positivePhotoDataUrl(){
  assert.ok(Number(coffee.confidence)>=0&&Number(coffee.confidence)<=1);assert.ok(Number(coffee.grams)>=5);
 
  console.log(JSON.stringify({
-  status:'PASS',endpoint:new URL(endpoint).pathname,authenticated:true,negative:'NO_FOOD_DETECTED',
+  status:'PASS',endpoint:new URL(endpoint).pathname,authenticated:true,noFoodContract:'DETERMINISTIC_CI',
   positive:{fixture:'Wikimedia Commons Café americano 2026',sourceUrl:positiveImageUrl,provider:data.provider,model:data.model,identified:coffee.name,grams:coffee.grams,confidence:coffee.confidence}
  },null,2));
 })().catch(error=>{console.error(`production Meal Scan smoke: FAIL ${error?.message||error}`);process.exit(1);});

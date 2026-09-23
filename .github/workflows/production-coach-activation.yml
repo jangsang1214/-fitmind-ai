@@ -188,20 +188,20 @@ jobs:
           })().catch(error=>{console.error(error.message||error);process.exit(1);});
           NODE
 
-      - name: Run authenticated live Meal Scan smoke
-        id: live_meal_scan_smoke
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run smoke:meal-scan:prod
-          echo "status=PASS" >> "$GITHUB_OUTPUT"
-
       - name: Run authenticated live nutrition lookup smoke
         id: live_nutrition_lookup_smoke
         shell: bash
         run: |
           set -euo pipefail
           npm run smoke:nutrition-lookup:prod
+          echo "status=PASS" >> "$GITHUB_OUTPUT"
+
+      - name: Run authenticated live Meal Scan smoke
+        id: live_meal_scan_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run smoke:meal-scan:prod
           echo "status=PASS" >> "$GITHUB_OUTPUT"
 
       - name: Run authenticated live Coach smoke
