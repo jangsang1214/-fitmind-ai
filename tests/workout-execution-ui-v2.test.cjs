@@ -45,7 +45,7 @@ assert.ok(runtime.includes("execution-duration-field"),'manual execution must ke
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(runtime.includes("durationInput.value=liveDuration"),'recent-workout prefill must own duration before live-state recapture');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
-assert.ok(app.includes("workoutEditForm={name:x.name"),'draft edit must persist scalar form state across render');
+assert.ok(app.includes("workoutEditForm={index:i,name:x.name"),'draft edit must persist scalar form state and original position across render');
 assert.ok(app.includes("if(workoutEditForm){const edit=workoutEditForm;workoutEditForm=null"),'bindWorkout must restore persisted edit form state after render');
 assert.ok(app.includes("data-execution-completed=\"'+(row.executionCompleted===true?'true':'false')+'\""),'set renderer must preserve execution completion metadata');
 assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must preserve pre-rendered completion state');
@@ -65,3 +65,25 @@ assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-work
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-execution-v2.js'),'runtime manifest must include execution JS');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-workout-execution-v2.css'),'runtime manifest must include execution CSS');
 console.log('workout-execution-ui-v2: PASS');
+assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.includes('value="drop"')&&app.includes('value="failure"'),'workout must support warm-up, drop and failure set semantics');
+assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
+assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
+assert.ok(runtime.includes('GARANG ')&&runtime.includes('execution-target')&&runtime.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
+assert.ok(runtime.includes('targetFor(row)')&&runtime.includes('지난 세트 여유 반영')&&runtime.includes('피로도 반영'),'GARANG target must adapt from prior performance instead of copying Previous');
+assert.ok(runtime.includes('workout-result-pr')&&runtime.includes('estimated 1RM'),'session result must surface a PR benchmark');
+
+assert.ok(app.includes('id="wGroupType"')&&app.includes('value="superset"')&&app.includes('value="circuit"'),'workout must support superset and circuit grouping');
+assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('imperial?[45,35,25,10,5,2.5]:[20,15,10,5,2.5,1.25,1,.5]'),'workout must provide a unit-aware in-session plate calculator');
+
+assert.ok(app.includes("weightMetric")&&app.includes("estimated1RMMetric"),'previous-set bridge must expose canonical metric weights for unit-safe GARANG targets');
+assert.ok(runtime.includes("base=num(row.weightMetric")&&runtime.includes("displayBufferedWeight(target.weightMetric)"),'GARANG targets must calculate canonically and convert only for display');
+assert.ok(app.includes("[data-set-rir]")&&app.includes("[data-set-type]"),'completed set details must persist row-level RIR and set type');
+assert.ok(runtime.includes("data-set-type")&&runtime.includes("data-set-rir")&&runtime.includes("saved?.setType")&&runtime.includes("saved?.rir"),'execution rows must own and preserve mixed set semantics');
+assert.ok(app.includes("groupType!=='none'&&!groupId"),'superset/circuit entries must reject missing group identifiers');
+assert.ok(app.includes("imperial?[45,35,25,10,5,2.5]"),'plate calculator must use imperial denominations in lb mode');
+assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=bridge()?.draftPRComparisons"),'PR result must snapshot pre-save all-time exercise baselines');
+assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
+
+assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
+assert.ok(app.includes("workoutEditForm={index:i")&&app.includes("dataset.editIndex")&&app.includes("workoutDraft.splice(editIndex,0,x)"),'editing and re-adding an exercise must preserve its original draft position');
+assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR metric must be selected from exercises that actually improved');

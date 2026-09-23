@@ -18,13 +18,15 @@ async function waitForServer(){
 async function tap(page,selector){
   const loc=page.locator(selector);
   await loc.waitFor({state:'visible',timeout:7000});
+  await loc.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest'}));
+  await page.waitForTimeout(50);
   const box=await loc.boundingBox();
   assert.ok(box,`${selector} must have touch box`);
   const hit=await loc.evaluate(el=>{
     const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,h=document.elementFromPoint(x,y);
-    return !!h&&(h===el||el.contains(h));
+    return {ok:!!h&&(h===el||el.contains(h)),owner:h?{tag:h.tagName,id:h.id||'',className:String(h.className||''),text:String(h.textContent||'').trim().slice(0,80)}:null,rect:{x:r.x,y:r.y,width:r.width,height:r.height},point:{x,y}};
   });
-  assert.equal(hit,true,`${selector} must own hit point`);
+  assert.equal(hit.ok,true,`${selector} must own hit point: ${JSON.stringify(hit)}`);
   // Locator.tap preserves real touch semantics while waiting for the target to be stable
   // between hit-testing and dispatch. Raw coordinate taps can race lifecycle-driven layout.
   await loc.tap({timeout:7000});
@@ -234,7 +236,7 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
     assert.equal(await page.locator('#saveWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-bar')),true,'Finish must live in the top-level live session bar');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');
-    assert.match(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').innerText(),/SET\s+PREVIOUS\s+KG\s+REPS\s+RPE\s+✓/,'set-first table must expose the commercial execution hierarchy');
+    assert.match(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').innerText(),/SET\s+PREVIOUS\s+TARGET\s+TYPE\s+KG\s+REPS\s+RPE\s+RIR\s+✓/,'set-first table must expose the full commercial execution hierarchy');
     assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
     await tap(page,'[data-gws-reuse-latest]');
     await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50'&&document.querySelector('#workoutSetDetails [data-set-reps]')?.value==='6',{timeout:3000});
@@ -275,6 +277,7 @@ async function assertCoachSettles(page){
     await page.locator('#wSets').fill('5');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'decreasing set count must preserve surviving completed sets');
+    await page.locator('#addWorkout').scrollIntoViewIfNeeded();
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
