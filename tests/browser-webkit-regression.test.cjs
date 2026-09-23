@@ -18,6 +18,7 @@ async function waitForServer(){
 async function tap(page,selector){
   const loc=page.locator(selector);
   await loc.waitFor({state:'visible',timeout:7000});
+  await loc.scrollIntoViewIfNeeded();
   const box=await loc.boundingBox();
   assert.ok(box,`${selector} must have touch box`);
   const hit=await loc.evaluate(el=>{
