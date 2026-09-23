@@ -23,7 +23,7 @@ assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refres
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
 assert.ok(app.includes("garang:workout-session-clearing"),'session reset must publish before the app rerenders workout rows');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("liveSetDraft=[]")&&runtime.includes("liveSetCount=0"),'execution layer must clear live row state before session reset rerender');
-assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported}"),'successful exercise add must publish whether it was a programmatic import');
+assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'successful exercise add must publish import status and group execution metadata');
 assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("event.detail?.imported!==true")&&runtime.includes("ensureSession()"),'live timer must start only from a successful manual exercise add');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
@@ -104,3 +104,9 @@ assert.ok(app.includes('id="scheduleWorkoutProgram"')&&app.includes("source:'wor
 assert.ok(app.includes('id="syncWorkoutHealth"')&&app.includes("GarangNativeHealthBridge")&&app.includes("garang-health-workout-v1"),'Workout must expose native Health bridge integration with a web export fallback');
 assert.ok(app.includes("throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today())"),'weekly review must exclude future scheduled program rows from current adherence');
 assert.ok(app.includes("v==='20kg'")&&app.includes("v==='15kg'")&&app.includes("v==='45lb'")&&app.includes("shownWeight(metric,1)"),'bar presets must convert canonical weights into the active display unit');
+
+ // Workout grouped execution polish v1
+assert.ok(app.includes("weightUnit()==='lb'?45:20"),'imperial plate calculator must default to a standard 45 lb bar');
+assert.ok(app.includes("groupKey=String(x.groupType)+':'+String(x.groupId).toLowerCase()")&&app.includes("workoutDraft.splice(last.index+1,0,x)"),'superset/circuit exercises must stay contiguous in the session draft');
+assert.ok(app.includes('workout-group-chip')&&app.includes('is-workout-grouped'),'grouped exercises must be visibly labeled in the session draft');
+assert.ok(app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'group execution metadata must be published on successful add');
