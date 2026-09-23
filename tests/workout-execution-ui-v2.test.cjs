@@ -68,9 +68,18 @@ console.log('workout-execution-ui-v2: PASS');
 assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.includes('value="drop"')&&app.includes('value="failure"'),'workout must support warm-up, drop and failure set semantics');
 assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
 assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
-assert.ok(exec.includes('GARANG ')&&exec.includes('execution-target')&&exec.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
-assert.ok(exec.includes('targetFor(row)')&&exec.includes('지난 세트 여유 반영')&&exec.includes('피로도 반영'),'GARANG target must adapt from prior performance instead of copying Previous');
-assert.ok(exec.includes('workout-result-pr')&&exec.includes('estimated 1RM'),'session result must surface a PR benchmark');
+assert.ok(runtime.includes('GARANG ')&&exec.includes('execution-target')&&exec.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
+assert.ok(runtime.includes('targetFor(row)')&&exec.includes('지난 세트 여유 반영')&&exec.includes('피로도 반영'),'GARANG target must adapt from prior performance instead of copying Previous');
+assert.ok(runtime.includes('workout-result-pr')&&exec.includes('estimated 1RM'),'session result must surface a PR benchmark');
 
 assert.ok(app.includes('id="wGroupType"')&&app.includes('value="superset"')&&app.includes('value="circuit"'),'workout must support superset and circuit grouping');
 assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('plates=[20,15,10,5,2.5,1.25,1,.5]'),'workout must provide an in-session plate calculator');
+
+assert.ok(app.includes("weightMetric")&&app.includes("estimated1RMMetric"),'previous-set bridge must expose canonical metric weights for unit-safe GARANG targets');
+assert.ok(runtime.includes("base=num(row.weightMetric")&&runtime.includes("displayBufferedWeight(target.weightMetric)"),'GARANG targets must calculate canonically and convert only for display');
+assert.ok(app.includes("[data-set-rir]")&&app.includes("[data-set-type]"),'completed set details must persist row-level RIR and set type');
+assert.ok(runtime.includes("data-set-type")&&runtime.includes("data-set-rir")&&runtime.includes("saved?.setType")&&runtime.includes("saved?.rir"),'execution rows must own and preserve mixed set semantics');
+assert.ok(app.includes("groupType!=='none'&&!groupId"),'superset/circuit entries must reject missing group identifiers');
+assert.ok(app.includes("imperial?[45,35,25,10,5,2.5]"),'plate calculator must use imperial denominations in lb mode');
+assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=bridge()?.draftPRComparisons"),'PR result must snapshot pre-save all-time exercise baselines');
+assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
