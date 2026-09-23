@@ -104,3 +104,17 @@ Boundary correction:
 - require the activation workflow overall to PASS, including nutrition lookup, positive Meal Scan, Coach, bounded write, and cleanup.
 
 No production runtime logic is relaxed or changed by this retry.
+
+## Nutrition fallback final live verification — 2026-09-23
+
+Founder-approved production activation remains in scope.
+
+Final trigger-only checkpoint:
+- PR #229 changed only the nutrition live-smoke fixture to a branded Starbucks Grande Caffè Americano so GARANG's generic-vs-branded provenance rule remains strict.
+- PR #229 exact-head Release Gate #1764 is FULL GREEN.
+- production runtime nutrition, Meal Scan, Coach, state mutation, auth, billing, secrets, and schema logic are unchanged by this checkpoint.
+- deploy only Firebase Function `api` to `fitfind-ai`.
+- require authenticated nutrition lookup live smoke PASS with a source-backed official Starbucks result.
+- then require authenticated positive Meal Scan, Coach, bounded write, sensitive-write boundary, and disposable-user cleanup PASS.
+- production completion requires the activation workflow itself to finish SUCCESS.
+
