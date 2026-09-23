@@ -28,7 +28,37 @@ function compareRank(a,b){const A=conflictRank(a),B=conflictRank(b);for(let i=0;
 function ownerAllowed(item,ownerUid){return !ownerUid||!item.ownerUid||String(item.ownerUid)===String(ownerUid);}
 function resolveConflicts(entries,{now=new Date(),deletedIds=[],ownerUid=null}={}){const deleted=new Set(normalizeDeletedIds(deletedIds)),list=rows(entries).map(x=>normalizeEntry(x,now)).filter(x=>x&&!deleted.has(String(x.id))&&ownerAllowed(x,ownerUid)),groups=new Map();for(const item of list){const k=semanticKey(item);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(item);}const out=[];for(const group of groups.values()){const exact=new Map();for(const item of group){const k=exactKey(item);exact.set(k,exact.has(k)?mergeExact(exact.get(k),item,now):item);}const variants=[...exact.values()],viable=variants.filter(x=>!isExpired(x,now)),winner=(viable.length?viable:variants).slice().sort(compareRank)[0],winnerKey=winner?exactKey(winner):null;for(const item of variants){if(exactKey(item)===winnerKey)out.push({...item,status:isExpired(item,now)?'expired':'active',validTo:null,supersededBy:null});else{const cutoff=winner?.observedAt||winner?.updatedAt||item.updatedAt;out.push({...item,status:isExpired(item,now)?'expired':'superseded',validTo:item.validTo||cutoff,supersededBy:winner?.id||null});}}}return out.sort((a,b)=>semanticKey(a).localeCompare(semanticKey(b))||compareRank(a,b));}
 function upsertMemory(entries,candidate,{now=new Date(),deletedIds=[],ownerUid=null}={}){const incoming=normalizeEntry(candidate,now);if(!incoming)return resolveConflicts(entries,{now,deletedIds,ownerUid});const deleted=new Set(normalizeDeletedIds(deletedIds));if(deleted.has(String(incoming.id)))throw error('MEMORY_TOMBSTONED_ID');if(ownerUid&&incoming.ownerUid&&String(incoming.ownerUid)!==String(ownerUid))throw error('MEMORY_OWNER_MISMATCH');const scoped=ownerUid&&!incoming.ownerUid?{...incoming,ownerUid:String(ownerUid)}:incoming;return resolveConflicts([...rows(entries),scoped],{now,deletedIds,ownerUid});}
-function lexicalRelevance(item,query){const q=tokens(query);if(!q.size)return 0;const hay=tokens(`${item.memoryClass} ${item.type} ${item.key||''} ${item.value}`);let overlap=0;for(const t of q)if(hay.has(t))overlap++;const ratio=overlap/q.size,phrase=lower(`${item.key||''} ${item.value}`).includes(lower(query))?1:0;return ratio*48+phrase*22+(overlap===0?-10:0);}
+const SEMANTIC_GROUPS=Object.freeze([
+ ['protein','단백질','고단백','protein-rich','amino'],
+ ['recovery','recover','회복','피로','fatigue','soreness','근육통'],
+ ['sleep','수면','잠','sleeping'],
+ ['pain','통증','부상','injury','ache'],
+ ['strength','근력','웨이트','weight training','resistance'],
+ ['progression','progress','progressive','overload','증량','중량 증가'],
+ ['running','run','러닝','달리기','pace','페이스'],
+ ['nutrition','식단','영양','섭취','meal','food'],
+ ['calorie','calories','kcal','칼로리','열량'],
+ ['carb','carbs','carbohydrate','탄수','탄수화물'],
+ ['weight','체중','몸무게','body weight'],
+ ['morning','아침','오전'],
+ ['evening','저녁','야간','night'],
+ ['goal','목표','target'],
+ ['metric','kg','킬로그램','미터법'],
+ ['imperial','lb','lbs','파운드']
+]);
+function semanticFeatures(value){
+ const text=lower(value),raw=[...(text.match(/[\p{L}\p{N}]+/gu)||[])],features=new Set(raw);
+ for(const group of SEMANTIC_GROUPS){if(group.some(term=>text.includes(lower(term))))for(const term of group)features.add(lower(term));}
+ for(const token of raw){if(token.length>=3)for(let i=0;i<=token.length-3;i++)features.add('#'+token.slice(i,i+3));}
+ return features;
+}
+function semanticSimilarity(a,b){const A=semanticFeatures(a),B=semanticFeatures(b);if(!A.size||!B.size)return 0;let overlap=0;for(const x of A)if(B.has(x))overlap++;return overlap/Math.sqrt(A.size*B.size);}
+function lexicalRelevance(item,query){
+ const q=tokens(query);if(!q.size)return 0;
+ const text=`${item.memoryClass} ${item.type} ${item.key||''} ${item.value}`,hay=tokens(text);let overlap=0;for(const t of q)if(hay.has(t))overlap++;
+ const ratio=overlap/q.size,phrase=lower(`${item.key||''} ${item.value}`).includes(lower(query))?1:0,semantic=semanticSimilarity(query,text);
+ return ratio*34+phrase*20+semantic*34+(overlap===0&&semantic<.12?-10:0);
+}
 function scoreMemory(entry,{query='',now=new Date()}={}){const item=normalizeEntry(entry,now);if(!item||item.status!=='active'||isExpired(item,now))return -Infinity;const age=Math.max(0,(now.getTime()-(Date.parse(item.lastSeenAt||item.updatedAt)||now.getTime()))/DAY_MS),policy=CLASS_POLICY[item.memoryClass]||CLASS_POLICY.semantic,freshness=18/(1+age/Math.max(1,policy.halfLifeDays));let score=policy.base+item.importance*15+item.confidence*14+item.utility*10+item.sourceTrust*10+Math.min(10,Math.log2(item.evidenceCount+1)*3)+(item.userConfirmed?12:-18)+freshness+lexicalRelevance(item,query);return Number(score.toFixed(4));}
 function compactMemory(entries,{now=new Date(),deletedIds=[],maxEntries=500,includeHistory=true,ownerUid=null}={}){let list=resolveConflicts(entries,{now,deletedIds,ownerUid});if(!includeHistory)list=list.filter(x=>x.status==='active'&&!isExpired(x,now));list.sort((a,b)=>{const sa=scoreMemory(a,{now}),sb=scoreMemory(b,{now});if(sa!==sb)return sb-sa;return (Date.parse(b.updatedAt)||0)-(Date.parse(a.updatedAt)||0)||String(a.id).localeCompare(String(b.id));});return list.slice(0,Math.max(1,Number.parseInt(maxEntries,10)||500));}
 function contextEntry(entry){const item={};for(const key of CONTEXT_FIELDS)if(entry[key]!==undefined)item[key]=entry[key];return item;}
