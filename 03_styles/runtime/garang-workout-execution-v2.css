@@ -69,7 +69,7 @@
  .workout-execution-v2 .workout-entry-actions{margin-top:6px}
  .workout-execution-v2 .workout-set-toolbar{padding:6px 2px}
  .workout-execution-v2 .execution-set-row{min-height:60px}
- .workout-rest-timer{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:30;isolation:isolate;pointer-events:auto;box-shadow:0 16px 38px rgba(24,22,19,.22)}
+ .workout-rest-timer{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:60;isolation:isolate;pointer-events:auto;margin:0!important;box-shadow:0 16px 38px rgba(24,22,19,.22)}
 }
 
 /* Commercial parity v1 */
