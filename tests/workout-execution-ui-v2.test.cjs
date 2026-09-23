@@ -69,23 +69,23 @@ assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.inc
 assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
 assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
 assert.ok(runtime.includes('GARANG ')&&runtime.includes('execution-target')&&runtime.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
-assert.ok(runtime.includes('targetFor(row)')&&runtime.includes('지난 세트 여유 반영')&&runtime.includes('피로도 반영'),'GARANG target must adapt from prior performance instead of copying Previous');
+assert.ok(runtime.includes('targetFor(row)')&&runtime.includes('progressionContext')&&runtime.includes('recentTrend')&&runtime.includes('readiness'),'GARANG target must adapt from recent performance and readiness instead of copying Previous');
 assert.ok(runtime.includes('workout-result-pr')&&runtime.includes('estimated 1RM'),'session result must surface a PR benchmark');
 
 assert.ok(app.includes('id="wGroupType"')&&app.includes('value="superset"')&&app.includes('value="circuit"'),'workout must support superset and circuit grouping');
-assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('imperial?[45,35,25,10,5,2.5]:[20,15,10,5,2.5,1.25,1,.5]'),'workout must provide a unit-aware in-session plate calculator');
+assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('id="wPlateProfile"')&&app.includes('id="wPlateRounding"'),'workout must provide a unit-aware plate calculator with inventory profiles and rounding');
 
 assert.ok(app.includes("weightMetric")&&app.includes("estimated1RMMetric"),'previous-set bridge must expose canonical metric weights for unit-safe GARANG targets');
 assert.ok(runtime.includes("base=num(row.weightMetric")&&runtime.includes("displayBufferedWeight(target.weightMetric)"),'GARANG targets must calculate canonically and convert only for display');
 assert.ok(app.includes("[data-set-rir]")&&app.includes("[data-set-type]"),'completed set details must persist row-level RIR and set type');
 assert.ok(runtime.includes("data-set-type")&&runtime.includes("data-set-rir")&&runtime.includes("saved?.setType")&&runtime.includes("saved?.rir"),'execution rows must own and preserve mixed set semantics');
 assert.ok(app.includes("groupType!=='none'&&!groupId"),'superset/circuit entries must reject missing group identifiers');
-assert.ok(app.includes("imperial?[45,35,25,10,5,2.5]"),'plate calculator must use imperial denominations in lb mode');
+assert.ok(app.includes("imperial?(profile==='basic'?[45,25,10,5,2.5]:[45,35,25,10,5,2.5])"),'plate calculator must use imperial denominations and profile-aware inventory in lb mode');
 assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=bridge()?.draftPRComparisons"),'PR result must snapshot pre-save all-time exercise baselines');
 assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
 
 assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
-assert.ok(app.includes("workoutEditForm={index:i")&&app.includes("dataset.editIndex")&&app.includes("workoutDraft.splice(editIndex,0,x)"),'editing and re-adding an exercise must preserve its original draft position');
+assert.ok(app.includes("workoutEditTargetId=x.id")&&app.includes("findIndex(item=>String(item.id)===String(workoutEditTargetId))")&&app.includes("workoutDraft.splice(editIndex,1,x)"),'editing an exercise must use stable draft identity across rerenders and replace atomically');
 assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR metric must be selected from exercises that actually improved');
 
 // Workout session resilience v1
@@ -94,3 +94,13 @@ assert.ok(app.includes('sessionDraft(){return clone(workoutDraft);}')&&app.inclu
 assert.ok(runtime.includes('data-execution-add-set')&&runtime.includes('data-execution-set-delete')&&runtime.includes('changeSetCount('),'sets must be directly addable and removable during execution');
 assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}')&&runtime.includes('updateLivePR()')&&runtime.includes("NEW PR · e1RM"),'execution must surface immediate live PR feedback against pre-session history');
 assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
+
+assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
+assert.ok(app.includes("latestWorkoutNote")&&runtime.includes("LAST NOTE"),'exercise notes must carry forward into the next execution session');
+assert.ok(app.includes("data-replace-workout")&&app.includes("workoutReplaceIndex")&&app.includes('data-gws-step="exercise"')&&app.includes('data-gws-step="log"'),'exercise replacement must move through the exercise surface and return to Log');
+assert.ok(app.includes('id="wBarPreset"')&&app.includes('id="wPlateProfile"')&&app.includes('id="wPlateRounding"'),'plate calculator must expose bar presets, inventory profiles, and rounding');
+assert.ok(app.includes("analyzeMuscleLoad")&&app.includes("7D VOLUME")&&app.includes("30D VOLUME"),'workout analytics must expose recent volume and muscle load beyond PR-only cards');
+assert.ok(app.includes('id="scheduleWorkoutProgram"')&&app.includes("source:'workout_program'")&&app.includes("templateExercises")&&app.includes("data-plan-start")&&app.includes("workoutActivePlanId"),'Workout must support Planner-backed multi-week programs that can launch and complete in Workout Log');
+assert.ok(app.includes('id="syncWorkoutHealth"')&&app.includes("GarangNativeHealthBridge")&&app.includes("garang-health-workout-v1"),'Workout must expose native Health bridge integration with a web export fallback');
+assert.ok(app.includes("throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today())"),'weekly review must exclude future scheduled program rows from current adherence');
+assert.ok(app.includes("v==='20kg'")&&app.includes("v==='15kg'")&&app.includes("v==='45lb'")&&app.includes("shownWeight(metric,1)"),'bar presets must convert canonical weights into the active display unit');
