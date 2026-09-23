@@ -104,11 +104,13 @@ const SEMANTIC_GROUPS=Object.freeze([
  ['metric','kg','킬로그램','미터법'],
  ['imperial','lb','lbs','파운드']
 ]);
+const SEMANTIC_FEATURE_CACHE=new Map();
 function semanticFeatures(value){
- const text=lower(value),raw=[...(text.match(/[\p{L}\p{N}]+/gu)||[])],features=new Set(raw);
+ const text=lower(value),cached=SEMANTIC_FEATURE_CACHE.get(text);if(cached)return cached;
+ const raw=[...(text.match(/[\p{L}\p{N}]+/gu)||[])],features=new Set(raw);
  for(const group of SEMANTIC_GROUPS){if(group.some(term=>text.includes(lower(term))))for(const term of group)features.add(lower(term));}
  for(const token of raw){if(token.length>=3)for(let i=0;i<=token.length-3;i++)features.add('#'+token.slice(i,i+3));}
- return features;
+ if(SEMANTIC_FEATURE_CACHE.size>=1024)SEMANTIC_FEATURE_CACHE.clear();SEMANTIC_FEATURE_CACHE.set(text,features);return features;
 }
 function semanticSimilarity(a,b){const A=semanticFeatures(a),B=semanticFeatures(b);if(!A.size||!B.size)return 0;let overlap=0;for(const x of A)if(B.has(x))overlap++;return overlap/Math.sqrt(A.size*B.size);}
 function lexicalRelevance(item,query){
