@@ -235,12 +235,12 @@ async function assertCoachSettles(page){
     await page.locator('#wBarPreset').selectOption('20kg');await page.locator('#wPlateProfile').selectOption('basic');await page.locator('#wPlateRounding').selectOption('2.5');await page.locator('#wPlateTarget').fill('101');await tap(page,'#calcWorkoutPlates');
     assert.match(await page.locator('#workoutPlateResult').textContent(),/실제/,'plate calculator must resolve a rounded load from the selected inventory');
     assert.equal(await page.locator('.workout-trend-grid').count(),1,'Workout must expose 7/30-day load analytics alongside PR history');
-    await page.locator('#wWeight').fill('100');await page.locator('#wSets').fill('3');await page.locator('#wWarmupScheme').selectOption('standard');await tap(page,'#generateWorkoutWarmup');
+    await page.locator('#workoutSetDetails [data-set-weight]').first().fill('100');await page.locator('#wWarmupScheme').selectOption('standard');await tap(page,'#generateWorkoutWarmup');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===6,{timeout:3000});
     assert.deepEqual(await page.locator('#workoutSetDetails [data-set-type]').evaluateAll(nodes=>nodes.map(node=>node.value)),['warmup','warmup','warmup','working','working','working'],'warm-up calculator must prepend typed warm-up sets without removing working sets');
-    assert.deepEqual(await page.locator('#workoutSetDetails [data-set-weight]').evaluateAll(nodes=>nodes.map(node=>Number(node.value))),[50,70,85,100,100,100],'100 kg standard warm-up must create rounded 50/70/85% progression');
+    assert.deepEqual(await page.locator('#workoutSetDetails [data-set-weight]').evaluateAll(nodes=>nodes.map(node=>Number(node.value))),[50,70,85,100,100,100],'100 kg standard warm-up must create rounded 50/70/85% progression from the visible live-set target');
     assert.match(await page.locator('#workoutWarmupResult').textContent(),/3 warm-up \+ 3 working/,'warm-up calculator must explain generated execution structure');
-    await page.locator('#wSets').fill('3');
+    await page.evaluate(()=>{const node=document.getElementById('wSets');node.value='3';node.dispatchEvent(new Event('input',{bubbles:true}));});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.healthExport?.()?.schema),'garang-health-workout-v1','Health interoperability must expose the canonical workout export schema');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),true,'workout execution must expose set-first table hierarchy');
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
