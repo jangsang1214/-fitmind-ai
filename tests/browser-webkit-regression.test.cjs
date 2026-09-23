@@ -362,8 +362,9 @@ async function assertCoachSettles(page){
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutDraftArea [data-workout-group="superset:A"]').length===2,{timeout:3000});
     assert.equal(await page.locator('#workoutDraftArea [data-execute-workout]').count(),2,'grouped draft must expose execution entry points');
-    await tap(page,'[data-execute-workout="0"]');
+    await tap(page,'[data-execute-workout="1"]');
     await page.waitForFunction(()=>document.querySelector('#wName')?.value==='바벨 벤치프레스'&&document.querySelector('#workoutGroupExecutionCue')?.hidden===false,{timeout:4000});
+    assert.equal(await page.locator('#wName').inputValue(),'바벨 벤치프레스','starting B1 directly must normalize to the earliest incomplete A1 member');
     assert.match(await page.locator('#workoutGroupExecutionCue').textContent(),/SUPERSET A · ROUND 1\/2/,'group execution must expose group and round state');
     await page.locator('#workoutSetDetails .current-set [data-execution-set-complete]').click();
     await page.waitForFunction(()=>document.querySelector('#wName')?.value==='Squat',{timeout:4000});
