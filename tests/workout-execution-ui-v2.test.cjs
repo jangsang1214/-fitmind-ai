@@ -90,7 +90,7 @@ assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR 
 
 assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
 assert.ok(app.includes("latestWorkoutNote")&&runtime.includes("LAST NOTE"),'exercise notes must carry forward into the next execution session');
-assert.ok(app.includes("data-replace-workout")&&app.includes("workoutReplaceIndex")&&app.includes("운동을 교체했습니다"),'exercise replacement must be a direct in-session selection flow');
+assert.ok(app.includes("data-replace-workout")&&app.includes("workoutReplaceIndex")&&app.includes("운동을 교체했습니다")&&app.includes("data-gws-step=\"exercise\"")&&app.includes("data-gws-step=\"log\""),'exercise replacement must move to the exercise surface and return to Log');
 assert.ok(app.includes('id="wBarPreset"')&&app.includes('id="wPlateProfile"')&&app.includes('id="wPlateRounding"'),'plate calculator must expose bar presets, inventory profiles, and rounding');
 assert.ok(app.includes("analyzeMuscleLoad")&&app.includes("7D VOLUME")&&app.includes("30D VOLUME"),'workout analytics must expose recent volume and muscle load beyond PR-only cards');
 assert.ok(app.includes('id="scheduleWorkoutProgram"')&&app.includes("source:'workout_program'")&&app.includes("templateExercises")&&app.includes("data-plan-start")&&app.includes("workoutActivePlanId"),'Workout must support Planner-backed multi-week programs that can launch and complete in Workout Log');
