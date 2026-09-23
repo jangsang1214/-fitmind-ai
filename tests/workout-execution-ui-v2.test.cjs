@@ -110,3 +110,7 @@ assert.ok(app.includes("weightUnit()==='lb'?45:20"),'imperial plate calculator m
 assert.ok(app.includes("groupKey=String(x.groupType)+':'+String(x.groupId).toLowerCase()")&&app.includes("workoutDraft.splice(last.index+1,0,x)"),'superset/circuit exercises must stay contiguous in the session draft');
 assert.ok(app.includes('workout-group-chip')&&app.includes('is-workout-grouped'),'grouped exercises must be visibly labeled in the session draft');
 assert.ok(app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'group execution metadata must be published on successful add');
+
+assert.ok(runtime.includes("readinessScore=context?.readiness?.score")&&runtime.includes("readinessScore===null||readinessScore===undefined?NaN"),'missing readiness must remain unknown instead of coercing to a low score');
+assert.ok(app.includes("if(workoutDraft.length)return toast('진행 중인 운동 초안을 먼저 저장하거나 초기화해 주세요.')"),'starting a Planner program must not overwrite an active unsaved workout draft');
+assert.ok(app.includes("sessionContext(){return {activePlanId:workoutActivePlanId||null};}")&&app.includes("restoreSessionContext(value)")&&runtime.includes("context=bridge()?.sessionContext?.()")&&runtime.includes("restoreSessionContext?.(saved.context||null)"),'active Planner workout identity must survive resilient session persistence and reload');
