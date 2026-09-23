@@ -1,38 +1,30 @@
 'use strict';
-
-const VERSION='recommendation-policy-eval-v1.1.0';
-const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
-const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
-const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
-const round=(v,d=3)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
+const VERSION='recommendation-policy-eval-v1.2.0';
+const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v),finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),round=(v,d=3)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
 function durationScale(model){const band=String(model?.training?.preferredDurationBand||'');return band==='short'?.72:band==='medium'?.9:1;}
 function loadScale(band){return band==='low'?.82:band==='moderate'?.92:1;}
 function preferredScales(model={}){return {duration:durationScale(model),intensity:loadScale(String(model?.training?.preferredIntensityBand||'')),volume:loadScale(String(model?.training?.preferredVolumeBand||''))};}
 function empirical(model,dimension,band,field,fallback){
- const map=dimension==='duration'?model?.training?.durationStats:dimension==='intensity'?model?.training?.intensityStats:model?.training?.volumeStats;
- const value=finite(map?.[band]?.[field]);return value===null?fallback:clamp(field==='outcomeScore'?value/100:value,0,1);
+ const map=dimension==='duration'?model?.training?.durationStats:dimension==='intensity'?model?.training?.intensityStats:model?.training?.volumeStats,cell=map?.[band],value=finite(cell?.[field]),confidence=clamp(finite(cell?.confidence)??0,0,1);
+ if(value===null)return {value:fallback,confidence:0};
+ const normalized=field==='outcomeScore'?clamp(value/100,0,1):clamp(value,0,1);
+ return {value:round(fallback*(1-confidence)+normalized*confidence),confidence};
 }
 function build(decisionInput={},responseModelInput={},options={}){
  const d=object(decisionInput)?decisionInput:{},r=object(responseModelInput)?responseModelInput:{},baseDuration=finite(d?.recommendation?.duration),baseIntensity=finite(d?.recommendation?.intensityScale),baseVolume=finite(d?.recommendation?.volumeScale),responseConfidence=clamp(finite(r.confidence)??0,0,1),pref=responseConfidence>=.35?preferredScales(r):{duration:1,intensity:1,volume:1};
- const raw=[
-  {id:'base',durationScale:1,intensityScale:1,volumeScale:1},
-  {id:'response_fit',durationScale:pref.duration,intensityScale:pref.intensity,volumeScale:pref.volume},
-  {id:'adherence_first',durationScale:Math.min(pref.duration,.85),intensityScale:Math.min(pref.intensity,.95),volumeScale:Math.min(pref.volume,.9)},
-  {id:'recovery_protective',durationScale:.75,intensityScale:.8,volumeScale:.78}
- ];
+ const raw=[{id:'base',durationScale:1,intensityScale:1,volumeScale:1},{id:'response_fit',durationScale:pref.duration,intensityScale:pref.intensity,volumeScale:pref.volume},{id:'adherence_first',durationScale:Math.min(pref.duration,.85),intensityScale:Math.min(pref.intensity,.95),volumeScale:Math.min(pref.volume,.9)},{id:'recovery_protective',durationScale:.75,intensityScale:.8,volumeScale:.78}];
  const safetyMode=['caution','recover','reduce'].includes(String(d.mode||'')),overallAdherence=clamp(finite(r?.behavior?.acceptedExecutionRate)??finite(r?.behavior?.executionRate)??.65,0,1);
  const candidates=raw.map(c=>{
   const duration=baseDuration===null?null:Math.round(baseDuration*c.durationScale),intensity=baseIntensity===null?null:round(baseIntensity*c.intensityScale,2),volume=baseVolume===null?null:round(baseVolume*c.volumeScale,2),durationBand=duration===null?null:duration<=35?'short':duration<=55?'medium':'long',intensityBand=intensity===null?null:intensity<=.8?'low':intensity<=.95?'moderate':'full',volumeBand=volume===null?null:volume<=.8?'low':volume<=.95?'moderate':'full';
   const safety=safetyMode?(c.id==='recovery_protective'?1:c.id==='base'?.55:.88):c.id==='recovery_protective'?.9:1;
-  const empiricalExecution=(empirical(r,'duration',durationBand,'executionRate',overallAdherence)+empirical(r,'intensity',intensityBand,'executionRate',overallAdherence)+empirical(r,'volume',volumeBand,'executionRate',overallAdherence))/3;
-  const empiricalOutcome=(empirical(r,'duration',durationBand,'outcomeScore',.5)+empirical(r,'intensity',intensityBand,'outcomeScore',.5)+empirical(r,'volume',volumeBand,'outcomeScore',.5))/3;
-  const match=c.id==='response_fit'?responseConfidence:c.id==='adherence_first'?Math.max(responseConfidence*.9,.55):c.id==='recovery_protective'?.55:.5;
-  const adherence=clamp(overallAdherence*.45+empiricalExecution*.4+match*.15,0,1),goalAlignment=c.id==='base'?1:c.id==='response_fit'?.96:c.id==='adherence_first'?.9:.82,recoveryCost=(intensity??1)*(volume??1),recoveryProtection=1-clamp(recoveryCost/1.5,0,1);
-  const utility=round(safety*.3+adherence*.25+goalAlignment*.18+empiricalOutcome*.17+recoveryProtection*.1);
-  return Object.freeze({...c,duration,intensityScale:intensity,volumeScale:volume,score:utility,components:{safety:round(safety),adherence:round(adherence),goalAlignment:round(goalAlignment),observedOutcome:round(empiricalOutcome),recoveryProtection:round(recoveryProtection)}});
+  const ex=[empirical(r,'duration',durationBand,'executionRate',overallAdherence),empirical(r,'intensity',intensityBand,'executionRate',overallAdherence),empirical(r,'volume',volumeBand,'executionRate',overallAdherence)],out=[empirical(r,'duration',durationBand,'outcomeScore',.5),empirical(r,'intensity',intensityBand,'outcomeScore',.5),empirical(r,'volume',volumeBand,'outcomeScore',.5)];
+  const empiricalExecution=ex.reduce((a,x)=>a+x.value,0)/3,empiricalOutcome=out.reduce((a,x)=>a+x.value,0)/3,evidenceConfidence=round((ex.concat(out).reduce((a,x)=>a+x.confidence,0)/6)*responseConfidence);
+  const match=c.id==='response_fit'?responseConfidence:c.id==='adherence_first'?Math.max(responseConfidence*.9,.55):c.id==='recovery_protective'?.55:.5,adherence=clamp(overallAdherence*.45+empiricalExecution*.4+match*.15,0,1),goalAlignment=c.id==='base'?1:c.id==='response_fit'?.96:c.id==='adherence_first'?.9:.82,recoveryCost=(intensity??1)*(volume??1),recoveryProtection=1-clamp(recoveryCost/1.5,0,1),uncertaintyPenalty=(1-evidenceConfidence)*(c.id==='base'?0:.05);
+  const utility=round(safety*.3+adherence*.25+goalAlignment*.18+empiricalOutcome*.17+recoveryProtection*.1-uncertaintyPenalty);
+  return Object.freeze({...c,duration,intensityScale:intensity,volumeScale:volume,score:utility,evidenceConfidence,components:{safety:round(safety),adherence:round(adherence),goalAlignment:round(goalAlignment),observedOutcome:round(empiricalOutcome),recoveryProtection:round(recoveryProtection),uncertaintyPenalty:round(uncertaintyPenalty)}});
  });
- const selected=candidates.slice().sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id))[0]||null,safeSelected=selected?{...selected,intensityScale:baseIntensity===null?selected.intensityScale:Math.min(baseIntensity,selected.intensityScale??baseIntensity),volumeScale:baseVolume===null?selected.volumeScale:Math.min(baseVolume,selected.volumeScale??baseVolume),durationScale:Math.min(1,selected.durationScale)}:null;
- return Object.freeze({version:VERSION,decisionId:String(d.decisionId||''),decisionMode:String(d.mode||''),responseConfidence,candidates:Object.freeze(candidates),selected:safeSelected?Object.freeze(safeSelected):null,guardrails:Object.freeze({advisoryOnly:true,transparentScoring:true,empiricalResponseWeighted:true,neverExceedsDeterministicDecision:true,noAutomaticProgressionIncrease:true,noSilentMutation:true})});
+ const selected=candidates.slice().sort((a,b)=>b.score-a.score||b.evidenceConfidence-a.evidenceConfidence||a.id.localeCompare(b.id))[0]||null,safeSelected=selected?{...selected,intensityScale:baseIntensity===null?selected.intensityScale:Math.min(baseIntensity,selected.intensityScale??baseIntensity),volumeScale:baseVolume===null?selected.volumeScale:Math.min(baseVolume,selected.volumeScale??baseVolume),durationScale:Math.min(1,selected.durationScale)}:null;
+ return Object.freeze({version:VERSION,decisionId:String(d.decisionId||''),decisionMode:String(d.mode||''),responseConfidence,candidates:Object.freeze(candidates),selected:safeSelected?Object.freeze(safeSelected):null,guardrails:Object.freeze({advisoryOnly:true,transparentScoring:true,empiricalResponseWeighted:true,confidenceCalibrated:true,uncertaintyPenalized:true,neverExceedsDeterministicDecision:true,noAutomaticProgressionIncrease:true,noSilentMutation:true})});
 }
-function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),decisionId:String(v.decisionId||''),decisionMode:String(v.decisionMode||''),responseConfidence:clamp(finite(v.responseConfidence)??0,0,1),selected:object(v.selected)?v.selected:null,candidates:Array.isArray(v.candidates)?v.candidates.slice(0,4):[],guardrails:{advisoryOnly:true,transparentScoring:true,empiricalResponseWeighted:true,neverExceedsDeterministicDecision:true,noAutomaticProgressionIncrease:true,noSilentMutation:true}};}
-module.exports=Object.freeze({VERSION,build,compactForContext,preferredScales});
+function compactForContext(v={}){return {version:String(v.version||VERSION),decisionId:String(v.decisionId||''),decisionMode:String(v.decisionMode||''),responseConfidence:clamp(finite(v.responseConfidence)??0,0,1),selected:object(v.selected)?v.selected:null,candidates:Array.isArray(v.candidates)?v.candidates.slice(0,4):[],guardrails:{advisoryOnly:true,transparentScoring:true,empiricalResponseWeighted:true,confidenceCalibrated:true,uncertaintyPenalized:true,neverExceedsDeterministicDecision:true,noAutomaticProgressionIncrease:true,noSilentMutation:true}};}
+module.exports=Object.freeze({VERSION,build,compactForContext,preferredScales,empirical});

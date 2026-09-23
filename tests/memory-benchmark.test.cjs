@@ -13,7 +13,7 @@ const corpus=[
  {id:'new',memoryClass:'semantic',type:'identity',key:'training_experience',value:'intermediate',importance:3,confidence:.9,userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}
 ];
 
-const retrievalCases=[['protein meals','protein'],['morning strength training','morning'],['10K 45 minutes','goal'],['metric unit','units'],['training experience intermediate','new']];
+const retrievalCases=[['protein meals','protein'],['morning strength training','morning'],['10K 45 minutes','goal'],['metric unit','units'],['training experience intermediate','new'],['아침 웨이트 선호','morning'],['고단백 식단','protein']];
 let retrievalHits=0;
 for(const [query,expected] of retrievalCases){const top=Memory.selectMemory(corpus,{query,now,limit:1})[0];if(top?.id===expected)retrievalHits++;else console.error('BENCH retrieval miss',{query,expected,actual:top?.id});}
 const precisionAt1=retrievalHits/retrievalCases.length;
