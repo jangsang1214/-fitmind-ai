@@ -66,6 +66,12 @@ function refreshPrevious(rows=previous()){
   currentRows().forEach((row,i)=>{const cell=row.querySelector('.execution-previous');if(cell)cell.textContent=previousText(rows[i]);});
 }
 function changeSetCount(nextCount,removeIndex=null){const sets=document.getElementById('wSets');if(!sets)return;captureLiveSetRows();if(Number.isInteger(removeIndex)&&removeIndex>=0&&removeIndex<liveSetDraft.length)liveSetDraft.splice(removeIndex,1);liveSetCount=Math.max(1,num(nextCount,1));setSnapshot=liveSetDraft.slice(0,liveSetCount).map(row=>({...row}));restoringLiveSetCount=true;sets.value=String(liveSetCount);sets.dispatchEvent(new Event('input',{bubbles:true}));restoringLiveSetCount=false;persistSessionState();}
+function replaceSetPlan(rows=[]){
+  if(!Array.isArray(rows)||!rows.length)return false;
+  const sets=document.getElementById('wSets');if(!sets)return false;
+  liveSetDraft=rows.map(row=>({weightMetric:Math.max(0,num(row.weightMetric??row.weight)),reps:String(Math.max(1,num(row.reps,1))),rpe:String(num(row.rpe,8)),rir:String(num(row.rir,2)),setType:String(row.setType||'working'),completed:false}));
+  liveSetCount=liveSetDraft.length;setSnapshot=liveSetDraft.map(row=>({...row}));restoringLiveSetCount=true;sets.value=String(liveSetCount);sets.dispatchEvent(new Event('input',{bubbles:true}));restoringLiveSetCount=false;persistSessionState();setTimeout(()=>{enhance();restoreSetRows();updateLive();},0);return true;
+}
 function enhanceRows(){
   const host=document.getElementById('workoutSetDetails');if(!host)return;
   const disclosure=host.closest('details');if(disclosure&&!disclosure.open)disclosure.open=true;
@@ -141,5 +147,5 @@ window.addEventListener('garang:workout-exercise-added',event=>{if(event.detail?
 window.addEventListener('garang:workout-set-rows-rendered',()=>{enhanceRows();updateLive();});
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
 if(document.querySelector('.workout-builder-v2'))enhance();
-window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance,applyPrefill});
+window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance,applyPrefill,replaceSetPlan});
 })();
