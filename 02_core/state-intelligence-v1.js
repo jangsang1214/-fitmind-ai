@@ -1,8 +1,9 @@
 (function(root,factory){
- const api=factory();
+ const Phys=typeof module==='object'&&module.exports?require('./physiological-signal-intelligence-v1.js'):root.GarangPhysiologicalSignalIntelligenceV1;
+ const api=factory(Phys);
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.GarangStateIntelligence=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(PhysiologicalSignals){
 'use strict';
 
 const ENGINE_VERSION='state-intelligence-v1';
@@ -63,6 +64,14 @@ function readinessSignal(daily,asOf){
  const values=Object.values(components);if(!values.length)return {value:null,band:'unknown',confidence:0,components:{},reasons:['INSUFFICIENT_CHECKIN_FIELDS']};
  const value=round(mean(values),0),fieldCoverage=values.length/5,checkinCoverage=recent.length/3,confidence=round(clamp(fieldCoverage*.7+checkinCoverage*.3,0,1),2);return {value,band:band(value,[45,65,80],['low','guarded','ready','high']),confidence,components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,round(v,0)])),reasons:reasons.length?reasons:['CHECKIN_STABLE']};
 }
+function fuseReadiness(base,phys){
+ if(!phys||phys.quality==='insufficient'||phys?.derived?.readinessScore===null||phys?.derived?.readinessScore===undefined)return base;
+ const pv=num(phys.derived.readinessScore),pc=clamp(num(phys.confidence)||0,0,1);if(pv===null||pc<.35)return base;
+ if(base?.value===null||base?.value===undefined)return {value:round(pv,0),band:band(pv,[45,65,80],['low','guarded','ready','high']),confidence:round(pc*.85,2),components:{physiological:round(pv,0)},reasons:['PHYSIOLOGICAL_SIGNAL_ONLY',...(phys.derived.reasonCodes||[])]};
+ const bc=clamp(num(base.confidence)||0,0,1),wBase=Math.max(.35,bc),wPhys=Math.max(.25,pc*.75),value=round((base.value*wBase+pv*wPhys)/(wBase+wPhys),0),reasons=[...(base.reasons||[])];
+ reasons.push('PHYSIOLOGICAL_SIGNAL_FUSED');if(Math.abs(base.value-pv)>=25)reasons.push('CHECKIN_PHYSIOLOGICAL_DIVERGENCE');
+ return {...base,value,band:band(value,[45,65,80],['low','guarded','ready','high']),confidence:round(clamp(Math.max(bc,pc*.8),0,1),2),components:{...(base.components||{}),physiological:round(pv,0)},reasons:[...new Set(reasons.concat(phys.derived.reasonCodes||[]))]};
+}
 function fatigueSignal(daily,asOf,load,readiness){
  const recent=windowRows(daily,asOf,7),checkins=recent.filter(d=>d.checkin).map(d=>d.checkin),parts=[],reasons=[];
  if(load.ratio!==null){parts.push(clamp((load.ratio-1)*55+40,0,100));if(load.ratio>=1.5)reasons.push('LOAD_SPIKE');}
@@ -101,11 +110,8 @@ function coverage(state,daily,asOf){
  const recent=windowRows(daily,asOf,28),domains={workouts:rows(state.workouts).filter(x=>inRange(isoDate(x.date),shiftDate(asOf,-27),asOf)).length,runs:rows(state.runs).filter(x=>inRange(isoDate(x.date),shiftDate(asOf,-27),asOf)).length,meals:rows(state.meals).filter(x=>inRange(isoDate(x.date),shiftDate(asOf,-27),asOf)).length,body:rows(state.body).filter(x=>inRange(isoDate(x.date),shiftDate(asOf,-27),asOf)).length,checkins:recent.filter(d=>d.checkin).length};
  const present=Object.values(domains).filter(v=>v>0).length,score=round(present/5,2);return {score,domains,presentDomains:present,totalDomains:5};
 }
-function estimateState(stateInput,{now=new Date()}={}){
- const state=object(stateInput)?stateInput:{},asOf=asOfDate(now),daily=buildDailyFeatures(state,{now,days:56}),load=loadSignal(daily,asOf),readiness=readinessSignal(daily,asOf),trends=trendSignals(daily,asOf),fatigue=fatigueSignal(daily,asOf,load,readiness),patterns=detectPatterns(daily,asOf,load,readiness,fatigue,trends),goal=goalAlignment(state,daily,asOf,trends),dataCoverage=coverage(state,daily,asOf),confidence=round(clamp(dataCoverage.score*.45+Math.max(load.confidence,readiness.confidence,fatigue.confidence)*.55,0,1),2);
- return {engineVersion:ENGINE_VERSION,asOf,confidence,coverage:dataCoverage,readiness,fatigue,load,trends,patterns,goalAlignment:goal,diagnostics:{dailyDays:daily.length,patternCount:patterns.length,futureRecordsExcluded:true,medicalDiagnosis:false}};
-}
-function compactForContext(stateResult){if(!object(stateResult))return null;return {engineVersion:stateResult.engineVersion,asOf:stateResult.asOf,confidence:stateResult.confidence,coverage:stateResult.coverage,readiness:stateResult.readiness,fatigue:stateResult.fatigue,load:stateResult.load,trends:stateResult.trends,patterns:rows(stateResult.patterns).slice(0,8),goalAlignment:stateResult.goalAlignment};}
+function estimateState(stateInput,{now=new Date()}={}){const state=object(stateInput)?stateInput:{},asOf=asOfDate(now),daily=buildDailyFeatures(state,{now,days:56}),load=loadSignal(daily,asOf),physiological=PhysiologicalSignals&&typeof PhysiologicalSignals.build==='function'?PhysiologicalSignals.build(state,{now}):{quality:'insufficient',confidence:0,derived:{readinessScore:null,reasonCodes:[]}},readiness=fuseReadiness(readinessSignal(daily,asOf),physiological),trends=trendSignals(daily,asOf),fatigue=fatigueSignal(daily,asOf,load,readiness),patterns=detectPatterns(daily,asOf,load,readiness,fatigue,trends),goal=goalAlignment(state,daily,asOf,trends),dataCoverage=coverage(state,daily,asOf),physConfidence=physiological.quality==='insufficient'?0:physiological.confidence,confidence=round(clamp(dataCoverage.score*.4+Math.max(load.confidence,readiness.confidence,fatigue.confidence,physConfidence)*.6,0,1),2);return {engineVersion:ENGINE_VERSION,asOf,confidence,coverage:dataCoverage,readiness,fatigue,load,trends,patterns,goalAlignment:goal,physiological:PhysiologicalSignals&&typeof PhysiologicalSignals.compactForContext==='function'?PhysiologicalSignals.compactForContext(physiological):null,diagnostics:{dailyDays:daily.length,patternCount:patterns.length,futureRecordsExcluded:true,medicalDiagnosis:false,physiologicalSignalsOptional:true}};}
+function compactForContext(stateResult){if(!object(stateResult))return null;return {engineVersion:stateResult.engineVersion,asOf:stateResult.asOf,confidence:stateResult.confidence,coverage:stateResult.coverage,readiness:stateResult.readiness,fatigue:stateResult.fatigue,load:stateResult.load,trends:stateResult.trends,patterns:rows(stateResult.patterns).slice(0,8),goalAlignment:stateResult.goalAlignment,physiological:stateResult.physiological||null};}
 function diagnostics(stateInput,{now=new Date()}={}){const s=estimateState(stateInput,{now});return {engineVersion:s.engineVersion,asOf:s.asOf,confidence:s.confidence,coverage:s.coverage,patternCount:s.patterns.length,readinessBand:s.readiness.band,fatigueBand:s.fatigue.band,loadBand:s.load.band,goalBand:s.goalAlignment.band};}
 return Object.freeze({ENGINE_VERSION,buildDailyFeatures,linearTrend,estimateState,compactForContext,diagnostics,workoutVolume});
 });
