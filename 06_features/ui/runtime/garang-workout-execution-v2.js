@@ -74,7 +74,7 @@ function enhanceRows(){
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
   const headerScope=host.closest('.gws-panel[data-garang-workout-surface="log"]')||host.parentElement;
   [...headerScope.querySelectorAll('.workout-set-table-head')].forEach(node=>node.remove());
-  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>TARGET</span><span>TYPE</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>RIR</span><span>✓</span>';host.before(head);
+  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>TARGET</span><span>TYPE</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>RIR</span><span>✓</span>';host.prepend(head);
 }
 function resultCard(){
   if(!lastResult||document.querySelector('.workout-result-card'))return;
