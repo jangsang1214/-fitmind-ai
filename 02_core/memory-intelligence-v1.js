@@ -86,11 +86,36 @@ function upsertMemory(entries,candidate,{now=new Date(),deletedIds=[],ownerUid=n
  const scoped=ownerUid&&!incoming.ownerUid?{...incoming,ownerUid:String(ownerUid)}:incoming;
  return resolveConflicts([...rows(entries),scoped],{now,deletedIds,ownerUid});
 }
+const SEMANTIC_GROUPS=Object.freeze([
+ ['protein','단백질','고단백','protein-rich','amino'],
+ ['recovery','recover','회복','피로','fatigue','soreness','근육통'],
+ ['sleep','수면','잠','sleeping'],
+ ['pain','통증','부상','injury','ache'],
+ ['strength','근력','웨이트','weight training','resistance'],
+ ['progression','progress','progressive','overload','증량','중량 증가'],
+ ['running','run','러닝','달리기','pace','페이스'],
+ ['nutrition','식단','영양','섭취','meal','food'],
+ ['calorie','calories','kcal','칼로리','열량'],
+ ['carb','carbs','carbohydrate','탄수','탄수화물'],
+ ['weight','체중','몸무게','body weight'],
+ ['morning','아침','오전'],
+ ['evening','저녁','야간','night'],
+ ['goal','목표','target'],
+ ['metric','kg','킬로그램','미터법'],
+ ['imperial','lb','lbs','파운드']
+]);
+function semanticFeatures(value){
+ const text=lower(value),raw=[...(text.match(/[\p{L}\p{N}]+/gu)||[])],features=new Set(raw);
+ for(const group of SEMANTIC_GROUPS){if(group.some(term=>text.includes(lower(term))))for(const term of group)features.add(lower(term));}
+ for(const token of raw){if(token.length>=3)for(let i=0;i<=token.length-3;i++)features.add('#'+token.slice(i,i+3));}
+ return features;
+}
+function semanticSimilarity(a,b){const A=semanticFeatures(a),B=semanticFeatures(b);if(!A.size||!B.size)return 0;let overlap=0;for(const x of A)if(B.has(x))overlap++;return overlap/Math.sqrt(A.size*B.size);}
 function lexicalRelevance(item,query){
  const q=tokens(query);if(!q.size)return 0;
- const hay=tokens(`${item.memoryClass} ${item.type} ${item.key||''} ${item.value}`);let overlap=0;for(const t of q)if(hay.has(t))overlap++;
- const ratio=overlap/q.size,phrase=lower(`${item.key||''} ${item.value}`).includes(lower(query))?1:0;
- return ratio*48+phrase*22+(overlap===0?-10:0);
+ const text=`${item.memoryClass} ${item.type} ${item.key||''} ${item.value}`,hay=tokens(text);let overlap=0;for(const t of q)if(hay.has(t))overlap++;
+ const ratio=overlap/q.size,phrase=lower(`${item.key||''} ${item.value}`).includes(lower(query))?1:0,semantic=semanticSimilarity(query,text);
+ return ratio*34+phrase*20+semantic*34+(overlap===0&&semantic<.12?-10:0);
 }
 function scoreMemory(entry,{query='',now=new Date()}={}){
  const item=normalizeEntry(entry,now);if(!item||item.status!=='active'||isExpired(item,now))return -Infinity;
