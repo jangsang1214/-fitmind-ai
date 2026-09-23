@@ -234,7 +234,7 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
     assert.equal(await page.locator('#saveWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-bar')),true,'Finish must live in the top-level live session bar');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');
-    assert.match(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').innerText(),/SET\s+PREVIOUS\s+KG\s+REPS\s+RPE\s+✓/,'set-first table must expose the commercial execution hierarchy');
+    assert.match(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').innerText(),/SET\s+PREVIOUS\s+TARGET\s+TYPE\s+KG\s+REPS\s+RPE\s+RIR\s+✓/,'set-first table must expose the full commercial execution hierarchy');
     assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
     await tap(page,'[data-gws-reuse-latest]');
     await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50'&&document.querySelector('#workoutSetDetails [data-set-reps]')?.value==='6',{timeout:3000});
