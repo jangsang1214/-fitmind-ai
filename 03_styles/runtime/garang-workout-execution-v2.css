@@ -102,3 +102,6 @@
 .workout-load-row div{display:grid;gap:2px}.workout-load-row strong{font-size:12px}.workout-load-row small{font-size:9px;color:#918b82}.workout-load-row>b{font-size:12px;font-variant-numeric:tabular-nums}.workout-load-row>span{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8b7452}
 .workout-advanced-tools output{grid-column:1/-1}
 @media(max-width:720px){.workout-program-card,.workout-health-card{padding:12px}.workout-load-row{grid-template-columns:minmax(0,1fr) auto}.workout-load-row>span{grid-column:1/-1}.workout-program-card .compact-fields{grid-template-columns:1fr 1fr!important}}
+
+/* Workout grouped execution polish v1 */
+.workout-execution-v2 .draft-area .list-item.is-workout-grouped{border-left:3px solid #9a8056;background:#fffdf8}.workout-group-chip{display:inline-flex;align-items:center;margin:0 8px 5px 0;padding:3px 6px;border-radius:999px;background:#25221e;color:#f7f2e8;font-size:8px;font-weight:900;letter-spacing:.08em}.workout-group-chip+strong{display:inline-block}
