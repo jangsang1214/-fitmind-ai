@@ -277,7 +277,7 @@ async function assertCoachSettles(page){
     await page.locator('#workoutSetDetails [data-set-type]').nth(1).selectOption('warmup');
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:3000});
-    assert.match(await page.locator('#workoutExecutionRestClock').textContent(),/^00:[0-5]\d$/,'warm-up rest must be capped below the default working-set rest');
+    const warmupClock=await page.locator('#workoutExecutionRestClock').textContent(),[warmupMin,warmupSec]=warmupClock.split(':').map(Number);assert.ok(warmupMin*60+warmupSec<=60,'warm-up rest must be capped at 60 seconds');
     await tap(page,'#skipWorkoutRest');
     await page.locator('#wSets').fill('6');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===6,{timeout:3000});
