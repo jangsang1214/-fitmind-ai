@@ -3,7 +3,8 @@
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
 const VERSION='workout-execution-v2';
-let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false;
+const SESSION_KEY='garang_workout_session_v2';
+let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
 function num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -11,20 +12,25 @@ function clock(ms){const total=Math.max(0,Math.ceil(num(ms)/1000)),m=Math.floor(
 function bridge(){return window.GarangWorkoutExecutionBridge||null;}
 function metricBufferedWeight(value){const converted=bridge()?.toMetricWeight?.(value),n=Number(converted);return Number.isFinite(n)?n:num(value);}
 function displayBufferedWeight(value){const shown=bridge()?.displayWeight?.(value,1);return shown===null||shown===undefined?'':String(shown);}
+function persistSessionState(){try{const draft=bridge()?.sessionDraft?.()||[];const active=!!(sessionStartedAt||restUntil||liveSetDraft.length||draft.length);if(!active){sessionStorage.removeItem(SESSION_KEY);return;}sessionStorage.setItem(SESSION_KEY,JSON.stringify({sessionStartedAt,restUntil,liveSetDraft,liveSetCount,liveDuration,liveDraftCount,liveExercise,draft,updatedAt:Date.now()}));}catch{}}
+function clearPersistedSession(){try{sessionStorage.removeItem(SESSION_KEY);}catch{}}
+function hydrateSessionState(){if(sessionHydrated)return false;sessionHydrated=true;try{const raw=sessionStorage.getItem(SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(!saved||Date.now()-num(saved.updatedAt)>1000*60*60*24){clearPersistedSession();return false;}sessionStartedAt=num(saved.sessionStartedAt);restUntil=num(saved.restUntil);liveSetDraft=Array.isArray(saved.liveSetDraft)?saved.liveSetDraft.map(x=>({...x})):[];liveSetCount=Math.max(0,num(saved.liveSetCount,liveSetDraft.length));liveDuration=String(saved.liveDuration||'');liveDraftCount=num(saved.liveDraftCount,-1);liveExercise=String(saved.liveExercise||'');const existing=draftSummary();if(Array.isArray(saved.draft)&&saved.draft.length&&!existing.exercises){bridge()?.restoreSessionDraft?.(saved.draft);return true;}return false;}catch{clearPersistedSession();return false;}}
+function estimated1RMMetric(weight,reps){const w=Math.max(0,num(weight)),r=Math.max(1,num(reps,1));return w?r===1?w:w*(1+Math.min(r,12)/30):0;}
+function updateLivePR(){const builder=document.querySelector('.workout-execution-v2');if(!builder)return;let chip=builder.querySelector('.workout-live-pr');if(!chip){chip=document.createElement('div');chip.className='workout-live-pr';const head=builder.querySelector('.workout-exercise-head');head?.appendChild(chip);}if(!chip)return;const exercise=document.getElementById('wName')?.value||'',baseline=num(bridge()?.exercisePRBaseline?.(exercise));let best=0;currentRows().forEach(row=>{const w=metricBufferedWeight(row.querySelector('[data-set-weight]')?.value||0),r=num(row.querySelector('[data-set-reps]')?.value);best=Math.max(best,estimated1RMMetric(w,r));});if(baseline>0&&best>baseline+.05){chip.textContent='NEW PR · e1RM '+displayBufferedWeight(best)+' '+displayUnit();chip.hidden=false;}else chip.hidden=true;}
 function previous(){return bridge()?.previousSets?.(document.getElementById('wName')?.value)||[];}
 function currentRows(){return [...document.querySelectorAll('#workoutSetDetails [data-set-row]')];}
 function completedCurrent(){return currentRows().filter(row=>row.dataset.executionCompleted==='true').length;}
 function refreshSetStates(){let currentClaimed=false;currentRows().forEach(row=>{const done=row.dataset.executionCompleted==='true',current=!done&&!currentClaimed;if(current)currentClaimed=true;row.classList.toggle('current-set',current);row.classList.toggle('upcoming-set',!done&&!current);row.dataset.executionState=done?'completed':current?'current':'upcoming';if(current)row.setAttribute('aria-current','step');else row.removeAttribute('aria-current');});}
-function captureLiveSetRows(){const rows=currentRows();liveSetDraft=rows.map(row=>({weightMetric:metricBufferedWeight(row.querySelector('[data-set-weight]')?.value||0),reps:row.querySelector('[data-set-reps]')?.value||'',rpe:row.querySelector('[data-set-rpe]')?.value||'',rir:row.querySelector('[data-set-rir]')?.value||'',setType:row.querySelector('[data-set-type]')?.value||'working',completed:row.dataset.executionCompleted==='true'}));if(rows.length)liveSetCount=rows.length;const duration=document.getElementById('wDuration');if(duration?.value)liveDuration=duration.value;}
+function captureLiveSetRows(){const rows=currentRows();liveSetDraft=rows.map(row=>({weightMetric:metricBufferedWeight(row.querySelector('[data-set-weight]')?.value||0),reps:row.querySelector('[data-set-reps]')?.value||'',rpe:row.querySelector('[data-set-rpe]')?.value||'',rir:row.querySelector('[data-set-rir]')?.value||'',setType:row.querySelector('[data-set-type]')?.value||'working',completed:row.dataset.executionCompleted==='true'}));if(rows.length)liveSetCount=rows.length;const duration=document.getElementById('wDuration');if(duration?.value)liveDuration=duration.value;persistSessionState();updateLivePR();}
 function snapshotSetRows(){if(restoringLiveSetCount){setSnapshot=liveSetDraft.map(row=>({...row}));return;}captureLiveSetRows();const requested=Math.max(1,num(document.getElementById('wSets')?.value,liveSetCount||1));liveSetCount=requested;setSnapshot=liveSetDraft.slice(0,requested).map(row=>({...row}));}
 function restoreSetRows(){if(!setSnapshot.length)return;currentRows().forEach((row,i)=>{const saved=setSnapshot[i];if(!saved)return;const weight=row.querySelector('[data-set-weight]'),reps=row.querySelector('[data-set-reps]'),rpe=row.querySelector('[data-set-rpe]'),rir=row.querySelector('[data-set-rir]'),setType=row.querySelector('[data-set-type]'),button=row.querySelector('[data-execution-set-complete]');if(weight)weight.value=displayBufferedWeight(saved.weightMetric??metricBufferedWeight(saved.weight??0));if(reps)reps.value=saved.reps;if(rpe)rpe.value=saved.rpe;if(rir)rir.value=saved.rir??2;if(setType)setType.value=saved.setType||'working';row.dataset.executionCompleted=saved.completed?'true':'false';row.classList.toggle('completed',saved.completed);if(button){button.classList.toggle('is-complete',saved.completed);button.textContent=saved.completed?'✓':'○';}});setSnapshot=[];captureLiveSetRows();refreshSetStates();}
 function applyPrefill({details=[],weight,reps,rpe,rir,setType,duration}={}){if(duration!==undefined&&duration!==null&&duration!==''){liveDuration=String(duration);const durationInput=document.getElementById('wDuration');if(durationInput)durationInput.value=liveDuration;}currentRows().forEach((row,i)=>{const source=details[i]||details[0]||{};const values={weight:source.weight??source.w??weight,reps:source.reps??source.r??reps,rpe:source.rpe??rpe,rir:source.rir??rir,type:source.setType??setType};for(const [key,value] of Object.entries(values)){if(value===undefined||value===null||value==='')continue;const input=row.querySelector('[data-set-'+key+']');if(input)input.value=String(value);}row.dataset.executionCompleted='false';row.classList.remove('completed');const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.remove('is-complete');button.textContent='○';}});setSnapshot=[];captureLiveSetRows();refreshSetStates();updateLive();}
 function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
 function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
-function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();startTicker();}
+function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();persistSessionState();startTicker();}
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
-function stopRest(){restUntil=0;updateLive();}
-function startRest(){const seconds=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90));restUntil=Date.now()+seconds*1000;updateLive();}
+function stopRest(){restUntil=0;persistSessionState();updateLive();}
+function startRest(){const seconds=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90));restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
@@ -52,6 +58,7 @@ function previousText(row){return row?(num(row.weight).toFixed(1)+' × '+Math.ro
 function refreshPrevious(rows=previous()){
   currentRows().forEach((row,i)=>{const cell=row.querySelector('.execution-previous');if(cell)cell.textContent=previousText(rows[i]);});
 }
+function changeSetCount(nextCount,removeIndex=null){const sets=document.getElementById('wSets');if(!sets)return;captureLiveSetRows();if(Number.isInteger(removeIndex)&&removeIndex>=0&&removeIndex<liveSetDraft.length)liveSetDraft.splice(removeIndex,1);liveSetCount=Math.max(1,num(nextCount,1));setSnapshot=liveSetDraft.slice(0,liveSetCount).map(row=>({...row}));restoringLiveSetCount=true;sets.value=String(liveSetCount);sets.dispatchEvent(new Event('input',{bubbles:true}));restoringLiveSetCount=false;persistSessionState();}
 function enhanceRows(){
   const host=document.getElementById('workoutSetDetails');if(!host)return;
   const disclosure=host.closest('details');if(disclosure&&!disclosure.open)disclosure.open=true;
@@ -64,8 +71,9 @@ function enhanceRows(){
     if(row.dataset.executionEnhanced==='true')return;
     const saved=liveSetDraft[i]||null,initiallyComplete=saved?saved.completed:row.dataset.executionCompleted==='true',target=targetFor(prev[i]),existingWeight=row.querySelector('[data-set-weight]')?.value??0,reps=saved?.reps??row.querySelector('[data-set-reps]')?.value??target?.reps??10,weight=saved?displayBufferedWeight(saved.weightMetric??metricBufferedWeight(saved.weight??0)):(seededEdit?existingWeight:(target?displayBufferedWeight(target.weightMetric):existingWeight)),rpe=saved?.rpe??row.querySelector('[data-set-rpe]')?.value??8,rir=saved?.rir??row.querySelector('[data-set-rir]')?.value??prev[i]?.rir??2,setType=saved?.setType??row.querySelector('[data-set-type]')?.value??prev[i]?.setType??'working',previousValue=previousText(prev[i]),targetValue=target?(displayBufferedWeight(target.weightMetric)+' × '+target.reps):'—';
     row.dataset.executionEnhanced='true';row.classList.add('execution-set-row');row.classList.toggle('completed',initiallyComplete);
-    row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><span class="execution-target">'+esc(targetValue)+'</span><label><span>TYPE</span><select data-set-type><option value="working"'+(setType==='working'?' selected':'')+'>WORK</option><option value="warmup"'+(setType==='warmup'?' selected':'')+'>WARM</option><option value="drop"'+(setType==='drop'?' selected':'')+'>DROP</option><option value="failure"'+(setType==='failure'?' selected':'')+'>FAIL</option></select></label><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><label><span>RIR</span><input data-set-rir inputmode="numeric" type="number" min="0" max="10" step="1" value="'+esc(rir)+'"></label><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
+    row.innerHTML='<b class="execution-set-index">'+(i+1)+'</b><span class="execution-previous">'+esc(previousValue)+'</span><span class="execution-target">'+esc(targetValue)+'</span><label><span>TYPE</span><select data-set-type><option value="working"'+(setType==='working'?' selected':'')+'>WORK</option><option value="warmup"'+(setType==='warmup'?' selected':'')+'>WARM</option><option value="drop"'+(setType==='drop'?' selected':'')+'>DROP</option><option value="failure"'+(setType==='failure'?' selected':'')+'>FAIL</option></select></label><label><span>중량</span><input data-set-weight inputmode="decimal" type="number" min="0" step="0.5" value="'+esc(weight)+'"></label><label><span>반복</span><input data-set-reps inputmode="numeric" type="number" min="1" value="'+esc(reps)+'"></label><label><span>RPE</span><input data-set-rpe inputmode="decimal" type="number" min="1" max="10" step="0.5" value="'+esc(rpe)+'"></label><label><span>RIR</span><input data-set-rir inputmode="numeric" type="number" min="0" max="10" step="1" value="'+esc(rir)+'"></label><button type="button" class="set-delete-button" data-execution-set-delete aria-label="'+(i+1)+'세트 삭제">×</button><button type="button" class="set-complete-button" data-execution-set-complete aria-label="'+(i+1)+'세트 완료">○</button>';
     const initialButton=row.querySelector('[data-execution-set-complete]');if(initialButton){initialButton.classList.toggle('is-complete',initiallyComplete);initialButton.textContent=initiallyComplete?'✓':'○';}
+    row.querySelector('[data-execution-set-delete]')?.addEventListener('click',()=>{if(currentRows().length<=1)return;changeSetCount(currentRows().length-1,i);});
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
       if(!done){ensureSession();startRest();}captureLiveSetRows();updateLive();
@@ -74,7 +82,7 @@ function enhanceRows(){
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
   const headerScope=host.closest('.gws-panel[data-garang-workout-surface="log"]')||host.parentElement;
   [...headerScope.querySelectorAll('.workout-set-table-head')].forEach(node=>node.remove());
-  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>TARGET</span><span>TYPE</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>RIR</span><span>✓</span>';host.prepend(head);
+  const head=document.createElement('div');head.className='workout-set-table-head';head.innerHTML='<span>SET</span><span>PREVIOUS</span><span>TARGET</span><span>TYPE</span><span>'+esc(displayUnit())+'</span><span>REPS</span><span>RPE</span><span>RIR</span><span>DEL</span><span>✓</span>';host.prepend(head);
 }
 function resultCard(){
   if(!lastResult||document.querySelector('.workout-result-card'))return;
@@ -85,6 +93,7 @@ function resultCard(){
 }
 function enhance(){
   const builder=document.querySelector('.workout-builder-v2');if(!builder)return;
+  if(hydrateSessionState()){setTimeout(enhance,0);return;}
   builder.classList.add('workout-execution-v2');
   document.querySelector('.workout-visual-hero')?.classList.add('workout-execution-hero');
   const oldHead=builder.querySelector('.visual-section-head');
@@ -99,7 +108,7 @@ function enhance(){
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
   document.querySelector('.one-rm-panel')?.classList.add('execution-secondary-metric');
-  const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='세트 완료 시 휴식 타이머가 자동 시작됩니다.';}
+  const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='세트 완료 시 휴식 타이머가 자동 시작됩니다.';if(!toolbar.querySelector('[data-execution-add-set]')){const addSet=document.createElement('button');addSet.type='button';addSet.className='ghost small';addSet.dataset.executionAddSet='true';addSet.textContent='+ 세트';addSet.addEventListener('click',()=>changeSetCount(currentRows().length+1));toolbar.appendChild(addSet);}}
   enhanceRows();
   if(!document.getElementById('workoutExecutionRest')){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
@@ -109,7 +118,7 @@ function enhance(){
   const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
   const setHost=document.getElementById('workoutSetDetails');if(setHost&&!setHost.dataset.executionLiveBound){setHost.dataset.executionLiveBound='true';setHost.addEventListener('input',captureLiveSetRows);}
   if(sessionStartedAt||restUntil)startTicker();
-  updateLive();resultCard();
+  updateLive();updateLivePR();persistSessionState();resultCard();
 }
 document.addEventListener('click',event=>{
   if(event.target.closest?.('[data-gws-step="log"]'))setTimeout(enhance,0);
@@ -118,9 +127,9 @@ document.addEventListener('click',event=>{
 },true);
 window.addEventListener('garang:state-updated',event=>{
   if(event.detail?.event!=='workout_saved'||!pendingResult)return;
-  lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';
+  lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();
 });
-window.addEventListener('garang:workout-session-clearing',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';stopRest();updateLive();});
+window.addEventListener('garang:workout-session-clearing',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();stopRest();updateLive();});
 window.addEventListener('garang:workout-exercise-added',event=>{if(event.detail?.imported!==true)ensureSession();});
 window.addEventListener('garang:workout-set-rows-rendered',()=>{enhanceRows();updateLive();});
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
