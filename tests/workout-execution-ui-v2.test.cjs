@@ -85,7 +85,7 @@ assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=br
 assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
 
 assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
-assert.ok(app.includes("workoutEditForm={index:i")&&app.includes("dataset.editIndex")&&app.includes("workoutDraft.splice(editIndex,1,x)"),'editing an exercise must replace it atomically at its original draft position');
+assert.ok(app.includes("workoutEditTargetId=x.id")&&app.includes("findIndex(item=>String(item.id)===String(workoutEditTargetId))")&&app.includes("workoutDraft.splice(editIndex,1,x)"),'editing an exercise must use a stable draft identity across rerenders and replace atomically');
 assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR metric must be selected from exercises that actually improved');
 
 assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
@@ -93,5 +93,8 @@ assert.ok(app.includes("latestWorkoutNote")&&runtime.includes("LAST NOTE"),'exer
 assert.ok(app.includes("data-replace-workout")&&app.includes("workoutReplaceIndex")&&app.includes("운동을 교체했습니다"),'exercise replacement must be a direct in-session selection flow');
 assert.ok(app.includes('id="wBarPreset"')&&app.includes('id="wPlateProfile"')&&app.includes('id="wPlateRounding"'),'plate calculator must expose bar presets, inventory profiles, and rounding');
 assert.ok(app.includes("analyzeMuscleLoad")&&app.includes("7D VOLUME")&&app.includes("30D VOLUME"),'workout analytics must expose recent volume and muscle load beyond PR-only cards');
-assert.ok(app.includes('id="scheduleWorkoutProgram"')&&app.includes("source:'workout_program'")&&app.includes("templateExercises"),'Workout must support a multi-week Planner-backed program builder');
+assert.ok(app.includes('id="scheduleWorkoutProgram"')&&app.includes("source:'workout_program'")&&app.includes("templateExercises")&&app.includes("data-plan-start")&&app.includes("workoutActivePlanId"),'Workout must support Planner-backed multi-week programs that can launch and complete in Workout Log');
 assert.ok(app.includes('id="syncWorkoutHealth"')&&app.includes("GarangNativeHealthBridge")&&app.includes("garang-health-workout-v1"),'Workout must expose native Health bridge integration with a web export fallback');
+
+assert.ok(app.includes("throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today())"),'weekly review must exclude future scheduled program rows from current adherence');
+assert.ok(app.includes("v==='20kg'")&&app.includes("v==='15kg'")&&app.includes("v==='45lb'")&&app.includes("shownWeight(metric,1)"),'bar presets must convert canonical weights into the active display unit');
