@@ -590,8 +590,14 @@ function workoutExecutionForm(item,index){
   const rows=workoutExecutionRows(item),first=rows[0]||{};
   return {index,name:item.name,sets:Math.max(1,rows.length||num(item.sets,1)),reps:Math.max(1,num(first.reps,item.reps||1)),weight:shownWeight(first.weight??item.weight,1),rpe:clamp(num(first.rpe,item.rpe||8),1,10),rir:clamp(num(first.rir,item.rir||2),0,10),setType:String(first.setType||item.setType||'working'),notes:String(item.notes||''),groupType:String(item.groupType||'none'),groupId:String(item.groupId||''),duration:Math.max(1,num(item.duration,15)),body:shownWeight(item.body||state.profile?.weight||67,1)};
 }
+function workoutGroupStartIndex(index){
+  const requested=workoutDraft[index];if(!requested)return index;const groupType=String(requested.groupType||'none'),groupId=String(requested.groupId||'').trim();if(groupType==='none'||!groupId)return index;
+  const key=groupType+':'+groupId.toLowerCase(),members=workoutDraft.map((item,memberIndex)=>({item,index:memberIndex,rows:workoutExecutionRows(item)})).filter(({item})=>String(item.groupType||'none')+':'+String(item.groupId||'').trim().toLowerCase()===key);if(members.length<2)return index;
+  const rounds=Math.max(...members.map(member=>member.rows.length));for(let round=0;round<rounds;round++){for(const member of members){if(round<member.rows.length&&member.rows[round]?.executionCompleted!==true)return member.index;}}
+  return index;
+}
 function stageWorkoutDraftExecution(index,renderNow=true){
-  const item=workoutDraft[index];if(!item)return false;
+  index=workoutGroupStartIndex(index);const item=workoutDraft[index];if(!item)return false;
   workoutExecutionDraftId=item.id;workoutEditTargetId=null;workoutEditForm=workoutExecutionForm(item,index);workoutSetDraft=workoutExecutionRows(item);workoutSetDetailsOpen=true;workoutSelectedExercise=item.name;
   if(renderNow){render();requestAnimationFrame(()=>document.querySelector('[data-gws-step="log"]')?.click());}
   return true;
