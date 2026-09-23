@@ -72,3 +72,17 @@ Trigger-only checkpoint:
 - require authenticated live Meal Scan smoke before production Vision is considered VERIFIED
 - retain existing authenticated Coach, autonomous-write, sensitive-write boundary, and disposable-user cleanup checks
 
+## Nutrition fallback production activation — 2026-09-23
+
+Founder explicitly approved production activation after PR #225 merged as `e84e012c3e0a0269634637c85d62bf0d19b0ece9`.
+
+Activation scope:
+- deploy only Firebase Function `api` to project `fitfind-ai`
+- preserve the existing `GARANG_LLM_API_KEY`
+- activate the authenticated nutrition lookup route merged by PR #225
+- require public nutrition lookup auth/method boundary preflight
+- require authenticated live nutrition lookup smoke
+- retain authenticated live Meal Scan and Coach smoke, bounded autonomous-write smoke, sensitive-write boundary checks, and disposable Firebase identity cleanup
+- do not change billing, secrets, auth architecture, Firestore schema, or unrelated production resources
+
+Success requires the Production Coach Activation workflow to complete successfully with the live nutrition lookup smoke PASS. A skipped or failed nutrition smoke is not success.
