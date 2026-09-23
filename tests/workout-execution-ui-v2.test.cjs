@@ -94,3 +94,9 @@ assert.ok(app.includes('sessionDraft(){return clone(workoutDraft);}')&&app.inclu
 assert.ok(runtime.includes('data-execution-add-set')&&runtime.includes('data-execution-set-delete')&&runtime.includes('changeSetCount('),'sets must be directly addable and removable during execution');
 assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}')&&runtime.includes('updateLivePR()')&&runtime.includes("NEW PR · e1RM"),'execution must surface immediate live PR feedback against pre-session history');
 assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
+
+// Workout grouped execution polish v1
+assert.ok(app.includes("weightUnit()==='lb'?45:20"),'imperial plate calculator must default to a standard 45 lb bar');
+assert.ok(app.includes("groupKey=String(x.groupType)+':'+String(x.groupId).toLowerCase()")&&app.includes("workoutDraft.splice(last.index+1,0,x)"),'superset/circuit exercises must stay contiguous in the session draft');
+assert.ok(app.includes('workout-group-chip')&&app.includes('is-workout-grouped'),'grouped exercises must be visibly labeled in the session draft');
+assert.ok(app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'group execution metadata must be published on successful add');
