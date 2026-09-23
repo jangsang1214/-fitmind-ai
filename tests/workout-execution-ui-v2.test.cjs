@@ -23,7 +23,7 @@ assert.ok(runtime.includes("refreshPrevious(prev)"),'Previous values must refres
 assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must label the actual display unit');
 assert.ok(app.includes("garang:workout-session-clearing"),'session reset must publish before the app rerenders workout rows');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("liveSetDraft=[]")&&runtime.includes("liveSetCount=0"),'execution layer must clear live row state before session reset rerender');
-assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported}"),'successful exercise add must publish whether it was a programmatic import');
+assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'successful exercise add must publish import status and group execution metadata');
 assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("event.detail?.imported!==true")&&runtime.includes("ensureSession()"),'live timer must start only from a successful manual exercise add');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
