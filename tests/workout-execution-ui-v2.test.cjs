@@ -73,7 +73,7 @@ assert.ok(runtime.includes('targetFor(row)')&&runtime.includes('지난 세트 �
 assert.ok(runtime.includes('workout-result-pr')&&runtime.includes('estimated 1RM'),'session result must surface a PR benchmark');
 
 assert.ok(app.includes('id="wGroupType"')&&app.includes('value="superset"')&&app.includes('value="circuit"'),'workout must support superset and circuit grouping');
-assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('plates=[20,15,10,5,2.5,1.25,1,.5]'),'workout must provide an in-session plate calculator');
+assert.ok(app.includes('id="calcWorkoutPlates"')&&app.includes('workoutPlateResult')&&app.includes('imperial?[45,35,25,10,5,2.5]:[20,15,10,5,2.5,1.25,1,.5]'),'workout must provide a unit-aware in-session plate calculator');
 
 assert.ok(app.includes("weightMetric")&&app.includes("estimated1RMMetric"),'previous-set bridge must expose canonical metric weights for unit-safe GARANG targets');
 assert.ok(runtime.includes("base=num(row.weightMetric")&&runtime.includes("displayBufferedWeight(target.weightMetric)"),'GARANG targets must calculate canonically and convert only for display');
@@ -83,3 +83,7 @@ assert.ok(app.includes("groupType!=='none'&&!groupId"),'superset/circuit entries
 assert.ok(app.includes("imperial?[45,35,25,10,5,2.5]"),'plate calculator must use imperial denominations in lb mode');
 assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=bridge()?.draftPRComparisons"),'PR result must snapshot pre-save all-time exercise baselines');
 assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
+
+assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
+assert.ok(app.includes("workoutEditForm={index:i")&&app.includes("dataset.editIndex")&&app.includes("workoutDraft.splice(editIndex,0,x)"),'editing and re-adding an exercise must preserve its original draft position');
+assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR metric must be selected from exercises that actually improved');
