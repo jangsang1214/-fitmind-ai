@@ -85,3 +85,16 @@
 .workout-execution-v2 .workout-entry-actions button{position:relative;z-index:1;pointer-events:auto}
 .workout-execution-v2 .workout-advanced-tools{margin:10px 20px;position:relative;z-index:1}
 @media(max-width:720px){.workout-execution-v2 .workout-entry-actions{margin-top:14px;padding-top:2px}.workout-execution-v2 .workout-advanced-tools{margin:10px 14px}}
+
+/* Commercial parity v3 */
+.workout-previous-note{margin:4px 0 0!important;padding-left:8px;border-left:2px solid rgba(176,138,82,.42);color:#8b7452!important;font-size:10px!important;line-height:1.45}
+.workout-program-card,.workout-health-card{margin-top:14px}
+.workout-program-card .visual-section-head,.workout-health-card .visual-section-head{padding:0 0 10px!important}
+.workout-program-card>small,.workout-health-card>p{display:block;margin:9px 0 0;color:#8d867c;font-size:10px;line-height:1.5}
+.workout-health-card .actions{margin-top:10px}
+.workout-trend-grid{margin-bottom:10px}
+.workout-load-list{display:grid;gap:7px;margin:0 0 18px}
+.workout-load-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(24,22,19,.08);border-radius:12px;background:#fff}
+.workout-load-row div{display:grid;gap:2px}.workout-load-row strong{font-size:12px}.workout-load-row small{font-size:9px;color:#918b82}.workout-load-row>b{font-size:12px;font-variant-numeric:tabular-nums}.workout-load-row>span{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8b7452}
+.workout-advanced-tools output{grid-column:1/-1}
+@media(max-width:720px){.workout-program-card,.workout-health-card{padding:14px}.workout-load-row{grid-template-columns:minmax(0,1fr) auto}.workout-load-row>span{grid-column:1/-1}.workout-program-card .compact-fields{grid-template-columns:1fr 1fr!important}}
