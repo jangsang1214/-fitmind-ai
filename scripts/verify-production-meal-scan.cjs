@@ -7,7 +7,7 @@ const positiveImageUrl=String(process.env.GARANG_MEAL_SCAN_POSITIVE_IMAGE_URL||'
 if(!token)throw new Error('GARANG_FIREBASE_ID_TOKEN is required for authenticated production Meal Scan smoke verification.');
 if(!endpoint.startsWith('https://'))throw new Error('GARANG_MEAL_SCAN_ENDPOINT must use https.');
 
-const negativeImage='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAADjklEQVR42u2dK3IbQRCG111GIbpG7hJibCISZBKSEwTnBkEGMRbxIXKbGNg4IFUqlxKtRtvv3e8vQ0vb83/TPY/d1dy8vv6eUJ4ECwAAAAQAACAAAAABAAAIAABAAAAAAgAAkL9ue4X7+Pg08m/7/X2XFt0UvyEz6HhfHhUBmJjeBUYtABetv7v7NPI9h8NzFwwlAMz4Puj4Yh7pJJIBnLPexPdxEokY0gD813on3wdJpGDIAfCv+2HWz2OIZxANoIj1dTCEAjhxP936GQxhDOIAvHe/lPXnMMQwiABQueOnp4Lg/vyY5Losd8+AFmUntxwJ7o+kgl8eCO7nMhDcz2UguJ/LQGLiXhOD0gCOHWRN7p+0yDYJxMP91cuwpeIR0/q6v99gcOsapYd2H17m/+HlbefK4OL9zoSVcEDpv+h7JIkjA/0KWQzdd/L971/wZ8PaLrbpaW59ta8yb6nU7P4e3dYpFZQOSMFO4Vc0DL/Zqr1Sqvt7l2ynS2h8kDrdwdt682uZtLrK4+mR7mdd0RiA4dw/ywv9dfUbRLyg0TMDDIff3FJgePVlnohVDvYtxMoYlA7IOnpf30gYAxqOASbznzrdXx+PZi5EBrRdB6DGAKrVn8SoyIBuGbDiB09MVgPXjsOykUwvGxsliFkQABAAAIAAAAAEAAAgAADAWa7P77eL7WoAxyfibd9T6K7FbwxQgjY5BtSsQilRkQHMggCQMg5Xq0KaeDTv7JEBGy5BdZIgMRItAOVqoAIDZQxKBxa+Kb/f31s9of7ytou5Ff7r4avm4x+//xgcGhkDOmn5b0Uck+BweD55Rujh6Ys+sp+fv614B4IMWNcsaJsbcyatVgFodFaOqzQ+SKnusLXubwCAJFA6IAU7xXF9YLVMM/wq85ZKehcY8W6ZfZrPhrVdbOPwGwnG3fT23fD3yiaPH+3zHo1zt4/MWyd1krHXzMeqvZaD8HZmRIYtlbKRle3+tm1kLyhZUjk91118vGZBZXXxjkrYwEsJquL+xClKue5PAQe5tTtHbIo9y829BJ1EX3/XOvgkPc6STCg7OQAmTlNNBzBxnnA6gFIYtnii9gyDiTPli2DwI3FuDpa4fZIMYB6DFYmZuW/6zlUJACMkruJxcbVRZ8ewFoBBDIYLQwBEwKi8Q14dwDIeje5JNAOwPnE/AAAAQAAAAAIAABAAAIAAAAAEAAAgAGxDfwA0Jvl5/1fLegAAAABJRU5ErkJggg==';
+const negativeImage='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAABMElEQVR4nO3RMQ0AIADAMEADwhCLQGT0YFWwZHOfO+IsHfC7BmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYArAFYA7AGYA3AGoA1AGsA1gCsAVgDsAZgDcAagDUAawDWAKwBWAOwBmANwBqANQBrANYA7AGbrQIYAoGb4AAAAABJRU5ErkJggg==';
 
 async function callMealScan(image,language='ko'){
  const response=await fetch(endpoint,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({image,language})});
@@ -26,7 +26,7 @@ async function positivePhotoDataUrl(){
 (async()=>{
  const negative=await callMealScan({mediaType:'image/png',dataUrl:negativeImage});
  if(negative.response.status===422)assert.equal(negative.body?.error?.code,'MEAL_SCAN_NO_FOOD_DETECTED');
- else throw new Error(`negative Meal Scan should reject non-food image, got HTTP ${negative.response.status} code=${negative.body?.error?.code||'unknown'}`);
+ else throw new Error(`negative Meal Scan should reject non-food image, got HTTP ${negative.response.status} code=${negative.body?.error?.code||'unknown'} items=${JSON.stringify(negative.body?.data?.items||[])}`);
 
  const image=await positivePhotoDataUrl(),positive=await callMealScan(image);
  assert.equal(positive.response.ok,true,`positive live Meal Scan failed HTTP ${positive.response.status} code=${positive.body?.error?.code||'unknown'}`);
