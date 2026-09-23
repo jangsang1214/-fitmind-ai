@@ -275,6 +275,7 @@ async function assertCoachSettles(page){
     await page.locator('#wSets').fill('5');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===5,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'decreasing set count must preserve surviving completed sets');
+    await page.locator('#addWorkout').scrollIntoViewIfNeeded();
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
