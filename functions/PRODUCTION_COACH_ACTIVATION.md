@@ -104,3 +104,25 @@ Boundary correction:
 - require the activation workflow overall to PASS, including nutrition lookup, positive Meal Scan, Coach, bounded write, and cleanup.
 
 No production runtime logic is relaxed or changed by this retry.
+
+## Nutrition fallback final activation checkpoint — 2026-09-23
+
+Founder-approved final activation checkpoint after PR #229.
+
+Verified preconditions:
+- PRODUCT main before this checkpoint: `690e3f931c956043ab9b02a3ebf060e344e53a0c`.
+- PR #229 exact-head Release Gate #1764: FULL GREEN.
+- Post-merge Release Gate #1765: FULL GREEN.
+- Pages #855: SUCCESS.
+- Production runtime logic is unchanged by this documentation-only checkpoint.
+
+Final activation requirements remain unchanged:
+- deploy only Firebase Function `api` to `fitfind-ai`;
+- preserve the existing `GARANG_LLM_API_KEY`;
+- require public Coach / Meal Scan / nutrition lookup auth-method boundaries;
+- require authenticated live nutrition lookup smoke using the branded official-primary-source fixture;
+- require authenticated positive Meal Scan live provider smoke;
+- require authenticated live Coach and bounded autonomous-write smokes;
+- require sensitive-write boundary preservation and disposable Firebase identity cleanup.
+
+Do not mark nutrition fallback production VERIFIED unless the activation workflow is SUCCESS.
