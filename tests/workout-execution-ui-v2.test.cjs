@@ -87,3 +87,10 @@ assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session res
 assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
 assert.ok(app.includes("workoutEditForm={index:i")&&app.includes("dataset.editIndex")&&app.includes("workoutDraft.splice(editIndex,0,x)"),'editing and re-adding an exercise must preserve its original draft position');
 assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR metric must be selected from exercises that actually improved');
+
+// Workout session resilience v1
+assert.ok(runtime.includes("SESSION_KEY='garang_workout_session_v2'")&&runtime.includes('sessionStorage.setItem(SESSION_KEY')&&runtime.includes('hydrateSessionState()'),'active workout execution must survive reloads through session-scoped persistence');
+assert.ok(app.includes('sessionDraft(){return clone(workoutDraft);}')&&app.includes('restoreSessionDraft(items)'),'workout bridge must persist and restore the unsaved exercise draft');
+assert.ok(runtime.includes('data-execution-add-set')&&runtime.includes('data-execution-set-delete')&&runtime.includes('changeSetCount('),'sets must be directly addable and removable during execution');
+assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}')&&runtime.includes('updateLivePR()')&&runtime.includes("NEW PR · e1RM"),'execution must surface immediate live PR feedback against pre-session history');
+assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
