@@ -232,7 +232,7 @@ async function assertCoachSettles(page){
     assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
     assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
     assert.equal(await page.locator('#wPlateProfile').isVisible(),true,'plate inventory profile must be available in-session');
-    await page.locator('#wBarPreset').selectOption('20');await page.locator('#wPlateProfile').selectOption('basic');await page.locator('#wPlateRounding').selectOption('2.5');await page.locator('#wPlateTarget').fill('101');await tap(page,'#calcWorkoutPlates');
+    await page.locator('#wBarPreset').selectOption('20kg');await page.locator('#wPlateProfile').selectOption('basic');await page.locator('#wPlateRounding').selectOption('2.5');await page.locator('#wPlateTarget').fill('101');await tap(page,'#calcWorkoutPlates');
     assert.match(await page.locator('#workoutPlateResult').textContent(),/실제/,'plate calculator must resolve a rounded load from the selected inventory');
     assert.equal(await page.locator('.workout-trend-grid').count(),1,'Workout must expose 7/30-day load analytics alongside PR history');
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.healthExport?.()?.schema),'garang-health-workout-v1','Health interoperability must expose the canonical workout export schema');
@@ -255,6 +255,7 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
     await page.waitForFunction(()=>Math.abs(Number(document.querySelector('#workoutSetDetails [data-set-weight]')?.value)-110.2)<0.2,{timeout:5000});
     assert.ok(Math.abs(Number(await page.locator('#workoutSetDetails [data-set-weight]').first().inputValue())-110.2)<0.2,'active 50 kg set must restore as about 110.2 lb after unit change');
+    await page.locator('#wBarPreset').selectOption('20kg');assert.ok(Math.abs(Number(await page.locator('#wBarWeight').inputValue())-44.1)<0.2,'20 kg bar preset must convert to about 44.1 lb in imperial mode');
     await page.locator('#settingsTopBtn').click();await page.locator('#unitSetting').selectOption('metric');await page.locator('#savePreferences').click();
     await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'workout-unit-regression-return',force:true}));
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
@@ -312,6 +313,14 @@ async function assertCoachSettles(page){
     await page.locator('#wProgramName').fill('WebKit Strength');await page.locator('#wProgramWeeks').fill('2');await page.locator('#wProgramFrequency').fill('2');await tap(page,'#scheduleWorkoutProgram');
     await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length===4;},{timeout:4000});
     assert.equal(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length;}),4,'two-week twice-weekly Program Builder must create four Planner executions');
+    const programPlanId=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).find(x=>x.source==='workout_program'&&x.programName==='WebKit Strength')?.id||'';});
+    await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'program-browser-regression',force:true}));
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
+    await tap(page,`[data-plan-start="${programPlanId}"]`);
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});
+    await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary?.().sets===2,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary?.().sets),2,'Planner program action must load its template into Workout Log');
+    await tap(page,'[data-gws-step="log"]');
     await tap(page,'#clearWorkoutDraft');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===0,{timeout:3000});
     assert.equal(await page.locator('#workoutExecutionElapsed').textContent(),'00:00','session reset must clear live elapsed time');
