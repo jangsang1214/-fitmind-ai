@@ -111,9 +111,12 @@ def main():
     for key,variants in groups.items():
         if len(variants)>1: duplicate_groups+=1
         g_variants=[r for r in variants if basis(r.get('영양성분함량기준량'))[1]=='g']
-        if g_variants: preferred_g_groups+=1; candidates=g_variants
-        else: continue
-        best=max(candidates,key=rank); origins=sorted({clean(v.get('식품기원명')) for v in variants if clean(v.get('식품기원명'))})
+        if not g_variants: continue
+        preferred_g_groups+=1
+        core_keys=['에너지(kcal)','단백질(g)','탄수화물(g)','지방(g)']
+        complete_variants=[r for r in g_variants if all(finite(r.get(k)) is not None for k in core_keys)]
+        if not complete_variants: continue
+        best=max(complete_variants,key=rank); origins=sorted({clean(v.get('식품기원명')) for v in variants if clean(v.get('식품기원명'))})
         rec=build_record(best,len(variants),origins)
         if rec: records.append(rec)
     records.sort(key=lambda r:(compact(r['name']),r['food_id']))
