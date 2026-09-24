@@ -27,7 +27,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must answer what GARANG thinks today');
   assert.equal(await flow.locator('.gtf-disclosure').isHidden(),true,'detailed rationale must remain progressive and Coach-owned');
   assert.equal(await flow.locator('.gpc-coach-explain').isVisible(),true,'Today must offer one quiet explanation entry');
-  assert.equal(await flow.locator('.gpc-today-plan .gtf-track').count(),3,'Today keeps the three domain tracks in the internalized plan contract');assert.equal(await flow.locator('.gpc-today-plan').isHidden(),true,'Today must not expose the full three-domain plan before the next action');
+  assert.equal(await flow.locator('.gpc-today-plan .gtf-track').count(),3,'Today keeps the three domain tracks in the internalized plan contract');assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'Today keeps one compact Planner utility row');assert.equal(await flow.locator('.gpc-today-plan .gtf-track-visual').isHidden(),true,'three-domain plan detail must stay internalized');
   assert.equal(await page.locator('#garangTodayBrandHero').isHidden(),true,'decorative hero must not compete with Today question');
   assert.equal(await page.locator('#garangTodayDensity').isHidden(),true,'duplicate metric density must not compete with Today judgment');
 
@@ -37,9 +37,9 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked'&&document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),null,{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach',null,{timeout:3000});
   await page.waitForTimeout(220);
-  await page.waitForFunction(()=>{const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};const root=document.querySelector('#garangTodayFlow');return root?.dataset?.gtoPhase==='checked'&&visible(root.querySelector('.gtf-decision'))&&visible(root.querySelector('.gtf-action'))&&!visible(root.querySelector('.gpc-today-plan'));},null,{timeout:3000});
+  await page.waitForFunction(()=>{const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};const root=document.querySelector('#garangTodayFlow');return root?.dataset?.gtoPhase==='checked'&&visible(root.querySelector('.gtf-decision'))&&visible(root.querySelector('.gtf-action'))&&visible(root.querySelector('.gpc-today-plan'))&&!visible(root.querySelector('.gpc-today-plan .gtf-track-visual'));},null,{timeout:3000});
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'post-check-in GARANG judgment must stay visible on Today');
-  assert.equal(await flow.locator('.gpc-today-plan').isHidden(),true,'full plan remains internalized so Today can stay state -> judgment -> action');
+  assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'compact Planner utility remains reachable');assert.equal(await flow.locator('.gpc-today-plan .gtf-track-visual').isHidden(),true,'full plan details remain internalized so Today stays state -> judgment -> action');
   assert.equal(await flow.locator('.gtf-action').isVisible(),true,'canonical next action must return after check-in');
   assert.equal(await checkin.isHidden(),true,'state edit becomes secondary while another next action owns Today');
   assert.equal(await visiblePrimary(page),1,'Today still exposes exactly one primary action after check-in');
