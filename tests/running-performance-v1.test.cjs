@@ -1,5 +1,5 @@
 'use strict';
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const Running=require('../02_core/running-performance-v1.js');
 
 const state={runs:[
@@ -42,7 +42,12 @@ const sparse=Running.build({runs:[{id:'x',date:'2026-09-23',distance:3,duration:
 assert.equal(sparse.recommendation.status,'collect_more_data');
 assert.equal(sparse.analysis.paceGuide.status,'insufficient');
 assert.equal(sparse.analysis.split.status,'insufficient');
-console.log('running-performance-v1: PASS');
+const appSource=fs.readFileSync('01_app/app.js','utf8');
+assert.match(appSource,/GarangRunningPerformanceV1/);
+assert.match(appSource,/RUNNING PERFORMANCE/);
+assert.match(appSource,/Advanced running analysis|고급 러닝 분석/);
+assert.match(appSource,/Pace Guide는 최근 28일 페이스/);
+console.log('running-performance-v1 + analysis-v2: PASS');
 
 const negative=Running.latestSplitAnalysis(Running.validRuns({runs:[{id:'n1',date:'2026-09-24',distance:4,duration:20,splits:[{km:1,paceMinPerKm:5.3},{km:2,paceMinPerKm:5.2},{km:3,paceMinPerKm:4.9},{km:4,paceMinPerKm:4.8}]}]},new Date('2026-09-24T12:00:00Z')));
 assert.equal(negative.pattern,'negative_split');
