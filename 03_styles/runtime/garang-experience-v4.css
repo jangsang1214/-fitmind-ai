@@ -20,3 +20,128 @@
   visibility:hidden!important;
   pointer-events:none!important;
 }
+
+/* GARANG Design Simplification v2 — P1 to P5 visual contract */
+#main.garang-p5-clean[data-garang-low-density="1"]{
+  --garang-v2-bg:#070907;
+  --garang-v2-panel:#0d100e;
+  --garang-v2-ivory:#f1ede4;
+  --garang-v2-muted:#8f8b83;
+  --garang-v2-jade:#78988c;
+  --garang-v2-copper:#986b58;
+}
+#main.garang-p5-clean[data-garang-low-density="1"]>.page-head{
+  margin-bottom:18px!important;
+}
+#main.garang-p5-clean[data-garang-low-density="1"]>.page-head .eyebrow{
+  opacity:.48!important;
+}
+#main.garang-p5-clean[data-garang-low-density="1"] .section-title{
+  margin-top:24px!important;
+}
+#main.garang-p5-clean[data-garang-low-density="1"] .section-title h2{
+  font-weight:500!important;
+}
+#main.garang-p5-clean[data-garang-low-density="1"] .card{
+  box-shadow:none!important;
+}
+
+/* One quiet disclosure pattern for advanced capabilities. */
+.garang-luxury-drawer{
+  width:100%;margin:14px 0!important;border:1px solid rgba(241,237,228,.08)!important;
+  border-radius:15px 5px 15px 5px!important;background:#0b0d0c!important;overflow:hidden!important;
+}
+.garang-luxury-drawer>summary{
+  min-height:60px;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px;
+  padding:0 16px!important;list-style:none!important;cursor:pointer!important;color:#e8e4dc!important;
+}
+.garang-luxury-drawer>summary::-webkit-details-marker{display:none}
+.garang-luxury-drawer>summary span{display:grid;gap:4px}
+.garang-luxury-drawer>summary b{font-size:13px;font-weight:650}
+.garang-luxury-drawer>summary small{color:#777b76;font-size:9px;line-height:1.4}
+.garang-luxury-drawer>summary i{font-style:normal;color:#78988c;font-size:17px;transition:transform .18s ease}
+.garang-luxury-drawer[open]>summary i{transform:rotate(45deg)}
+.garang-luxury-drawer-body{padding:0 14px 14px!important;border-top:1px solid rgba(241,237,228,.05)}
+.garang-luxury-drawer-body>.workout-advanced-tools,
+.garang-luxury-drawer-body>.workout-secondary-capabilities,
+.garang-luxury-drawer-body>.photo-evidence-card-workout{
+  margin:14px 0 0!important;
+}
+
+/* Workout: primary execution first, every secondary capability disclosed on demand. */
+#main[data-garang-screen="workout"][data-garang-design-v2="workout"]{
+  background:var(--garang-v2-bg);
+}
+#main[data-garang-screen="workout"] .garang-workout-luxury-v2{
+  background:transparent!important;border:0!important;padding-inline:0!important;
+}
+#main[data-garang-screen="workout"] .garang-workout-luxury-v2 .workout-advanced-tools{
+  border:0!important;background:transparent!important;padding:0!important;
+}
+#main[data-garang-screen="workout"] .garang-workout-luxury-v2 .workout-secondary-capabilities{
+  gap:10px!important;
+}
+#main[data-garang-screen="workout"] .garang-workout-luxury-v2 .workout-program-card,
+#main[data-garang-screen="workout"] .garang-workout-luxury-v2 .workout-health-card{
+  border:1px solid rgba(241,237,228,.07)!important;background:#0d0f0e!important;color:#e7e3db!important;
+}
+#main[data-garang-screen="workout"] .garang-history-quiet{
+  border-color:rgba(241,237,228,.07)!important;background:#0b0d0c!important;
+}
+
+/* Progress: interpretation is the hero; dashboards remain attached but visually secondary. */
+#main[data-garang-screen="progress"] .garang-progress-luxury-v2{
+  border:1px solid rgba(120,152,140,.18)!important;
+  border-radius:20px 6px 20px 6px!important;
+  background:
+    radial-gradient(circle at 85% 10%,rgba(120,152,140,.10),transparent 32%),
+    linear-gradient(150deg,#101411,#090b0a 68%)!important;
+  box-shadow:0 20px 50px rgba(0,0,0,.16)!important;
+}
+#main[data-garang-screen="progress"] .garang-progress-luxury-v2 .gx-insight{
+  border-color:rgba(241,237,228,.07)!important;background:rgba(255,255,255,.018)!important;
+}
+#main[data-garang-screen="progress"] .garang-progress-luxury-v2 .gx-insight strong{
+  color:#f1ede4!important;font-weight:560!important;
+}
+#main[data-garang-screen="progress"] .garang-progress-legacy-detail{
+  opacity:.62!important;
+}
+
+/* Coach: a quiet intelligence surface, not a generic chat app. */
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2{
+  border-color:rgba(241,237,228,.07)!important;
+  background:#080a09!important;
+  box-shadow:none!important;
+}
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .g2-chat-head,
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .coach-app-head{
+  border-bottom-color:rgba(241,237,228,.06)!important;
+  background:#080a09!important;
+}
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .g2-message.assistant .g2-message-body{
+  border:0!important;background:transparent!important;padding-left:0!important;
+}
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .g2-message.user .g2-message-body{
+  border-color:rgba(120,152,140,.14)!important;background:rgba(51,75,67,.34)!important;
+}
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .g2-composer{
+  border-color:rgba(241,237,228,.10)!important;background:#0d100e!important;
+}
+#main[data-garang-screen="coach"] .garang-coach-luxury-v2 .g2-send{
+  background:#f1ede4!important;color:#111411!important;
+}
+
+/* P5: remove decorative competition from the four primary surfaces. */
+#main[data-garang-low-density="1"] .eyebrow{letter-spacing:.12em}
+#main[data-garang-low-density="1"] .pill{box-shadow:none!important}
+#main[data-garang-low-density="1"] .helper{line-height:1.55}
+@media(max-width:800px){
+  #main.garang-p5-clean[data-garang-low-density="1"]{padding-inline:16px!important}
+  #main[data-garang-screen="coach"].garang-p5-clean{padding-inline:0!important}
+  .garang-luxury-drawer>summary{min-height:56px;padding-inline:14px!important}
+  #main[data-garang-screen="workout"] .photo-evidence-card-workout{
+    border-radius:12px 4px 12px 4px!important;
+  }
+}
+
