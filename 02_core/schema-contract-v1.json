@@ -1,8 +1,8 @@
 {
-  "freezeId": "garang-state-v1-schema8-20260908",
+  "freezeId": "garang-state-v1-schema9-20260924",
   "status": "frozen",
   "contractVersion": "garang-state-v1",
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "memoryContract": "garang-memory-v1",
   "topLevel": [
     "contractVersion",
@@ -15,6 +15,7 @@
     "body",
     "planner",
     "dailyCheckins",
+    "physiologicalSignals",
     "memory",
     "aiChats",
     "scoreHistory",
@@ -30,6 +31,7 @@
     "body",
     "planner",
     "dailyCheckins",
+    "physiologicalSignals",
     "aiChats",
     "scoreHistory"
   ],

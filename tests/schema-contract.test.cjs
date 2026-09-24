@@ -7,12 +7,12 @@ function test(name,fn){try{fn();tests.push({name,status:'PASS'});}catch(error){t
 
 test('production contract identity is frozen',()=>{
  assert.equal(G.CONTRACT_VERSION,'garang-state-v1');
- assert.equal(G.VERSION,8);
- assert.equal(G.CONTRACT.schemaVersion,8);
+ assert.equal(G.VERSION,9);
+ assert.equal(G.CONTRACT.schemaVersion,9);
  assert.equal(G.CONTRACT.units.weight,'kg');
  assert.equal(G.CONTRACT.units.distance,'km');
  assert.ok(G.CONTRACT.domains.includes('userModel'));
- assert.ok(G.CONTRACT.domains.includes('dailyCheckins'));
+ assert.ok(G.CONTRACT.domains.includes('dailyCheckins'));assert.ok(G.CONTRACT.domains.includes('physiologicalSignals'));
 });
 
 test('active app aliases migrate to canonical server fields without data loss',()=>{
@@ -50,6 +50,16 @@ test('legacy normalized memory importance is upgraded to the 1-5 contract scale'
  assert.equal(x.memory.entries[0].confidence,.5);
 });
 
+test('physiological signals persist through schema v9 migration and transport',()=>{
+ const source={schemaVersion:8,physiologicalSignals:[{source:'Apple Health export',capturedAt:'2026-09-24T06:00:00Z',date:'2026-09-24',hrvMs:52,restingHeartRateBpm:58}]};
+ const x=G.toTransport(source);assert.equal(x.schemaVersion,9);assert.equal(x.physiologicalSignals.length,1);assert.ok(x.physiologicalSignals[0].id.startsWith('health_'));assert.equal(x.physiologicalSignals[0].hrvMs,52);assert.equal(G.toTransport(x).physiologicalSignals[0].id,x.physiologicalSignals[0].id);
+});
+
+test('schema v8 canonical memory importance stays unchanged during v9 migration',()=>{
+ const x=G.migrate({schemaVersion:8,memory:{entries:[{id:'m8',importance:1,confidence:.8,value:'low importance canonical memory'}],legacyMigrated:true}});
+ assert.equal(x.schemaVersion,9);assert.equal(x.memory.entries[0].importance,1);
+});
+
 test('transport output contains canonical top-level keys and excludes local UI containers',()=>{
  const x=G.toTransport({meta:{schemaVersion:5},preferences:{language:'ko'},checkins:[],aiChat:[],onboarding:{goal:'건강'},workouts:[],meals:[],runs:[],body:[],planner:[],memory:{entries:[]}});
  for(const key of G.CONTRACT.topLevel)assert.ok(key in x,key);
@@ -73,7 +83,7 @@ test('migration and transport are idempotent at the frozen boundary',()=>{
 test('AI context is generated from the canonical contract, including user model and check-ins',()=>{
  const c=A.context({preferences:{language:'ko'},onboarding:{goal:'러닝',weeklyFrequency:3},checkins:[{id:'c1',date:'2026-09-04'}],workouts:[],meals:[],runs:[],body:[],planner:[],memory:{entries:[]}});
  assert.equal(c.contractVersion,'garang-state-v1');
- assert.equal(c.schemaVersion,8);
+ assert.equal(c.schemaVersion,9);
  assert.equal(c.userModel.goal,'러닝');
  assert.equal(c.dailyCheckins.length,1);
 });
