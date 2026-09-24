@@ -1,0 +1,210 @@
+{
+  "observedAt": "2026-09-24",
+  "sourceUrl": "https://various.foodsafetykorea.go.kr/nutrient/export/down/filePop.do",
+  "forms": [
+    {
+      "name": "regForm",
+      "id": "regForm",
+      "onsubmit": "return false;",
+      "method": "post"
+    }
+  ],
+  "fields": [
+    {
+      "tag": "input",
+      "type": "hidden",
+      "name": "pageToken",
+      "id": "pageToken",
+      "value": "2.098619506E9"
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "name": "dbGubun",
+      "id": "dbGubun",
+      "value": "02"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "name": "sosok",
+      "id": "sosok",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "name": "depart",
+      "id": "depart",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "agencyType",
+      "id": "agencyType01",
+      "value": "01"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "agencyType",
+      "id": "agencyType02",
+      "value": "02"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "agencyType",
+      "id": "agencyType03",
+      "value": "03"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "agencyType",
+      "id": "agencyType04",
+      "value": "04"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "agencyType",
+      "id": "agencyType05",
+      "value": "05"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose01",
+      "value": "01"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose02",
+      "value": "02"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose03",
+      "value": "03"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose04",
+      "value": "04"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose05",
+      "value": "05"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose06",
+      "value": "06"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose07",
+      "value": "07"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose08",
+      "value": "08"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose09",
+      "value": "09"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "usePurpose",
+      "id": "usePurpose10",
+      "value": "10"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "dbGubun",
+      "id": "dbGubun0",
+      "value": "01",
+      "disabled": "disabled"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "dbGubun",
+      "id": "dbGubun1",
+      "value": "02",
+      "checked": "checked",
+      "disabled": "disabled"
+    },
+    {
+      "tag": "input",
+      "type": "radio",
+      "name": "dbGubun",
+      "id": "dbGubun2",
+      "value": "12",
+      "disabled": "disabled"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "remark",
+      "name": "remark",
+      "value": "",
+      "title": "말씀남기는란"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "remark",
+      "name": "remark",
+      "value": "",
+      "title": "말씀남기는란"
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "a",
+      "href": "javascript:;",
+      "onclick": "javascript:ComJqxWindowClose();",
+      "class": "button lg white"
+    },
+    {
+      "tag": "a",
+      "href": "javascript:;",
+      "onclick": "fnObj.fnSave();",
+      "class": "button lg"
+    }
+  ],
+  "inlineSnippets": [
+    "form.submit();",
+    "<script type=\"text/javascript\" src=\"/nutrient/js/jquery.fileDownload.js?ver=2026092422241603\"></script>",
+    "document.write('<div id=\"update\">보고계신 사이트는 <b>익스플로러11에 최적화 된</b> 사이트 입니다. Windows Internet Explorer를 <b>업데이트</b>를 받으세요 <a href=\"http://windows.microsoft.com/ko-KR/internet-explorer/downloads/ie\" target=\"_blank\" title=\"새창\">Internet Explorer 업데이트하기</a></div>');",
+    "ComFileDownDirect(vm.vmFileKey);",
+    "form.action = \"/nutrient/export/down/cudAction.do\";"
+  ],
+  "htmlBytes": 11187
+}
