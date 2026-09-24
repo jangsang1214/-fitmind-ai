@@ -10,6 +10,7 @@ const output={
   version:report.version,
   total:report.total,
   statusCounts:report.statusCounts,
+  coverage:report.coverage,
   errors:report.errors.length,
   warnings:report.warnings.length,
   duplicateNames:report.duplicateNames.length,
