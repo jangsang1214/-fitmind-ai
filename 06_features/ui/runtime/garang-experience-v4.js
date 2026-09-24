@@ -201,7 +201,9 @@
     main.dataset.garangDesignV2='progress';
     const overview=main.querySelector('#garangAccumulationOverview');
     if(overview)overview.classList.add('garang-progress-luxury-v2');
-    const legacy=[...main.querySelectorAll('.progress-tabs,.grid.grid-4')];
+    const rangeTabs=main.querySelector('.progress-tabs');
+    if(rangeTabs)rangeTabs.classList.add('garang-progress-range-quiet');
+    const legacy=[...main.querySelectorAll('.grid.grid-4')];
     legacy.forEach(node=>node.classList.add('garang-progress-legacy-detail'));
     ensureLuxuryDrawer(
       'garangProgressDetails',
