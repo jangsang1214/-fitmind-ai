@@ -16,7 +16,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await installAuthenticatedFirebaseMock(context);
   await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},seed());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.1.0',{timeout:9000});
+  await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.2.0',{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach'&&document.querySelector('#garangTodayFlow')?.dataset?.decisionOwner==='coach',null,{timeout:5000});
   const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:5000});
@@ -27,7 +27,7 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must answer what GARANG thinks today');
   assert.equal(await flow.locator('.gtf-disclosure').isHidden(),true,'detailed rationale must remain progressive and Coach-owned');
   assert.equal(await flow.locator('.gpc-coach-explain').isVisible(),true,'Today must offer one quiet explanation entry');
-  assert.equal(await flow.locator('.gpc-today-plan .gtf-track').count(),3,'Today plan must retain Training, Recovery and Nutrition');
+  assert.equal(await flow.locator('.gpc-today-plan .gtf-track').count(),3,'Today keeps the three domain tracks in the internalized plan contract');assert.equal(await flow.locator('.gpc-today-plan').isHidden(),true,'Today must not expose the full three-domain plan before the next action');
   assert.equal(await page.locator('#garangTodayBrandHero').isHidden(),true,'decorative hero must not compete with Today question');
   assert.equal(await page.locator('#garangTodayDensity').isHidden(),true,'duplicate metric density must not compete with Today judgment');
 
@@ -36,11 +36,10 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await page.waitForFunction(today=>{const s=window.GarangAgentStateBridge?.getState?.();return [...(s?.dailyCheckins||[]),...(s?.checkins||[])].some(row=>String(row?.date||'').slice(0,10)===today);},date(),{timeout:5000});
   await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked'&&document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),null,{timeout:9000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach',null,{timeout:3000});
-  await page.waitForFunction(()=>{const plan=document.querySelector('#garangTodayFlow .gpc-today-plan');if(!plan)return false;const style=getComputedStyle(plan),box=plan.getBoundingClientRect();return style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;},null,{timeout:3000});
   await page.waitForTimeout(220);
-  await page.waitForFunction(()=>{const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};const root=document.querySelector('#garangTodayFlow');return root?.dataset?.gtoPhase==='checked'&&visible(root.querySelector('.gtf-decision'))&&visible(root.querySelector('.gpc-today-plan'))&&visible(root.querySelector('.gtf-action'));},null,{timeout:3000});
+  await page.waitForFunction(()=>{const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};const root=document.querySelector('#garangTodayFlow');return root?.dataset?.gtoPhase==='checked'&&visible(root.querySelector('.gtf-decision'))&&visible(root.querySelector('.gtf-action'))&&!visible(root.querySelector('.gpc-today-plan'));},null,{timeout:3000});
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'post-check-in GARANG judgment must stay visible on Today');
-  assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'plan remains visible between judgment and action');
+  assert.equal(await flow.locator('.gpc-today-plan').isHidden(),true,'full plan remains internalized so Today can stay state -> judgment -> action');
   assert.equal(await flow.locator('.gtf-action').isVisible(),true,'canonical next action must return after check-in');
   assert.equal(await checkin.isHidden(),true,'state edit becomes secondary while another next action owns Today');
   assert.equal(await visiblePrimary(page),1,'Today still exposes exactly one primary action after check-in');
@@ -50,6 +49,6 @@ const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-act
   await flow.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});assert.equal(await page.locator('.garang-coach-v2').count(),1);
   await page.locator('#bottomNav [data-page="today"]').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1',null,{timeout:7000});
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today consolidation must not overflow mobile viewport: ${JSON.stringify(width)}`);
-  assert.deepEqual(errors,[],`Today consolidation browser errors:\n${errors.join('\n')}`);await context.close();console.log('browser-today-action-flow state -> judgment -> plan -> single action: PASS');
+  assert.deepEqual(errors,[],`Today consolidation browser errors:\n${errors.join('\n')}`);await context.close();console.log('browser-today-action-flow state -> judgment -> single action with plan internalized: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
