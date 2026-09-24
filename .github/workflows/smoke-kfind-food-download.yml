@@ -52,7 +52,8 @@ jobs:
             --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' \
             "$BASE/nutrient/export/down/cudAction.do" \
             -o "$RUNNER_TEMP/kfind-register-response.html"
-          ENCODED_FILE_KEY="$(python - "$FILE_KEY" <<'PY'\nimport sys,urllib.parse\nprint(urllib.parse.quote(sys.argv[1],safe=''))\nPY\n)"\n          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" \
+          ENCODED_FILE_KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" \
             -e "$POP" \
             -D "$RUNNER_TEMP/kfind-download.headers" \
             "$BASE/nutrient/multi/file/download.do?key=$ENCODED_FILE_KEY" \
