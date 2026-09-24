@@ -1,0 +1,127 @@
+name: Build K-FIND Processed Corpus
+
+on:
+  push:
+    branches:
+      - ai/korean-food-source-acquisition-v2-20260924
+    paths:
+      - scripts/build-kfind-processed-corpus.py
+      - .github/workflows/build-kfind-processed-corpus.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kfind-processed-corpus-v1
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip kfind-processed-build]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Restore official K-FIND processed workbook cache
+        id: kfind-processed-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/processed.xlsx
+          key: kfind-processed-20260828-b074d98e75d2
+
+      - name: Download latest official K-FIND processed-food workbook
+        if: steps.kfind-processed-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://various.foodsafetykorea.go.kr'
+          POP="$BASE/nutrient/export/down/filePop.do?pagenum=1&totalListCnt=17&pageblock=10&pagesize=10&searchDbSeq=1787898734821&searchDbGubun=01&searchOpenApi=Y"
+          JAR="$RUNNER_TEMP/kfind.cookies"
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --location --connect-timeout 20 --max-time 120 --silent --show-error -c "$JAR" -b "$JAR" "$POP" -o "$RUNNER_TEMP/popup.html"; then break; fi
+            if [ "$attempt" = 5 ]; then exit 28; fi
+            sleep $((attempt*8))
+          done
+          python - <<'PY' > "$RUNNER_TEMP/kfind.env"
+          import re,os
+          from pathlib import Path
+          t=Path(os.environ['RUNNER_TEMP']+'/popup.html').read_text(errors='ignore')
+          token=re.search(r'name="pageToken"[^>]*value="([^"]+)"',t);key=re.search(r'vmFileKey\s*:\s*"([^"]+)"',t)
+          if not token or not key:raise SystemExit('K-FIND processed popup token/file key not found')
+          print('PAGE_TOKEN='+token.group(1));print('FILE_KEY='+key.group(1))
+          PY
+          source "$RUNNER_TEMP/kfind.env"
+          curl --fail --location --connect-timeout 20 --max-time 120 --retry 3 --retry-all-errors --retry-delay 5 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" \
+            --data-urlencode "pageToken=$PAGE_TOKEN" --data-urlencode 'dbGubun=01' --data-urlencode 'sosok=GARANG' --data-urlencode 'depart=AI/Data' --data-urlencode 'agencyType=01' --data-urlencode 'usePurpose=02' --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' \
+            "$BASE/nutrient/export/down/cudAction.do" -o "$RUNNER_TEMP/register.html"
+          KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
+          URL="$BASE/nutrient/multi/file/download.do?key=$KEY"
+          for attempt in 1 2 3 4 5; do
+            rm -f "$RUNNER_TEMP/processed.xlsx"
+            if curl --fail --location --connect-timeout 20 --max-time 360 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" -H 'Range: bytes=0-1048575' "$URL" -o "$RUNNER_TEMP/processed.xlsx"; then
+              SIZE="$(stat -c%s "$RUNNER_TEMP/processed.xlsx")"
+              if [ "$SIZE" -gt 180000000 ]; then break; fi
+            fi
+            if [ "$attempt" = 5 ]; then echo 'K-FIND processed download failed after retries' >&2; exit 28; fi
+            sleep $((attempt*10))
+          done
+          echo "processed_bytes=$(stat -c%s "$RUNNER_TEMP/processed.xlsx")"
+
+      - name: Cache verified official workbook
+        if: steps.kfind-processed-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/processed.xlsx
+          key: kfind-processed-20260828-b074d98e75d2
+
+      - name: Build verified processed-food brand shards
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf 04_data/knowledge/food-db-supplemental-korea-processed-v1
+          mkdir -p 04_data/knowledge/food-db-supplemental-korea-processed-v1
+          python scripts/build-kfind-processed-corpus.py \
+            --input "$RUNNER_TEMP/processed.xlsx" \
+            --output-dir 04_data/knowledge/food-db-supplemental-korea-processed-v1 \
+            --manifest 04_data/knowledge/food-db-supplemental-korea-processed-v1/manifest.json \
+            --meta 04_data/knowledge/food-db-supplemental-korea-processed-v1/meta.json
+
+      - name: Verify corpus scale and file sizes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          root=Path('04_data/knowledge/food-db-supplemental-korea-processed-v1')
+          manifest=json.loads((root/'manifest.json').read_text());meta=json.loads((root/'meta.json').read_text())
+          if manifest['count']<250000:raise SystemExit('processed corpus scale gate failed')
+          if meta['brandRows']<250000:raise SystemExit('processed brand coverage gate failed')
+          sizes=[]
+          for spec in manifest['shards'].values():
+              p=root/spec['file']
+              if not p.exists():raise SystemExit('missing shard '+spec['file'])
+              sizes.append((p.stat().st_size,spec['file']))
+          total=sum(size for size,_ in sizes)+(root/'manifest.json').stat().st_size+(root/'meta.json').stat().st_size
+          max_size,max_file=max(sizes,default=(0,''))
+          if total>120_000_000:raise SystemExit('processed corpus total payload too large: '+str(total))
+          if max_size>20_000_000:raise SystemExit('processed shard too large: '+max_file+' '+str(max_size))
+          print(json.dumps({'count':manifest['count'],'brandRows':meta['brandRows'],'brandRate':meta['brandRate'],'shards':len(manifest['shards']),'totalBytes':total,'maxShardBytes':max_size,'maxShardFile':max_file},ensure_ascii=False,indent=2))
+          PY
+
+      - name: Commit generated processed corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'GARANG K-FIND Processed Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 04_data/knowledge/food-db-supplemental-korea-processed-v1
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Add K-FIND processed-food brand corpus [skip kfind-processed-build]'
+          git fetch origin "${GITHUB_REF_NAME}"
+          git rebase "origin/${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

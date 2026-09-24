@@ -1,39 +1,25 @@
 {
-  "version": "garang-korean-food-corpus-v1",
-  "status": "source_access_pending",
-  "observedAt": "2026-09-24",
-  "blockers": [
-    {
-      "code": "DATA_GO_KR_SERVICE_KEY_MISSING",
-      "detail": "Repository workflow does not currently receive DATA_GO_KR_SERVICE_KEY."
-    },
-    {
-      "code": "PUBLIC_GRID_CAPTCHA",
-      "detail": "Public data.go.kr grid download is capped at 50,000 rows and presents CAPTCHA; it is not used as an automated source."
-    }
-  ],
-  "preparedSources": {
-    "dataGoKr": {
-      "endpoint": "https://api.data.go.kr/openapi/tn_pubr_public_nutri_info_api",
-      "modifiedDate": "2026-09-15"
-    },
-    "kfind": {
-      "portal": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do",
-      "foodDb": {
-        "searchDbSeq": "1787898710194",
-        "searchDbGubun": "02"
-      },
-      "processedDb": {
-        "searchDbSeq": "1787898734821",
-        "searchDbGubun": "01"
-      }
-    }
+  "version": "garang-kfind-food-corpus-v1",
+  "status": "ready",
+  "rawRows": 19617,
+  "uniqueNormalizedNames": 14982,
+  "duplicateNameGroups": 2157,
+  "records": 2502,
+  "excludedNonGramRows": 5740,
+  "invalidRows": 0,
+  "preferredGramGroups": 12168,
+  "shardCount": 18,
+  "source": {
+    "provider": "식품의약품안전처 K-FIND",
+    "dataset": "K-FIND 음식 DB 2026-08-28",
+    "url": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do"
   },
   "guardrails": {
     "canonicalPrimary": true,
     "verifiedOnly": true,
+    "gramBasisOnlyForAutomaticCalculation": true,
     "traceableProvenanceRequired": true,
-    "noAutomaticCanonicalOverwrite": true,
-    "deterministicAliasesOnly": true
+    "representativeSelection": "gram basis > analyzed > calculated > household/restaurant > foodservice > completeness > recency",
+    "noAutomaticCanonicalOverwrite": true
   }
 }

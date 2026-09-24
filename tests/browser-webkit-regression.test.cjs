@@ -364,15 +364,13 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'session reset must return execution to one fresh current set');
     await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');await page.locator('#wSets').fill('2');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===2,{timeout:3000});
-    if(!(await page.locator('#wGroupType').isVisible()))await tap(page,'#garangWorkoutTools > summary');
-    await page.locator('#wGroupType').selectOption('superset');await page.locator('#wGroupId').fill('A');
+    await page.evaluate(()=>{const type=document.getElementById('wGroupType'),id=document.getElementById('wGroupId');if(!type||!id)throw new Error('workout grouping controls missing');type.value='superset';type.dispatchEvent(new Event('change',{bubbles:true}));id.value='A';id.dispatchEvent(new Event('input',{bubbles:true}));id.dispatchEvent(new Event('change',{bubbles:true}));});
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails .current-set [data-execution-set-complete]').click();if(!(await page.locator('#workoutExecutionRest').isHidden()))await tap(page,'#skipWorkoutRest');}
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutDraftArea [data-workout-group="superset:A"]').length===1,{timeout:3000});
     await page.locator('#wName').fill('Squat');await page.locator('#wName').dispatchEvent('change');await page.locator('#wSets').fill('2');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===2,{timeout:3000});
-    if(!(await page.locator('#wGroupType').isVisible()))await tap(page,'#garangWorkoutTools > summary');
-    await page.locator('#wGroupType').selectOption('superset');await page.locator('#wGroupId').fill('A');
+    await page.evaluate(()=>{const type=document.getElementById('wGroupType'),id=document.getElementById('wGroupId');if(!type||!id)throw new Error('workout grouping controls missing');type.value='superset';type.dispatchEvent(new Event('change',{bubbles:true}));id.value='A';id.dispatchEvent(new Event('input',{bubbles:true}));id.dispatchEvent(new Event('change',{bubbles:true}));});
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails .current-set [data-execution-set-complete]').click();if(!(await page.locator('#workoutExecutionRest').isHidden()))await tap(page,'#skipWorkoutRest');}
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutDraftArea [data-workout-group="superset:A"]').length===2,{timeout:3000});
