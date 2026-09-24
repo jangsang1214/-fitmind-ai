@@ -9,7 +9,7 @@ const Food=require('../02_core/food-data-foundation-v2.js');
   assert.equal(food.quality,'approximate');
   assert.equal(food.nutrients.carbs,34.3);
   assert.deepEqual(food.aliases,['현미']);
-  console.log('PASS legacy Food DB row canonicalizes without changing quality');
+  const branded=Food.canonicalize({food_id:'B1',name:'프로틴 음료',brand:'GARANG Foods',product_name:'Protein Drink',basis_g:100,kcal:80,protein:15,carbs:4,fat:1,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'BRANDED',recordId:'B1'}});\n  assert.equal(branded.brand,'GARANG Foods');assert.equal(branded.productName,'Protein Drink');\n  console.log('PASS legacy Food DB row canonicalizes without changing quality');
 }
 
 {
