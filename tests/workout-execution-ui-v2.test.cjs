@@ -9,6 +9,7 @@ const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-e
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const polish=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-polish-v3.js'),'utf8');
 const workoutLibrary=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-library-v2.js'),'utf8');
+const swRuntime=fs.readFileSync(path.join(root,'02_core','sw-runtime.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
 assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
@@ -73,8 +74,10 @@ assert.ok(css.includes('Workout commercial UX v4')&&css.includes('.workout-exerc
 assert.ok(css.includes('Workout session controls v3')&&css.includes('.workout-session-icon')&&css.includes('touch-action:manipulation'),'session icon controls must own a touch-safe mobile hit area');
 assert.ok(css.includes('Workout simplicity v5')&&css.includes('.execution-set-row.current-set .execution-rpe-field')&&css.includes('display:none!important'),'active-set defaults must prioritize weight and reps while keeping RPE behind one-tap details');
 const bodyV6Dir=path.join(root,'05_assets','body-model-v6');
-for(const gender of ['male','female'])for(const view of ['front','side','back']){const assetPath=path.join(bodyV6Dir,`${gender}-${view}.svg`);assert.ok(fs.existsSync(assetPath),`Body Model v6 asset missing: ${gender}-${view}`);const asset=fs.readFileSync(assetPath,'utf8');assert.match(asset,/MakeHuman hm08 basemesh/);assert.ok((asset.match(/<polygon /g)||[]).length>4500,`Body Model v6 ${gender}-${view} must retain dense mesh geometry`);}
-assert.ok(polish.includes('function v6MeshSVG')&&polish.includes('function v6ZoneMarkup')&&polish.includes('/${person}-${view}.svg?v=6.1.0-complete-mesh')&&polish.includes('data-garang-visual-layer="mesh"')&&polish.includes('data-garang-interaction-layer="zones"'),'Body Model v6 must separate complete mesh visual geometry from interaction/highlight zones');
+for(const gender of ['male','female'])for(const view of ['front','side','back']){const assetPath=path.join(bodyV6Dir,`${gender}-${view}.svg`);assert.ok(fs.existsSync(assetPath),`Body Model v6 asset missing: ${gender}-${view}`);const asset=fs.readFileSync(assetPath,'utf8');assert.match(asset,/MakeHuman hm08 basemesh/);assert.ok((asset.match(/<polygon /g)||[]).length>4500,`Body Model v6 ${gender}-${view} must retain dense mesh geometry`);assert.ok(!asset.includes('feGaussianBlur')&&!asset.includes('filter="url(#soft)"'),`Body Model v6 ${gender}-${view} must render without intentional blur`);}
+assert.ok(polish.includes('function v6MeshSVG')&&polish.includes('function v6ZoneMarkup')&&polish.includes('/${person}-${view}.svg?v=6.2.0-sharp-aligned')&&polish.includes('data-garang-visual-layer="mesh"')&&polish.includes('data-garang-interaction-layer="zones"'),'Body Model v6 must separate complete mesh visual geometry from interaction/highlight zones');
+assert.ok(!polish.includes('transform="scale(2.76923077 2.11538462)"'),'Body Model v6 interaction zones must use the native 720x1100 mesh coordinate system instead of scaled v5 geometry');
+for(const gender of ['male','female'])for(const view of ['front','side','back'])assert.ok(swRuntime.includes(`./05_assets/body-model-v6/${gender}-${view}.svg?v=6.2.0-sharp-aligned`),`Body Model v6 ${gender}-${view} must be available in the offline app shell`);
 assert.ok(polish.includes("v6MeshSVG(gender,side)")&&polish.includes("side==='back'")&&polish.includes("gender==='female'"),'Body Model v6 must support male/female FRONT/SIDE/BACK through one renderer contract');
 assert.ok(polish.includes('data-garang-classical-model="5"')&&polish.includes('g5-silhouette')&&polish.includes('function v5SideSVG')&&polish.includes('data-g3-view="side"'),'Body Model v5 fallback must preserve FRONT / SIDE / BACK capability and interactive muscle zones');
 assert.ok(html.includes('garang-workout-execution-v2.css'),'execution CSS must load');
