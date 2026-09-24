@@ -30,6 +30,13 @@ const WEB_NUTRITION_SCHEMA=Object.freeze({
 
 function clean(value,limit=500){return String(value??'').trim().slice(0,limit);}
 function finite(value){const n=Number(value);return Number.isFinite(n)?n:null;}
+function barcodeDigits(value){return String(value??'').replace(/\D/g,'');}
+function validGtin(value){
+ const s=barcodeDigits(value);if(![8,12,13,14].includes(s.length))return false;
+ let sum=0,weight=3;for(let i=s.length-2;i>=0;i--){sum+=Number(s[i])*weight;weight=weight===3?1:3;}
+ return ((10-(sum%10))%10)===Number(s.at(-1));
+}
+function normalizeGtin(value){const s=barcodeDigits(value);return validGtin(s)?s.padStart(14,'0'):'';}
 function requestId(){return globalThis.crypto?.randomUUID?.()||`nutrition_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;}
 function normalizeUrl(value){try{const u=new URL(String(value||''));u.hash='';u.searchParams.sort();return u.toString().replace(/\/$/,'');}catch{return '';}}
 function collectCitationUrls(payload){
@@ -72,7 +79,7 @@ function normalizeLookupItems(value,input,citations){
   const kcal=finite(row?.kcal),protein=finite(row?.protein),carbs=finite(row?.carbs),fat=finite(row?.fat);
   const values=[kcal,protein,carbs,fat],grams=input[inputIndex].grams;
   const implausible=values.some(v=>v===null||v<0)||kcal>Math.max(120,grams*10)||protein>grams*1.15||carbs>grams*1.15||fat>grams*1.15||(protein+carbs+fat)>grams*1.35;
-  if(!sourceUrl||blockedSource(sourceUrl)||!cited(sourceUrl,citations)||confidence===null||confidence<0.55||implausible){
+  if(!sourceUrl||blockedSource(sourceUrl)||!cited(sourceUrl,citations)||confidence===null||confidence<(input[inputIndex].barcode?0.75:0.55)||implausible){
    unresolved.push({inputIndex,name:input[inputIndex].name,reason:'UNVERIFIED_WEB_RESULT'});seen.add(inputIndex);continue;
   }
   items.push({
@@ -81,8 +88,10 @@ function normalizeLookupItems(value,input,citations){
    nutritionStatus:'estimated',
    nutritionSource:{
     source:'web_search',provider:'OpenAI web_search',sourceType:clean(row?.sourceType,40),
-    title:clean(row?.sourceTitle,180),url:sourceUrl,basis:clean(row?.basisNote,240)
-   }
+    title:clean(row?.sourceTitle,180),url:sourceUrl,basis:clean(row?.basisNote,240),
+    ...(input[inputIndex].barcode?{matchRule:'barcode_source_backed'}:{})
+   },
+   ...(input[inputIndex].barcode?{barcode:input[inputIndex].barcode}:{})
   });
   seen.add(inputIndex);
  }
@@ -93,14 +102,15 @@ function parseInput(value){
  const rows=(Array.isArray(value)?value:[]).slice(0,MAX_ITEMS).map((row,index)=>{
   const name=clean(row?.name,MAX_NAME),grams=Math.max(5,Math.min(1500,Math.round(finite(row?.grams)??100)));
   const aliases=[...new Set((Array.isArray(row?.aliases)?row.aliases:[]).map(x=>clean(x,80)).filter(Boolean))].slice(0,5);
-  if(!name)throw Object.assign(new Error('NUTRITION_LOOKUP_ITEM_INVALID'),{code:'NUTRITION_LOOKUP_ITEM_INVALID',inputIndex:index});
-  return {name,aliases,grams};
+  const barcodeRaw=clean(row?.barcode,40),barcode=barcodeRaw?normalizeGtin(barcodeRaw):'';
+  if(!name||barcodeRaw&&!barcode)throw Object.assign(new Error('NUTRITION_LOOKUP_ITEM_INVALID'),{code:'NUTRITION_LOOKUP_ITEM_INVALID',inputIndex:index});
+  return {name,aliases,grams,...(barcode?{barcode}:{})};
  });
  if(!rows.length)throw Object.assign(new Error('NUTRITION_LOOKUP_ITEMS_REQUIRED'),{code:'NUTRITION_LOOKUP_ITEMS_REQUIRED'});
  return rows;
 }
 function systemPrompt(language='ko'){
- return `You are GARANG Nutrition Source Resolver. Search the live web for nutrition facts only when GARANG's internal food database could not match an identified meal item. Use one trustworthy primary source per item. Priority: official government food databases, the food or beverage manufacturer's official nutrition page, then reputable institutional nutrition databases. Never use blogs, forums, social media, user posts, SEO pages, crowdsourced wikis, or unsourced snippets. Return nutrition for the requested gram amount. If the source uses a serving size, scale only when the conversion is reasonable and explain the basis. Never fabricate a missing macro. If a trustworthy source with calories, protein, carbs, and fat cannot be found, omit that item. sourceUrl must be the exact URL you used from web search. Keep generic and branded products distinct. For zero-calorie or near-zero drinks, preserve legitimate zeros. Output language for labels: ${language==='en'?'English':'Korean'}. This is an estimate that requires user confirmation before GARANG saves it.`;
+ return `You are GARANG Nutrition Source Resolver. Search the live web for nutrition facts only when GARANG's internal food database could not match an identified meal item. Use one trustworthy primary source per item. Priority: official government food databases, the food or beverage manufacturer's official nutrition page, then reputable institutional nutrition databases. Never use blogs, forums, social media, user posts, SEO pages, crowdsourced wikis, or unsourced snippets. Return nutrition for the requested gram amount. If the source uses a serving size, scale only when the conversion is reasonable and explain the basis. Never fabricate a missing macro. If a trustworthy source with calories, protein, carbs, and fat cannot be found, omit that item. sourceUrl must be the exact URL you used from web search. Keep generic and branded products distinct. If an input includes a barcode/GTIN, treat it as an exact product-identity constraint: only return that item when a trustworthy primary source explicitly identifies the same GTIN/barcode with that product; otherwise omit it. Never substitute a similar product or a different package size. For zero-calorie or near-zero drinks, preserve legitimate zeros. Output language for labels: ${language==='en'?'English':'Korean'}. This is an estimate that requires user confirmation before GARANG saves it.`;
 }
 function createNutritionLookupProvider(options={}){
  const fetchImpl=options.fetchImpl||globalThis.fetch;
@@ -240,4 +250,4 @@ function createNutritionLookupHandler(deps={}){
  };
 }
 
-module.exports={DEFAULT_MODEL,WEB_NUTRITION_SCHEMA,parseInput,collectCitationUrls,normalizeLookupItems,systemPrompt,createNutritionLookupProvider,createNutritionLookupHandler};
+module.exports={DEFAULT_MODEL,WEB_NUTRITION_SCHEMA,barcodeDigits,validGtin,normalizeGtin,parseInput,collectCitationUrls,normalizeLookupItems,systemPrompt,createNutritionLookupProvider,createNutritionLookupHandler};
