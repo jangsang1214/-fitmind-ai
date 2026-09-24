@@ -72,6 +72,7 @@
     "06_features/ui/runtime/garang-photo-evidence-v1.js",
     "02_core/food-data-foundation-v2.js",
     "02_core/food-intelligence-v2.js",
+    "02_core/food-identity-v1.js",
     "02_core/health-signal-import-v1.js",
     "01_app/app.js",
     "06_features/ui/runtime/garang-router-v1.js",
