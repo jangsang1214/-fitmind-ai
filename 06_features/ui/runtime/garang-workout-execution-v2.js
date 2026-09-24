@@ -50,6 +50,7 @@ function finishWorkoutSession(){
   return true;
 }
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
+function hardHideCanonicalSave(){const save=document.getElementById('saveWorkoutSession');if(!save)return null;save.classList.add('workout-canonical-save');save.hidden=true;save.setAttribute('aria-hidden','true');save.tabIndex=-1;save.style.setProperty('display','none','important');save.style.setProperty('pointer-events','none','important');return save;}
 function stopRest(){restUntil=0;persistSessionState();updateLive();}
 function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
 function updateLive(){
@@ -150,8 +151,9 @@ function enhance(){
     builder.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
-    const canonicalSave=document.getElementById('saveWorkoutSession');if(canonicalSave){canonicalSave.classList.add('workout-canonical-save');canonicalSave.hidden=true;canonicalSave.setAttribute('aria-hidden','true');canonicalSave.tabIndex=-1;canonicalSave.style.setProperty('display','none','important');canonicalSave.style.setProperty('pointer-events','none','important');}
+    hardHideCanonicalSave();
   }
+  hardHideCanonicalSave();
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
   document.querySelector('.one-rm-panel')?.classList.add('execution-secondary-metric');
