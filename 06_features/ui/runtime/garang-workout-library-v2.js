@@ -134,6 +134,7 @@
     input.value = name; input.dispatchEvent(new Event('input', { bubbles:true })); input.dispatchEvent(new Event('change', { bubbles:true }));
     main.querySelectorAll('.exercise-visual-card[data-exercise-pick]').forEach(x => x.classList.toggle('selected', x === card));
     card.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    requestAnimationFrame(()=>document.querySelector('[data-gws-step="log"]')?.click());
   }
 
   function applySearchVisibility(library) {
