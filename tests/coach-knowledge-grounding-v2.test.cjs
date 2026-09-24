@@ -20,6 +20,7 @@ const coachRules=[
   assert.equal(result.decisionIdentity.mode,'reduce');
   assert.ok(result.queryTags.includes('recovery'));
   assert.ok(result.evidence.some(item=>item.id==='V5R036'));
+  assert.ok(result.evidence.some(item=>item.id==='V5R036'&&item.vectorScore>0));
   assert.equal(result.contract.decisionOwnedBy,'GARANG');
   assert.equal(result.contract.llmRole,'explain_only');
   assert.equal(result.contract.stateMutationAllowed,false);
