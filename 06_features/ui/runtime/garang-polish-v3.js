@@ -205,6 +205,32 @@
     </svg>`;
   }
 
+
+  // Body Model v6 mesh layer — visual geometry is separated from interaction/highlight zones.
+  // Current mesh coverage is male FRONT/SIDE; unsupported views intentionally fall back to v5.
+  function v6MeshSVG(side='front'){
+    const isSide=side==='side';
+    const asset=isSide?'./05_assets/body-model-v6/male-side.svg?v=6.0.0-mesh-layer':'./05_assets/body-model-v6/male-front.svg?v=6.0.0-mesh-layer';
+    const zones=isSide
+      ? `<path class="g3-muscle muscle-shoulders" d="M128 104c17 1 29 11 33 27-8 13-20 18-34 11l-11-22Z"/>
+        <path class="g3-muscle muscle-chest" d="M130 132c17 5 26 19 28 39l-4 28-27-7-10-35Z"/>
+        <path class="g3-muscle muscle-back" d="M104 118c12 3 21 15 25 34l-8 61-22 42-15-52 3-50Z"/>
+        <path class="g3-muscle muscle-biceps" d="M149 151c10 3 15 14 14 30l-4 35-12-2-10-37Z"/>
+        <path class="g3-muscle muscle-triceps" d="M139 145c10 1 16 10 16 25l-8 49-14-20-7-34Z"/>
+        <path class="g3-muscle muscle-core" d="M119 191c17 2 29 12 35 29l-6 50-17 40-31-10 7-42-9-40Z"/>
+        <path class="g3-muscle muscle-legs" d="M126 316c16 10 23 30 21 56l-9 46-18-5-9-42 4-38Zm-17 91c12 1 20 11 21 29l-6 68-20 2-5-46 6-43Zm34 15c12 5 17 17 15 33l-8 49-19-2 1-44 5-32Z"/>`
+      : `<path class="g3-muscle muscle-shoulders" d="M70 109c16-12 33-13 50-4l-10 35c-18 7-34 0-44-14Zm120 0c-16-12-33-13-50-4l10 35c18 7 34 0 44-14Z"/>
+        <path class="g3-muscle muscle-chest" d="M86 125c14-10 29-13 44-8v42c-20 6-37 1-50-14Zm88 0c-14-10-29-13-44-8v42c20 6 37 1 50-14Z"/>
+        <path class="g3-muscle muscle-biceps" d="M67 145c11 0 17 11 16 28l-7 39c-4 13-11 19-18 10l3-40Zm126 0c-11 0-17 11-16 28l7 39c4 13 11 19 18 10l-3-40Z"/>
+        <path class="g3-muscle muscle-triceps" d="M56 154c8 5 11 17 9 32l-7 42-10 15 5-56Zm148 0c-8 5-11 17-9 32l7 42 10 15-5-56Z"/>
+        <path class="g3-muscle muscle-core" d="M108 166c7 4 14 6 22 6s15-2 22-6l8 40-6 60-24 25-24-25-6-60Zm-10 22c7 11 9 28 7 50l-5 28-14-22 4-40Zm64 0c-7 11-9 28-7 50l5 28 14-22-4-40Z"/>
+        <path class="g3-muscle muscle-legs" d="M95 295c11-10 24-8 31 7l-5 67-24 20-16-61Zm70 0c-11-10-24-8-31 7l5 67 24 20 16-61ZM90 386c13-8 24 1 27 19l-6 70-21 7-8-51Zm80 0c-13-8-24 1-27 19l6 70 21 7 8-51Z"/>`;
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model" data-garang-classical-model="6" data-garang-body-v2="${side}" data-garang-anatomy-v6="${side}" data-garang-gender="male" viewBox="0 0 720 1100" role="img" aria-label="남성 ${isSide?'측면':'전면'} mesh 기반 근육 지도">
+      <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
+      <g class="g6-interaction-layer" data-garang-interaction-layer="zones" transform="scale(2.76923077 2.11538462)">${zones}</g>
+    </svg>`;
+  }
+
   function bindZones(map){
     map.querySelectorAll('.g3-muscle').forEach(zone=>{
       const key=['chest','back','shoulders','biceps','triceps','core','legs'].find(k=>zone.classList.contains(`muscle-${k}`));if(!key)return;
@@ -226,9 +252,10 @@
       views=[...map.querySelectorAll('.body-view')];
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
-        const side=order[i]||'front',old=view.querySelector('svg');
-        if(old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
-        const tpl=document.createElement('template');tpl.innerHTML=(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender)).trim();
+        const side=order[i]||'front',old=view.querySelector('svg'),useMesh=gender==='male'&&(side==='front'||side==='side');
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender:old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        const markup=useMesh?v6MeshSVG(side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
+        const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;if(old)old.replaceWith(next);else view.appendChild(next);
       });
       let tools=wrap.previousElementSibling?.classList.contains('g3-anatomy-tools')?wrap.previousElementSibling:wrap.querySelector(':scope > .g3-anatomy-tools');
