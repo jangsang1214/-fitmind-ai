@@ -7,6 +7,7 @@ const intelligence=fs.readFileSync(path.join(root,'06_features','ui','runtime','
 const workoutFlow=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-flow-v1.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-execution-v2.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const polish=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-polish-v3.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
 assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
@@ -24,7 +25,8 @@ assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must 
 assert.ok(app.includes("garang:workout-session-clearing"),'session reset must publish before the app rerenders workout rows');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("liveSetDraft=[]")&&runtime.includes("liveSetCount=0"),'execution layer must clear live row state before session reset rerender');
 assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'successful exercise add must publish import status and group execution metadata');
-assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("event.detail?.imported!==true")&&runtime.includes("ensureSession()"),'live timer must start only from a successful manual exercise add');
+assert.ok(runtime.includes('id="startWorkoutSession"')&&runtime.includes("운동 시작")&&runtime.includes("bar.querySelector('#startWorkoutSession')")&&runtime.includes("ensureSession();updateLive()"),'live timer must expose an explicit workout-start control');
+assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("updateLive();persistSessionState()"),'adding an exercise must preserve session state without silently starting the workout clock');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
 assert.ok(runtime.includes("headerScope.querySelectorAll('.workout-set-table-head')")&&runtime.includes("forEach(node=>node.remove())"),'active Log enhancement must collapse duplicate set-table headers to exactly one');
@@ -42,6 +44,8 @@ assert.ok(runtime.includes("summary.exercises>liveDraftCount")&&!runtime.include
 assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.includes("setsInput.dispatchEvent(new Event('input'"),'remount must restore the saved set count before enhancing rows');
 assert.ok(runtime.includes("saved?displayBufferedWeight(saved.weightMetric")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
+assert.ok(app.includes('id="openWorkoutExerciseSearch"')&&app.includes(".garang-exercise-search input")&&app.includes("[data-gws-step=\"exercise\"]"),'Log must expose a magnifier control that routes to the existing exercise search');
+assert.ok(app.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"log\"]')?.click())"),'exercise selection must return directly to Log for fast execution');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(runtime.includes("durationInput.value=liveDuration"),'recent-workout prefill must own duration before live-state recapture');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
@@ -59,6 +63,8 @@ assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile st
 for(const token of ['LIVE SESSION','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
+assert.ok(css.includes('Workout commercial UX v4')&&css.includes('.workout-exercise-search-button')&&css.includes('background:#0c0f0d!important'),'Workout v4 must keep picker and active-set controls on one dark surface system');
+assert.ok(polish.includes('data-garang-classical-model="2"')&&polish.includes("const head=female")&&polish.includes("const torso=female"),'body model v2 must use rebuilt classical head/torso proportions instead of the legacy mannequin frame');
 assert.ok(html.includes('garang-workout-execution-v2.css'),'execution CSS must load');
 assert.ok(html.includes('garang-workout-execution-v2.js'),'execution runtime must load');
 assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-workout-execution-v2.js'),'execution layer must load after the workout library layer');
