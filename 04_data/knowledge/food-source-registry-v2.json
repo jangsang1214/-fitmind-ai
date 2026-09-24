@@ -63,7 +63,7 @@
         "protein": "A009"
       },
       "adapterStatus": "implemented-contract-tested",
-      "liveImportStatus": "adapter-ready; K-FIND bulk form observed; automated full import still requires approved source access/usage submission",
+      "liveImportStatus": "KDDB bulk download verified and corpus built; PFDB processed-food ingestion in progress",
       "bulkDownloadPortal": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do",
       "bulkDownloadRequests": [
         {
@@ -82,7 +82,22 @@
           "popup": "https://various.foodsafetykorea.go.kr/nutrient/export/down/filePop.do",
           "observedAt": "2026-09-24"
         }
-      ]
+      ],
+      "bulkDownloadAccess": "usage registration required; no API key required for official bulk file download",
+      "bulkFileEndpoint": "https://various.foodsafetykorea.go.kr/nutrient/multi/file/download.do?key=<official-file-key>",
+      "supplementalCorpora": {
+        "food": {
+          "path": "04_data/knowledge/food-db-supplemental-korea-v1/manifest.json",
+          "metaPath": "04_data/knowledge/food-db-supplemental-korea-v1/meta.json",
+          "buildScript": "scripts/build-kfind-food-corpus.py",
+          "buildWorkflow": ".github/workflows/build-kfind-food-corpus.yml",
+          "sourceFile": "20260828_음식DB_19617건.xlsx",
+          "sourceSha256": "1ef3551f9a1d0ee87891d6306fa22bbd6a7ffcc90f2c70a4a184dbfe3fce6ea6",
+          "rawRows": 19617,
+          "representativeVerifiedGramRecords": 2502,
+          "policy": "representative per normalized food name; gram-basis and complete core nutrients only; canonical 500 remains primary"
+        }
+      }
     },
     {
       "id": "usda-fdc",
