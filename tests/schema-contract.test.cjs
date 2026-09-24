@@ -60,6 +60,16 @@ test('schema v8 canonical memory importance stays unchanged during v9 migration'
  assert.equal(x.schemaVersion,9);assert.equal(x.memory.entries[0].importance,1);
 });
 
+test('client-only food identity learning survives local/cloud merge without entering canonical transport',()=>{
+ const barcode={gtin:'00012345678905',name:'QA product',confirmedAt:'2026-09-25T00:00:00.000Z'};
+ const local={meta:{updatedAt:'2026-09-25T00:00:00.000Z'},foodIdentity:{barcodes:[barcode],misses:[],corrections:[]},meals:[],memory:{entries:[]}};
+ const remote={meta:{updatedAt:'2026-09-24T00:00:00.000Z'},meals:[],memory:{entries:[]}};
+ const merged=G.mergeStates(local,remote);
+ assert.equal(merged.foodIdentity.barcodes[0].gtin,barcode.gtin);
+ const transport=G.toTransport(merged);
+ assert.equal('foodIdentity' in transport,false,'foodIdentity stays client-local and must not silently expand the server contract');
+});
+
 test('transport output contains canonical top-level keys and excludes local UI containers',()=>{
  const x=G.toTransport({meta:{schemaVersion:5},preferences:{language:'ko'},checkins:[],aiChat:[],onboarding:{goal:'건강'},workouts:[],meals:[],runs:[],body:[],planner:[],memory:{entries:[]}});
  for(const key of G.CONTRACT.topLevel)assert.ok(key in x,key);
