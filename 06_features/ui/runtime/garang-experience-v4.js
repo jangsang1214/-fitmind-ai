@@ -1,4 +1,4 @@
-/* GARANG experience v4.5
+/* GARANG experience v4.6 — luxury simplification owner
    Keeps the existing product policy while making observer reconciliation idempotent.
    One body observer owns subtree changes; identical text/HTML state is never rewritten. */
 (() => {
@@ -8,6 +8,8 @@
   if (!main) return;
   let scheduled = false;
   let mealEntryScrollY = null;
+  const DESIGN_VERSION='garang-design-simplification-v2.0.0';
+  const drawerOpenState=new Map();
 
   const isKo = () => document.documentElement.lang !== 'en';
   const setText=(el,value)=>{const next=String(value??'');if(el&&el.textContent!==next)el.textContent=next;};
@@ -79,6 +81,97 @@
     main.querySelectorAll('.today-body-panel .g3-anatomy-tools').forEach(el => el.remove());
   }
 
+  function ensureLuxuryDrawer(id,label,description,nodes){
+    const usable=(nodes||[]).filter(Boolean);
+    if(!usable.length)return null;
+    let drawer=main.querySelector('#'+id);
+    const newlyCreated=!drawer;
+    if(!drawer){
+      drawer=document.createElement('details');
+      drawer.id=id;
+      drawer.className='garang-luxury-drawer';
+      drawer.dataset.garangDesignDrawer='1';
+      const summary=document.createElement('summary');
+      summary.innerHTML='<span><b></b><small></small></span><i aria-hidden="true">＋</i>';
+      drawer.appendChild(summary);
+      const body=document.createElement('div');
+      body.className='garang-luxury-drawer-body';
+      drawer.appendChild(body);
+      drawer.open=drawerOpenState.get(id)===true;
+      drawer.addEventListener('toggle',()=>drawerOpenState.set(id,drawer.open));
+      const first=usable[0];
+      first.parentElement?.insertBefore(drawer,first);
+    }
+    const summary=drawer.querySelector(':scope>summary');
+    setText(summary?.querySelector('b'),label);
+    setText(summary?.querySelector('small'),description);
+    const body=drawer.querySelector('.garang-luxury-drawer-body');
+    usable.forEach(node=>{if(node&&body&&node.parentElement!==body)body.appendChild(node);});
+    if(newlyCreated&&drawerOpenState.get(id)!==true)drawer.open=false;
+    return drawer;
+  }
+
+  function simplifyWorkout(){
+    if(main.dataset.garangScreen!=='workout')return;
+    main.dataset.garangDesignV2='workout';
+    const builder=main.querySelector('.workout-builder-v2');
+    if(!builder)return;
+    builder.classList.add('garang-workout-luxury-v2');
+    const advanced=builder.querySelector('.workout-advanced-tools');
+    const secondary=builder.querySelector('.workout-secondary-capabilities');
+    const programCard=builder.querySelector('.workout-program-card');
+    const healthCard=builder.querySelector('.workout-health-card');
+    ensureLuxuryDrawer(
+      'garangWorkoutTools',
+      isKo()?'도구 및 옵션':'Tools & options',
+      isKo()?'그룹 · 워밍업 · 플레이트':'Group · warm-up · plates',
+      [advanced]
+    );
+    ensureLuxuryDrawer(
+      'garangWorkoutProgram',
+      isKo()?'프로그램':'Program',
+      isKo()?'현재 세션을 반복 계획으로':'Repeat this session as a plan',
+      [programCard]
+    );
+    ensureLuxuryDrawer(
+      'garangWorkoutHealth',
+      isKo()?'Health · Wearable':'Health · Wearable',
+      isKo()?'연동 · 가져오기 · 내보내기':'Sync · import · export',
+      [healthCard]
+    );
+    if(secondary&&!secondary.children.length)secondary.remove();
+    const evidence=main.querySelector('.photo-evidence-card-workout');
+    ensureLuxuryDrawer(
+      'garangWorkoutEvidence',
+      isKo()?'운동 사진':'Workout evidence',
+      isKo()?'원할 때만 사진을 기록하세요':'Optional photo evidence',
+      [evidence]
+    );
+    main.querySelectorAll('.compact-history').forEach(node=>node.classList.add('garang-history-quiet'));
+  }
+
+  function simplifyProgress(){
+    if(main.dataset.garangScreen!=='progress')return;
+    main.dataset.garangDesignV2='progress';
+    const overview=main.querySelector('#garangAccumulationOverview');
+    if(overview)overview.classList.add('garang-progress-luxury-v2');
+    main.querySelectorAll('.progress-tabs,.grid.grid-4').forEach(node=>node.classList.add('garang-progress-legacy-detail'));
+  }
+
+  function simplifyCoach(){
+    if(main.dataset.garangScreen!=='coach')return;
+    main.dataset.garangDesignV2='coach';
+    const root=main.querySelector('.garang-coach-v2,.coach-app-shell');
+    if(root)root.classList.add('garang-coach-luxury-v2');
+  }
+
+  function applyP5Cleanup(){
+    main.classList.add('garang-p5-clean');
+    const screen=main.dataset.garangScreen||'';
+    if(['workout','progress','coach','today'].includes(screen))main.dataset.garangLowDensity='1';
+    else delete main.dataset.garangLowDensity;
+  }
+
   function internalizeMemorySurface() {
     removeRoute('[data-pagego="memory"], [data-page="memory"]');
     removeRoute('[data-pagego="settings"], [data-page="settings"]');
@@ -104,6 +197,10 @@
     decorateMoreSheet();
     cleanTodayAnatomy();
     keepMealEntryOpen();
+    simplifyWorkout();
+    simplifyProgress();
+    simplifyCoach();
+    applyP5Cleanup();
   }
 
   function schedule() {
@@ -115,12 +212,22 @@
   /* Screen/state lifecycle replaces broad body reconciliation. */
   window.addEventListener('garang:screen-rendered', schedule);
   window.addEventListener('garang:state-updated', schedule);
+  const collapseWorkoutUtilities=()=>{
+    for(const id of ['garangWorkoutTools','garangWorkoutProgram','garangWorkoutHealth','garangWorkoutEvidence']){
+      drawerOpenState.set(id,false);
+      const drawer=main.querySelector('#'+id);
+      if(drawer)drawer.open=false;
+    }
+  };
+  window.addEventListener('garang:workout-exercise-added',()=>{collapseWorkoutUtilities();schedule();});
+  window.addEventListener('garang:workout-session-clearing',()=>{collapseWorkoutUtilities();schedule();});
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', event => {
     if (event.target.closest('#addFood')) mealEntryScrollY = window.scrollY;
     if (event.target.closest('[data-page],[data-pagego],#menuBtn,#settingsTopBtn,#addFood,#saveMeal,#clearMealScan,#confirmMealScan')) {setTimeout(schedule,0);requestAnimationFrame(schedule);}
   }, true);
 
+  window.GarangDesignSimplificationV2=Object.freeze({version:DESIGN_VERSION,sync:schedule});
   schedule();
 })();
 
