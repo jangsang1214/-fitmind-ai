@@ -24,12 +24,17 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
     const url=typeof input==='string'?input:input?.url,method=String(init?.method||input?.method||'GET').toUpperCase();
     if(url===mealEndpoint&&method==='POST'){
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
+     if(request.mode==='label'){
+      window.__GARANG_LABEL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
+      const label={productName:'GARANG 프로틴 바 QA',brand:'GARANG LABS',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.95,nutritionConfidence:.94,uncertain:false,notes:'fixture label'};
+      return new Response(JSON.stringify({ok:true,label,data:{mode:'label',label,source:'vision',provider:'fixture',model:'fixture-vision',requestId:'label-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+     }
      window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
      const items=[
-      {name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,kcal:9999},
-      {name:'GARANG QA 음료 ZX91',aliases:['GARANG QA beverage ZX91'],grams:355,confidence:.91,kcal:7777}
+      {name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,portionConfidence:.88,kcal:9999},
+      {name:'GARANG QA 음료 ZX91',aliases:['GARANG QA beverage ZX91'],grams:355,confidence:.91,portionConfidence:.84,kcal:7777}
      ];
-     return new Response(JSON.stringify({ok:true,items,data:{items,overallConfidence:.91,uncertain:false,notes:'fixture',source:'vision',provider:'fixture',model:'fixture-vision',requestId:'meal-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+     return new Response(JSON.stringify({ok:true,items,data:{mode:'meal',items,overallConfidence:.91,uncertain:false,notes:'fixture',source:'vision',provider:'fixture',model:'fixture-vision',requestId:'meal-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
     if(url===lookupEndpoint&&method==='POST'){
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
@@ -73,8 +78,30 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.equal(chicken.foodId,'F0486','Vision identity must resolve to canonical GARANG Food DB record');assert.equal(chicken.nutritionStatus,'verified');assert.ok(chicken.kcal>120&&chicken.kcal<140);
   assert.equal(webFallback.foodId,null);assert.equal(webFallback.nutritionStatus,'estimated');assert.equal(webFallback.nutritionSource.source,'web_search');assert.match(webFallback.nutritionSource.url,/official-qa-beverage/);assert.equal(webFallback.scanEvidence.source,'vision+web');
   assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
-  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
+
+  await route(page,'nutrition');
+  assert.equal(await page.locator('#pickLabelScan').count(),1,'Nutrition must expose a dedicated Label Scan entry');
+  const labelChooserPromise=page.waitForEvent('filechooser');await page.locator('#pickLabelScan').click();const labelChooser=await labelChooserPromise;
+  await labelChooser.setFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
+  await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
+  await page.locator('#analyzeMealScan').click();
+  await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('GARANG LABS'),null,{timeout:7000});
+  const labelRequest=await page.evaluate(()=>window.__GARANG_LABEL_SCAN_BROWSER_REQUEST__);
+  assert.equal(labelRequest.authorization,'Bearer mock-id-token-mock-user','Label Scan must use authenticated transport');
+  assert.equal(labelRequest.request.mode,'label','Label Scan must explicitly select the label vision contract');
+  const labelText=await page.locator('.meal-scan-results').innerText();
+  assert.match(labelText,/GARANG LABS/);assert.match(labelText,/210 kcal/);assert.match(labelText,/LABEL SCAN/);assert.match(labelText,/확인 필요/);
+  await page.locator('#confirmMealScan').click();
+  await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
+  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('GARANG LABS'));
+  await page.locator('#saveMeal').click();await page.waitForTimeout(1200);
+  const afterLabel=await page.evaluate(()=>window.GarangAgentStateBridge.getState());
+  assert.equal(afterLabel.meals.length,2,'Label Scan confirmation must save through the canonical meal path');
+  const labelItem=afterLabel.meals[1].items[0];
+  assert.equal(labelItem.foodId,null);assert.equal(labelItem.nutritionStatus,'approximate');assert.equal(labelItem.nutritionSource.source,'nutrition_label_scan');assert.equal(labelItem.scanEvidence.source,'label+vision');assert.equal(labelItem.scanEvidence.confirmationRequired,true);
+  assert.equal(Math.round(labelItem.kcal),210);assert.equal(Math.round(labelItem.protein),20);
+  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal/Label Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
   assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-real-meal-scan WebKit mobile + web fallback: PASS');
+  await context.close();console.log('browser-real-meal-scan WebKit mobile + web fallback + label scan: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
