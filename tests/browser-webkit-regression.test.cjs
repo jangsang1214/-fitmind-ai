@@ -252,7 +252,10 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#saveWorkoutSession').isHidden(),true,'canonical save owner must stay hidden behind the visible finish control');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');
     assert.deepEqual(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head > span').allTextContents(),['SET','PREVIOUS','TARGET','TYPE','KG','REPS','RPE','RIR','DEL','✓'],'hidden mobile header must preserve the full commercial execution hierarchy contract');
-    assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
+    assert.equal(await page.locator('#garangWorkoutEntryDetails').getAttribute('open'),null,'secondary workout-entry fields must stay collapsed by default');
+    assert.equal(await page.locator('#wDuration').isVisible(),false,'duration must not compete with the essential workout inputs by default');
+    await tap(page,'#garangWorkoutEntryDetails > summary');
+    assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain one tap away and editable');
     await tap(page,'[data-gws-reuse-latest]');
     await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50'&&document.querySelector('#workoutSetDetails [data-set-reps]')?.value==='6',{timeout:3000});
     assert.equal(await page.locator('#wDuration').inputValue(),'30','recent workout reuse must preserve duration');
