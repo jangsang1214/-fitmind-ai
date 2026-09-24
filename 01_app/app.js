@@ -678,8 +678,10 @@ function supplementalKey(value){let s=String(value||'');try{s=s.normalize('NFKC'
 function buildSupplementalIndex(rows=[]){
  const exact=new Map(),prefix=new Map();
  for(const row of rows){
-  const keys=[row?.name,row?.name_en,row?.product_name,row?.brand,...(Array.isArray(row?.aliases)?row.aliases:[])].map(supplementalKey).filter(Boolean);
-  for(const key of keys){if(!exact.has(key))exact.set(key,row);const p=key.slice(0,4);if(p){const bucket=prefix.get(p)||[];if(bucket.length<120)bucket.push(row);prefix.set(p,bucket);}}
+  const exactKeys=[row?.name,row?.name_en,row?.product_name,...(Array.isArray(row?.aliases)?row.aliases:[])].map(supplementalKey).filter(Boolean);
+  const prefixKeys=[...exactKeys,supplementalKey(row?.brand)].filter(Boolean);
+  for(const key of exactKeys)if(!exact.has(key))exact.set(key,row);
+  for(const key of prefixKeys){const p=key.slice(0,4);if(!p)continue;const bucket=prefix.get(p)||[];if(bucket.length<160&&!bucket.includes(row))bucket.push(row);prefix.set(p,bucket);}
  }
  return {exact,prefix};
 }
