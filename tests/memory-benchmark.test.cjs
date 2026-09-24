@@ -18,6 +18,9 @@ let retrievalHits=0;
 for(const [query,expected] of retrievalCases){const top=Memory.selectMemory(corpus,{query,now,limit:1})[0];if(top?.id===expected)retrievalHits++;else console.error('BENCH retrieval miss',{query,expected,actual:top?.id});}
 const precisionAt1=retrievalHits/retrievalCases.length;
 
+const vectorCorpus=[{value:'high protein recovery meal'},{value:'running pace interval speed'}],vectorScores=Memory.sparseVectorScores(vectorCorpus,'단백질 회복 식단',x=>x.value);
+assert.ok(vectorScores[0]>vectorScores[1],'sparse vector retrieval must prefer semantically aligned memory');
+
 const conflictCases=[
  [[{id:'a',type:'goal',key:'g',value:'cut',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'goal',key:'g',value:'gain',userConfirmed:true,observedAt:'2026-09-01T00:00:00Z'}],'b'],
  [[{id:'a',type:'preference',key:'time',value:'morning',userConfirmed:true,observedAt:'2026-08-01T00:00:00Z'},{id:'b',type:'preference',key:'time',value:'evening',userConfirmed:false,observedAt:'2026-09-01T00:00:00Z'}],'a'],
