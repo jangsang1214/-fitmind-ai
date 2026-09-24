@@ -185,10 +185,14 @@
     const manual=main.querySelector('details.manual-entry');
     if(manual){
       manual.classList.add('garang-manual-entry-quiet');
-      if(!manual.dataset.garangUserOpened){
-        manual.open=false;
-        manual.addEventListener('toggle',()=>{if(manual.open)manual.dataset.garangUserOpened='1';},{once:true});
+      if(!manual.dataset.garangQuietBound){
+        manual.dataset.garangQuietBound='1';
+        manual.addEventListener('toggle',event=>{if(event.isTrusted&&manual.open)manual.dataset.garangUserOpened='1';});
       }
+      const save=manual.querySelector('#saveMeal');
+      const hasDraft=!!(save&&!save.disabled);
+      if(hasDraft)manual.open=true;
+      else if(!manual.dataset.garangUserOpened)manual.open=false;
     }
   }
 
