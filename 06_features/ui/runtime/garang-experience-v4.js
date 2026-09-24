@@ -8,7 +8,7 @@
   if (!main) return;
   let scheduled = false;
   let mealEntryScrollY = null;
-  const DESIGN_VERSION='garang-design-simplification-v2.0.0';
+  const DESIGN_VERSION='garang-design-simplification-v3.0.0';
   const drawerOpenState=new Map();
 
   const isKo = () => document.documentElement.lang !== 'en';
@@ -121,6 +121,26 @@
     const secondary=builder.querySelector('.workout-secondary-capabilities');
     const programCard=builder.querySelector('.workout-program-card');
     const healthCard=builder.querySelector('.workout-health-card');
+    const fields=builder.querySelector('.workout-fields');
+    const rpeField=builder.querySelector('#wRpe')?.closest('.field');
+    const detailFields=[...builder.querySelectorAll('.workout-fields .compact-secondary')];
+    const setDetailToolbar=builder.querySelector('.set-detail-toolbar');
+    const entryDetails=[rpeField,...detailFields,setDetailToolbar].filter((node,index,list)=>node&&list.indexOf(node)===index);
+    ensureLuxuryDrawer(
+      'garangWorkoutEntryDetails',
+      isKo()?'세부 기록':'Details',
+      isKo()?'RPE · RIR · 메모 · 시간':'RPE · RIR · notes · duration',
+      entryDetails
+    );
+    if(fields){
+      fields.classList.add('garang-essential-workout-fields');
+      if(!builder.querySelector('.garang-workout-primary-hint')){
+        const hint=document.createElement('p');
+        hint.className='garang-workout-primary-hint';
+        hint.textContent=isKo()?'운동을 고르고 중량·반복만 기록해도 충분합니다.':'Choose an exercise. Weight and reps are enough to start.';
+        fields.insertAdjacentElement('beforebegin',hint);
+      }
+    }
     ensureLuxuryDrawer(
       'garangWorkoutTools',
       isKo()?'도구 및 옵션':'Tools & options',
@@ -155,7 +175,14 @@
     main.dataset.garangDesignV2='progress';
     const overview=main.querySelector('#garangAccumulationOverview');
     if(overview)overview.classList.add('garang-progress-luxury-v2');
-    main.querySelectorAll('.progress-tabs,.grid.grid-4').forEach(node=>node.classList.add('garang-progress-legacy-detail'));
+    const legacy=[...main.querySelectorAll('.progress-tabs,.grid.grid-4')];
+    legacy.forEach(node=>node.classList.add('garang-progress-legacy-detail'));
+    ensureLuxuryDrawer(
+      'garangProgressDetails',
+      isKo()?'세부 지표':'Detailed metrics',
+      isKo()?'필요할 때만 추세와 수치를 확인하세요':'Open trends and metrics only when needed',
+      legacy
+    );
   }
 
   function simplifyCoach(){
@@ -213,7 +240,7 @@
   window.addEventListener('garang:screen-rendered', schedule);
   window.addEventListener('garang:state-updated', schedule);
   const collapseWorkoutUtilities=()=>{
-    for(const id of ['garangWorkoutTools','garangWorkoutProgram','garangWorkoutHealth','garangWorkoutEvidence']){
+    for(const id of ['garangWorkoutEntryDetails','garangWorkoutTools','garangWorkoutProgram','garangWorkoutHealth','garangWorkoutEvidence']){
       drawerOpenState.set(id,false);
       const drawer=main.querySelector('#'+id);
       if(drawer)drawer.open=false;
