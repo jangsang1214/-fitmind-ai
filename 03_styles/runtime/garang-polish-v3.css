@@ -398,11 +398,12 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
   pointer-events:none;
 }
 .g3-classical-model[data-garang-classical-model="6"] .g6-interaction-layer .g3-muscle{
-  fill:#f0ede6!important;
-  stroke:#d9d4ca!important;
+  fill:transparent!important;
+  stroke:transparent!important;
   stroke-width:.45!important;
   vector-effect:non-scaling-stroke;
-  opacity:.035!important;
+  opacity:0!important;
+  pointer-events:all;
   cursor:pointer;
   transition:opacity .16s ease,fill .16s ease,stroke .16s ease,filter .16s ease;
 }
@@ -420,13 +421,13 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="6"] .muscle-legs{
   fill:#b3816b!important;
   stroke:#d8aa95!important;
-  opacity:.50!important;
+  opacity:.42!important;
   filter:none!important;
 }
 .muscle-map[data-muscle="full"] .g3-classical-model[data-garang-classical-model="6"] .g6-interaction-layer .g3-muscle{
   fill:#7f968d!important;
   stroke:#a9bbb4!important;
-  opacity:.16!important;
+  opacity:.10!important;
   filter:none!important;
 }
 .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="6"]{
@@ -439,4 +440,41 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
     max-width:286px!important;
     height:490px!important;
   }
+}
+
+
+/* GARANG Body v7 — muscular mesh, anatomy definition, invisible hit zones until selected */
+.g3-classical-model[data-garang-visual-revision="7"] .g7-definition-layer{
+  pointer-events:none;
+}
+.g3-classical-model[data-garang-visual-revision="7"] .g7-definition{
+  fill:none;
+  stroke:#756e62;
+  stroke-width:1.15;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+  opacity:.34;
+}
+.g3-classical-model[data-garang-visual-revision="7"] .g7-definition.strong{
+  stroke:#655f55;
+  stroke-width:1.45;
+  opacity:.46;
+}
+.g3-classical-model[data-garang-visual-revision="7"] .g7-definition.soft{
+  stroke:#847c6f;
+  stroke-width:.85;
+  opacity:.24;
+}
+.g3-classical-model[data-garang-visual-revision="7"] .g6-visual-layer{
+  opacity:.985;
+}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7"] .muscle-legs{
+  opacity:.42!important;
 }
