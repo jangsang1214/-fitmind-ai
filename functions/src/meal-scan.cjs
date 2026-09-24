@@ -153,4 +153,4 @@ function createMealScanHandler(deps={}){
   }
  };
 }
-module.exports={DEFAULT_MODEL,MAX_IMAGE_DATA_URL,IMAGE_TYPES,MEAL_SCAN_SCHEMA,LABEL_SCAN_SCHEMA,parseMealImage,validateMealScan,validateLabelScan,systemPrompt,createMealScanProvider,createMealScanHandler};
+module.exports={DEFAULT_MODEL,MAX_IMAGE_DATA_URL,IMAGE_TYPES,MEAL_SCAN_SCHEMA,LABEL_SCAN_SCHEMA,BARCODE_SCAN_SCHEMA,barcodeDigits,validGtin,normalizeGtin,normalizeReportNo,parseMealImage,validateMealScan,validateLabelScan,validateBarcodeScan,systemPrompt,createMealScanProvider,createMealScanHandler};
