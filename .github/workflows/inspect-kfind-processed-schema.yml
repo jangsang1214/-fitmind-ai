@@ -1,0 +1,90 @@
+name: Inspect K-FIND Processed Schema
+
+on:
+  push:
+    branches:
+      - ai/korean-food-source-acquisition-v2-20260924
+    paths:
+      - .github/workflows/inspect-kfind-processed-schema.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Download latest K-FIND processed-food workbook
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://various.foodsafetykorea.go.kr'
+          POP="$BASE/nutrient/export/down/filePop.do?pagenum=1&totalListCnt=17&pageblock=10&pagesize=10&searchDbSeq=1787898734821&searchDbGubun=01&searchOpenApi=Y"
+          JAR="$RUNNER_TEMP/kfind.cookies"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" "$POP" -o "$RUNNER_TEMP/popup.html"
+          python - <<'PY' > "$RUNNER_TEMP/kfind.env"
+          import re,os
+          from pathlib import Path
+          text=Path(os.environ['RUNNER_TEMP']+'/popup.html').read_text(errors='ignore')
+          token=re.search(r'name="pageToken"[^>]*value="([^"]+)"',text); key=re.search(r'vmFileKey\s*:\s*"([^"]+)"',text)
+          if not token or not key: raise SystemExit('K-FIND processed popup token/file key not found')
+          print('PAGE_TOKEN='+token.group(1)); print('FILE_KEY='+key.group(1))
+          PY
+          source "$RUNNER_TEMP/kfind.env"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" \
+            --data-urlencode "pageToken=$PAGE_TOKEN" --data-urlencode 'dbGubun=01' --data-urlencode 'sosok=GARANG' --data-urlencode 'depart=AI/Data' --data-urlencode 'agencyType=01' --data-urlencode 'usePurpose=02' --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' \
+            "$BASE/nutrient/export/down/cudAction.do" -o "$RUNNER_TEMP/register.html"
+          KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" -D "$RUNNER_TEMP/headers" "$BASE/nutrient/multi/file/download.do?key=$KEY" -o "$RUNNER_TEMP/processed.xlsx"
+          test "$(stat -c%s "$RUNNER_TEMP/processed.xlsx")" -gt 100000000
+
+      - name: Extract processed-food workbook header and samples
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,zipfile,xml.etree.ElementTree as ET,re
+          from pathlib import Path
+          p=Path(os.environ['RUNNER_TEMP'])/'processed.xlsx'; ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main','r':'http://schemas.openxmlformats.org/officeDocument/2006/relationships'}
+          def col_index(ref):
+              letters=re.match(r'([A-Z]+)',ref).group(1); n=0
+              for ch in letters:n=n*26+ord(ch)-64
+              return n-1
+          with zipfile.ZipFile(p) as z:
+              shared=[]
+              if 'xl/sharedStrings.xml' in z.namelist():
+                  root=ET.fromstring(z.read('xl/sharedStrings.xml')); shared=[''.join(t.text or '' for t in si.findall('.//m:t',ns)) for si in root.findall('m:si',ns)]
+              wb=ET.fromstring(z.read('xl/workbook.xml')); sheet_names=[s.attrib.get('name') for s in wb.findall('.//m:sheets/m:sheet',ns)]
+              rows=[]
+              with z.open('xl/worksheets/sheet1.xml') as fh:
+                  for event,row in ET.iterparse(fh,events=('end',)):
+                      if not row.tag.endswith('}row'): continue
+                      vals={}
+                      for cell in list(row):
+                          if not cell.tag.endswith('}c'): continue
+                          idx=col_index(cell.attrib.get('r','A1')); typ=cell.attrib.get('t'); v=cell.find('m:v',ns); inline=cell.find('m:is',ns)
+                          if inline is not None: val=''.join(t.text or '' for t in inline.findall('.//m:t',ns))
+                          elif v is None: val=''
+                          elif typ=='s': val=shared[int(v.text)] if int(v.text)<len(shared) else ''
+                          else: val=v.text or ''
+                          vals[idx]=val
+                      width=max(vals.keys(),default=-1)+1; rows.append([vals.get(i,'') for i in range(width)]); row.clear()
+                      if len(rows)>=6: break
+          report={'observedAt':'2026-09-24','source':'K-FIND 가공식품 DB','bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'sheets':sheet_names,'rows':rows}
+          Path('04_data/knowledge/kfind-processed-schema-v1.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({'bytes':report['bytes'],'sheets':sheet_names,'header':rows[0] if rows else [],'sample':rows[1] if len(rows)>1 else []},ensure_ascii=False,indent=2)[:30000])
+          PY
+      - name: Commit processed schema evidence
+        shell: bash
+        run: |
+          git config user.name 'GARANG K-FIND Ingestion'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 04_data/knowledge/kfind-processed-schema-v1.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Record K-FIND processed-food workbook schema [skip kfind-probe]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
