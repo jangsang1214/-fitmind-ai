@@ -208,24 +208,33 @@
 
   // Body Model v6 mesh layer — visual geometry is separated from interaction/highlight zones.
   // Current mesh coverage is male FRONT/SIDE; unsupported views intentionally fall back to v5.
-  function v6MeshSVG(side='front'){
-    const isSide=side==='side';
-    const asset=isSide?'./05_assets/body-model-v6/male-side.svg?v=6.0.0-mesh-layer':'./05_assets/body-model-v6/male-front.svg?v=6.0.0-mesh-layer';
-    const zones=isSide
-      ? `<path class="g3-muscle muscle-shoulders" d="M128 104c17 1 29 11 33 27-8 13-20 18-34 11l-11-22Z"/>
-        <path class="g3-muscle muscle-chest" d="M130 132c17 5 26 19 28 39l-4 28-27-7-10-35Z"/>
-        <path class="g3-muscle muscle-back" d="M104 118c12 3 21 15 25 34l-8 61-22 42-15-52 3-50Z"/>
-        <path class="g3-muscle muscle-biceps" d="M149 151c10 3 15 14 14 30l-4 35-12-2-10-37Z"/>
-        <path class="g3-muscle muscle-triceps" d="M139 145c10 1 16 10 16 25l-8 49-14-20-7-34Z"/>
-        <path class="g3-muscle muscle-core" d="M119 191c17 2 29 12 35 29l-6 50-17 40-31-10 7-42-9-40Z"/>
-        <path class="g3-muscle muscle-legs" d="M126 316c16 10 23 30 21 56l-9 46-18-5-9-42 4-38Zm-17 91c12 1 20 11 21 29l-6 68-20 2-5-46 6-43Zm34 15c12 5 17 17 15 33l-8 49-19-2 1-44 5-32Z"/>`
-      : `<path class="g3-muscle muscle-shoulders" d="M70 109c16-12 33-13 50-4l-10 35c-18 7-34 0-44-14Zm120 0c-16-12-33-13-50-4l10 35c18 7 34 0 44-14Z"/>
-        <path class="g3-muscle muscle-chest" d="M86 125c14-10 29-13 44-8v42c-20 6-37 1-50-14Zm88 0c-14-10-29-13-44-8v42c20 6 37 1 50-14Z"/>
-        <path class="g3-muscle muscle-biceps" d="M67 145c11 0 17 11 16 28l-7 39c-4 13-11 19-18 10l3-40Zm126 0c-11 0-17 11-16 28l7 39c4 13 11 19 18 10l-3-40Z"/>
-        <path class="g3-muscle muscle-triceps" d="M56 154c8 5 11 17 9 32l-7 42-10 15 5-56Zm148 0c-8 5-11 17-9 32l7 42 10 15-5-56Z"/>
-        <path class="g3-muscle muscle-core" d="M108 166c7 4 14 6 22 6s15-2 22-6l8 40-6 60-24 25-24-25-6-60Zm-10 22c7 11 9 28 7 50l-5 28-14-22 4-40Zm64 0c-7 11-9 28-7 50l5 28 14-22-4-40Z"/>
-        <path class="g3-muscle muscle-legs" d="M95 295c11-10 24-8 31 7l-5 67-24 20-16-61Zm70 0c-11-10-24-8-31 7l5 67 24 20 16-61ZM90 386c13-8 24 1 27 19l-6 70-21 7-8-51Zm80 0c-13-8-24 1-27 19l6 70 21 7 8-51Z"/>`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model" data-garang-classical-model="6" data-garang-body-v2="${side}" data-garang-anatomy-v6="${side}" data-garang-gender="male" viewBox="0 0 720 1100" role="img" aria-label="남성 ${isSide?'측면':'전면'} mesh 기반 근육 지도">
+  function v6ZoneMarkup(side='front',gender='male'){
+    const female=gender==='female';
+    if(side==='side')return `<path class="g3-muscle muscle-shoulders" d="M128 104c17 1 29 11 33 27-8 13-20 18-34 11l-11-22Z"/>
+      <path class="g3-muscle muscle-chest" d="M130 132c17 5 26 19 28 39l-4 28-27-7-10-35Z"/>
+      <path class="g3-muscle muscle-back" d="M104 118c12 3 21 15 25 34l-8 61-22 42-15-52 3-50Z"/>
+      <path class="g3-muscle muscle-biceps" d="M149 151c10 3 15 14 14 30l-4 35-12-2-10-37Z"/>
+      <path class="g3-muscle muscle-triceps" d="M139 145c10 1 16 10 16 25l-8 49-14-20-7-34Z"/>
+      <path class="g3-muscle muscle-core" d="M119 191c17 2 29 12 35 29l-6 50-17 40-31-10 7-42-9-40Z"/>
+      <path class="g3-muscle muscle-legs" d="M126 316c16 10 23 30 21 56l-9 46-18-5-9-42 4-38Zm-17 91c12 1 20 11 21 29l-6 68-20 2-5-46 6-43Zm34 15c12 5 17 17 15 33l-8 49-19-2 1-44 5-32Z"/>`;
+    if(side==='back')return `<path class="g3-muscle muscle-shoulders" d="${female?'M78 111c13-11 27-12 42-5l-8 33c-16 6-30 0-39-12Zm104 0c-13-11-27-12-42-5l8 33c16 6 30 0 39-12Z':'M70 109c16-12 33-13 50-4l-9 36c-19 6-35-1-45-15Zm120 0c-16-12-33-13-50-4l9 36c19 6 35-1 45-15Z'}"/>
+      <path class="g3-muscle muscle-back" d="M109 96c7-7 14-11 21-11s14 4 21 11l14 34-16 28-19-14-19 14-16-28Zm-18 34c14-9 26-5 39 14-10 19-18 43-22 72l-30-36 6-34Zm78 0c-14-9-26-5-39 14 10 19 18 43 22 72l30-36-6-34Z"/>
+      <path class="g3-muscle muscle-triceps" d="M67 144c11 0 17 11 16 29l-8 42c-5 14-12 19-18 10l4-41Zm126 0c-11 0-17 11-16 29l8 42c5 14 12 19 18 10l-4-41Z"/>
+      <path class="g3-muscle muscle-core" d="M107 210h46l8 46-31 33-31-33Z"/>
+      <path class="g3-muscle muscle-legs" d="M95 291c15-9 27-2 35 18-8 19-21 32-39 38l-17-28Zm70 0c-15-9-27-2-35 18 8 19 21 32 39 38l17-28ZM94 343c14-7 27 3 34 24l-7 42-24 12-17-48Zm72 0c-14-7-27 3-34 24l7 42 24 12 17-48ZM90 410c13-8 24 2 27 20l-6 50-21 6-8-40Zm80 0c-13-8-24 2-27 20l6 50 21 6 8-40Z"/>`;
+    return `<path class="g3-muscle muscle-shoulders" d="${female?'M78 111c13-11 27-12 42-5l-9 32c-15 7-29 1-38-11Zm104 0c-13-11-27-12-42-5l9 32c15 7 29 1 38-11Z':'M70 109c16-12 33-13 50-4l-10 35c-18 7-34 0-44-14Zm120 0c-16-12-33-13-50-4l10 35c18 7 34 0 44-14Z'}"/>
+      <path class="g3-muscle muscle-chest" d="${female?'M92 126c12-9 25-12 38-8v40c-17 5-32 1-44-13Zm76 0c-12-9-25-12-38-8v40c17 5 32 1 44-13Z':'M86 125c14-10 29-13 44-8v42c-20 6-37 1-50-14Zm88 0c-14-10-29-13-44-8v42c20 6 37 1 50-14Z'}"/>
+      <path class="g3-muscle muscle-biceps" d="M67 145c11 0 17 11 16 28l-7 39c-4 13-11 19-18 10l3-40Zm126 0c-11 0-17 11-16 28l7 39c4 13 11 19 18 10l-3-40Z"/>
+      <path class="g3-muscle muscle-triceps" d="M56 154c8 5 11 17 9 32l-7 42-10 15 5-56Zm148 0c-8 5-11 17-9 32l7 42 10 15-5-56Z"/>
+      <path class="g3-muscle muscle-core" d="M108 166c7 4 14 6 22 6s15-2 22-6l8 40-6 60-24 25-24-25-6-60Zm-10 22c7 11 9 28 7 50l-5 28-14-22 4-40Zm64 0c-7 11-9 28-7 50l5 28 14-22-4-40Z"/>
+      <path class="g3-muscle muscle-legs" d="M95 295c11-10 24-8 31 7l-5 67-24 20-16-61Zm70 0c-11-10-24-8-31 7l5 67 24 20 16-61ZM90 386c13-8 24 1 27 19l-6 70-21 7-8-51Zm80 0c-13-8-24 1-27 19l6 70 21 7 8-51Z"/>`;
+  }
+
+  function v6MeshSVG(gender='male',side='front'){
+    const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=6.1.0-complete-mesh`,zones=v6ZoneMarkup(view,person);
+    const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면';
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model" data-garang-classical-model="6" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g6-interaction-layer" data-garang-interaction-layer="zones" transform="scale(2.76923077 2.11538462)">${zones}</g>
     </svg>`;
@@ -252,9 +261,9 @@
       views=[...map.querySelectorAll('.body-view')];
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
-        const side=order[i]||'front',old=view.querySelector('svg'),useMesh=gender==='male'&&(side==='front'||side==='side');
+        const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
         if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender:old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
-        const markup=useMesh?v6MeshSVG(side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
+        const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;if(old)old.replaceWith(next);else view.appendChild(next);
       });
