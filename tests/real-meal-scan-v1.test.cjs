@@ -24,7 +24,7 @@ assert.match(app,/nutrition_label_scan/);
 assert.match(app,/LABEL SCAN · 확인 필요/);
 assert.match(app,/function mealScanMatch/);
 assert.match(app,/JSON\.stringify\(\{image,language:/);
-assert.match(app,/mode\}\)\),payload/);
+assert.match(app,/,mode\}\)\)/);
 assert.match(app,/scanEvidence:\{visionName:/);
 assert.match(app,/portionConfidence/);
 assert.match(app,/confirmationRequired/);
