@@ -179,3 +179,22 @@
   }
 }
 
+/* Independent utility rows: no nested secondary ancestor may suppress Program or Health. */
+#main[data-garang-screen="workout"] #garangWorkoutProgram[open] .workout-program-card,
+#main[data-garang-screen="workout"] #garangWorkoutHealth[open] .workout-health-card{
+  display:block!important;visibility:visible!important;opacity:1!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(72px,.45fr) minmax(72px,.45fr)!important;gap:10px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields .field{
+  display:grid!important;visibility:visible!important;opacity:1!important;min-width:0!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields input{
+  display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;min-height:42px!important;
+}
+@media(max-width:520px){
+  #main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields{grid-template-columns:1fr 1fr!important}
+  #main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields .field.full{grid-column:1/-1!important}
+}
+
