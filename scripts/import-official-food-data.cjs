@@ -19,10 +19,11 @@ async function fetchUsda(query,key,pageSize=25){
 }
 async function fetchDataGoKr(key,{pageSize=1000,maxPages=1000}={}){
   if(!key)throw Object.assign(new Error('DATA_GO_KR_SERVICE_KEY_REQUIRED'),{code:'DATA_GO_KR_SERVICE_KEY_REQUIRED'});
+  let serviceKey=String(key).trim();try{if(/%[0-9A-Fa-f]{2}/.test(serviceKey))serviceKey=decodeURIComponent(serviceKey);}catch{}
   const rows=[];let pageNo=1,totalCount=null;
   while(pageNo<=Number(maxPages||1000)){
     const url=new URL(DATA_GO_KR_FOOD_ENDPOINT);
-    url.searchParams.set('serviceKey',key);url.searchParams.set('pageNo',String(pageNo));url.searchParams.set('numOfRows',String(Number(pageSize)||1000));url.searchParams.set('type','json');
+    url.searchParams.set('serviceKey',serviceKey);url.searchParams.set('pageNo',String(pageNo));url.searchParams.set('numOfRows',String(Number(pageSize)||1000));url.searchParams.set('type','json');
     const response=await fetch(url);if(!response.ok)throw Object.assign(new Error(`DATA_GO_KR_HTTP_${response.status}`),{code:`DATA_GO_KR_HTTP_${response.status}`});
     const payload=await response.json(),pageRows=Adapters.unwrapRows(payload,'data-go-kr-standard');
     const header=payload?.response?.header;if(header&&String(header.resultCode??'00')!=='00')throw Object.assign(new Error(`DATA_GO_KR_${header.resultCode||'ERROR'}`),{code:`DATA_GO_KR_${header.resultCode||'ERROR'}`});
