@@ -209,3 +209,57 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
     height:388px!important;max-width:218px!important;
   }
 }
+
+
+/* GARANG Real Human Anatomy v3 — connected silhouette and natural proportions */
+.g3-classical-model[data-garang-classical-model="3"]{
+  filter:drop-shadow(0 22px 30px rgba(0,0,0,.26))!important;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-base,
+.g3-classical-model[data-garang-classical-model="3"] .g3-limb{
+  stroke:rgba(226,216,199,.26)!important;
+  stroke-width:.38!important;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-human-trunk{
+  stroke-width:.44!important;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-head,
+.g3-classical-model[data-garang-classical-model="3"] .g3-neck,
+.g3-classical-model[data-garang-classical-model="3"] .g3-foot{
+  stroke-width:.34!important;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-anatomy-line{
+  fill:none;stroke:rgba(41,42,38,.54);stroke-width:.48;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.68;pointer-events:none;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-face-line{
+  stroke:rgba(54,53,48,.42);stroke-width:.38;opacity:.54;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-fine{
+  stroke:rgba(242,236,225,.30)!important;stroke-width:.30!important;opacity:.30!important;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-muscle{
+  opacity:.25!important;stroke-width:.34!important;
+  mix-blend-mode:normal;
+}
+.g3-classical-model[data-garang-classical-model="3"] .g3-highlight{
+  opacity:.24!important;stroke-width:.30!important;
+}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-classical-model="3"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-classical-model="3"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-classical-model="3"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-classical-model="3"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-classical-model="3"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-classical-model="3"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="3"] .muscle-legs{
+  opacity:.72!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-real-human{
+  max-width:208px!important;height:414px!important;
+}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-real-human{
+    height:400px!important;max-width:206px!important;
+  }
+}
