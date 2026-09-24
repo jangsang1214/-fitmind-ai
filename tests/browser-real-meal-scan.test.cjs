@@ -19,14 +19,14 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await installAuthenticatedFirebaseMock(context);
   await context.addInitScript(({mealEndpoint,lookupEndpoint})=>{
-   const nativeFetch=window.fetch.bind(window);
+   const nativeFetch=window.fetch.bind(window);window.__GARANG_NUTRITION_LOOKUP_COUNT__=0;
    window.fetch=async(input,init={})=>{
     const url=typeof input==='string'?input:input?.url,method=String(init?.method||input?.method||'GET').toUpperCase();
     if(url===mealEndpoint&&method==='POST'){
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
      if(request.mode==='label'){
       window.__GARANG_LABEL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
-      const label={productName:'GARANG 프로틴 바 QA',brand:'GARANG LABS',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.95,nutritionConfidence:.94,uncertain:false,notes:'fixture label'};
+      const label={productName:'GARANG 프로틴 바 QA',brand:'GARANG LABS',barcode:'036000291452',reportNo:'2024041736623',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.95,nutritionConfidence:.94,uncertain:false,notes:'fixture label'};
       return new Response(JSON.stringify({ok:true,label,data:{mode:'label',label,source:'vision',provider:'fixture',model:'fixture-vision',requestId:'label-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
      }
      window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
@@ -38,7 +38,15 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
     }
     if(url===lookupEndpoint&&method==='POST'){
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
+     window.__GARANG_NUTRITION_LOOKUP_COUNT__=(window.__GARANG_NUTRITION_LOOKUP_COUNT__||0)+1;
      window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
+     const barcode=request?.items?.[0]?.barcode;
+     if(barcode){
+      return new Response(JSON.stringify({ok:true,items:[{
+       inputIndex:0,name:'GARANG GTIN 프로틴 드링크',grams:100,kcal:120,protein:24,carbs:4,fat:1,nutritionStatus:'estimated',barcode,
+       nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official GTIN product nutrition',url:'https://example.com/official-gtin-product',basis:'100g exact GTIN product',matchRule:'barcode_source_backed'}
+      }],unresolved:[],data:{source:'web_search',provider:'fixture',model:'fixture-search',requestId:'lookup-barcode-1',citationCount:1}}),{status:200,headers:{'Content-Type':'application/json'}});
+     }
      return new Response(JSON.stringify({ok:true,items:[{
       inputIndex:0,name:'GARANG QA 음료 ZX91',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated',
       nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official QA beverage nutrition',url:'https://example.com/official-qa-beverage',basis:'355g serving'}
@@ -80,6 +88,31 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
 
   await route(page,'nutrition');
+  assert.equal(await page.locator('#barcodeInput').count(),1,'Nutrition must expose barcode/GTIN identity capture');
+  await page.locator('#barcodeInput').fill('012345678905');
+  const lookupBeforeBarcode=await page.evaluate(()=>window.__GARANG_NUTRITION_LOOKUP_COUNT__||0);
+  await page.locator('#lookupBarcode').click();
+  await page.waitForFunction(()=>document.querySelector('.barcode-identity-card')?.innerText.includes('GARANG GTIN 프로틴 드링크'),null,{timeout:7000});
+  const barcodeCandidateText=await page.locator('.barcode-identity-card').innerText();
+  assert.match(barcodeCandidateText,/확인 필요/);assert.match(barcodeCandidateText,/WEB ESTIMATE/);
+  const barcodeLookupRequest=await page.evaluate(()=>window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__);
+  assert.equal(barcodeLookupRequest.request.items[0].barcode,'00012345678905','Barcode lookup must send canonical GTIN-14');
+  await page.locator('#confirmBarcode').click();
+  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('GARANG GTIN 프로틴 드링크'));
+  const learned=await page.evaluate(()=>window.GarangAgentStateBridge.getState().foodIdentity);
+  assert.equal(learned.barcodes.length,1,'Confirmed barcode candidate must create one bounded user mapping');
+  assert.equal(learned.barcodes[0].gtin,'00012345678905');
+  const lookupAfterConfirm=await page.evaluate(()=>window.__GARANG_NUTRITION_LOOKUP_COUNT__||0);
+  assert.equal(lookupAfterConfirm,lookupBeforeBarcode+1,'First unknown GTIN should use one source-backed lookup');
+  await page.locator('[data-remove-food]').last().click();
+  await page.waitForTimeout(80);
+  await page.locator('#barcodeInput').fill('012345678905');
+  await page.locator('#lookupBarcode').click();
+  await page.waitForFunction(()=>document.querySelector('.barcode-identity-card')?.innerText.includes('이전에 직접 확인한 제품'),null,{timeout:3000});
+  const lookupAfterRepeat=await page.evaluate(()=>window.__GARANG_NUTRITION_LOOKUP_COUNT__||0);
+  assert.equal(lookupAfterRepeat,lookupAfterConfirm,'Repeated confirmed GTIN must resolve locally without another web lookup');
+  await page.locator('#clearBarcode').click();
+
   assert.equal(await page.locator('#pickLabelScan').count(),1,'Nutrition must expose a dedicated Label Scan entry');
   const labelChooserPromise=page.waitForEvent('filechooser');await page.locator('#pickLabelScan').click();const labelChooser=await labelChooserPromise;
   await labelChooser.setFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
@@ -99,7 +132,10 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   assert.equal(afterLabel.meals.length,2,'Label Scan confirmation must save through the canonical meal path');
   const labelItem=afterLabel.meals[1].items[0];
   assert.equal(labelItem.foodId,null);assert.equal(labelItem.nutritionStatus,'approximate');assert.equal(labelItem.nutritionSource.source,'nutrition_label_scan');assert.equal(labelItem.scanEvidence.source,'label+vision');assert.equal(labelItem.scanEvidence.confirmationRequired,true);
+  assert.equal(labelItem.barcode,'00036000291452');assert.equal(labelItem.reportNo,'2024041736623');
   assert.equal(Math.round(labelItem.kcal),210);assert.equal(Math.round(labelItem.protein),20);
+  assert.equal(afterLabel.foodIdentity.barcodes.length,2,'Confirmed label GTIN should join the account barcode map');
+  assert.ok(afterLabel.foodIdentity.barcodes.some(row=>row.gtin==='00036000291452'));
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal/Label Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
   assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);
   await context.close();console.log('browser-real-meal-scan WebKit mobile + web fallback + label scan: PASS');

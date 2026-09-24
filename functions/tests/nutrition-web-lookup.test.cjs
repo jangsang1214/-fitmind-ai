@@ -1,10 +1,13 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {
- parseInput,collectCitationUrls,normalizeLookupItems,createNutritionLookupProvider,createNutritionLookupHandler,WEB_NUTRITION_SCHEMA
+ validGtin,normalizeGtin,parseInput,collectCitationUrls,normalizeLookupItems,createNutritionLookupProvider,createNutritionLookupHandler,WEB_NUTRITION_SCHEMA
 }=require('../src/nutrition-web-lookup.cjs');
 
 assert.deepEqual(parseInput([{name:'아메리카노',grams:355}])[0],{name:'아메리카노',aliases:[],grams:355});
+assert.equal(validGtin('012345678905'),true);assert.equal(normalizeGtin('012345678905'),'00012345678905');
+assert.deepEqual(parseInput([{name:'GTIN 012345678905',grams:100,barcode:'012345678905'}])[0],{name:'GTIN 012345678905',aliases:[],grams:100,barcode:'00012345678905'});
+assert.throws(()=>parseInput([{name:'bad barcode',barcode:'1234'}]),e=>e?.code==='NUTRITION_LOOKUP_ITEM_INVALID');
 assert.equal(WEB_NUTRITION_SCHEMA.properties.items.maxItems,6);
 
 const citedPayload={output:[{type:'web_search_call',action:{sources:[{url:'https://fdc.nal.usda.gov/fdc-app.html#/food-details/171890/nutrients'}]}},{type:'message',content:[{type:'output_text',text:'{}',annotations:[{type:'url_citation',url:'https://fdc.nal.usda.gov/fdc-app.html#/food-details/171890/nutrients',title:'USDA'}]}]}]};
@@ -13,6 +16,12 @@ const normalized=normalizeLookupItems({items:[{inputIndex:0,matchedName:'아메�
 assert.equal(normalized.items.length,1);assert.equal(normalized.items[0].nutritionStatus,'estimated');assert.equal(normalized.unresolved.length,0);
 const uncited=normalizeLookupItems({items:[{inputIndex:0,matchedName:'아메리카노',kcal:4,protein:.2,carbs:.6,fat:0,confidence:.9,sourceUrl:'https://example.com/nutrition',sourceTitle:'Example',sourceType:'manufacturer',basisNote:'serving'}]},[{name:'아메리카노',grams:355}],citations);
 assert.equal(uncited.items.length,0);assert.equal(uncited.unresolved[0].reason,'UNVERIFIED_WEB_RESULT');
+const barcodeCitation=['https://manufacturer.example/product-gtin'];
+const barcodeResolved=normalizeLookupItems({items:[{inputIndex:0,matchedName:'정확 제품',kcal:200,protein:20,carbs:20,fat:5,confidence:.86,sourceUrl:'https://manufacturer.example/product-gtin',sourceTitle:'Manufacturer product',sourceType:'manufacturer',basisNote:'100g exact GTIN product'}]},[{name:'GTIN 012345678905',aliases:[],grams:100,barcode:'00012345678905'}],barcodeCitation);
+assert.equal(barcodeResolved.items[0].barcode,'00012345678905');
+assert.equal(barcodeResolved.items[0].nutritionSource.matchRule,'barcode_source_backed');
+const weakBarcode=normalizeLookupItems({items:[{inputIndex:0,matchedName:'정확 제품',kcal:200,protein:20,carbs:20,fat:5,confidence:.7,sourceUrl:'https://manufacturer.example/product-gtin',sourceTitle:'Manufacturer product',sourceType:'manufacturer',basisNote:'100g'}]},[{name:'GTIN 012345678905',grams:100,barcode:'00012345678905'}],barcodeCitation);
+assert.equal(weakBarcode.items.length,0);assert.equal(weakBarcode.unresolved[0].reason,'UNVERIFIED_WEB_RESULT');
 
 (async()=>{
  let request=null;
@@ -27,7 +36,7 @@ assert.equal(uncited.items.length,0);assert.equal(uncited.unresolved[0].reason,'
  const result=await provider.lookup({items:[{name:'아메리카노',aliases:['Americano'],grams:355}],language:'ko',requestId:'lookup-1'});
  assert.equal(result.items.length,1);assert.equal(result.items[0].nutritionSource.source,'web_search');
  assert.equal(request.store,false);assert.equal(request.tool_choice,'required');assert.equal(request.tools[0].type,'web_search');assert.equal(request.tools[0].external_web_access,true);
- assert.match(request.input[0].content[0].text,/Never use blogs/);
+ assert.match(request.input[0].content[0].text,/Never use blogs/);assert.match(request.input[0].content[0].text,/barcode\/GTIN/);
 
  let route=null;
  const handler=createNutritionLookupHandler({

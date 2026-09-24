@@ -22,10 +22,12 @@ const MEAL_SCAN_SCHEMA=Object.freeze({
 });
 const LABEL_SCAN_SCHEMA=Object.freeze({
  type:'object',additionalProperties:false,
- required:['productName','brand','servingGrams','calories','protein','carbs','fat','confidence','nutritionConfidence','uncertain','notes'],
+ required:['productName','brand','barcode','reportNo','servingGrams','calories','protein','carbs','fat','confidence','nutritionConfidence','uncertain','notes'],
  properties:{
   productName:{type:'string',minLength:1,maxLength:120},
   brand:{type:'string',maxLength:100},
+  barcode:{type:'string',maxLength:40},
+  reportNo:{type:'string',maxLength:40},
   servingGrams:{type:'number',minimum:1,maximum:2000},
   calories:{type:'number',minimum:0,maximum:10000},
   protein:{type:'number',minimum:0,maximum:1000},
@@ -37,8 +39,21 @@ const LABEL_SCAN_SCHEMA=Object.freeze({
   notes:{type:'string',maxLength:300}
  }
 });
+const BARCODE_SCAN_SCHEMA=Object.freeze({
+ type:'object',additionalProperties:false,required:['barcode','productText','confidence','uncertain','notes'],properties:{
+  barcode:{type:'string',minLength:8,maxLength:40},
+  productText:{type:'string',maxLength:160},
+  confidence:{type:'number',minimum:0,maximum:1},
+  uncertain:{type:'boolean'},
+  notes:{type:'string',maxLength:240}
+ }
+});
 
 function clean(value,limit=500){return String(value??'').trim().slice(0,limit);}
+function barcodeDigits(value){return String(value??'').replace(/\D/g,'');}
+function validGtin(value){const s=barcodeDigits(value);if(![8,12,13,14].includes(s.length))return false;let sum=0,weight=3;for(let i=s.length-2;i>=0;i--){sum+=Number(s[i])*weight;weight=weight===3?1:3;}return ((10-(sum%10))%10)===Number(s.at(-1));}
+function normalizeGtin(value){const s=barcodeDigits(value);return validGtin(s)?s.padStart(14,'0'):'';}
+function normalizeReportNo(value){const s=barcodeDigits(value);return s.length>=8&&s.length<=20?s:'';}
 function requestId(){return globalThis.crypto?.randomUUID?.()||`meal_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;}
 function parseMealImage(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('MEAL_SCAN_IMAGE_REQUIRED'),{code:'MEAL_SCAN_IMAGE_REQUIRED'});
@@ -60,26 +75,33 @@ function validateMealScan(value){
 }
 function validateLabelScan(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('NUTRITION_LABEL_RESPONSE_INVALID'),{code:'NUTRITION_LABEL_RESPONSE_INVALID'});
- const productName=clean(value.productName,120),brand=clean(value.brand,100),servingGrams=Number(value.servingGrams),calories=Number(value.calories),protein=Number(value.protein),carbs=Number(value.carbs),fat=Number(value.fat),confidence=Number(value.confidence),nutritionConfidence=Number(value.nutritionConfidence);
+ const productName=clean(value.productName,120),brand=clean(value.brand,100),barcodeRaw=clean(value.barcode,40),barcode=normalizeGtin(barcodeRaw),reportNo=normalizeReportNo(value.reportNo),servingGrams=Number(value.servingGrams),calories=Number(value.calories),protein=Number(value.protein),carbs=Number(value.carbs),fat=Number(value.fat),confidence=Number(value.confidence),nutritionConfidence=Number(value.nutritionConfidence);
  if(!productName||![servingGrams,calories,protein,carbs,fat,confidence,nutritionConfidence].every(Number.isFinite)||servingGrams<1||servingGrams>2000)throw Object.assign(new Error('NUTRITION_LABEL_RESPONSE_INVALID'),{code:'NUTRITION_LABEL_RESPONSE_INVALID'});
  return {
-  productName,brand,servingGrams:Math.round(servingGrams*10)/10,
+  productName,brand,barcode,reportNo,servingGrams:Math.round(servingGrams*10)/10,
   calories:Math.max(0,calories),protein:Math.max(0,protein),carbs:Math.max(0,carbs),fat:Math.max(0,fat),
   confidence:Math.max(0,Math.min(1,confidence)),nutritionConfidence:Math.max(0,Math.min(1,nutritionConfidence)),
-  uncertain:value.uncertain===true,notes:clean(value.notes,300)
+  uncertain:value.uncertain===true||Boolean(barcodeRaw&&!barcode),notes:clean(value.notes,300)
  };
 }
+function validateBarcodeScan(value){
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('BARCODE_SCAN_RESPONSE_INVALID'),{code:'BARCODE_SCAN_RESPONSE_INVALID'});
+ const barcode=normalizeGtin(value.barcode),confidence=Number(value.confidence);
+ if(!barcode||!Number.isFinite(confidence))throw Object.assign(new Error('BARCODE_SCAN_NO_VALID_GTIN'),{code:'BARCODE_SCAN_NO_VALID_GTIN'});
+ return {barcode,productText:clean(value.productText,160),confidence:Math.max(0,Math.min(1,confidence)),uncertain:value.uncertain===true,notes:clean(value.notes,240)};
+}
 function systemPrompt(language='ko',mode='meal'){
- if(mode==='label')return `You are GARANG Nutrition Label Vision. Read only nutrition facts visibly printed on a packaged-food label. Return the product name, brand when visible, serving grams, calories, protein grams, carbohydrate grams, and fat grams for one printed serving. Never infer missing values from general knowledge or a database. If multiple columns exist, use the clearly labeled per-serving column and mention ambiguity in notes. confidence measures product identity confidence; nutritionConfidence measures confidence that the printed serving and macro values were read correctly. Set uncertain=true when text is blurry, cropped, conflicting, or the serving basis is ambiguous. Output language: ${language==='en'?'English':'Korean where appropriate'}.`;
+ if(mode==='barcode')return `You are GARANG Barcode Vision. Read only a visibly printed EAN-8, UPC-A, EAN-13, or GTIN-14 barcode number from the package image. Do not infer digits, do not repair a checksum, and do not identify a product from general knowledge. Return the barcode digits, nearby product text when visibly readable, confidence, uncertainty, and a short note. If digits are blurry or incomplete, lower confidence and set uncertain=true. Output language for productText/notes: ${language==='en'?'English':'Korean where appropriate'}.`;
+ if(mode==='label')return `You are GARANG Nutrition Label Vision. Read only nutrition facts and identity fields visibly printed on a packaged-food label. Return the product name, brand when visible, barcode/GTIN when visibly readable (otherwise an empty string), Korean item-manufacturing report number when visibly readable (otherwise an empty string), serving grams, calories, protein grams, carbohydrate grams, and fat grams for one printed serving. Never infer missing values from general knowledge or a database. If multiple columns exist, use the clearly labeled per-serving column and mention ambiguity in notes. confidence measures product identity confidence; nutritionConfidence measures confidence that the printed serving and macro values were read correctly. Set uncertain=true when text is blurry, cropped, conflicting, or the serving basis is ambiguous. Output language: ${language==='en'?'English':'Korean where appropriate'}.`;
  return `You are GARANG Meal Scan Vision. Identify only foods visibly supported by the supplied meal photo. Return 1-6 food components with conservative gram estimates, identity confidence, and a separate portionConfidence for the gram estimate. Prefer common Korean food names that can match a Korean food database; include short Korean/English aliases when useful. Do not invent hidden ingredients. Do not calculate calories, protein, carbs, fat, or any nutrition values: GARANG's verified food database owns nutrition. If food identity is uncertain, lower confidence. If portion size is uncertain, lower portionConfidence and set uncertain=true. If the image is not a meal or no food can be identified, do not fabricate food. Output language: ${language==='en'?'English with Korean aliases when known':'Korean with English aliases when useful'}.`;
 }
 function createMealScanProvider(options={}){
  const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(1000,Number(options.timeoutMs)||25000),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2));
  if(!apiKey)throw Object.assign(new Error('LLM_SECRET_MISSING'),{code:'LLM_SECRET_MISSING'});if(typeof fetchImpl!=='function')throw new Error('LLM_FETCH_UNAVAILABLE');
  return {name:'openai',model,async scan({image,language='ko',requestId:id,mode='meal'}){
-  const scanMode=mode==='label'?'label':'meal',schema=scanMode==='label'?LABEL_SCAN_SCHEMA:MEAL_SCAN_SCHEMA;
-  const userText=scanMode==='label'?(language==='en'?'Read this packaged-food nutrition label exactly as printed.':'이 포장식품의 영양정보 라벨을 인쇄된 값 그대로 읽어줘.'):(language==='en'?'Identify the visible foods and estimate portions.':'사진에 보이는 음식과 양을 식별해줘.');
-  const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt(language,scanMode)}]},{role:'user',content:[{type:'input_text',text:userText},{type:'input_image',image_url:image.dataUrl}]}],reasoning:{effort:'none'},max_output_tokens:800,text:{format:{type:'json_schema',name:scanMode==='label'?'garang_nutrition_label_scan':'garang_meal_scan',strict:true,schema}}};
+  const scanMode=mode==='barcode'?'barcode':(mode==='label'?'label':'meal'),schema=scanMode==='barcode'?BARCODE_SCAN_SCHEMA:(scanMode==='label'?LABEL_SCAN_SCHEMA:MEAL_SCAN_SCHEMA);
+  const userText=scanMode==='barcode'?(language==='en'?'Read the visible package barcode digits only.':'포장지에 보이는 바코드 숫자만 정확히 읽어줘.'):(scanMode==='label'?(language==='en'?'Read this packaged-food nutrition label exactly as printed.':'이 포장식품의 영양정보 라벨을 인쇄된 값 그대로 읽어줘.'):(language==='en'?'Identify the visible foods and estimate portions.':'사진에 보이는 음식과 양을 식별해줘.'));
+  const body={model,store:false,input:[{role:'system',content:[{type:'input_text',text:systemPrompt(language,scanMode)}]},{role:'user',content:[{type:'input_text',text:userText},{type:'input_image',image_url:image.dataUrl}]}],reasoning:{effort:'none'},max_output_tokens:800,text:{format:{type:'json_schema',name:scanMode==='barcode'?'garang_barcode_scan':(scanMode==='label'?'garang_nutrition_label_scan':'garang_meal_scan'),strict:true,schema}}};
   let lastError=null;
   for(let attempt=1;attempt<=maxAttempts;attempt++){
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -87,9 +109,9 @@ function createMealScanProvider(options={}){
     const response=await fetchImpl(endpoint,{method:'POST',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','X-GARANG-Request-Id':String(id||'')},signal:controller.signal,body:JSON.stringify(body)});
     if(!response?.ok)throw Object.assign(new Error(`MEAL_SCAN_PROVIDER_${response?.status||'ERROR'}`),{code:'MEAL_SCAN_PROVIDER_ERROR',status:response?.status||null});
     const payload=await response.json(),payloadError=providerPayloadError(payload);if(payloadError)throw payloadError;
-    const text=extractResponseText(payload);if(!text)throw Object.assign(new Error(scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID'),{code:scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID'});
-    let parsed;try{parsed=JSON.parse(text);}catch{throw Object.assign(new Error(scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID'),{code:scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID'});}
-    const validated=scanMode==='label'?{label:validateLabelScan(parsed)}:validateMealScan(parsed);
+    const text=extractResponseText(payload);if(!text){const code=scanMode==='barcode'?'BARCODE_SCAN_RESPONSE_INVALID':(scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID');throw Object.assign(new Error(code),{code});}
+    let parsed;try{parsed=JSON.parse(text);}catch{const code=scanMode==='barcode'?'BARCODE_SCAN_RESPONSE_INVALID':(scanMode==='label'?'NUTRITION_LABEL_RESPONSE_INVALID':'MEAL_SCAN_RESPONSE_INVALID');throw Object.assign(new Error(code),{code});}
+    const validated=scanMode==='barcode'?{barcode:validateBarcodeScan(parsed)}:(scanMode==='label'?{label:validateLabelScan(parsed)}:validateMealScan(parsed));
     return {...validated,mode:scanMode,provider:'openai',model,providerResponseId:clean(payload?.id,160)||null,attempts:attempt};
    }catch(error){
     if(error?.name==='AbortError')lastError=Object.assign(new Error('MEAL_SCAN_TIMEOUT'),{code:'MEAL_SCAN_TIMEOUT'});
@@ -110,11 +132,15 @@ function createMealScanHandler(deps={}){
   let decoded;try{decoded=await verifyIdToken(token);}catch{return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});}
   const uid=clean(decoded?.uid,180);if(!uid)return response.status(401).json({ok:false,error:{code:'UNAUTHENTICATED'}});
   let image;try{image=parseMealImage(request?.body?.image);}catch(error){return response.status(400).json({ok:false,error:{code:error?.code||'MEAL_SCAN_IMAGE_INVALID'}});}
-  const language=request?.body?.language==='en'?'en':'ko',mode=request?.body?.mode==='label'?'label':'meal',id=requestId();
-  let rate;try{rate=await consumeRateLimit(uid,{now:clock(),route:mode==='label'?'nutrition_label_scan':'meal_scan'});}catch{return response.status(503).json({ok:false,error:{code:'MEAL_SCAN_RATE_LIMIT_UNAVAILABLE'},requestId:id});}
+  const language=request?.body?.language==='en'?'en':'ko',mode=request?.body?.mode==='barcode'?'barcode':(request?.body?.mode==='label'?'label':'meal'),id=requestId();
+  let rate;try{rate=await consumeRateLimit(uid,{now:clock(),route:mode==='barcode'?'nutrition_barcode_scan':(mode==='label'?'nutrition_label_scan':'meal_scan')});}catch{return response.status(503).json({ok:false,error:{code:'MEAL_SCAN_RATE_LIMIT_UNAVAILABLE'},requestId:id});}
   if(rate?.allowed===false){const retry=Math.max(1,Number(rate.retryAfterSec)||60);response.set?.('Retry-After',String(retry));return response.status(429).json({ok:false,error:{code:'MEAL_SCAN_RATE_LIMITED'},retryAfterSec:retry,requestId:id});}
   try{
    const provider=providerFactory(getProviderConfig()),result=await provider.scan({image,language,mode,requestId:id});
+   if(mode==='barcode'){
+    const data={mode:'barcode',barcode:result.barcode,source:'vision',provider:result.provider,model:result.model,requestId:id};
+    return response.status(200).json({ok:true,barcode:data.barcode,data});
+   }
    if(mode==='label'){
     const data={mode:'label',label:result.label,source:'vision',provider:result.provider,model:result.model,requestId:id};
     return response.status(200).json({ok:true,label:data.label,data});
@@ -127,4 +153,4 @@ function createMealScanHandler(deps={}){
   }
  };
 }
-module.exports={DEFAULT_MODEL,MAX_IMAGE_DATA_URL,IMAGE_TYPES,MEAL_SCAN_SCHEMA,LABEL_SCAN_SCHEMA,parseMealImage,validateMealScan,validateLabelScan,systemPrompt,createMealScanProvider,createMealScanHandler};
+module.exports={DEFAULT_MODEL,MAX_IMAGE_DATA_URL,IMAGE_TYPES,MEAL_SCAN_SCHEMA,LABEL_SCAN_SCHEMA,BARCODE_SCAN_SCHEMA,barcodeDigits,validGtin,normalizeGtin,normalizeReportNo,parseMealImage,validateMealScan,validateLabelScan,validateBarcodeScan,systemPrompt,createMealScanProvider,createMealScanHandler};
