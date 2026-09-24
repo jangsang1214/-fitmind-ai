@@ -62,6 +62,31 @@ function normalizedNutritionSource(value){
   const out={};for(const key of ['source','provider','dataset','recordId','matchRule','sourceType','title','url','basis']){const raw=source[key];if(raw!==undefined&&raw!==null&&String(raw).trim())out[key]=String(raw).trim().slice(0,key==='url'?500:240);}
   return Object.keys(out).length?out:null;
 }
+function foodIdentityCore(){return window.GarangFoodIdentityV1||null;}
+function normalizedBarcode(value){return foodIdentityCore()?.normalizeGtin?.(value)||null;}
+function barcodeItemFromMapping(mapping){
+ if(!mapping)return null;
+ return {id:uid(),foodId:mapping.foodId||null,name:String(mapping.name||'제품'),grams:Math.max(1,num(mapping.grams,100)),kcal:num(mapping.kcal),protein:num(mapping.protein),carbs:num(mapping.carbs),fat:num(mapping.fat),nutritionStatus:String(mapping.nutritionStatus||'unknown'),nutritionSource:normalizedNutritionSource(mapping.nutritionSource||{source:'user_confirmed_barcode',matchRule:'barcode_exact'}),barcode:mapping.gtin,reportNo:mapping.reportNo||null,userOverride:false,scanEvidence:{barcode:mapping.gtin,confidence:1,identityConfidence:1,portionConfidence:1,matchConfidence:1,confirmationRequired:false,matchReason:'USER_CONFIRMED_BARCODE_EXACT',source:'barcode+user-confirmed'}};
+}
+function findConfirmedBarcode(value){const gtin=normalizedBarcode(value);return gtin?foodIdentityCore()?.findMapping?.(state.foodIdentity?.barcodes,gtin.canonical)||null:null;}
+function rememberBarcodeMapping(value,item,meta={}){
+ const core=foodIdentityCore(),gtin=core?.normalizeGtin?.(value);if(!core||!gtin||!item)return false;
+ const existing=core.findMapping?.(state.foodIdentity?.barcodes,gtin.canonical),mapping=core.mappingFromItem?.(gtin.canonical,item,{...meta,confirmedAt:isoNow(),lastUsedAt:isoNow(),uses:Math.max(1,num(existing?.uses,0)+1)});
+ if(!mapping)return false;
+ state.foodIdentity.barcodes=core.upsertMapping(state.foodIdentity.barcodes,mapping,300);
+ saveState({event:'food_identity_barcode_confirmed',source:'nutrition'});trackEvent('nutrition_barcode_mapping_confirmed',{source:String(meta.source||item?.scanEvidence?.source||'unknown'),hasFoodId:item.foodId?1:0});
+ return true;
+}
+function recordFoodIdentityMiss(kind,value,detail={}){
+ const text=String(value||'').trim();if(!text)return;
+ state.foodIdentity.misses.push({id:uid(),kind:String(kind||'search'),value:text,at:isoNow(),...detail});state.foodIdentity.misses=state.foodIdentity.misses.slice(-120);
+ lastFoodSearchMiss={kind:String(kind||'search'),value:text,at:isoNow()};saveState({event:'food_identity_miss',source:'nutrition'});trackEvent('food_identity_miss',{kind:String(kind||'search')});
+}
+function recordFoodIdentityCorrection(value,item={}){
+ const text=String(value||'').trim();if(!text)return;
+ state.foodIdentity.corrections.push({id:uid(),value:text,name:String(item?.name||text),grams:num(item?.grams,100),kcal:num(item?.kcal),protein:num(item?.protein),carbs:num(item?.carbs),fat:num(item?.fat),at:isoNow()});state.foodIdentity.corrections=state.foodIdentity.corrections.slice(-120);
+ saveState({event:'food_identity_correction',source:'nutrition'});trackEvent('food_identity_correction',{});
+}
 function normalizeMealItem(i={}){
   const quality=String(i.nutritionStatus||i.nutrition_status||'unknown').toLowerCase();
   return {...i,id:i.id||uid(),foodId:i.foodId||i.food_id?String(i.foodId||i.food_id):null,name:String(i.name||'음식'),grams:num(i.grams,100),kcal:num(i.kcal),protein:num(i.protein),carbs:num(i.carbs??i.carbohydrate),fat:num(i.fat),nutritionStatus:['verified','approximate','estimated','unknown'].includes(quality)?quality:'unknown',nutritionSource:normalizedNutritionSource(i.nutritionSource||i.provenance||(i.source?{source:i.source}:null)),userOverride:i.userOverride===true};
