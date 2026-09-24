@@ -130,7 +130,7 @@
   for(const k of ['facts','preferences','goals','events','entries','deletedIds'])s.memory[k]=Array.isArray(s.memory[k])?s.memory[k]:[];
   s.memory.deletedIds=[...new Set(s.memory.deletedIds.map(String))];
   s.memory.events=s.memory.events.filter(x=>typeof x==='string'||isObject(x));
-  const oldNormalizedImportance=!activeStateAliases&&originalSchema>0&&originalSchema<VERSION;
+  const oldNormalizedImportance=!activeStateAliases&&originalSchema>0&&originalSchema<8;
   s.memory.entries=rows(s.memory.entries).map(x=>{
    const category=String(x.category||x.type||'notes'),text=String(x.text??x.value??''),rawImportance=numeric(x.importance);
    const importance=rawImportance===null?3:oldNormalizedImportance&&rawImportance>=0&&rawImportance<=1?clamp(Math.round(1+rawImportance*4),1,5):clamp(Math.round(rawImportance),1,5);
