@@ -1,0 +1,59 @@
+{
+  "version": "garang-usda-supplemental-corpus-v1",
+  "generatedAt": "2026-09-24T02:31:23.242Z",
+  "count": 5721,
+  "sourceCounts": {
+    "Foundation": 311,
+    "FNDDS": 5430
+  },
+  "rejectedCounts": {
+    "Foundation": 84,
+    "FNDDS": 2
+  },
+  "dedupe": {
+    "duplicateIds": 0,
+    "duplicateNames": 20
+  },
+  "audit": {
+    "pass": true,
+    "statusCounts": {
+      "verified": 5721,
+      "approximate": 0,
+      "estimated": 0,
+      "unknown": 0
+    },
+    "coverage": {
+      "traceableProvenance": 5721,
+      "traceableProvenanceRate": 1,
+      "verifiedTraceable": 5721,
+      "aliasRows": 0,
+      "aliasRowRate": 0,
+      "totalAliases": 0,
+      "servingRows": 5721,
+      "servingRowRate": 1,
+      "englishNameRows": 5721,
+      "englishNameRate": 1,
+      "brandRows": 0,
+      "brandRowRate": 0
+    },
+    "errors": 0,
+    "warnings": 78,
+    "duplicateNames": 0,
+    "aliasCollisions": 0
+  },
+  "sourceFiles": {
+    "foundation": {
+      "sha256": "27d1fe3fd89edfbe528ed915da5619320e1d004d4594603a1b19bdb1511590cc"
+    },
+    "fndds": {
+      "sha256": "2e7eb9fda92adf1d4d784dba5eaa3a7fd4418cd86ccff383c7c9294d79e9b808"
+    }
+  },
+  "guardrails": {
+    "canonicalPrimary": true,
+    "verifiedOnly": true,
+    "traceableProvenanceRequired": true,
+    "noAutomaticCanonicalOverwrite": true,
+    "noFabricatedAliases": true
+  }
+}
