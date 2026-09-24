@@ -198,3 +198,71 @@
   #main[data-garang-screen="workout"] #garangWorkoutProgram[open] .form-grid.compact-fields .field.full{grid-column:1/-1!important}
 }
 
+
+
+/* GARANG Design Simplification v3 — essential-first interaction */
+#main[data-garang-screen="workout"] .garang-workout-primary-hint{
+  margin:2px 0 12px!important;color:#777b76!important;font-size:10px!important;line-height:1.55!important;
+}
+#main[data-garang-screen="workout"] .garang-essential-workout-fields{
+  grid-template-columns:minmax(0,1fr) 78px 92px!important;
+  gap:10px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails{
+  margin-top:8px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails .garang-luxury-drawer-body{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails .field,
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails .set-detail-toolbar{
+  min-width:0!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails .field.full,
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails .set-detail-toolbar{
+  grid-column:1/-1!important;
+}
+#main[data-garang-screen="progress"] #garangProgressDetails{
+  margin-top:14px!important;
+}
+#main[data-garang-screen="progress"] .garang-progress-range-quiet{
+  margin:0 0 10px!important;padding:0!important;gap:6px!important;
+  opacity:.72;
+}
+#main[data-garang-screen="progress"] .garang-progress-range-quiet button{
+  min-height:32px!important;padding:0 10px!important;font-size:9px!important;
+}
+#main[data-garang-screen="progress"] #garangProgressDetails>.garang-luxury-drawer-body{
+  display:grid!important;gap:12px!important;
+}
+#main[data-garang-screen="progress"] #garangProgressDetails:not([open]) .garang-progress-legacy-detail{
+  display:none!important;
+}
+@media(max-width:800px){
+  #main[data-garang-screen="workout"] .garang-essential-workout-fields{
+    grid-template-columns:minmax(0,1fr) 72px!important;
+  }
+  #main[data-garang-screen="workout"] .garang-essential-workout-fields .execution-exercise-field{
+    grid-column:1/-1!important;
+  }
+  #main[data-garang-screen="workout"] #garangWorkoutEntryDetails .garang-luxury-drawer-body{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+
+/* Nutrition simplicity — photo first, manual entry secondary */
+#main[data-garang-screen="nutrition"] .garang-meal-scan-primary{
+  border:1px solid rgba(120,152,140,.16)!important;
+  background:linear-gradient(150deg,#0f1311,#090b0a 72%)!important;
+  box-shadow:none!important;
+}
+#main[data-garang-screen="nutrition"] .garang-meal-scan-primary .meal-scan-header p{
+  max-width:34rem!important;color:#858981!important;line-height:1.55!important;
+}
+#main[data-garang-screen="nutrition"] .garang-manual-entry-quiet{
+  border-color:rgba(241,237,228,.07)!important;background:#0b0d0c!important;
+}
+#main[data-garang-screen="nutrition"] .garang-manual-entry-quiet>summary{
+  min-height:54px!important;color:#d8d5ce!important;
+}

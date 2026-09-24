@@ -410,3 +410,37 @@
     width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;
   }
 }
+
+
+/* Workout simplicity v5 — essential set logging first */
+@media(max-width:800px){
+  .workout-execution-v2 .execution-set-row.current-set{
+    grid-template-columns:40px repeat(2,minmax(0,1fr))!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-rpe-field,
+  .workout-execution-v2 .execution-set-row.upcoming-set .execution-rpe-field{
+    display:none!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open{
+    grid-template-columns:40px repeat(2,minmax(0,1fr))!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-rpe-field{
+    display:grid!important;grid-column:1/-1!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-type-field{
+    grid-column:1/2!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-rir-field{
+    grid-column:2/4!important;
+  }
+  .workout-execution-v2 .execution-set-row.upcoming-set{
+    grid-template-columns:34px repeat(2,minmax(0,1fr)) 36px!important;
+  }
+  .workout-execution-v2 .workout-live-pr{
+    margin-top:6px!important;padding:0!important;border:0!important;background:transparent!important;
+    color:#8eaa9f!important;font-size:9px!important;letter-spacing:.04em!important;
+  }
+  .workout-execution-v2 .workout-set-toolbar span{
+    max-width:240px!important;line-height:1.45!important;
+  }
+}

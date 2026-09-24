@@ -263,3 +263,63 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
     height:400px!important;max-width:206px!important;
   }
 }
+
+
+/* GARANG Body Model v4 — three-view realistic anatomy floor */
+.g3-body-model[data-garang-anatomy-v3="side"] .g3-base{fill:url(#g3Body-s)}
+.g3-body-model[data-garang-anatomy-v3="side"] .g3-limb{fill:url(#g3Limb-s)}
+.g3-body-model[data-garang-anatomy-v3="side"] .g3-muscle{fill:url(#g3Muscle-s)}
+.g3-classical-model[data-garang-classical-model="4"]{
+  filter:drop-shadow(0 24px 34px rgba(0,0,0,.28))!important;
+}
+.g3-classical-model[data-garang-classical-model="4"] .g3-base,
+.g3-classical-model[data-garang-classical-model="4"] .g3-limb{
+  stroke:rgba(229,221,207,.30)!important;stroke-width:.40!important;stroke-linecap:round;stroke-linejoin:round;
+}
+.g3-classical-model[data-garang-classical-model="4"] .g3-human-trunk{stroke-width:.46!important}
+.g3-classical-model[data-garang-classical-model="4"] .g3-hand,
+.g3-classical-model[data-garang-classical-model="4"] .g3-foot{stroke-width:.30!important}
+.g3-classical-model[data-garang-classical-model="4"] .g3-shadow{fill:#4f504a!important;opacity:.20!important}
+.g3-classical-model[data-garang-classical-model="4"] .g3-anatomy-line{
+  fill:none;stroke:rgba(42,42,38,.56);stroke-width:.46;stroke-linecap:round;stroke-linejoin:round;opacity:.72;
+}
+.g3-classical-model[data-garang-classical-model="4"] .g3-face-line{stroke-width:.34;opacity:.60}
+.g3-classical-model[data-garang-classical-model="4"] .g3-muscle{
+  opacity:.28!important;stroke:rgba(44,45,40,.64)!important;stroke-width:.34!important;
+}
+.g3-classical-model[data-garang-classical-model="4"] .g3-highlight{opacity:.30!important}
+.g3-classical-model[data-garang-classical-model="4"] .g3-side-leg-far{opacity:.70!important}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-classical-model="4"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-classical-model="4"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-classical-model="4"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-classical-model="4"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-classical-model="4"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-classical-model="4"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="4"] .muscle-legs{
+  opacity:.76!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="4"]{
+  width:100%!important;max-width:238px!important;height:418px!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{
+  grid-template-columns:1fr!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view{display:none!important}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:nth-child(1),
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="side"] .body-view:nth-child(2),
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="back"] .body-view:nth-child(3){
+  display:grid!important;place-items:center;
+}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{min-height:438px!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:nth-child(1),
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="side"] .body-view:nth-child(2),
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="back"] .body-view:nth-child(3){display:grid!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:not(:nth-child(1)),
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="side"] .body-view:not(:nth-child(2)),
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="back"] .body-view:not(:nth-child(3)){display:none!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="4"]{
+    height:408px!important;max-width:224px!important;
+  }
+  .g3-view-switch button{min-width:48px;height:30px;font-size:7px!important}
+}

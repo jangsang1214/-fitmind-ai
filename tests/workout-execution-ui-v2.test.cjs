@@ -71,7 +71,8 @@ assert.ok(!runtime.includes('MutationObserver'),'workout execution must use life
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
 assert.ok(css.includes('Workout commercial UX v4')&&css.includes('.workout-exercise-search-button')&&css.includes('background:#0c0f0d!important'),'Workout v4 must keep picker and active-set controls on one dark surface system');
 assert.ok(css.includes('Workout session controls v3')&&css.includes('.workout-session-icon')&&css.includes('touch-action:manipulation'),'session icon controls must own a touch-safe mobile hit area');
-assert.ok(polish.includes('data-garang-classical-model="3"')&&polish.includes('g3-real-human')&&polish.includes("const head=female")&&polish.includes("const trunk=female")&&polish.includes("const leftFoot=female"),'body model v3 must render a connected human silhouette with trunk, limbs and feet instead of segmented mannequin proportions');
+assert.ok(css.includes('Workout simplicity v5')&&css.includes('.execution-set-row.current-set .execution-rpe-field')&&css.includes('display:none!important'),'active-set defaults must prioritize weight and reps while keeping RPE behind one-tap details');
+assert.ok(polish.includes('data-garang-classical-model="4"')&&polish.includes('g3-real-human')&&polish.includes('function sideSVG')&&polish.includes('data-garang-anatomy-v4="side"')&&polish.includes('data-g3-view="side"'),'Body Model v4 must provide realistic FRONT / SIDE / BACK anatomy while preserving interactive muscle zones');
 assert.ok(html.includes('garang-workout-execution-v2.css'),'execution CSS must load');
 assert.ok(html.includes('garang-workout-execution-v2.js'),'execution runtime must load');
 assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-workout-execution-v2.js'),'execution layer must load after the workout library layer');
@@ -105,7 +106,9 @@ assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR 
 assert.ok(runtime.includes("SESSION_KEY='garang_workout_session_v2'")&&runtime.includes('sessionStorage.setItem(SESSION_KEY')&&runtime.includes('hydrateSessionState()'),'active workout execution must survive reloads through session-scoped persistence');
 assert.ok(app.includes('sessionDraft(){return clone(workoutDraft);}')&&app.includes('restoreSessionDraft(items)'),'workout bridge must persist and restore the unsaved exercise draft');
 assert.ok(runtime.includes('data-execution-add-set')&&runtime.includes('data-execution-set-delete')&&runtime.includes('changeSetCount('),'sets must be directly addable and removable during execution');
-assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}')&&runtime.includes('updateLivePR()')&&runtime.includes("NEW PR · e1RM"),'execution must surface immediate live PR feedback against pre-session history');
+assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}'),'execution must read the canonical pre-session PR baseline');
+assert.ok(runtime.includes('function updateLivePR()')&&runtime.includes("NEW PR · +"),'execution must surface an immediate PR delta when the active set improves the baseline');
+assert.ok(runtime.includes("BEST ")&&runtime.includes("현재 "),'execution must keep the baseline/current comparison understandable before a new PR');
 assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
 
 assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
