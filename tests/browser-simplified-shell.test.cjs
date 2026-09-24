@@ -103,7 +103,8 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   await route(page,'progress');await page.waitForFunction(()=>document.querySelector('#garangAccumulationOverview')?.dataset?.gpcProgress==='1',null,{timeout:6000});
   assert.equal(await page.locator('#garangAccumulationOverview').isVisible(),true,'canonical Progress interpretation surface must remain visible');
   assert.equal(await page.locator('#garangProgressDetails').getAttribute('open'),null,'detailed progress metrics must be collapsed by default');
-  assert.equal(await page.locator('.progress-tabs').isHidden(),true,'legacy range/dashboard chrome must be internalized');
+  assert.equal(await page.locator('.progress-tabs').isVisible(),true,'Progress range control must stay visible as the canonical accumulation anchor');
+  assert.ok(await page.locator('.progress-tabs').evaluate(node=>node.classList.contains('garang-progress-range-quiet')),'Progress range control must be visually quiet rather than moved into the details drawer');
   assert.equal(await page.locator('.grid.grid-4').isHidden(),true,'legacy metric wall must be internalized rather than deleted');
   const meaning=await page.locator('#garangAccumulationOverview [data-gx-meaning-loop] .gx-insight>span').allTextContents();assert.deepEqual(meaning,['쌓인 기록','GARANG이 배운 것','다음 선택'],'Progress must read as accumulated evidence -> learning -> next choice');
   assert.match(await page.locator('#main>.page-head').innerText(),/나의 변화/);
