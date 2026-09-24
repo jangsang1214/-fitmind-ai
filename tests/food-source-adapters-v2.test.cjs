@@ -24,8 +24,7 @@ assert.equal(kfindIncomplete.quality,'unknown');
 assert.ok(Foundation.assess(kfindIncomplete).warnings.some(x=>x.code==='UNKNOWN_QUALITY'));
 
 assert.equal(Import.DATA_GO_KR_FOOD_ENDPOINT,'https://api.data.go.kr/openapi/tn_pubr_public_nutri_food_info_api');
-const csvRows=Import.parseCsv('식품코드,식품명,데이터구분명,영양성분함량기준량,에너지(kcal),단백질(g),지방(g),탄수화물(g),출처명,데이터생성일자
-D001,"김밥, 소고기",음식,100g,160,6.39,3.85,25.01,식품의약품안전처,2026-04-29');
+const csvRows=Import.parseCsv('식품코드,식품명,데이터구분명,영양성분함량기준량,에너지(kcal),단백질(g),지방(g),탄수화물(g),출처명,데이터생성일자\nD001,"김밥, 소고기",음식,100g,160,6.39,3.85,25.01,식품의약품안전처,2026-04-29');
 assert.equal(csvRows.length,1);assert.equal(csvRows[0]['식품명'],'김밥, 소고기');
 const csvFood=Adapters.adaptDataGoKrStandard(csvRows[0]);assert.equal(csvFood.quality,'verified');assert.equal(csvFood.provenance.recordId,'D001');
 
