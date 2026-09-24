@@ -41,7 +41,7 @@ jobs:
             --data-urlencode "pageToken=$PAGE_TOKEN" --data-urlencode 'dbGubun=01' --data-urlencode 'sosok=GARANG' --data-urlencode 'depart=AI/Data' --data-urlencode 'agencyType=01' --data-urlencode 'usePurpose=02' --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' \
             "$BASE/nutrient/export/down/cudAction.do" -o "$RUNNER_TEMP/register.html"
           KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
-          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" -D "$RUNNER_TEMP/headers" "$BASE/nutrient/multi/file/download.do?key=$KEY" -o "$RUNNER_TEMP/processed.xlsx"
+          curl --fail --location --http1.1 --connect-timeout 15 --max-time 1200 --retry 30 --retry-all-errors --retry-delay 3 --silent --show-error --user-agent 'Mozilla/5.0 GARANG-Data-Ingestion/1.0' -c "$JAR" -b "$JAR" -e "$POP" -D "$RUNNER_TEMP/headers" "$BASE/nutrient/multi/file/download.do?key=$KEY" -o "$RUNNER_TEMP/processed.xlsx"
           test "$(stat -c%s "$RUNNER_TEMP/processed.xlsx")" -gt 100000000
 
       - name: Extract processed-food workbook header and samples
