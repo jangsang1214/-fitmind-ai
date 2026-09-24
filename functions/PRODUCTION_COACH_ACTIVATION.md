@@ -154,3 +154,28 @@ Activation scope:
 
 Success requires the standard Production Coach Activation workflow to finish SUCCESS with public route boundary checks and authenticated nutrition lookup, Meal Scan, Coach, bounded-write, and disposable-user cleanup smokes.
 
+## Intelligence Quality Hardening v2 production activation — 2026-09-24
+
+Founder explicitly approved all remaining approval-gated AI/Data work in the partial/insufficient maturity scope and instructed immediate execution.
+
+Approved source/web baseline:
+- PRODUCT main: `26f01ad829afeeaca0deb97d0159915c315f758c`
+- PR #248: `Harden Intelligence quality and remaining AI/Data gaps v2`
+- exact-head Release Gate #1855: FULL GREEN
+- post-merge Release Gate #1856: FULL GREEN
+- Pages #869: SUCCESS
+
+Activation scope:
+- deploy only Firebase Function `api` to project `fitfind-ai`;
+- preserve the existing `GARANG_LLM_API_KEY`;
+- activate measured chronological-replay confidence calibration and recommendation-quality use of measured ECE/Brier evidence;
+- activate Intelligence drift observability in Agent Context / Coach telemetry;
+- activate deterministic sparse semantic-vector reranking for Memory and Coach knowledge grounding;
+- activate longitudinal data-quality v1.1 range/missing-attribution/outlier diagnostics;
+- activate robust physiological baselines and readiness-confidence disagreement handling;
+- activate Meal Scan identity-vs-portion confidence handling and low-confidence confirmation boundaries;
+- retain deterministic GARANG Decision ownership, no automatic workout progression, no automatic nutrition-target mutation, bounded authenticated writes, and existing privacy/security boundaries;
+- do not change billing, secrets, auth architecture, Firestore schema, native provider integrations, or unrelated production resources.
+
+Success requires the standard Production Coach Activation workflow to finish SUCCESS, including public Coach / Meal Scan / nutrition boundaries, authenticated nutrition lookup, Meal Scan, Coach, bounded-write, sensitive-write boundary behavior, disposable-user cleanup, and non-secret deployment evidence. No new server capability is considered production-live before that evidence.
+
