@@ -55,6 +55,11 @@ test('physiological signals persist through schema v9 migration and transport',(
  const x=G.toTransport(source);assert.equal(x.schemaVersion,9);assert.equal(x.physiologicalSignals.length,1);assert.ok(x.physiologicalSignals[0].id.startsWith('health_'));assert.equal(x.physiologicalSignals[0].hrvMs,52);assert.equal(G.toTransport(x).physiologicalSignals[0].id,x.physiologicalSignals[0].id);
 });
 
+test('schema v8 canonical memory importance stays unchanged during v9 migration',()=>{
+ const x=G.migrate({schemaVersion:8,memory:{entries:[{id:'m8',importance:1,confidence:.8,value:'low importance canonical memory'}],legacyMigrated:true}});
+ assert.equal(x.schemaVersion,9);assert.equal(x.memory.entries[0].importance,1);
+});
+
 test('transport output contains canonical top-level keys and excludes local UI containers',()=>{
  const x=G.toTransport({meta:{schemaVersion:5},preferences:{language:'ko'},checkins:[],aiChat:[],onboarding:{goal:'건강'},workouts:[],meals:[],runs:[],body:[],planner:[],memory:{entries:[]}});
  for(const key of G.CONTRACT.topLevel)assert.ok(key in x,key);
