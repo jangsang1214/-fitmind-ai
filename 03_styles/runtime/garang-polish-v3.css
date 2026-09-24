@@ -390,8 +390,9 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 
 /* GARANG Body Model v6 — complete six-view mesh visual layer + independent interaction/highlight overlay */
 .g3-classical-model[data-garang-classical-model="6"]{
-  filter:drop-shadow(0 28px 44px rgba(0,0,0,.36))!important;
+  filter:none!important;
   overflow:visible!important;
+  shape-rendering:geometricPrecision;
 }
 .g3-classical-model[data-garang-classical-model="6"] .g6-visual-layer{
   pointer-events:none;
@@ -419,8 +420,8 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="6"] .muscle-legs{
   fill:#b3816b!important;
   stroke:#d8aa95!important;
-  opacity:.68!important;
-  filter:drop-shadow(0 0 8px rgba(159,108,84,.2))!important;
+  opacity:.50!important;
+  filter:none!important;
 }
 .muscle-map[data-muscle="full"] .g3-classical-model[data-garang-classical-model="6"] .g6-interaction-layer .g3-muscle{
   fill:#7f968d!important;
