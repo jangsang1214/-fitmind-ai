@@ -1,4 +1,4 @@
-/* GARANG experience v4.6 — luxury simplification owner
+/* GARANG experience v4.7 — essential-first simplification owner
    Keeps the existing product policy while making observer reconciliation idempotent.
    One body observer owns subtree changes; identical text/HTML state is never rewritten. */
 (() => {
