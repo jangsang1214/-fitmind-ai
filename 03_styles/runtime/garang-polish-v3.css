@@ -323,3 +323,66 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
   }
   .g3-view-switch button{min-width:48px;height:30px;font-size:7px!important}
 }
+
+
+/* GARANG Body Model v5 — anatomy-quality silhouette, no mannequin segmentation */
+.g3-classical-model[data-garang-classical-model="5"]{
+  filter:drop-shadow(0 30px 42px rgba(0,0,0,.34))!important;
+}
+.g3-classical-model[data-garang-classical-model="5"] .g5-silhouette{
+  fill:url(#g5Body-5f);
+  stroke:rgba(235,231,221,.34)!important;
+  stroke-width:.62!important;
+  stroke-linejoin:round!important;
+}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="back"] .g5-silhouette{fill:url(#g5Body-5b)}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="side"] .g5-silhouette{fill:url(#g5Body-5s)}
+.g3-classical-model[data-garang-classical-model="5"] .g5-volume{
+  fill:url(#g5Volume-5f);pointer-events:none;opacity:.9;
+}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="back"] .g5-volume{fill:url(#g5Volume-5b)}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="side"] .g5-volume{fill:url(#g5Volume-5s)}
+.g3-classical-model[data-garang-classical-model="5"] .g3-muscle{
+  fill:url(#g5Muscle-5f)!important;
+  stroke:rgba(61,61,56,.58)!important;
+  stroke-width:.42!important;
+  opacity:.42!important;
+}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="back"] .g3-muscle{fill:url(#g5Muscle-5b)!important}
+.g3-classical-model[data-garang-classical-model="5"][data-garang-anatomy-v5="side"] .g3-muscle{fill:url(#g5Muscle-5s)!important}
+.g3-classical-model[data-garang-classical-model="5"] .g5-landmark,
+.g3-classical-model[data-garang-classical-model="5"] .g5-face,
+.g3-classical-model[data-garang-classical-model="5"] .g5-segment,
+.g3-classical-model[data-garang-classical-model="5"] .g5-hand-detail,
+.g3-classical-model[data-garang-classical-model="5"] .g5-foot-detail{
+  fill:none;stroke:rgba(62,62,57,.48);stroke-width:.52;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;
+}
+.g3-classical-model[data-garang-classical-model="5"] .g5-face{stroke-width:.44;opacity:.72}
+.g3-classical-model[data-garang-classical-model="5"] .g5-segment{stroke-width:.42;opacity:.62}
+.g3-classical-model[data-garang-classical-model="5"] .g5-hand-detail,
+.g3-classical-model[data-garang-classical-model="5"] .g5-foot-detail{stroke-width:.36;opacity:.58}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-classical-model="5"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-classical-model="5"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-classical-model="5"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-classical-model="5"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-classical-model="5"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-classical-model="5"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="5"] .muscle-legs{
+  fill:#b3816b!important;stroke:#d3a18a!important;opacity:.82!important;
+  filter:drop-shadow(0 0 7px rgba(159,108,84,.22))!important;
+}
+.muscle-map[data-muscle="full"] .g3-classical-model[data-garang-classical-model="5"] .g3-muscle{
+  fill:#7f968d!important;stroke:#a9bbb4!important;opacity:.46!important;filter:none!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="5"]{
+  width:100%!important;max-width:250px!important;height:500px!important;overflow:visible!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view>span{
+  margin-bottom:2px!important;letter-spacing:.16em!important;color:#747973!important;
+}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{min-height:525px!important}
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="5"]{
+    max-width:238px!important;height:490px!important;
+  }
+}
