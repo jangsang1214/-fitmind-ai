@@ -24,7 +24,7 @@ function rowsOf(payload){
  return [];
 }
 function legacyRow(food){
- return {food_id:food.foodId,name:food.name,name_en:food.nameEn||food.name,category:food.category||'USDA',serving:food.serving||'100g',basis_g:Number(food.basisG)||100,kcal:food.nutrients.kcal,protein:food.nutrients.protein,carbs:food.nutrients.carbs,fat:food.nutrients.fat,sugar:food.nutrients.sugar,fiber:food.nutrients.fiber,sodium:food.nutrients.sodium,cholesterol:food.nutrients.cholesterol,saturated_fat:food.nutrients.saturatedFat,trans_fat:food.nutrients.transFat,aliases:Array.isArray(food.aliases)?food.aliases:[],nutrition_status:'verified',source:'USDA FoodData Central',nutrition_basis_g:Number(food.basisG)||100,provenance:food.provenance};
+ return {food_id:food.foodId,name:food.name,name_en:food.nameEn||food.name,category:food.category||'USDA',brand:food.brand||null,product_name:food.productName||food.name,serving:food.serving||'100g',basis_g:Number(food.basisG)||100,kcal:food.nutrients.kcal,protein:food.nutrients.protein,carbs:food.nutrients.carbs,fat:food.nutrients.fat,sugar:food.nutrients.sugar,fiber:food.nutrients.fiber,sodium:food.nutrients.sodium,cholesterol:food.nutrients.cholesterol,saturated_fat:food.nutrients.saturatedFat,trans_fat:food.nutrients.transFat,aliases:Array.isArray(food.aliases)?food.aliases:[],nutrition_status:'verified',source:'USDA FoodData Central',nutrition_basis_g:Number(food.basisG)||100,provenance:food.provenance};
 }
 function ingest(file,kind,retrievedAt){
  const payload=readJson(file),rows=rowsOf(payload),accepted=[],rejected=[];
