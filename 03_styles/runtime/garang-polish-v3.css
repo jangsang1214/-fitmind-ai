@@ -301,6 +301,15 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="4"]{
   width:100%!important;max-width:238px!important;height:418px!important;
 }
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{
+  grid-template-columns:1fr!important;
+}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view{display:none!important}
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:nth-child(1),
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="side"] .body-view:nth-child(2),
+.workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="back"] .body-view:nth-child(3){
+  display:grid!important;place-items:center;
+}
 @media(max-width:800px){
   .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{min-height:438px!important}
   .workout-hero-v2 .muscle-map-wrap.g3-upgraded[data-g3-view="front"] .body-view:nth-child(1),
