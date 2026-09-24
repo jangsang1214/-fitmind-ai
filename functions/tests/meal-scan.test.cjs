@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const {parseMealImage,validateMealScan,createMealScanProvider,createMealScanHandler,MEAL_SCAN_SCHEMA}=require('../src/meal-scan.cjs');
+const {parseMealImage,validateMealScan,validateLabelScan,createMealScanProvider,createMealScanHandler,MEAL_SCAN_SCHEMA,LABEL_SCAN_SCHEMA}=require('../src/meal-scan.cjs');
 
 const image={mediaType:'image/jpeg',dataUrl:'data:image/jpeg;base64,aGVsbG8='};
 assert.equal(parseMealImage(image).mediaType,'image/jpeg');
@@ -11,6 +11,8 @@ assert.equal(JSON.stringify(MEAL_SCAN_SCHEMA).includes('protein'),false,'Vision 
 assert.ok(MEAL_SCAN_SCHEMA.properties.items.items.properties.portionConfidence,'Vision schema must expose separate portion confidence');
 assert.equal(MEAL_SCAN_SCHEMA.properties.items.minItems,0,'Vision schema must allow an explicit no-food result instead of forcing fabrication');
 assert.throws(()=>validateMealScan({items:[],overallConfidence:0,uncertain:true,notes:'not food'}),e=>e?.code==='MEAL_SCAN_NO_FOOD_DETECTED');
+assert.ok(LABEL_SCAN_SCHEMA.properties.nutritionConfidence,'Label schema must expose nutrition-reading confidence');
+assert.deepEqual(validateLabelScan({productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''}),{productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''});
 
 (async()=>{
  let request;
@@ -21,6 +23,13 @@ assert.throws(()=>validateMealScan({items:[],overallConfidence:0,uncertain:true,
  assert.equal(request.store,false);
  assert.equal(request.input[1].content.some(x=>x.type==='input_image'&&x.image_url===image.dataUrl),true);
  assert.match(request.input[0].content[0].text,/Do not calculate calories/);
+
+ let labelRequest;
+ const labelProvider=createMealScanProvider({apiKey:'secret',fetchImpl:async(_url,init)=>{labelRequest=JSON.parse(init.body);return {ok:true,json:async()=>({id:'label-response',output:[{content:[{text:JSON.stringify({productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:'printed serving'})}]}]})};}});
+ const labelResult=await labelProvider.scan({image,language:'ko',requestId:'label-1',mode:'label'});
+ assert.equal(labelResult.mode,'label');assert.equal(labelResult.label.productName,'프로틴 바');assert.equal(labelResult.label.protein,20);
+ assert.match(labelRequest.input[0].content[0].text,/Read only nutrition facts visibly printed/);
+ assert.equal(labelRequest.text.format.name,'garang_nutrition_label_scan');
 
  let captured=null,rateRoute=null;
  const handler=createMealScanHandler({
@@ -37,6 +46,18 @@ assert.throws(()=>validateMealScan({items:[],overallConfidence:0,uncertain:true,
  assert.equal(response.payload.items[0].portionConfidence,.65);
  assert.equal(captured.image.dataUrl,image.dataUrl);
  assert.equal(rateRoute,'meal_scan');
+
+ let labelCaptured=null,labelRateRoute=null;
+ const labelHandler=createMealScanHandler({
+  verifyIdToken:async()=>({uid:'user-1'}),
+  consumeRateLimit:async(_uid,meta)=>{labelRateRoute=meta.route;return {allowed:true};},
+  providerFactory:()=>({scan:async input=>{labelCaptured=input;return {mode:'label',label:{productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''},provider:'mock',model:'mock-vision'};}}),
+  getProviderConfig:()=>({provider:'mock'})
+ });
+ const labelResponse={statusCode:200,payload:null,headers:{},status(code){this.statusCode=code;return this;},json(value){this.payload=value;return this;},set(k,v){this.headers[k]=v;return this;}};
+ await labelHandler({method:'POST',headers:{authorization:'Bearer token'},body:{image,language:'ko',mode:'label'},get(){return null;}},labelResponse);
+ assert.equal(labelResponse.statusCode,200);assert.equal(labelResponse.payload.data.mode,'label');assert.equal(labelResponse.payload.label.calories,210);
+ assert.equal(labelCaptured.mode,'label');assert.equal(labelRateRoute,'nutrition_label_scan');
 
  const unauth={statusCode:200,payload:null,status(code){this.statusCode=code;return this;},json(value){this.payload=value;return this;}};
  await handler({method:'POST',headers:{},body:{image}},unauth);
