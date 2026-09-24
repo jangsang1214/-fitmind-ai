@@ -688,12 +688,32 @@ function mealScanMatch(row){
  const item=window.GarangFoodIntelligenceV2?.toMealItem?.(food,Math.max(5,num(row?.grams,100)))||foodItem(food.name,Math.max(5,num(row?.grams,100)));
  return item?{...item,id:uid(),scanEvidence:{visionName:String(row?.name||food.name),confidence:identityConfidence,identityConfidence,portionConfidence,matchConfidence,confirmationRequired,matchReason:String(smart?.reason||'LEGACY_EXACT'),source:'vision+food-intelligence-v2'}}:null;
 }
+function supplementalMealScanCandidates(corpus,row,limit=96){
+ const intelligence=window.GarangFoodIntelligenceV2,normalize=value=>intelligence?.normalize?.(value)||String(value||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+ const stop=new Set(['food','foods','meal','dish','item','serving','portion','beverage','drink','drinks','음식','식품','메뉴','요리','음료']);
+ const names=[row?.name,...(Array.isArray(row?.aliases)?row.aliases:[])].map(normalize).filter(Boolean);
+ const queryTokens=[...new Set(names.flatMap(name=>name.match(/[\p{L}\p{N}]+/gu)||[]).map(token=>token.toLowerCase()).filter(token=>token.length>=3&&!stop.has(token)))];
+ if(!queryTokens.length)return [];
+ const ranked=[];
+ for(const food of Array.isArray(corpus)?corpus:[]){
+  const hay=normalize([food?.name,food?.name_en,food?.description,food?.product_name,food?.brand,...(Array.isArray(food?.aliases)?food.aliases:[])].filter(Boolean).join(' '));
+  if(!hay)continue;
+  let hits=0,longest=0;
+  for(const token of queryTokens)if(hay.includes(token)){hits++;longest=Math.max(longest,token.length);}
+  if(!hits)continue;
+  ranked.push({food,hits,longest});
+ }
+ ranked.sort((a,b)=>b.hits-a.hits||b.longest-a.longest||String(a.food?.name||'').length-String(b.food?.name||'').length);
+ return ranked.slice(0,limit).map(x=>x.food);
+}
 async function lookupMealScanSupplemental(rows=[]){
  const input=(Array.isArray(rows)?rows:[]).slice(0,6);if(!input.length)return {items:[],unresolved:[]};
  const corpus=await loadSupplementalFoodDb();if(!corpus.length)return {items:[],unresolved:input};
  const items=[],unresolved=[];
  for(const row of input){
-  const smart=window.GarangFoodIntelligenceV2?.resolveVisionRow?.(corpus,row,{minCombinedConfidence:.7});
+  const candidates=supplementalMealScanCandidates(corpus,row);
+  if(!candidates.length){unresolved.push(row);continue;}
+  const smart=window.GarangFoodIntelligenceV2?.resolveVisionRow?.(candidates,row,{minCombinedConfidence:.7});
   if(smart?.status!=='matched'||!smart.food){unresolved.push(row);continue;}
   const identityConfidence=clamp(num(row?.confidence,0),0,1),portionConfidence=clamp(num(row?.portionConfidence,row?.confidence??0),0,1),matchConfidence=clamp(num(smart?.confidence,0),0,1),confirmationRequired=identityConfidence<.65||portionConfidence<.6||matchConfidence<.72;
   const item=window.GarangFoodIntelligenceV2?.toMealItem?.(smart.food,Math.max(5,num(row?.grams,100)))||foodItemFromFood(smart.food,Math.max(5,num(row?.grams,100)));
