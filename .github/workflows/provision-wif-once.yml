@@ -1,0 +1,148 @@
+name: Provision GARANG WIF Once
+
+on:
+  push:
+    branches:
+      - ops/wif-provision-v1
+    paths:
+      - .github/workflows/provision-wif-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROJECT_ID: fitfind-ai
+      POOL_ID: garang-github
+      PROVIDER_ID: fitmind-ai
+      REPOSITORY: jangsang1214/-fitmind-ai
+      MAIN_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Select existing verified deployment credential
+        id: credential
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT_FITFIND_AI: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FITFIND_AI }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+        run: |
+          set -euo pipefail
+          cred_file="$RUNNER_TEMP/garang-wif-bootstrap.json"
+          if [[ -n "${FIREBASE_SERVICE_ACCOUNT_FITFIND_AI:-}" ]]; then
+            printf '%s' "$FIREBASE_SERVICE_ACCOUNT_FITFIND_AI" > "$cred_file"
+            echo "source=fitfind" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${GOOGLE_APPLICATION_CREDENTIALS_JSON:-}" ]]; then
+            printf '%s' "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > "$cred_file"
+            echo "source=generic" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No service-account JSON credential is available for one-time WIF bootstrap."
+            exit 42
+          fi
+          node - "$cred_file" <<'NODE'
+          const fs=require('node:fs');
+          const p=process.argv[2];
+          const j=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(j.project_id!=='fitfind-ai') throw new Error('BOOTSTRAP_PROJECT_MISMATCH');
+          if(!String(j.client_email||'').endsWith('@fitfind-ai.iam.gserviceaccount.com')) throw new Error('BOOTSTRAP_SERVICE_ACCOUNT_INVALID');
+          console.log(`::add-mask::${j.private_key_id||''}`);
+          fs.appendFileSync(process.env.GITHUB_ENV,`BOOTSTRAP_SA_EMAIL=${j.client_email}\nBOOTSTRAP_CRED_FILE=${p}\n`);
+          NODE
+
+      - name: Authenticate bootstrap service account
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud auth activate-service-account "$BOOTSTRAP_SA_EMAIL" --key-file="$BOOTSTRAP_CRED_FILE" --project="$PROJECT_ID" --quiet
+          active="$(gcloud auth list --filter=status:ACTIVE --format='value(account)' | head -n1)"
+          [[ "$active" == "$BOOTSTRAP_SA_EMAIL" ]] || { echo "::error::Unexpected active gcloud account."; exit 43; }
+
+      - name: Resolve project number
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          number="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+          [[ "$number" =~ ^[0-9]+$ ]] || { echo "::error::Could not resolve project number."; exit 44; }
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Create or verify Workload Identity Pool
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gcloud iam workload-identity-pools describe "$POOL_ID" --project="$PROJECT_ID" --location=global >/dev/null 2>&1; then
+            state="$(gcloud iam workload-identity-pools describe "$POOL_ID" --project="$PROJECT_ID" --location=global --format='value(state)')"
+            [[ "$state" == "ACTIVE" ]] || { echo "::error::Existing WIF pool is not ACTIVE."; exit 45; }
+          else
+            gcloud iam workload-identity-pools create "$POOL_ID" --project="$PROJECT_ID" --location=global --display-name='GARANG GitHub Actions' --description='Keyless production deployment identity for GARANG PRODUCT main' --quiet
+          fi
+
+      - name: Create or verify GitHub OIDC provider
+        id: provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_condition="assertion.repository=='$REPOSITORY' && assertion.ref=='$MAIN_REF'"
+          expected_mapping='google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner,attribute.ref=assertion.ref'
+          if gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" --project="$PROJECT_ID" --location=global --workload-identity-pool="$POOL_ID" >/dev/null 2>&1; then
+            issuer="$(gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" --project="$PROJECT_ID" --location=global --workload-identity-pool="$POOL_ID" --format='value(oidc.issuerUri)')"
+            condition="$(gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" --project="$PROJECT_ID" --location=global --workload-identity-pool="$POOL_ID" --format='value(attributeCondition)')"
+            [[ "$issuer" == 'https://token.actions.githubusercontent.com' || "$issuer" == 'https://token.actions.githubusercontent.com/' ]] || { echo "::error::Existing provider issuer mismatch."; exit 46; }
+            [[ "$condition" == "$expected_condition" ]] || { echo "::error::Existing provider condition mismatch; refusing mutation."; exit 47; }
+          else
+            gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_ID" \
+              --project="$PROJECT_ID" \
+              --location=global \
+              --workload-identity-pool="$POOL_ID" \
+              --display-name='GARANG PRODUCT main' \
+              --issuer-uri='https://token.actions.githubusercontent.com/' \
+              --attribute-mapping="$expected_mapping" \
+              --attribute-condition="$expected_condition" \
+              --quiet
+          fi
+          resource="$(gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" --project="$PROJECT_ID" --location=global --workload-identity-pool="$POOL_ID" --format='value(name)')"
+          echo "resource=$resource" >> "$GITHUB_OUTPUT"
+
+      - name: Bind PRODUCT repository to existing deploy service account
+        shell: bash
+        run: |
+          set -euo pipefail
+          pool_resource="projects/${{ steps.project.outputs.number }}/locations/global/workloadIdentityPools/$POOL_ID"
+          member="principalSet://iam.googleapis.com/${pool_resource}/attribute.repository/$REPOSITORY"
+          gcloud iam service-accounts add-iam-policy-binding "$BOOTSTRAP_SA_EMAIL" \
+            --project="$PROJECT_ID" \
+            --role='roles/iam.workloadIdentityUser' \
+            --member="$member" \
+            --quiet >/dev/null
+          policy="$(gcloud iam service-accounts get-iam-policy "$BOOTSTRAP_SA_EMAIL" --project="$PROJECT_ID" --format=json)"
+          node - "$member" "$policy" <<'NODE'
+          const [member,raw]=process.argv.slice(2);
+          const p=JSON.parse(raw);
+          const ok=(p.bindings||[]).some(b=>b.role==='roles/iam.workloadIdentityUser'&&(b.members||[]).includes(member));
+          if(!ok) throw new Error('WIF_SERVICE_ACCOUNT_BINDING_NOT_VERIFIED');
+          NODE
+
+      - name: Record non-secret provisioning evidence
+        shell: bash
+        run: |
+          {
+            echo '## GARANG WIF Provisioning'
+            echo "- Project: $PROJECT_ID"
+            echo "- Project number: ${{ steps.project.outputs.number }}"
+            echo "- Provider: ${{ steps.provider.outputs.resource }}"
+            echo "- Service account: $BOOTSTRAP_SA_EMAIL"
+            echo "- Repository: $REPOSITORY"
+            echo "- Branch condition: $MAIN_REF"
+            echo '- Service account key creation: NONE'
+            echo '- Added binding: roles/iam.workloadIdentityUser for PRODUCT repository principalSet'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove bootstrap credential file
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/garang-wif-bootstrap.json"
