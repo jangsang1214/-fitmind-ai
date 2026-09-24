@@ -477,9 +477,12 @@ function progressLearningSnapshot(){
     const bridge=window.GarangIntelligenceBridge;
     if(!bridge?.userPerformanceReady?.())return null;
     const days=Math.max(7,Math.min(56,progressRangeDays||28));
-    const model=bridge.getUserPerformanceModel?.({days,asOf:new Date()})||null;
+    const asOf=new Date();
+    const model=bridge.getUserPerformanceModel?.({days,asOf})||null;
     const review=bridge.getWeeklyReview?.({date:today(),days:7})||null;
-    return {model,review};
+    const running=bridge.runningPerformanceReady?.()?bridge.getRunningPerformance?.({asOf}):null;
+    const personal=bridge.personalPerformanceReady?.()?bridge.getPersonalPerformance?.({days,asOf}):null;
+    return {model,review,running,personal};
   }catch(e){captureError('progress_learning_surface',e);return null;}
 }
 function progressLearningHtml(snapshot){
@@ -489,7 +492,11 @@ function progressLearningHtml(snapshot){
   const insight=snapshot.review?.insight?.text||'아직 충분한 실행 결과가 없어 다음 개인화 근거를 더 수집하고 있습니다.';
   const next=snapshot.review?.nextAdjustment;
   const nextText=next?.kind==='simplify'?'실행 결과를 근거로 다음 계획은 더 단순하게 제안할 수 있습니다.':next?.kind==='hold'?'현재 구조를 유지하면서 결과를 더 관찰합니다.':'다음 조정은 충분한 근거가 생길 때만 제안합니다.';
-  return `<section class="card"><div class="visual-section-head"><div><span class="eyebrow">LONGITUDINAL LEARNING</span><h3>GARANG이 배운 것</h3></div><span class="pill">읽기 전용</span></div>${rows}<div class="helper"><strong>최근 해석</strong> · ${esc(insight)}</div><div class="helper"><strong>다음 판단</strong> · ${esc(nextText)}</div><div class="helper">추천 → 사용자 반응 → 실행 → 결과가 연결된 근거만 개인화에 사용합니다. 자동 증량이나 무단 변경은 하지 않습니다.</div></section>`;
+  const focusLabels={recovery:'회복 보호',running:'러닝 흐름',nutrition:'식단 일관성',planning:'계획 마찰',training:'훈련 일관성',consistency:'현재 구조 유지'};
+  const actionLabels={protect_recovery_and_avoid_intensity_progression:'강도를 올리지 말고 회복을 우선합니다.',reduce_complexity_and_prioritize_recovery:'다음 행동을 단순화하고 회복을 우선합니다.',hold_or_reduce_running_load:'러닝 부하를 유지하거나 낮추는 편이 안전합니다.',prioritize_running_consistency_and_recovery:'페이스보다 일관성과 회복을 먼저 봅니다.',simplify_next_nutrition_action:'다음 식단 행동을 한 가지로 단순화합니다.',reduce_next_plan_friction:'다음 계획의 마찰을 줄여 실행 가능성을 높입니다.',protect_training_consistency_before_progression:'증량보다 훈련 일관성을 먼저 지킵니다.',maintain_current_running_structure:'현재 러닝 구조를 유지합니다.',continue_current_structure_and_collect_outcomes:'현재 구조를 유지하며 결과 근거를 더 쌓습니다.'};
+  const personal=snapshot.personal,focus=personal?.focus,focusLine=focus?`<div class="helper"><strong>Personal Performance</strong> · ${esc(focusLabels[focus.domain]||focus.domain)} · ${esc(actionLabels[focus.action]||focus.action||'근거를 더 수집합니다.')}</div>`:'';
+  const run=snapshot.running,run28=run?.recent?.days28,trend=run?.trend,runLine=run28?.sessions?`<div class="helper"><strong>러닝 28일</strong> · ${run28.sessions}회 · ${Number(run28.distanceKm||0).toFixed(1)} km · 페이스 ${trend?.direction==='improving'?'개선':trend?.direction==='slower'?'저하':trend?.direction==='stable'?'안정':'근거 수집 중'} · 부하 ${esc(run?.load?.band||'unknown')}</div>`:'';
+  return `<section class="card"><div class="visual-section-head"><div><span class="eyebrow">LONGITUDINAL LEARNING</span><h3>GARANG이 배운 것</h3></div><span class="pill">읽기 전용</span></div>${focusLine}${runLine}${rows}<div class="helper"><strong>최근 해석</strong> · ${esc(insight)}</div><div class="helper"><strong>다음 판단</strong> · ${esc(nextText)}</div><div class="helper">추천 → 사용자 반응 → 실행 → 결과가 연결된 근거만 개인화에 사용합니다. 자동 증량이나 무단 변경은 하지 않습니다.</div></section>`;
 }
 
 function progressPage(){const learning=progressLearningSnapshot(),score=performanceScore(),r=weeklyReview(),data=filterProgress(progressRangeDays);const bestWeight=data.workouts.length?Math.max(...data.workouts.map(workoutRecordMaxWeight)):0,bestVolume=data.workouts.length?Math.max(...data.workouts.map(workoutRecordVolume)):0,bestRun=data.runs.length?Math.max(...data.runs.map(x=>num(x.distance))):0;const bodyPts=data.body.map(x=>num(x.weight)).filter(Boolean);return `${pageHead('PROGRESS / 흐름','진행 상황','기록을 쌓는 화면과 해석하는 화면을 분리했습니다.')}
