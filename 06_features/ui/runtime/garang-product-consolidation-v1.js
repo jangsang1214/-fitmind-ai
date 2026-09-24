@@ -35,8 +35,8 @@ html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:4px!important;width:100%!important;margin:0!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head span{font-size:8px!important;font-weight:600!important;letter-spacing:.055em!important;color:#78988c!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head small{display:none!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-context{display:flex!important;padding:0 0 8px!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-track-visual{display:grid!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-context{display:none!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-track-visual{display:none!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-action{order:3!important;margin-top:2px!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow>.gtf-checkin-access{order:3!important;margin-top:2px!important}
 html body #main[data-garang-screen="progress"]>.garang-progress-legacy-internalized{display:none!important}
