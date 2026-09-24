@@ -2,7 +2,7 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.1';
+const VERSION='workout-execution-v2.2';
 const SESSION_KEY='garang_workout_session_v2';
 let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
@@ -28,16 +28,31 @@ function applyPrefill({details=[],weight,reps,rpe,rir,setType,duration}={}){if(d
 function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
 function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();persistSessionState();startTicker();}
+function startWorkoutSession(){ensureSession();updateLive();}
+function finishWorkoutSession(){
+  if(!sessionStartedAt)return false;
+  let save=document.getElementById('saveWorkoutSession');
+  if(save?.disabled){
+    const add=document.getElementById('addWorkout');
+    if(add&&!add.disabled){
+      add.click();
+      save=document.getElementById('saveWorkoutSession');
+    }
+  }
+  if(!save||save.disabled)return false;
+  save.click();
+  return true;
+}
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
 function stopRest(){restUntil=0;persistSessionState();updateLive();}
 function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
-  const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('saveWorkoutSession');
+  const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('finishWorkoutSession');
   if(stateLabel)stateLabel.textContent=active?'LIVE SESSION':'READY';
-  if(start)start.hidden=active;
-  if(finish){finish.hidden=!active;finish.textContent='운동 종료';}
+  if(start){start.hidden=active;start.disabled=active;}
+  if(finish){finish.hidden=!active;finish.disabled=!active;}
   const summary=draftSummary(),progress=document.getElementById('workoutExecutionProgress');
   if(progress)progress.textContent=(summary.sets+completedCurrent())+' SETS';
   refreshSetStates();
@@ -125,10 +140,11 @@ function enhance(){
   let bar=builder.querySelector('.workout-session-bar');
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';
-    bar.innerHTML='<div class="workout-session-live"><span><i></i><b id="workoutExecutionState">READY</b></span><strong id="workoutExecutionElapsed">00:00</strong></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div><button id="startWorkoutSession" class="workout-start" type="button">운동 시작</button>';
+    bar.innerHTML='<div class="workout-session-live"><span><i></i><b id="workoutExecutionState">READY</b></span><strong id="workoutExecutionElapsed">00:00</strong></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="운동 시작" title="운동 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
     builder.prepend(bar);
-    bar.querySelector('#startWorkoutSession')?.addEventListener('click',()=>{ensureSession();updateLive();});
-    const finish=document.getElementById('saveWorkoutSession');if(finish){finish.classList.add('workout-finish');finish.textContent='운동 종료';finish.hidden=true;bar.appendChild(finish);}
+    bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
+    bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
+    const canonicalSave=document.getElementById('saveWorkoutSession');if(canonicalSave){canonicalSave.classList.add('workout-canonical-save');canonicalSave.hidden=true;}
   }
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
@@ -167,5 +183,5 @@ window.addEventListener('garang:workout-exercise-added',()=>{updateLive();persis
 window.addEventListener('garang:workout-set-rows-rendered',()=>{enhanceRows();updateLive();});
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
 if(document.querySelector('.workout-builder-v2'))enhance();
-window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance,applyPrefill,replaceSetPlan});
+window.GarangWorkoutExecutionV2=Object.freeze({version:VERSION,enhance,applyPrefill,replaceSetPlan,startWorkoutSession,finishWorkoutSession});
 })();
