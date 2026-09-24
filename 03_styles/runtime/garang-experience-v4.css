@@ -242,3 +242,20 @@
     grid-template-columns:1fr 1fr!important;
   }
 }
+
+
+/* Nutrition simplicity — photo first, manual entry secondary */
+#main[data-garang-screen="nutrition"] .garang-meal-scan-primary{
+  border:1px solid rgba(120,152,140,.16)!important;
+  background:linear-gradient(150deg,#0f1311,#090b0a 72%)!important;
+  box-shadow:none!important;
+}
+#main[data-garang-screen="nutrition"] .garang-meal-scan-primary .meal-scan-header p{
+  max-width:34rem!important;color:#858981!important;line-height:1.55!important;
+}
+#main[data-garang-screen="nutrition"] .garang-manual-entry-quiet{
+  border-color:rgba(241,237,228,.07)!important;background:#0b0d0c!important;
+}
+#main[data-garang-screen="nutrition"] .garang-manual-entry-quiet>summary{
+  min-height:54px!important;color:#d8d5ce!important;
+}
