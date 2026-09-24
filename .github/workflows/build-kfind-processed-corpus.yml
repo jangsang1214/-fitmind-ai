@@ -27,7 +27,15 @@ jobs:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
 
+      - name: Restore official K-FIND processed workbook cache
+        id: kfind-processed-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/processed.xlsx
+          key: kfind-processed-20260828-b074d98e75d2
+
       - name: Download latest official K-FIND processed-food workbook
+        if: steps.kfind-processed-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -63,6 +71,13 @@ jobs:
             sleep $((attempt*15))
           done
           echo "processed_bytes=$(stat -c%s "$RUNNER_TEMP/processed.xlsx")"
+
+      - name: Cache verified official workbook
+        if: steps.kfind-processed-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/processed.xlsx
+          key: kfind-processed-20260828-b074d98e75d2
 
       - name: Build verified processed-food brand shards
         shell: bash
