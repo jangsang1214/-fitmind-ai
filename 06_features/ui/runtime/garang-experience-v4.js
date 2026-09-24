@@ -122,16 +122,18 @@
     const programCard=builder.querySelector('.workout-program-card');
     const healthCard=builder.querySelector('.workout-health-card');
     const fields=builder.querySelector('.workout-fields');
-    const rpeField=builder.querySelector('#wRpe')?.closest('.field');
-    const detailFields=[...builder.querySelectorAll('.workout-fields .compact-secondary')];
+    const detailIds=['wRpe','wDuration','wBody','wSetType','wRir','wNotes'];
     const setDetailToolbar=builder.querySelector('.set-detail-toolbar');
-    const entryDetails=[rpeField,...detailFields,setDetailToolbar].filter((node,index,list)=>node&&list.indexOf(node)===index);
+    const entryDetails=[...detailIds.map(id=>builder.querySelector('#'+id)?.closest('.field')),setDetailToolbar].filter((node,index,list)=>node&&list.indexOf(node)===index);
     const entryDrawer=ensureLuxuryDrawer(
       'garangWorkoutEntryDetails',
       isKo()?'세부 기록':'Details',
       isKo()?'RPE · RIR · 메모 · 시간':'RPE · RIR · notes · duration',
       entryDetails
     );
+    const entryBody=entryDrawer?.querySelector('.garang-luxury-drawer-body');
+    detailIds.forEach(id=>{const node=builder.querySelector('#'+id)?.closest('.field');if(node&&entryBody&&node.parentElement!==entryBody)entryBody.appendChild(node);});
+    if(setDetailToolbar&&entryBody&&setDetailToolbar.parentElement!==entryBody)entryBody.appendChild(setDetailToolbar);
     if(entryDrawer&&fields&&entryDrawer.parentElement===fields)fields.insertAdjacentElement('afterend',entryDrawer);
     if(fields){
       fields.classList.add('garang-essential-workout-fields');
