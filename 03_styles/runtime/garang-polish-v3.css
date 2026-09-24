@@ -181,3 +181,31 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
   fill:#6f8179!important;stroke:#9aaba3!important;opacity:.22!important;
 }
 
+
+
+/* GARANG Classical Performance Model v3 — matte sculpture proportions */
+.g3-classical-model[data-garang-classical-model="2"]{
+  filter:drop-shadow(0 20px 28px rgba(0,0,0,.28))!important;
+}
+.g3-classical-model[data-garang-classical-model="2"] .g3-base,
+.g3-classical-model[data-garang-classical-model="2"] .g3-limb{
+  stroke-linejoin:round;stroke-linecap:round;
+}
+.g3-classical-model[data-garang-classical-model="2"] .g3-head{stroke-width:.38!important}
+.g3-classical-model[data-garang-classical-model="2"] .g3-torso{stroke-width:.56!important}
+.g3-classical-model[data-garang-classical-model="2"] .g3-pelvis{stroke-width:.46!important}
+.g3-classical-model[data-garang-classical-model="2"] .g3-muscle{opacity:.30!important}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-classical-model="2"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-classical-model="2"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-classical-model="2"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-classical-model="2"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-classical-model="2"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-classical-model="2"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-classical-model="2"] .muscle-legs{
+  opacity:.70!important;
+}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-classical-model="2"]{
+    height:388px!important;max-width:218px!important;
+  }
+}
