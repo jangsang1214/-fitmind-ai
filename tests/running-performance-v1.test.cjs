@@ -24,7 +24,26 @@ assert.ok(result.recent.days28.distanceKm>=26);
 assert.ok(['stable','spike','drop'].includes(result.load.band));
 assert.equal(result.guardrails.noAutomaticProgression,true);
 assert.equal(result.guardrails.averagePaceIsNotSegmentPR,true);
+assert.equal(result.analysis.split.status,'measured');
+assert.equal(result.analysis.split.pattern,'positive_split');
+assert.equal(result.analysis.paceGuide.status,'measured');
+assert.ok(result.analysis.paceGuide.zones.easy.lowMinPerKm>result.analysis.paceGuide.anchorPaceMinPerKm);
+assert.equal(result.analysis.distribution.status,'measured');
+assert.equal(result.analysis.distribution.sessions,4);
+assert.equal(result.analysis.progression.fiveKm.status,'measured');
+assert.ok(result.analysis.progression.fiveKm.improvementPct>0);
+assert.equal(result.analysis.projection.status,'estimated');
+assert.ok(result.analysis.projection.halfMarathonMin>result.analysis.projection.tenKmMin);
+assert.equal(result.guardrails.paceGuideIsHeuristic,true);
+assert.equal(result.guardrails.noHeartRateZoneClaim,true);
+assert.equal(result.guardrails.raceProjectionEstimateOnly,true);
 
 const sparse=Running.build({runs:[{id:'x',date:'2026-09-23',distance:3,duration:18}]},{asOf:new Date('2026-09-24T12:00:00Z')});
 assert.equal(sparse.recommendation.status,'collect_more_data');
+assert.equal(sparse.analysis.paceGuide.status,'insufficient');
+assert.equal(sparse.analysis.split.status,'insufficient');
 console.log('running-performance-v1: PASS');
+
+const negative=Running.latestSplitAnalysis(Running.validRuns({runs:[{id:'n1',date:'2026-09-24',distance:4,duration:20,splits:[{km:1,paceMinPerKm:5.3},{km:2,paceMinPerKm:5.2},{km:3,paceMinPerKm:4.9},{km:4,paceMinPerKm:4.8}]}]},new Date('2026-09-24T12:00:00Z')));
+assert.equal(negative.pattern,'negative_split');
+assert.ok(negative.changePct<0);
