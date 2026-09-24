@@ -1,32 +1,40 @@
 name: Build Public Food Corpus
 
 on:
-  push:
-    branches:
-      - ai/food-db-scale-v1-20260924
-    paths:
-      - .github/workflows/build-public-food-corpus.yml
-      - scripts/build-public-food-corpus.cjs
   workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Existing non-main branch that will receive the regenerated corpus
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
-  group: food-corpus-build-v1
+  group: food-corpus-build-v1-${{ inputs.target_branch }}
   cancel-in-progress: false
 
 jobs:
   build:
-    if: ${{ !contains(github.event.head_commit.message || '', '[skip food-corpus-build]') }}
+    if: ${{ inputs.target_branch != 'main' && startsWith(inputs.target_branch, 'ai/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Check out corpus branch
+      - name: Check out approved non-main corpus branch
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ inputs.target_branch }}
           fetch-depth: 0
+
+      - name: Fail closed on main or unexpected branch
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          set -euo pipefail
+          test "$TARGET_BRANCH" != main
+          case "$TARGET_BRANCH" in ai/*) ;; *) echo 'Target must be an ai/* branch.' >&2; exit 42 ;; esac
 
       - name: Set up Node 22
         uses: actions/setup-node@v7
@@ -65,13 +73,15 @@ jobs:
           console.log(JSON.stringify({count:corpus.records.length,sourceCounts:meta.sourceCounts,dedupe:meta.dedupe,audit:meta.audit},null,2));
           NODE
 
-      - name: Commit generated public corpus
+      - name: Commit generated public corpus to target branch
         shell: bash
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
           set -euo pipefail
           git config user.name 'GARANG Food Data Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add 04_data/knowledge/food-db-supplemental-usda-v1.json 04_data/knowledge/food-db-supplemental-usda-v1.meta.json
           if git diff --cached --quiet; then echo 'No corpus changes.'; exit 0; fi
-          git commit -m 'Add USDA supplemental food corpus [skip food-corpus-build]'
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git commit -m 'Regenerate USDA supplemental food corpus'
+          git push origin "HEAD:${TARGET_BRANCH}"
