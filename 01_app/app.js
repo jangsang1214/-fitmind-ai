@@ -22,7 +22,7 @@ const EMPTY = () => ({
   onboarding:{complete:false,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},
   preferences:{language:'ko',unit:'metric'},
   privacy:{consent:{analytics:false}},
-  checkins:[], planner:[], workouts:[], meals:[], runs:[], body:[], aiChat:[],
+  checkins:[], planner:[], workouts:[], meals:[], runs:[], body:[], physiologicalSignals:[], aiChat:[],
   memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
   actionLog:[], analytics:{events:[]}, errors:[], plan:'FREE'
 });
