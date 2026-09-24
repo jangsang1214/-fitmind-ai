@@ -12,7 +12,10 @@ assert.ok(MEAL_SCAN_SCHEMA.properties.items.items.properties.portionConfidence,'
 assert.equal(MEAL_SCAN_SCHEMA.properties.items.minItems,0,'Vision schema must allow an explicit no-food result instead of forcing fabrication');
 assert.throws(()=>validateMealScan({items:[],overallConfidence:0,uncertain:true,notes:'not food'}),e=>e?.code==='MEAL_SCAN_NO_FOOD_DETECTED');
 assert.ok(LABEL_SCAN_SCHEMA.properties.nutritionConfidence,'Label schema must expose nutrition-reading confidence');
-assert.deepEqual(validateLabelScan({productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''}),{productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''});
+assert.ok(LABEL_SCAN_SCHEMA.properties.barcode,'Label schema must expose optional printed barcode');
+assert.ok(LABEL_SCAN_SCHEMA.properties.reportNo,'Label schema must expose optional printed report number');
+assert.deepEqual(validateLabelScan({productName:'프로틴 바',brand:'GARANG',barcode:'012345678905',reportNo:'2024-0417-36623',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''}),{productName:'프로틴 바',brand:'GARANG',barcode:'00012345678905',reportNo:'2024041736623',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''});
+assert.equal(validateLabelScan({productName:'프로틴 바',brand:'',barcode:'1234',reportNo:'',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''}).uncertain,true);
 
 (async()=>{
  let request;
@@ -25,10 +28,10 @@ assert.deepEqual(validateLabelScan({productName:'프로틴 바',brand:'GARANG',s
  assert.match(request.input[0].content[0].text,/Do not calculate calories/);
 
  let labelRequest;
- const labelProvider=createMealScanProvider({apiKey:'secret',fetchImpl:async(_url,init)=>{labelRequest=JSON.parse(init.body);return {ok:true,json:async()=>({id:'label-response',output:[{content:[{text:JSON.stringify({productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:'printed serving'})}]}]})};}});
+ const labelProvider=createMealScanProvider({apiKey:'secret',fetchImpl:async(_url,init)=>{labelRequest=JSON.parse(init.body);return {ok:true,json:async()=>({id:'label-response',output:[{content:[{text:JSON.stringify({productName:'프로틴 바',brand:'GARANG',barcode:'012345678905',reportNo:'2024-0417-36623',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:'printed serving'})}]}]})};}});
  const labelResult=await labelProvider.scan({image,language:'ko',requestId:'label-1',mode:'label'});
- assert.equal(labelResult.mode,'label');assert.equal(labelResult.label.productName,'프로틴 바');assert.equal(labelResult.label.protein,20);
- assert.match(labelRequest.input[0].content[0].text,/Read only nutrition facts visibly printed/);
+ assert.equal(labelResult.mode,'label');assert.equal(labelResult.label.productName,'프로틴 바');assert.equal(labelResult.label.protein,20);assert.equal(labelResult.label.barcode,'00012345678905');assert.equal(labelResult.label.reportNo,'2024041736623');
+ assert.match(labelRequest.input[0].content[0].text,/Read only nutrition facts and identity fields visibly printed/);
  assert.equal(labelRequest.text.format.name,'garang_nutrition_label_scan');
 
  let captured=null,rateRoute=null;
@@ -51,7 +54,7 @@ assert.deepEqual(validateLabelScan({productName:'프로틴 바',brand:'GARANG',s
  const labelHandler=createMealScanHandler({
   verifyIdToken:async()=>({uid:'user-1'}),
   consumeRateLimit:async(_uid,meta)=>{labelRateRoute=meta.route;return {allowed:true};},
-  providerFactory:()=>({scan:async input=>{labelCaptured=input;return {mode:'label',label:{productName:'프로틴 바',brand:'GARANG',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''},provider:'mock',model:'mock-vision'};}}),
+  providerFactory:()=>({scan:async input=>{labelCaptured=input;return {mode:'label',label:{productName:'프로틴 바',brand:'GARANG',barcode:'00012345678905',reportNo:'2024041736623',servingGrams:55,calories:210,protein:20,carbs:24,fat:6,confidence:.94,nutritionConfidence:.91,uncertain:false,notes:''},provider:'mock',model:'mock-vision'};}}),
   getProviderConfig:()=>({provider:'mock'})
  });
  const labelResponse={statusCode:200,payload:null,headers:{},status(code){this.statusCode=code;return this;},json(value){this.payload=value;return this;},set(k,v){this.headers[k]=v;return this;}};
