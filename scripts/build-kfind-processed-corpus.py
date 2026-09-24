@@ -108,8 +108,12 @@ def main():
             duplicate+=1
             if rank(rec)>rank(prev):by_key[key]=rec
     records=sorted(by_key.values(),key=lambda r:(bucket_of(r['name']),compact(r['name']),compact(r.get('brand') or ''),r['food_id']))
-    out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True);buckets=defaultdict(list)
-    for rec in records:buckets[bucket_of(rec['name'])].append(compact_row(rec))
+    out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True);buckets=defaultdict(list);brand_prefix_buckets=defaultdict(set);brands=set()
+    for rec in records:
+        product_bucket=bucket_of(rec['name']);buckets[product_bucket].append(compact_row(rec))
+        if rec.get('brand'):
+            brand_key=compact(rec['brand']);brands.add(brand_key)
+            if brand_key:brand_prefix_buckets[brand_key[:4]].add(product_bucket)
     shards={}
     for bucket,items in buckets.items():
         fn=safe_bucket(bucket)+'.json'
@@ -117,9 +121,10 @@ def main():
         shards[bucket]={'file':fn,'count':len(items)}
     now=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
     fixed={'provider':'식품의약품안전처 K-FIND','dataset':DATASET,'url':SOURCE_URL,'label':LABEL}
-    manifest={'version':VERSION,'format':FORMAT,'fields':FIELDS,'fixedProvenance':fixed,'generatedAt':now,'status':'ready','purpose':'compact K-FIND processed-food brand/product supplemental corpus','rawCount':raw,'count':len(records),'shards':shards}
+    brand_routes={key:sorted(values) for key,values in brand_prefix_buckets.items()}
+    manifest={'version':VERSION,'format':FORMAT,'fields':FIELDS,'fixedProvenance':fixed,'generatedAt':now,'status':'ready','purpose':'compact K-FIND processed-food brand/product supplemental corpus','rawCount':raw,'count':len(records),'brandPrefixBuckets':brand_routes,'shards':shards}
     brand_count=sum(1 for r in records if r.get('brand'));report_count=sum(1 for r in records if r.get('report_no'))
-    meta={'version':VERSION,'format':FORMAT,'status':'ready','rawRows':raw,'records':len(records),'brandRows':brand_count,'brandRate':brand_count/len(records) if records else 0,'reportNoRows':report_count,'reportNoRate':report_count/len(records) if records else 0,'duplicateBrandProductRows':duplicate,'excludedNonGramRows':non_g,'incompleteCoreRows':incomplete,'invalidRows':invalid,'shardCount':len(shards),'source':fixed,'guardrails':{'verifiedOnly':True,'gramBasisOnlyForAutomaticCalculation':True,'traceableProvenanceRequired':True,'deterministicRuntimeAliases':True,'noAutomaticCanonicalOverwrite':True,'singleShardOwnership':True}}
+    meta={'version':VERSION,'format':FORMAT,'status':'ready','rawRows':raw,'records':len(records),'brandRows':brand_count,'brandRate':brand_count/len(records) if records else 0,'uniqueBrands':len(brands),'brandRoutePrefixes':len(brand_routes),'reportNoRows':report_count,'reportNoRate':report_count/len(records) if records else 0,'duplicateBrandProductRows':duplicate,'excludedNonGramRows':non_g,'incompleteCoreRows':incomplete,'invalidRows':invalid,'shardCount':len(shards),'source':fixed,'guardrails':{'verifiedOnly':True,'gramBasisOnlyForAutomaticCalculation':True,'traceableProvenanceRequired':True,'deterministicRuntimeAliases':True,'noAutomaticCanonicalOverwrite':True,'singleShardOwnership':True,'brandRouteOnlyNoDuplicateRecords':True}}
     Path(a.manifest).write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n');Path(a.meta).write_text(json.dumps(meta,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(meta,ensure_ascii=False,indent=2))
     if len(records)<100000:raise SystemExit('K-FIND processed corpus unexpectedly small: '+str(len(records)))
