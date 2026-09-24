@@ -1,15 +1,6 @@
 name: Build Korean Food Corpus
 
 on:
-  push:
-    branches:
-      - ai/korean-food-corpus-v1-20260924
-    paths:
-      - .github/workflows/build-korean-food-corpus.yml
-      - scripts/build-korean-food-corpus.cjs
-      - scripts/import-official-food-data.cjs
-      - 02_core/korean-food-normalization-v1.js
-      - 02_core/food-source-adapters-v2.js
   workflow_dispatch:
 
 permissions:
@@ -21,7 +12,6 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ !contains(github.event.head_commit.message || '', '[skip korean-corpus-build]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
