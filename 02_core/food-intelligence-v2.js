@@ -34,7 +34,8 @@ function keyScore(query,key){
  const q=compact(query),k=compact(key);if(!q||!k)return {score:0,kind:'none'};if(q===k)return {score:1,kind:'exact'};
  const contains=(q.includes(k)||k.includes(q))?Math.min(q.length,k.length)/Math.max(q.length,k.length):0;
  const qt=tokens(query),kt=tokens(key),tok=overlap(qt,kt),coverage=queryCoverage(qt,kt),tri=dice(trigrams(query),trigrams(key)),edit=editRatio(query,key),concept=conceptOverlap(query,key);
- const score=Math.max(contains*.9,tok*.88,coverage*.91,tri*.78,edit*.86,concept*.82,concept*.65+tri*.25);
+ const coverageScore=(qt.size>=2||kt.size<=qt.size)?coverage*.91:coverage*.62;
+ const score=Math.max(contains*.9,tok*.88,coverageScore,tri*.78,edit*.86,concept*.82,concept*.65+tri*.25);
  return {score,kind:concept>=1?'semantic':edit>=.85?'typo':contains>=.8?'contains':'fuzzy'};
 }
 const INDEX_CACHE=typeof WeakMap==='function'?new WeakMap():null;
