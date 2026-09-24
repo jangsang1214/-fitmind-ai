@@ -30,11 +30,13 @@ const EMPTY = () => ({
 let state = EMPTY();
 let db = {exercise:[],food:[]};
 let supplementalFoodDb=null, supplementalFoodDbPromise=null, supplementalFoodIndex=null, supplementalSelectedFood=null;
-let koreanFoodManifest=null, koreanFoodManifestPromise=null;
+let koreanFoodManifest=null, koreanFoodManifestPromise=null, koreanProcessedManifest=null, koreanProcessedManifestPromise=null;
 const koreanFoodShardCache=new Map(), koreanFoodShardPromises=new Map(), koreanFoodShardIndexes=new Map();
 const SUPPLEMENTAL_FOOD_DB_PATH='04_data/knowledge/food-db-supplemental-usda-v1.json';
 const KOREAN_FOOD_MANIFEST_PATH='04_data/knowledge/food-db-supplemental-korea-v1/manifest.json';
 const KOREAN_FOOD_BASE_PATH='04_data/knowledge/food-db-supplemental-korea-v1/';
+const KOREAN_PROCESSED_MANIFEST_PATH='04_data/knowledge/food-db-supplemental-korea-processed-v1/manifest.json';
+const KOREAN_PROCESSED_BASE_PATH='04_data/knowledge/food-db-supplemental-korea-processed-v1/';
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
 let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
@@ -701,14 +703,27 @@ async function loadKoreanFoodManifest(){
  if(!koreanFoodManifestPromise)koreanFoodManifestPromise=fetch(KOREAN_FOOD_MANIFEST_PATH,{cache:'force-cache'}).then(async response=>{if(response.status===404)return {shards:{},count:0};if(!response.ok)throw new Error('KOREAN_FOOD_MANIFEST_'+response.status);const payload=await response.json();return payload&&typeof payload==='object'?payload:{shards:{},count:0};}).then(payload=>{koreanFoodManifest=payload;return payload;}).catch(error=>{koreanFoodManifestPromise=null;captureError('korean_food_manifest_load',error);return {shards:{},count:0};});
  return koreanFoodManifestPromise;
 }
+async function loadKoreanProcessedManifest(){
+ if(koreanProcessedManifest)return koreanProcessedManifest;
+ if(!koreanProcessedManifestPromise)koreanProcessedManifestPromise=fetch(KOREAN_PROCESSED_MANIFEST_PATH,{cache:'force-cache'}).then(async response=>{if(response.status===404)return {shards:{},count:0};if(!response.ok)throw new Error('KOREAN_PROCESSED_MANIFEST_'+response.status);const payload=await response.json();return payload&&typeof payload==='object'?payload:{shards:{},count:0};}).then(payload=>{koreanProcessedManifest=payload;return payload;}).catch(error=>{koreanProcessedManifestPromise=null;captureError('korean_processed_manifest_load',error);return {shards:{},count:0};});
+ return koreanProcessedManifestPromise;
+}
 async function loadKoreanFoodShard(query){
- const manifest=await loadKoreanFoodManifest(),bucket=koreanFoodBucket(query),spec=manifest?.shards?.[bucket];if(!spec?.file)return {rows:[],index:null,bucket};
+ const bucket=koreanFoodBucket(query),[foodManifest,processedManifest]=await Promise.all([loadKoreanFoodManifest(),loadKoreanProcessedManifest()]);
+ const specs=[
+  foodManifest?.shards?.[bucket]?.file?{base:KOREAN_FOOD_BASE_PATH,file:foodManifest.shards[bucket].file,kind:'food'}:null,
+  processedManifest?.shards?.[bucket]?.file?{base:KOREAN_PROCESSED_BASE_PATH,file:processedManifest.shards[bucket].file,kind:'processed'}:null
+ ].filter(Boolean);
+ if(!specs.length)return {rows:[],index:null,bucket};
  if(koreanFoodShardCache.has(bucket))return {rows:koreanFoodShardCache.get(bucket),index:koreanFoodShardIndexes.get(bucket),bucket};
- if(!koreanFoodShardPromises.has(bucket))koreanFoodShardPromises.set(bucket,fetch(KOREAN_FOOD_BASE_PATH+spec.file,{cache:'force-cache'}).then(async response=>{if(!response.ok)throw new Error('KOREAN_FOOD_SHARD_'+response.status);const payload=await response.json(),rows=Array.isArray(payload?.records)?payload.records:[];const index=buildSupplementalIndex(rows);koreanFoodShardCache.set(bucket,rows);koreanFoodShardIndexes.set(bucket,index);return rows;}).catch(error=>{koreanFoodShardPromises.delete(bucket);captureError('korean_food_shard_load',error);return [];}));
+ if(!koreanFoodShardPromises.has(bucket))koreanFoodShardPromises.set(bucket,Promise.all(specs.map(async spec=>{
+   try{const response=await fetch(spec.base+spec.file,{cache:'force-cache'});if(!response.ok)throw new Error('KOREAN_FOOD_SHARD_'+response.status);const payload=await response.json();return Array.isArray(payload?.records)?payload.records:[];}
+   catch(error){captureError('korean_food_shard_load',error);return [];}
+ })).then(parts=>{const rows=parts.flat(),index=buildSupplementalIndex(rows);koreanFoodShardCache.set(bucket,rows);koreanFoodShardIndexes.set(bucket,index);return rows;}).catch(error=>{koreanFoodShardPromises.delete(bucket);captureError('korean_food_shard_merge',error);return [];}));
  const rows=await koreanFoodShardPromises.get(bucket);return {rows,index:koreanFoodShardIndexes.get(bucket)||null,bucket};
 }
 async function findKoreanSupplementalFood(q,options={}){
- const query=String(q||'').trim();if(!query)return null;const shard=await loadKoreanFoodShard(query);if(!shard.rows.length)return null;const hit=indexedSupplementalMatch(shard.rows,shard.index,query,options);return hit?{...hit,source:'korea-official',bucket:shard.bucket}:null;
+ const query=String(q||'').trim();if(!query)return null;const shard=await loadKoreanFoodShard(query);if(!shard.rows.length)return null;const hit=indexedSupplementalMatch(shard.rows,shard.index,query,options);if(!hit)return null;const source=String(hit.food?.food_id||'').startsWith('kfind-processed:')?'korea-processed':'korea-official';return {...hit,source,bucket:shard.bucket};
 }
 async function findUsdaSupplementalFood(q,options={}){
  const query=String(q||'').trim();if(!query)return null;const rows=await loadSupplementalFoodDb();if(!rows.length)return null;const hit=indexedSupplementalMatch(rows,supplementalFoodIndex,query,options);return hit?{...hit,source:'usda'}:null;
@@ -718,7 +733,7 @@ function foodItemFromFood(f,grams){if(!f)return null;const g=Math.max(1,num(gram
 function foodItem(name,grams){return foodItemFromFood(findFood(name),grams);}
 function applyFoodFields(f){const x=foodItemFromFood(f,$('foodGram').value);if(!x)return false;$('foodSearch').value=f.name;$('foodKcal').value=Math.round(x.kcal);$('foodProtein').value=x.protein.toFixed(1);$('foodCarb').value=x.carbs.toFixed(1);$('foodFat').value=x.fat.toFixed(1);return true;}
 function fillFood(manual=true){const f=findFood($('foodSearch').value);if(!f){if(manual)toast('기본 Food DB에서 찾지 못했습니다. 공식 확장 DB를 확인합니다.');return false;}supplementalSelectedFood=null;applyFoodFields(f);return true;}
-async function fillFoodExpanded(){if(fillFood(false))return;const hit=await findSupplementalFood($('foodSearch').value,{mode:'manual'});if(!hit?.food)return toast('GARANG 공식 Food DB에서 찾지 못했습니다.');supplementalSelectedFood=hit.food;applyFoodFields(hit.food);const korean=hit.source==='korea-official';toast(korean?'한국 공식 확장 DB에서 불러왔습니다.':'공식 USDA 확장 DB에서 불러왔습니다.');trackEvent('food_supplemental_match',{source:hit.source||'unknown',confidence:num(hit.match?.confidence,0)});}
+async function fillFoodExpanded(){if(fillFood(false))return;const hit=await findSupplementalFood($('foodSearch').value,{mode:'manual'});if(!hit?.food)return toast('GARANG 공식 Food DB에서 찾지 못했습니다.');supplementalSelectedFood=hit.food;applyFoodFields(hit.food);const korean=String(hit.source||'').startsWith('korea-');toast(korean?'한국 공식 확장 DB에서 불러왔습니다.':'공식 USDA 확장 DB에서 불러왔습니다.');trackEvent('food_supplemental_match',{source:hit.source||'unknown',confidence:num(hit.match?.confidence,0)});}
 function bindNutrition(){
   installNutritionDraftBridge();
   $('foodSearch')?.addEventListener('input',()=>{supplementalSelectedFood=null;fillFood(false);});if($('fillFood'))$('fillFood').onclick=fillFoodExpanded;if($('addFood'))$('addFood').onclick=addMealDraft;if($('saveMeal'))$('saveMeal').onclick=saveMealGroup;
