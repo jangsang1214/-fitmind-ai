@@ -24,7 +24,7 @@ assert.match(app,/nutrition_label_scan/);
 assert.match(app,/LABEL SCAN · 확인 필요/);
 assert.match(app,/function mealScanMatch/);
 assert.match(app,/JSON\.stringify\(\{image,language:/);
-assert.match(app,/,mode\}\)\)/);
+assert.ok(app.includes(',mode})}),payload'),'Meal/Label Scan request must send an explicit vision mode');
 assert.match(app,/scanEvidence:\{visionName:/);
 assert.match(app,/portionConfidence/);
 assert.match(app,/confirmationRequired/);
