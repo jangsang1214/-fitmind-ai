@@ -717,10 +717,11 @@ async function loadKoreanFoodBucket(query){
  if(!koreanFoodShardPromises.has(bucket))koreanFoodShardPromises.set(bucket,fetch(KOREAN_FOOD_BASE_PATH+spec.file,{cache:'force-cache'}).then(async response=>{if(!response.ok)throw new Error('KOREAN_FOOD_SHARD_'+response.status);const payload=await response.json(),rows=Array.isArray(payload?.records)?payload.records:[];koreanFoodShardCache.set(bucket,rows);return rows;}).catch(error=>{koreanFoodShardPromises.delete(bucket);captureError('korean_food_shard_load',error);return [];}));
  return koreanFoodShardPromises.get(bucket);
 }
-function koreanProcessedBuckets(query){
- const text=String(query||'').trim(),parts=text.split(/[\s·_\-()[\]{}.,/\\:+]+/).map(x=>x.trim()).filter(Boolean);
- const buckets=[koreanFoodBucket(text),...parts.map(koreanFoodBucket)].filter(Boolean);
- return [...new Set(buckets)].slice(0,4);
+function koreanProcessedBuckets(query,manifest){
+ const text=String(query||'').trim(),parts=text.split(/[\s·_\-()[\]{}.,/\\:+]+/).map(x=>x.trim()).filter(Boolean),routeKey=supplementalKey(text).slice(0,4);
+ const brandBuckets=Array.isArray(manifest?.brandPrefixBuckets?.[routeKey])?manifest.brandPrefixBuckets[routeKey]:[];
+ const buckets=[koreanFoodBucket(text),...parts.map(koreanFoodBucket),...brandBuckets].filter(Boolean);
+ return [...new Set(buckets)].slice(0,6);
 }
 function inflateKoreanProcessedShard(payload,manifest){
  const records=Array.isArray(payload?.records)?payload.records:[],fields=Array.isArray(payload?.fields)?payload.fields:(Array.isArray(manifest?.fields)?manifest.fields:[]),fixed=manifest?.fixedProvenance||{};
@@ -740,14 +741,14 @@ async function loadKoreanProcessedBucket(bucket,manifest){
 }
 async function loadKoreanProcessedRows(query){
  const manifest=await loadKoreanProcessedManifest();if(!manifest?.count)return [];
- const buckets=koreanProcessedBuckets(query),parts=await Promise.all(buckets.map(bucket=>loadKoreanProcessedBucket(bucket,manifest)));
+ const buckets=koreanProcessedBuckets(query,manifest),parts=await Promise.all(buckets.map(bucket=>loadKoreanProcessedBucket(bucket,manifest)));
  const byId=new Map();for(const row of parts.flat()){const id=String(row?.food_id||'');if(id&&!byId.has(id))byId.set(id,row);}
  return [...byId.values()];
 }
 async function loadKoreanFoodShard(query){
  const [foodRows,processedRows]=await Promise.all([loadKoreanFoodBucket(query),loadKoreanProcessedRows(query)]);
  const rows=[...foodRows,...processedRows],bucket=koreanFoodBucket(query);
- return {rows,index:rows.length?buildSupplementalIndex(rows):null,bucket,processedBuckets:koreanProcessedBuckets(query)};
+ return {rows,index:rows.length?buildSupplementalIndex(rows):null,bucket,processedBuckets:koreanProcessedBuckets(query,koreanProcessedManifest)};
 }
 async function findKoreanSupplementalFood(q,options={}){
  const query=String(q||'').trim();if(!query)return null;const shard=await loadKoreanFoodShard(query);if(!shard.rows.length)return null;const hit=indexedSupplementalMatch(shard.rows,shard.index,query,options);if(!hit)return null;const source=String(hit.food?.food_id||'').startsWith('kfind-processed:')?'korea-processed':'korea-official';return {...hit,source,bucket:shard.bucket};
