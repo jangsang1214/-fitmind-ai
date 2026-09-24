@@ -24,6 +24,7 @@ const EMPTY = () => ({
   privacy:{consent:{analytics:false}},
   checkins:[], planner:[], workouts:[], meals:[], runs:[], body:[], physiologicalSignals:[], aiChat:[],
   memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
+  foodIdentity:{barcodes:[],misses:[],corrections:[]},
   actionLog:[], analytics:{events:[]}, errors:[], plan:'FREE'
 });
 
@@ -43,7 +44,7 @@ let firebaseReady=false, currentUser=null, currentPage='today';
 let storageKey=SIGNED_OUT_KEY, syncTimer=null, syncRetry=0, cloudHydrated=true, cloudSyncPending=false;
 window.GarangCloudHydrationReady=true;
 function setCloudHydrationReady(value){cloudHydrated=!!value;window.GarangCloudHydrationReady=cloudHydrated;if(cloudHydrated)try{window.dispatchEvent(new CustomEvent('garang:cloud-state-ready',{detail:{ready:true}}));}catch{} }
-let workoutDraft=[], workoutEvidenceDraft=null, runEvidenceDraft=null, mealDraft=[], mealScanDraft=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false, workoutEditForm=null;
+let workoutDraft=[], workoutEvidenceDraft=null, runEvidenceDraft=null, mealDraft=[], mealScanDraft=null, barcodeDraft=null, lastFoodSearchMiss=null, bodyAttachmentDraft=null, runTimer=null, runState=null, workoutSetDraft=[], workoutSetDetailsOpen=false, workoutSetBridgeBound=false, workoutEditForm=null;
 let workoutMuscleFilter='all', workoutSelectedExercise='', workoutReplaceIndex=null, workoutEditTargetId=null, workoutActivePlanId=null, workoutExecutionDraftId=null;
 let currentCert={workout:null,running:null};
 let progressRangeDays=30, bodyRangeDays=90, bodyTrendMetric='weight', memoryEditId=null;
@@ -90,6 +91,9 @@ function normalizeState(){
   state.analytics=state.analytics&&typeof state.analytics==='object'?state.analytics:{events:[]};state.analytics.events=Array.isArray(state.analytics.events)?state.analytics.events:[];
   state.privacy=state.privacy&&typeof state.privacy==='object'?state.privacy:{};state.privacy.consent=state.privacy.consent&&typeof state.privacy.consent==='object'?state.privacy.consent:{};state.privacy.consent.analytics=state.privacy.consent.analytics===true;
   state.onboarding={...base.onboarding,...(state.onboarding||{})}; state.preferences={...base.preferences,...(state.preferences||{})}; state.preferences.language=state.preferences.language==='en'?'en':'ko'; state.preferences.unit=state.preferences.unit==='imperial'?'imperial':'metric'; state.plan=state.plan==='PRO'?'PRO':'FREE';
+  state.foodIdentity=state.foodIdentity&&typeof state.foodIdentity==='object'?state.foodIdentity:{barcodes:[],misses:[],corrections:[]};
+  for(const k of ['barcodes','misses','corrections'])state.foodIdentity[k]=Array.isArray(state.foodIdentity[k])?state.foodIdentity[k]:[];
+  state.foodIdentity.barcodes=state.foodIdentity.barcodes.slice(-300);state.foodIdentity.misses=state.foodIdentity.misses.slice(-120);state.foodIdentity.corrections=state.foodIdentity.corrections.slice(-120);
   migrateMemory();normalizeMeals();
 }
 function touch(){state.meta.updatedAt=isoNow();state.meta.schemaVersion=SCHEMA_VERSION;}
@@ -108,6 +112,7 @@ function cloudPayload(){
   out.workouts=out.workouts.slice(-350);out.meals=out.meals.slice(-350);out.body=out.body.slice(-250);out.checkins=out.checkins.slice(-180);out.planner=out.planner.slice(-300);out.actionLog=out.actionLog.slice(-300);
   out.runs=out.runs.slice(-200).map(r=>({...r,coords:Array.isArray(r.coords)?r.coords.slice(-250):[]}));
   out.memory.entries=out.memory.entries.slice(-400);out.memory.events=out.memory.events.slice(-300);out.aiChat=out.aiChat.slice(-80);
+  if(out.foodIdentity){out.foodIdentity.barcodes=(out.foodIdentity.barcodes||[]).slice(-300);out.foodIdentity.misses=(out.foodIdentity.misses||[]).slice(-120);out.foodIdentity.corrections=(out.foodIdentity.corrections||[]).slice(-120);}
   return out;
 }
 async function cloudSaveNow(){
