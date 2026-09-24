@@ -127,6 +127,84 @@
     <path class="g3-highlight" d="M123 94q13 5 20 14M120 119q15 7 22 19M105 153q14 7 28 6M117 268q11 10 15 24M103 348q9 7 16 5"/>
   </svg>`;}
 
+
+  function v5Defs(side){
+    const p=side==='front'?'5f':side==='side'?'5s':'5b';
+    return `<defs>
+      <linearGradient id="g5Body-${p}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f0ede6"/><stop offset=".28" stop-color="#d4d0c7"/>
+        <stop offset=".62" stop-color="#a8a49b"/><stop offset=".84" stop-color="#7e7b74"/><stop offset="1" stop-color="#625f5a"/>
+      </linearGradient>
+      <linearGradient id="g5Muscle-${p}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#c0b9ad"/><stop offset=".52" stop-color="#9a948a"/><stop offset="1" stop-color="#736f68"/>
+      </linearGradient>
+      <radialGradient id="g5Volume-${p}" cx=".42" cy=".24" r=".86">
+        <stop offset="0" stop-color="#ffffff" stop-opacity=".24"/><stop offset=".58" stop-color="#ffffff" stop-opacity=".04"/><stop offset="1" stop-color="#11130f" stop-opacity=".18"/>
+      </radialGradient>
+    </defs>`;
+  }
+
+  const v5FrontOutlineMale='M130 12C111 12 101 26 101 47c0 15 7 28 15 35l-1 9c-11 3-20 7-29 12-11 5-21 12-27 24-5 11-7 24-8 41l-5 49c-1 19-3 35-6 50-2 13 0 24 6 31l1 18c0 8 3 15 8 18 5-3 7-11 7-19l1-19c5-10 9-24 12-38l7-43c3-16 5-31 7-45 2 20 5 39 9 57 3 16 6 29 3 42-3 11-8 22-12 31-5 12-7 28-7 47 0 22 6 44 10 63 2 13-1 29-4 46-2 14-2 27 0 39 1 8 5 14 11 16 6-1 9-7 10-16l4-44c3-21 6-41 9-60l4-61c1-14 2-23 4-25 2 2 3 11 4 25l4 61c3 19 6 39 9 60l4 44c1 9 4 15 10 16 6-2 10-8 11-16 2-12 2-25 0-39-3-17-6-33-4-46 4-19 10-41 10-63 0-19-2-35-7-47-4-9-9-20-12-31-3-13 0-26 3-42 4-18 7-37 9-57 2 14 4 29 7 45l7 43c3 14 7 28 12 38l1 19c0 8 2 16 7 19 5-3 8-10 8-18l1-18c6-7 8-18 6-31-3-15-5-31-6-50l-5-49c-1-17-3-30-8-41-6-12-16-19-27-24-9-5-18-9-29-12l-1-9c8-7 15-20 15-35 0-21-10-35-29-35Z';
+  const v5FrontOutlineFemale='M130 12C112 12 102 26 102 47c0 15 6 28 14 35l-1 10c-10 3-19 7-28 12-10 6-18 13-23 24-4 11-6 24-7 40l-4 49c-1 18-3 34-6 49-2 12 0 23 5 30l1 18c0 8 3 14 7 17 5-3 7-10 7-18l1-18c4-10 8-23 11-37l7-42c3-16 5-31 6-44 3 20 6 39 10 56 3 15 6 28 3 40-3 10-8 21-13 30-6 12-9 28-9 47 0 22 7 44 11 63 3 13 0 29-3 46-2 14-2 27 0 39 1 8 5 14 11 16 6-1 9-7 10-16l4-44c3-21 6-41 9-60l4-61c1-14 2-23 4-25 2 2 3 11 4 25l4 61c3 19 6 39 9 60l4 44c1 9 4 15 10 16 6-2 10-8 11-16 2-12 2-25 0-39-3-17-6-33-3-46 4-19 11-41 11-63 0-19-3-35-9-47-5-9-10-20-13-30-3-12 0-25 3-40 4-17 7-36 10-56 1 13 3 28 6 44l7 42c3 14 7 27 11 37l1 18c0 8 2 15 7 18 4-3 7-9 7-17l1-18c5-7 7-18 5-30-3-15-5-31-6-49l-4-49c-1-16-3-29-7-40-5-11-13-18-23-24-9-5-18-9-28-12l-1-10c8-7 14-20 14-35 0-21-10-35-28-35Z';
+
+  function v5FrontSVG(gender='male'){
+    const female=gender==='female',outline=female?v5FrontOutlineFemale:v5FrontOutlineMale;
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g5-anatomy" data-garang-classical-model="5" data-garang-body-v2="front" data-garang-anatomy-v5="front" data-garang-gender="${gender}" viewBox="0 0 260 520" role="img" aria-label="${female?'여성':'남성'} 전면 해부학 기반 근육 지도">
+      ${v5Defs('front')}
+      <path class="g5-silhouette g3-base g3-human-trunk" d="${outline}"/>
+      <path class="g5-volume" d="${outline}"/>
+      <path class="g5-landmark" d="M116 84q14 9 28 0M89 113q20-12 41-6m41 6q-20-12-41-6M95 155q35 17 70 0M101 206q29 13 58 0M104 249q26 10 52 0M102 285q28 12 56 0"/>
+      <path class="g5-face" d="M113 39q17-8 34 0M118 52q12 5 24 0M122 66q8 5 16 0"/>
+      <path class="g3-muscle muscle-shoulders" d="${female?'M78 111c13-11 27-12 42-5l-9 32c-15 7-29 1-38-11Zm104 0c-13-11-27-12-42-5l9 32c15 7 29 1 38-11Z':'M70 109c16-12 33-13 50-4l-10 35c-18 7-34 0-44-14Zm120 0c-16-12-33-13-50-4l10 35c18 7 34 0 44-14Z'}"/>
+      <path class="g3-muscle muscle-chest" d="${female?'M92 126c12-9 25-12 38-8v40c-17 5-32 1-44-13Zm76 0c-12-9-25-12-38-8v40c17 5 32 1 44-13Z':'M86 125c14-10 29-13 44-8v42c-20 6-37 1-50-14Zm88 0c-14-10-29-13-44-8v42c20 6 37 1 50-14Z'}"/>
+      <path class="g3-muscle muscle-biceps" d="M67 145c11 0 17 11 16 28l-7 39c-4 13-11 19-18 10l3-40Zm126 0c-11 0-17 11-16 28l7 39c4 13 11 19 18 10l-3-40Z"/>
+      <path class="g3-muscle muscle-triceps" d="M56 154c8 5 11 17 9 32l-7 42-10 15 5-56Zm148 0c-8 5-11 17-9 32l7 42 10 15-5-56Z"/>
+      <path class="g3-muscle muscle-core" d="M108 166c7 4 14 6 22 6s15-2 22-6l8 40-6 60-24 25-24-25-6-60Zm-10 22c7 11 9 28 7 50l-5 28-14-22 4-40Zm64 0c-7 11-9 28-7 50l5 28 14-22-4-40Z"/>
+      <path class="g5-segment" d="M113 184q17 6 34 0M111 205q19 7 38 0M112 227q18 7 36 0M114 250q16 6 32 0M130 174v109"/>
+      <path class="g3-muscle muscle-legs" d="M95 295c11-10 24-8 31 7l-5 67-24 20-16-61Zm70 0c-11-10-24-8-31 7l5 67 24 20 16-61ZM90 386c13-8 24 1 27 19l-6 70-21 7-8-51Zm80 0c-13-8-24 1-27 19l6 70 21 7 8-51Z"/>
+      <path class="g5-segment" d="M98 314q15 10 27 7M162 314q-15 10-27 7M94 351q15 11 29 7M166 351q-15 11-29 7M93 407q12 9 23 6M167 407q-12 9-23 6M92 447q11 8 20 4M168 447q-11 8-20 4"/>
+      <path class="g5-hand-detail" d="M47 297l3 20m3-22 2 22m4-24 1 21M213 297l-3 20m-3-22-2 22m-4-24-1 21"/>
+      <path class="g5-foot-detail" d="M89 498q10 8 22 5m60-5q-10 8-22 5"/>
+    </svg>`;
+  }
+
+  function v5BackSVG(gender='male'){
+    const female=gender==='female',outline=female?v5FrontOutlineFemale:v5FrontOutlineMale;
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g5-anatomy" data-garang-classical-model="5" data-garang-body-v2="back" data-garang-anatomy-v5="back" data-garang-gender="${gender}" viewBox="0 0 260 520" role="img" aria-label="${female?'여성':'남성'} 후면 해부학 기반 근육 지도">
+      ${v5Defs('back')}
+      <path class="g5-silhouette g3-base g3-human-trunk" d="${outline}"/>
+      <path class="g5-volume" d="${outline}"/>
+      <path class="g5-face" d="M114 47q16 8 32 0M130 77v18"/>
+      <path class="g3-muscle muscle-shoulders" d="${female?'M78 111c13-11 27-12 42-5l-8 33c-16 6-30 0-39-12Zm104 0c-13-11-27-12-42-5l8 33c16 6 30 0 39-12Z':'M70 109c16-12 33-13 50-4l-9 36c-19 6-35-1-45-15Zm120 0c-16-12-33-13-50-4l9 36c19 6 35-1 45-15Z'}"/>
+      <path class="g3-muscle muscle-back" d="M109 96c7-7 14-11 21-11s14 4 21 11l14 34-16 28-19-14-19 14-16-28Zm-18 34c14-9 26-5 39 14-10 19-18 43-22 72l-30-36 6-34Zm78 0c-14-9-26-5-39 14 10 19 18 43 22 72l30-36-6-34Z"/>
+      <path class="g3-muscle muscle-triceps" d="M67 144c11 0 17 11 16 29l-8 42c-5 14-12 19-18 10l4-41Zm126 0c-11 0-17 11-16 29l8 42c5 14 12 19 18 10l-4-41Z"/>
+      <path class="g3-muscle muscle-core" d="M107 210h46l8 46-31 33-31-33Z"/>
+      <path class="g5-segment" d="M130 93v190M103 120q27 18 54 0M102 157q28 18 56 0M104 204q26 15 52 0"/>
+      <path class="g3-muscle muscle-legs" d="M95 291c15-9 27-2 35 18-8 19-21 32-39 38l-17-28Zm70 0c-15-9-27-2-35 18 8 19 21 32 39 38l17-28ZM94 343c14-7 27 3 34 24l-7 42-24 12-17-48Zm72 0c-14-7-27 3-34 24l7 42 24 12 17-48ZM90 410c13-8 24 2 27 20l-6 50-21 6-8-40Zm80 0c-13-8-24 2-27 20l6 50 21 6 8-40Z"/>
+      <path class="g5-segment" d="M98 306q15 10 30 8M162 306q-15 10-30 8M96 363q16 10 31 7M164 363q-16 10-31 7M92 428q13 8 24 5M168 428q-13 8-24 5"/>
+      <path class="g5-hand-detail" d="M47 297l3 20m3-22 2 22m4-24 1 21M213 297l-3 20m-3-22-2 22m-4-24-1 21"/>
+      <path class="g5-foot-detail" d="M89 498q10 8 22 5m60-5q-10 8-22 5"/>
+    </svg>`;
+  }
+
+  function v5SideSVG(gender='male'){
+    const female=gender==='female';
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g5-anatomy g5-side" data-garang-classical-model="5" data-garang-body-v2="side" data-garang-anatomy-v5="side" data-garang-gender="${gender}" viewBox="0 0 260 520" role="img" aria-label="${female?'여성':'남성'} 측면 해부학 기반 근육 지도">
+      ${v5Defs('side')}
+      <path class="g5-silhouette g3-base g3-human-trunk" d="${female?'M117 12c-15 2-25 16-25 37 0 14 6 27 15 35l2 12c-12 5-21 15-26 29-6 17-5 38-1 61l7 43-9 31c-4 14-3 28 4 39 5 8 12 14 21 17-6 18-8 38-5 60l6 38-5 45c-2 18 1 36 9 50 6 10 13 13 21 11l-3-60 5-48-3-42 5-48 6 43 12 50-4 51 6 51c2 14 8 20 16 19 7-2 11-9 11-21l-3-48 5-48 8-45c3-24 1-45-6-64-7-20-16-34-27-43l8-32 3-42c1-18-2-33-8-45-6-13-15-22-27-27l3-12c9-7 16-19 18-31l10-3-8-8c-1-17-10-28-23-29Z':'M116 12c-16 2-26 16-26 38 0 15 6 28 16 36l2 12c-13 5-23 15-29 30-6 18-5 40-1 64l8 44-10 32c-4 15-3 30 4 42 6 9 13 15 22 18-7 19-9 40-6 63l6 39-5 46c-2 19 1 37 10 52 6 10 14 13 22 11l-3-61 5-50-3-44 5-50 7 45 13 52-4 53 6 52c2 15 8 21 17 20 8-2 12-10 12-22l-3-50 5-50 9-47c3-25 1-47-6-67-7-21-17-36-29-45l9-34 3-44c1-19-2-35-9-48-7-14-17-23-30-28l3-13c10-8 17-20 19-33l11-4-9-8c-1-18-11-30-25-31Z'}"/>
+      <path class="g5-volume" d="M105 101c22-11 47-3 60 22 9 18 8 43 1 66l-8 27 8 34-6 46-24 17-31-13-10-40 8-39-8-35-4-42c-2-20 3-34 14-43Z"/>
+      <path class="g3-muscle muscle-shoulders" d="M128 104c17 1 29 11 33 27-8 13-20 18-34 11l-11-22Z"/>
+      <path class="g3-muscle muscle-chest" d="M130 132c17 5 26 19 28 39l-4 28-27-7-10-35Z"/>
+      <path class="g3-muscle muscle-back" d="M104 118c12 3 21 15 25 34l-8 61-22 42-15-52 3-50Z"/>
+      <path class="g3-muscle muscle-biceps" d="M149 151c10 3 15 14 14 30l-4 35-12-2-10-37Z"/>
+      <path class="g3-muscle muscle-triceps" d="M139 145c10 1 16 10 16 25l-8 49-14-20-7-34Z"/>
+      <path class="g3-muscle muscle-core" d="M119 191c17 2 29 12 35 29l-6 50-17 40-31-10 7-42-9-40Z"/>
+      <path class="g3-muscle muscle-legs" d="M126 316c16 10 23 30 21 56l-9 46-18-5-9-42 4-38Zm-17 91c12 1 20 11 21 29l-6 68-20 2-5-46 6-43Zm34 15c12 5 17 17 15 33l-8 49-19-2 1-44 5-32Z"/>
+      <path class="g5-face" d="M122 28l13 3 10 8-11 5-6 11-11 8"/>
+      <path class="g5-segment" d="M111 108q20 11 36 27M114 161q24 10 41 6M107 206q22 9 42 5M104 250q20 9 39 4M107 294q18 8 37 3M119 336q16 12 25 30M120 424q14 9 25 6"/>
+    </svg>`;
+  }
+
   function bindZones(map){
     map.querySelectorAll('.g3-muscle').forEach(zone=>{
       const key=['chest','back','shoulders','biceps','triceps','core','legs'].find(k=>zone.classList.contains(`muscle-${k}`));if(!key)return;
@@ -149,8 +227,8 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg');
-        if(old?.dataset?.garangAnatomyV4===side&&old?.dataset?.garangGender===gender)return;
-        const tpl=document.createElement('template');tpl.innerHTML=(side==='front'?frontSVG(gender):side==='side'?sideSVG(gender):backSVG(gender)).trim();
+        if(old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        const tpl=document.createElement('template');tpl.innerHTML=(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender)).trim();
         const next=tpl.content.firstElementChild;if(old)old.replaceWith(next);else view.appendChild(next);
       });
       let tools=wrap.previousElementSibling?.classList.contains('g3-anatomy-tools')?wrap.previousElementSibling:wrap.querySelector(':scope > .g3-anatomy-tools');
