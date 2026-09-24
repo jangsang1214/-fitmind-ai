@@ -170,6 +170,25 @@
     main.querySelectorAll('.compact-history').forEach(node=>node.classList.add('garang-history-quiet'));
   }
 
+  function simplifyNutrition(){
+    if(main.dataset.garangScreen!=='nutrition')return;
+    main.dataset.garangDesignV2='nutrition';
+    const scan=main.querySelector('.meal-scan-card');
+    if(scan){
+      scan.classList.add('garang-meal-scan-primary');
+      setText(scan.querySelector('.meal-scan-header h3'),isKo()?'사진으로 기록':'Record with a photo');
+      setText(scan.querySelector('.meal-scan-header p'),isKo()?'사진을 찍으면 음식과 영양을 계산합니다. 저장 전에 한 번 확인하세요.':'Take a photo, review the estimate, then save.');
+    }
+    const manual=main.querySelector('details.manual-entry');
+    if(manual){
+      manual.classList.add('garang-manual-entry-quiet');
+      if(!manual.dataset.garangUserOpened){
+        manual.open=false;
+        manual.addEventListener('toggle',()=>{if(manual.open)manual.dataset.garangUserOpened='1';},{once:true});
+      }
+    }
+  }
+
   function simplifyProgress(){
     if(main.dataset.garangScreen!=='progress')return;
     main.dataset.garangDesignV2='progress';
@@ -195,7 +214,7 @@
   function applyP5Cleanup(){
     main.classList.add('garang-p5-clean');
     const screen=main.dataset.garangScreen||'';
-    if(['workout','progress','coach','today'].includes(screen))main.dataset.garangLowDensity='1';
+    if(['workout','nutrition','progress','coach','today'].includes(screen))main.dataset.garangLowDensity='1';
     else delete main.dataset.garangLowDensity;
   }
 
@@ -225,6 +244,7 @@
     cleanTodayAnatomy();
     keepMealEntryOpen();
     simplifyWorkout();
+    simplifyNutrition();
     simplifyProgress();
     simplifyCoach();
     applyP5Cleanup();
