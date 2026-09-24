@@ -1,0 +1,33 @@
+{
+  "version": "garang-kfind-processed-corpus-v2",
+  "format": "compact-array-v1",
+  "status": "ready",
+  "rawRows": 316734,
+  "records": 266415,
+  "brandRows": 266110,
+  "brandRate": 0.9988551695662782,
+  "uniqueBrands": 19770,
+  "brandRoutePrefixes": 13697,
+  "reportNoRows": 266415,
+  "reportNoRate": 1.0,
+  "duplicateBrandProductRows": 9256,
+  "excludedNonGramRows": 41063,
+  "incompleteCoreRows": 0,
+  "invalidRows": 0,
+  "shardCount": 47,
+  "source": {
+    "provider": "식품의약품안전처 K-FIND",
+    "dataset": "K-FIND 가공식품 DB 2026-08-28",
+    "url": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do",
+    "label": "식품영양성분 데이터베이스"
+  },
+  "guardrails": {
+    "verifiedOnly": true,
+    "gramBasisOnlyForAutomaticCalculation": true,
+    "traceableProvenanceRequired": true,
+    "deterministicRuntimeAliases": true,
+    "noAutomaticCanonicalOverwrite": true,
+    "singleShardOwnership": true,
+    "brandRouteOnlyNoDuplicateRecords": true
+  }
+}
