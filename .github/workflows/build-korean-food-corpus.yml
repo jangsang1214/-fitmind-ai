@@ -1,0 +1,90 @@
+name: Build Korean Food Corpus
+
+on:
+  push:
+    branches:
+      - ai/korean-food-corpus-v1-20260924
+    paths:
+      - .github/workflows/build-korean-food-corpus.yml
+      - scripts/build-korean-food-corpus.cjs
+      - scripts/import-official-food-data.cjs
+      - 02_core/korean-food-normalization-v1.js
+      - 02_core/food-source-adapters-v2.js
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: korean-food-corpus-v1
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip korean-corpus-build]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+    steps:
+      - name: Check out corpus branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Require public-data service key
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${DATA_GO_KR_SERVICE_KEY:-}" ]; then
+            echo 'DATA_GO_KR_SERVICE_KEY_MISSING'
+            exit 2
+          fi
+
+      - name: Build Korean official corpus shards
+        run: |
+          rm -rf 04_data/knowledge/food-db-supplemental-korea-v1
+          mkdir -p 04_data/knowledge/food-db-supplemental-korea-v1
+          node scripts/build-korean-food-corpus.cjs \
+            --page-size 1000 \
+            --max-pages 1000 \
+            --output-dir 04_data/knowledge/food-db-supplemental-korea-v1 \
+            --manifest 04_data/knowledge/food-db-supplemental-korea-v1/manifest.json \
+            --meta 04_data/knowledge/food-db-supplemental-korea-v1/meta.json
+
+      - name: Verify corpus quality
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const manifest=require('./04_data/knowledge/food-db-supplemental-korea-v1/manifest.json');
+          const meta=require('./04_data/knowledge/food-db-supplemental-korea-v1/meta.json');
+          if(!(manifest.count>=1000))throw new Error('KOREAN_CORPUS_SCALE_TOO_SMALL:'+manifest.count);
+          if(meta.audit?.pass!==true||meta.audit?.errors!==0)throw new Error('KOREAN_CORPUS_AUDIT_RED');
+          if(meta.audit?.coverage?.traceableProvenanceRate!==1)throw new Error('KOREAN_PROVENANCE_NOT_COMPLETE');
+          if(!(meta.aliasRows>0))throw new Error('KOREAN_ALIAS_COVERAGE_EMPTY');
+          for(const spec of Object.values(manifest.shards||{})){
+            const file='./04_data/knowledge/food-db-supplemental-korea-v1/'+spec.file;
+            if(!fs.existsSync(file))throw new Error('MISSING_SHARD:'+spec.file);
+          }
+          console.log(JSON.stringify({count:manifest.count,sourceCounts:meta.sourceCounts,brandRows:meta.brandRows,aliasRows:meta.aliasRows,shards:Object.keys(manifest.shards||{}).length},null,2));
+          NODE
+
+      - name: Commit generated Korean corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'GARANG Korean Food Data Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 04_data/knowledge/food-db-supplemental-korea-v1
+          if git diff --cached --quiet; then
+            echo 'No Korean corpus changes.'
+            exit 0
+          fi
+          git commit -m 'Add Korean official supplemental corpus [skip korean-corpus-build]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
