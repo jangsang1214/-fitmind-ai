@@ -32,6 +32,12 @@ function startWorkoutSession(){ensureSession();updateLive();}
 function finishWorkoutSession(){
   if(!sessionStartedAt)return false;
   let save=document.getElementById('saveWorkoutSession');
+  if(save?.disabled&&draftSummary().exercises===0&&completedCurrent()===0){
+    sessionStartedAt=0;restUntil=0;pendingResult=null;clearPersistedSession();
+    if(timer){clearInterval(timer);timer=null;}
+    updateLive();
+    return true;
+  }
   if(save?.disabled){
     const add=document.getElementById('addWorkout');
     if(add&&!add.disabled){
