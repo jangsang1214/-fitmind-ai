@@ -45,4 +45,11 @@ assert.equal(files.shell.includes(".g4-prompt-strip"),false,'Coach shell must no
 assert.equal(files.shell.includes(".g2-message-text"),false,'Coach shell must not own message subtree');
 assert.ok(files.agent.includes("data-garang-prompt-id"),'Agent must own canonical prompts');
 assert.equal(files.profile.includes('.garang-decision-signals'),false,'Coach profile must not rewrite decision subtree');
+const productConsolidation=fs.readFileSync(require.resolve('../06_features/ui/runtime/garang-product-consolidation-v1.js'),'utf8');
+const todayActionFlow=fs.readFileSync(require.resolve('../06_features/ui/runtime/garang-today-action-flow-v1.js'),'utf8');
+assert.ok(productConsolidation.includes("flow.dataset.gpcConsolidated='1';m.dataset.gpcToday='1'"),'Today readiness must be published only after current flow consolidation');
+assert.ok(productConsolidation.includes("gpcConsolidated!=='1')delete current.dataset.gpcToday"),'Today readiness must be invalidated when the flow is remounted');
+assert.ok(productConsolidation.includes('reconcileNow'),'Product consolidation must expose synchronous lifecycle reconciliation');
+assert.ok(todayActionFlow.includes('GarangProductConsolidationV1?.reconcileNow?.()'),'Today flow replacement must synchronously reapply Product Consolidation');
+assert.ok(todayActionFlow.includes('GarangTodaySingleNextActionV1?.syncNow?.()'),'Today flow replacement must synchronously reapply the canonical next-action owner');
 console.log('runtime-lifecycle-contract: PASS');
