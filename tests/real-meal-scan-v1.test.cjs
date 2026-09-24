@@ -41,5 +41,5 @@ assert.match(app,/Food DB에 자동 매칭되지 않은 항목/);
 assert.doesNotMatch(app,/data\.items\.map\(i=>\(\{id:uid\(\),name:String\(i\.name\|\|'음식'\),grams:num\(i\.grams,100\),kcal:num\(i\.kcal\)/,'Meal Vision response must not directly supply nutrition');
 assert.match(css,/\.meal-scan-unmatched/);
 assert.match(html,/garang-services-config\.js\?v=1\.2\.0-nutrition-web/);
-assert.match(html,/adaptive-nutrition-learning-v1\.js\?v=1\.2\.0/);\nassert.match(html,/app\.js\?v=0\.11\.0-beta\.11-adaptive-nutrition/);
+assert.match(html,/adaptive-nutrition-learning-v1\.js\?v=1\.2\.0/);\nassert.match(html,/app\.js\?v=0\.11\.0-beta\.12-running-analysis/);
 console.log('Real Meal + Label Scan client contract: PASS');
