@@ -126,12 +126,13 @@
     const detailFields=[...builder.querySelectorAll('.workout-fields .compact-secondary')];
     const setDetailToolbar=builder.querySelector('.set-detail-toolbar');
     const entryDetails=[rpeField,...detailFields,setDetailToolbar].filter((node,index,list)=>node&&list.indexOf(node)===index);
-    ensureLuxuryDrawer(
+    const entryDrawer=ensureLuxuryDrawer(
       'garangWorkoutEntryDetails',
       isKo()?'세부 기록':'Details',
       isKo()?'RPE · RIR · 메모 · 시간':'RPE · RIR · notes · duration',
       entryDetails
     );
+    if(entryDrawer&&fields&&entryDrawer.parentElement===fields)fields.insertAdjacentElement('afterend',entryDrawer);
     if(fields){
       fields.classList.add('garang-essential-workout-fields');
       if(!builder.querySelector('.garang-workout-primary-hint')){
