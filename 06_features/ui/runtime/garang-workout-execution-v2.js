@@ -2,7 +2,7 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.2';
+const VERSION='workout-execution-v2.3';
 const SESSION_KEY='garang_workout_session_v2';
 let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
