@@ -3,6 +3,7 @@
 const assert=require('node:assert/strict');
 const Adapters=require('../02_core/food-source-adapters-v2.js');
 const Foundation=require('../02_core/food-data-foundation-v2.js');
+const Import=require('../scripts/import-official-food-data.cjs');
 
 const kfindFixture={
   FOOD_CD:'KTEST001',FOOD_NM_KR:'흰쌀밥',FOOD_NM_EN:'Cooked white rice',FOOD_CAT3_NM:'밥류',DB_GRP_CM:'음식',NUT_CON_SRTR_QUA:'100g',
@@ -22,7 +23,12 @@ const kfindIncomplete=Adapters.adaptKfind({...kfindFixture,PROTEIN_G:''});
 assert.equal(kfindIncomplete.quality,'unknown');
 assert.ok(Foundation.assess(kfindIncomplete).warnings.some(x=>x.code==='UNKNOWN_QUALITY'));
 
-const dataGoKrFixture={foodCd:'P116-705070200-1080',foodNm:'대추 쌀과자',dataCd:'P',typeNm:'가공식품',enerc:'382',nutConSrtrQua:'100g',prot:'8.50',fatce:'2.00',chocdf:'82.00',sugar:'0.20',nat:'18',fasat:'0.40',fatrn:'0.00',srcNm:'식품의약품안전처',dataProdYmd:'2025-01-22'};
+assert.equal(Import.DATA_GO_KR_FOOD_ENDPOINT,'https://api.data.go.kr/openapi/tn_pubr_public_nutri_food_info_api');
+const csvRows=Import.parseCsv('식품코드,식품명,데이터구분명,영양성분함량기준량,에너지(kcal),단백질(g),지방(g),탄수화물(g),출처명,데이터생성일자\nD001,"김밥, 소고기",음식,100g,160,6.39,3.85,25.01,식품의약품안전처,2026-04-29');
+assert.equal(csvRows.length,1);assert.equal(csvRows[0]['식품명'],'김밥, 소고기');
+const csvFood=Adapters.adaptDataGoKrStandard(csvRows[0]);assert.equal(csvFood.quality,'verified');assert.equal(csvFood.provenance.recordId,'D001');
+
+const dataGoKrFixture={foodCd:'P116-705070200-1080',foodNm:'대추 쌀과자',dataCd:'P',typeNm:'가공식품',enerc:'382',nutConSrtrQua:'100g',prot:'8.50',fatce:'2.00',chocdf:'82.00',sugar:'0.20',nat:'18',fasat:'0.40',fatrn:'0.00',srcNm:'식품의약품안전처',crtYmd:'2025-01-22',foodLv3Nm:'과자류',restNm:'테스트업체'};
 const dataGoKr=Adapters.adaptDataGoKrStandard(dataGoKrFixture,{retrievedAt:'2026-09-15'});
 assert.equal(dataGoKr.quality,'verified');
 assert.equal(dataGoKr.provenance.provider,'DATA.GO.KR');
@@ -31,6 +37,8 @@ assert.equal(dataGoKr.provenance.recordId,'P116-705070200-1080');
 assert.equal(dataGoKr.basisG,100);
 assert.equal(dataGoKr.nutrients.kcal,382);
 assert.equal(dataGoKr.nutrients.protein,8.5);
+assert.equal(dataGoKr.category,'과자류');
+assert.equal(dataGoKr.provenance.sourceDate,'2025-01-22');
 assert.equal(Foundation.assess(dataGoKr).errors.length,0);
 
 const volumeBasis=Adapters.adaptDataGoKrStandard({...dataGoKrFixture,foodCd:'P-VOLUME',foodNm:'간장 테스트',nutConSrtrQua:'100ml'});
