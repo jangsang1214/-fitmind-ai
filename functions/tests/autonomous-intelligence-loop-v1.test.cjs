@@ -180,8 +180,8 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.offlinePolicyEvaluation.guardrails.noCounterfactualClaim,true);
   assert.equal(context.workoutPrescriptionShadow.guardrails.neverAutoIncrease,true);
   assert.equal(context.adaptiveNutritionLearning.guardrails.noAutomaticTargetMutation,true);
-  assert.equal(context.intelligenceDataQuality.version,'intelligence-data-quality-v1.0.0');
-  assert.equal(context.recommendationQuality.version,'recommendation-quality-eval-v1.0.0');
+  assert.equal(context.intelligenceDataQuality.version,'intelligence-data-quality-v1.1.0');
+  assert.equal(context.recommendationQuality.version,'recommendation-quality-eval-v1.1.0');
   assert.equal(context.recommendationQuality.guardrails.noRecommendationMutation,true);
   assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.0.0');
   assert.equal(context.physiologicalSignals.guardrails.missingSignalsDoNotImplyNormal,true);
