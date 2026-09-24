@@ -84,13 +84,18 @@ jobs:
           from pathlib import Path
           root=Path('04_data/knowledge/food-db-supplemental-korea-processed-v1')
           manifest=json.loads((root/'manifest.json').read_text());meta=json.loads((root/'meta.json').read_text())
-          if manifest['count']<100000:raise SystemExit('processed corpus scale gate failed')
-          if meta['brandRows']<50000:raise SystemExit('processed brand coverage gate failed')
+          if manifest['count']<250000:raise SystemExit('processed corpus scale gate failed')
+          if meta['brandRows']<250000:raise SystemExit('processed brand coverage gate failed')
+          sizes=[]
           for spec in manifest['shards'].values():
               p=root/spec['file']
               if not p.exists():raise SystemExit('missing shard '+spec['file'])
-              if p.stat().st_size>95_000_000:raise SystemExit('shard exceeds GitHub file limit '+spec['file'])
-          print(json.dumps({'count':manifest['count'],'brandRows':meta['brandRows'],'brandRate':meta['brandRate'],'shards':len(manifest['shards']),'totalBytes':sum(p.stat().st_size for p in root.glob('*.json'))},ensure_ascii=False,indent=2))
+              sizes.append((p.stat().st_size,spec['file']))
+          total=sum(size for size,_ in sizes)+(root/'manifest.json').stat().st_size+(root/'meta.json').stat().st_size
+          max_size,max_file=max(sizes,default=(0,''))
+          if total>120_000_000:raise SystemExit('processed corpus total payload too large: '+str(total))
+          if max_size>20_000_000:raise SystemExit('processed shard too large: '+max_file+' '+str(max_size))
+          print(json.dumps({'count':manifest['count'],'brandRows':meta['brandRows'],'brandRate':meta['brandRate'],'shards':len(manifest['shards']),'totalBytes':total,'maxShardBytes':max_size,'maxShardFile':max_file},ensure_ascii=False,indent=2))
           PY
 
       - name: Commit generated processed corpus
@@ -102,4 +107,6 @@ jobs:
           git add 04_data/knowledge/food-db-supplemental-korea-processed-v1
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'Add K-FIND processed-food brand corpus [skip kfind-processed-build]'
+          git fetch origin "${GITHUB_REF_NAME}"
+          git rebase "origin/${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
