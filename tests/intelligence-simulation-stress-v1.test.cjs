@@ -32,9 +32,9 @@ for(const rpe of [6,7,8,9,10]){
    for(const trend of [0,.025,.05]){
     const sessions=[0,1,2].map((i)=>({date:`2026-09-${String(1+i*7).padStart(2,'0')}`,name:'Bench',setDetails:Array.from({length:3},()=>({weight:80*(1+trend*i),reps:8,rpe,rir,failure:rpe===10&&rir===0}))}));
     const checkin=recovery?{date:'2026-09-24',sleepHours:5,energy:2,stress:4,soreness:4}:{date:'2026-09-24',sleepHours:8,energy:5,stress:1,soreness:1};
-    const w=Workout.build({workouts:sessions,dailyCheckins:[checkin]},{asOf:'2026-09-24'}).exercises[0];
+    const workoutResult=Workout.build({workouts:sessions,dailyCheckins:[checkin]},{asOf:'2026-09-24'}),w=workoutResult.exercises[0];
     check(w.prescription.action!=='review_progression'||w.prescription.requiresConfirmation===true,'workout progression without confirmation');
-    check(w.guardrails.neverAutoIncrease===true,'workout auto-increase guard missing');
+    check(workoutResult.guardrails.neverAutoIncrease===true,'workout auto-increase guard missing');
     if(recovery)check(w.prescription.action==='reduce','recovery stress did not reduce workout');
     if(rpe>=9||rir===0)check(w.prescription.action!=='review_progression','high-effort workout progressed');
    }
