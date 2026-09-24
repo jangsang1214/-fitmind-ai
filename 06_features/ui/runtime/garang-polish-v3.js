@@ -25,11 +25,11 @@
     const p=side==='front'?'f':'b';
     return `<defs>
       <linearGradient id="g3Body-${p}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#d3c8b7"/><stop offset=".32" stop-color="#a99e8e"/>
-        <stop offset=".68" stop-color="#756e65"/><stop offset="1" stop-color="#4b4944"/>
+        <stop offset="0" stop-color="#ddd5c8"/><stop offset=".34" stop-color="#b9b0a2"/>
+        <stop offset=".72" stop-color="#817b72"/><stop offset="1" stop-color="#5b5852"/>
       </linearGradient>
       <linearGradient id="g3Limb-${p}" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#706b63"/><stop offset=".45" stop-color="#b5aa99"/><stop offset="1" stop-color="#5b5852"/>
+        <stop offset="0" stop-color="#817b72"/><stop offset=".5" stop-color="#bdb4a6"/><stop offset="1" stop-color="#69655e"/>
       </linearGradient>
       <linearGradient id="g3Muscle-${p}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#8d9188"/><stop offset=".62" stop-color="#62675f"/><stop offset="1" stop-color="#434842"/>
@@ -38,27 +38,38 @@
   }
   function bodyFrame(gender='male',side='front'){
     const female=gender==='female',back=side==='back';
+    const head=female
+      ?'M96 24C96 12 102 5 110 5c9 0 16 8 17 19 1 11-4 21-11 27-4 3-8 3-12 0-7-5-9-14-8-24 0-1 0-2 0-3Z'
+      :'M95 24C95 11 101 4 110 4c10 0 17 8 18 20 1 12-4 22-12 28-4 3-9 3-13 0-7-5-10-15-9-25 0-1 1-2 1-3Z';
     const torso=female
-      ?'M91 68C78 69 68 75 62 86c-7 13-8 31-6 50l5 43c2 16 8 27 17 38 8 9 17 15 32 15s24-6 32-15c9-11 15-22 17-38l5-43c2-19 1-37-6-50-6-11-16-17-29-18l-10-2c-3 5-6 8-9 8s-6-3-9-8Z'
-      :'M82 68C63 70 49 80 43 96c-5 14-4 31 1 49l9 34c4 16 12 29 23 38 9 7 20 10 34 10s25-3 34-10c11-9 19-22 23-38l9-34c5-18 6-35 1-49-6-16-20-26-39-28l-18-3c-2 7-6 11-10 11s-8-4-10-11Z';
+      ?'M88 69C75 70 64 76 57 87c-6 10-7 24-3 39l9 28c4 14 9 27 16 39 8 12 18 19 31 19s23-7 31-19c7-12 12-25 16-39l9-28c4-15 3-29-3-39-7-11-18-17-31-18l-10-3c-2 7-6 12-12 12s-10-5-12-12Z'
+      :'M84 68C69 70 57 76 48 87c-7 10-7 23-2 37l12 27c5 12 10 25 17 37 9 13 20 20 35 20s26-7 35-20c7-12 12-25 17-37l12-27c5-14 5-27-2-37-9-11-21-17-36-19l-14-3c-2 7-6 12-12 12s-10-5-12-12Z';
     const pelvis=female
-      ?'M77 211c9 8 20 12 33 12s24-4 33-12l11 22c-10 18-25 27-44 27s-34-9-44-27Z'
-      :'M76 210c9 8 20 12 34 12s25-4 34-12l11 24c-10 17-25 26-45 26s-35-9-45-26Z';
-    const leftArm=female?'M61 87c-10 5-15 18-18 37l-8 53c-2 13 1 21 9 24l8-4 9-45 11-40Z':'M51 91c-12 7-18 22-21 43l-8 48c-2 13 2 21 11 24l10-5 10-47 14-43Z';
-    const rightArm=female?'M159 87c10 5 15 18 18 37l8 53c2 13-1 21-9 24l-8-4-9-45-11-40Z':'M169 91c12 7 18 22 21 43l8 48c2 13-2 21-11 24l-10-5-10-47-14-43Z';
-    const leftLeg=female?'M78 244c13-4 23 2 31 18l-7 69-7 82H69l-4-58 2-65Z':'M75 247c14-5 26 2 34 19l-6 70-9 77H66l-3-58 4-67Z';
-    const rightLeg=female?'M142 244c-13-4-23 2-31 18l7 69 7 82h26l4-58-2-65Z':'M145 247c-14-5-26 2-34 19l6 70 9 77h28l3-58-4-67Z';
-    return `<ellipse class="g3-base g3-head" cx="110" cy="31" rx="${female?16:18}" ry="${female?21:23}"/>
-      <path class="g3-hair" d="${female?'M94 27c2-17 28-24 34-5 0 8-2 12-5 16-1-13-7-20-16-20-6 0-10 3-13 9Z':'M91 28c1-16 11-25 21-25 12 0 22 8 24 22-5-5-9-6-13-5 0-6-6-9-11-7-3-5-11-4-13 2-5 0-8 5-8 13Z'}"/>
-      <path class="g3-base g3-neck" d="M100 50c1 8 0 13-7 21 4 7 10 11 17 11s13-4 17-11c-7-8-8-13-7-21Z"/>
+      ?'M78 198c9 10 20 15 32 15s23-5 32-15l16 27c-10 17-26 25-48 25s-38-8-48-25Z'
+      :'M76 198c10 10 21 15 34 15s24-5 34-15l11 24c-9 15-24 23-45 23s-36-8-45-23Z';
+    const leftArm=female
+      ?'M59 91c-9 5-14 17-17 33l-7 43c-3 15-2 27 4 34 3 4 7 5 12 2l7-6 8-36 8-32 4-29Z'
+      :'M55 91c-10 5-15 17-18 33l-8 45c-3 16-2 28 4 36 3 4 8 6 13 3l8-6 8-38 9-34 5-31Z';
+    const rightArm=female
+      ?'M161 91c9 5 14 17 17 33l7 43c3 15 2 27-4 34-3 4-7 5-12 2l-7-6-8-36-8-32-4-29Z'
+      :'M165 91c10 5 15 17 18 33l8 45c3 16 2 28-4 36-3 4-8 6-13 3l-8-6-8-38-9-34-5-31Z';
+    const leftLeg=female
+      ?'M78 239c11-4 22 2 29 17l-5 54c-2 18-5 35-6 51l-4 52H69l-5-51 2-54 2-36c1-15 4-27 10-33Z'
+      :'M77 239c12-5 24 2 31 17l-6 54c-2 18-5 35-6 51l-4 52H66l-4-51 2-54 3-38c1-15 4-26 10-31Z';
+    const rightLeg=female
+      ?'M142 239c-11-4-22 2-29 17l5 54c2 18 5 35 6 51l4 52h23l5-51-2-54-2-36c-1-15-4-27-10-33Z'
+      :'M143 239c-12-5-24 2-31 17l6 54c2 18 5 35 6 51l4 52h26l4-51-2-54-3-38c-1-15-4-26-10-31Z';
+    return `<path class="g3-base g3-head" d="${head}"/>
+      <path class="g3-hair" d="${female?'M96 24c1-14 8-21 16-21 10 0 17 8 18 21-5-5-10-7-15-5-4-4-10-5-14-1-2 2-4 4-5 6Z':'M94 23c2-13 8-21 17-21 10 0 18 8 20 21-5-4-9-5-13-4-3-4-9-6-14-2-4 2-7 4-10 6Z'}"/>
+      <path class="g3-base g3-neck" d="M100 49c2 8 1 14-6 22 4 7 9 11 16 11s12-4 16-11c-7-8-8-14-6-22Z"/>
       <path class="g3-base g3-torso" d="${torso}"/>
       <path class="g3-limb g3-arm" d="${leftArm}"/><path class="g3-limb g3-arm" d="${rightArm}"/>
       <path class="g3-base g3-pelvis" d="${pelvis}"/>
       <path class="g3-limb g3-leg" d="${leftLeg}"/><path class="g3-limb g3-leg" d="${rightLeg}"/>
-      <path class="g3-sculpt-line" d="M110 76v135${back?'M77 101q33 18 66 0M73 132q37 20 74 0':'M79 109q31 10 62 0M87 151q23 7 46 0M91 184q19 6 38 0'}"/>
-      <path class="g3-fine" d="M72 102q14 11 27 14m49-14q-14 11-27 14M73 284q17 9 32 4m42-4q-17 9-32 4M71 357q13 9 24 5m54-5q-13 9-24 5"/>`;
+      <path class="g3-sculpt-line" d="${back?'M110 79v126M70 96q40 22 80 0M76 120q34 20 68 0M83 178q27 10 54 0':'M110 79v126M70 96q40 20 80 0M79 114q31 14 62 0M86 153q24 8 48 0M88 184q22 8 44 0'}"/>
+      <path class="g3-fine" d="M66 107q17 10 30 13m58-13q-17 10-30 13M74 278q17 9 31 5m41-5q-17 9-31 5M70 354q14 8 25 4m55-4q-14 8-25 4"/>`;
   }
-  function frontSVG(gender='male'){const female=gender==='female';return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model" data-garang-classical-model="1" data-garang-body-v2="front" data-garang-anatomy-v3="front" data-garang-gender="${gender}" viewBox="0 0 220 430" role="img" aria-label="${female?'여성':'남성'} 전면 퍼포먼스 신체 지도">
+  function frontSVG(gender='male'){const female=gender==='female';return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model" data-garang-classical-model="2" data-garang-body-v2="front" data-garang-anatomy-v3="front" data-garang-gender="${gender}" viewBox="0 0 220 430" role="img" aria-label="${female?'여성':'남성'} 전면 퍼포먼스 신체 지도">
     ${defs('front')}${bodyFrame(gender,'front')}
     <path class="g3-muscle muscle-shoulders" d="${female?'M70 84c8-8 18-11 28-8l-6 24c-9 3-18-1-25-10Zm80 0c-8-8-18-11-28-8l6 24c9 3 18-1 25-10Z':'M58 84c12-10 27-13 39-8l-8 29c-13 4-25-2-35-13Zm104 0c-12-10-27-13-39-8l8 29c13 4 25-2 35-13Z'}"/>
     <path class="g3-muscle muscle-chest" d="M78 94c10-9 21-12 32-9v42c-18 2-31-7-36-22Zm64 0c-10-9-21-12-32-9v42c18 2 31-7 36-22Z"/>
@@ -69,7 +80,7 @@
     <path class="g3-muscle muscle-legs" d="M76 252c13-5 24 2 32 19l-7 59-18 5-12-45Zm68 0c-13-5-24 2-32 19l7 59 18 5 12-45ZM72 340c11-5 19 3 20 17l-7 52H69l-3-38Zm76 0c-11-5-19 3-20 17l7 52h16l3-38Z"/>
     <path class="g3-highlight" d="M79 99q16-8 31-6m31 6q-16-8-31-6M88 138q22 6 44 0M80 265q14 7 27 4m33-4q-14 7-27 4"/>
   </svg>`;}
-  function backSVG(gender='male'){const female=gender==='female';return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model" data-garang-classical-model="1" data-garang-body-v2="back" data-garang-anatomy-v3="back" data-garang-gender="${gender}" viewBox="0 0 220 430" role="img" aria-label="${female?'여성':'남성'} 후면 퍼포먼스 신체 지도">
+  function backSVG(gender='male'){const female=gender==='female';return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model" data-garang-classical-model="2" data-garang-body-v2="back" data-garang-anatomy-v3="back" data-garang-gender="${gender}" viewBox="0 0 220 430" role="img" aria-label="${female?'여성':'남성'} 후면 퍼포먼스 신체 지도">
     ${defs('back')}${bodyFrame(gender,'back')}
     <path class="g3-muscle muscle-shoulders" d="${female?'M70 84c8-8 18-11 28-8l-6 24c-9 3-18-1-25-10Zm80 0c-8-8-18-11-28-8l6 24c9 3 18-1 25-10Z':'M58 84c12-10 27-13 39-8l-8 29c-13 4-25-2-35-13Zm104 0c-12-10-27-13-39-8l8 29c13 4 25-2 35-13Z'}"/>
     <path class="g3-muscle muscle-back" d="M87 79c7-8 15-12 23-12s16 4 23 12l11 28-14 34-20-22-20 22-14-34ZM75 104c13-6 24 0 35 15-10 17-17 37-20 59l-23-28 3-31Zm70 0c-13-6-24 0-35 15 10 17 17 37 20 59l23-28-3-31Z"/>
