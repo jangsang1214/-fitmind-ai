@@ -20,10 +20,21 @@ const coachRules=[
   assert.equal(result.decisionIdentity.mode,'reduce');
   assert.ok(result.queryTags.includes('recovery'));
   assert.ok(result.evidence.some(item=>item.id==='V5R036'));
-  assert.ok(result.evidence.some(item=>item.id==='V5R036'&&item.vectorScore>0));
   assert.equal(result.contract.decisionOwnedBy,'GARANG');
   assert.equal(result.contract.llmRole,'explain_only');
   assert.equal(result.contract.stateMutationAllowed,false);
+}
+
+
+{
+  const result=Grounding.ground({
+    decision:{decisionId:'d-vector',mode:'reduce',reasonCodes:['SHORT_SLEEP']},
+    query:'잠을 거의 못 자서 오늘은 회복 중심으로 운동 강도를 낮추고 싶어',
+    coachRules
+  });
+  const sleep=result.evidence.find(item=>item.id==='V5R036');
+  assert.ok(sleep);
+  assert.ok(sleep.vectorScore>0,'semantic recovery query should produce sparse-vector evidence');
 }
 
 {
