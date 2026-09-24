@@ -212,33 +212,70 @@
     const female=gender==='female';
     if(side==='side'){
       const dx=female?18:0;
-      return `<path class="g3-muscle muscle-shoulders" d="M${305+dx} 225 C${355+dx} 215 ${405+dx} 245 ${425+dx} 305 C${390+dx} 335 ${345+dx} 330 ${312+dx} 300 Z"/>
-        <path class="g3-muscle muscle-chest" d="M${335+dx} 305 C${390+dx} 300 ${425+dx} 340 ${430+dx} 420 L${405+dx} 470 C${365+dx} 455 ${340+dx} 410 ${328+dx} 350 Z"/>
-        <path class="g3-muscle muscle-back" d="M${270+dx} 285 C${305+dx} 270 ${335+dx} 300 ${345+dx} 350 L${330+dx} 520 C${300+dx} 570 ${270+dx} 560 ${250+dx} 500 L${255+dx} 345 Z"/>
-        <path class="g3-muscle muscle-biceps" d="M${410+dx} 355 C${455+dx} 350 ${478+dx} 390 ${476+dx} 455 L${458+dx} 535 C${430+dx} 545 ${410+dx} 510 ${405+dx} 455 Z"/>
-        <path class="g3-muscle muscle-triceps" d="M${385+dx} 350 C${420+dx} 345 ${445+dx} 385 ${445+dx} 455 L${428+dx} 525 C${405+dx} 515 ${390+dx} 480 ${382+dx} 420 Z"/>
-        <path class="g3-muscle muscle-core" d="M${300+dx} 430 C${345+dx} 410 ${395+dx} 430 ${408+dx} 500 L${395+dx} 625 C${360+dx} 665 ${315+dx} 650 ${290+dx} 600 L${285+dx} 500 Z"/>
-        <path class="g3-muscle muscle-legs" d="M${275+dx} 620 C${325+dx} 600 ${365+dx} 630 ${375+dx} 720 L${355+dx} 835 L${335+dx} 1015 C${310+dx} 1035 ${280+dx} 1020 ${268+dx} 980 L${270+dx} 820 L${250+dx} 720 Z"/>`;
+      return `<path class="g3-muscle muscle-shoulders" d="M${300+dx} 238 C${342+dx} 215 ${392+dx} 232 ${418+dx} 282 C${402+dx} 315 ${365+dx} 332 ${325+dx} 318 C${302+dx} 300 ${294+dx} 270 ${300+dx} 238 Z"/>
+        <path class="g3-muscle muscle-chest" d="M${332+dx} 298 C${375+dx} 286 ${413+dx} 307 ${423+dx} 354 C${426+dx} 384 ${418+dx} 414 ${402+dx} 435 C${368+dx} 436 ${343+dx} 414 ${331+dx} 379 Z"/>
+        <path class="g3-muscle muscle-back" d="M${272+dx} 300 C${303+dx} 276 ${332+dx} 291 ${342+dx} 332 L${334+dx} 494 C${316+dx} 536 ${286+dx} 548 ${258+dx} 515 L${252+dx} 357 Z"/>
+        <path class="g3-muscle muscle-biceps" d="M${401+dx} 362 C${433+dx} 351 ${455+dx} 382 ${454+dx} 431 C${452+dx} 464 ${443+dx} 493 ${428+dx} 513 C${407+dx} 507 ${397+dx} 480 ${397+dx} 445 Z"/>
+        <path class="g3-muscle muscle-triceps" d="M${379+dx} 349 C${408+dx} 345 ${430+dx} 372 ${433+dx} 414 C${435+dx} 451 ${427+dx} 486 ${412+dx} 507 C${392+dx} 495 ${380+dx} 464 ${376+dx} 421 Z"/>
+        <path class="g3-muscle muscle-core" d="M${296+dx} 426 C${337+dx} 411 ${382+dx} 423 ${397+dx} 471 L${392+dx} 603 C${365+dx} 637 ${326+dx} 641 ${296+dx} 612 C${282+dx} 572 ${281+dx} 496 ${296+dx} 426 Z"/>
+        <path class="g3-muscle muscle-legs" d="M${268+dx} 626 C${310+dx} 603 ${351+dx} 625 ${362+dx} 699 L${350+dx} 824 L${329+dx} 1009 C${307+dx} 1029 ${280+dx} 1019 ${269+dx} 985 L${268+dx} 834 L${246+dx} 724 C${245+dx} 681 ${252+dx} 648 ${268+dx} 626 Z"/>`;
     }
-    if(side==='back')return `<path class="g3-muscle muscle-shoulders" d="${female?'M190 255 C235 220 295 220 340 250 L325 345 C270 365 220 340 180 300 Z M530 255 C485 220 425 220 380 250 L395 345 C450 365 500 340 540 300 Z':'M175 250 C230 215 295 215 340 250 L323 350 C265 370 210 340 165 295 Z M545 250 C490 215 425 215 380 250 L397 350 C455 370 510 340 555 295 Z'}"/>
-      <path class="g3-muscle muscle-back" d="M285 285 C315 250 340 240 360 250 C380 240 405 250 435 285 L475 390 L430 520 L360 465 L290 520 L245 390 Z M235 350 C285 315 325 340 360 400 C325 465 305 535 295 615 L205 520 L220 410 Z M485 350 C435 315 395 340 360 400 C395 465 415 535 425 615 L515 520 L500 410 Z"/>
-      <path class="g3-muscle muscle-triceps" d="M120 350 C165 345 195 390 190 465 L165 555 C145 590 115 575 105 535 L110 430 Z M600 350 C555 345 525 390 530 465 L555 555 C575 590 605 575 615 535 L610 430 Z"/>
-      <path class="g3-muscle muscle-core" d="M300 530 H420 L445 650 L360 730 L275 650 Z"/>
-      <path class="g3-muscle muscle-legs" d="M245 630 C290 600 335 620 360 685 C335 750 300 790 250 810 L205 735 Z M475 630 C430 600 385 620 360 685 C385 750 420 790 470 810 L515 735 Z M240 790 C290 765 330 805 345 875 L325 1015 L255 1035 L215 900 Z M480 790 C430 765 390 805 375 875 L395 1015 L465 1035 L505 900 Z"/>`;
-    return `<path class="g3-muscle muscle-shoulders" d="${female?'M190 255 C235 220 295 220 340 250 L325 340 C275 365 225 345 185 305 Z M530 255 C485 220 425 220 380 250 L395 340 C445 365 495 345 535 305 Z':'M175 250 C230 215 295 215 340 250 L323 345 C265 370 210 345 165 300 Z M545 250 C490 215 425 215 380 250 L397 345 C455 370 510 345 555 300 Z'}"/>
-      <path class="g3-muscle muscle-chest" d="${female?'M245 310 C285 275 325 270 360 285 V410 C305 430 255 410 220 365 Z M475 310 C435 275 395 270 360 285 V410 C415 430 465 410 500 365 Z':'M230 305 C275 270 320 265 360 282 V415 C300 438 245 415 205 365 Z M490 305 C445 270 400 265 360 282 V415 C420 438 475 415 515 365 Z'}"/>
-      <path class="g3-muscle muscle-biceps" d="M115 345 C155 340 185 385 180 455 L155 545 C135 575 105 560 98 520 L105 420 Z M605 345 C565 340 535 385 540 455 L565 545 C585 575 615 560 622 520 L615 420 Z"/>
-      <path class="g3-muscle muscle-triceps" d="M75 380 C105 395 120 445 112 500 L90 575 L55 610 L65 470 Z M645 380 C615 395 600 445 608 500 L630 575 L665 610 L655 470 Z"/>
-      <path class="g3-muscle muscle-core" d="M290 410 C315 425 338 435 360 435 C382 435 405 425 430 410 L450 510 L430 650 C410 690 385 715 360 715 C335 715 310 690 290 650 L270 510 Z"/>
-      <path class="g3-muscle muscle-legs" d="M245 620 C290 590 335 605 355 670 L340 820 L275 870 L225 730 Z M475 620 C430 590 385 605 365 670 L380 820 L445 870 L495 730 Z M235 820 C285 790 325 835 335 910 L315 1030 L250 1045 L220 930 Z M485 820 C435 790 395 835 385 910 L405 1030 L470 1045 L500 930 Z"/>`;
+    if(side==='back')return `<path class="g3-muscle muscle-shoulders" d="${female?'M205 255 C242 226 292 222 336 248 L326 326 C286 344 239 336 201 304 Z M515 255 C478 226 428 222 384 248 L394 326 C434 344 481 336 519 304 Z':'M195 248 C238 218 292 214 338 244 L326 332 C281 351 230 340 188 300 Z M525 248 C482 218 428 214 382 244 L394 332 C439 351 490 340 532 300 Z'}"/>
+      <path class="g3-muscle muscle-back" d="M292 281 C320 254 340 244 360 247 C380 244 400 254 428 281 L462 364 C448 415 420 467 390 513 L360 477 L330 513 C300 467 272 415 258 364 Z M241 346 C279 322 315 340 337 384 C312 433 297 487 292 548 L226 505 L222 405 Z M479 346 C441 322 405 340 383 384 C408 433 423 487 428 548 L494 505 L498 405 Z"/>
+      <path class="g3-muscle muscle-triceps" d="M130 356 C165 347 187 380 184 431 L171 497 C157 527 135 525 122 498 L118 410 Z M590 356 C555 347 533 380 536 431 L549 497 C563 527 585 525 598 498 L602 410 Z"/>
+      <path class="g3-muscle muscle-core" d="M300 520 C323 538 338 545 360 545 C382 545 397 538 420 520 L435 627 L360 702 L285 627 Z"/>
+      <path class="g3-muscle muscle-legs" d="M254 636 C291 610 329 622 352 678 C336 734 304 771 258 793 L219 727 Z M466 636 C429 610 391 622 368 678 C384 734 416 771 462 793 L501 727 Z M247 795 C285 777 320 806 332 870 L317 1009 L263 1026 L229 905 Z M473 795 C435 777 400 806 388 870 L403 1009 L457 1026 L491 905 Z"/>`;
+    return `<path class="g3-muscle muscle-shoulders" d="${female?'M205 255 C242 226 292 222 336 248 L326 326 C286 344 239 336 201 304 Z M515 255 C478 226 428 222 384 248 L394 326 C434 344 481 336 519 304 Z':'M190 248 C235 216 291 214 339 244 L326 330 C282 350 231 340 187 301 Z M530 248 C485 216 429 214 381 244 L394 330 C438 350 489 340 533 301 Z'}"/>
+      <path class="g3-muscle muscle-chest" d="${female?'M266 294 C292 275 326 270 357 284 L357 392 C328 407 298 404 272 389 C251 377 242 353 248 326 C251 313 257 302 266 294 Z M454 294 C428 275 394 270 363 284 L363 392 C392 407 422 404 448 389 C469 377 478 353 472 326 C469 313 463 302 454 294 Z':'M258 289 C289 267 326 265 357 281 L357 400 C327 416 294 410 266 391 C244 377 236 352 242 323 C245 309 250 298 258 289 Z M462 289 C431 267 394 265 363 281 L363 400 C393 416 426 410 454 391 C476 377 484 352 478 323 C475 309 470 298 462 289 Z'}"/>
+      <path class="g3-muscle muscle-biceps" d="M137 348 C166 341 190 367 190 411 C188 447 178 480 160 505 C141 503 130 482 129 451 L132 386 Z M583 348 C554 341 530 367 530 411 C532 447 542 480 560 505 C579 503 590 482 591 451 L588 386 Z"/>
+      <path class="g3-muscle muscle-triceps" d="M100 369 C124 372 139 398 137 435 L125 500 C117 524 102 536 86 520 L78 456 L87 401 Z M620 369 C596 372 581 398 583 435 L595 500 C603 524 618 536 634 520 L642 456 L633 401 Z"/>
+      <path class="g3-muscle muscle-core" d="M299 405 C319 419 339 426 360 426 C381 426 401 419 421 405 L435 486 L424 608 C410 651 387 677 360 687 C333 677 310 651 296 608 L285 486 Z"/>
+      <path class="g3-muscle muscle-legs" d="M250 630 C287 604 328 612 351 670 L338 805 L278 853 L232 730 Z M470 630 C433 604 392 612 369 670 L382 805 L442 853 L488 730 Z M242 821 C282 796 316 827 327 894 L312 1021 L258 1037 L229 929 Z M478 821 C438 796 404 827 393 894 L408 1021 L462 1037 L491 929 Z"/>`;
+  }
+
+  function v7DefinitionMarkup(side='front',gender='male'){
+    if(gender!=='male')return '';
+    if(side==='back')return `<g class="g7-definition-layer" data-garang-definition-layer="v7">
+      <path class="g7-definition strong" d="M360 246 C343 266 328 292 319 326 M360 246 C377 266 392 292 401 326"/>
+      <path class="g7-definition" d="M220 302 C264 330 303 342 338 342 M500 302 C456 330 417 342 382 342"/>
+      <path class="g7-definition strong" d="M360 268 L360 615"/>
+      <path class="g7-definition" d="M274 350 C292 413 302 480 298 542 M446 350 C428 413 418 480 422 542"/>
+      <path class="g7-definition soft" d="M245 411 C277 438 304 454 330 467 M475 411 C443 438 416 454 390 467"/>
+      <path class="g7-definition strong" d="M264 665 C302 699 325 735 337 785 M456 665 C418 699 395 735 383 785"/>
+      <path class="g7-definition" d="M252 803 C283 845 297 903 290 977 M468 803 C437 845 423 903 430 977"/>
+      </g>`;
+    if(side==='side')return `<g class="g7-definition-layer" data-garang-definition-layer="v7">
+      <path class="g7-definition strong" d="M305 248 C342 230 382 245 405 285"/>
+      <path class="g7-definition" d="M336 311 C379 300 407 328 414 374"/>
+      <path class="g7-definition" d="M383 358 C409 390 418 432 407 474"/>
+      <path class="g7-definition soft" d="M301 440 C327 478 334 532 320 584"/>
+      <path class="g7-definition strong" d="M278 652 C321 693 337 751 327 822"/>
+      <path class="g7-definition" d="M271 832 C296 879 300 934 287 991"/>
+      </g>`;
+    return `<g class="g7-definition-layer" data-garang-definition-layer="v7">
+      <path class="g7-definition strong" d="M360 276 L360 418"/>
+      <path class="g7-definition strong" d="M258 305 C292 281 326 278 353 292 M462 305 C428 281 394 278 367 292"/>
+      <path class="g7-definition" d="M252 366 C284 397 319 409 354 401 M468 366 C436 397 401 409 366 401"/>
+      <path class="g7-definition strong" d="M211 286 C236 250 278 235 315 258 M509 286 C484 250 442 235 405 258"/>
+      <path class="g7-definition" d="M143 376 C171 354 198 370 208 410 M577 376 C549 354 522 370 512 410"/>
+      <path class="g7-definition strong" d="M360 428 L360 650"/>
+      <path class="g7-definition" d="M316 470 C334 478 346 481 360 478 M404 470 C386 478 374 481 360 478"/>
+      <path class="g7-definition" d="M312 518 C332 526 346 528 360 525 M408 518 C388 526 374 528 360 525"/>
+      <path class="g7-definition" d="M309 566 C330 574 345 576 360 572 M411 566 C390 574 375 576 360 572"/>
+      <path class="g7-definition soft" d="M296 448 C276 493 279 549 304 603 M424 448 C444 493 441 549 416 603"/>
+      <path class="g7-definition strong" d="M265 682 C300 716 322 771 318 837 M455 682 C420 716 398 771 402 837"/>
+      <path class="g7-definition" d="M330 688 C313 749 307 810 318 865 M390 688 C407 749 413 810 402 865"/>
+      <path class="g7-definition soft" d="M250 864 C274 908 277 964 263 1022 M470 864 C446 908 443 964 457 1022"/>
+      </g>`;
   }
 
   function v6MeshSVG(gender='male',side='front'){
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
-    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=6.2.0-sharp-aligned`,zones=v6ZoneMarkup(view,person);
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.0.0-muscular-remap`,zones=v6ZoneMarkup(view,person),definition=v7DefinitionMarkup(view,person);
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면';
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model" data-garang-classical-model="6" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
+      ${definition}
       <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
     </svg>`;
   }
@@ -265,10 +302,10 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender:old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
-        const next=tpl.content.firstElementChild;if(old)old.replaceWith(next);else view.appendChild(next);
+        const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
       });
       let tools=wrap.previousElementSibling?.classList.contains('g3-anatomy-tools')?wrap.previousElementSibling:wrap.querySelector(':scope > .g3-anatomy-tools');
       if(!tools){
