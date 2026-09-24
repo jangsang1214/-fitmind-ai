@@ -326,7 +326,7 @@ async function assertCoachSettles(page){
     await page.waitForFunction(name=>document.querySelector('#workoutDraftArea .list-item strong')?.textContent===name,replacementName,{timeout:4000});
     await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="log"]')?.hidden===false,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'direct exercise replacement must preserve completed set count');
-    if(!(await page.locator('#wProgramName').isVisible()))await tap(page,'#garangWorkoutTools > summary');
+    assert.equal(await page.locator('#garangWorkoutProgram').getAttribute('open'),null,'Program Builder must stay collapsed by default');await tap(page,'#garangWorkoutProgram > summary');await page.locator('#wProgramName').waitFor({state:'visible',timeout:3000});
     await page.locator('#wProgramName').fill('WebKit Strength');await page.locator('#wProgramWeeks').fill('2');await page.locator('#wProgramFrequency').fill('2');await tap(page,'#scheduleWorkoutProgram');
     await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length===4;},{timeout:4000});
     assert.equal(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length;}),4,'two-week twice-weekly Program Builder must create four Planner executions');
