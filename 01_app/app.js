@@ -411,11 +411,48 @@ function renderWorkoutInsights(){
  return `<section class="record-insights"><div class="section-title"><div><span class="eyebrow">TRAINING LOAD</span><h2>${ux('최근 훈련량과 부위별 부하','Recent volume and muscle load')}</h2></div></div><div class="insight-grid workout-trend-grid"><article class="insight-card"><span>7D VOLUME</span><strong>${fmt(shownWeight(volume7,0))} ${weightUnit()}</strong><small>${sessions7} sessions</small></article><article class="insight-card"><span>30D VOLUME</span><strong>${fmt(shownWeight(volume30,0))} ${weightUnit()}</strong><small>${sessions30} sessions</small></article><article class="insight-card"><span>7D / 30D</span><strong>${volume30?Math.round(volume7/(volume30/4)*100):0}%</strong><small>${ux('최근 주간 훈련량 비율','Recent weekly load ratio')}</small></article></div><div class="workout-load-list">${loadRows||'<div class="empty">최근 7일 부위별 데이터가 없습니다.</div>'}</div><div class="section-title compact"><h2>${ux('최고 기록과 PR','Best records and PRs')}</h2></div><div class="insight-grid">${card(ux('전체 최고 중량','Overall max weight'),x.topWeight,r=>`${Number(shownWeight(r.weight,1)).toFixed(1)} ${weightUnit()}`)}${card(ux('전체 추정 1RM','Overall estimated 1RM'),x.topEstimated1RM,r=>`${Number(shownWeight(r.estimated1RM,1)).toFixed(1)} ${weightUnit()}`)}${card(ux('전체 최고 볼륨','Overall max volume'),x.topVolume,r=>`${fmt(shownWeight(r.volume,0))} ${weightUnit()}`)}</div><div class="section-title compact"><h2>${ux('종목별 PR 현황','PRs by exercise')}</h2></div><div class="pr-list">${x.exercises.slice(0,12).map(row).join('')}</div></section>`;
 }
 function renderRunningInsights(){
- if(!window.GarangPerformance?.runningInsights)return '';
- const x=GarangPerformance.runningInsights(state),pace=GarangPerformance.formatPace,fmt=n=>num(n).toFixed(2);
- if(!x.records?.length)return `<div class="section-title"><h2>${ux('러닝 분석','Running insights')}</h2></div><div class="card empty">${ux('러닝을 저장하면 평균 페이스와 최고 기록이 표시됩니다.','Save a run to see average pace and best records.')}</div>`;
- const card=(label,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${value}</strong><small>${meta}</small></article>`;
- return `<section class="record-insights"><div class="section-title"><div><span class="eyebrow">RUNNING RECORDS</span><h2>${ux('평균 페이스와 최고 기록','Average pace and best records')}</h2></div></div><div class="insight-grid run-grid">${card(ux('전체 평균 페이스','Overall average pace'),`${pace(x.averagePace)} /km`,ux('거리 가중 평균','Distance-weighted average'))}${card(ux('최고 페이스','Fastest pace'),`${pace(x.fastest?.pace)} /km`,esc(x.fastest?.date||'—'))}${card(ux('최장 거리','Longest distance'),`${fmt(x.longest?.distance)} km`,esc(x.longest?.date||'—'))}${card(ux('누적 거리','Total distance'),`${fmt(x.totalDistance)} km`,`${x.count}${ux('회',' runs')}`)}</div></section>`;
+ const api=window.GarangRunningPerformanceV1;
+ if(!api?.build)return '';
+ const x=api.build(state,{asOf:new Date(today()+'T12:00:00')}),pace=v=>Number.isFinite(Number(v))?paceText({duration:Number(v),distance:1}):'—',card=(label,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${value}</strong><small>${meta}</small></article>`;
+ if(!x.evidence?.validRuns)return `<div class="section-title"><h2>${ux('러닝 분석','Running insights')}</h2></div><div class="card empty">${ux('러닝을 저장하면 페이스 추세, 부하, split 패턴과 개인 기록이 자동으로 정리됩니다.','Save a run to build pace trend, load, split patterns and personal records.')}</div>`;
+ const trend=x.trend||{},load=x.load||{},best=x.bestEfforts||{},analysis=x.analysis||{},split=analysis.split||{},guide=analysis.paceGuide||{},distribution=analysis.distribution||{},projection=analysis.projection||{},progression=analysis.progression||{};
+ const trendLabel=trend.status==='measured'?(trend.direction==='improving'?ux('개선','Improving'):trend.direction==='slower'?ux('느려짐','Slower'):ux('안정','Stable')):ux('데이터 수집 중','Collecting');
+ const loadLabel=load.band==='spike'?ux('급증','Spike'):load.band==='drop'?ux('감소','Drop'):load.band==='stable'?ux('안정','Stable'):ux('미측정','Unknown');
+ const patternLabel=split.pattern==='negative_split'?ux('네거티브 스플릿','Negative split'):split.pattern==='positive_split'?ux('포지티브 스플릿','Positive split'):split.pattern==='even_split'?ux('이븐 스플릿','Even split'):ux('측정 대기','Waiting for splits');
+ const consistencyLabel=split.consistency==='tight'?ux('매우 일정','Tight'):split.consistency==='moderate'?ux('보통','Moderate'):split.consistency==='variable'?ux('변동 큼','Variable'):'—';
+ const best1=best.oneKm?pace(best.oneKm.paceMinPerKm):'—',best5=best.fiveKm?formatRunMinutes(best.fiveKm.estimatedDurationMin):'—',best10=best.tenKm?formatRunMinutes(best.tenKm.estimatedDurationMin):'—';
+ const zone=(name,label)=>{const z=guide?.zones?.[name];return z?`<div class="list-item"><div><strong>${label}</strong><div class="muted">${pace(z.lowMinPerKm)}–${pace(z.highMinPerKm)} /km</div></div></div>`:'';};
+ const buckets=distribution?.buckets||{},distRow=(key,label)=>{const b=buckets[key];return b?`<span class="pill">${label} ${Math.round(num(b.distancePct))}%</span>`:'';};
+ const projectionText=projection.status==='estimated'?`${projection.tenKmMin?`10K ${formatRunMinutes(projection.tenKmMin)}`:''}${projection.halfMarathonMin?` · HALF ${formatRunMinutes(projection.halfMarathonMin)}`:''}`:'—';
+ const fiveProgress=progression?.fiveKm?.status==='measured'?`+${Math.max(0,num(progression.fiveKm.improvementPct)).toFixed(1)}%`:ux('기록 축적 중','Collecting');
+ return `<section class="record-insights running-performance-v2">
+ <div class="section-title"><div><span class="eyebrow">RUNNING PERFORMANCE</span><h2>${ux('최근 페이스·부하·기록','Pace, load and records')}</h2></div><span class="pill">CONFIDENCE ${Math.round(num(x.confidence)*100)}%</span></div>
+ <div class="insight-grid run-grid">
+  ${card('7D DISTANCE',`${num(x.recent?.days7?.distanceKm).toFixed(1)} km`,`${x.recent?.days7?.sessions||0} sessions`)}
+  ${card(ux('28일 중앙 페이스','28D median pace'),`${pace(x.recent?.days28?.medianPaceMinPerKm)} /km`,`${x.recent?.days28?.sessions||0} sessions`)}
+  ${card(ux('페이스 추세','Pace trend'),trendLabel,trend.changePct===null?'—':`${trend.changePct>0?'+':''}${trend.changePct}%`)}
+  ${card(ux('러닝 부하','Running load'),loadLabel,load.ratio===null?'—':`7D / baseline ${load.ratio.toFixed(2)}×`)}
+ </div>
+ <div class="section-title compact"><h2>${ux('개인 최고와 진행','Best efforts and progression')}</h2></div>
+ <div class="insight-grid">
+  ${card('BEST 1K',`${best1} /km`,esc(best.oneKm?.date||'—'))}
+  ${card('BEST 5K',best5,best.fiveKm?`${pace(best.fiveKm.paceMinPerKm)} /km · ${esc(best.fiveKm.date)}`:'—')}
+  ${card('BEST 10K',best10,best.tenKm?`${pace(best.tenKm.paceMinPerKm)} /km · ${esc(best.tenKm.date)}`:'—')}
+  ${card('5K PROGRESSION',fiveProgress,progression?.fiveKm?.attempts?`${progression.fiveKm.attempts} efforts`:'—')}
+ </div>
+ <details class="card running-analysis-detail"><summary><span><b>${ux('고급 러닝 분석','Advanced running analysis')}</b><small>${ux('Split · Pace guide · 분포 · 예상 기록','Split · Pace guide · distribution · projection')}</small></span><span>＋</span></summary>
+  <div class="manual-entry-body">
+   <div class="grid grid-3">
+    <div><div class="stat">${patternLabel}</div><div class="stat-label">${split.status==='measured'?`${esc(split.date)} · ${split.splits} splits`:ux('2개 이상의 split 필요','Need 2+ splits')}</div></div>
+    <div><div class="stat">${consistencyLabel}</div><div class="stat-label">${ux('Split 일관성','Split consistency')}${split.changePct===null?'':` · ${split.changePct>0?'+':''}${split.changePct}%`}</div></div>
+    <div><div class="stat">${projectionText}</div><div class="stat-label">${ux('현재 기록 기반 예상','Estimate from current evidence')}</div></div>
+   </div>
+   ${guide.status==='measured'?`<div class="section-title compact"><h2>${ux('개인 Pace Guide','Personal pace guide')}</h2><span class="pill">${pace(guide.anchorPaceMinPerKm)} anchor</span></div><div class="list">${zone('easy',ux('Easy','Easy'))}${zone('steady',ux('Steady','Steady'))}${zone('tempo',ux('Tempo','Tempo'))}</div>`:''}
+   ${distribution.status==='measured'?`<div class="actions" style="margin-top:10px">${distRow('easy','EASY')}${distRow('steady','STEADY')}${distRow('fast','FAST')}</div>`:''}
+   <p class="helper">${ux('Pace Guide는 최근 28일 페이스의 상대 범위이며 심박·젖산역치 zone이 아닙니다. 예상 기록은 현재 평균 페이스 기반 추정치입니다.','Pace Guide is relative to your recent 28-day pace; it is not a heart-rate or lactate-threshold zone. Race times are estimates from observed average pace.')}</p>
+  </div>
+ </details>
+ </section>`;
 }
 
 function workoutPageBase(){
