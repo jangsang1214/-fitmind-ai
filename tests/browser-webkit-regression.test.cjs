@@ -248,7 +248,8 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
     assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
-    assert.equal(await page.locator('#saveWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-bar')),true,'Finish must live in the top-level live session bar');
+    assert.equal(await page.locator('#finishWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-controls')&&node.closest('.workout-session-bar')!==null),true,'Finish symbol control must live in the top-level live session control group');
+    assert.equal(await page.locator('#saveWorkoutSession').isHidden(),true,'canonical save owner must stay hidden behind the visible finish control');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');
     assert.deepEqual(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head > span').allTextContents(),['SET','PREVIOUS','TARGET','TYPE','KG','REPS','RPE','RIR','DEL','✓'],'hidden mobile header must preserve the full commercial execution hierarchy contract');
     assert.equal(await page.locator('#wDuration').isVisible(),true,'workout duration must remain editable on the execution surface');
