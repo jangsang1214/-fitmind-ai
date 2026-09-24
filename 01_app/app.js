@@ -29,7 +29,7 @@ const EMPTY = () => ({
 
 let state = EMPTY();
 let db = {exercise:[],food:[]};
-let supplementalFoodDb=null, supplementalFoodDbPromise=null, supplementalSelectedFood=null;
+let supplementalFoodDb=null, supplementalFoodDbPromise=null, supplementalFoodIndex=null, supplementalSelectedFood=null;
 const SUPPLEMENTAL_FOOD_DB_PATH='04_data/knowledge/food-db-supplemental-usda-v1.json';
 let knowledge = [];
 let firebaseReady=false, currentUser=null, currentPage='today';
@@ -659,12 +659,30 @@ function editWorkout(i){const x=workoutDraft[i];if(!x)return;workoutEditTargetId
 async function saveWorkoutSession(){if(!workoutDraft.length)return toast('운동을 먼저 추가해 주세요.');const sessionId=uid(),stamp=isoNow(),draft=workoutEvidenceDraft;let evidence=null;if(draft?.file){const api=window.GarangPhotoEvidence;if(!api)return toast('사진 기능을 불러오지 못했습니다.');const evidenceId=uid();try{await api.store(evidenceId,draft.file);evidence=api.metadata(evidenceId,draft.file,'workout');}catch(e){captureError('workout_photo_evidence_save',e);return toast('운동 사진 저장에 실패했습니다. 기록은 아직 저장하지 않았습니다.');}}workoutDraft.forEach(x=>state.workouts.push({...finalizedWorkoutDraftItem(x),date:today(),sessionId,photoEvidence:evidence,createdAt:stamp,updatedAt:stamp}));if(workoutActivePlanId){const plan=state.planner.find(p=>String(p.id)===String(workoutActivePlanId));if(plan){plan.completed=true;plan.done=true;plan.status='completed';plan.completedSessionId=sessionId;plan.updatedAt=stamp;}workoutActivePlanId=null;}state.memory.events.push({type:'workout_session',date:today(),text:`${workoutDraft.length}종목`});workoutDraft=[];workoutExecutionDraftId=null;workoutEvidenceDraft=null;window.GarangPhotoEvidence?.revoke(currentCert.workout);currentCert.workout=draft||null;saveState({event:'workout_saved',source:'workout'});trackEvent('photo_evidence_recorded',{kind:'workout',attached:!!evidence});toast(evidence?'운동 세션과 인증 사진을 저장했습니다.':'운동 세션을 저장했습니다.');render();}
 
 function findFood(q){q=String(q||'').trim();if(!q)return null;const smart=window.GarangFoodIntelligenceV2?.resolve?.(db.food,q,{mode:'manual'});if(smart?.status==='matched'&&smart.food)return smart.food;const lower=q.toLowerCase();return db.food.find(x=>String(x.name||'').toLowerCase()===lower)||db.food.find(x=>(x.aliases||[]).some(a=>String(a).toLowerCase()===lower))||null;}
+function supplementalKey(value){return String(value||'').normalize?.('NFKC')?.toLowerCase?.().replace(/[\s·_\-()[\]{}.,/\\:+]/g,'')||String(value||'').toLowerCase().replace(/\s+/g,'');}
+function buildSupplementalFoodIndex(rows=[]){
+ const exact=new Map(),prefix=new Map();
+ for(const row of rows){
+  const keys=[row?.name,row?.name_en,...(Array.isArray(row?.aliases)?row.aliases:[])].map(supplementalKey).filter(Boolean);
+  for(const key of keys){if(!exact.has(key))exact.set(key,row);const p=key.slice(0,4);if(p){const bucket=prefix.get(p)||[];if(bucket.length<80)bucket.push(row);prefix.set(p,bucket);}}
+ }
+ return {exact,prefix};
+}
 async function loadSupplementalFoodDb(){
  if(Array.isArray(supplementalFoodDb))return supplementalFoodDb;
- if(!supplementalFoodDbPromise)supplementalFoodDbPromise=fetch(SUPPLEMENTAL_FOOD_DB_PATH,{cache:'force-cache'}).then(async response=>{if(!response.ok)throw new Error(`SUPPLEMENTAL_FOOD_DB_${response.status}`);const payload=await response.json(),rows=Array.isArray(payload)?payload:(Array.isArray(payload?.records)?payload.records:[]);if(rows.length<4000)throw new Error('SUPPLEMENTAL_FOOD_DB_SCALE_INVALID');supplementalFoodDb=rows;return rows;}).catch(error=>{supplementalFoodDbPromise=null;captureError('supplemental_food_db_load',error);return [];});
+ if(!supplementalFoodDbPromise)supplementalFoodDbPromise=fetch(SUPPLEMENTAL_FOOD_DB_PATH,{cache:'force-cache'}).then(async response=>{if(!response.ok)throw new Error(`SUPPLEMENTAL_FOOD_DB_${response.status}`);const payload=await response.json(),rows=Array.isArray(payload)?payload:(Array.isArray(payload?.records)?payload.records:[]);if(rows.length<4000)throw new Error('SUPPLEMENTAL_FOOD_DB_SCALE_INVALID');supplementalFoodDb=rows;supplementalFoodIndex=buildSupplementalFoodIndex(rows);return rows;}).catch(error=>{supplementalFoodDbPromise=null;captureError('supplemental_food_db_load',error);return [];});
  return supplementalFoodDbPromise;
 }
-async function findSupplementalFood(q,options={}){const query=String(q||'').trim();if(!query)return null;const rows=await loadSupplementalFoodDb();if(!rows.length)return null;const smart=window.GarangFoodIntelligenceV2?.resolve?.(rows,query,{mode:options.mode==='vision'?'vision':'manual',minConfidence:options.minConfidence,margin:options.margin});return smart?.status==='matched'&&smart.food?{food:smart.food,match:smart}:null;}
+async function findSupplementalFood(q,options={}){
+ const query=String(q||'').trim();if(!query)return null;
+ const rows=await loadSupplementalFoodDb();if(!rows.length)return null;
+ const key=supplementalKey(query),exact=supplementalFoodIndex?.exact?.get(key);
+ if(exact)return {food:exact,match:{status:'matched',confidence:1,reason:'SUPPLEMENTAL_EXACT'}};
+ const prefix=key.slice(0,4),candidates=(supplementalFoodIndex?.prefix?.get(prefix)||[]);
+ if(!candidates.length)return null;
+ const smart=window.GarangFoodIntelligenceV2?.resolve?.(candidates,query,{mode:options.mode==='vision'?'vision':'manual',minConfidence:options.minConfidence,margin:options.margin});
+ return smart?.status==='matched'&&smart.food?{food:smart.food,match:smart}:null;
+}
 function foodItemFromFood(f,grams){if(!f)return null;const g=Math.max(1,num(grams,100)),ratio=g/num(f.basis_g??f.nutrition_basis_g,100),nutritionSource=normalizedNutritionSource({source:f.source,...(f.provenance&&typeof f.provenance==='object'?f.provenance:{})});return {id:uid(),foodId:f.food_id||f.id||null,name:f.name,grams:g,kcal:num(f.kcal)*ratio,protein:num(f.protein)*ratio,carbs:num(f.carbs)*ratio,fat:num(f.fat)*ratio,nutritionStatus:String(f.nutrition_status||'unknown').toLowerCase(),nutritionSource,userOverride:false};}
 function foodItem(name,grams){return foodItemFromFood(findFood(name),grams);}
 function applyFoodFields(f){const x=foodItemFromFood(f,$('foodGram').value);if(!x)return false;$('foodSearch').value=f.name;$('foodKcal').value=Math.round(x.kcal);$('foodProtein').value=x.protein.toFixed(1);$('foodCarb').value=x.carbs.toFixed(1);$('foodFat').value=x.fat.toFixed(1);return true;}
@@ -690,15 +708,19 @@ function mealScanMatch(row){
 }
 async function lookupMealScanSupplemental(rows=[]){
  const input=(Array.isArray(rows)?rows:[]).slice(0,6);if(!input.length)return {items:[],unresolved:[]};
- const corpus=await loadSupplementalFoodDb();if(!corpus.length)return {items:[],unresolved:input};
+ await loadSupplementalFoodDb();if(!supplementalFoodDb?.length)return {items:[],unresolved:input};
  const items=[],unresolved=[];
  for(const row of input){
-  const smart=window.GarangFoodIntelligenceV2?.resolveVisionRow?.(corpus,row,{minCombinedConfidence:.7});
-  if(smart?.status!=='matched'||!smart.food){unresolved.push(row);continue;}
-  const identityConfidence=clamp(num(row?.confidence,0),0,1),portionConfidence=clamp(num(row?.portionConfidence,row?.confidence??0),0,1),matchConfidence=clamp(num(smart?.confidence,0),0,1),confirmationRequired=identityConfidence<.65||portionConfidence<.6||matchConfidence<.72;
-  const item=window.GarangFoodIntelligenceV2?.toMealItem?.(smart.food,Math.max(5,num(row?.grams,100)))||foodItemFromFood(smart.food,Math.max(5,num(row?.grams,100)));
+  const queries=[row?.name,...(Array.isArray(row?.aliases)?row.aliases:[])].map(x=>String(x||'').trim()).filter(Boolean);
+  let hit=null;
+  for(const query of queries){hit=await findSupplementalFood(query,{mode:'vision',minConfidence:.8,margin:.055});if(hit)break;}
+  if(!hit?.food){unresolved.push(row);continue;}
+  const smart=hit.match,identityConfidence=clamp(num(row?.confidence,0),0,1),portionConfidence=clamp(num(row?.portionConfidence,row?.confidence??0),0,1),matchConfidence=clamp(num(smart?.confidence,0),0,1),combinedConfidence=clamp(matchConfidence*(.65+.35*identityConfidence),0,1);
+  if(combinedConfidence<.7){unresolved.push(row);continue;}
+  const confirmationRequired=identityConfidence<.65||portionConfidence<.6||combinedConfidence<.72;
+  const item=window.GarangFoodIntelligenceV2?.toMealItem?.(hit.food,Math.max(5,num(row?.grams,100)))||foodItemFromFood(hit.food,Math.max(5,num(row?.grams,100)));
   if(!item){unresolved.push(row);continue;}
-  items.push({...item,id:uid(),scanEvidence:{visionName:String(row?.name||smart.food.name),confidence:identityConfidence,identityConfidence,portionConfidence,matchConfidence,confirmationRequired,matchReason:String(smart?.reason||'USDA_SUPPLEMENTAL'),source:'vision+usda-supplemental'}});
+  items.push({...item,id:uid(),scanEvidence:{visionName:String(row?.name||hit.food.name),confidence:identityConfidence,identityConfidence,portionConfidence,matchConfidence:combinedConfidence,confirmationRequired,matchReason:String(smart?.reason||'USDA_SUPPLEMENTAL'),source:'vision+usda-supplemental'}});
  }
  if(items.length)trackEvent('meal_scan_supplemental_resolved',{resolved:items.length,unresolved:unresolved.length});
  return {items,unresolved};
