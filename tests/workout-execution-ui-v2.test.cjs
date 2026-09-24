@@ -106,7 +106,9 @@ assert.ok(runtime.includes("pool=improved.length?improved:comparisons"),'NEW PR 
 assert.ok(runtime.includes("SESSION_KEY='garang_workout_session_v2'")&&runtime.includes('sessionStorage.setItem(SESSION_KEY')&&runtime.includes('hydrateSessionState()'),'active workout execution must survive reloads through session-scoped persistence');
 assert.ok(app.includes('sessionDraft(){return clone(workoutDraft);}')&&app.includes('restoreSessionDraft(items)'),'workout bridge must persist and restore the unsaved exercise draft');
 assert.ok(runtime.includes('data-execution-add-set')&&runtime.includes('data-execution-set-delete')&&runtime.includes('changeSetCount('),'sets must be directly addable and removable during execution');
-assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}')&&runtime.includes('updateLivePR()')&&runtime.includes("NEW PR · +")&&runtime.includes("BEST ")&&runtime.includes("현재 "),'execution must surface immediate understandable live PR feedback against pre-session history');
+assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM(exerciseName);}'),'execution must read the canonical pre-session PR baseline');
+assert.ok(runtime.includes('function updateLivePR()')&&runtime.includes("NEW PR · +"),'execution must surface an immediate PR delta when the active set improves the baseline');
+assert.ok(runtime.includes("BEST ")&&runtime.includes("현재 "),'execution must keep the baseline/current comparison understandable before a new PR');
 assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
 
 assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
