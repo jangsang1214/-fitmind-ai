@@ -1,0 +1,60 @@
+name: Probe K-FIND Processed Range
+
+on:
+  push:
+    branches:
+      - ai/korean-food-source-acquisition-v2-20260924
+    paths:
+      - .github/workflows/probe-kfind-processed-range.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Probe byte-range support
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://various.foodsafetykorea.go.kr'
+          POP="$BASE/nutrient/export/down/filePop.do?pagenum=1&totalListCnt=17&pageblock=10&pagesize=10&searchDbSeq=1787898734821&searchDbGubun=01&searchOpenApi=Y"
+          JAR="$RUNNER_TEMP/kfind.cookies"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" "$POP" -o "$RUNNER_TEMP/popup.html"
+          python - <<'PY' > "$RUNNER_TEMP/kfind.env"
+          import re,os
+          from pathlib import Path
+          t=Path(os.environ['RUNNER_TEMP']+'/popup.html').read_text(errors='ignore'); token=re.search(r'name="pageToken"[^>]*value="([^"]+)"',t); key=re.search(r'vmFileKey\s*:\s*"([^"]+)"',t)
+          print('PAGE_TOKEN='+token.group(1));print('FILE_KEY='+key.group(1))
+          PY
+          source "$RUNNER_TEMP/kfind.env"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" --data-urlencode "pageToken=$PAGE_TOKEN" --data-urlencode 'dbGubun=01' --data-urlencode 'sosok=GARANG' --data-urlencode 'depart=AI/Data' --data-urlencode 'agencyType=01' --data-urlencode 'usePurpose=02' --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' "$BASE/nutrient/export/down/cudAction.do" -o "$RUNNER_TEMP/register.html"
+          KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
+          URL="$BASE/nutrient/multi/file/download.do?key=$KEY"
+          curl --location --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" -H 'Range: bytes=0-1048575' -D "$RUNNER_TEMP/range.headers" "$URL" -o "$RUNNER_TEMP/range.bin"
+          python - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          h=(Path(os.environ['RUNNER_TEMP'])/'range.headers').read_text(errors='ignore'); p=Path(os.environ['RUNNER_TEMP'])/'range.bin'
+          def last(name):
+              xs=re.findall(r'(?im)^'+re.escape(name)+r':\s*([^\r\n]+)',h); return xs[-1] if xs else None
+          status=re.findall(r'(?im)^HTTP/\S+\s+(\d+)',h)
+          report={'observedAt':'2026-09-24','status':int(status[-1]) if status else None,'bytes':p.stat().st_size if p.exists() else 0,'acceptRanges':last('accept-ranges'),'contentRange':last('content-range'),'contentLength':last('content-length'),'contentDisposition':last('content-disposition')}
+          Path('04_data/knowledge/kfind-processed-range-probe-v1.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n');print(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
+      - name: Commit range probe
+        shell: bash
+        run: |
+          git config user.name 'GARANG K-FIND Probe'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 04_data/knowledge/kfind-processed-range-probe-v1.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Record K-FIND processed range probe [skip kfind-probe]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
