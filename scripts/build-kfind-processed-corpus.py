@@ -125,6 +125,6 @@ def main():
     brand_count=sum(1 for r in records if r.get('brand'));report_count=sum(1 for r in records if r.get('report_no'))
     meta={'version':VERSION,'status':'ready','rawRows':raw,'records':len(records),'brandRows':brand_count,'brandRate':brand_count/len(records) if records else 0,'reportNoRows':report_count,'reportNoRate':report_count/len(records) if records else 0,'duplicateBrandProductRows':duplicate,'excludedNonGramRows':non_g,'incompleteCoreRows':incomplete,'invalidRows':invalid,'shardCount':len(shards),'source':{'provider':'식품의약품안전처 K-FIND','dataset':DATASET,'url':SOURCE_URL},'guardrails':{'verifiedOnly':True,'gramBasisOnlyForAutomaticCalculation':True,'traceableProvenanceRequired':True,'deterministicAliasesOnly':True,'noAutomaticCanonicalOverwrite':True}}
     Path(a.manifest).write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n');Path(a.meta).write_text(json.dumps(meta,ensure_ascii=False,indent=2)+'\n');print(json.dumps(meta,ensure_ascii=False,indent=2))
-    if len(records)<100000:raise SystemExit('K-FIND processed corpus unexpectedly small: '+str(len(records))
+    if len(records)<100000:raise SystemExit('K-FIND processed corpus unexpectedly small: '+str(len(records)))
 
 if __name__=='__main__':main()
