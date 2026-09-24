@@ -10,6 +10,8 @@ assert.equal(exact.canonical.name,'현미밥');
 const spaced=Food.resolve(foods,'현미 밥',{mode:'manual'});
 assert.equal(spaced.status,'matched');
 assert.equal(spaced.canonical.name,'현미밥');
+const quantity=Food.resolve(foods,'현미 밥 200그램',{mode:'manual'});
+assert.equal(quantity.status,'matched');assert.equal(quantity.canonical.name,'현미밥');
 
 const synthetic=[
  {food_id:'chicken',name:'닭가슴살',name_en:'Chicken Breast',aliases:['chicken breast','닭 가슴살'],basis_g:100,kcal:165,protein:31,carbs:0,fat:3.6,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'1'}},
@@ -27,7 +29,12 @@ assert.equal(lowVision.status,'unmatched');assert.equal(lowVision.reason,'VISION
 const vision=Food.resolveVisionRow(synthetic,{name:'닭 가슴살',aliases:['chicken breast'],confidence:.92});
 assert.equal(vision.status,'matched');assert.equal(vision.canonical.foodId,'chicken');
 const branded=[{food_id:'brand-yogurt',name:'프로틴 요거트',brand:'GARANG Foods',product_name:'High Protein Yogurt',basis_g:100,kcal:100,protein:15,carbs:7,fat:2,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'brand-1'}}];
-const brandMatch=Food.resolve(branded,'GARANG Foods High Protein Yogurt',{mode:'manual'});assert.equal(brandMatch.status,'matched');assert.equal(brandMatch.canonical.foodId,'brand-yogurt');assert.equal(brandMatch.canonical.brand,'GARANG Foods');\nconst conflictCorpus=[\n {food_id:'apple',name:'사과',name_en:'Apple',basis_g:100,kcal:52,protein:.3,carbs:14,fat:.2,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'a'}},\n {food_id:'banana',name:'바나나',name_en:'Banana',basis_g:100,kcal:89,protein:1.1,carbs:23,fat:.3,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'b'}}\n];\nconst conflict=Food.resolveVisionRow(conflictCorpus,{name:'사과',aliases:['바나나'],confidence:.95});assert.equal(conflict.status,'ambiguous');assert.equal(conflict.reason,'VISION_ALIAS_CONFLICT');
+const brandMatch=Food.resolve(branded,'GARANG Foods High Protein Yogurt',{mode:'manual'});assert.equal(brandMatch.status,'matched');assert.equal(brandMatch.canonical.foodId,'brand-yogurt');assert.equal(brandMatch.canonical.brand,'GARANG Foods');
+const conflictCorpus=[
+ {food_id:'apple',name:'사과',name_en:'Apple',basis_g:100,kcal:52,protein:.3,carbs:14,fat:.2,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'a'}},
+ {food_id:'banana',name:'바나나',name_en:'Banana',basis_g:100,kcal:89,protein:1.1,carbs:23,fat:.3,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'b'}}
+];
+const conflict=Food.resolveVisionRow(conflictCorpus,{name:'사과',aliases:['바나나'],confidence:.95});assert.equal(conflict.status,'ambiguous');assert.equal(conflict.reason,'VISION_ALIAS_CONFLICT');
 const item=Food.toMealItem(synthetic[0],150);
 assert.equal(item.nutritionStatus,'verified');assert.equal(Math.round(item.protein*10)/10,46.5);assert.equal(item.nutritionSource.recordId,'1');
 console.log('food-intelligence-v2: PASS');
