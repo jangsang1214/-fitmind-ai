@@ -15,7 +15,7 @@ const DEMO_KEY='garang_demo_state_v3';
 const USER_KEY_RE=/^garang_user_(.+)_v3$/;
 const BACKUP_PREFIX='garang_state_recovery_backup_v1::';
 const INVALID_SUFFIX='::invalid-json';
-const ROW_DOMAINS=['checkins','planner','workouts','meals','runs','body','aiChat','actionLog','errors'];
+const ROW_DOMAINS=['checkins','planner','workouts','meals','runs','body','physiologicalSignals','aiChat','actionLog','errors'];
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const rows=value=>Array.isArray(value)?value.filter(object):[];
