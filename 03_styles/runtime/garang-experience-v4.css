@@ -225,6 +225,13 @@
 #main[data-garang-screen="progress"] #garangProgressDetails{
   margin-top:14px!important;
 }
+#main[data-garang-screen="progress"] .garang-progress-range-quiet{
+  margin:0 0 10px!important;padding:0!important;gap:6px!important;
+  opacity:.72;
+}
+#main[data-garang-screen="progress"] .garang-progress-range-quiet button{
+  min-height:32px!important;padding:0 10px!important;font-size:9px!important;
+}
 #main[data-garang-screen="progress"] #garangProgressDetails>.garang-luxury-drawer-body{
   display:grid!important;gap:12px!important;
 }
