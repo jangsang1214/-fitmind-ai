@@ -68,9 +68,10 @@ function fuseReadiness(base,phys){
  if(!phys||phys.quality==='insufficient'||phys?.derived?.readinessScore===null||phys?.derived?.readinessScore===undefined)return base;
  const pv=num(phys.derived.readinessScore),pc=clamp(num(phys.confidence)||0,0,1);if(pv===null||pc<.35)return base;
  if(base?.value===null||base?.value===undefined)return {value:round(pv,0),band:band(pv,[45,65,80],['low','guarded','ready','high']),confidence:round(pc*.85,2),components:{physiological:round(pv,0)},reasons:['PHYSIOLOGICAL_SIGNAL_ONLY',...(phys.derived.reasonCodes||[])]};
- const bc=clamp(num(base.confidence)||0,0,1),wBase=Math.max(.35,bc),wPhys=Math.max(.25,pc*.75),value=round((base.value*wBase+pv*wPhys)/(wBase+wPhys),0),reasons=[...(base.reasons||[])];
- reasons.push('PHYSIOLOGICAL_SIGNAL_FUSED');if(Math.abs(base.value-pv)>=25)reasons.push('CHECKIN_PHYSIOLOGICAL_DIVERGENCE');
- return {...base,value,band:band(value,[45,65,80],['low','guarded','ready','high']),confidence:round(clamp(Math.max(bc,pc*.8),0,1),2),components:{...(base.components||{}),physiological:round(pv,0)},reasons:[...new Set(reasons.concat(phys.derived.reasonCodes||[]))]};
+ const bc=clamp(num(base.confidence)||0,0,1),wBase=Math.max(.35,bc),wPhys=Math.max(.25,pc*.75),value=round((base.value*wBase+pv*wPhys)/(wBase+wPhys),0),reasons=[...(base.reasons||[])],divergence=Math.abs(base.value-pv);
+ reasons.push('PHYSIOLOGICAL_SIGNAL_FUSED');if(divergence>=25)reasons.push('CHECKIN_PHYSIOLOGICAL_DIVERGENCE');
+ const agreementFactor=divergence>=40?.65:divergence>=25?.82:divergence>=15?.93:1,rawConfidence=clamp(Math.max(bc,pc*.8),0,1),confidence=round(rawConfidence*agreementFactor,2);
+ return {...base,value,band:band(value,[45,65,80],['low','guarded','ready','high']),confidence,components:{...(base.components||{}),physiological:round(pv,0),agreement:round(agreementFactor,2)},reasons:[...new Set(reasons.concat(phys.derived.reasonCodes||[]))]};
 }
 function fatigueSignal(daily,asOf,load,readiness){
  const recent=windowRows(daily,asOf,7),checkins=recent.filter(d=>d.checkin).map(d=>d.checkin),parts=[],reasons=[];

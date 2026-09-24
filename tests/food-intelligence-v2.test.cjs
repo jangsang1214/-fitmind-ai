@@ -26,6 +26,8 @@ const lowVision=Food.resolveVisionRow(synthetic,{name:'닭가슴살',confidence:
 assert.equal(lowVision.status,'unmatched');assert.equal(lowVision.reason,'VISION_CONFIDENCE_TOO_LOW');
 const vision=Food.resolveVisionRow(synthetic,{name:'닭 가슴살',aliases:['chicken breast'],confidence:.92});
 assert.equal(vision.status,'matched');assert.equal(vision.canonical.foodId,'chicken');
+const branded=[{food_id:'brand-yogurt',name:'프로틴 요거트',brand:'GARANG Foods',product_name:'High Protein Yogurt',basis_g:100,kcal:100,protein:15,carbs:7,fat:2,nutrition_status:'verified',provenance:{provider:'TEST',dataset:'OFFICIAL',recordId:'brand-1'}}];
+const brandMatch=Food.resolve(branded,'GARANG Foods High Protein Yogurt',{mode:'manual'});assert.equal(brandMatch.status,'matched');assert.equal(brandMatch.canonical.foodId,'brand-yogurt');
 const item=Food.toMealItem(synthetic[0],150);
 assert.equal(item.nutritionStatus,'verified');assert.equal(Math.round(item.protein*10)/10,46.5);assert.equal(item.nutritionSource.recordId,'1');
 console.log('food-intelligence-v2: PASS');

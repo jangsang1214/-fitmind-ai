@@ -25,6 +25,18 @@ const coachRules=[
   assert.equal(result.contract.stateMutationAllowed,false);
 }
 
+
+{
+  const result=Grounding.ground({
+    decision:{decisionId:'d-vector',mode:'reduce',reasonCodes:['SHORT_SLEEP']},
+    query:'잠을 거의 못 자서 오늘은 회복 중심으로 운동 강도를 낮추고 싶어',
+    coachRules
+  });
+  const sleep=result.evidence.find(item=>item.id==='V5R036');
+  assert.ok(sleep);
+  assert.ok(sleep.vectorScore>0,'semantic recovery query should produce sparse-vector evidence');
+}
+
 {
   const result=Grounding.ground({
     decision:{decisionId:'d2',mode:'progress',reasonCodes:['READINESS_HIGH']},

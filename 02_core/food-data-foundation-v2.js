@@ -85,16 +85,20 @@ function assess(input={}){
 function audit(records=[]){
   const seenIds=new Map(),seenNames=new Map(),aliasOwners=new Map(),items=[];
   const statusCounts=Object.fromEntries(QUALITY.map(key=>[key,0]));
+  let traceable=0,verifiedTraceable=0,withAliases=0,aliasCount=0,withServing=0,withEnglishName=0,withBrand=0;
   for(const raw of list(records)){
     const result=assess(raw),food=result.food;items.push(result);statusCounts[food.quality]=(statusCounts[food.quality]||0)+1;
+    const trace=!!(food.provenance.provider&&food.provenance.dataset&&food.provenance.recordId);if(trace)traceable++;if(trace&&food.quality==='verified')verifiedTraceable++;
+    if(food.aliases.length){withAliases++;aliasCount+=food.aliases.length;}if(food.serving)withServing++;if(food.nameEn)withEnglishName++;if(clean(raw.brand||raw.brand_name||raw.manufacturer))withBrand++;
     if(food.foodId){if(seenIds.has(food.foodId))result.errors.push(issue('DUPLICATE_FOOD_ID','error',food.foodId));else seenIds.set(food.foodId,food.name);}
     const nameKey=normalizedName(food.name);if(nameKey){const bucket=seenNames.get(nameKey)||[];bucket.push(food.foodId);seenNames.set(nameKey,bucket);}
     for(const alias of [food.name,...food.aliases]){const key=normalizedName(alias);if(!key)continue;const owners=aliasOwners.get(key)||new Set();owners.add(food.foodId);aliasOwners.set(key,owners);}
   }
   const duplicateNames=[...seenNames.entries()].filter(([,ids])=>ids.filter(Boolean).length>1).map(([key,ids])=>({key,ids}));
   const aliasCollisions=[...aliasOwners.entries()].filter(([,owners])=>owners.size>1).map(([key,owners])=>({key,ids:[...owners]}));
-  const errors=items.flatMap((item,index)=>item.errors.map(x=>({...x,index,foodId:item.food.foodId,name:item.food.name}))),warnings=items.flatMap((item,index)=>item.warnings.map(x=>({...x,index,foodId:item.food.foodId,name:item.food.name})));
-  return {version:VERSION,total:items.length,statusCounts,errors,warnings,duplicateNames,aliasCollisions,pass:errors.length===0};
+  const errors=items.flatMap((item,index)=>item.errors.map(x=>({...x,index,foodId:item.food.foodId,name:item.food.name}))),warnings=items.flatMap((item,index)=>item.warnings.map(x=>({...x,index,foodId:item.food.foodId,name:item.food.name}))),total=items.length;
+  const coverage={traceableProvenance:traceable,traceableProvenanceRate:total?traceable/total:0,verifiedTraceable,aliasRows:withAliases,aliasRowRate:total?withAliases/total:0,totalAliases:aliasCount,servingRows:withServing,servingRowRate:total?withServing/total:0,englishNameRows:withEnglishName,englishNameRate:total?withEnglishName/total:0,brandRows:withBrand,brandRowRate:total?withBrand/total:0};
+  return {version:VERSION,total,statusCounts,coverage,errors,warnings,duplicateNames,aliasCollisions,pass:errors.length===0};
 }
 function ingestExternal(input={}){
   const provenance=normalizeSource(input.provenance||{}),quality=normalizeQuality(input.quality);

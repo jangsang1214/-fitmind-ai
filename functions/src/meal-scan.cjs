@@ -8,11 +8,12 @@ const MAX_IMAGE_DATA_URL=2600000;
 const IMAGE_TYPES=Object.freeze(['image/jpeg','image/png','image/webp']);
 const MEAL_SCAN_SCHEMA=Object.freeze({
  type:'object',additionalProperties:false,required:['items','overallConfidence','uncertain','notes'],properties:{
-  items:{type:'array',minItems:0,maxItems:6,items:{type:'object',additionalProperties:false,required:['name','aliases','grams','confidence'],properties:{
+  items:{type:'array',minItems:0,maxItems:6,items:{type:'object',additionalProperties:false,required:['name','aliases','grams','confidence','portionConfidence'],properties:{
    name:{type:'string',minLength:1,maxLength:80},
    aliases:{type:'array',maxItems:5,items:{type:'string',minLength:1,maxLength:80}},
    grams:{type:'number',minimum:5,maximum:1500},
-   confidence:{type:'number',minimum:0,maximum:1}
+   confidence:{type:'number',minimum:0,maximum:1},
+   portionConfidence:{type:'number',minimum:0,maximum:1}
   }}},
   overallConfidence:{type:'number',minimum:0,maximum:1},
   uncertain:{type:'boolean'},
@@ -32,16 +33,16 @@ function parseMealImage(value){
 function validateMealScan(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('MEAL_SCAN_RESPONSE_INVALID'),{code:'MEAL_SCAN_RESPONSE_INVALID'});
  const items=(Array.isArray(value.items)?value.items:[]).slice(0,6).map(row=>{
-  const name=clean(row?.name,80),aliases=[...new Set((Array.isArray(row?.aliases)?row.aliases:[]).map(x=>clean(x,80)).filter(Boolean))].slice(0,5),grams=Number(row?.grams),confidence=Number(row?.confidence);
-  if(!name||!Number.isFinite(grams)||grams<5||grams>1500||!Number.isFinite(confidence))throw Object.assign(new Error('MEAL_SCAN_RESPONSE_INVALID'),{code:'MEAL_SCAN_RESPONSE_INVALID'});
-  return {name,aliases,grams:Math.round(grams),confidence:Math.max(0,Math.min(1,confidence))};
+  const name=clean(row?.name,80),aliases=[...new Set((Array.isArray(row?.aliases)?row.aliases:[]).map(x=>clean(x,80)).filter(Boolean))].slice(0,5),grams=Number(row?.grams),confidence=Number(row?.confidence),portionConfidence=Number(row?.portionConfidence??row?.confidence);
+  if(!name||!Number.isFinite(grams)||grams<5||grams>1500||!Number.isFinite(confidence)||!Number.isFinite(portionConfidence))throw Object.assign(new Error('MEAL_SCAN_RESPONSE_INVALID'),{code:'MEAL_SCAN_RESPONSE_INVALID'});
+  return {name,aliases,grams:Math.round(grams),confidence:Math.max(0,Math.min(1,confidence)),portionConfidence:Math.max(0,Math.min(1,portionConfidence))};
  });
  if(!items.length)throw Object.assign(new Error('MEAL_SCAN_NO_FOOD_DETECTED'),{code:'MEAL_SCAN_NO_FOOD_DETECTED'});
  const overallConfidence=Number(value.overallConfidence);
  return {items,overallConfidence:Number.isFinite(overallConfidence)?Math.max(0,Math.min(1,overallConfidence)):0,uncertain:value.uncertain===true,notes:clean(value.notes,300)};
 }
 function systemPrompt(language='ko'){
- return `You are GARANG Meal Scan Vision. Identify only foods visibly supported by the supplied meal photo. Return 1-6 food components with conservative gram estimates and confidence. Prefer common Korean food names that can match a Korean food database; include short Korean/English aliases when useful. Do not invent hidden ingredients. Do not calculate calories, protein, carbs, fat, or any nutrition values: GARANG's verified food database owns nutrition. If portion size is uncertain, lower confidence and set uncertain=true. If the image is not a meal or no food can be identified, do not fabricate food. Output language: ${language==='en'?'English with Korean aliases when known':'Korean with English aliases when useful'}.`;
+ return `You are GARANG Meal Scan Vision. Identify only foods visibly supported by the supplied meal photo. Return 1-6 food components with conservative gram estimates, identity confidence, and a separate portionConfidence for the gram estimate. Prefer common Korean food names that can match a Korean food database; include short Korean/English aliases when useful. Do not invent hidden ingredients. Do not calculate calories, protein, carbs, fat, or any nutrition values: GARANG's verified food database owns nutrition. If food identity is uncertain, lower confidence. If portion size is uncertain, lower portionConfidence and set uncertain=true. If the image is not a meal or no food can be identified, do not fabricate food. Output language: ${language==='en'?'English with Korean aliases when known':'Korean with English aliases when useful'}.`;
 }
 function createMealScanProvider(options={}){
  const fetchImpl=options.fetchImpl||globalThis.fetch,apiKey=clean(options.apiKey,1000),model=clean(options.model||DEFAULT_MODEL,120),endpoint=clean(options.endpoint||'https://api.openai.com/v1/responses',500),timeoutMs=Math.max(1000,Number(options.timeoutMs)||25000),maxAttempts=Math.max(1,Math.min(2,Number(options.maxAttempts)||2));

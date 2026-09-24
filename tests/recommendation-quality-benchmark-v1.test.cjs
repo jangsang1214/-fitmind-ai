@@ -106,5 +106,23 @@ test('observability elevates any guardrail violation to critical',()=>{
  assert.ok(o.alerts.includes('GUARDRAIL_VIOLATION'));
 });
 
+test('recommendation quality prefers measured replay calibration over heuristic flags',()=>{
+ const measured={status:'weak',sampleSize:40,ece:.32,mce:.4,brier:.31,alerts:['SYSTEMATIC_OVERCONFIDENCE']};
+ const q=Quality.build(qualityInput({confidenceCalibration:measured}));
+ assert.equal(q.evidence.calibrationSource,'chronological_replay');
+ assert.ok(q.components.calibration<.5);
+ assert.ok(q.alerts.includes('CONFIDENCE_CALIBRATION_WEAK'));
+ assert.ok(q.alerts.includes('SYSTEMATIC_OVERCONFIDENCE'));
+});
+
+test('longitudinal data quality exposes missing attribution, invalid ranges and robust outliers',()=>{
+ const episodes=cleanEpisodes(8);episodes.episodes[0].attribution={};episodes.episodes[1].execution.completionRatio=1.4;episodes.episodes[2].outcome.score=0;episodes.episodes[3].outcome.score=100;episodes.episodes[4].outcome.score=81;episodes.episodes[5].outcome.score=82;episodes.episodes[6].outcome.score=83;episodes.episodes[7].outcome.score=99;
+ const q=DataQuality.build(episodes,{asOf:'2026-09-24'});
+ assert.equal(q.status,'invalid');
+ assert.ok(q.issues.missingAttribution.includes('e0'));
+ assert.ok(q.issues.invalidRanges.some(x=>x.field==='execution.completionRatio'));
+ assert.equal(q.guardrails.outlierAware,true);
+});
+
 console.log(JSON.stringify({status:'PASS',tests:passed,axes:['relevance/grounding','safety','actionability','personalization','calibration','longitudinal drift']},null,2));
 console.log('recommendation-quality-benchmark-v1: PASS');
