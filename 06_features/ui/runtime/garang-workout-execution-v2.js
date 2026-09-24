@@ -150,7 +150,7 @@ function enhance(){
     builder.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
-    const canonicalSave=document.getElementById('saveWorkoutSession');if(canonicalSave){canonicalSave.classList.add('workout-canonical-save');canonicalSave.hidden=true;}
+    const canonicalSave=document.getElementById('saveWorkoutSession');if(canonicalSave){canonicalSave.classList.add('workout-canonical-save');canonicalSave.hidden=true;canonicalSave.setAttribute('aria-hidden','true');canonicalSave.tabIndex=-1;canonicalSave.style.setProperty('display','none','important');canonicalSave.style.setProperty('pointer-events','none','important');}
   }
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
