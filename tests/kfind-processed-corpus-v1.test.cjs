@@ -62,6 +62,8 @@ assert.ok(app.includes('inflateKoreanProcessedShard(payload,manifest)'));
 assert.ok(app.includes('manifest?.brandPrefixBuckets?.[routeKey]'));
 assert.ok(app.includes("?'korea-processed':'korea-official'"));
 assert.ok(app.includes("payload?.format!=='compact-array-v1'"));
+assert.ok(app.includes("K-FIND · 식품영양성분 DB"));
+assert.ok(app.includes("USDA FDC"));
 
 console.log(JSON.stringify({
  status:'PASS',
