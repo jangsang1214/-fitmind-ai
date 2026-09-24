@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const Adapters=require('../02_core/food-source-adapters-v2.js');
 const Foundation=require('../02_core/food-data-foundation-v2.js');
-const DATA_GO_KR_FOOD_ENDPOINT='https://api.data.go.kr/openapi/tn_pubr_public_nutri_food_info_api';
+const DATA_GO_KR_FOOD_ENDPOINT='https://api.data.go.kr/openapi/tn_pubr_public_nutri_info_api';
 
 function argsOf(argv){const out={};for(let i=0;i<argv.length;i++){const token=argv[i];if(!token.startsWith('--'))continue;const key=token.slice(2);const next=argv[i+1];if(next&&!next.startsWith('--')){out[key]=next;i++;}else out[key]=true;}return out;}
 function parseCsv(text){const rows=[];let row=[],cell='',quoted=false;for(let i=0;i<String(text).length;i++){const ch=text[i],next=text[i+1];if(ch==='"'){if(quoted&&next==='"'){cell+='"';i++;}else quoted=!quoted;}else if(ch===','&&!quoted){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);cell='';if(row.some(v=>String(v).trim()!==''))rows.push(row);row=[];}else cell+=ch;}if(cell||row.length){row.push(cell);if(row.some(v=>String(v).trim()!==''))rows.push(row);}if(rows.length<2)return [];const headers=rows[0].map((h,i)=>String(h||`column_${i}`).replace(/^\uFEFF/,'').trim());return rows.slice(1).map(values=>Object.fromEntries(headers.map((h,i)=>[h,String(values[i]??'').trim()])));}
