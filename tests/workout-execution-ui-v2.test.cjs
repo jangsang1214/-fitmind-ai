@@ -8,6 +8,7 @@ const workoutFlow=fs.readFileSync(path.join(root,'06_features','ui','runtime','g
 const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-execution-v2.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const polish=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-polish-v3.js'),'utf8');
+const polishCss=fs.readFileSync(path.join(root,'03_styles','runtime','garang-polish-v3.css'),'utf8');
 const workoutLibrary=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-library-v2.js'),'utf8');
 const swRuntime=fs.readFileSync(path.join(root,'02_core','sw-runtime.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
@@ -78,7 +79,7 @@ for(const gender of ['male','female'])for(const view of ['front','side','back'])
 assert.ok(polish.includes('function v6MeshSVG')&&polish.includes('function v6ZoneMarkup')&&polish.includes('/${person}-${view}.svg?v=7.0.0-muscular-remap')&&polish.includes('data-garang-visual-layer="mesh"')&&polish.includes('data-garang-interaction-layer="zones"'),'Body Model v6 must separate complete mesh visual geometry from interaction/highlight zones');
 assert.ok(!polish.includes('transform="scale(2.76923077 2.11538462)"'),'Body Model v6 interaction zones must use the native 720x1100 mesh coordinate system instead of scaled v5 geometry');
 assert.ok(polish.includes('function v7DefinitionMarkup')&&polish.includes('data-garang-visual-revision="7"')&&polish.includes("view.querySelectorAll('svg').forEach(node=>node.remove())"),'Body v7 must add anatomy definition, require the v7 renderer revision, and remove duplicate legacy body SVGs');
-assert.ok(css.includes('GARANG Body v7')&&css.includes('fill:transparent!important')&&css.includes('pointer-events:all'),'Body v7 hit zones must stay interactive without floating unselected silhouettes');
+assert.ok(polishCss.includes('GARANG Body v7')&&polishCss.includes('fill:transparent!important')&&polishCss.includes('pointer-events:all'),'Body v7 hit zones must stay interactive without floating unselected silhouettes');
 for(const gender of ['male','female'])for(const view of ['front','side','back'])assert.ok(swRuntime.includes(`./05_assets/body-model-v6/${gender}-${view}.svg?v=7.0.0-muscular-remap`),`Body Model v6 ${gender}-${view} must be available in the offline app shell`);
 assert.ok(polish.includes("v6MeshSVG(gender,side)")&&polish.includes("side==='back'")&&polish.includes("gender==='female'"),'Body Model v6 must support male/female FRONT/SIDE/BACK through one renderer contract');
 assert.ok(polish.includes('data-garang-classical-model="5"')&&polish.includes('g5-silhouette')&&polish.includes('function v5SideSVG')&&polish.includes('data-g3-view="side"'),'Body Model v5 fallback must preserve FRONT / SIDE / BACK capability and interactive muscle zones');
