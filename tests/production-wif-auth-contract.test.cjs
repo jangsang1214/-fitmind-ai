@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const workflow=fs.readFileSync(path.join(root,'.github/workflows/production-coach-activation.yml'),'utf8');
+const readiness=fs.readFileSync(path.join(root,'.github/workflows/production-wif-readiness.yml'),'utf8');
 const ignore=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
 assert.match(workflow,/id-token:\s*write/,'production activation must allow GitHub OIDC tokens');
 assert.match(workflow,/google-github-actions\/auth@v3/,'production activation must use Google WIF auth');
