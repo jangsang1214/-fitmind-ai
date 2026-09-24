@@ -1,14 +1,88 @@
 {
-  "version": "garang-korean-food-corpus-v1",
-  "generatedAt": null,
-  "status": "source_access_pending",
-  "purpose": "Korean official supplemental lookup corpus; curated GARANG canonical remains primary",
+  "version": "garang-kfind-food-corpus-v1",
+  "generatedAt": "2026-09-24T13:27:08.736287Z",
+  "status": "ready",
+  "purpose": "K-FIND Korean food supplemental lookup corpus; curated GARANG canonical remains primary",
   "precedence": [
     "GARANG canonical Korean DB",
-    "Korean official supplemental",
+    "K-FIND Korean food supplemental",
     "USDA supplemental",
     "source-backed web lookup"
   ],
-  "count": 0,
-  "shards": {}
+  "rawCount": 19617,
+  "count": 2502,
+  "shards": {
+    "ㄱ": {
+      "file": "ko-e384b1.json",
+      "count": 159
+    },
+    "ㄲ": {
+      "file": "ko-e384b2.json",
+      "count": 25
+    },
+    "ㄴ": {
+      "file": "ko-e384b4.json",
+      "count": 22
+    },
+    "ㄷ": {
+      "file": "ko-e384b7.json",
+      "count": 221
+    },
+    "ㄸ": {
+      "file": "ko-e384b8.json",
+      "count": 33
+    },
+    "ㄹ": {
+      "file": "ko-e384b9.json",
+      "count": 58
+    },
+    "ㅁ": {
+      "file": "ko-e38581.json",
+      "count": 161
+    },
+    "ㅂ": {
+      "file": "ko-e38582.json",
+      "count": 244
+    },
+    "ㅅ": {
+      "file": "ko-e38585.json",
+      "count": 255
+    },
+    "ㅆ": {
+      "file": "ko-e38586.json",
+      "count": 13
+    },
+    "ㅇ": {
+      "file": "ko-e38587.json",
+      "count": 249
+    },
+    "ㅈ": {
+      "file": "ko-e38588.json",
+      "count": 55
+    },
+    "ㅉ": {
+      "file": "ko-e38589.json",
+      "count": 10
+    },
+    "ㅊ": {
+      "file": "ko-e3858a.json",
+      "count": 89
+    },
+    "ㅋ": {
+      "file": "ko-e3858b.json",
+      "count": 290
+    },
+    "ㅌ": {
+      "file": "ko-e3858c.json",
+      "count": 16
+    },
+    "ㅍ": {
+      "file": "ko-e3858d.json",
+      "count": 536
+    },
+    "ㅎ": {
+      "file": "ko-e3858e.json",
+      "count": 66
+    }
+  }
 }
