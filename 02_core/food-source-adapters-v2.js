@@ -65,7 +65,7 @@ const DATA_GO_KR_FIELDS=Object.freeze({
   recordId:['foodCd','식품코드'],name:['foodNm','식품명'],dataset:['typeNm','데이터구분명','dataCd','데이터구분코드'],basis:['nutConSrtrQua','영양성분함량기준량'],
   kcal:['enerc','에너지(kcal)'],protein:['prot','단백질(g)'],fat:['fatce','지방(g)'],carbs:['chocdf','탄수화물(g)'],sugar:['sugar','당류(g)'],fiber:['fibtg','식이섬유(g)'],
   sodium:['nat','나트륨(mg)'],cholesterol:['chole','콜레스테롤(mg)'],saturatedFat:['fasat','포화지방산(g)'],transFat:['fatrn','트랜스지방산(g)'],
-  source:['srcNm','출처명'],sourceDate:['dataProdYmd','dataProdDt','데이터생성일자','dataCrtrYmd','데이터기준일자'],manufacturer:['mkrNm','제조사명'],company:['companyNm','업체명']
+  source:['srcNm','출처명'],sourceDate:['crtYmd','dataProdYmd','dataProdDt','데이터생성일자','crtrYmd','dataCrtrYmd','데이터기준일자'],manufacturer:['mkrNm','제조사명'],company:['restNm','companyNm','업체명']
 });
 function normalizeDataGoKrDataset(value){const raw=clean(value);const map={음식:'FOOD',가공식품:'PROCESSED',원재료성식품:'MATERIAL','원재료성 식품':'MATERIAL'};return map[raw]||raw||null;}
 function adaptDataGoKrStandard(raw={},options={}){
@@ -77,7 +77,7 @@ function adaptDataGoKrStandard(raw={},options={}){
   const traceable=!!(recordId&&dataset&&name&&basisG&&basisG>0);
   const quality=traceable&&hasCore(nutrients)?'verified':'unknown';
   return Foundation.ingestExternal({
-    foodId:clean(options.foodId)||safeFoodId('data-go-kr',dataset,recordId),name,category:clean(first(raw,['foodCat1Nm','식품대분류','category']))||null,aliases:list(options.aliases),serving:clean(basisRaw)||null,basisG:basisG||100,nutrients,quality,
+    foodId:clean(options.foodId)||safeFoodId('data-go-kr',dataset,recordId),name,category:clean(first(raw,['foodLv3Nm','foodCat1Nm','식품대분류명','식품대분류','category']))||null,aliases:list(options.aliases),serving:clean(basisRaw)||null,basisG:basisG||100,nutrients,quality,
     provenance:{provider:'DATA.GO.KR',dataset,recordId,url:'https://www.data.go.kr/data/15100064/standard.do',sourceDate:dateText(first(raw,DATA_GO_KR_FIELDS.sourceDate)),retrievedAt:dateText(options.retrievedAt),label:source}
   });
 }
