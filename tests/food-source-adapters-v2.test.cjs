@@ -24,7 +24,8 @@ assert.equal(kfindIncomplete.quality,'unknown');
 assert.ok(Foundation.assess(kfindIncomplete).warnings.some(x=>x.code==='UNKNOWN_QUALITY'));
 
 assert.equal(Import.DATA_GO_KR_FOOD_ENDPOINT,'https://api.data.go.kr/openapi/tn_pubr_public_nutri_food_info_api');
-const csvRows=Import.parseCsv('식품코드,식품명,데이터구분명,영양성분함량기준량,에너지(kcal),단백질(g),지방(g),탄수화물(g),출처명,데이터생성일자\nD001,"김밥, 소고기",음식,100g,160,6.39,3.85,25.01,식품의약품안전처,2026-04-29');
+const csvRows=Import.parseCsv('식품코드,식품명,데이터구분명,영양성분함량기준량,에너지(kcal),단백질(g),지방(g),탄수화물(g),출처명,데이터생성일자
+D001,"김밥, 소고기",음식,100g,160,6.39,3.85,25.01,식품의약품안전처,2026-04-29');
 assert.equal(csvRows.length,1);assert.equal(csvRows[0]['식품명'],'김밥, 소고기');
 const csvFood=Adapters.adaptDataGoKrStandard(csvRows[0]);assert.equal(csvFood.quality,'verified');assert.equal(csvFood.provenance.recordId,'D001');
 
@@ -37,7 +38,8 @@ assert.equal(dataGoKr.provenance.recordId,'P116-705070200-1080');
 assert.equal(dataGoKr.basisG,100);
 assert.equal(dataGoKr.nutrients.kcal,382);
 assert.equal(dataGoKr.nutrients.protein,8.5);
-assert.equal(dataGoKr.category,'과자류');\nassert.equal(dataGoKr.brand,'테스트업체');
+assert.equal(dataGoKr.category,'과자류');
+assert.equal(dataGoKr.brand,'테스트업체');
 assert.equal(dataGoKr.provenance.sourceDate,'2025-01-22');
 assert.equal(Foundation.assess(dataGoKr).errors.length,0);
 
@@ -61,7 +63,9 @@ assert.equal(usda.provenance.dataset,'Foundation');
 assert.equal(usda.provenance.recordId,'999001');
 assert.equal(usda.basisG,100);
 assert.equal(usda.nutrients.protein,31);
-assert.equal(Foundation.assess(usda).errors.length,0);\nconst brandedUsda=Adapters.adaptUsda({...usdaFixture,fdcId:999003,dataType:'Branded',description:'Caffe Americano, Grande',brandOwner:'Starbucks Coffee Company'});\nassert.equal(brandedUsda.brand,'Starbucks Coffee Company');assert.equal(brandedUsda.productName,'Caffe Americano, Grande');assert.equal(brandedUsda.provenance.dataset,'Branded');
+assert.equal(Foundation.assess(usda).errors.length,0);
+const brandedUsda=Adapters.adaptUsda({...usdaFixture,fdcId:999003,dataType:'Branded',description:'Caffe Americano, Grande',brandOwner:'Starbucks Coffee Company'});
+assert.equal(brandedUsda.brand,'Starbucks Coffee Company');assert.equal(brandedUsda.productName,'Caffe Americano, Grande');assert.equal(brandedUsda.provenance.dataset,'Branded');
 
 const kj=Adapters.adaptUsda({...usdaFixture,fdcId:999002,foodNutrients:[
   {nutrient:{id:1008,name:'Energy',unitName:'kJ'},amount:418.4},
