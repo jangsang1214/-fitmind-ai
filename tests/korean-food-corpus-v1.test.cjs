@@ -60,10 +60,11 @@ for(const spec of Object.values(shards))assert.ok(fs.existsSync(path.join(tmp,sp
 
 const app=fs.readFileSync(require.resolve('../01_app/app.js'),'utf8');
 assert.ok(app.includes("KOREAN_FOOD_MANIFEST_PATH='04_data/knowledge/food-db-supplemental-korea-v1/manifest.json'"));
+assert.ok(app.includes("KOREAN_PROCESSED_MANIFEST_PATH='04_data/knowledge/food-db-supplemental-korea-processed-v1/manifest.json'"));
 assert.ok(app.includes('findKoreanSupplementalFood(q,options={})'));
 assert.ok(app.includes('return await findKoreanSupplementalFood(q,options)||await findUsdaSupplementalFood(q,options)'));
 assert.ok(app.includes('buildSupplementalIndex(rows)'));
-assert.ok(app.includes("source:'korea-official'"));
+assert.ok(app.includes("'korea-processed':'korea-official'"));
 
 console.log(JSON.stringify({status:'PASS',normalization:normalized,shards:Object.keys(shards),kfindRaw:manifest.rawCount,kfindRepresentatives:manifest.count,effectiveCoverage:canonical.length+usda.count+manifest.count},null,2));
 console.log('korean-food-corpus-v1: PASS');
