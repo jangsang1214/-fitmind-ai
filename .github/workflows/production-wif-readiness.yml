@@ -59,8 +59,8 @@ jobs:
         run: |
           {
             echo "## GARANG Production WIF Readiness"
-            echo "- Provider configured: `${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}`"
-            echo "- Service account configured: `${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT != '' }}`"
-            echo "- Status: `${{ steps.readiness.outputs.status || 'INVALID_CONFIGURATION' }}`"
+            echo "- Provider configured: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}"
+            echo "- Service account configured: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT != '' }}"
+            echo "- Status: ${{ steps.readiness.outputs.status || 'INVALID_CONFIGURATION' }}"
             echo "- This workflow does not authenticate to Google or deploy production resources."
           } >> "$GITHUB_STEP_SUMMARY"
