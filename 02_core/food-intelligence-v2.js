@@ -35,7 +35,7 @@ function keyScore(query,key){
  const score=Math.max(contains*.9,tok*.88,tri*.78,edit*.86,concept*.82,concept*.65+tri*.25);
  return {score,kind:concept>=1?'semantic':edit>=.85?'typo':contains>=.8?'contains':'fuzzy'};
 }
-function index(corpus=[]){return list(corpus).map((raw,order)=>{const food=Foundation.canonicalize(raw),keys=[{value:food.name,kind:'primary'},{value:food.nameEn,kind:'english'},...list(food.aliases).map(value=>({value,kind:'alias'}))].filter(x=>clean(x.value));return {raw,food,order,keys};});}
+function index(corpus=[]){return list(corpus).map((raw,order)=>{const food=Foundation.canonicalize(raw),brand=clean(raw?.brand||raw?.brand_name||raw?.manufacturer),product=clean(raw?.product_name||raw?.productName),keys=[{value:food.name,kind:'primary'},{value:food.nameEn,kind:'english'},{value:product,kind:'product'},{value:brand&&food.name?`${brand} ${food.name}`:'',kind:'brand-primary'},{value:brand&&product?`${brand} ${product}`:'',kind:'brand-product'},...list(food.aliases).map(value=>({value,kind:'alias'}))].filter(x=>clean(x.value));return {raw,food,order,keys};});}
 function resolve(corpus,query,options={}){
  const q=clean(query),mode=options.mode==='vision'?'vision':'manual',min=Number.isFinite(Number(options.minConfidence))?Number(options.minConfidence):(mode==='vision'?.8:.72),margin=Number.isFinite(Number(options.margin))?Number(options.margin):.055;
  if(!q)return {version:VERSION,status:'unmatched',query:q,confidence:0,reason:'EMPTY_QUERY',alternatives:[]};
