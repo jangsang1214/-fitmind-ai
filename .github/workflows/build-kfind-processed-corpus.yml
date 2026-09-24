@@ -63,12 +63,12 @@ jobs:
           URL="$BASE/nutrient/multi/file/download.do?key=$KEY"
           for attempt in 1 2 3 4 5; do
             rm -f "$RUNNER_TEMP/processed.xlsx"
-            if curl --fail --location --http1.1 --connect-timeout 25 --max-time 900 --silent --show-error --user-agent 'Mozilla/5.0 GARANG-Data-Ingestion/1.0' -c "$JAR" -b "$JAR" -e "$POP" "$URL" -o "$RUNNER_TEMP/processed.xlsx"; then
+            if curl --fail --location --connect-timeout 20 --max-time 360 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" -H 'Range: bytes=0-1048575' "$URL" -o "$RUNNER_TEMP/processed.xlsx"; then
               SIZE="$(stat -c%s "$RUNNER_TEMP/processed.xlsx")"
               if [ "$SIZE" -gt 180000000 ]; then break; fi
             fi
             if [ "$attempt" = 5 ]; then echo 'K-FIND processed download failed after retries' >&2; exit 28; fi
-            sleep $((attempt*15))
+            sleep $((attempt*10))
           done
           echo "processed_bytes=$(stat -c%s "$RUNNER_TEMP/processed.xlsx")"
 
