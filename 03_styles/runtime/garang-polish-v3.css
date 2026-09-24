@@ -135,3 +135,49 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .bottom-nav button.active:before{content:"";position:absolute;left:50%;top:5px;width:17px;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--garang-cheongja) 24%,var(--garang-cheongja) 76%,transparent);opacity:.9}
 @media(max-width:800px){#appView:not([hidden]) .page-head{padding-top:15px}#main .section-title h2{padding-left:11px}.garang-coach-v2{border-radius:0}}
 @media(prefers-reduced-motion:reduce){.bottom-nav button.active:before{transition:none!important}}
+
+/* GARANG Classical Performance Model v2 */
+.g3-body-model.g3-classical-model{
+  filter:drop-shadow(0 26px 34px rgba(0,0,0,.34))!important;
+}
+.g3-classical-model .g3-hair{
+  fill:#33332f;stroke:#817969;stroke-width:.42;opacity:.96;
+}
+.g3-classical-model .g3-base{
+  stroke:rgba(223,213,195,.42)!important;stroke-width:.52!important;
+}
+.g3-classical-model .g3-limb{
+  stroke:rgba(209,199,181,.34)!important;stroke-width:.48!important;
+}
+.g3-classical-model .g3-sculpt-line{
+  fill:none;stroke:rgba(43,43,39,.66);stroke-width:.58;stroke-linecap:round;opacity:.68;
+}
+.g3-classical-model .g3-fine{
+  stroke:rgba(241,237,228,.36)!important;opacity:.28!important;
+}
+.g3-classical-model .g3-muscle{
+  stroke:rgba(32,37,33,.48)!important;stroke-width:.42!important;
+  opacity:.34!important;filter:none!important;
+}
+.g3-classical-model .g3-highlight{
+  stroke:rgba(245,237,224,.48)!important;stroke-width:.38!important;opacity:.34!important;
+}
+.g3-classical-model .g3-muscle:hover,
+.g3-classical-model .g3-muscle:focus{
+  fill:#78988c!important;stroke:#b2c3bb!important;opacity:.76!important;
+  filter:drop-shadow(0 0 7px rgba(120,152,140,.2))!important;
+}
+.muscle-map[data-muscle="chest"] .g3-classical-model .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model .muscle-legs{
+  fill:#986b58!important;stroke:#d0a28b!important;opacity:.78!important;
+  filter:drop-shadow(0 0 8px rgba(152,107,88,.22))!important;
+}
+.muscle-map[data-muscle="full"] .g3-classical-model .g3-muscle{
+  fill:#6f8179!important;stroke:#9aaba3!important;opacity:.22!important;
+}
+
