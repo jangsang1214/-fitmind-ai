@@ -1,0 +1,66 @@
+name: Production WIF Readiness
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/production-coach-activation.yml
+      - .github/workflows/production-wif-readiness.yml
+      - tests/production-wif-auth-contract.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect non-secret WIF repository variables
+        id: readiness
+        shell: bash
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          provider_set=0
+          service_account_set=0
+          [[ -n "${WIF_PROVIDER:-}" ]] && provider_set=1
+          [[ -n "${WIF_SERVICE_ACCOUNT:-}" ]] && service_account_set=1
+
+          if [[ "$provider_set" != "$service_account_set" ]]; then
+            echo "::error::WIF repository variables are partially configured. Configure both variables or neither."
+            exit 45
+          fi
+
+          if [[ "$provider_set" == "0" ]]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "status=NOT_CONFIGURED" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! "$WIF_PROVIDER" =~ ^projects/[0-9]+/locations/global/workloadIdentityPools/[^/]+/providers/[^/]+$ ]]; then
+            echo "::error::GCP_WORKLOAD_IDENTITY_PROVIDER does not match the expected provider resource format."
+            exit 46
+          fi
+
+          if [[ ! "$WIF_SERVICE_ACCOUNT" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com$ ]]; then
+            echo "::error::GCP_DEPLOY_SERVICE_ACCOUNT does not match the expected Google service-account email format."
+            exit 47
+          fi
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          echo "status=READY" >> "$GITHUB_OUTPUT"
+
+      - name: Record non-secret readiness evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## GARANG Production WIF Readiness"
+            echo "- Provider configured: `${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}`"
+            echo "- Service account configured: `${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT != '' }}`"
+            echo "- Status: `${{ steps.readiness.outputs.status || 'INVALID_CONFIGURATION' }}`"
+            echo "- This workflow does not authenticate to Google or deploy production resources."
+          } >> "$GITHUB_STEP_SUMMARY"
