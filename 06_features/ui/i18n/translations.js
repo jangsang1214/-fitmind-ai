@@ -49,7 +49,7 @@ window.GARANG_UI_TRANSLATIONS={
     '로그아웃':'Log out','현재 플랜':'Current plan','메뉴':'Menu','FREE / PRO 보기':'View FREE / PRO',
     '오늘의 데이터':'Today’s data','오늘 운동':'Today’s workout','오늘 식단':'Today’s nutrition','최근 운동':'Recent workout',
     '최근 기록':'Recent records','운동 기록':'Workout log','운동 세션':'Workout session','운동 인증':'Workout verification',
-    '운동 추가':'Add workout','운동을 세션에 추가':'Add workout to session','운동 세션 저장':'Save workout session',
+    '운동 추가':'Add workout','운동을 세션에 추가':'Add workout to session','운동 세션 저장':'Save workout session','운동 시작':'Start workout','운동 종료':'Finish workout',
     '운동 시간 분':'Workout duration (min)','중량 kg':'Weight (kg)','체중 kg':'Body weight (kg)','반복':'Reps','세트':'Sets','볼륨':'Volume',
     '식사':'Meal','오늘 식사':'Today’s meals','오늘 누적':'Today’s total','섭취 kcal':'Calories','단백질 g':'Protein (g)',
     '탄수화물 g':'Carbs (g)','지방 g':'Fat (g)','섭취량 g':'Serving (g)','음식/메뉴':'Food / menu','음식 추가':'Add food',
