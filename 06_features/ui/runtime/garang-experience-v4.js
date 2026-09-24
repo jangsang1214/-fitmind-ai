@@ -119,27 +119,27 @@
     builder.classList.add('garang-workout-luxury-v2');
     const advanced=builder.querySelector('.workout-advanced-tools');
     const secondary=builder.querySelector('.workout-secondary-capabilities');
+    const programCard=builder.querySelector('.workout-program-card');
+    const healthCard=builder.querySelector('.workout-health-card');
     ensureLuxuryDrawer(
       'garangWorkoutTools',
       isKo()?'도구 및 옵션':'Tools & options',
-      isKo()?'그룹 · 워밍업 · 플레이트 · 프로그램 · Health':'Group · warm-up · plates · program · Health',
-      [advanced,secondary]
+      isKo()?'그룹 · 워밍업 · 플레이트':'Group · warm-up · plates',
+      [advanced]
     );
-    for(const id of ['wProgramName','wProgramWeeks','wProgramFrequency']){
-      const input=main.querySelector('#'+id),field=input?.closest('.field');
-      if(field)field.style.setProperty('display','grid','important');
-      if(input)input.style.setProperty('display','block','important');
-    }
-    if(secondary){
-      secondary.style.setProperty('display','grid','important');
-      secondary.style.setProperty('visibility','visible','important');
-    }
-    const programCard=main.querySelector('.workout-program-card');
-    if(programCard)programCard.style.setProperty('display','block','important');
-    const healthCard=main.querySelector('.workout-health-card');
-    if(healthCard)healthCard.style.setProperty('display','block','important');
-    const programGrid=main.querySelector('.workout-program-card .form-grid');
-    if(programGrid)programGrid.style.setProperty('display','grid','important');
+    ensureLuxuryDrawer(
+      'garangWorkoutProgram',
+      isKo()?'프로그램':'Program',
+      isKo()?'현재 세션을 반복 계획으로':'Repeat this session as a plan',
+      [programCard]
+    );
+    ensureLuxuryDrawer(
+      'garangWorkoutHealth',
+      isKo()?'Health · Wearable':'Health · Wearable',
+      isKo()?'연동 · 가져오기 · 내보내기':'Sync · import · export',
+      [healthCard]
+    );
+    if(secondary&&!secondary.children.length)secondary.remove();
     const evidence=main.querySelector('.photo-evidence-card-workout');
     ensureLuxuryDrawer(
       'garangWorkoutEvidence',
@@ -213,7 +213,7 @@
   window.addEventListener('garang:screen-rendered', schedule);
   window.addEventListener('garang:state-updated', schedule);
   const collapseWorkoutUtilities=()=>{
-    for(const id of ['garangWorkoutTools','garangWorkoutEvidence']){
+    for(const id of ['garangWorkoutTools','garangWorkoutProgram','garangWorkoutHealth','garangWorkoutEvidence']){
       drawerOpenState.set(id,false);
       const drawer=main.querySelector('#'+id);
       if(drawer)drawer.open=false;
