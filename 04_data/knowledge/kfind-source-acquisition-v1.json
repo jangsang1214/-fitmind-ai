@@ -1,0 +1,77 @@
+{
+  "version": "garang-kfind-source-acquisition-v1",
+  "observedAt": "2026-09-24",
+  "provider": "식품의약품안전처 K-FIND",
+  "portal": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do",
+  "attribution": {
+    "ko": "식품영양성분 데이터베이스",
+    "en": "Korean Food Composition Database system(K-FCDB)",
+    "requiredByDownloadPage": true
+  },
+  "downloadContract": {
+    "popup": "https://various.foodsafetykorea.go.kr/nutrient/export/down/filePop.do",
+    "usageRegistration": {
+      "method": "POST",
+      "path": "/nutrient/export/down/cudAction.do",
+      "requiredFields": [
+        "pageToken",
+        "sosok",
+        "depart",
+        "agencyType",
+        "usePurpose",
+        "dbGubun"
+      ]
+    },
+    "fileDownload": {
+      "method": "GET",
+      "path": "/nutrient/multi/file/download.do?key=<official-file-key>"
+    },
+    "declaredUse": {
+      "sosok": "GARANG",
+      "depart": "AI/Data",
+      "agencyType": "01",
+      "usePurpose": "02",
+      "usePurposeLabel": "앱 등 시스템 개발 DB로 활용"
+    }
+  },
+  "releases": {
+    "food": {
+      "searchDbSeq": "1787898710194",
+      "searchDbGubun": "02",
+      "filename": "20260828_음식DB_19617건.xlsx",
+      "bytes": 12071982,
+      "rows": 19617,
+      "sha256": "1ef3551f9a1d0ee87891d6306fa22bbd6a7ffcc90f2c70a4a184dbfe3fce6ea6",
+      "generatedCorpus": "04_data/knowledge/food-db-supplemental-korea-v1/manifest.json",
+      "materializedRecords": 2502
+    },
+    "processed": {
+      "searchDbSeq": "1787898734821",
+      "searchDbGubun": "01",
+      "filename": "20260828_가공식품DB_316734건.xlsx",
+      "bytes": 201609878,
+      "rows": 316734,
+      "sha256": "b074d98e75d2d087dc1b193f0056affbf9afd14524c9ccb556cb2b20978504f7",
+      "rangeSupport": false,
+      "rangeProbeBehavior": "Range request returned HTTP 200 and the full 201,609,878-byte workbook.",
+      "generatedCorpus": "04_data/knowledge/food-db-supplemental-korea-processed-v1/manifest.json",
+      "lastVerifiedBuildMetrics": {
+        "usableRecords": 264904,
+        "brandRows": 264599,
+        "brandRate": 0.9988486395071422,
+        "reportNoRows": 264904,
+        "reportNoRate": 1,
+        "duplicateBrandProductRows": 10767,
+        "excludedNonGramRows": 41063
+      }
+    }
+  },
+  "policies": {
+    "rawWorkbooksCommitted": false,
+    "canonical500Primary": true,
+    "verifiedOnly": true,
+    "gramBasisOnlyForAutomaticCalculation": true,
+    "traceableOfficialRecordIdRequired": true,
+    "noAutomaticCanonicalOverwrite": true
+  }
+}
