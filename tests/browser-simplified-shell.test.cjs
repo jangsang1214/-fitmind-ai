@@ -61,8 +61,14 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
     sheet=await openRecord(page);await sheet.locator(`[data-garang-record-route="${recordRoute}"]`).click();await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,recordRoute,{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${recordRoute} canonical flow must remain reachable`);
   }
   await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
-  await page.waitForFunction(()=>window.GarangDesignSimplificationV2?.version==='garang-design-simplification-v2.0.0'&&document.querySelector('#garangWorkoutTools')&&document.querySelector('.g3-body-model[data-garang-classical-model="3"]'),null,{timeout:6000});
-  assert.ok(await page.locator('.g3-body-model[data-garang-classical-model="3"]').count()>=1,'Workout/body surfaces must render the classical performance model');
+  await page.waitForFunction(()=>window.GarangDesignSimplificationV2?.version==='garang-design-simplification-v3.0.0'&&document.querySelector('#garangWorkoutEntryDetails')&&document.querySelector('#garangWorkoutTools')&&document.querySelector('.g3-body-model[data-garang-classical-model="4"]'),null,{timeout:6000});
+  assert.ok(await page.locator('.g3-body-model[data-garang-classical-model="4"]').count()>=1,'Workout/body surfaces must render Body Model v4');
+  assert.equal(await page.locator('.g3-view-switch [data-g3-view]').count(),3,'Body Model v4 must expose FRONT / SIDE / BACK views');
+  await page.locator('.g3-view-switch [data-g3-view="side"]').click();await page.waitForFunction(()=>document.querySelector('.muscle-map-wrap.g3-upgraded')?.dataset?.g3View==='side');
+  assert.ok(await page.locator('.g3-body-model[data-garang-anatomy-v4="side"]').count()>=1,'Body Model v4 must render a dedicated side anatomy view');
+  assert.equal(await page.locator('#garangWorkoutEntryDetails').getAttribute('open'),null,'RPE, RIR, duration and notes must be collapsed behind Details by default');
+  assert.equal(await page.locator('#garangWorkoutEntryDetails #wRpe').count(),1,'RPE must remain attached inside progressive disclosure');
+  assert.equal(await page.locator('#garangWorkoutEntryDetails #wDuration').count(),1,'duration must remain attached inside progressive disclosure');
   assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'advanced workout tools must be collapsed by default');
   assert.equal(await page.locator('#garangWorkoutTools .workout-advanced-tools').count(),1,'group, warm-up and plate controls must stay attached inside the utility drawer');
   assert.equal(await page.locator('#garangWorkoutEvidence').getAttribute('open'),null,'Workout Evidence must be optional and collapsed by default');assert.equal(await page.locator('#garangWorkoutProgram').getAttribute('open'),null,'Program utility must be collapsed by default');assert.equal(await page.locator('#garangWorkoutHealth').getAttribute('open'),null,'Health utility must be collapsed by default');
@@ -78,7 +84,9 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   assert.equal(workoutDensity.target,false,'Target detail must not compete with the active set on mobile');
   assert.equal(workoutDensity.type,false,'Set type must be progressive disclosure on the active set');
   assert.equal(workoutDensity.rir,false,'RIR must be progressive disclosure on the active set');
-  assert.equal(workoutDensity.weight,true);assert.equal(workoutDensity.reps,true);assert.equal(workoutDensity.rpe,true);assert.equal(workoutDensity.cta,true);
+  assert.equal(workoutDensity.weight,true);assert.equal(workoutDensity.reps,true);assert.equal(workoutDensity.rpe,false,'RPE must not compete with weight and reps by default');assert.equal(workoutDensity.cta,true);
+  await page.locator('#workoutSetDetails .current-set [data-execution-set-detail]').click();
+  assert.equal(await page.locator('#workoutSetDetails .current-set .execution-rpe-field').isVisible(),true,'RPE must remain one tap away in set details');
   assert.match(workoutDensity.ctaText,/세트 완료/,'current set must expose one strong completion action');
   assert.ok(workoutDensity.rowWidth<=workoutDensity.hostWidth+1,'current workout row must fit its surface: '+JSON.stringify(workoutDensity));
   assert.ok(workoutDensity.scrollWidth<=workoutDensity.clientWidth+1,'Workout simplification must not reintroduce horizontal page overflow: '+JSON.stringify(workoutDensity));
@@ -94,6 +102,7 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
 
   await route(page,'progress');await page.waitForFunction(()=>document.querySelector('#garangAccumulationOverview')?.dataset?.gpcProgress==='1',null,{timeout:6000});
   assert.equal(await page.locator('#garangAccumulationOverview').isVisible(),true,'canonical Progress interpretation surface must remain visible');
+  assert.equal(await page.locator('#garangProgressDetails').getAttribute('open'),null,'detailed progress metrics must be collapsed by default');
   assert.equal(await page.locator('.progress-tabs').isHidden(),true,'legacy range/dashboard chrome must be internalized');
   assert.equal(await page.locator('.grid.grid-4').isHidden(),true,'legacy metric wall must be internalized rather than deleted');
   const meaning=await page.locator('#garangAccumulationOverview [data-gx-meaning-loop] .gx-insight>span').allTextContents();assert.deepEqual(meaning,['쌓인 기록','GARANG이 배운 것','다음 선택'],'Progress must read as accumulated evidence -> learning -> next choice');
