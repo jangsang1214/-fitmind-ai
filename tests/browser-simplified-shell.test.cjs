@@ -47,7 +47,7 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today may show a judgment summary while Coach remains the canonical decision disclosure owner');
   assert.equal(await today.locator('.gtf-disclosure').isHidden(),true,'detailed rationale stays out of Today');
   await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:5000});
-  assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');
+  assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('garang-coach-luxury-v2'),null,{timeout:4000});assert.equal(await page.locator('.garang-coach-v2.garang-coach-luxury-v2').count(),1,'Coach must use the restrained luxury presentation owner');
   await route(page,'today');
 
   let sheet=await openRecord(page);
@@ -61,6 +61,21 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
     sheet=await openRecord(page);await sheet.locator(`[data-garang-record-route="${recordRoute}"]`).click();await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,recordRoute,{timeout:5000});assert.equal(await page.locator(selector).count(),1,`${recordRoute} canonical flow must remain reachable`);
   }
   await route(page,'workout');assert.equal(await page.locator('.gws-panel[data-garang-workout-surface]').count(),3,'Workout overview/exercise/log surfaces must remain intact');assert.equal(await page.locator('#wName').count(),1,'Workout inputs must not be duplicated');
+  await page.waitForFunction(()=>window.GarangDesignSimplificationV2?.version==='garang-design-simplification-v2.0.0'&&document.querySelector('#garangWorkoutTools')&&document.querySelector('.g3-body-model[data-garang-classical-model="1"]'),null,{timeout:6000});
+  assert.ok(await page.locator('.g3-body-model[data-garang-classical-model="1"]').count()>=1,'Workout/body surfaces must render the classical performance model');
+  assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'advanced workout tools must be collapsed by default');
+  assert.equal(await page.locator('#garangWorkoutTools .workout-advanced-tools').count(),1,'group, warm-up and plate controls must stay attached inside the utility drawer');
+  assert.equal(await page.locator('#garangWorkoutEvidence').getAttribute('open'),null,'Workout Evidence must be optional and collapsed by default');
+  await page.locator('[data-gws-step="log"]').click();await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="log"]:not([hidden]) .execution-set-row.current-set'),null,{timeout:5000});
+  const workoutDensity=await page.evaluate(()=>{const row=document.querySelector('.gws-panel[data-garang-workout-surface="log"] .execution-set-row.current-set'),host=document.querySelector('.gws-panel[data-garang-workout-surface="log"] .workout-execution-sets'),visible=el=>{if(!el)return false;const s=getComputedStyle(el),r=el.getBoundingClientRect();return !el.hidden&&s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;};return {rowWidth:row?.getBoundingClientRect().width||0,hostWidth:host?.getBoundingClientRect().width||0,previous:visible(row?.querySelector('.execution-previous')),target:visible(row?.querySelector('.execution-target')),type:visible(row?.querySelector('.execution-type-field')),rir:visible(row?.querySelector('.execution-rir-field')),weight:visible(row?.querySelector('.execution-weight-field')),reps:visible(row?.querySelector('.execution-reps-field')),rpe:visible(row?.querySelector('.execution-rpe-field')),cta:visible(row?.querySelector('[data-execution-set-complete]')),ctaText:row?.querySelector('[data-execution-set-complete]')?.textContent||'',scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};});
+  assert.equal(workoutDensity.previous,false,'Previous must not compete with the active set on mobile');
+  assert.equal(workoutDensity.target,false,'Target detail must not compete with the active set on mobile');
+  assert.equal(workoutDensity.type,false,'Set type must be progressive disclosure on the active set');
+  assert.equal(workoutDensity.rir,false,'RIR must be progressive disclosure on the active set');
+  assert.equal(workoutDensity.weight,true);assert.equal(workoutDensity.reps,true);assert.equal(workoutDensity.rpe,true);assert.equal(workoutDensity.cta,true);
+  assert.match(workoutDensity.ctaText,/세트 완료/,'current set must expose one strong completion action');
+  assert.ok(workoutDensity.rowWidth<=workoutDensity.hostWidth+1,'current workout row must fit its surface: '+JSON.stringify(workoutDensity));
+  assert.ok(workoutDensity.scrollWidth<=workoutDensity.clientWidth+1,'Workout simplification must not reintroduce horizontal page overflow: '+JSON.stringify(workoutDensity));
 
   await verifyCapabilityRoute(page,'planner','#addPlan');
   await verifyCapabilityRoute(page,'memory','#saveMemory');
@@ -83,6 +98,6 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   await route(page,'settings');await waitControl(page,'settings','#settingsLogout');
   const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(overflow.scroll<=overflow.client+1,`consolidated shell must not horizontally overflow: ${JSON.stringify(overflow)}`);
   assert.deepEqual(errors,[],`consolidated shell browser errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-simplified-shell four-surface consolidation + restrained Today: PASS');
+  await context.close();console.log('browser-simplified-shell four-surface consolidation + P1-P5 luxury simplification: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
