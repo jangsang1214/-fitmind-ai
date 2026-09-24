@@ -27,7 +27,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
      window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
      const items=[
       {name:'닭가슴살',aliases:['chicken breast'],grams:120,confidence:.93,kcal:9999},
-      {name:'아메리카노',aliases:['Americano','black coffee'],grams:355,confidence:.91,kcal:7777}
+      {name:'GARANG QA 음료 ZX91',aliases:['GARANG QA beverage ZX91'],grams:355,confidence:.91,kcal:7777}
      ];
      return new Response(JSON.stringify({ok:true,items,data:{items,overallConfidence:.91,uncertain:false,notes:'fixture',source:'vision',provider:'fixture',model:'fixture-vision',requestId:'meal-browser-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
@@ -35,8 +35,8 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
      const headers=new Headers(init.headers||{}),request=JSON.parse(String(init.body||'{}'));
      window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
      return new Response(JSON.stringify({ok:true,items:[{
-      inputIndex:0,name:'아메리카노',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated',
-      nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official Americano nutrition',url:'https://example.com/official-americano',basis:'355g serving'}
+      inputIndex:0,name:'GARANG QA 음료 ZX91',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated',
+      nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official QA beverage nutrition',url:'https://example.com/official-qa-beverage',basis:'355g serving'}
      }],unresolved:[],data:{source:'web_search',provider:'fixture',model:'fixture-search',requestId:'lookup-browser-1',citationCount:1}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
     return nativeFetch(input,init);
@@ -51,27 +51,27 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   await chooser.setFiles({name:'meal.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
   await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
-  await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('아메리카노'),null,{timeout:7000});
+  await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('GARANG QA 음료 ZX91'),null,{timeout:7000});
   const requests=await page.evaluate(()=>({meal:window.__GARANG_MEAL_SCAN_BROWSER_REQUEST__,lookup:window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__}));
   assert.equal(requests.meal.authorization,'Bearer mock-id-token-mock-user','Meal Scan must use authenticated transport');
   assert.equal(requests.lookup.authorization,'Bearer mock-id-token-mock-user','Nutrition lookup must use authenticated transport');
   assert.equal(requests.lookup.request.items.length,1,'Only DB-unmatched foods should use web lookup');
-  assert.equal(requests.lookup.request.items[0].name,'아메리카노');
+  assert.equal(requests.lookup.request.items[0].name,'GARANG QA 음료 ZX91');
   const resultText=await page.locator('.meal-scan-results').innerText();
-  assert.match(resultText,/닭가슴살/);assert.match(resultText,/아메리카노/);assert.match(resultText,/GARANG DB/);assert.match(resultText,/WEB ESTIMATE/);
+  assert.match(resultText,/닭가슴살/);assert.match(resultText,/GARANG QA 음료 ZX91/);assert.match(resultText,/GARANG DB/);assert.match(resultText,/WEB ESTIMATE/);
   assert.doesNotMatch(resultText,/9999|7777/,'Vision provider nutrition must never be rendered as GARANG nutrition');
   assert.equal(await page.locator('.meal-source-link').count(),1,'Web-estimated nutrition should expose its source');
   await page.locator('#confirmMealScan').click();
   await page.evaluate(()=>{if(window.GarangPhotoEvidence){const api=window.GarangPhotoEvidence;window.GarangPhotoEvidence=Object.freeze({...api,store:async()=>true});}});
   await page.locator('.manual-entry').evaluate(node=>{node.open=true;});
-  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('아메리카노'));
+  await page.waitForFunction(()=>document.querySelector('#mealDraftArea')?.textContent.includes('GARANG QA 음료 ZX91'));
   const before=await page.evaluate(()=>window.GarangAgentStateBridge.getState());assert.equal(before.meals.length,0,'Meal Scan confirmation must only create a draft');
   await page.locator('#saveMeal').click();await page.waitForTimeout(1200);
   const saved=await page.evaluate(()=>window.GarangAgentStateBridge.getState());
   assert.equal(saved.meals.length,1);assert.equal(saved.meals[0].items.length,2);
-  const chicken=saved.meals[0].items.find(x=>x.name==='닭가슴살'),americano=saved.meals[0].items.find(x=>x.name==='아메리카노');
+  const chicken=saved.meals[0].items.find(x=>x.name==='닭가슴살'),webFallback=saved.meals[0].items.find(x=>x.name==='GARANG QA 음료 ZX91');
   assert.equal(chicken.foodId,'F0486','Vision identity must resolve to canonical GARANG Food DB record');assert.equal(chicken.nutritionStatus,'verified');assert.ok(chicken.kcal>120&&chicken.kcal<140);
-  assert.equal(americano.foodId,null);assert.equal(americano.nutritionStatus,'estimated');assert.equal(americano.nutritionSource.source,'web_search');assert.match(americano.nutritionSource.url,/official-americano/);assert.equal(americano.scanEvidence.source,'vision+web');
+  assert.equal(webFallback.foodId,null);assert.equal(webFallback.nutritionStatus,'estimated');assert.equal(webFallback.nutritionSource.source,'web_search');assert.match(webFallback.nutritionSource.url,/official-qa-beverage/);assert.equal(webFallback.scanEvidence.source,'vision+web');
   assert.ok(saved.meals[0].photoEvidence?.id,'confirmed meal must retain Photo Evidence');
   const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Meal Scan must not create horizontal overflow: ${JSON.stringify(width)}`);
   assert.deepEqual(errors,[],`Real Meal Scan browser errors:\n${errors.join('\n')}`);
