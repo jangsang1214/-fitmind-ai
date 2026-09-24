@@ -388,7 +388,7 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 }
 
 
-/* GARANG Body Model v6 — mesh visual layer + independent interaction/highlight overlay */
+/* GARANG Body Model v6 — complete six-view mesh visual layer + independent interaction/highlight overlay */
 .g3-classical-model[data-garang-classical-model="6"]{
   filter:drop-shadow(0 28px 44px rgba(0,0,0,.36))!important;
   overflow:visible!important;
