@@ -756,7 +756,10 @@ async function loadKoreanFoodShard(query){
  return {rows,index:rows.length?buildSupplementalIndex(rows):null,bucket,processedBuckets:koreanProcessedBuckets(query,koreanProcessedManifest)};
 }
 async function findKoreanSupplementalFood(q,options={}){
- const query=String(q||'').trim();if(!query)return null;const shard=await loadKoreanFoodShard(query);if(!shard.rows.length)return null;const hit=indexedSupplementalMatch(shard.rows,shard.index,query,options);if(!hit)return null;const source=String(hit.food?.food_id||'').startsWith('kfind-processed:')?'korea-processed':'korea-official';return {...hit,source,bucket:shard.bucket};
+ const query=String(q||'').trim();if(!query)return null;const shard=await loadKoreanFoodShard(query);if(!shard.rows.length)return null;
+ const reportNo=window.GarangFoodIdentityV1?.normalizeReportNo?.(options.reportNo)||'';
+ if(reportNo){const exact=shard.rows.find(row=>window.GarangFoodIdentityV1?.normalizeReportNo?.(row?.report_no)===reportNo);if(exact){const source=String(exact?.food_id||'').startsWith('kfind-processed:')?'korea-processed':'korea-official';return {food:exact,match:{status:'matched',confidence:1,reason:'REPORT_NO_EXACT'},source,bucket:shard.bucket};}}
+ const hit=indexedSupplementalMatch(shard.rows,shard.index,query,options);if(!hit)return null;const source=String(hit.food?.food_id||'').startsWith('kfind-processed:')?'korea-processed':'korea-official';return {...hit,source,bucket:shard.bucket};
 }
 async function findUsdaSupplementalFood(q,options={}){
  const query=String(q||'').trim();if(!query)return null;const rows=await loadSupplementalFoodDb();if(!rows.length)return null;const hit=indexedSupplementalMatch(rows,supplementalFoodIndex,query,options);return hit?{...hit,source:'usda'}:null;
