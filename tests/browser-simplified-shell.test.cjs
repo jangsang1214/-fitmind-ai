@@ -69,6 +69,9 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   await page.locator('.g3-view-switch [data-g3-view="side"]').click();await page.waitForFunction(()=>document.querySelector('.muscle-map-wrap.g3-upgraded')?.dataset?.g3View==='side');
   assert.ok(await page.locator('.g3-body-model[data-garang-anatomy-v6="side"]').count()>=1,'Body Model v6 must render the dedicated male SIDE mesh visual layer');
   const sideHref=await page.locator('.g3-body-model[data-garang-anatomy-v6="side"] .g6-visual-layer').getAttribute('href');assert.match(sideHref,/body-model-v6\/male-side\.svg/);
+  await page.locator('.g3-view-switch [data-g3-view="back"]').click();await page.waitForFunction(()=>document.querySelector('.muscle-map-wrap.g3-upgraded')?.dataset?.g3View==='back');
+  assert.ok(await page.locator('.g3-body-model[data-garang-anatomy-v6="back"]').count()>=1,'Body Model v6 must render the dedicated male BACK mesh visual layer');
+  const backHref=await page.locator('.g3-body-model[data-garang-anatomy-v6="back"] .g6-visual-layer').getAttribute('href');assert.match(backHref,/body-model-v6\/male-back\.svg/);
   assert.equal(await page.locator('#garangWorkoutEntryDetails').getAttribute('open'),null,'RPE, RIR, duration and notes must be collapsed behind Details by default');
   assert.equal(await page.locator('#garangWorkoutEntryDetails #wRpe').count(),1,'RPE must remain attached inside progressive disclosure');
   assert.equal(await page.locator('#garangWorkoutEntryDetails #wDuration').count(),1,'duration must remain attached inside progressive disclosure');
