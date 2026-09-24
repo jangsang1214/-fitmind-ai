@@ -7,19 +7,21 @@
 .garang-code-mark .g2-mark-ripple{stroke-width:1.25!important}
 
 /* High-detail code anatomy. No img/picture/canvas is used. */
-.g3-body-model{display:block;width:100%;height:100%;max-height:430px;overflow:visible;filter:drop-shadow(0 20px 28px rgba(0,0,0,.36))}
+.g3-body-model{display:block;width:100%;height:100%;max-height:430px;overflow:visible;filter:drop-shadow(0 22px 30px rgba(0,0,0,.28))}
 .g3-body-model[data-garang-anatomy-v3="front"] .g3-base{fill:url(#g3Body-f)}
 .g3-body-model[data-garang-anatomy-v3="back"] .g3-base{fill:url(#g3Body-b)}
 .g3-body-model[data-garang-anatomy-v3="front"] .g3-limb{fill:url(#g3Limb-f)}
 .g3-body-model[data-garang-anatomy-v3="back"] .g3-limb{fill:url(#g3Limb-b)}
 .g3-body-model[data-garang-anatomy-v3="front"] .g3-muscle{fill:url(#g3Muscle-f)}
 .g3-body-model[data-garang-anatomy-v3="back"] .g3-muscle{fill:url(#g3Muscle-b)}
-.g3-body-model .g3-base{stroke:#777972;stroke-width:.65}
-.g3-body-model .g3-limb{stroke:#6f716c;stroke-width:.55}
-.g3-body-model .g3-detail{fill:none;stroke:#171917;stroke-width:.7;opacity:.9;stroke-linecap:round}
-.g3-body-model .g3-fine{fill:none;stroke:#96958e;stroke-width:.28;opacity:.3;stroke-linecap:round}
-.g3-body-model .g3-muscle{stroke:#272925;stroke-width:.52;opacity:.94;cursor:pointer;transition:fill .15s ease,stroke .15s ease,filter .15s ease,opacity .15s ease}
-.g3-body-model .g3-muscle:hover,.g3-body-model .g3-muscle:focus{fill:#8f6554!important;stroke:#c18b73;filter:drop-shadow(0 0 5px rgba(193,139,115,.28));outline:none}
+.g3-body-model .g3-base{stroke:#767b74;stroke-width:.55}
+.g3-body-model .g3-limb{stroke:#686e67;stroke-width:.5}
+.g3-body-model .g3-detail{fill:none;stroke:rgba(14,17,15,.72);stroke-width:.62;opacity:.72;stroke-linecap:round}
+.g3-body-model .g3-fine{fill:none;stroke:rgba(199,202,194,.42);stroke-width:.32;opacity:.34;stroke-linecap:round}
+.g3-body-model .g3-head{stroke-width:.45}
+.g3-body-model .g3-torso,.g3-body-model .g3-pelvis,.g3-body-model .g3-arm,.g3-body-model .g3-leg{vector-effect:non-scaling-stroke}
+.g3-body-model .g3-muscle{stroke:#252a25;stroke-width:.46;opacity:.56;cursor:pointer;transition:fill .15s ease,stroke .15s ease,filter .15s ease,opacity .15s ease}
+.g3-body-model .g3-muscle:hover,.g3-body-model .g3-muscle:focus{fill:var(--garang-cheongja)!important;stroke:#a5bbb2;opacity:.9;filter:drop-shadow(0 0 5px rgba(120,152,140,.24));outline:none}
 .g3-body-model .g3-shadow{fill:#151715;opacity:.72}
 .g3-body-model .g3-highlight{fill:none;stroke:#c9c6bf;stroke-width:.34;opacity:.16}
 
@@ -30,7 +32,9 @@
 .muscle-map[data-muscle="biceps"] .g3-body-model .muscle-biceps,
 .muscle-map[data-muscle="triceps"] .g3-body-model .muscle-triceps,
 .muscle-map[data-muscle="core"] .g3-body-model .muscle-core,
-.muscle-map[data-muscle="legs"] .g3-body-model .muscle-legs{fill:#a96f57!important;stroke:#cf9b82!important;opacity:1!important;filter:drop-shadow(0 0 7px rgba(169,111,87,.3))!important}
+.muscle-map[data-muscle="legs"] .g3-body-model .muscle-legs{fill:var(--garang-onggi)!important;stroke:#c99a84!important;opacity:.96!important;filter:drop-shadow(0 0 7px rgba(152,107,88,.24))!important}
+
+.muscle-map[data-muscle="full"] .g3-body-model .g3-muscle{fill:var(--garang-cheongja)!important;stroke:#9eb4aa!important;opacity:.46!important;filter:none!important}
 
 .g3-anatomy-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;padding:0 2px;width:100%}
 .g3-view-switch{display:flex;gap:3px;border:1px solid rgba(255,255,255,.075);border-radius:8px;padding:3px;background:#090a09}
