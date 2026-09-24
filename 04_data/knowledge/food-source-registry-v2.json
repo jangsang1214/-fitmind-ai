@@ -1,10 +1,19 @@
 {
   "version": "garang-food-source-registry-v2",
-  "updatedAt": "2026-09-15",
+  "updatedAt": "2026-09-24",
   "policy": {
     "primaryRegion": "KR",
-    "verifiedRequires": ["provider", "dataset", "recordId"],
-    "qualityStates": ["verified", "approximate", "estimated", "unknown"],
+    "verifiedRequires": [
+      "provider",
+      "dataset",
+      "recordId"
+    ],
+    "qualityStates": [
+      "verified",
+      "approximate",
+      "estimated",
+      "unknown"
+    ],
     "rules": [
       "Never promote an estimated or approximate value to verified without traceable source metadata.",
       "Preserve the source record identifier and dataset name at ingestion.",
@@ -25,10 +34,22 @@
       "apiPage": "https://various.foodsafetykorea.go.kr/nutrient/industry/openApi/info.do",
       "dataPortal": "https://www.data.go.kr/data/15127578/openapi.do",
       "datasets": [
-        {"id": "KDDB", "name": "식품의약품안전처 음식 DB"},
-        {"id": "PFDB", "name": "식품의약품안전처 가공식품 DB"},
-        {"id": "KFCT", "name": "농촌진흥청 국가표준식품성분표"},
-        {"id": "KCTMP", "name": "해양수산부 표준수산물성분표"}
+        {
+          "id": "KDDB",
+          "name": "식품의약품안전처 음식 DB"
+        },
+        {
+          "id": "PFDB",
+          "name": "식품의약품안전처 가공식품 DB"
+        },
+        {
+          "id": "KFCT",
+          "name": "농촌진흥청 국가표준식품성분표"
+        },
+        {
+          "id": "KCTMP",
+          "name": "해양수산부 표준수산물성분표"
+        }
       ],
       "nutrientCodes": {
         "kcal": "A001",
@@ -54,12 +75,43 @@
       "apiPage": "https://fdc.nal.usda.gov/api-guide/",
       "license": "CC0 1.0 / public domain",
       "datasets": [
-        {"id": "Foundation", "name": "Foundation Foods"},
-        {"id": "FNDDS", "name": "Food and Nutrient Database for Dietary Studies"},
-        {"id": "Branded", "name": "Global Branded Food Products Database"}
+        {
+          "id": "Foundation",
+          "name": "Foundation Foods"
+        },
+        {
+          "id": "FNDDS",
+          "name": "Food and Nutrient Database for Dietary Studies"
+        },
+        {
+          "id": "Branded",
+          "name": "Global Branded Food Products Database"
+        }
       ],
       "adapterStatus": "implemented-contract-tested",
-      "liveImportStatus": "api-key-required-cli-ready"
+      "liveImportStatus": "api-key-required-cli-ready",
+      "bulkDownloads": [
+        {
+          "dataset": "Foundation",
+          "releaseDate": "2026-04-30",
+          "format": "JSON",
+          "url": "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_foundation_food_json_2026-04-30.zip"
+        },
+        {
+          "dataset": "FNDDS",
+          "releaseDate": "2024-10-31",
+          "format": "JSON",
+          "url": "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_survey_food_json_2024-10-31.zip"
+        }
+      ],
+      "supplementalCorpus": {
+        "path": "04_data/knowledge/food-db-supplemental-usda-v1.json",
+        "metaPath": "04_data/knowledge/food-db-supplemental-usda-v1.meta.json",
+        "buildScript": "scripts/build-public-food-corpus.cjs",
+        "count": 5721,
+        "policy": "verified-only; canonical Korean corpus remains primary; no automatic canonical overwrite"
+      },
+      "bulkImportStatus": "foundation-fndds-verified-supplemental-corpus-built"
     }
   ]
 }
