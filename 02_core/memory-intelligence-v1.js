@@ -113,6 +113,12 @@ function semanticFeatures(value){
  if(SEMANTIC_FEATURE_CACHE.size>=1024)SEMANTIC_FEATURE_CACHE.clear();SEMANTIC_FEATURE_CACHE.set(text,features);return features;
 }
 function semanticSimilarity(a,b){const A=semanticFeatures(a),B=semanticFeatures(b);if(!A.size||!B.size)return 0;let overlap=0;for(const x of A)if(B.has(x))overlap++;return overlap/Math.sqrt(A.size*B.size);}
+function sparseVectorScores(items,query,textFn=item=>`${item.memoryClass||''} ${item.type||''} ${item.key||''} ${item.value||''}`){
+ const q=semanticFeatures(query),docs=items.map(item=>semanticFeatures(textFn(item)));if(!q.size||!docs.length)return items.map(()=>0);
+ const df=new Map();for(const features of docs)for(const feature of features)df.set(feature,(df.get(feature)||0)+1);
+ const idf=feature=>Math.log((docs.length+1)/((df.get(feature)||0)+1))+1,qWeights=[...q].map(feature=>[feature,idf(feature)]),qNorm=Math.sqrt(qWeights.reduce((sum,[,w])=>sum+w*w,0))||1;
+ return docs.map(features=>{let dot=0,dNormSq=0;for(const feature of features){const w=idf(feature);dNormSq+=w*w;}for(const [feature,w] of qWeights)if(features.has(feature))dot+=w*w;const dNorm=Math.sqrt(dNormSq)||1;return dot/(qNorm*dNorm);});
+}
 function lexicalRelevance(item,query){
  const q=tokens(query);if(!q.size)return 0;
  const text=`${item.memoryClass} ${item.type} ${item.key||''} ${item.value}`,hay=tokens(text);let overlap=0;for(const t of q)if(hay.has(t))overlap++;
@@ -136,10 +142,11 @@ function contextEntry(entry){
 function contextCost(entry){return JSON.stringify(contextEntry(entry)).length;}
 function selectMemory(entries,{query='',now=new Date(),limit=24,budgetChars=6000,includeUnconfirmed=false,deletedIds=[],ownerUid=null}={}){
  const max=Math.max(1,Math.min(50,Number.parseInt(limit,10)||24)),budget=Math.max(256,Math.min(20000,Number.parseInt(budgetChars,10)||6000));
- const ranked=compactMemory(entries,{now,deletedIds,maxEntries:500,includeHistory:false,ownerUid}).filter(x=>includeUnconfirmed||x.userConfirmed!==false).map(x=>({...x,_score:scoreMemory(x,{query,now})})).sort((a,b)=>b._score-a._score||String(a.id).localeCompare(String(b.id)));
+ const candidates=compactMemory(entries,{now,deletedIds,maxEntries:500,includeHistory:false,ownerUid}).filter(x=>includeUnconfirmed||x.userConfirmed!==false),vectorScores=sparseVectorScores(candidates,query);
+ const ranked=candidates.map((x,i)=>({...x,_vectorScore:vectorScores[i]||0,_score:scoreMemory(x,{query,now})+(vectorScores[i]||0)*28})).sort((a,b)=>b._score-a._score||b._vectorScore-a._vectorScore||String(a.id).localeCompare(String(b.id)));
  const out=[];let used=0;
  for(const item of ranked){const cost=contextCost(item);if(used+cost>budget)continue;out.push(item);used+=cost;if(out.length>=max)break;}
- return out.map(({_score,...x})=>x);
+ return out.map(({_score,_vectorScore,...x})=>x);
 }
 function candidate(type,key,value,{memoryClass=null,importance=3,confidence=.95,utility=.6,source='structured',now=new Date(),observedAt=null,userConfirmed=true,expiresAt=null,ownerUid=null,revision=1}={}){
  const text=clean(value);if(!text)return null;const seen=iso(observedAt)||now.toISOString();
@@ -204,5 +211,5 @@ function diagnostics(entries,{now=new Date(),deletedIds=[],ownerUid=null}={}){
  return {contractVersion:CONTRACT_VERSION,schemaVersion:MEMORY_SCHEMA_VERSION,policyVersion:POLICY_VERSION,total:all.length,active:all.filter(x=>x.status==='active').length,superseded:all.filter(x=>x.status==='superseded').length,expired:all.filter(x=>x.status==='expired').length,unconfirmed:all.filter(x=>x.userConfirmed===false).length,classes:Object.fromEntries(MEMORY_CLASSES.map(c=>[c,all.filter(x=>x.memoryClass===c).length]))};
 }
 
-return Object.freeze({POLICY_VERSION,CONTRACT_VERSION,MEMORY_SCHEMA_VERSION,MEMORY_CLASSES,ENTRY_STATUSES,SOURCE_TRUST,CLASS_POLICY,CONTEXT_FIELDS,normalizeDeletedIds,normalizeEntry,semanticKey,exactKey,dedupeKey,isExpired,mergeExact,mergeEntries,resolveConflicts,upsertMemory,scoreMemory,compactMemory,selectMemory,contextEntry,contextCost,candidate,deriveStructuredCandidates,extractExplicitCandidates,migrateMemory,mergeMemoryContainers,prepareMemoryContext,validateEntry,validateMemory,diagnostics});
+return Object.freeze({POLICY_VERSION,CONTRACT_VERSION,MEMORY_SCHEMA_VERSION,MEMORY_CLASSES,ENTRY_STATUSES,SOURCE_TRUST,CLASS_POLICY,CONTEXT_FIELDS,normalizeDeletedIds,normalizeEntry,semanticKey,exactKey,dedupeKey,isExpired,mergeExact,mergeEntries,resolveConflicts,upsertMemory,scoreMemory,compactMemory,selectMemory,sparseVectorScores,contextEntry,contextCost,candidate,deriveStructuredCandidates,extractExplicitCandidates,migrateMemory,mergeMemoryContainers,prepareMemoryContext,validateEntry,validateMemory,diagnostics});
 });
