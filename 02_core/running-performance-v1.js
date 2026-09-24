@@ -31,7 +31,7 @@ function normalizeRun(row={}){
  };
 }
 function validRuns(state={},asOf=new Date()){
- const end=asOf instanceof Date?asOf:new Date(asOf||Date.now()),endMs=end.getTime();
+ const end=asOf instanceof Date?asOf:new Date(asOf||Date.now()),endMs=Date.parse(end.toISOString().slice(0,10)+'T23:59:59Z');
  return list(state.runs).map(normalizeRun).filter(r=>{
   const t=dateMs(r.date);
   return t!==null&&t<=endMs&&r.distanceKm>.1&&r.durationMin>=2&&r.paceMinPerKm!==null&&r.paceMinPerKm>=2&&r.paceMinPerKm<=20;
@@ -75,7 +75,7 @@ function recommendation({rows,trend,load}){
  return {status:'ready',reason:'RUN_PATTERN_STABLE',action:'maintain_consistency'};
 }
 function build(stateInput={},options={}){
- const state=object(stateInput)?stateInput:{},asOf=options.asOf instanceof Date?options.asOf:new Date(options.asOf||Date.now()),rows=validRuns(state,asOf),end=asOf.getTime(),recent7=summarize(inWindow(rows,end,7)),recent28=summarize(inWindow(rows,end,28)),trend=paceTrend(rows,asOf),load=loadSignal(rows,asOf),best1k=bestSplit1k(rows)||bestEffort(rows,1),best5k=bestEffort(rows,5),best10k=bestEffort(rows,10),spanDays=rows.length>1?Math.max(0,Math.round((dateMs(rows.at(-1).date)-dateMs(rows[0].date))/DAY)):0,splitCoverage=rows.length?rows.filter(r=>r.splits.length).length/rows.length:0,confidence=round(clamp((rows.length/8)*.4+(spanDays/42)*.25+splitCoverage*.15+load.confidence*.2,0,1),2),rec=recommendation({rows,trend,load});
+ const state=object(stateInput)?stateInput:{},asOf=options.asOf instanceof Date?options.asOf:new Date(options.asOf||Date.now()),rows=validRuns(state,asOf),end=Date.parse(asOf.toISOString().slice(0,10)+'T23:59:59Z'),recent7=summarize(inWindow(rows,end,7)),recent28=summarize(inWindow(rows,end,28)),trend=paceTrend(rows,asOf),load=loadSignal(rows,asOf),best1k=bestSplit1k(rows)||bestEffort(rows,1),best5k=bestEffort(rows,5),best10k=bestEffort(rows,10),spanDays=rows.length>1?Math.max(0,Math.round((dateMs(rows.at(-1).date)-dateMs(rows[0].date))/DAY)):0,splitCoverage=rows.length?rows.filter(r=>r.splits.length).length/rows.length:0,confidence=round(clamp((rows.length/8)*.4+(spanDays/42)*.25+splitCoverage*.15+load.confidence*.2,0,1),2),rec=recommendation({rows,trend,load});
  return Object.freeze({
   version:VERSION,asOf:asOf.toISOString().slice(0,10),confidence,
   recent:Object.freeze({days7:Object.freeze(recent7),days28:Object.freeze(recent28)}),
