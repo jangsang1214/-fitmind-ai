@@ -38,6 +38,7 @@ assert.equal(dataGoKr.basisG,100);
 assert.equal(dataGoKr.nutrients.kcal,382);
 assert.equal(dataGoKr.nutrients.protein,8.5);
 assert.equal(dataGoKr.category,'과자류');
+assert.equal(dataGoKr.brand,'테스트업체');
 assert.equal(dataGoKr.provenance.sourceDate,'2025-01-22');
 assert.equal(Foundation.assess(dataGoKr).errors.length,0);
 
@@ -62,6 +63,8 @@ assert.equal(usda.provenance.recordId,'999001');
 assert.equal(usda.basisG,100);
 assert.equal(usda.nutrients.protein,31);
 assert.equal(Foundation.assess(usda).errors.length,0);
+const brandedUsda=Adapters.adaptUsda({...usdaFixture,fdcId:999003,dataType:'Branded',description:'Caffe Americano, Grande',brandOwner:'Starbucks Coffee Company'});
+assert.equal(brandedUsda.brand,'Starbucks Coffee Company');assert.equal(brandedUsda.productName,'Caffe Americano, Grande');assert.equal(brandedUsda.provenance.dataset,'Branded');
 
 const kj=Adapters.adaptUsda({...usdaFixture,fdcId:999002,foodNutrients:[
   {nutrient:{id:1008,name:'Energy',unitName:'kJ'},amount:418.4},

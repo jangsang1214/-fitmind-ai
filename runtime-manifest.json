@@ -56,6 +56,8 @@
     "02_core/golden-path-v1.js",
     "02_core/workout-intelligence-v1.js",
     "02_core/running-integrity-v1.js",
+    "02_core/running-performance-v1.js",
+    "02_core/personal-performance-intelligence-v1.js",
     "services/performance.js",
     "services/units.js",
     "06_features/final/agent-contract-v1.js",

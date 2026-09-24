@@ -27,6 +27,7 @@ const KFIND_FIELDS=Object.freeze({
   basis:['NUT_CON_SRTR_QUA','nutConSrtrQua','nutritionBasis','nutrition_basis','영양성분함량기준량'],
   serving:['SERVING_SIZE','servingSize','nutriServingSize','oneServing','1회섭취참고량'],
   sourceDate:['DATA_CRTR_YMD','dataCrtrYmd','DATA_GENERATION_DATE','dataGenerationDate','데이터기준일자','데이터생성일자'],
+  manufacturer:['MKR_NM','mkrNm','manufacturer','manufacturerName','제조사명','업체명'],
   kcal:['ENERGY_KCAL','energyKcal','ENERC_KCAL','enercKcal','energy','에너지(kcal)','에너지'],
   protein:['PROTEIN_G','proteinG','PROCNT','procnt','protein','단백질(g)','단백질'],
   carbs:['CARBOHYDRATE_G','carbohydrateG','CHOCDF','chocdf','carbs','carbohydrate','탄수화물(g)','탄수화물'],
@@ -56,7 +57,7 @@ function adaptKfind(raw={},options={}){
   const quality=traceable&&hasCore(nutrients)?'verified':'unknown';
   return Foundation.ingestExternal({
     foodId:clean(options.foodId)||safeFoodId('kfind',dataset,recordId),name:clean(first(raw,KFIND_FIELDS.name)),nameEn:clean(first(raw,KFIND_FIELDS.nameEn))||null,
-    category:clean(first(raw,KFIND_FIELDS.category))||null,aliases:list(options.aliases),serving:clean(first(raw,KFIND_FIELDS.serving))||clean(basisRaw)||null,basisG,nutrients,quality,
+    category:clean(first(raw,KFIND_FIELDS.category))||null,brand:clean(first(raw,KFIND_FIELDS.manufacturer))||null,productName:clean(first(raw,KFIND_FIELDS.name))||null,aliases:list(options.aliases),serving:clean(first(raw,KFIND_FIELDS.serving))||clean(basisRaw)||null,basisG,nutrients,quality,
     provenance:{provider:'MFDS K-FIND',dataset,recordId,url:'https://www.data.go.kr/data/15127578/openapi.do',sourceDate:dateText(first(raw,KFIND_FIELDS.sourceDate)),retrievedAt:dateText(options.retrievedAt),label:'Official food nutrition data'}
   });
 }
@@ -77,7 +78,7 @@ function adaptDataGoKrStandard(raw={},options={}){
   const traceable=!!(recordId&&dataset&&name&&basisG&&basisG>0);
   const quality=traceable&&hasCore(nutrients)?'verified':'unknown';
   return Foundation.ingestExternal({
-    foodId:clean(options.foodId)||safeFoodId('data-go-kr',dataset,recordId),name,category:clean(first(raw,['foodLv3Nm','foodCat1Nm','식품대분류명','식품대분류','category']))||null,aliases:list(options.aliases),serving:clean(basisRaw)||null,basisG:basisG||100,nutrients,quality,
+    foodId:clean(options.foodId)||safeFoodId('data-go-kr',dataset,recordId),name,category:clean(first(raw,['foodLv3Nm','foodCat1Nm','식품대분류명','식품대분류','category']))||null,brand:clean(first(raw,DATA_GO_KR_FIELDS.manufacturer))||clean(first(raw,DATA_GO_KR_FIELDS.company))||null,productName:name,aliases:list(options.aliases),serving:clean(basisRaw)||null,basisG:basisG||100,nutrients,quality,
     provenance:{provider:'DATA.GO.KR',dataset,recordId,url:'https://www.data.go.kr/data/15100064/standard.do',sourceDate:dateText(first(raw,DATA_GO_KR_FIELDS.sourceDate)),retrievedAt:dateText(options.retrievedAt),label:source}
   });
 }
@@ -93,7 +94,7 @@ function adaptUsda(raw={},options={}){
   const recordId=clean(raw.fdcId??raw.fdc_id),dataset=normalizeUsdaDataset(raw.dataType||raw.data_type||options.dataset),rows=raw.foodNutrients||raw.food_nutrients||[],energy=findUsdaNutrient(rows,'kcal'),nutrients={kcal:normalizeEnergy(energy.value,energy.unit)};
   for(const key of ['protein','carbs','fat','sugar','fiber','sodium','cholesterol','saturatedFat','transFat'])nutrients[key]=findUsdaNutrient(rows,key).value;
   const servingG=gramValue(raw.servingSize,raw.servingSizeUnit),serving=clean(raw.householdServingFullText)||(servingG?`${servingG}g`:null),traceable=!!(recordId&&dataset&&clean(raw.description)),quality=traceable&&hasCore(nutrients)?'verified':'unknown';
-  return Foundation.ingestExternal({foodId:clean(options.foodId)||safeFoodId('usda-fdc',dataset,recordId),name:clean(options.name||raw.description),nameEn:clean(raw.description)||null,category:clean(raw.foodCategory||raw.brandedFoodCategory||raw.food_category)||null,aliases:list(options.aliases),serving,basisG:100,nutrients,quality,provenance:{provider:'USDA FoodData Central',dataset,recordId,url:recordId?`https://fdc.nal.usda.gov/fdc-app.html#/food-details/${recordId}`:'https://fdc.nal.usda.gov/',sourceDate:dateText(raw.publicationDate||raw.availableDate||raw.modifiedDate),retrievedAt:dateText(options.retrievedAt),label:'USDA FoodData Central'}});
+  return Foundation.ingestExternal({foodId:clean(options.foodId)||safeFoodId('usda-fdc',dataset,recordId),name:clean(options.name||raw.description),nameEn:clean(raw.description)||null,category:clean(raw.foodCategory||raw.brandedFoodCategory||raw.food_category)||null,brand:clean(raw.brandOwner||raw.brandName||raw.brand_owner||raw.brand_name)||null,productName:clean(raw.description)||null,aliases:list(options.aliases),serving,basisG:100,nutrients,quality,provenance:{provider:'USDA FoodData Central',dataset,recordId,url:recordId?`https://fdc.nal.usda.gov/fdc-app.html#/food-details/${recordId}`:'https://fdc.nal.usda.gov/',sourceDate:dateText(raw.publicationDate||raw.availableDate||raw.modifiedDate),retrievedAt:dateText(options.retrievedAt),label:'USDA FoodData Central'}});
 }
 function unwrapRows(payload,source){
   if(Array.isArray(payload))return payload;

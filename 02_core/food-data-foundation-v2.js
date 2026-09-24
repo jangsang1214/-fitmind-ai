@@ -50,6 +50,8 @@ function canonicalize(input={},options={}){
     name:clean(input.name||input.food_name||input.description),
     nameEn:clean(input.name_en||input.nameEn)||null,
     category:clean(input.category)||null,
+    brand:clean(input.brand||input.brand_name||input.manufacturer)||null,
+    productName:clean(input.product_name||input.productName)||null,
     aliases:uniq(input.aliases),
     serving:clean(input.serving||input.serving_description)||null,
     basisG:finite(input.basis_g??input.nutrition_basis_g??input.basisG)??100,
@@ -89,7 +91,7 @@ function audit(records=[]){
   for(const raw of list(records)){
     const result=assess(raw),food=result.food;items.push(result);statusCounts[food.quality]=(statusCounts[food.quality]||0)+1;
     const trace=!!(food.provenance.provider&&food.provenance.dataset&&food.provenance.recordId);if(trace)traceable++;if(trace&&food.quality==='verified')verifiedTraceable++;
-    if(food.aliases.length){withAliases++;aliasCount+=food.aliases.length;}if(food.serving)withServing++;if(food.nameEn)withEnglishName++;if(clean(raw.brand||raw.brand_name||raw.manufacturer))withBrand++;
+    if(food.aliases.length){withAliases++;aliasCount+=food.aliases.length;}if(food.serving)withServing++;if(food.nameEn)withEnglishName++;if(food.brand)withBrand++;
     if(food.foodId){if(seenIds.has(food.foodId))result.errors.push(issue('DUPLICATE_FOOD_ID','error',food.foodId));else seenIds.set(food.foodId,food.name);}
     const nameKey=normalizedName(food.name);if(nameKey){const bucket=seenNames.get(nameKey)||[];bucket.push(food.foodId);seenNames.set(nameKey,bucket);}
     for(const alias of [food.name,...food.aliases]){const key=normalizedName(alias);if(!key)continue;const owners=aliasOwners.get(key)||new Set();owners.add(food.foodId);aliasOwners.set(key,owners);}
@@ -103,7 +105,7 @@ function audit(records=[]){
 function ingestExternal(input={}){
   const provenance=normalizeSource(input.provenance||{}),quality=normalizeQuality(input.quality);
   if(quality==='verified'&&!(provenance.provider&&provenance.dataset&&provenance.recordId))throw Object.assign(new Error('TRACEABLE_PROVENANCE_REQUIRED'),{code:'TRACEABLE_PROVENANCE_REQUIRED'});
-  return canonicalize({foodId:input.foodId||input.id,name:input.name,nameEn:input.nameEn,category:input.category,aliases:input.aliases,serving:input.serving,basisG:input.basisG,nutrients:input.nutrients,quality},{source:provenance,quality});
+  return canonicalize({foodId:input.foodId||input.id,name:input.name,nameEn:input.nameEn,category:input.category,brand:input.brand,productName:input.productName,aliases:input.aliases,serving:input.serving,basisG:input.basisG,nutrients:input.nutrients,quality},{source:provenance,quality});
 }
 return Object.freeze({VERSION,QUALITY,CORE_NUTRIENTS,normalizeQuality,normalizeSource,nutritionFromLegacy,canonicalize,assess,audit,ingestExternal,normalizedName});
 });
