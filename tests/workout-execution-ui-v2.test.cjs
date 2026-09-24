@@ -8,6 +8,7 @@ const workoutFlow=fs.readFileSync(path.join(root,'06_features','ui','runtime','g
 const css=fs.readFileSync(path.join(root,'03_styles','runtime','garang-workout-execution-v2.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const polish=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-polish-v3.js'),'utf8');
+const workoutLibrary=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-library-v2.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
 assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
@@ -46,6 +47,7 @@ assert.ok(runtime.includes("saved?displayBufferedWeight(saved.weightMetric")&&ru
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
 assert.ok(app.includes('id="openWorkoutExerciseSearch"')&&app.includes(".garang-exercise-search input")&&app.includes("[data-gws-step=\"exercise\"]"),'Log must expose a magnifier control that routes to the existing exercise search');
 assert.ok(app.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"log\"]')?.click())"),'exercise selection must return directly to Log for fast execution');
+assert.ok(workoutLibrary.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"log\"]')?.click())"),'expanded/search exercise picks must also return directly to Log');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(runtime.includes("durationInput.value=liveDuration"),'recent-workout prefill must own duration before live-state recapture');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
