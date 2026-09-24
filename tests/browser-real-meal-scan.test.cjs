@@ -36,7 +36,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
      window.__GARANG_NUTRITION_LOOKUP_BROWSER_REQUEST__={authorization:headers.get('Authorization'),request};
      return new Response(JSON.stringify({ok:true,items:[{
       inputIndex:0,name:'GARANG QA 음료 ZX91',grams:355,kcal:5,protein:.3,carbs:.7,fat:0,nutritionStatus:'estimated',
-      nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official Americano nutrition',url:'https://example.com/official-americano',basis:'355g serving'}
+      nutritionSource:{source:'web_search',provider:'OpenAI web_search',sourceType:'manufacturer',title:'Official QA beverage nutrition',url:'https://example.com/official-qa-beverage',basis:'355g serving'}
      }],unresolved:[],data:{source:'web_search',provider:'fixture',model:'fixture-search',requestId:'lookup-browser-1',citationCount:1}}),{status:200,headers:{'Content-Type':'application/json'}});
     }
     return nativeFetch(input,init);
