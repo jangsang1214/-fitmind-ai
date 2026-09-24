@@ -22,10 +22,12 @@ const MEAL_SCAN_SCHEMA=Object.freeze({
 });
 const LABEL_SCAN_SCHEMA=Object.freeze({
  type:'object',additionalProperties:false,
- required:['productName','brand','servingGrams','calories','protein','carbs','fat','confidence','nutritionConfidence','uncertain','notes'],
+ required:['productName','brand','barcode','reportNo','servingGrams','calories','protein','carbs','fat','confidence','nutritionConfidence','uncertain','notes'],
  properties:{
   productName:{type:'string',minLength:1,maxLength:120},
   brand:{type:'string',maxLength:100},
+  barcode:{type:'string',maxLength:40},
+  reportNo:{type:'string',maxLength:40},
   servingGrams:{type:'number',minimum:1,maximum:2000},
   calories:{type:'number',minimum:0,maximum:10000},
   protein:{type:'number',minimum:0,maximum:1000},
@@ -39,6 +41,10 @@ const LABEL_SCAN_SCHEMA=Object.freeze({
 });
 
 function clean(value,limit=500){return String(value??'').trim().slice(0,limit);}
+function barcodeDigits(value){return String(value??'').replace(/\D/g,'');}
+function validGtin(value){const s=barcodeDigits(value);if(![8,12,13,14].includes(s.length))return false;let sum=0,weight=3;for(let i=s.length-2;i>=0;i--){sum+=Number(s[i])*weight;weight=weight===3?1:3;}return ((10-(sum%10))%10)===Number(s.at(-1));}
+function normalizeGtin(value){const s=barcodeDigits(value);return validGtin(s)?s.padStart(14,'0'):'';}
+function normalizeReportNo(value){const s=barcodeDigits(value);return s.length>=8&&s.length<=20?s:'';}
 function requestId(){return globalThis.crypto?.randomUUID?.()||`meal_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;}
 function parseMealImage(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('MEAL_SCAN_IMAGE_REQUIRED'),{code:'MEAL_SCAN_IMAGE_REQUIRED'});
@@ -60,17 +66,17 @@ function validateMealScan(value){
 }
 function validateLabelScan(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(new Error('NUTRITION_LABEL_RESPONSE_INVALID'),{code:'NUTRITION_LABEL_RESPONSE_INVALID'});
- const productName=clean(value.productName,120),brand=clean(value.brand,100),servingGrams=Number(value.servingGrams),calories=Number(value.calories),protein=Number(value.protein),carbs=Number(value.carbs),fat=Number(value.fat),confidence=Number(value.confidence),nutritionConfidence=Number(value.nutritionConfidence);
+ const productName=clean(value.productName,120),brand=clean(value.brand,100),barcodeRaw=clean(value.barcode,40),barcode=normalizeGtin(barcodeRaw),reportNo=normalizeReportNo(value.reportNo),servingGrams=Number(value.servingGrams),calories=Number(value.calories),protein=Number(value.protein),carbs=Number(value.carbs),fat=Number(value.fat),confidence=Number(value.confidence),nutritionConfidence=Number(value.nutritionConfidence);
  if(!productName||![servingGrams,calories,protein,carbs,fat,confidence,nutritionConfidence].every(Number.isFinite)||servingGrams<1||servingGrams>2000)throw Object.assign(new Error('NUTRITION_LABEL_RESPONSE_INVALID'),{code:'NUTRITION_LABEL_RESPONSE_INVALID'});
  return {
-  productName,brand,servingGrams:Math.round(servingGrams*10)/10,
+  productName,brand,barcode,reportNo,servingGrams:Math.round(servingGrams*10)/10,
   calories:Math.max(0,calories),protein:Math.max(0,protein),carbs:Math.max(0,carbs),fat:Math.max(0,fat),
   confidence:Math.max(0,Math.min(1,confidence)),nutritionConfidence:Math.max(0,Math.min(1,nutritionConfidence)),
-  uncertain:value.uncertain===true,notes:clean(value.notes,300)
+  uncertain:value.uncertain===true||Boolean(barcodeRaw&&!barcode),notes:clean(value.notes,300)
  };
 }
 function systemPrompt(language='ko',mode='meal'){
- if(mode==='label')return `You are GARANG Nutrition Label Vision. Read only nutrition facts visibly printed on a packaged-food label. Return the product name, brand when visible, serving grams, calories, protein grams, carbohydrate grams, and fat grams for one printed serving. Never infer missing values from general knowledge or a database. If multiple columns exist, use the clearly labeled per-serving column and mention ambiguity in notes. confidence measures product identity confidence; nutritionConfidence measures confidence that the printed serving and macro values were read correctly. Set uncertain=true when text is blurry, cropped, conflicting, or the serving basis is ambiguous. Output language: ${language==='en'?'English':'Korean where appropriate'}.`;
+ if(mode==='label')return `You are GARANG Nutrition Label Vision. Read only nutrition facts and identity fields visibly printed on a packaged-food label. Return the product name, brand when visible, barcode/GTIN when visibly readable (otherwise an empty string), Korean item-manufacturing report number when visibly readable (otherwise an empty string), serving grams, calories, protein grams, carbohydrate grams, and fat grams for one printed serving. Never infer missing values from general knowledge or a database. If multiple columns exist, use the clearly labeled per-serving column and mention ambiguity in notes. confidence measures product identity confidence; nutritionConfidence measures confidence that the printed serving and macro values were read correctly. Set uncertain=true when text is blurry, cropped, conflicting, or the serving basis is ambiguous. Output language: ${language==='en'?'English':'Korean where appropriate'}.`;
  return `You are GARANG Meal Scan Vision. Identify only foods visibly supported by the supplied meal photo. Return 1-6 food components with conservative gram estimates, identity confidence, and a separate portionConfidence for the gram estimate. Prefer common Korean food names that can match a Korean food database; include short Korean/English aliases when useful. Do not invent hidden ingredients. Do not calculate calories, protein, carbs, fat, or any nutrition values: GARANG's verified food database owns nutrition. If food identity is uncertain, lower confidence. If portion size is uncertain, lower portionConfidence and set uncertain=true. If the image is not a meal or no food can be identified, do not fabricate food. Output language: ${language==='en'?'English with Korean aliases when known':'Korean with English aliases when useful'}.`;
 }
 function createMealScanProvider(options={}){
