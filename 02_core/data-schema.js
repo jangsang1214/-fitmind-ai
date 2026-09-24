@@ -4,7 +4,7 @@
 */
 (function(root){
  'use strict';
- const VERSION=8;
+ const VERSION=9;
  const CONTRACT_VERSION='garang-state-v1';
  const SCORE_FORMULA_VERSION='recording-v2';
  const BODY_ESTIMATE_VERSION='body-estimate-v1';
@@ -19,14 +19,14 @@
  const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(new Date(x+'T12:00:00Z').getTime())&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const validTime=x=>typeof x==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(x);
  const row=x=>({...x,id:String(x.id||id()),date:validDate(x.date)?x.date:date()});
- const canonicalTopLevel=Object.freeze(['contractVersion','schemaVersion','profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','memory','aiChats','scoreHistory','plan','language','settings','updatedAtMs']);
- const collectionDomains=Object.freeze(['workouts','meals','runs','body','planner','dailyCheckins','aiChats','scoreHistory']);
+ const canonicalTopLevel=Object.freeze(['contractVersion','schemaVersion','profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','memory','aiChats','scoreHistory','plan','language','settings','updatedAtMs']);
+ const collectionDomains=Object.freeze(['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','aiChats','scoreHistory']);
  const CONTRACT=Object.freeze({
   id:CONTRACT_VERSION,
   schemaVersion:VERSION,
   units:Object.freeze({weight:'kg',length:'cm',distance:'km',duration:'min',pace:'min/km',energy:'kcal',date:'YYYY-MM-DD',timestamp:'ISO-8601'}),
   topLevel:canonicalTopLevel,
-  domains:Object.freeze(['profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','memory','aiChats','scoreHistory','settings']),
+  domains:Object.freeze(['profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','memory','aiChats','scoreHistory','settings']),
   compatibility:Object.freeze({
    checkins:'dailyCheckins',aiChat:'aiChats',onboarding:'userModel',
    plannerCompleted:'done',plannerSource:'origin',bodyFatPercent:'bodyFat'
@@ -43,12 +43,12 @@
  function empty(){return {
   contractVersion:CONTRACT_VERSION,schemaVersion:VERSION,
   profile:null,userModel:null,
-  workouts:[],meals:[],runs:[],body:[],planner:[],dailyCheckins:[],
+  workouts:[],meals:[],runs:[],body:[],planner:[],dailyCheckins:[],physiologicalSignals:[],
   memory:{facts:[],preferences:[],goals:[],events:[],entries:[],deletedIds:[],legacyMigrated:true},
   aiChats:[],scoreHistory:[],plan:'FREE',language:'ko',settings:{notifications:true,unit:'metric'},updatedAtMs:0
  };}
 
- function hasUserData(s){return !!s&&(!!s.profile||!!s.userModel||['workouts','meals','runs','body','planner','dailyCheckins','aiChats'].some(k=>Array.isArray(s[k])&&s[k].length>0)||['facts','preferences','goals','events','entries'].some(k=>Array.isArray(s.memory?.[k])&&s.memory[k].length>0));}
+ function hasUserData(s){return !!s&&(!!s.profile||!!s.userModel||['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','aiChats'].some(k=>Array.isArray(s[k])&&s[k].length>0)||['facts','preferences','goals','events','entries'].some(k=>Array.isArray(s.memory?.[k])&&s.memory[k].length>0));}
  function accountBootstrap(hasAccountCache,guestState,demoEnabled){if(hasAccountCache)return null;return demoEnabled&&hasUserData(guestState)?migrate(guestState):empty();}
 
  function mergeRows(localRows,remoteRows,preferRemote,key='id'){
@@ -65,7 +65,7 @@
 
  function mergeStates(localInput,remoteInput){
   const local=migrate(localInput),remote=migrate(remoteInput),preferRemote=(numeric(remote.updatedAtMs)||0)>(numeric(local.updatedAtMs)||0),merged={...(preferRemote?local:remote),...(preferRemote?remote:local)};
-  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','aiChats'])merged[k]=mergeRows(local[k],remote[k],preferRemote);
+  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','aiChats'])merged[k]=mergeRows(local[k],remote[k],preferRemote);
   merged.scoreHistory=mergeRows(local.scoreHistory,remote.scoreHistory,preferRemote,'date').sort((a,b)=>a.date.localeCompare(b.date));
   merged.memory={...(preferRemote?local.memory:remote.memory),...(preferRemote?remote.memory:local.memory)};
   for(const k of ['facts','preferences','goals','events'])merged.memory[k]=[...new Map([...(local.memory[k]||[]),...(remote.memory[k]||[])].map(x=>[typeof x==='string'?x:JSON.stringify(x),x])).values()];
@@ -113,6 +113,8 @@
   s.userModel=normalizeUserModel(s.userModel);
 
   for(const k of ['workouts','meals','runs','body','planner'])s[k]=rows(s[k]).map(row);
+  const physioId=x=>{const raw=[x?.source,x?.capturedAt||x?.date,x?.hrvMs,x?.restingHeartRateBpm,x?.sleepHours,x?.sleepScore,x?.stressScore,x?.steps,x?.activeMinutes].join('|');let h=2166136261;for(const ch of raw){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return 'health_'+(h>>>0).toString(16).padStart(8,'0');};
+  s.physiologicalSignals=rows(s.physiologicalSignals).map(x=>{const captured=typeof x.capturedAt==='string'&&Number.isFinite(Date.parse(x.capturedAt))?new Date(x.capturedAt).toISOString():null,d=validDate(x.date)?x.date:(captured?captured.slice(0,10):date()),out={...x,id:String(x.id||physioId(x)),date:d,source:String(x.source||'import'),capturedAt:captured};for(const k of ['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore','steps','activeMinutes']){const n=numeric(x[k]);if(n===null)delete out[k];else out[k]=Math.max(0,n);}return out;}).slice(-5000);
   s.dailyCheckins=rows(s.dailyCheckins).map(x=>{const normalized=root.GarangToday?.normalizeCheckin?root.GarangToday.normalizeCheckin(x,{...x,revision:Math.max(0,(numeric(x.revision)||1)-1),createdAt:x.createdAt},new Date(x.updatedAt||x.createdAt||Date.now())):{...row(x),timezone:String(x.timezone||'UTC'),sleepHours:numeric(x.sleepHours),energy:numeric(x.energy),stress:numeric(x.stress),availableMinutes:numeric(x.availableMinutes),soreness:isObject(x.soreness)?x.soreness:{},notes:String(x.notes||''),painCaution:x.painCaution===true,schemaVersion:1,revision:Math.max(1,numeric(x.revision)||1)};return normalized;});
 
   const numbers=(x,keys)=>{const y={...x};for(const k of keys)y[k]=Math.max(0,numeric(x[k])||0);return y;};
@@ -161,9 +163,9 @@
   if(!['FREE','PRO'].includes(state.plan))errors.push('plan');
   if(!['metric','imperial'].includes(state.settings?.unit))errors.push('settings.unit');
 
-  for(const domain of ['workouts','meals','runs','body','planner','dailyCheckins'])for(const item of state[domain]||[]){
+  for(const domain of ['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals'])for(const item of state[domain]||[]){
    if(typeof item.id!=='string'||!item.id)errors.push(`${domain}.id`);
-   if(!validDate(item.date))errors.push(`${domain}.date`);
+   if(!validDate(item.date))errors.push(`${domain}.date`);if(domain==='physiologicalSignals'&&typeof item.source!=='string')errors.push('physiologicalSignals.source');
   }
   for(const item of state.planner||[]){if(!validTime(item.time))errors.push('planner.time');if(typeof item.done!=='boolean')errors.push('planner.done');if(typeof item.origin!=='string')errors.push('planner.origin');}
   for(const item of state.body||[]){if(item.bodyFat!==null&&item.bodyFat!==undefined&&(numeric(item.bodyFat)<0||numeric(item.bodyFat)>100))errors.push('body.bodyFat');}
@@ -176,8 +178,8 @@
  function toTransport(input){const s=migrate(input),out={};for(const key of canonicalTopLevel)out[key]=clone(s[key]);out.contractVersion=CONTRACT_VERSION;out.schemaVersion=VERSION;return assertContract(out);}
 
  function validateImport(x){
-  if(!isObject(x)||!['workouts','meals','runs','body','planner','dailyCheckins','checkins','profile','userModel','onboarding','memory'].some(k=>k in x))throw new Error('INVALID_DATA');
-  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','checkins','aiChats','aiChat'])if(k in x&&(!Array.isArray(x[k])||x[k].some(y=>!isObject(y))))throw new Error('INVALID_DATA');
+  if(!isObject(x)||!['workouts','meals','runs','body','planner','dailyCheckins','checkins','physiologicalSignals','profile','userModel','onboarding','memory'].some(k=>k in x))throw new Error('INVALID_DATA');
+  for(const k of ['workouts','meals','runs','body','planner','dailyCheckins','checkins','physiologicalSignals','aiChats','aiChat'])if(k in x&&(!Array.isArray(x[k])||x[k].some(y=>!isObject(y))))throw new Error('INVALID_DATA');
   return migrate(x);
  }
 
