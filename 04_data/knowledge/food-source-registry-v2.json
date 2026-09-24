@@ -63,7 +63,26 @@
         "protein": "A009"
       },
       "adapterStatus": "implemented-contract-tested",
-      "liveImportStatus": "external-api-key-required"
+      "liveImportStatus": "adapter-ready; K-FIND bulk form observed; automated full import still requires approved source access/usage submission",
+      "bulkDownloadPortal": "https://various.foodsafetykorea.go.kr/nutrient/general/down/historyList.do",
+      "bulkDownloadRequests": [
+        {
+          "dataset": "KDDB",
+          "searchDbSeq": "1787898710194",
+          "searchDbGubun": "02",
+          "method": "POST",
+          "popup": "https://various.foodsafetykorea.go.kr/nutrient/export/down/filePop.do",
+          "observedAt": "2026-09-24"
+        },
+        {
+          "dataset": "PFDB",
+          "searchDbSeq": "1787898734821",
+          "searchDbGubun": "01",
+          "method": "POST",
+          "popup": "https://various.foodsafetykorea.go.kr/nutrient/export/down/filePop.do",
+          "observedAt": "2026-09-24"
+        }
+      ]
     },
     {
       "id": "usda-fdc",
@@ -112,6 +131,51 @@
         "policy": "verified-only; canonical Korean corpus remains primary; no automatic canonical overwrite"
       },
       "bulkImportStatus": "foundation-fndds-verified-supplemental-corpus-built"
+    },
+    {
+      "id": "data-go-kr-standard",
+      "provider": "대한민국 공공데이터포털",
+      "country": "KR",
+      "priority": 95,
+      "official": true,
+      "apiKeyRequired": true,
+      "page": "https://www.data.go.kr/data/15100064/standard.do",
+      "apiEndpoint": "https://api.data.go.kr/openapi/tn_pubr_public_nutri_info_api",
+      "modifiedDate": "2026-09-15",
+      "datasets": [
+        {
+          "id": "FOOD",
+          "name": "음식"
+        },
+        {
+          "id": "PROCESSED",
+          "name": "가공식품"
+        },
+        {
+          "id": "MATERIAL",
+          "name": "원재료성 식품"
+        }
+      ],
+      "publicGridDownload": {
+        "limitRows": 50000,
+        "captchaObserved": true,
+        "formats": [
+          "XLS",
+          "XML",
+          "JSON",
+          "RDF",
+          "CSV"
+        ]
+      },
+      "builder": {
+        "script": "scripts/build-korean-food-corpus.cjs",
+        "workflow": ".github/workflows/build-korean-food-corpus.yml",
+        "manifest": "04_data/knowledge/food-db-supplemental-korea-v1/manifest.json",
+        "sharding": "Korean choseong / latin initial",
+        "aliasPolicy": "deterministic product + company/manufacturer/retailer aliases only"
+      },
+      "adapterStatus": "implemented-contract-tested",
+      "liveImportStatus": "DATA_GO_KR_SERVICE_KEY not connected in repository workflow as of 2026-09-24"
     }
   ]
 }

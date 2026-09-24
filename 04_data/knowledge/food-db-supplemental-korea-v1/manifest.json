@@ -1,0 +1,14 @@
+{
+  "version": "garang-korean-food-corpus-v1",
+  "generatedAt": null,
+  "status": "source_access_pending",
+  "purpose": "Korean official supplemental lookup corpus; curated GARANG canonical remains primary",
+  "precedence": [
+    "GARANG canonical Korean DB",
+    "Korean official supplemental",
+    "USDA supplemental",
+    "source-backed web lookup"
+  ],
+  "count": 0,
+  "shards": {}
+}
