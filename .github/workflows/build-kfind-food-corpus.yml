@@ -1,0 +1,95 @@
+name: Build K-FIND Food Corpus
+
+on:
+  push:
+    branches:
+      - ai/korean-food-source-acquisition-v2-20260924
+    paths:
+      - .github/workflows/build-kfind-food-corpus.yml
+      - scripts/build-kfind-food-corpus.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip kfind-build]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Download latest official K-FIND food DB
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://various.foodsafetykorea.go.kr'
+          POP="$BASE/nutrient/export/down/filePop.do?pagenum=1&totalListCnt=17&pageblock=10&pagesize=10&searchDbSeq=1787898710194&searchDbGubun=02&searchOpenApi=Y"
+          JAR="$RUNNER_TEMP/kfind.cookies"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" "$POP" -o "$RUNNER_TEMP/popup.html"
+          python - <<'PY' > "$RUNNER_TEMP/kfind.env"
+          import re,os
+          from pathlib import Path
+          text=Path(os.environ['RUNNER_TEMP']+'/popup.html').read_text(errors='ignore')
+          token=re.search(r'name="pageToken"[^>]*value="([^"]+)"',text); key=re.search(r'vmFileKey\s*:\s*"([^"]+)"',text)
+          if not token or not key: raise SystemExit('K-FIND popup token/file key not found')
+          print('PAGE_TOKEN='+token.group(1)); print('FILE_KEY='+key.group(1))
+          PY
+          source "$RUNNER_TEMP/kfind.env"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" \
+            --data-urlencode "pageToken=$PAGE_TOKEN" --data-urlencode 'dbGubun=02' --data-urlencode 'sosok=GARANG' --data-urlencode 'depart=AI/Data' --data-urlencode 'agencyType=01' --data-urlencode 'usePurpose=02' --data-urlencode 'remark=GARANG 앱 영양 데이터베이스 연동 및 품질 검증' \
+            "$BASE/nutrient/export/down/cudAction.do" -o "$RUNNER_TEMP/register.html"
+          KEY="$(printf '%s' "$FILE_KEY" | jq -sRr @uri)"
+          curl --fail --location --retry 3 --silent --show-error -c "$JAR" -b "$JAR" -e "$POP" "$BASE/nutrient/multi/file/download.do?key=$KEY" -o "$RUNNER_TEMP/kfind-food.xlsx"
+          test "$(stat -c%s "$RUNNER_TEMP/kfind-food.xlsx")" -gt 10000000
+
+      - name: Build representative Korean food shards
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf 04_data/knowledge/food-db-supplemental-korea-v1
+          mkdir -p 04_data/knowledge/food-db-supplemental-korea-v1
+          python scripts/build-kfind-food-corpus.py \
+            --input "$RUNNER_TEMP/kfind-food.xlsx" \
+            --output-dir 04_data/knowledge/food-db-supplemental-korea-v1 \
+            --manifest 04_data/knowledge/food-db-supplemental-korea-v1/manifest.json \
+            --meta 04_data/knowledge/food-db-supplemental-korea-v1/meta.json
+
+      - name: Verify corpus quality and mobile-shard limits
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          base=Path('04_data/knowledge/food-db-supplemental-korea-v1')
+          manifest=json.loads((base/'manifest.json').read_text()); meta=json.loads((base/'meta.json').read_text())
+          assert manifest['status']=='ready'
+          assert manifest['count']>=1000, manifest['count']
+          assert meta['guardrails']['gramBasisOnlyForAutomaticCalculation'] is True
+          assert manifest['count']==meta['records']
+          total=0
+          for bucket,spec in manifest['shards'].items():
+              p=base/spec['file']; assert p.exists(), spec
+              payload=json.loads(p.read_text()); assert payload['count']==len(payload['records'])==spec['count']
+              assert all(r.get('nutrition_status')=='verified' for r in payload['records'])
+              assert all(r.get('basis_unit')=='g' for r in payload['records'])
+              assert all(r.get('provenance',{}).get('provider')=='식품의약품안전처 K-FIND' for r in payload['records'])
+              assert p.stat().st_size<8_000_000, (bucket,p.stat().st_size)
+              total+=len(payload['records'])
+          assert total==manifest['count']
+          print(json.dumps({'raw':manifest['rawCount'],'records':manifest['count'],'shards':len(manifest['shards']),'excludedNonGramRows':meta['excludedNonGramRows'],'duplicateNameGroups':meta['duplicateNameGroups']},ensure_ascii=False,indent=2))
+          PY
+
+      - name: Commit generated K-FIND corpus
+        shell: bash
+        run: |
+          git config user.name 'GARANG K-FIND Ingestion'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 04_data/knowledge/food-db-supplemental-korea-v1
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Add K-FIND Korean food corpus [skip kfind-build]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
