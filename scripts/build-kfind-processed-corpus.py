@@ -69,7 +69,7 @@ def safe_bucket(bucket):
     if len(bucket)==1 and bucket.isascii() and bucket.isalpha():return 'latin-'+bucket.lower()
     return 'ko-'+bucket.encode().hex()
 def brand_of(row):
-    vals=[row.get('제조사명'),row.get('수입업체명'),row.get('유통업체명')]
+    vals=[row.get('유통업체명'),row.get('수입업체명'),row.get('제조사명')]
     vals=[strip_corp(v) for v in vals if clean(v) and clean(v)!='해당없음']
     return vals[0] if vals else None
 def record(row):
