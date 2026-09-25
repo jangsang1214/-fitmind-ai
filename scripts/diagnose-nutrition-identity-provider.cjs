@@ -5,7 +5,7 @@ const apiKey=String(process.env.GARANG_LLM_API_KEY||'').trim();
 const model=String(process.env.GARANG_MEAL_SCAN_MODEL||process.env.GARANG_LLM_MODEL||'gpt-5.6-luna').trim();
 if(!apiKey)throw new Error('GARANG_LLM_API_KEY_MISSING');
 const fixture=fs.readFileSync(path.join(__dirname,'fixtures/barcode-028400090896.b64'),'utf8').trim();
-const imageUrl='data:image/png;base64,'+fixture;
+let imageUrl='data:image/png;base64,'+fixture;
 function clean(v,n=120){return String(v??'').slice(0,n);}
 async function call(label,body){
  const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -16,6 +16,13 @@ async function call(label,body){
 }
 function input(){return [{role:'system',content:[{type:'input_text',text:systemPrompt('en','barcode')}]},{role:'user',content:[{type:'input_text',text:'Read the visible package barcode digits only.'},{type:'input_image',image_url:imageUrl}]}];}
 (async()=>{
+ const source='https://commons.wikimedia.org/wiki/Special:Redirect/file/Ean13-Beispiel_k.png?width=800';
+ const img=await fetch(source,{headers:{'User-Agent':'GARANG-provider-diagnostic/1.0'}});
+ if(!img.ok)throw new Error('DIAG_FIXTURE_FETCH_'+img.status);
+ const type=String(img.headers.get('content-type')||'image/png').split(';')[0].trim();
+ const bytes=Buffer.from(await img.arrayBuffer());
+ imageUrl='data:'+type+';base64,'+bytes.toString('base64');
+ console.log(JSON.stringify({label:'fixture-fetch',http:img.status,ok:img.ok,type,bytes:bytes.length}));
  const exact=await call('exact-prod-shape',{model,store:false,input:input(),reasoning:{effort:'none'},max_output_tokens:800,text:{format:{type:'json_schema',name:'garang_barcode_scan',strict:true,schema:BARCODE_SCAN_SCHEMA}}});
  if(exact.response.ok)return;
  const plain=await call('plain-text-same-image',{model,store:false,input:input(),reasoning:{effort:'none'},max_output_tokens:80});
