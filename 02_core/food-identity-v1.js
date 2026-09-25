@@ -51,5 +51,9 @@ function queryNames(value={}){
  const brand=clean(value.brand,120),name=clean(value.productName||value.name,180);
  return [...new Set([brand&&name?brand+' '+name:'',name,brand].filter(Boolean))];
 }
-return Object.freeze({VERSION,digits,validCheckDigit,normalizeGtin,normalizeReportNo,compact,mappingFromItem,findMapping,upsertMapping,identityKey,queryNames});
+function findReportNoMatch(rows,reportNo){
+ const target=normalizeReportNo(reportNo);if(!target)return null;
+ return (Array.isArray(rows)?rows:[]).find(row=>normalizeReportNo(row?.report_no||row?.reportNo)===target)||null;
+}
+return Object.freeze({VERSION,digits,validCheckDigit,normalizeGtin,normalizeReportNo,compact,mappingFromItem,findMapping,upsertMapping,identityKey,queryNames,findReportNoMatch});
 });
