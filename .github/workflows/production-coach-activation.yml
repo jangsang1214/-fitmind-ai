@@ -1,5 +1,5 @@
 name: Production Coach Activation
-# Nutrition Identity live-smoke before destructive smoke cleanup v4
+# Nutrition Identity exact-lookup plus fail-closed Vision contract v5
 
 on:
   push:
