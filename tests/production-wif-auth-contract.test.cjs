@@ -6,6 +6,7 @@ const readiness=fs.readFileSync(path.join(root,'.github/workflows/production-wif
 const ignore=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 const nutritionIdentitySmoke=fs.readFileSync(path.join(root,'scripts/verify-production-nutrition-identity.cjs'),'utf8');
+const barcodeFixture=fs.readFileSync(path.join(root,'scripts/fixtures/barcode-028400090896.b64'),'utf8').trim();
 assert.match(workflow,/id-token:\s*write/,'production activation must allow GitHub OIDC tokens');
 assert.match(workflow,/google-github-actions\/auth@v3/,'production activation must use Google WIF auth');
 assert.match(workflow,/GCP_WORKLOAD_IDENTITY_PROVIDER/);
@@ -23,5 +24,7 @@ assert.match(nutritionIdentitySmoke,/mode:'barcode'/);
 assert.match(nutritionIdentitySmoke,/028400090896/);
 assert.match(nutritionIdentitySmoke,/barcode_source_backed/);
 assert.match(nutritionIdentitySmoke,/pepsico\.info/);
+assert.ok(barcodeFixture.length>4000,'production barcode smoke fixture must be a complete PNG base64 payload');
+assert.match(barcodeFixture,/^iVBORw0KGgo/,'production barcode smoke fixture must be PNG base64');
 execFileSync(process.execPath,['--check',path.join(root,'scripts/verify-production-nutrition-identity.cjs')],{stdio:'pipe'});
 console.log('production-wif-auth-contract: PASS');
