@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const Core=require('../02_core/plan-execution-v1.js');
+const AdaptiveNutrition=require('../02_core/adaptive-nutrition-learning-v1.js');
 const Goal=require('../02_core/goal-alignment-v1.js');
 const Loop=require('../06_features/ui/runtime/garang-core-loop-v1.js');
 const appSource=fs.readFileSync(path.join(__dirname,'../01_app/app.js'),'utf8');
@@ -22,6 +23,23 @@ test('goal-aware calorie target changes without mutating source',()=>{
 
 test('missing adult profile data never fabricates a calorie target',()=>{const s=base();s.profile={weight:70,goal:'근육 증가'};const t=Core.estimateTargets(s,'2026-09-08');assert.equal(t.calorieTarget,null);assert.ok(t.reasons.includes('MISSING_HEIGHT'));assert.ok(t.reasons.includes('MISSING_AGE'));});
 test('minor profile does not receive an adult calorie target',()=>{const s=base();s.profile.age=17;const t=Core.estimateTargets(s,'2026-09-08');assert.equal(t.calorieTarget,null);assert.ok(t.reasons.includes('AGE_REQUIRES_CLINICAL_TARGET'));});
+
+test('adaptive nutrition produces a bounded confirmation-only target from longitudinal evidence',()=>{
+  const s=base();s.meals=[];for(let day=4;day<=24;day++)s.meals.push({id:`m${day}`,date:`2026-09-${String(day).padStart(2,'0')}`,kcal:2200,protein:120});
+  s.body=[{date:'2026-09-05',weight:70},{date:'2026-09-12',weight:70},{date:'2026-09-19',weight:70},{date:'2026-09-24',weight:70}];
+  const model=AdaptiveNutrition.build(s,{asOf:'2026-09-24',days:28}),proposal=model.recommendation.targetProposal;
+  assert.equal(model.estimate.eligible,true);assert.ok(model.confidence>=.55);assert.equal(proposal.eligible,true);assert.equal(proposal.proposedDailyKcal,2300);assert.equal(proposal.deltaKcal,100);assert.equal(proposal.requiresConfirmation,true);assert.equal(model.guardrails.noAutomaticTargetMutation,true);
+});
+
+test('confirmed adaptive calorie target becomes the plan target without bypassing adult guardrail',()=>{
+  const s=base();s.profile.calorieTarget=2300;s.profile.calorieTargetConfidence=.84;s.profile.calorieTargetSource='adaptive_nutrition_learning_v1';
+  const target=Core.estimateTargets(s,'2026-09-24');assert.equal(target.calorieTarget,2300);assert.equal(target.targetSource,'user_confirmed');assert.equal(target.estimateOnly,false);assert.ok(target.reasons.includes('EXPLICIT_CALORIE_TARGET'));
+  s.profile.age=17;const minor=Core.estimateTargets(s,'2026-09-24');assert.equal(minor.calorieTarget,null);assert.equal(minor.targetSource,'derived_profile');assert.ok(minor.reasons.includes('AGE_REQUIRES_CLINICAL_TARGET'));
+});
+
+test('nutrition UI exposes explicit apply and reset actions instead of silent target mutation',()=>{
+  assert.match(appSource,/function adaptiveNutritionCard/);assert.match(appSource,/id="applyAdaptiveNutritionTarget"/);assert.match(appSource,/function applyAdaptiveNutritionTarget/);assert.match(appSource,/saveState\(\{event:'nutrition_target_applied'/);assert.match(appSource,/function resetAdaptiveNutritionTarget/);
+});
 
 test('explicit completion and actual records both count as execution',()=>{
   const s=base();s.planner=[{id:'p1',date:'2026-09-08',time:'10:00',type:'nutrition',title:'칼로리 목표',completed:true},{id:'p2',date:'2026-09-08',time:'18:00',type:'workout',title:'상체 운동',completed:false}];
