@@ -1,11 +1,11 @@
 'use strict';
-const assert=require('node:assert/strict');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 
 const mealEndpoint=String(process.env.GARANG_MEAL_SCAN_ENDPOINT||'https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/meal/scan').trim();
 const lookupEndpoint=String(process.env.GARANG_NUTRITION_LOOKUP_ENDPOINT||'https://asia-northeast3-fitfind-ai.cloudfunctions.net/api/nutrition/lookup').trim();
 const token=String(process.env.GARANG_FIREBASE_ID_TOKEN||'').trim();
 const upc='028400090896',gtin14='00028400090896';
-const barcodePng='iVBORw0KGgoAAAANSUhEUgAAAdwAAADcCAIAAABVtocWAAANhElEQVR42u3dbWxT1QPH8XP3ULoNxwAdtHEbD1PIElbGfFhS0TCGCy4LKMagC0wTXiCikAUCvnAoq75YUIZEwQyIQYMkjPiEqDMwfJrCC9kM0VioCw8iunXMbg7abrv/Fyc2tb23tLdbrX+/n1el95x7zj3d+e3u3tOLoqqqAAAkhxSGAAAIZQAAoQwAhDIAgFAGAEIZAEAoAwChDAAglAGAUAYAEMoAQCgDAAhlAAChDACEMgCAUAYAQhkAQCgDAKEMAIhHWrJ1SFGUwOvg/z9Q7/1o9hMs1n3GWiaatmItE0//Y+3nWI/naO0znvejGdtYfyZH6/Ma637G83MeTz/j6UOsfRvrfXKmDABcvgAAEMoAQCgDAAhlAAChDACEMgCAUAYAQhkAQCgDAKEMACCUAYBQBgAQygBAKAMACGUAIJQBAIQyAIBQBgBCGQBAKAMAoQwAIJQBgFAGABDKAABCGQAIZQAAoQwAhDIAgFAGAEIZAEAoAwChDAAglAGAUAYAEMoAQCgDAAhlAAChDACEMgCAUAYAQhkAQCgDAKEMACCUAYBQBgAQygBAKAMACGUAIJQBAIQyABDKAABCGQAIZQAAoQwAhDIAgFAGABDKAEAoAwAIZQAglAEAhDIAEMoAAEIZAAhlAMA/5n8e3ZQt0NGDKwAAAABJRU5ErkJggg==';
+const barcodePng=fs.readFileSync(path.join(__dirname,'fixtures/barcode-028400090896.b64'),'utf8').trim();
 if(!token)throw new Error('GARANG_FIREBASE_ID_TOKEN is required for authenticated Nutrition Identity production smoke.');
 for(const endpoint of [mealEndpoint,lookupEndpoint])if(!endpoint.startsWith('https://'))throw new Error('Production Nutrition Identity endpoints must use https.');
 
