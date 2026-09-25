@@ -19,6 +19,7 @@ assert.equal(pkg.scripts['smoke:nutrition-identity:prod'],'node scripts/verify-p
 assert.match(workflow,/Run authenticated live Nutrition Identity smoke/);
 assert.match(workflow,/npm run smoke:nutrition-identity:prod/);
 assert.match(workflow,/live_nutrition_identity_smoke\.outputs\.status/);
+assert.ok(workflow.indexOf('Run authenticated live Nutrition Identity smoke') < workflow.indexOf('Run authenticated autonomous write smoke'),'Nutrition Identity smoke must run before autonomous write smoke can delete the disposable identity');
 assert.match(nutritionIdentitySmoke,/mode:'barcode'/);
 assert.match(nutritionIdentitySmoke,/028400090896/);
 assert.match(nutritionIdentitySmoke,/barcode_source_backed/);
