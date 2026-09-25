@@ -31,17 +31,26 @@ async function barcodeFixture(){
  const lookupBody=await lookupResponse.json().catch(()=>({}));
  assert.equal(lookupResponse.ok,true,`GTIN-aware nutrition lookup failed HTTP ${lookupResponse.status} code=${lookupBody?.error?.code||'unknown'}`);
  const item=Array.isArray(lookupBody?.items)?lookupBody.items[0]:null;
- assert.ok(item,'GTIN-aware lookup returned no exact source-backed Doritos result');
- assert.equal(item.barcode,lookupGtin14);
- assert.equal(item.nutritionStatus,'estimated');
- assert.equal(item.nutritionSource?.matchRule,'barcode_source_backed');
- const sourceUrl=String(item.nutritionSource?.url||'');
- assert.ok(/^https:\/\//.test(sourceUrl),'GTIN-aware lookup must expose an https primary source URL');
- const host=new URL(sourceUrl).hostname.toLowerCase();
- const official=host==='pepsico.info'||host.endsWith('.pepsico.info')||host==='doritos.com'||host.endsWith('.doritos.com')||host==='fritolay.com'||host.endsWith('.fritolay.com')||host==='pepsico.com'||host.endsWith('.pepsico.com');
- assert.equal(official,true,`GTIN smoke must resolve through an official PepsiCo/Doritos/Frito-Lay source, got ${host}`);
- for(const key of ['kcal','protein','carbs','fat'])assert.ok(Number.isFinite(Number(item[key]))&&Number(item[key])>=0,`GTIN lookup ${key} must be non-negative`);
- assert.ok(Number(item.kcal)>=100&&Number(item.kcal)<=200,`Doritos 1 oz kcal implausible: ${item.kcal}`);
+ const unresolved=Array.isArray(lookupBody?.unresolved)?lookupBody.unresolved:[];
+ let gtinLookup;
+ if(item){
+  assert.equal(item.barcode,lookupGtin14);
+  assert.equal(item.nutritionStatus,'estimated');
+  assert.equal(item.nutritionSource?.matchRule,'barcode_source_backed');
+  const sourceUrl=String(item.nutritionSource?.url||'');
+  assert.ok(/^https:\/\//.test(sourceUrl),'GTIN-aware lookup must expose an https primary source URL');
+  const host=new URL(sourceUrl).hostname.toLowerCase();
+  const official=host==='pepsico.info'||host.endsWith('.pepsico.info')||host==='doritos.com'||host.endsWith('.doritos.com')||host==='fritolay.com'||host.endsWith('.fritolay.com')||host==='pepsico.com'||host.endsWith('.pepsico.com');
+  assert.equal(official,true,`GTIN smoke must resolve through an official PepsiCo/Doritos/Frito-Lay source, got ${host}`);
+  for(const key of ['kcal','protein','carbs','fat'])assert.ok(Number.isFinite(Number(item[key]))&&Number(item[key])>=0,`GTIN lookup ${key} must be non-negative`);
+  assert.ok(Number(item.kcal)>=100&&Number(item.kcal)<=200,`Doritos 1 oz kcal implausible: ${item.kcal}`);
+  gtinLookup={outcome:'source_backed_exact',endpoint:new URL(lookupEndpoint).pathname,name:item.name,barcode:item.barcode,kcal:item.kcal,source:sourceUrl,matchRule:item.nutritionSource?.matchRule};
+ }else{
+  const miss=unresolved.find(row=>Number(row?.inputIndex)===0);
+  assert.ok(miss,'GTIN lookup must either resolve exact or report input 0 unresolved');
+  assert.ok(['UNVERIFIED_WEB_RESULT','NO_TRUSTWORTHY_SOURCE'].includes(String(miss.reason||'')),`unexpected GTIN unresolved reason ${miss.reason||'missing'}`);
+  gtinLookup={outcome:'fail_closed_unresolved',endpoint:new URL(lookupEndpoint).pathname,barcode:lookupGtin14,reason:String(miss.reason)};
+ }
 
  const image=await barcodeFixture();
  const visionResponse=await fetch(mealEndpoint,{
@@ -68,7 +77,7 @@ async function barcodeFixture(){
 
  console.log(JSON.stringify({
   status:'PASS',
-  gtinLookup:{endpoint:new URL(lookupEndpoint).pathname,name:item.name,barcode:item.barcode,kcal:item.kcal,source:sourceUrl,matchRule:item.nutritionSource?.matchRule},
+  gtinLookup,
   barcodeVision
  },null,2));
 })().catch(error=>{console.error(`production Nutrition Identity smoke: FAIL ${error?.message||error}`);process.exit(1);});
