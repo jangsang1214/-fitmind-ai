@@ -725,8 +725,14 @@ function buildSupplementalIndex(rows=[]){
 }
 function indexedSupplementalMatch(rows,index,query,options={}){
  const key=supplementalKey(query);if(!key||!rows?.length)return null;
- const exact=index?.exact?.get(key);if(exact)return {food:exact,match:{status:'matched',confidence:1,reason:'SUPPLEMENTAL_EXACT'}};
+ const reportNo=foodIdentityCore()?.normalizeReportNo?.(options.reportNo)||null,reportOf=row=>foodIdentityCore()?.normalizeReportNo?.(row?.report_no||row?.reportNo)||null;
+ const exact=index?.exact?.get(key);
+ if(exact&&(!reportNo||reportOf(exact)===reportNo))return {food:exact,match:{status:'matched',confidence:1,reason:reportNo?'REPORT_NO_EXACT':'SUPPLEMENTAL_EXACT'}};
  const candidates=index?.prefix?.get(key.slice(0,4))||[];
+ if(reportNo){
+  const reportHit=candidates.find(row=>reportOf(row)===reportNo);
+  if(reportHit)return {food:reportHit,match:{status:'matched',confidence:1,reason:'REPORT_NO_EXACT'}};
+ }
  if(!candidates.length)return null;
  const smart=window.GarangFoodIntelligenceV2?.resolve?.(candidates,query,{mode:options.mode==='vision'?'vision':'manual',minConfidence:options.minConfidence,margin:options.margin});
  return smart?.status==='matched'&&smart.food?{food:smart.food,match:smart}:null;
