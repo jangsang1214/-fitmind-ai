@@ -1,0 +1,31 @@
+name: Diagnose Nutrition Identity Provider
+
+on:
+  push:
+    branches:
+      - diagnose/nutrition-identity-provider-20260925
+    paths:
+      - .github/workflows/diagnose-nutrition-identity-provider.yml
+      - scripts/diagnose-nutrition-identity-provider.cjs
+      - scripts/fixtures/barcode-028400090896.b64
+      - functions/src/meal-scan.cjs
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GARANG_LLM_API_KEY: ${{ secrets.GARANG_LLM_API_KEY }}
+      GARANG_LLM_MODEL: gpt-5.6-luna
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Run sanitized provider contract diagnostic
+        run: node scripts/diagnose-nutrition-identity-provider.cjs
