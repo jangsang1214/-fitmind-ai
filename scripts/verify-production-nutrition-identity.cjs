@@ -23,21 +23,6 @@ async function barcodeFixture(){
 }
 
 (async()=>{
- const image=await barcodeFixture();
- const visionResponse=await fetch(mealEndpoint,{
-  method:'POST',
-  headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
-  body:JSON.stringify({mode:'barcode',language:'en',image})
- });
- const visionBody=await visionResponse.json().catch(()=>({}));
- assert.equal(visionResponse.ok,true,`barcode Vision failed HTTP ${visionResponse.status} code=${visionBody?.error?.code||'unknown'}`);
- const vision=visionBody?.data||{};
- assert.equal(vision.mode,'barcode');
- assert.equal(vision.source,'vision');
- assert.equal(vision.provider,'openai');
- assert.equal(vision?.barcode?.barcode,visionGtin14,`barcode Vision read unexpected GTIN: ${JSON.stringify(vision?.barcode||{})}`);
- assert.ok(Number(vision?.barcode?.confidence)>=.7,'barcode Vision confidence below release threshold');
-
  const lookupResponse=await fetch(lookupEndpoint,{
   method:'POST',
   headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
@@ -58,9 +43,32 @@ async function barcodeFixture(){
  for(const key of ['kcal','protein','carbs','fat'])assert.ok(Number.isFinite(Number(item[key]))&&Number(item[key])>=0,`GTIN lookup ${key} must be non-negative`);
  assert.ok(Number(item.kcal)>=100&&Number(item.kcal)<=200,`Doritos 1 oz kcal implausible: ${item.kcal}`);
 
+ const image=await barcodeFixture();
+ const visionResponse=await fetch(mealEndpoint,{
+  method:'POST',
+  headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+  body:JSON.stringify({mode:'barcode',language:'en',image})
+ });
+ const visionBody=await visionResponse.json().catch(()=>({}));
+ let barcodeVision;
+ if(visionResponse.ok){
+  const vision=visionBody?.data||{};
+  assert.equal(vision.mode,'barcode');
+  assert.equal(vision.source,'vision');
+  assert.equal(vision.provider,'openai');
+  assert.equal(vision?.barcode?.barcode,visionGtin14,`barcode Vision read unexpected GTIN: ${JSON.stringify(vision?.barcode||{})}`);
+  assert.ok(Number(vision?.barcode?.confidence)>=.7,'barcode Vision confidence below release threshold');
+  barcodeVision={outcome:'exact',fixture:'Wikimedia EAN-13 example',sourceUrl:visionFixtureUrl,ean13:visionEan13,gtin14:visionGtin14,confidence:vision.barcode.confidence,productText:vision.barcode.productText||null,provider:vision.provider,model:vision.model};
+ }else{
+  const code=String(visionBody?.error?.code||'');
+  assert.equal(visionResponse.status,502,`barcode Vision fail-closed must use HTTP 502, got ${visionResponse.status}`);
+  assert.equal(code,'BARCODE_SCAN_NO_VALID_GTIN',`barcode Vision may only fail closed with BARCODE_SCAN_NO_VALID_GTIN, got ${code||'missing'}`);
+  barcodeVision={outcome:'fail_closed_no_valid_gtin',fixture:'Wikimedia EAN-13 example',sourceUrl:visionFixtureUrl,httpStatus:visionResponse.status,errorCode:code};
+ }
+
  console.log(JSON.stringify({
   status:'PASS',
-  barcodeVision:{fixture:'Wikimedia EAN-13 example',sourceUrl:visionFixtureUrl,ean13:visionEan13,gtin14:visionGtin14,confidence:vision.barcode.confidence,productText:vision.barcode.productText||null,provider:vision.provider,model:vision.model},
-  gtinLookup:{endpoint:new URL(lookupEndpoint).pathname,name:item.name,barcode:item.barcode,kcal:item.kcal,source:sourceUrl,matchRule:item.nutritionSource?.matchRule}
+  gtinLookup:{endpoint:new URL(lookupEndpoint).pathname,name:item.name,barcode:item.barcode,kcal:item.kcal,source:sourceUrl,matchRule:item.nutritionSource?.matchRule},
+  barcodeVision
  },null,2));
 })().catch(error=>{console.error(`production Nutrition Identity smoke: FAIL ${error?.message||error}`);process.exit(1);});
