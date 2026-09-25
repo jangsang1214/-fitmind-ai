@@ -1,0 +1,69 @@
+name: Measure Nutrition Identity Production
+
+on:
+  push:
+    branches:
+      - measure/nutrition-identity-real-usage-20260925
+    paths:
+      - .github/workflows/measure-nutrition-identity-production.yml
+      - scripts/measure-production-nutrition-identity.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out measurement branch
+        uses: actions/checkout@v7
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Validate WIF configuration
+        shell: bash
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "${WIF_PROVIDER:-}" || { echo "::error::Missing GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 2; }
+          test -n "${WIF_SERVICE_ACCOUNT:-}" || { echo "::error::Missing GCP_DEPLOY_SERVICE_ACCOUNT"; exit 3; }
+
+      - name: Authenticate with Google Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fitfind-ai
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Install Firebase Admin runtime
+        run: npm ci --prefix functions --omit=dev --no-audit --no-fund
+
+      - name: Aggregate production Food Identity state
+        id: measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd functions
+          node ../scripts/measure-production-nutrition-identity.cjs | tee "$RUNNER_TEMP/nutrition-identity-metrics.log"
+          line="$(grep '^GARANG_NUTRITION_IDENTITY_METRICS=' "$RUNNER_TEMP/nutrition-identity-metrics.log" | tail -1)"
+          test -n "$line" || { echo "::error::Aggregate metrics line missing"; exit 4; }
+          json="${line#GARANG_NUTRITION_IDENTITY_METRICS=}"
+          {
+            echo '### GARANG Nutrition Identity production aggregate'
+            echo
+            echo 'Aggregate-only; no user IDs, GTINs, product names, or raw records are emitted.'
+            echo
+            echo '```json'
+            echo "$json" | jq .
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
