@@ -1,5 +1,5 @@
 name: Production Coach Activation
-# Nutrition Identity live-smoke fixture integrity v2
+# Nutrition Identity live-smoke verified Wikimedia EAN fixture v3
 
 on:
   push:
@@ -197,13 +197,6 @@ jobs:
           npm run smoke:nutrition-lookup:prod
           echo "status=PASS" >> "$GITHUB_OUTPUT"
 
-      - name: Run authenticated live Nutrition Identity smoke
-        id: live_nutrition_identity_smoke
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run smoke:nutrition-identity:prod
-          echo "status=PASS" >> "$GITHUB_OUTPUT"
       - name: Run authenticated live Meal Scan smoke
         id: live_meal_scan_smoke
         shell: bash
@@ -226,6 +219,14 @@ jobs:
         run: |
           set -euo pipefail
           npm run smoke:coach:prod-write
+          echo "status=PASS" >> "$GITHUB_OUTPUT"
+
+      - name: Run authenticated live Nutrition Identity smoke
+        id: live_nutrition_identity_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run smoke:nutrition-identity:prod
           echo "status=PASS" >> "$GITHUB_OUTPUT"
 
       - name: Delete disposable Firebase smoke identity
