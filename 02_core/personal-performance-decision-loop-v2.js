@@ -7,7 +7,7 @@
 const VERSION='personal-performance-decision-loop-v2.0.0';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v),list=v=>Array.isArray(v)?v.filter(object):[],finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;},clean=v=>String(v??'').trim(),dateKey=v=>String(v||'').slice(0,10);
 function hash(value){let h=2166136261;for(const ch of String(value||'')){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
-function stableId(prefix,parts){const body=list(parts).map(clean).filter(Boolean).join('|');return body?`${prefix}_${hash(body)}`:null;}
+function stableId(prefix,parts){const body=(Array.isArray(parts)?parts:[]).map(clean).filter(Boolean).join('|');return body?`${prefix}_${hash(body)}`:null;}
 function goalClass(state){const raw=clean(state?.profile?.goal||state?.onboarding?.goal).toLowerCase();if(/근육|muscle|bulk|hypertrophy/.test(raw))return'muscle_gain';if(/체지방|감량|fat.?loss|weight.?loss|cut/.test(raw))return'fat_loss';if(/러닝|running|run/.test(raw))return'running_performance';if(/퍼포먼스|performance|strength|기록 향상/.test(raw))return'performance';return'maintenance';}
 function actionMeta(domain,action){const key=clean(action),table={
  protect_recovery_and_avoid_intensity_progression:{type:'recovery',intent:'protect_recovery',title:'오늘은 회복을 우선',summary:'강도를 올리지 말고 회복과 다음 세션 연결성을 지킵니다.',duration:30},
