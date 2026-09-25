@@ -21,5 +21,11 @@ assert.equal(Identity.upsertMapping([mapping],updated).length,1);
 assert.equal(Identity.upsertMapping([mapping],updated)[0].kcal,205);
 assert.deepEqual(Identity.queryNames({brand:'GARANG LABS',productName:'프로틴바'}),['GARANG LABS 프로틴바','프로틴바','GARANG LABS']);
 assert.ok(Identity.identityKey({brand:'GARANG LABS',productName:'프로틴바',reportNo:'2024-0417-36623'}).includes('garanglabs'));
+const reportRows=[
+ {food_id:'kfind-processed:A',name:'프로틴바',report_no:'2024-0417-36622'},
+ {food_id:'kfind-processed:B',name:'프로틴바',report_no:'2024-0417-36623'}
+];
+assert.equal(Identity.findReportNoMatch(reportRows,'2024041736623').food_id,'kfind-processed:B');
+assert.equal(Identity.findReportNoMatch(reportRows,'not-a-report'),null);
 
 console.log('food-identity-v1: PASS');

@@ -48,6 +48,7 @@ assert.match(app,/detectBarcodeLocally/);
 assert.match(app,/detectBarcodeWithVision/);
 assert.match(app,/rememberBarcodeMapping/);
 assert.match(app,/REPORT_NO_EXACT/);
+assert.match(app,/findReportNoMatch/,'Label product identity must use exact K-FIND report-number matching before fuzzy resolution');
 assert.match(app,/nutrition_barcode_mapping_confirmed/);
 assert.match(app,/food_identity_miss/);
 assert.match(app,/food_identity_correction/);
