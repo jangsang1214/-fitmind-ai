@@ -27,5 +27,7 @@ assert.match(nutritionIdentitySmoke,/pepsico\.info/);
 assert.match(nutritionIdentitySmoke,/commons\.wikimedia\.org\/wiki\/Special:Redirect\/file\/Ean13-Beispiel_k\.png/,'production barcode Vision smoke must use the verified Wikimedia EAN-13 image');
 assert.match(nutritionIdentitySmoke,/5903039449022/,'production barcode Vision smoke must pin the expected EAN-13 digits');
 assert.match(nutritionIdentitySmoke,/05903039449022/,'production barcode Vision smoke must pin the expected canonical GTIN-14');
+assert.match(nutritionIdentitySmoke,/BARCODE_SCAN_NO_VALID_GTIN/,'production barcode Vision smoke may only accept the explicit fail-closed no-valid-GTIN outcome');
+assert.match(nutritionIdentitySmoke,/fail_closed_no_valid_gtin/,'production smoke must report fail-closed Vision separately from exact GTIN lookup success');
 execFileSync(process.execPath,['--check',path.join(root,'scripts/verify-production-nutrition-identity.cjs')],{stdio:'pipe'});
 console.log('production-wif-auth-contract: PASS');
