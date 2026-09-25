@@ -53,7 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           cd functions
-          node ../scripts/measure-production-nutrition-identity.cjs | tee "$RUNNER_TEMP/nutrition-identity-metrics.log"
+          NODE_PATH="$PWD/node_modules" node ../scripts/measure-production-nutrition-identity.cjs | tee "$RUNNER_TEMP/nutrition-identity-metrics.log"
           line="$(grep '^GARANG_NUTRITION_IDENTITY_METRICS=' "$RUNNER_TEMP/nutrition-identity-metrics.log" | tail -1)"
           test -n "$line" || { echo "::error::Aggregate metrics line missing"; exit 4; }
           json="${line#GARANG_NUTRITION_IDENTITY_METRICS=}"
