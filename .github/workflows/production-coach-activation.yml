@@ -196,6 +196,13 @@ jobs:
           npm run smoke:nutrition-lookup:prod
           echo "status=PASS" >> "$GITHUB_OUTPUT"
 
+      - name: Run authenticated live Nutrition Identity smoke
+        id: live_nutrition_identity_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run smoke:nutrition-identity:prod
+          echo "status=PASS" >> "$GITHUB_OUTPUT"
       - name: Run authenticated live Meal Scan smoke
         id: live_meal_scan_smoke
         shell: bash
@@ -255,6 +262,7 @@ jobs:
             echo "- Repository revision: \`${GITHUB_SHA}\`"
             echo "- Firebase auth mode: \`${{ steps.auth.outputs.mode || 'unavailable' }}\`"
             echo "- Authenticated live smoke: \`${{ steps.live_smoke.outputs.status || 'NOT_REACHED' }}\`"
+            echo "- Authenticated Nutrition Identity smoke: \`${{ steps.live_nutrition_identity_smoke.outputs.status || 'NOT_REACHED' }}\`"
             echo "- Authenticated Meal Scan smoke: \`${{ steps.live_meal_scan_smoke.outputs.status || 'NOT_REACHED' }}\`"
             echo "- Authenticated nutrition lookup smoke: \`${{ steps.live_nutrition_lookup_smoke.outputs.status || 'NOT_REACHED' }}\`"
             echo "- Secret values were scoped to the minimum required steps and were not printed or persisted to repository files."
