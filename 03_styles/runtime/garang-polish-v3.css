@@ -478,7 +478,8 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-visual-revision="7.1"] .muscle-triceps,
 .muscle-map[data-muscle="core"] .g3-classical-model[data-garang-visual-revision="7.1"] .muscle-core,
 .muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7.1"] .muscle-legs{
-  opacity:.42!important;
+  opacity:.30!important;
+  stroke:none!important;
 }
 
 .g3-classical-model[data-garang-visual-revision="7.1"] .g71-overlay-mask{
