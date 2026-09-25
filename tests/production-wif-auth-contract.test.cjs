@@ -1,5 +1,5 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const workflow=fs.readFileSync(path.join(root,'.github/workflows/production-coach-activation.yml'),'utf8');
 const readiness=fs.readFileSync(path.join(root,'.github/workflows/production-wif-readiness.yml'),'utf8');
@@ -23,4 +23,5 @@ assert.match(nutritionIdentitySmoke,/mode:'barcode'/);
 assert.match(nutritionIdentitySmoke,/028400090896/);
 assert.match(nutritionIdentitySmoke,/barcode_source_backed/);
 assert.match(nutritionIdentitySmoke,/pepsico\.info/);
+execFileSync(process.execPath,['--check',path.join(root,'scripts/verify-production-nutrition-identity.cjs')],{stdio:'pipe'});
 console.log('production-wif-auth-contract: PASS');
