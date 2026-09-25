@@ -106,7 +106,7 @@
   s.profile=isObject(s.profile)?{...s.profile,name:String(s.profile.name||''),weight:weight(s.profile)}:null;
   if(s.profile){
    for(const k of ['bodyWeight','body_weight','체중'])delete s.profile[k];
-   for(const k of ['age','height','targetWeight','runningGoalKm'])s.profile[k]=numeric(s.profile[k]);
+   for(const k of ['age','height','targetWeight','runningGoalKm','calorieTarget','calorieTargetConfidence','proteinTarget'])s.profile[k]=numeric(s.profile[k]);
    if('gender' in s.profile)s.profile.gender=['male','female'].includes(s.profile.gender)?s.profile.gender:null;
    if('goal' in s.profile)s.profile.goal=String(s.profile.goal||'');
   }
