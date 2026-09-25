@@ -1,9 +1,11 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const workflow=fs.readFileSync(path.join(root,'.github/workflows/production-coach-activation.yml'),'utf8');
 const readiness=fs.readFileSync(path.join(root,'.github/workflows/production-wif-readiness.yml'),'utf8');
 const ignore=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+const nutritionIdentitySmoke=fs.readFileSync(path.join(root,'scripts/verify-production-nutrition-identity.cjs'),'utf8');
 assert.match(workflow,/id-token:\s*write/,'production activation must allow GitHub OIDC tokens');
 assert.match(workflow,/google-github-actions\/auth@v3/,'production activation must use Google WIF auth');
 assert.match(workflow,/GCP_WORKLOAD_IDENTITY_PROVIDER/);
@@ -13,4 +15,13 @@ assert.match(workflow,/requires Workload Identity Federation/,'explicit WIF acti
 assert.match(workflow,/Refusing long-lived credential fallback/,'WIF-required activation must not silently fall back to JSON credentials');
 assert.ok(workflow.indexOf('mode=wif-service-account') < workflow.indexOf('mode=adc-service-account-fitfind'),'WIF must be preferred over JSON key fallback');
 assert.match(ignore,/gha-creds-\*\.json/,'generated WIF credential files must never be committed');
+assert.equal(pkg.scripts['smoke:nutrition-identity:prod'],'node scripts/verify-production-nutrition-identity.cjs');
+assert.match(workflow,/Run authenticated live Nutrition Identity smoke/);
+assert.match(workflow,/npm run smoke:nutrition-identity:prod/);
+assert.match(workflow,/live_nutrition_identity_smoke\.outputs\.status/);
+assert.match(nutritionIdentitySmoke,/mode:'barcode'/);
+assert.match(nutritionIdentitySmoke,/028400090896/);
+assert.match(nutritionIdentitySmoke,/barcode_source_backed/);
+assert.match(nutritionIdentitySmoke,/pepsico\.info/);
+execFileSync(process.execPath,['--check',path.join(root,'scripts/verify-production-nutrition-identity.cjs')],{stdio:'pipe'});
 console.log('production-wif-auth-contract: PASS');
