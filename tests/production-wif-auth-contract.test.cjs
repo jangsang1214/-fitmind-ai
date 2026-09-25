@@ -29,5 +29,7 @@ assert.match(nutritionIdentitySmoke,/5903039449022/,'production barcode Vision s
 assert.match(nutritionIdentitySmoke,/05903039449022/,'production barcode Vision smoke must pin the expected canonical GTIN-14');
 assert.match(nutritionIdentitySmoke,/BARCODE_SCAN_NO_VALID_GTIN/,'production barcode Vision smoke may only accept the explicit fail-closed no-valid-GTIN outcome');
 assert.match(nutritionIdentitySmoke,/fail_closed_no_valid_gtin/,'production smoke must report fail-closed Vision separately from exact GTIN lookup success');
+assert.match(nutritionIdentitySmoke,/fail_closed_unresolved/,'production GTIN lookup smoke must accept only explicit unresolved fail-closed behavior when no trustworthy exact source exists');
+assert.match(nutritionIdentitySmoke,/NO_TRUSTWORTHY_SOURCE/,'production GTIN lookup smoke must pin the unresolved allowlist');
 execFileSync(process.execPath,['--check',path.join(root,'scripts/verify-production-nutrition-identity.cjs')],{stdio:'pipe'});
 console.log('production-wif-auth-contract: PASS');
