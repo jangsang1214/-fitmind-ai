@@ -20,7 +20,8 @@
     "preflight:meal-scan:prod-route": "node tests/meal-scan-production-route-health.test.cjs",
     "preflight:nutrition-lookup:prod-route": "node tests/nutrition-lookup-production-route-health.test.cjs",
     "smoke:meal-scan:prod": "node scripts/verify-production-meal-scan.cjs",
-    "smoke:nutrition-lookup:prod": "node scripts/verify-production-nutrition-lookup.cjs"
+    "smoke:nutrition-lookup:prod": "node scripts/verify-production-nutrition-lookup.cjs",
+    "smoke:nutrition-identity:prod": "node scripts/verify-production-nutrition-identity.cjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "3.0.3",
