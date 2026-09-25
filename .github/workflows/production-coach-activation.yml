@@ -1,5 +1,5 @@
 name: Production Coach Activation
-# Nutrition Identity exact-lookup plus fail-closed Vision contract v5
+# Nutrition Identity exact-or-fail-closed lookup and Vision contract v6
 
 on:
   push:
