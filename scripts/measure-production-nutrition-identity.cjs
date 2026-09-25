@@ -15,7 +15,7 @@ const pct=(a,b)=>b>0?Math.round((a/b)*1000)/10:null;
 
 (async()=>{
  const snap=await db.collectionGroup('app').get();
- let stateDocs=0,usersWithIdentity=0,usersWithMappings=0,usersWithMisses=0,usersWithCorrections=0;
+ let stateDocs=0,usersWithAnalyticsConsent=0,usersWithIdentity=0,usersWithMappings=0,usersWithMisses=0,usersWithCorrections=0;
  let mappings=0,mappingUseSum=0,misses=0,corrections=0,mealItems=0,itemsWithBarcode=0,itemsWithReportNo=0,identityMealItems=0;
  let mappings7=0,mappings30=0,misses7=0,misses30=0,corrections7=0,corrections30=0,identityItems7=0,identityItems30=0;
  const missesByKind={},missesByReason={},sources={};
@@ -23,6 +23,7 @@ const pct=(a,b)=>b>0?Math.round((a/b)*1000)/10:null;
    if(doc.id!=='state')continue;
    stateDocs++;
    const s=doc.data()||{},fi=s.foodIdentity&&typeof s.foodIdentity==='object'?s.foodIdentity:{};
+   if(s?.privacy?.consent?.analytics===true)usersWithAnalyticsConsent++;
    const bs=Array.isArray(fi.barcodes)?fi.barcodes:[],mi=Array.isArray(fi.misses)?fi.misses:[],co=Array.isArray(fi.corrections)?fi.corrections:[];
    if(bs.length||mi.length||co.length)usersWithIdentity++;
    if(bs.length)usersWithMappings++;if(mi.length)usersWithMisses++;if(co.length)usersWithCorrections++;
@@ -59,10 +60,14 @@ const pct=(a,b)=>b>0?Math.round((a/b)*1000)/10:null;
    }
  }
  const searchMisses=missesByKind.search||0,barcodeMisses=missesByKind.barcode||0;
+ const telemetrySnap=await db.collectionGroup('telemetry').get();
+ const telemetryEventNames={};let telemetryDocs=0,telemetryAnalyticsDocs=0,telemetryErrorDocs=0,telemetryEvents=0;
+ for(const doc of telemetrySnap.docs){const row=doc.data()||{};telemetryDocs++;if(row.kind==='analytics'){telemetryAnalyticsDocs++;for(const ev of Array.isArray(row.events)?row.events:[]){telemetryEvents++;inc(telemetryEventNames,ev?.name);}}else if(row.kind==='error')telemetryErrorDocs++;}
  const metrics={
    observedAt:new Date().toISOString(),
    scope:'aggregate production Firestore state only; no user IDs, GTINs, product names, or raw records emitted',
    stateDocs,
+   analytics:{usersWithConsent:usersWithAnalyticsConsent,telemetryDocs,telemetryAnalyticsDocs,telemetryErrorDocs,telemetryEvents,canonicalEventNames:telemetryEventNames},
    adoption:{usersWithIdentity,usersWithMappings,usersWithMisses,usersWithCorrections},
    cumulative:{
      confirmedBarcodeMappings:mappings,
