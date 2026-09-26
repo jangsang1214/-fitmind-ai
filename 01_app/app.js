@@ -529,12 +529,17 @@ function adaptiveNutritionCard(){
  const rangeText=range&&Number.isFinite(Number(range.low))&&Number.isFinite(Number(range.high))?`${Math.round(range.low)}–${Math.round(range.high)} kcal`:'—';
  return `<section class="card adaptive-nutrition-card" data-adaptive-nutrition="ready"><div class="visual-section-head"><div><span class="eyebrow">ADAPTIVE NUTRITION</span><h3>이번 목표 조정 제안</h3></div><span class="pill">CONFIDENCE ${Math.round(model.confidence*100)}%</span></div><div class="grid grid-3"><div><div class="stat">${maintenance||'—'}</div><div class="stat-label">유지 kcal 추정</div></div><div><div class="stat">${next}</div><div class="stat-label">제안 kcal / day</div></div><div><div class="stat">${delta>=0?'+':''}${delta}</div><div class="stat-label">현재 관찰 대비</div></div></div><p class="helper">최근 섭취량과 완만한 체중 추세를 21/28일 창으로 교차 확인했습니다. 유지 범위 ${rangeText}. 변경은 승인 후에만 적용됩니다.</p><div class="actions">${same?'<span class="pill">현재 목표로 적용 중</span>':`<button id="applyAdaptiveNutritionTarget" class="primary">이 목표 적용</button>`}${currentValid&&source==='adaptive_nutrition_learning_v1'?'<button id="resetAdaptiveNutritionTarget" class="ghost">기본 추정으로 복귀</button>':''}</div></section>`;
 }
-function applyAdaptiveNutritionTarget(){
- const model=adaptiveNutritionModel(),proposal=model?.recommendation?.targetProposal,age=Number(state.profile?.age),next=Math.round(Number(proposal?.proposedDailyKcal));
- if(!(proposal?.eligible===true&&model?.confidence>=.55&&Number.isFinite(next)&&next>=1000&&next<=5000&&Number.isFinite(age)&&age>=18))return toast('목표를 바꾸기에는 아직 근거가 충분하지 않습니다.');
+function commitAdaptiveNutritionTarget({model,proposal,linkage={}}={}){
+ const age=Number(state.profile?.age),next=Math.round(Number(proposal?.proposedDailyKcal));
+ if(!(proposal?.eligible===true&&model?.confidence>=.55&&Number.isFinite(next)&&next>=1000&&next<=5000&&Number.isFinite(age)&&age>=18))return {ok:false,reason:'INSUFFICIENT_EVIDENCE'};
  const previous=Number(state.profile?.calorieTarget);state.profile=state.profile||{};state.profile.calorieTarget=next;state.profile.calorieTargetConfidence=model.confidence;state.profile.calorieTargetSource='adaptive_nutrition_learning_v1';state.profile.calorieTargetUpdatedAt=isoNow();state.profile.calorieTargetMaintenanceEstimate=Math.round(Number(model.estimate?.estimatedMaintenanceKcal)||0);
- state.memory.events.push({type:'nutrition_target_applied',date:today(),text:`일일 칼로리 목표 ${next} kcal`,source:'adaptive_nutrition_learning_v1',previousTarget:Number.isFinite(previous)?Math.round(previous):null,confidence:model.confidence,maintenanceKcal:state.profile.calorieTargetMaintenanceEstimate});
- saveState({event:'nutrition_target_applied',source:'adaptive_nutrition'});toast(`일일 목표를 ${next} kcal로 적용했습니다.`);render();
+ state.memory.events.push({type:'nutrition_target_applied',date:today(),text:`일일 칼로리 목표 ${next} kcal`,source:'adaptive_nutrition_learning_v1',previousTarget:Number.isFinite(previous)?Math.round(previous):null,confidence:model.confidence,maintenanceKcal:state.profile.calorieTargetMaintenanceEstimate,...(linkage?.decisionId?{decisionId:linkage.decisionId}:{}),...(linkage?.recommendationId?{recommendationId:linkage.recommendationId}:{}),...(linkage?.experimentKey?{experimentKey:linkage.experimentKey}:{})});
+ return {ok:true,next,previousTarget:Number.isFinite(previous)?Math.round(previous):null};
+}
+function applyAdaptiveNutritionTarget(){
+ const model=adaptiveNutritionModel(),proposal=model?.recommendation?.targetProposal,applied=commitAdaptiveNutritionTarget({model,proposal});
+ if(!applied.ok)return toast('목표를 바꾸기에는 아직 근거가 충분하지 않습니다.');
+ saveState({event:'nutrition_target_applied',source:'adaptive_nutrition'});toast(`일일 목표를 ${applied.next} kcal로 적용했습니다.`);render();
 }
 function resetAdaptiveNutritionTarget(){
  if(String(state.profile?.calorieTargetSource||'')!=='adaptive_nutrition_learning_v1')return;
@@ -700,8 +705,13 @@ function currentGoalClass(){if(window.GarangPlanExecution?.goalClass)return wind
 function applyPerformanceDecision(){
  const loop=personalPerformanceDecisionLoop(),next=loop?.nextAction;if(!loop||!next)return toast('Decision Loop 근거를 아직 만들지 못했습니다.');if(loop.interaction?.status==='accepted')return toast('이미 오늘 Planner에 적용된 추천입니다.');
  const time=todayPlans()[0]?.time||'18:30';if(!window.confirm(`오늘 ${time}에 “${next.title}” 행동을 적용할까요?\n\n${next.summary}`))return;
+ if(next.intent==='adaptive_energy_target'){
+  const model=adaptiveNutritionModel(),proposal=model?.recommendation?.targetProposal,proposalKcal=Math.round(Number(proposal?.proposedDailyKcal)),recommendedKcal=Math.round(num(next.targetKcal));
+  if(!Number.isFinite(proposalKcal)||proposalKcal!==recommendedKcal)return toast('영양 목표 근거가 변경됐습니다. 추천을 다시 확인해 주세요.');
+  const applied=commitAdaptiveNutritionTarget({model,proposal,linkage:{decisionId:loop.decisionId,recommendationId:loop.recommendationId,experimentKey:loop.experimentKey}});
+  if(!applied.ok)return toast('영양 목표를 적용하기에는 근거가 충분하지 않습니다.');
+ }
  const p={id:uid(),date:today(),time,type:next.type||'workout',domain:next.domain||null,title:next.title,source:'ai',status:'confirmed',completed:false,reason:next.summary,goalClass:currentGoalClass(),goalLabel:currentGoalLabel(),decisionId:loop.decisionId,decisionMode:'personal_performance_v2',recommendationId:loop.recommendationId,recommendationRevision:1,experimentKey:loop.experimentKey,decisionConfidence:loop.confidence,createdAt:isoNow(),updatedAt:isoNow()};
- if(next.intent==='adaptive_energy_target'&&num(next.targetKcal)>0){state.profile={...(state.profile||{}),calorieTarget:Math.round(num(next.targetKcal)),calorieTargetConfidence:loop.confidence,calorieTargetSource:'personal_performance_decision_loop_v2',calorieTargetUpdatedAt:isoNow()};}
  state.planner.push(p);state.actionLog.push({id:uid(),event:'recommendation_accepted',action:'performance_decision_accepted',decisionId:loop.decisionId,recommendationId:loop.recommendationId,experimentKey:loop.experimentKey,userConfirmed:true,args:{date:today(),planIds:[p.id],decisionId:loop.decisionId,decisionMode:'personal_performance_v2',recommendationId:loop.recommendationId,recommendationRevision:1,experimentKey:loop.experimentKey},at:isoNow()});state.actionLog=state.actionLog.slice(-300);saveState({event:'performance_decision_accepted',source:'decision_loop_v2'});trackEvent('performance_decision_response',{response:'accepted',domain:next.domain,intent:next.intent},true);toast('추천을 Planner에 연결했습니다. 실행 결과까지 학습합니다.');render();
 }
 function modifyPerformanceDecision(){const loop=personalPerformanceDecisionLoop(),next=loop?.nextAction;if(!loop||!next)return;state.actionLog.push({id:uid(),event:'recommendation_modified',action:'performance_decision_modified',decisionId:loop.decisionId,recommendationId:loop.recommendationId,experimentKey:loop.experimentKey,userConfirmed:true,at:isoNow()});state.actionLog=state.actionLog.slice(-300);saveState({event:'performance_decision_modified',source:'decision_loop_v2'});navigatePage('coach','performance-decision-modify');requestAnimationFrame(()=>{const q=$('aiQuestion');if(q){q.value=`이 추천을 내 상황에 맞게 수정해줘: ${next.title} — ${next.summary}`;q.dispatchEvent(new Event('input',{bubbles:true}));q.focus();}});}
