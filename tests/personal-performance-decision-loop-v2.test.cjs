@@ -64,6 +64,11 @@ assert.match(app,/recommendation_modified/);
 assert.match(app,/recommendation_rejected/);
 assert.match(app,/Personal Experiments/);
 assert.match(app,/개인 실험은 관찰적 패턴/);
+assert.match(app,/function commitAdaptiveNutritionTarget/);
+assert.match(app,/calorieTargetSource='adaptive_nutrition_learning_v1'/);
+assert.doesNotMatch(app,/calorieTargetSource:'personal_performance_decision_loop_v2'/);
+assert.match(app,/commitAdaptiveNutritionTarget\(\{model,proposal,linkage:\{decisionId:loop\.decisionId,recommendationId:loop\.recommendationId,experimentKey:loop\.experimentKey\}\}\)/);
+assert.match(app,/영양 목표 근거가 변경됐습니다/);
 
 const bridge=fs.readFileSync(path.resolve(__dirname,'../06_features/final/intelligence-state-bridge-v1.js'),'utf8');
 assert.match(bridge,/decisionLoopReady/);
