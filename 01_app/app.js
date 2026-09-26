@@ -190,7 +190,7 @@ async function cloudLoadAndMerge(){
 }
 
 function captureError(type,e){try{state.errors=Array.isArray(state.errors)?state.errors:[];state.errors.push({id:uid(),type,message:String(e?.message||e||'unknown'),code:e?.code||null,at:isoNow()});if(state.errors.length>100)state.errors=state.errors.slice(-100);localStorage.setItem(storageKey,JSON.stringify(state));}catch{}}
-function trackEvent(name,props={},persist=true){try{state.analytics.events.push({id:uid(),name,props,at:isoNow()});if(state.analytics.events.length>500)state.analytics.events=state.analytics.events.slice(-500);if(persist)writeLocal();if(SERVICES.analyticsEndpoint)fetch(SERVICES.analyticsEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,props,at:isoNow(),userId:currentUser?.uid||null})}).catch(()=>{});}catch{}}
+function trackEvent(name,props={},persist=true){try{state.analytics.events.push({id:uid(),name,props,at:isoNow()});if(state.analytics.events.length>500)state.analytics.events=state.analytics.events.slice(-500);if(persist)writeLocal();if(SERVICES.analyticsEndpoint&&state.privacy?.consent?.analytics===true)fetch(SERVICES.analyticsEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,props,at:isoNow(),userId:currentUser?.uid||null})}).catch(()=>{});}catch{}}
 function syncStateFromAgent(){try{const bridge=window.GarangAgentStateBridge;if(!bridge?.ready?.())return;const live=bridge.getLiveState?.();if(live)state=live;}catch{}}
 window.addEventListener('garang:agent-write',syncStateFromAgent);
 window.addEventListener('error',e=>captureError('frontend_error',e.error||e.message));window.addEventListener('unhandledrejection',e=>captureError('unhandled_rejection',e.reason));
