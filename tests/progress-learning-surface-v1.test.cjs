@@ -8,9 +8,9 @@ assert.match(app,/getUserPerformanceModel/,'Progress must read the User Performa
 assert.match(app,/getWeeklyReview/,'Progress must read outcome-aware weekly review evidence');
 assert.match(app,/getRunningPerformance/,'Progress must read longitudinal Running Performance intelligence');
 assert.match(app,/getPersonalPerformance/,'Progress must read unified Personal Performance intelligence');
-assert.match(app,/Personal Performance/,'Progress must surface one cross-domain performance focus');
-assert.match(app,/러닝 28일/,'Progress must expose a restrained running trend summary');
+assert.match(app,/배운 것/,'Progress must surface one cross-domain learning focus without technical product jargon');
+assert.match(app,/러닝 근거/,'Progress must expose running evidence through progressive disclosure');
 assert.match(app,/GARANG이 배운 것/,'Progress must explain accumulated learning to the user');
-assert.match(app,/추천 → 사용자 반응 → 실행 → 결과/,'Progress must expose the closed intelligence loop');
-assert.match(app,/자동 증량이나 무단 변경은 하지 않습니다/,'Progress must keep the no-silent-mutation guardrail visible');
+assert.match(app,/추천 → 반응 → 실행 → 결과/,'Progress must expose the closed intelligence loop');
+assert.match(app,/자동 증량이나 무단 변경에 사용하지 않습니다/,'Progress must keep the no-silent-mutation guardrail visible');
 console.log('progress-learning-surface-v1: PASS');
