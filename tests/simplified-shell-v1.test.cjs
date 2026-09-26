@@ -45,7 +45,7 @@ assert.match(recovery,/const route=b\.dataset\.route;if\(!navigateAny\(route\)\)
 assert.match(router,/let ok=callBound\(bottomTarget\(next\)\)[\s\S]*if\(cleanup\)removeTransient\(\);/,'Router must render the requested screen before removing the active More sheet');
 assert.doesNotMatch(recovery,/proxy\.dataset\.page=page|proxy\.click\(\)/,'functional recovery must not synthesize navigation through a Bottom Nav proxy');
 assert.doesNotMatch(runtime,/localStorage\.|firebase\.|firestore|saveState\(|state\.[a-zA-Z]+\s*=/,'simplified shell must not write user data');
-assert.match(router,/VERSION='garang-router-v1\.3\.0'/,'canonical router must use the single app-bridge version');
+assert.match(router,/VERSION='garang-router-v1\.3\.1-touch-intent'/,'canonical router must use the touch-intent app-bridge version');
 assert.doesNotMatch(router,/function viaMenu\(|ok=viaMenu/,'Router must not reopen More as a hidden navigation dependency');
 assert.match(router,/function callAppBridge\(route\)/,'Router must delegate non-primary features through one app-bound bridge');
 assert.match(router,/bridge\.dataset\.page=route[\s\S]*finally\{bridge\.dataset\.page=previous\|\|'__bridge'/,'app bridge must restore its inert route after every navigation');
@@ -74,7 +74,7 @@ assert.match(html,/garang-experience-v4\.js\?v=1\.7\.0-essential-first/,'Experie
 assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.1\.4-explicit-boot-lifecycle/,'Today Next Action must ship as an explicit parser-owned lifecycle runtime');
 assert.match(html,/garang-golden-path-v1\.js\?v=1\.0\.3-single-visible-owner/,'Golden Path UI cache key must ship the single visible next-action owner contract');
 assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.4-explicit-boot-owner/,'Simplified Shell runtime cache key must ship explicit boot ownership');
-assert.match(html,/garang-router-v1\.js\?v=1\.3\.0/,'router cache key must match the single app-bridge implementation');
+assert.match(html,/garang-router-v1\.js\?v=1\.3\.1-touch-intent/,'router cache key must match the touch-intent app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
 assert.deepEqual(primary,['today','log','coach','progress'],'only Today, Record, Coach and Accumulation may be visible first-level navigation');

@@ -117,9 +117,11 @@ function syncPromptStrip(root){
  let strip=composerWrap.querySelector('.g4-prompt-strip');if(!strip){strip=document.createElement('div');strip.className='g4-prompt-strip';composerWrap.insertBefore(strip,composer);}if(strip.nextElementSibling!==composer)composerWrap.insertBefore(strip,composer);
  strip.dataset.garangPromptOwner='coach-agent-v4';strip.dataset.garangPersistent='1';
  const placeholder=english()?'Message GARANG':'GARANG에게 메시지 보내기';if(input.placeholder!==placeholder)input.placeholder=placeholder;if(input.getAttribute('aria-label')!==placeholder)input.setAttribute('aria-label',placeholder);
- const wanted=promptSignature();if(currentPromptSignature(strip)===wanted)return;
- const isEn=english();strip.innerHTML=PROMPTS.map(item=>`<button type="button" data-g4-prompt="${esc(isEn?item.enPrompt:item.koPrompt)}" data-garang-canonical-prompt="${esc(item.koPrompt)}" data-garang-prompt-id="${item.id}">${esc(isEn?item.enLabel:item.koLabel)}</button>`).join('');strip.dataset.garangPromptSignature=wanted;
+ const wanted=promptSignature();if(currentPromptSignature(strip)===wanted){try{window.dispatchEvent(new CustomEvent('garang:coach-prompt-strip-ready',{detail:{root,strip}}));}catch{}return;}
+ const contextActions=Array.from(strip.children).find(child=>child.hasAttribute?.('data-gcl-coach-actions'))||null;
+ const isEn=english();strip.innerHTML=PROMPTS.map(item=>`<button type="button" data-g4-prompt="${esc(isEn?item.enPrompt:item.koPrompt)}" data-garang-canonical-prompt="${esc(item.koPrompt)}" data-garang-prompt-id="${item.id}">${esc(isEn?item.enLabel:item.koLabel)}</button>`).join('');if(contextActions)strip.appendChild(contextActions);strip.dataset.garangPromptSignature=wanted;
  strip.querySelectorAll('[data-garang-canonical-prompt]').forEach(button=>{button.onclick=()=>submitPrompt(root,input,button.dataset.garangCanonicalPrompt||'');});
+ try{window.dispatchEvent(new CustomEvent('garang:coach-prompt-strip-ready',{detail:{root,strip}}));}catch{}
 }
 function syncProposalLanguage(root){root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(message=>{const entries=sessionsByMessage.get(message.dataset.messageId);if(entries)entries.forEach(entry=>renderProposalCard(message,entry));});}
 function syncRoot(root){if(root!==activeRoot||!root.isConnected)return;syncPromptStrip(root);repairMessageLanguage(root);syncProposalLanguage(root);root.querySelectorAll('.g2-message.assistant[data-message-id]').forEach(processAssistant);}

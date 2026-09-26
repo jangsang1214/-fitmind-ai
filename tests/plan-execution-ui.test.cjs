@@ -124,7 +124,7 @@ test('planner week strip is ordered Monday through Sunday',()=>{
 test('cache keys identify the truth-surface release',()=>{
   assert.match(index,/garang-plan-execution-v1\.css\?v=1\.1\.0-truth-surface/);
   assert.match(index,/garang-plan-execution-ui-v1\.js\?v=1\.1\.1-golden-path/);
-  assert.match(index,/garang-core-loop-v1\.js\?v=1\.1\.2-quiet-actions/);
+  assert.match(index,/garang-core-loop-v1\.js\?v=1\.1\.3-coach-handshake/);
 });
 
 console.log(`${tests.length} plan execution UI tests passed`);
