@@ -6,7 +6,7 @@
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.3.0';
+const VERSION='garang-router-v1.3.1-touch-intent';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
@@ -77,7 +77,10 @@ function navigate(route,{source='runtime',force=false,cleanup=true}={}){
 */
 let touchIntent=null;
 function touchRouteTarget(target){
-  const el=target?.closest?.('[data-gtf-route],[data-garang-record-route]');if(!el)return null;
+  const el=target?.closest?.('[data-gtf-route],[data-garang-record-route],[data-gsn-action]');if(!el)return null;
+  const canonicalAction=normalize(el.dataset.gsnAction);
+  if(canonicalAction==='coach')return'coach';
+  if(canonicalAction==='accumulation')return'progress';
   const route=normalize(el.dataset.gtfRoute||el.dataset.garangRecordRoute);return valid(route)?route:null;
 }
 document.addEventListener('pointerdown',event=>{
