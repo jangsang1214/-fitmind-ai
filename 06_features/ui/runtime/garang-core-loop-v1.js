@@ -158,7 +158,7 @@ function mount(root){
     const coach=event.target.closest?.('[data-gcl-coach]');
     if(coach){const host=coach.closest('[data-gcl-coach-actions]'),action=host?._gclActions?.[Number(coach.dataset.gclCoach)];if(!action)return;event.preventDefault();const input=main.querySelector('.g2-composer textarea,#aiQuestion,.gpt-composer textarea'),send=main.querySelector('.g2-send,#askAI,.gpt-send');if(input&&send){input.value=action.prompt;input.dispatchEvent(new Event('input',{bubbles:true}));if(typeof send.onclick==='function')send.onclick.call(send,{type:'garang-context-action',target:send,currentTarget:send,preventDefault(){},stopPropagation(){}});else send.click();}return;}
   },true);
-  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:agent-proposal-resolved','garang:record-sheet-opened','garang:goal-alignment-ready'])root.addEventListener(name,schedule);
+  for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:agent-proposal-resolved','garang:record-sheet-opened','garang:goal-alignment-ready','garang:coach-prompt-strip-ready'])root.addEventListener(name,schedule);
   doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);
   schedule();return true;
 }
