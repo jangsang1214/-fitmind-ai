@@ -30,6 +30,7 @@ assert.match(app,/event:'onboarding_completed'/);
 assert.match(app,/trackEvent\('screen_viewed'/);
 assert.match(app,/privacy:\{consent:\{analytics:false\}\}/,'analytics consent must default to false in canonical user state');
 assert.match(app,/analyticsConsentSetting/,'Settings must expose an explicit analytics consent control');
+assert.match(app,/SERVICES\.analyticsEndpoint&&state\.privacy\?\.consent\?\.analytics===true/,'remote analytics must require explicit in-app consent');
 assert.match(app,/delete out\.analytics;delete out\.errors/,'analytics and local error logs must not piggyback on general Cloud Sync');
 assert.match(app,/FIRST_RECORD_EVENT_TYPES/);
 assert.match(app,/trackEvent\('first_record_created',\{recordType,source\},true\)/,'first record must be emitted exactly through the guarded first-record path');
