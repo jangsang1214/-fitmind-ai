@@ -1,6 +1,6 @@
 
 'use strict';
-const VERSION='physiological-signal-intelligence-v1.1.0-freshness-fusion';
+const VERSION='physiological-signal-intelligence-v1.2.0-recovery-persistence';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v),list=v=>Array.isArray(v)?v.filter(object):[],finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;},mean=v=>{const x=v.filter(Number.isFinite);return x.length?x.reduce((a,b)=>a+b,0)/x.length:null;};
 const DAY=86400000,HOUR=3600000;
 function ts(v){const t=Date.parse(String(v||''));return Number.isFinite(t)?t:null;}
@@ -42,6 +42,32 @@ function metricScore(key,value,base){
  if(key==='stressScore')return value<=5?clamp((5-value)/4*100,0,100):clamp(100-value,0,100);
  return null;
 }
+function dailyRecoverySnapshot(rows,date,endMs){
+ const coreMetrics=['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore'],weights={hrvMs:.25,restingHeartRateBpm:.25,sleepHours:.2,sleepScore:.15,stressScore:.15},dayRows=rows.filter(row=>row.date===date),components=[],reasons=[];
+ for(const key of coreMetrics){
+  let latest=null,latestMs=null;
+  for(const row of dayRows){const value=finite(row[key]),t=ts(row.capturedAt||row.date);if(value===null||t===null||t>endMs)continue;if(latestMs===null||t>latestMs){latest=row;latestMs=t;}}
+  if(!latest)continue;
+  const value=finite(latest[key]),base=baselineForMetric(rows,key,{capturedAt:latest.capturedAt||latest.date},endMs),score=metricScore(key,value,base);
+  if(score!==null)components.push({key,score,weight:weights[key]||.1});
+  const b=base?.median??base?.mean;
+  if(key==='hrvMs'&&value!==null&&b>0&&value/b<.8)reasons.push('HRV_BELOW_RECENT_BASELINE');
+  if(key==='restingHeartRateBpm'&&value!==null&&b>0&&value-b>=5)reasons.push('RHR_ABOVE_RECENT_BASELINE');
+  if(key==='sleepHours'&&value!==null&&value<6)reasons.push('SHORT_SLEEP_SIGNAL');
+  if(key==='sleepScore'&&value!==null&&value<60)reasons.push('LOW_SLEEP_SCORE');
+  if(key==='stressScore'&&value!==null&&((value<=5&&value>=4)||(value>5&&value>=70)))reasons.push('ELEVATED_STRESS_SIGNAL');
+ }
+ const den=components.reduce((s,x)=>s+x.weight,0),readinessScore=components.length>=2&&den>0?round(components.reduce((s,x)=>s+x.score*x.weight,0)/den,0):null,redFlags=reasons.length,recoveryConstraint=readinessScore===null?'unknown':readinessScore<45||redFlags>=2?'protect':readinessScore<65||redFlags===1?'guarded':'normal';
+ return {date,readinessScore,recoveryConstraint,componentCount:components.length,reasonCodes:[...new Set(reasons)]};
+}
+function recoveryPersistence(rows,nowMs,windowDays=3){
+ const d=new Date(nowMs),days=Math.max(2,Math.min(7,Number(windowDays)||3)),snapshots=[];
+ for(let offset=days-1;offset>=0;offset--){const start=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-offset),date=new Date(start).toISOString().slice(0,10);snapshots.push(dailyRecoverySnapshot(rows,date,start+DAY-1));}
+ const evaluated=snapshots.filter(x=>x.readinessScore!==null);let consecutive=0;
+ for(let i=snapshots.length-1;i>=0;i--){const level=snapshots[i].recoveryConstraint;if(level==='guarded'||level==='protect')consecutive++;else break;}
+ const constrained=evaluated.filter(x=>x.recoveryConstraint==='guarded'||x.recoveryConstraint==='protect').length,status=evaluated.length<2?'insufficient':consecutive>=2?'persistent_strain':consecutive===1?'recent_strain':'stable';
+ return {windowDays:days,evaluatedDays:evaluated.length,constrainedDays:constrained,consecutiveConstrainedDays:consecutive,status,days:snapshots};
+}
 function build(stateInput={},options={}){
  const state=object(stateInput)?stateInput:{},now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),nowMs=now.getTime();
  const all=sourceRows(state).map(normalize).filter(x=>x.capturedAt||x.date).filter(x=>{const t=ts(x.capturedAt||x.date);return t!==null&&t<=nowMs;}).sort((a,b)=>(ts(a.capturedAt||a.date)||0)-(ts(b.capturedAt||b.date)||0));
@@ -68,13 +94,14 @@ function build(stateInput={},options={}){
  const confidence=round(clamp(coreCoverage*.25+freshCoverage*.2+dayCoverage*.2+baselineSupport*.2+agreement*.15,0,1),2);
  const redFlags=reasons.filter(x=>['HRV_BELOW_RECENT_BASELINE','RHR_ABOVE_RECENT_BASELINE','SHORT_SLEEP_SIGNAL','LOW_SLEEP_SCORE','ELEVATED_STRESS_SIGNAL'].includes(x)).length;
  const readinessBand=readinessScore===null?'unknown':readinessScore<45?'low':readinessScore<65?'guarded':readinessScore<80?'ready':'high';
- const recoveryConstraint=readinessScore===null?'unknown':readinessScore<45||redFlags>=2?'protect':readinessScore<65||redFlags===1?'guarded':'normal';
+ const recoveryConstraint=readinessScore===null?'unknown':readinessScore<45||redFlags>=2?'protect':readinessScore<65||redFlags===1?'guarded':'normal',persistence=recoveryPersistence(all,nowMs,3);
+ if(persistence.status==='persistent_strain')reasons.push('PERSISTENT_RECOVERY_STRAIN');
  const quality=readinessScore!==null&&confidence>=.75&&components.length>=3&&days.size>=5?'strong':readinessScore!==null&&confidence>=.4&&components.length>=2?'usable':'insufficient';
  const latestMap=Object.fromEntries(metrics.map(key=>[key,metricLatest[key]?{value:metricLatest[key].value,capturedAt:metricLatest[key].capturedAt,date:metricLatest[key].date,source:metricLatest[key].source,ageHours:metricLatest[key].ageHours}:null]));
  const componentMap=Object.fromEntries(components.map(x=>[x.key,{value:x.value,score:x.score,ageHours:x.ageHours,freshness:round(x.freshness,2),source:x.source}]));
- return Object.freeze({version:VERSION,asOf:now.toISOString(),quality,confidence,sourceCount:new Set(recent.map(x=>x.source)).size,recentDays:days.size,latest:latest?Object.freeze(latest):null,metricLatest:Object.freeze(latestMap),baselines:Object.freeze(baselines),derived:Object.freeze({readinessScore,readinessBand,recoveryConstraint,signalAgreement:agreement,componentCount:components.length,components:Object.freeze(componentMap),reasonCodes:Object.freeze([...new Set(reasons)])}),guardrails:Object.freeze({optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true})});
+ return Object.freeze({version:VERSION,asOf:now.toISOString(),quality,confidence,sourceCount:new Set(recent.map(x=>x.source)).size,recentDays:days.size,latest:latest?Object.freeze(latest):null,metricLatest:Object.freeze(latestMap),baselines:Object.freeze(baselines),derived:Object.freeze({readinessScore,readinessBand,recoveryConstraint,signalAgreement:agreement,componentCount:components.length,components:Object.freeze(componentMap),recoveryPersistence:Object.freeze({...persistence,days:Object.freeze(persistence.days.map(x=>Object.freeze({...x,reasonCodes:Object.freeze(x.reasonCodes)})))}),reasonCodes:Object.freeze([...new Set(reasons)])}),guardrails:Object.freeze({optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true,multiDayRecoveryPersistence:true,persistenceDescriptiveOnly:true,persistenceDoesNotAutoEscalate:true})});
 }
-function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),quality:String(v.quality||'insufficient'),confidence:finite(v.confidence)??0,sourceCount:Number(v.sourceCount)||0,recentDays:Number(v.recentDays)||0,latest:object(v.latest)?v.latest:null,metricLatest:object(v.metricLatest)?v.metricLatest:{},baselines:object(v.baselines)?v.baselines:{},derived:object(v.derived)?v.derived:{readinessScore:null,readinessBand:'unknown',recoveryConstraint:'unknown',reasonCodes:[]},guardrails:{optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true}};}
-const API=Object.freeze({VERSION,normalize,build,compactForContext,latestMetric,baselineForMetric});
+function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),quality:String(v.quality||'insufficient'),confidence:finite(v.confidence)??0,sourceCount:Number(v.sourceCount)||0,recentDays:Number(v.recentDays)||0,latest:object(v.latest)?v.latest:null,metricLatest:object(v.metricLatest)?v.metricLatest:{},baselines:object(v.baselines)?v.baselines:{},derived:object(v.derived)?v.derived:{readinessScore:null,readinessBand:'unknown',recoveryConstraint:'unknown',reasonCodes:[]},guardrails:{optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true,multiDayRecoveryPersistence:true,persistenceDescriptiveOnly:true,persistenceDoesNotAutoEscalate:true}};}
+const API=Object.freeze({VERSION,normalize,build,compactForContext,latestMetric,baselineForMetric,recoveryPersistence});
 
 module.exports=API;
