@@ -13,6 +13,9 @@ assert.match(app,/function recentReusableMeals\(limit=3\)/,'Nutrition must expos
 assert.match(app,/data-repeat-meal=/,'recent meals must be reusable from the Nutrition surface');
 assert.match(app,/function reuseMealToDraft\(mealId\)/,'recent meal reuse must route through a draft-only helper');
 assert.match(app,/mealDraft\.push\(\.\.\.rows\)/,'recent meal reuse must add to the editable draft rather than silently saving');
+assert.match(app,/secondaryToday=secondaryNutrientSummary\(dayMeals\(\)\.flatMap/,'Nutrition summary must derive secondary nutrients from actual saved meal items');
+assert.match(app,/fiberToday!==null\|\|sodiumToday!==null/,'Nutrition summary must only surface observed secondary nutrients');
+assert.match(app,/보조 영양소는 출처 값이 모두 있는 항목만 합산/,'Nutrition summary must disclose complete-coverage-only semantics');
 assert.match(app,/normalizeMealItem\(\{\.\.\.item,id:uid\(\)\}\)/,'recent meal reuse must preserve nutrient lineage while generating fresh item ids');
 assert.doesNotMatch(app,/state\.meals\.push\(meal\).*nutrition_recent_meal_reused/s,'recent meal reuse must not silently persist a new meal');
 
