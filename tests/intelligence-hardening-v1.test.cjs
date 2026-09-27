@@ -58,7 +58,7 @@ test('workout prescription uses RIR e1RM and failure signals while remaining con
   {date:'2026-09-08',name:'스쿼트',setDetails:[{weight:100,reps:6,rpe:7.5,rir:2.5},{weight:100,reps:6,rpe:7.5,rir:2.5},{weight:100,reps:6,rpe:7.5,rir:2.5}]},
   {date:'2026-09-15',name:'스쿼트',setDetails:[{weight:102.5,reps:6,rpe:7.5,rir:2},{weight:102.5,reps:6,rpe:7.5,rir:2},{weight:102.5,reps:6,rpe:7.5,rir:2}]}
  ],dailyCheckins:[{date:'2026-09-24',sleepHours:8,energy:5,stress:1,soreness:1}]};
- const a=Workout.build(state,{asOf:'2026-09-24'}),b=BrowserWorkout.build(state,{asOf:'2026-09-24'});assert.deepEqual(a,b);assert.equal(a.version,'workout-prescription-shadow-v1.2.0');assert.equal(a.exercises[0].prescription.action,'review_progression');assert.ok(a.exercises[0].observed.e1rmTrend>=.98);assert.ok(a.exercises[0].prescription.recommended.weight>a.exercises[0].observed.latest.weight);assert.equal(a.exercises[0].prescription.requiresConfirmation,true);
+ const a=Workout.build(state,{asOf:'2026-09-24'}),b=BrowserWorkout.build(state,{asOf:'2026-09-24'});assert.deepEqual(a,b);assert.equal(a.version,'workout-prescription-shadow-v1.3.0-physio-recovery');assert.equal(a.exercises[0].prescription.action,'review_progression');assert.ok(a.exercises[0].observed.e1rmTrend>=.98);assert.ok(a.exercises[0].prescription.recommended.weight>a.exercises[0].observed.latest.weight);assert.equal(a.exercises[0].prescription.requiresConfirmation,true);
  const fail={workouts:[...state.workouts,{date:'2026-09-23',name:'스쿼트',setDetails:[{weight:110,reps:3,rpe:10,rir:0,setType:'failure'}]}],dailyCheckins:state.dailyCheckins},f=Workout.build(fail,{asOf:'2026-09-24'});assert.equal(f.exercises[0].prescription.action,'reduce');assert.ok(f.exercises[0].prescription.recommended.weight<110);
 });
 
