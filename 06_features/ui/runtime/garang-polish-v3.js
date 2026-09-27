@@ -269,14 +269,61 @@
       </g>`;
   }
 
+  function v72MuscleTextureMarkup(side='front',gender='male'){
+    if(gender!=='male')return '';
+    if(side==='back')return `<g class="g72-volume-layer" data-garang-volume-layer="v7.2">
+      <path class="g72-volume g72-shadow" d="M326 262 C340 250 350 247 360 248 C370 247 380 250 394 262 L418 315 C400 330 381 338 360 339 C339 338 320 330 302 315 Z M250 360 C276 338 304 348 324 381 C311 417 299 458 294 507 C269 494 246 470 232 435 Z M470 360 C444 338 416 348 396 381 C409 417 421 458 426 507 C451 494 474 470 488 435 Z"/>
+      <path class="g72-volume g72-highlight" d="M313 282 C328 264 343 258 358 258 C350 287 344 314 342 337 C325 329 315 311 313 282 Z M407 282 C392 264 377 258 362 258 C370 287 376 314 378 337 C395 329 405 311 407 282 Z M264 380 C284 362 304 366 316 393 C307 424 300 450 298 474 C280 463 268 432 264 380 Z M456 380 C436 362 416 366 404 393 C413 424 420 450 422 474 C440 463 452 432 456 380 Z"/>
+      <path class="g72-volume g72-shadow g72-deep" d="M286 660 C308 640 330 650 344 688 C337 727 325 757 306 780 C288 765 275 724 274 681 Z M434 660 C412 640 390 650 376 688 C383 727 395 757 414 780 C432 765 445 724 446 681 Z M268 824 C286 811 302 827 307 858 C304 900 296 943 284 978 C271 957 265 905 268 824 Z M452 824 C434 811 418 827 413 858 C416 900 424 943 436 978 C449 957 455 905 452 824 Z"/>
+      <g class="g72-fiber-layer">
+        <path class="g72-fiber strong" d="M360 265 L360 330 M327 283 C338 298 346 314 350 332 M393 283 C382 298 374 314 370 332"/>
+        <path class="g72-fiber" d="M250 385 C276 396 296 412 310 434 M244 414 C270 424 289 440 303 461 M470 385 C444 396 424 412 410 434 M476 414 C450 424 431 440 417 461"/>
+        <path class="g72-fiber strong" d="M286 667 C307 695 318 731 316 770 M434 667 C413 695 402 731 404 770"/>
+        <path class="g72-fiber" d="M272 837 C290 875 291 921 281 963 M448 837 C430 875 429 921 439 963"/>
+      </g>
+    </g>`;
+    if(side==='side')return `<g class="g72-volume-layer" data-garang-volume-layer="v7.2">
+      <path class="g72-volume g72-shadow" d="M308 246 C342 226 381 238 404 280 C391 302 367 314 337 309 C316 296 306 274 308 246 Z M338 317 C372 304 402 323 414 358 C411 385 402 405 388 422 C361 409 344 377 338 317 Z M385 362 C410 373 421 405 414 449 C407 475 397 493 384 504 C372 474 371 416 385 362 Z"/>
+      <path class="g72-volume g72-highlight" d="M325 251 C349 239 374 246 391 272 C378 287 360 294 341 289 C328 281 322 268 325 251 Z M354 326 C378 320 397 335 402 360 C397 380 390 394 381 405 C362 391 353 365 354 326 Z"/>
+      <path class="g72-volume g72-shadow g72-deep" d="M286 652 C319 630 348 647 358 697 C350 747 338 790 322 821 C297 797 284 735 286 652 Z M277 833 C298 817 315 840 317 875 C313 920 306 962 294 995 C279 973 272 918 277 833 Z"/>
+      <g class="g72-fiber-layer">
+        <path class="g72-fiber strong" d="M323 260 C346 264 365 275 381 292 M354 335 C377 342 390 358 396 380"/>
+        <path class="g72-fiber" d="M391 374 C402 402 401 439 390 472 M304 455 C324 487 327 531 316 572"/>
+        <path class="g72-fiber strong" d="M298 669 C324 706 331 754 320 803"/>
+        <path class="g72-fiber" d="M286 846 C301 885 301 931 292 975"/>
+      </g>
+    </g>`;
+    return `<g class="g72-volume-layer" data-garang-volume-layer="v7.2">
+      <rect class="g72-mesh-wash" x="0" y="0" width="720" height="1100"/>
+      <path class="g72-volume g72-shadow" d="M215 260 C240 231 284 224 323 245 C312 274 287 302 250 317 C226 310 211 289 215 260 Z M505 260 C480 231 436 224 397 245 C408 274 433 302 470 317 C494 310 509 289 505 260 Z M271 331 C286 303 316 290 352 295 L352 374 C326 389 298 386 278 369 C266 358 263 345 271 331 Z M449 331 C434 303 404 290 368 295 L368 374 C394 389 422 386 442 369 C454 358 457 345 449 331 Z"/>
+      <path class="g72-volume g72-highlight" d="M228 255 C252 237 282 236 310 250 C298 270 280 287 257 298 C239 294 228 278 228 255 Z M492 255 C468 237 438 236 410 250 C422 270 440 287 463 298 C481 294 492 278 492 255 Z M285 309 C305 295 329 292 350 301 L350 344 C331 354 309 353 292 343 C283 334 281 321 285 309 Z M435 309 C415 295 391 292 370 301 L370 344 C389 354 411 353 428 343 C437 334 439 321 435 309 Z"/>
+      <path class="g72-volume g72-shadow" d="M193 329 C208 320 220 335 222 359 C220 392 211 419 200 434 C187 426 183 404 185 379 C186 354 188 338 193 329 Z M527 329 C512 320 500 335 498 359 C500 392 509 419 520 434 C533 426 537 404 535 379 C534 354 532 338 527 329 Z"/>
+      <path class="g72-volume g72-highlight" d="M198 337 C207 333 214 343 215 360 C213 382 208 401 201 413 C193 406 191 391 192 375 C193 356 194 345 198 337 Z M522 337 C513 333 506 343 505 360 C507 382 512 401 519 413 C527 406 529 391 528 375 C527 356 526 345 522 337 Z"/>
+      <path class="g72-volume g72-shadow g72-deep" d="M303 437 C318 428 342 428 357 435 L357 615 C340 625 320 617 307 594 C296 555 295 486 303 437 Z M417 437 C402 428 378 428 363 435 L363 615 C380 625 400 617 413 594 C424 555 425 486 417 437 Z"/>
+      <path class="g72-volume g72-highlight" d="M315 451 C327 445 341 445 352 449 L352 590 C341 598 328 594 319 578 C312 542 311 492 315 451 Z M405 451 C393 445 379 445 368 449 L368 590 C379 598 392 594 401 578 C408 542 409 492 405 451 Z"/>
+      <path class="g72-volume g72-shadow" d="M273 644 C298 625 326 633 340 669 C344 713 338 760 326 795 C310 817 288 813 273 789 C259 756 256 690 273 644 Z M447 644 C422 625 394 633 380 669 C376 713 382 760 394 795 C410 817 432 813 447 789 C461 756 464 690 447 644 Z M272 829 C291 815 307 832 311 858 C311 902 303 956 293 1002 C281 1018 269 1011 263 991 C257 947 258 872 272 829 Z M448 829 C429 815 413 832 409 858 C409 902 417 956 427 1002 C439 1018 451 1011 457 991 C463 947 462 872 448 829 Z"/>
+      <path class="g72-volume g72-highlight" d="M286 654 C304 642 323 651 332 678 C333 713 328 750 319 779 C308 795 294 790 285 773 C276 741 274 688 286 654 Z M434 654 C416 642 397 651 388 678 C387 713 392 750 401 779 C412 795 426 790 435 773 C444 741 446 688 434 654 Z M279 842 C291 834 301 847 303 866 C302 902 297 944 290 977 C282 989 274 984 270 970 C267 933 268 875 279 842 Z M441 842 C429 834 419 847 417 866 C418 902 423 944 430 977 C438 989 446 984 450 970 C453 933 452 875 441 842 Z"/>
+      <g class="g72-fiber-layer">
+        <path class="g72-fiber strong" d="M222 273 C249 270 276 278 300 294 M498 273 C471 270 444 278 420 294"/>
+        <path class="g72-fiber strong" d="M279 315 C301 323 323 329 348 331 M441 315 C419 323 397 329 372 331 M277 344 C302 351 326 355 349 355 M443 344 C418 351 394 355 371 355"/>
+        <path class="g72-fiber" d="M196 343 C204 365 203 389 197 412 M524 343 C516 365 517 389 523 412"/>
+        <path class="g72-fiber strong" d="M360 445 L360 606"/>
+        <path class="g72-fiber" d="M319 468 C333 474 347 476 360 474 M401 468 C387 474 373 476 360 474 M317 512 C333 518 347 520 360 518 M403 512 C387 518 373 520 360 518 M315 556 C332 562 347 564 360 562 M405 556 C388 562 373 564 360 562"/>
+        <path class="g72-fiber strong" d="M287 661 C308 693 319 731 317 776 M433 661 C412 693 401 731 403 776"/>
+        <path class="g72-fiber" d="M310 665 C297 705 292 747 297 786 M410 665 C423 705 428 747 423 786 M278 846 C291 882 291 927 283 970 M442 846 C429 882 429 927 437 970"/>
+      </g>
+    </g>`;
+  }
+
   function v6MeshSVG(gender='male',side='front'){
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
-    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.1.0-overlay-fit`,zones=v6ZoneMarkup(view,person),definition=v7DefinitionMarkup(view,person);
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.1.0-overlay-fit`,zones=v6ZoneMarkup(view,person),definition=v7DefinitionMarkup(view,person),texture=v72MuscleTextureMarkup(view,person);
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.1" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.2" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask></defs>
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
+        ${texture}
         ${definition}
         <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
       </g>
@@ -305,7 +352,7 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.1':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.2':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
