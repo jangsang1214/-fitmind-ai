@@ -1,5 +1,6 @@
 'use strict';
-const VERSION='workout-prescription-shadow-v1.2.0';
+const StateIntelligence=require('./state-intelligence.cjs');
+const VERSION='workout-prescription-shadow-v1.3.0-physio-recovery';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v),list=v=>Array.isArray(v)?v.filter(object):[],finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;},mean=v=>{const a=v.filter(Number.isFinite);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null;};
 function dateKey(v){return String(v||'').slice(0,10);}
 function latestCheckin(state){return [...list(state?.dailyCheckins),...list(state?.checkins)].filter(x=>x?.date).sort((a,b)=>String(a.date).localeCompare(String(b.date))).at(-1)||null;}
@@ -10,7 +11,14 @@ function dose(record={}){
  const e1rms=details.length?details.map(x=>e1rm(x.weight,x.reps)).filter(x=>x!==null):[e1rm(weight,reps)].filter(x=>x!==null);
  return {sets,reps,weight:round(weight,1),rpe:rpe===null?null:round(rpe,1),rir:rir===null?null:round(rir,1),failure,e1rm:e1rms.length?Math.max(...e1rms):null,volume:round(Math.max(0,sets*reps*weight),1)};
 }
-function recoveryConstraint(state){const c=latestCheckin(state);if(!c)return {active:false,reasons:[]};const reasons=[],sleep=finite(c.sleepHours??c.sleep),energy=finite(c.energy??c.energyLevel),stress=finite(c.stress??c.stressLevel),soreness=object(c.soreness)?Math.max(...Object.values(c.soreness).map(finite).filter(x=>x!==null),0):finite(c.soreness??c.muscleSoreness);if(sleep!==null&&sleep<6)reasons.push('SHORT_SLEEP');if(energy!==null&&energy<=2)reasons.push('LOW_ENERGY');if(stress!==null&&stress>=4)reasons.push('HIGH_STRESS');if(soreness!==null&&soreness>=4)reasons.push('HIGH_SORENESS');return {active:reasons.length>0,reasons};}
+function recoveryConstraint(state,options={}){
+ const c=latestCheckin(state),reasons=[],sleep=finite(c?.sleepHours??c?.sleep),energy=finite(c?.energy??c?.energyLevel),stress=finite(c?.stress??c?.stressLevel),soreness=object(c?.soreness)?Math.max(...Object.values(c.soreness).map(finite).filter(x=>x!==null),0):finite(c?.soreness??c?.muscleSoreness);
+ if(sleep!==null&&sleep<6)reasons.push('SHORT_SLEEP');if(energy!==null&&energy<=2)reasons.push('LOW_ENERGY');if(stress!==null&&stress>=4)reasons.push('HIGH_STRESS');if(soreness!==null&&soreness>=4)reasons.push('HIGH_SORENESS');
+ let fused=null;try{const now=options.now instanceof Date?options.now:new Date(options.asOf?`${String(options.asOf).slice(0,10)}T12:00:00Z`:Date.now());fused=StateIntelligence?.estimateState?.(state,{now});}catch{}
+ const rr=Array.isArray(fused?.readiness?.reasons)?fused.readiness.reasons:[],physContributed=rr.includes('PHYSIOLOGICAL_SIGNAL_ONLY')||rr.includes('PHYSIOLOGICAL_SIGNAL_FUSED'),physProtect=physContributed&&(fused?.readiness?.band==='low'||fused?.physiological?.derived?.recoveryConstraint==='protect');
+ if(physProtect)reasons.push('PHYSIOLOGICAL_RECOVERY_PROTECT');
+ return {active:reasons.length>0,reasons:[...new Set(reasons)],readiness:physContributed?{value:finite(fused?.readiness?.value),band:String(fused?.readiness?.band||'unknown'),confidence:finite(fused?.readiness?.confidence)}:null};
+}
 function roundLoad(v){const n=Math.max(0,finite(v)??0);return round(Math.round(n*2)/2,1);}
 function trend(history,key){const vals=history.map(x=>dose(x)[key]).filter(v=>v!==null&&Number.isFinite(v));if(vals.length<2)return null;const recent=vals.at(-1),prior=mean(vals.slice(0,-1));return prior&&prior>0?round(recent/prior,3):null;}
 function exactDose(latestDose,action){
@@ -20,7 +28,7 @@ function exactDose(latestDose,action){
  return {...base,volume:round(base.sets*base.reps*base.weight,1)};
 }
 function build(stateInput={},options={}){
- const state=object(stateInput)?stateInput:{},groups=new Map(),cutoff=String(options.asOf||new Date().toISOString().slice(0,10)),recovery=recoveryConstraint(state);
+ const state=object(stateInput)?stateInput:{},groups=new Map(),cutoff=String(options.asOf||new Date().toISOString().slice(0,10)),recovery=recoveryConstraint(state,{asOf:cutoff});
  for(const row of list(state.workouts)){const name=String(row?.name||row?.exercise||'').trim();if(!name||dateKey(row.date)>cutoff)continue;if(!groups.has(name))groups.set(name,[]);groups.get(name).push(row);}
  const exercises=[];
  for(const [name,rows] of groups){
@@ -36,7 +44,7 @@ function build(stateInput={},options={}){
  }
  exercises.sort((a,b)=>String(b.lastDate).localeCompare(String(a.lastDate))||b.sampleSize-a.sampleSize);
  const confidence=round(clamp(mean(exercises.filter(x=>x.sampleSize>=2).map(x=>x.prescription.confidence))??0,0,1),2);
- return Object.freeze({version:VERSION,asOf:cutoff,confidence,recoveryConstraint:recovery,exercises:Object.freeze(exercises.slice(0,12)),guardrails:Object.freeze({advisoryOnly:true,observationalOnly:true,exactDoseProposal:true,e1rmTrendAware:true,rirRpeAware:true,failureAware:true,neverAutoIncrease:true,noStateMutation:true,progressionRequiresConfirmation:true})});
+ return Object.freeze({version:VERSION,asOf:cutoff,confidence,recoveryConstraint:recovery,exercises:Object.freeze(exercises.slice(0,12)),guardrails:Object.freeze({advisoryOnly:true,observationalOnly:true,exactDoseProposal:true,e1rmTrendAware:true,rirRpeAware:true,failureAware:true,neverAutoIncrease:true,noStateMutation:true,progressionRequiresConfirmation:true,physiologicalRecoveryAware:true})});
 }
-function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),confidence:finite(v.confidence)??0,recoveryConstraint:object(v.recoveryConstraint)?v.recoveryConstraint:{active:false,reasons:[]},exercises:list(v.exercises).slice(0,8),guardrails:{advisoryOnly:true,observationalOnly:true,exactDoseProposal:true,e1rmTrendAware:true,rirRpeAware:true,failureAware:true,neverAutoIncrease:true,noStateMutation:true,progressionRequiresConfirmation:true}};}
+function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),confidence:finite(v.confidence)??0,recoveryConstraint:object(v.recoveryConstraint)?v.recoveryConstraint:{active:false,reasons:[]},exercises:list(v.exercises).slice(0,8),guardrails:{advisoryOnly:true,observationalOnly:true,exactDoseProposal:true,e1rmTrendAware:true,rirRpeAware:true,failureAware:true,neverAutoIncrease:true,noStateMutation:true,progressionRequiresConfirmation:true,physiologicalRecoveryAware:true}};}
 module.exports=Object.freeze({VERSION,build,compactForContext,dose,recoveryConstraint,exactDose,e1rm,trend});
