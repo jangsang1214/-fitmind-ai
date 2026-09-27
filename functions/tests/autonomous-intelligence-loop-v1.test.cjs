@@ -125,6 +125,22 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.deepEqual(replay,browserReplay);assert.equal(replay.status,'diagnostic_ready');assert.equal(replay.guardrailViolations,0);assert.equal(replay.guardrails.noCounterfactualClaim,true);assert.ok(replay.evaluatedEpisodes>=3);
  });
 
+ await test('repeated negative feedback suppresses matching recommendation bands without overreacting to one rejection',()=>{
+  const rejectedEpisode=i=>({episodeId:'neg-'+i,date:'2026-09-'+String(10+i).padStart(2,'0'),recommendation:{recommendationId:'neg-r'+i,duration:60,intensityScale:1,volumeScale:1},userResponse:{status:'rejected'},execution:{status:'not_observed',completionRatio:0},outcome:{classification:null,score:null,recoveryDelta:null},attribution:{confidence:1},context:{timeBucket:'morning',dayOfWeek:'mon'},decision:{mode:'maintain'}});
+  const acceptedEpisode=i=>({episodeId:'pos-'+i,date:'2026-09-'+String(20+i).padStart(2,'0'),recommendation:{recommendationId:'pos-r'+i,duration:60,intensityScale:1,volumeScale:1},userResponse:{status:'accepted'},execution:{executionId:'exec-'+i,status:'observed',completionRatio:1},outcome:{outcomeId:'out-'+i,classification:'completed',score:90,recoveryDelta:0},attribution:{confidence:1},context:{timeBucket:'morning',dayOfWeek:'mon'},decision:{mode:'maintain'}});
+  const decision={decisionId:'negative-feedback-next',mode:'maintain',recommendation:{duration:60,intensityScale:1,volumeScale:1}};
+
+  const repeated={asOf:'2026-09-28',episodes:[rejectedEpisode(1),rejectedEpisode(2),rejectedEpisode(3)]};
+  const response=ResponseModel.build(repeated,{asOf:'2026-09-28'}),browserResponse=BrowserResponseModel.build(repeated,{asOf:'2026-09-28'});
+  assert.deepEqual(response,browserResponse);assert.equal(response.training.durationStats.long.resolvedSampleSize,3);assert.equal(response.training.durationStats.long.rejectionCount,3);assert.ok(response.training.durationStats.long.rejectionRate>=.5);
+  const policy=RecommendationPolicy.build(decision,response),browserPolicy=BrowserRecommendationPolicy.build(decision,browserResponse);
+  assert.deepEqual(policy,browserPolicy);const base=policy.candidates.find(x=>x.id==='base'),adherence=policy.candidates.find(x=>x.id==='adherence_first');assert.ok(base.components.negativeFeedbackPenalty>0);assert.equal(base.negativeFeedback.active,true);assert.equal(adherence.components.negativeFeedbackPenalty,0);assert.notEqual(policy.selected.id,'base');assert.equal(policy.guardrails.negativeFeedbackSampleGated,true);assert.equal(policy.guardrails.singleRejectionCannotSuppress,true);assert.equal(policy.guardrails.positiveEvidenceCanReleaseSuppression,true);
+
+  const single={asOf:'2026-09-28',episodes:[rejectedEpisode(1)]},singleResponse=ResponseModel.build(single,{asOf:'2026-09-28'}),singlePolicy=RecommendationPolicy.build(decision,singleResponse),singleBase=singlePolicy.candidates.find(x=>x.id==='base');assert.equal(singleBase.components.negativeFeedbackPenalty,0);assert.equal(singleBase.negativeFeedback.active,false);
+
+  const recovered={asOf:'2026-09-28',episodes:[rejectedEpisode(1),rejectedEpisode(2),rejectedEpisode(3),acceptedEpisode(1),acceptedEpisode(2),acceptedEpisode(3)]},recoveredResponse=ResponseModel.build(recovered,{asOf:'2026-09-28'}),recoveredPolicy=RecommendationPolicy.build(decision,recoveredResponse),recoveredBase=recoveredPolicy.candidates.find(x=>x.id==='base');assert.ok(recoveredResponse.training.durationStats.long.rejectionRate<.5);assert.equal(recoveredBase.components.negativeFeedbackPenalty,0);assert.equal(recoveredBase.negativeFeedback.active,false);
+ });
+
  await test('workout prescription and adaptive nutrition shadows learn without autonomous escalation',()=>{
   const state=baseState();
   state.workouts=[
