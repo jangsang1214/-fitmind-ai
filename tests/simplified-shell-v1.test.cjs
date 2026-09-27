@@ -14,6 +14,7 @@ const experienceV4=read('06_features/ui/runtime/garang-experience-v4.js');
 const nextAction=read('06_features/ui/runtime/garang-today-single-next-action-v1.js');
 const goldenPathUi=read('06_features/ui/runtime/garang-golden-path-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
+const commercialMobileCss=read('03_styles/runtime/garang-commercial-mobile-v1.css');
 const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const planSurface=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
 const coreCss=read('03_styles/runtime/garang-core-loop-v1.css');
@@ -58,6 +59,16 @@ assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose fo
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
 assert.doesNotMatch(css,/@import[^;]*garang-core-loop-v1\.css/,'Simplified Shell must not own Core Loop stylesheet loading through a hidden import');
+assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.0\.0-app-native/,'commercial mobile design system must be the final explicit visual runtime');
+assert.ok(manifest.styles.includes('03_styles/runtime/garang-commercial-mobile-v1.css'),'runtime manifest must own the commercial mobile design system');
+assert.match(commercialMobileCss,/#appView:not\(\[hidden\]\) \.sync-badge,[\s\S]*#planBadge,[\s\S]*#logoutBtn\{display:none!important\}/,'mobile chrome must remove dashboard utility badges from the primary frame');
+assert.match(commercialMobileCss,/#appView:not\(\[hidden\]\)>#bottomNav\{[\s\S]*grid-template-columns:repeat\(4,1fr\)!important/,'mobile shell must render one four-axis native tab bar');
+assert.match(commercialMobileCss,/#main \.page-head h1,[\s\S]*font-family:"Noto Sans KR"/,'functional screen titles must use the app UI type system instead of editorial display serif');
+assert.match(commercialMobileCss,/\.garang-record-sheet\{[\s\S]*border-radius:26px 26px 0 0!important/,'Record must present as a native rounded action sheet');
+assert.match(commercialMobileCss,/\.workout-execution-v2 \.workout-session-bar\.is-live/,'commercial mobile system must preserve and visually elevate the live workout state');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.gpt-composer/,'Coach composer must share the native mobile surface language');
+assert.match(commercialMobileCss,/@media\(max-width:799px\)/,'commercial design system must be explicitly mobile-first');
+
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
 assert.equal(manifest.runtimeContract.singleOwners.coreLoopStyle,'03_styles/runtime/garang-core-loop-v1.css','runtime contract must name one Core Loop stylesheet owner');
