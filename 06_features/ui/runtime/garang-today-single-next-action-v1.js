@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.1.4';
+  const VERSION = 'garang-today-single-next-action-v1.2.0-record-owner';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -296,7 +296,10 @@
   }
 
   function openRecord() {
-    afterRoute('log', () => window.GarangSimplifiedShell?.openRecordSheet?.(document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]')));
+    const trigger=document.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]');
+    return window.GarangSimplifiedShell?.ensureRecordSheetOpen?.(trigger)
+      || window.GarangSimplifiedShell?.openRecordSheet?.(trigger)
+      || false;
   }
 
   function execute(model) {
