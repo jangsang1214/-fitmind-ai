@@ -819,7 +819,7 @@ body{background-image:
 #main[data-garang-screen="coach"] .g2-message.user .g2-message-text{color:var(--gapp-text)!important}
 #main[data-garang-screen="coach"] .g2-message-meta{color:rgba(242,244,239,.28)!important;font-size:7px!important}
 #main[data-garang-screen="coach"] .g2-composer-wrap{
-  position:sticky!important;bottom:0!important;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))!important;
+  position:relative!important;bottom:auto!important;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))!important;
   background:linear-gradient(180deg,rgba(8,10,8,0),rgba(8,10,8,.94) 25%,#080a08 55%)!important
 }
 #main[data-garang-screen="coach"] .g2-composer[data-gapp-role="coach-composer"],
