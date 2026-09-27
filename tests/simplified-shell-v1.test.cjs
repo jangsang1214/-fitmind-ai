@@ -17,6 +17,8 @@ const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
 const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const planSurface=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
 const coreCss=read('03_styles/runtime/garang-core-loop-v1.css');
+const commercialCss=read('03_styles/runtime/garang-commercial-mobile-v1.css');
+const commercialRuntime=read('06_features/ui/runtime/garang-commercial-mobile-v1.js');
 const recovery=read('06_features/ui/runtime/garang-functional-recovery.js');
 const Core=require('../06_features/ui/runtime/garang-core-loop-v1.js');
 
@@ -33,6 +35,16 @@ assert.match(registry,/memory:\s*Object\.freeze\(\{key:'memory'[\s\S]*selectors:
 assert.match(registry,/log:\s*Object\.freeze\(\{key:'log'[^\n]*selectors:\['\.visual-log-grid'\]/,'Record must remain a first-class screen identity');
 assert.match(registry,/version:'1\.2\.2'/,'Screen Registry version must include the Record identity fix');
 assert.match(runtime,/const VERSION = '1\.2\.0-record-owner'/,'Simplified Shell runtime version must include deterministic Record ownership');
+assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.0\.0/,'commercial mobile CSS must be wired after legacy design layers');
+assert.match(html,/garang-commercial-mobile-v1\.js\?v=1\.0\.0/,'commercial mobile runtime must be wired after canonical product runtimes');
+assert.match(commercialRuntime,/garangCommercialApp='v1'/,'commercial runtime must mark one visual architecture owner');
+assert.match(commercialRuntime,/gca-tab-icon/,'commercial runtime must provide a unified bottom-tab icon system');
+assert.match(commercialRuntime,/gca-record-icon/,'Record launcher must use the same icon language as primary navigation');
+assert.match(commercialCss,/--gca-accent:#c8f06a/,'commercial design system must expose one functional accent token');
+assert.match(commercialCss,/#bottomNav \.gca-tab-icon svg/,'commercial shell must style native-like tab icons');
+assert.match(commercialCss,/\.garang-record-routes\{[^}]*grid-template-columns:1fr 1fr/,'Record launcher must use a tactile two-column mobile layout');
+assert.match(commercialCss,/#main\[data-garang-screen="nutrition"\] \.nutrition-quick-summary/,'Nutrition must have a dedicated commercial hero surface');
+assert.match(commercialCss,/#main\[data-garang-screen="workout"\] \.workout-visual-hero/,'Workout must have a dedicated commercial hero surface');
 assert.match(runtime,/RECORD_ROUTES[\s\S]*workout[\s\S]*nutrition[\s\S]*running[\s\S]*body/,'Record surface must preserve all four existing record routes');
 assert.match(runtime,/function ensureRecordSheetOpen\(trigger\)/,'Record owner must expose an idempotent open path for Golden Path actions');
 assert.doesNotMatch(nextAction,/afterRoute\('log',[\s\S]*openRecordSheet/,'Today first record must not depend on legacy LOG route completion');
