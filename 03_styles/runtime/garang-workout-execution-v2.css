@@ -653,3 +653,37 @@
   .set-complete-button{width:78px!important;font-size:10px!important}
   .workout-session-icon{min-width:64px!important;padding:0 9px!important}
 }
+
+/* v2.5.1 — current set owns one unambiguous full-width completion action */
+@media(max-width:800px){
+  .workout-execution-v2 .execution-set-row.current-set{
+    grid-template-columns:30px minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:
+      "index weight reps"
+      "complete complete complete"
+      "detail detail detail"!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-field{
+    min-width:0!important;max-width:100%!important;overflow:hidden!important;position:relative!important;z-index:1!important
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-field input,
+  .workout-execution-v2 .execution-set-row.current-set .execution-field select{
+    box-sizing:border-box!important;min-width:0!important;max-width:100%!important;width:100%!important
+  }
+  .workout-execution-v2 .execution-set-row.current-set .set-complete-button{
+    grid-area:complete!important;position:relative!important;z-index:3!important;
+    width:100%!important;height:44px!important;min-width:0!important;
+    border-radius:12px!important;font-size:11px!important;pointer-events:auto!important;touch-action:manipulation!important
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open{
+    grid-template-columns:30px minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:
+      "index weight reps"
+      "complete complete complete"
+      "rpe rir type"
+      "delete detail detail"!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .set-delete-button{
+    grid-area:delete!important;justify-self:start!important
+  }
+}
