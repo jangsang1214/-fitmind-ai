@@ -238,6 +238,41 @@
       <path class="g3-muscle muscle-legs" data-g71-zone-part="right-calf" d="M448 813 C428 807 412 824 406 855 C403 897 408 953 419 1008 C431 1025 446 1024 456 1008 C465 973 469 928 467 884 C466 850 460 825 448 813 Z"/>`;
   }
 
+  function v73ZoneMarkup(side='front',gender='male',markup=''){
+    if(gender!=='male')return markup;
+    const apply=(needle,transform)=>markup=markup.replaceAll(needle,`<path transform="${transform}"${needle.slice(5)}`);
+    if(side==='side'){
+      apply('<path class="g3-muscle muscle-shoulders"','translate(300 285) scale(1.08 1.04) translate(-300 -285)');
+      apply('<path class="g3-muscle muscle-chest"','translate(315 365) scale(1.09 1.04) translate(-315 -365)');
+      apply('<path class="g3-muscle muscle-back"','translate(292 420) scale(1.08 1.03) translate(-292 -420)');
+      apply('<path class="g3-muscle muscle-biceps"','translate(425 430) scale(1.10 1.04) translate(-425 -430)');
+      apply('<path class="g3-muscle muscle-triceps"','translate(410 425) scale(1.10 1.04) translate(-410 -425)');
+      apply('<path class="g3-muscle muscle-core"','translate(310 515) scale(1.04 1.02) translate(-310 -515)');
+      apply('<path class="g3-muscle muscle-legs"','translate(290 820) scale(1.08 1.02) translate(-290 -820)');
+      return markup;
+    }
+    if(side==='back'){
+      apply('<path class="g3-muscle muscle-shoulders"','translate(360 285) scale(1.07 1.04) translate(-360 -285)');
+      apply('<path class="g3-muscle muscle-back"','translate(360 415) scale(1.08 1.03) translate(-360 -415)');
+      apply('<path class="g3-muscle muscle-triceps"','translate(360 425) scale(1.10 1.04) translate(-360 -425)');
+      apply('<path class="g3-muscle muscle-core"','translate(360 595) scale(1.03 1.02) translate(-360 -595)');
+      apply('<path class="g3-muscle muscle-legs"','translate(360 825) scale(1.06 1.02) translate(-360 -825)');
+      return markup;
+    }
+    apply('<path class="g3-muscle muscle-shoulders"','translate(360 285) scale(1.07 1.04) translate(-360 -285)');
+    apply('<path class="g3-muscle muscle-chest"','translate(360 340) scale(1.08 1.04) translate(-360 -340)');
+    markup=markup.replace('<path class="g3-muscle muscle-biceps" data-g71-zone-side="left"','<path transform="translate(202 380) scale(1.10 1.04) translate(-202 -380)" class="g3-muscle muscle-biceps" data-g71-zone-side="left"');
+    markup=markup.replace('<path class="g3-muscle muscle-biceps" data-g71-zone-side="right"','<path transform="translate(518 380) scale(1.10 1.04) translate(-518 -380)" class="g3-muscle muscle-biceps" data-g71-zone-side="right"');
+    markup=markup.replace('<path class="g3-muscle muscle-triceps" data-g71-zone-side="left"','<path transform="translate(176 390) scale(1.10 1.04) translate(-176 -390)" class="g3-muscle muscle-triceps" data-g71-zone-side="left"');
+    markup=markup.replace('<path class="g3-muscle muscle-triceps" data-g71-zone-side="right"','<path transform="translate(544 390) scale(1.10 1.04) translate(-544 -390)" class="g3-muscle muscle-triceps" data-g71-zone-side="right"');
+    apply('<path class="g3-muscle muscle-core"','translate(360 535) scale(1.025 1.02) translate(-360 -535)');
+    markup=markup.replace('<path class="g3-muscle muscle-legs" data-g71-zone-part="left-thigh"','<path transform="translate(298 720) scale(1.08 1.02) translate(-298 -720)" class="g3-muscle muscle-legs" data-g71-zone-part="left-thigh"');
+    markup=markup.replace('<path class="g3-muscle muscle-legs" data-g71-zone-part="right-thigh"','<path transform="translate(422 720) scale(1.08 1.02) translate(-422 -720)" class="g3-muscle muscle-legs" data-g71-zone-part="right-thigh"');
+    markup=markup.replace('<path class="g3-muscle muscle-legs" data-g71-zone-part="left-calf"','<path transform="translate(285 910) scale(1.06 1.02) translate(-285 -910)" class="g3-muscle muscle-legs" data-g71-zone-part="left-calf"');
+    markup=markup.replace('<path class="g3-muscle muscle-legs" data-g71-zone-part="right-calf"','<path transform="translate(435 910) scale(1.06 1.02) translate(-435 -910)" class="g3-muscle muscle-legs" data-g71-zone-part="right-calf"');
+    return markup;
+  }
+
   function v7DefinitionMarkup(side='front',gender='male'){
     if(gender!=='male')return '';
     if(side==='back')return `<g class="g7-definition-layer" data-garang-definition-layer="v7">
@@ -271,13 +306,12 @@
 
   function v6MeshSVG(gender='male',side='front'){
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
-    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.1.0-overlay-fit`,zones=v6ZoneMarkup(view,person),definition=v7DefinitionMarkup(view,person);
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person));
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.1" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.3" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask></defs>
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
-        ${definition}
         <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
       </g>
     </svg>`;
@@ -305,7 +339,7 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.1':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.3':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
