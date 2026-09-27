@@ -43,7 +43,7 @@ assert.match(css,/\.meal-scan-unmatched/);
 assert.match(html,/garang-services-config\.js\?v=1\.2\.0-nutrition-web/);
 assert.match(html,/food-identity-v1\.js\?v=1\.0\.0/);
 assert.match(html,/adaptive-nutrition-learning-v1\.js\?v=1\.3\.0-adherence-aware/);
-assert.match(html,/app\.js\?v=0\.11\.0-beta\.23-recommendation-lineage/);
+assert.match(html,/app\.js\?v=0\.11\.0-beta\.24-recommendation-follow-through/);
 assert.match(app,/lookupBarcodeNutrition/);
 assert.match(app,/detectBarcodeLocally/);
 assert.match(app,/detectBarcodeWithVision/);
