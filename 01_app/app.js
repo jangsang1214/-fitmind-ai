@@ -268,7 +268,7 @@ function canonicalRecoveryReadiness(){
   let model=null;try{model=window.GarangStateIntelligence?.estimateState?.(state,{now:new Date()})||null;}catch{}
   const fused=Number(model?.readiness?.value);
   if(Number.isFinite(fused))return {value:clamp(Math.round(fused),0,100),confidence:clamp(num(model?.readiness?.confidence,0),0,1),source:model?.readiness?.reasons?.includes('PHYSIOLOGICAL_SIGNAL_ONLY')?'physiological':'fused',reasons:Array.isArray(model?.readiness?.reasons)?model.readiness.reasons:[],physiological:model?.physiological||null};
-  return {value:legacy,confidence:c?.date===today()?.75:legacy!==null?.65:0,source:legacy!==null?'checkin':'none',reasons:legacy!==null?['LEGACY_CHECKIN_FALLBACK']:[],physiological:null};
+  return {value:legacy,confidence:legacy!==null?(c?.date===today()?0.75:0.65):0,source:legacy!==null?'checkin':'none',reasons:legacy!==null?['LEGACY_CHECKIN_FALLBACK']:[],physiological:null};
 }
 
 function performanceScore(){
