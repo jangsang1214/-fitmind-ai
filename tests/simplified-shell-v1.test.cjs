@@ -76,9 +76,9 @@ assert.match(html,/garang-core-loop-v1\.css\?v=1\.0\.2-explicit-boot/,'Core Loop
 assert.match(html,/garang-simplified-shell-v1\.css\?v=1\.1\.3-explicit-style-owner/,'Simplified Shell stylesheet cache key must ship explicit style ownership');
 assert.match(html,/goal-alignment-v1\.js\?v=1\.0\.0-explicit-boot/,'Goal Alignment must ship as an explicit parser-owned runtime dependency');
 assert.match(html,/garang-experience-v4\.js\?v=1\.7\.0-essential-first/,'Experience v4 cache key must ship essential-first simplification without changing boot ownership');
-assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.1\.4-explicit-boot-lifecycle/,'Today Next Action must ship as an explicit parser-owned lifecycle runtime');
-assert.match(html,/garang-golden-path-v1\.js\?v=1\.0\.3-single-visible-owner/,'Golden Path UI cache key must ship the single visible next-action owner contract');
-assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.1\.4-explicit-boot-owner/,'Simplified Shell runtime cache key must ship explicit boot ownership');
+assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.2\.0-record-owner/,'Today Next Action cache key must ship deterministic Record ownership');
+assert.match(html,/garang-golden-path-v1\.js\?v=1\.0\.4-record-owner/,'Golden Path cache key must share deterministic Record ownership');
+assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.2\.0-record-owner/,'Simplified Shell runtime cache key must ship deterministic Record ownership');
 assert.match(html,/garang-router-v1\.js\?v=1\.3\.1-touch-intent/,'router cache key must match the touch-intent app-bridge implementation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
