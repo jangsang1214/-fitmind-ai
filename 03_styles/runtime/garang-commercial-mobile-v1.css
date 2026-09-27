@@ -850,3 +850,146 @@ body{background-image:
   #main[data-garang-screen="coach"] .g2-chat-scroll{padding:16px 13px 24px!important}
   #main[data-garang-screen="coach"] .g2-message.user{padding-left:32px!important}
 }
+
+
+/* =========================================================
+   FINAL SECONDARY SURFACES — Auth / More / Settings / Profile / Onboarding
+   ========================================================= */
+.auth-view{
+  min-height:100dvh!important;background:
+    radial-gradient(circle at 78% 2%,rgba(143,226,193,.12),transparent 30%),
+    radial-gradient(circle at 0 72%,rgba(143,226,193,.04),transparent 30%),
+    #070907!important
+}
+.auth-shell{max-width:980px!important}
+.auth-copy h1{letter-spacing:-.045em!important}
+.auth-card{
+  border:1px solid var(--gapp-line)!important;border-radius:24px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.018),transparent),#0d100e!important;
+  box-shadow:0 24px 64px rgba(0,0,0,.32)!important
+}
+.auth-tabs{border-radius:13px!important;padding:3px!important}
+.auth-tabs button{min-height:40px!important;border-radius:10px!important}
+.auth-card input{min-height:48px!important;border-radius:13px!important}
+.auth-card .primary,.auth-card .social{min-height:48px!important;border-radius:14px!important}
+
+.garang-more-sheet{
+  background:rgba(0,0,0,.68)!important;-webkit-backdrop-filter:blur(12px)!important;backdrop-filter:blur(12px)!important
+}
+.garang-more-panel{
+  position:relative!important;width:min(560px,100%)!important;border:1px solid var(--gapp-line-strong)!important;border-bottom:0!important;
+  border-radius:27px 27px 0 0!important;padding:13px 16px calc(20px + env(safe-area-inset-bottom,0px))!important;
+  background:linear-gradient(180deg,#131714,#090b0a 72%)!important;box-shadow:0 -24px 64px rgba(0,0,0,.42)!important
+}
+.garang-more-panel::before{
+  content:"";display:block;width:42px;height:4px;margin:0 auto 15px;border-radius:999px;background:rgba(242,244,239,.17)
+}
+.garang-more-head{margin-bottom:10px!important}
+.garang-more-head strong{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;font-size:20px!important;font-weight:780!important;letter-spacing:.12em!important
+}
+.garang-more-head button{width:38px!important;height:38px!important;background:rgba(255,255,255,.025)!important;border-color:var(--gapp-line)!important}
+.garang-more-grid{grid-template-columns:1fr!important;gap:7px!important}
+.garang-more-grid button{
+  position:relative!important;min-height:60px!important;padding:11px 46px 11px 14px!important;border-radius:15px!important;
+  border:1px solid var(--gapp-line)!important;background:rgba(255,255,255,.018)!important;
+  color:var(--gapp-text)!important;font:700 12px/1.2 "Noto Sans KR",system-ui,sans-serif!important
+}
+.garang-more-grid button::after{
+  content:"›";position:absolute;right:15px;top:50%;translate:0 -50%;font-size:21px;font-weight:300;color:var(--gapp-text-3)
+}
+.garang-more-grid button small{margin-top:4px!important;color:var(--gapp-text-3)!important;font-size:9px!important;font-weight:500!important}
+
+/* Settings = grouped native preferences, not a dashboard */
+#main[data-garang-screen="settings"]{max-width:560px!important}
+#main[data-garang-screen="settings"] .settings-stack{display:grid!important;gap:10px!important}
+#main[data-garang-screen="settings"] .settings-block,
+#main[data-garang-screen="settings"] .plan-section{
+  padding:6px 14px 14px!important;border-radius:20px!important
+}
+#main[data-garang-screen="settings"] .settings-title{
+  min-height:56px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  border-bottom:1px solid rgba(255,255,255,.045)!important
+}
+#main[data-garang-screen="settings"] .settings-title h3{
+  margin:3px 0 0!important;font-size:15px!important;font-weight:740!important;letter-spacing:-.03em!important
+}
+#main[data-garang-screen="settings"] .settings-row{
+  min-height:62px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important;
+  padding:9px 0!important;border-bottom:1px solid rgba(255,255,255,.045)!important
+}
+#main[data-garang-screen="settings"] .settings-row strong{display:block!important;font-size:12px!important;font-weight:680!important}
+#main[data-garang-screen="settings"] .settings-row span{display:block!important;margin-top:3px!important;color:var(--gapp-text-3)!important;font-size:9px!important;line-height:1.45!important}
+#main[data-garang-screen="settings"] .settings-row select{min-width:100px!important;width:auto!important;min-height:38px!important}
+#main[data-garang-screen="settings"] .settings-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important}
+#main[data-garang-screen="settings"] .settings-actions #settingsLogout{grid-column:1/-1!important;color:#d9a29b!important}
+#main[data-garang-screen="settings"] .plan-compare{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:12px 0!important}
+#main[data-garang-screen="settings"] .plan-choice{
+  border:1px solid var(--gapp-line)!important;border-radius:16px!important;background:rgba(255,255,255,.015)!important;padding:13px!important
+}
+#main[data-garang-screen="settings"] .plan-choice.selected{border-color:rgba(143,226,193,.25)!important;background:rgba(143,226,193,.045)!important}
+#main[data-garang-screen="settings"] .app-info{opacity:.72!important}
+
+/* Profile = personal identity + goals */
+#main[data-garang-screen="profile"]{max-width:560px!important}
+#main[data-garang-screen="profile"]>.grid.grid-2{grid-template-columns:1fr!important;gap:10px!important}
+#main[data-garang-screen="profile"] .profile-model-card{
+  border-radius:22px!important;background:
+    radial-gradient(circle at 90% 0,rgba(143,226,193,.09),transparent 32%),
+    var(--gapp-surface)!important
+}
+#main[data-garang-screen="profile"] .profile-goal{font-size:22px!important;font-weight:760!important;letter-spacing:-.045em!important;margin:6px 0 14px!important}
+#main[data-garang-screen="profile"] .profile-model-grid{
+  display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:1px!important;overflow:hidden!important;
+  border:1px solid var(--gapp-line)!important;border-radius:15px!important;background:var(--gapp-line)!important
+}
+#main[data-garang-screen="profile"] .profile-model-grid>div{padding:12px!important;background:#0f1310!important}
+#main[data-garang-screen="profile"] .profile-model-grid strong{font-size:22px!important;font-weight:760!important}
+#main[data-garang-screen="profile"] .profile-model-grid span{font-size:8px!important;color:var(--gapp-text-3)!important}
+
+/* Onboarding = focused setup flow */
+#main[data-garang-screen="onboarding"]{max-width:560px!important}
+#main[data-garang-screen="onboarding"]>.card{
+  margin:0!important;max-width:none!important;padding:18px!important;border-radius:24px!important;
+  background:
+    radial-gradient(circle at 90% 0,rgba(143,226,193,.08),transparent 30%),
+    var(--gapp-surface)!important
+}
+#main[data-garang-screen="onboarding"] .form-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:11px!important}
+#main[data-garang-screen="onboarding"] .field.full{grid-column:1/-1!important}
+#main[data-garang-screen="onboarding"] .field label{
+  display:block!important;margin:0 0 6px!important;color:var(--gapp-text-3)!important;font-size:9px!important;font-weight:650!important
+}
+#main[data-garang-screen="onboarding"] .actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+#main[data-garang-screen="onboarding"] #saveOnboarding{min-height:52px!important}
+#main[data-garang-screen="onboarding"] #skipOnboarding{border:0!important;background:transparent!important}
+
+/* Secondary capability screens keep the same restrained app grammar */
+#main[data-garang-screen="planner"]>.grid.grid-2,
+#main[data-garang-screen="memory"]>.grid.grid-2{grid-template-columns:1fr!important;gap:10px!important}
+#main[data-garang-screen="planner"] .plan-row,
+#main[data-garang-screen="memory"] .memory-card{
+  border-radius:16px!important;background:var(--gapp-surface)!important
+}
+
+@media(max-width:799px){
+  #authView:not([hidden]){display:block!important;padding:0!important}
+  #authView:not([hidden]) .auth-shell{
+    width:100%!important;max-width:560px!important;min-height:100dvh!important;margin:0 auto!important;
+    padding:calc(28px + env(safe-area-inset-top,0px)) 18px calc(22px + env(safe-area-inset-bottom,0px))!important;
+    display:flex!important;flex-direction:column!important;gap:20px!important;justify-content:center!important
+  }
+  #authView:not([hidden]) .auth-copy{padding:0 4px!important}
+  #authView:not([hidden]) .brand-hero{margin-bottom:26px!important}
+  #authView:not([hidden]) .brand-hero img{width:42px!important;height:42px!important}
+  #authView:not([hidden]) .brand-hero b{font-size:20px!important}
+  #authView:not([hidden]) .auth-copy .eyebrow{display:none!important}
+  #authView:not([hidden]) .auth-copy h1{
+    margin:0!important;font-size:35px!important;line-height:1.08!important;letter-spacing:-.05em!important
+  }
+  #authView:not([hidden]) .auth-copy p{margin:13px 0 0!important;font-size:11px!important;line-height:1.6!important}
+  #authView:not([hidden]) .auth-card{padding:16px!important;border-radius:22px!important}
+  #main[data-garang-screen="settings"] .plan-compare{grid-template-columns:1fr!important}
+  #main[data-garang-screen="onboarding"] .form-grid{grid-template-columns:1fr!important}
+  #main[data-garang-screen="onboarding"] .field.full{grid-column:auto!important}
+}
