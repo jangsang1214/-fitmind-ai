@@ -8,7 +8,7 @@
   const VERSION='garang-commercial-mobile-v1.0.0';
   const main=()=>document.getElementById('main');
   const screen=()=>main()?.dataset?.garangScreen||'';
-  let scheduled=false;
+  let scheduled=false,lastScreen='';
 
   const visible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none';
   function mark(el,name){ if(el) el.dataset.gappRole=name; }
@@ -97,9 +97,12 @@
     else if(s==='workout')annotateWorkout(root);
     else if(s==='coach')annotateCoach(root);
     else if(s==='progress')annotateProgress(root);
-    root.classList.remove('gapp-screen-enter');
-    void root.offsetWidth;
-    root.classList.add('gapp-screen-enter');
+    if(s!==lastScreen){
+      root.classList.remove('gapp-screen-enter');
+      void root.offsetWidth;
+      root.classList.add('gapp-screen-enter');
+      lastScreen=s;
+    }
   }
   function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(apply)}
   window.addEventListener('garang:screen-rendered',schedule);
