@@ -12,7 +12,35 @@ const json=JSON.stringify({signals:[
 ]});
 const jr=Import.parse(json,{filename:'health.json'});
 assert.equal(jr.status,'ready');assert.equal(jr.signals.length,3);assert.ok(jr.signals.every(x=>x.id.startsWith('health_')));
+
 assert.deepEqual(Import.merge(jr.signals,jr).map(x=>x.id),jr.signals.map(x=>x.id),'reimport must dedupe stable signals');
+
+const providerPayload={records:[
+ {provider:'Health Connect',dataType:'HeartRateVariabilityRmssd',startTime:'2026-09-24T06:30:00Z',value:52,unit:'ms'},
+ {provider:'Health Connect',dataType:'RestingHeartRate',startTime:'2026-09-24T06:30:00Z',value:{numericValue:57},unitName:'count/min'},
+ {providerName:'Health Connect',recordType:'SleepDuration',startTime:'2026-09-24T06:30:00Z',quantity:450,unit:'min'}
+]};
+const providerResult=Import.parseJson(providerPayload,'native-health');
+assert.equal(providerResult.length,1,'same provider timestamp must fuse multiple native records');
+assert.equal(providerResult[0].hrvMs,52);
+assert.equal(providerResult[0].restingHeartRateBpm,57);
+assert.equal(providerResult[0].sleepHours,7.5);
+const providerParsed=Import.parse(JSON.stringify(providerPayload),{filename:'native-health.json',source:'native-health'});
+assert.equal(providerParsed.status,'ready');
+assert.equal(providerParsed.signals.length,1);
+const firstProviderId=providerParsed.signals[0].id;
+const corrected=Import.parse(JSON.stringify({records:[
+ {provider:'Health Connect',dataType:'HeartRateVariabilityRmssd',startTime:'2026-09-24T06:30:00Z',value:55,unit:'ms'}
+]}),{filename:'native-health.json',source:'native-health'});
+const providerMerged=Import.merge(providerParsed,corrected);
+assert.equal(providerMerged.length,1,'provider correction at the same source/timestamp must upsert instead of duplicate');
+assert.equal(providerMerged[0].hrvMs,55);
+assert.equal(providerMerged[0].restingHeartRateBpm,57,'upsert must preserve sibling metrics from the prior provider snapshot');
+assert.equal(providerMerged[0].sleepHours,7.5);
+assert.equal(providerMerged[0].id,firstProviderId,'provider correction must retain stable identity');
+assert.equal(Import.GUARDS.incrementalProviderUpsert,true);
+assert.equal(Import.GUARDS.stableProviderIdentity,true);
+assert.equal(Import.GUARDS.providerPayloadReady,true);
 
 const csv='date,source,hrvMs,restingHeartRateBpm,sleepHours,steps\n2026-09-23T07:00:00Z,Health Connect,49,59,7.2,9000\n2026-09-24T07:00:00Z,Health Connect,52,57,7.8,11000';
 const cr=Import.parse(csv,{filename:'health.csv'});
