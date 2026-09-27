@@ -5,7 +5,7 @@
   'use strict';
   if (window.GarangSimplifiedShell) return;
 
-  const VERSION = '1.1.1';
+  const VERSION = '1.2.0-record-owner';
   const RECORD_ROUTES = Object.freeze([
     { route:'workout', ko:'운동', en:'Workout', koMeta:'세트 · 인증', enMeta:'Sets · verification' },
     { route:'nutrition', ko:'식단', en:'Nutrition', koMeta:'사진 · 직접 입력', enMeta:'Photo · manual entry' },
@@ -160,6 +160,17 @@
     syncActiveNavigation();
     try { window.dispatchEvent(new CustomEvent('garang:record-sheet-opened',{detail:{source:'simplified-shell'}})); } catch {}
     requestAnimationFrame(()=>backdrop.querySelector('[data-garang-record-route]')?.focus({preventScroll:true}));
+    return backdrop;
+  }
+
+  function ensureRecordSheetOpen(trigger) {
+    if (sheet?.isConnected) {
+      if (trigger) previousFocus = trigger;
+      document.body.classList.add('garang-record-open');
+      syncActiveNavigation();
+      return sheet;
+    }
+    return openRecordSheet(trigger);
   }
 
   function reconcile() {
@@ -213,6 +224,7 @@
     version:VERSION,
     recordRoutes:RECORD_ROUTES,
     openRecordSheet,
+    ensureRecordSheetOpen,
     closeRecordSheet,
     reconcile
   });
