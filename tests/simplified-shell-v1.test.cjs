@@ -15,6 +15,7 @@ const nextAction=read('06_features/ui/runtime/garang-today-single-next-action-v1
 const goldenPathUi=read('06_features/ui/runtime/garang-golden-path-v1.js');
 const css=read('03_styles/runtime/garang-simplified-shell-v1.css');
 const commercialMobileCss=read('03_styles/runtime/garang-commercial-mobile-v1.css');
+const commercialMobileRuntime=read('06_features/ui/runtime/garang-commercial-mobile-v1.js');
 const coreSource=read('06_features/ui/runtime/garang-core-loop-v1.js');
 const planSurface=read('06_features/ui/runtime/garang-plan-execution-ui-v1.js');
 const coreCss=read('03_styles/runtime/garang-core-loop-v1.css');
@@ -68,6 +69,22 @@ assert.match(commercialMobileCss,/\.garang-record-sheet\{[\s\S]*border-radius:26
 assert.match(commercialMobileCss,/\.workout-execution-v2 \.workout-session-bar\.is-live/,'commercial mobile system must preserve and visually elevate the live workout state');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.gpt-composer/,'Coach composer must share the native mobile surface language');
 assert.match(commercialMobileCss,/@media\(max-width:799px\)/,'commercial design system must be explicitly mobile-first');
+assert.match(html,/garang-commercial-mobile-v1\.js\?v=1\.0\.0-app-native/,'commercial mobile presentation runtime must boot explicitly');
+assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-commercial-mobile-v1.js'),'runtime manifest must own the commercial mobile presentation runtime');
+assert.match(commercialMobileRuntime,/VERSION='garang-commercial-mobile-v1\.0\.0'/,'commercial mobile runtime must expose a stable version');
+assert.doesNotMatch(commercialMobileRuntime,/localStorage\.|firebase\.|firestore|saveState\(|state\.[a-zA-Z]+\s*=/,'commercial mobile runtime must remain presentation-only and write-free');
+assert.match(commercialMobileRuntime,/annotateNutrition/,'commercial runtime must annotate Nutrition presentation');
+assert.match(commercialMobileRuntime,/annotateRunning/,'commercial runtime must annotate Running presentation');
+assert.match(commercialMobileRuntime,/annotateBody/,'commercial runtime must annotate Body presentation');
+assert.match(commercialMobileRuntime,/annotateCoach/,'commercial runtime must annotate Coach presentation');
+assert.match(commercialMobileRuntime,/annotateProgress/,'commercial runtime must annotate Progress presentation');
+assert.match(commercialMobileCss,/FINAL COMMERCIAL SCREEN PASS/,'commercial design system must include the final P2-P5 screen pass');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="nutrition"\] \.nutrition-quick-summary/,'Nutrition must have a dedicated commercial hero');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="running"\] \[data-gapp-role="running-live"\]/,'Running must have a dedicated live performance hero');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="body"\] \.body-hero/,'Body must use the premium diagnostic surface');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.gpt-composer/,'Coach must use the native composer treatment');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="progress"\] #garangAccumulationOverview/,'Progress must use the accumulation-first commercial surface');
+
 
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
