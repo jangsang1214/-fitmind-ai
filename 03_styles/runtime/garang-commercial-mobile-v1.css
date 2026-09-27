@@ -1,0 +1,363 @@
+/* GARANG Commercial Mobile Design v1
+   Goal: transform the product from responsive web dashboard into a premium mobile performance app
+   without changing canonical routes, data owners, or Golden Path behavior.
+*/
+:root{
+  --gapp-bg:#070907;
+  --gapp-surface:#0d100e;
+  --gapp-surface-2:#121613;
+  --gapp-surface-3:#181d19;
+  --gapp-line:rgba(239,244,238,.085);
+  --gapp-line-strong:rgba(239,244,238,.14);
+  --gapp-text:#f2f4ef;
+  --gapp-text-2:rgba(242,244,239,.70);
+  --gapp-text-3:rgba(242,244,239,.44);
+  --gapp-signal:#8fe2c1;
+  --gapp-signal-2:#b8f1da;
+  --gapp-danger:#ef7d6e;
+  --gapp-radius-xs:10px;
+  --gapp-radius-sm:14px;
+  --gapp-radius-md:18px;
+  --gapp-radius-lg:24px;
+  --gapp-shadow:0 18px 54px rgba(0,0,0,.28);
+  --gapp-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+html,body{background:var(--gapp-bg)!important;color:var(--gapp-text)!important}
+body{background-image:
+  radial-gradient(circle at 90% -10%,rgba(92,168,139,.10),transparent 32%),
+  radial-gradient(circle at 8% 38%,rgba(92,168,139,.035),transparent 28%)!important;
+  background-attachment:fixed!important
+}
+
+/* App chrome — strip dashboard utility UI from the primary mobile frame */
+#appView:not([hidden])>.topbar{
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+#appView:not([hidden])>.topbar .brand.mini{min-width:0}
+#appView:not([hidden])>.topbar .brand.mini span{display:none!important}
+#appView:not([hidden])>.topbar .brand.mini b{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-size:13px!important;font-weight:800!important;letter-spacing:.16em!important
+}
+#appView:not([hidden]) .sync-badge,
+#appView:not([hidden]) #planBadge,
+#appView:not([hidden]) #logoutBtn{display:none!important}
+#appView:not([hidden]) #profileTopBtn{
+  width:34px!important;height:34px!important;min-width:34px!important;
+  padding:0!important;border-radius:50%!important;
+  border:1px solid var(--gapp-line-strong)!important;
+  background:linear-gradient(145deg,#1a201b,#0d100e)!important;
+  color:transparent!important;font-size:0!important;position:relative!important
+}
+#appView:not([hidden]) #profileTopBtn::before{
+  content:"";position:absolute;left:50%;top:8px;translate:-50% 0;
+  width:8px;height:8px;border-radius:50%;background:var(--gapp-text-2)
+}
+#appView:not([hidden]) #profileTopBtn::after{
+  content:"";position:absolute;left:50%;bottom:7px;translate:-50% 0;
+  width:15px;height:8px;border-radius:9px 9px 6px 6px;
+  border:1.5px solid var(--gapp-text-2);border-bottom:0
+}
+#appView:not([hidden]) #settingsTopBtn{
+  width:34px!important;height:34px!important;min-width:34px!important;
+  padding:0!important;border-radius:50%!important;
+  background:transparent!important;border:1px solid transparent!important;
+  color:var(--gapp-text-2)!important;font-size:17px!important
+}
+
+/* Unified page typography */
+#main .page-head{margin:0 0 16px!important;padding:2px 0 0!important}
+#main .page-head h1,
+#main[data-garang-screen="today"]>.page-head h1,
+#main .coach-app-head h1{
+  margin:0!important;
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-size:clamp(28px,7vw,38px)!important;
+  font-weight:760!important;line-height:1.06!important;letter-spacing:-.045em!important;
+  color:var(--gapp-text)!important
+}
+#main .page-head p{margin:7px 0 0!important;color:var(--gapp-text-3)!important;font-size:12px!important;line-height:1.5!important}
+#main .section-title{margin:22px 0 10px!important}
+#main .section-title h2{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-size:13px!important;font-weight:760!important;letter-spacing:-.015em!important
+}
+#main .eyebrow,#main .kicker,#main [class*="eyebrow"]{
+  color:var(--gapp-text-3)!important;font-family:"Noto Sans KR",system-ui,sans-serif!important
+}
+
+/* One component language */
+#main .card,
+#main .list-item,
+#main .status-visual-card,
+#main .today-plan-card,
+#main .coach-status-card,
+#main .one-rm-panel,
+#main .body-hero,
+#main .body-attachment-details{
+  border:1px solid var(--gapp-line)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.017),rgba(255,255,255,0)),var(--gapp-surface)!important;
+  border-radius:var(--gapp-radius-md)!important;
+  box-shadow:none!important
+}
+#main .primary,
+#main button.primary{
+  min-height:48px!important;border-radius:14px!important;
+  border:1px solid rgba(143,226,193,.28)!important;
+  background:linear-gradient(180deg,#2b7059,#235b49)!important;
+  color:#f7fbf8!important;font-weight:760!important;
+  box-shadow:0 8px 22px rgba(26,93,71,.18)!important;
+  transition:transform .14s var(--gapp-ease),filter .14s ease!important
+}
+#main .primary:active,#main button.primary:active{transform:scale(.975)!important}
+#main .ghost,#main button.ghost{
+  min-height:44px!important;border-radius:13px!important;
+  border:1px solid var(--gapp-line-strong)!important;background:var(--gapp-surface-2)!important;color:var(--gapp-text-2)!important
+}
+#main input,#main select,#main textarea{
+  min-height:46px!important;border-radius:13px!important;
+  border:1px solid var(--gapp-line-strong)!important;
+  background:#0b0e0c!important;color:var(--gapp-text)!important
+}
+#main input:focus,#main select:focus,#main textarea:focus{
+  border-color:rgba(143,226,193,.55)!important;
+  box-shadow:0 0 0 3px rgba(143,226,193,.08)!important
+}
+
+/* Record sheet: native action sheet rather than website menu */
+.garang-record-backdrop{
+  background:rgba(0,0,0,.68)!important;
+  -webkit-backdrop-filter:blur(10px)!important;backdrop-filter:blur(10px)!important
+}
+.garang-record-sheet{
+  max-width:560px!important;
+  border:1px solid var(--gapp-line-strong)!important;border-bottom:0!important;
+  border-radius:26px 26px 0 0!important;
+  background:linear-gradient(180deg,#121613,#090b0a 72%)!important;
+  box-shadow:0 -24px 64px rgba(0,0,0,.44)!important;
+  padding-top:12px!important
+}
+.garang-record-sheet::before{
+  content:"";display:block;width:42px;height:4px;border-radius:999px;
+  margin:0 auto 18px;background:rgba(242,244,239,.18)
+}
+.garang-record-sheet header span{display:none!important}
+.garang-record-sheet h2{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-size:24px!important;font-weight:780!important;letter-spacing:-.04em!important
+}
+.garang-record-routes{display:grid!important;gap:9px!important;border:0!important}
+.garang-record-route{
+  min-height:72px!important;padding:14px 15px!important;
+  border:1px solid var(--gapp-line)!important;border-radius:16px!important;
+  background:rgba(255,255,255,.022)!important
+}
+.garang-record-route strong{font-size:15px!important;font-weight:760!important}
+.garang-record-route small{font-size:11px!important;color:var(--gapp-text-3)!important}
+.garang-record-route>b{
+  width:30px;height:30px;display:grid;place-items:center;border-radius:50%;
+  background:rgba(143,226,193,.08);color:var(--gapp-signal)!important
+}
+.garang-record-route:active{transform:scale(.985);background:rgba(143,226,193,.07)!important}
+.garang-record-sheet>p{display:none!important}
+
+/* Today: single hero, then secondary evidence. */
+#main[data-garang-screen="today"]>.today-hero.visual-today-hero{
+  margin:0 0 14px!important;padding:0!important;border:0!important;background:transparent!important
+}
+#main[data-garang-screen="today"]>.today-hero .today-body-panel{
+  border-radius:var(--gapp-radius-lg)!important;
+  border:1px solid var(--gapp-line)!important;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(143,226,193,.10),transparent 34%),
+    linear-gradient(160deg,#151a16,#0a0d0b 70%)!important;
+  box-shadow:var(--gapp-shadow)!important
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today{
+  border:0!important;margin:0 0 10px!important;padding:0!important;background:transparent!important
+}
+#main[data-garang-screen="today"]>#garangCoreToday.gcl-today aside>b{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-size:15px!important;font-weight:750!important;color:var(--gapp-text-2)!important
+}
+#main[data-garang-screen="today"] .gtf-next,
+#main[data-garang-screen="today"] [data-gsn-action]{
+  border-radius:15px!important
+}
+
+/* Workout: execution object first, decoration second. */
+.workout-execution-v2 .workout-session-bar{
+  border-radius:20px!important;
+  border:1px solid var(--gapp-line-strong)!important;
+  background:rgba(12,15,13,.94)!important;
+  box-shadow:0 16px 44px rgba(0,0,0,.32)!important;
+  -webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important
+}
+.workout-execution-v2 .workout-session-bar.is-live{
+  border-color:rgba(143,226,193,.30)!important;
+  background:
+    radial-gradient(circle at 18% 0,rgba(143,226,193,.12),transparent 34%),
+    rgba(12,16,14,.96)!important
+}
+.workout-execution-v2 .workout-session-live strong{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;
+  font-weight:740!important;letter-spacing:-.055em!important
+}
+.workout-execution-v2 .workout-session-action-label{font-family:"Noto Sans KR",system-ui,sans-serif!important;font-weight:720!important}
+.workout-execution-v2 .workout-set-row,
+.workout-execution-v2 .set-row,
+.workout-execution-v2 .exercise-card{
+  border-radius:16px!important
+}
+.workout-visual-hero,.workout-hero-v2{
+  border-radius:22px!important;overflow:hidden!important
+}
+.workout-primary-metric strong,.one-rm-primary strong b{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;font-weight:760!important
+}
+
+/* Coach: native messaging surface, less card chrome. */
+#main[data-garang-screen="coach"] .coach-app-head{
+  border:0!important;padding-bottom:8px!important
+}
+#main[data-garang-screen="coach"] .coach-status-card{
+  margin:6px 0 10px!important;border-radius:16px!important
+}
+#main[data-garang-screen="coach"] .gpt-message{padding:10px 0!important}
+#main[data-garang-screen="coach"] .gpt-message.user .gpt-content{
+  border-radius:20px 20px 6px 20px!important;
+  background:#1a211d!important;border:1px solid var(--gapp-line-strong)!important
+}
+#main[data-garang-screen="coach"] .gpt-text{font-size:14px!important;line-height:1.62!important}
+#main[data-garang-screen="coach"] .gpt-composer{
+  border-radius:23px!important;border:1px solid var(--gapp-line-strong)!important;
+  background:rgba(20,25,21,.96)!important;box-shadow:0 14px 34px rgba(0,0,0,.32)!important
+}
+#main[data-garang-screen="coach"] .gpt-send{
+  background:var(--gapp-signal-2)!important;color:#0b120f!important
+}
+
+/* Nutrition/Body/Progress charts and metrics */
+#main[data-garang-screen="nutrition"] .card,
+#main[data-garang-screen="body"] .card,
+#main[data-garang-screen="progress"] .card,
+#main[data-garang-screen="running"] .card{overflow:hidden!important}
+#main .body-metric-tabs button,#main .body-range-tabs button,
+#main .coach-suggestions button,#main .muscle-filter-strip button{
+  border-radius:999px!important;border:1px solid var(--gapp-line-strong)!important;
+  background:var(--gapp-surface-2)!important;color:var(--gapp-text-2)!important
+}
+#main .body-metric-tabs button.active,#main .body-range-tabs button.active,
+#main .muscle-filter-strip button.active{
+  background:var(--gapp-text)!important;color:#0b0d0c!important;border-color:var(--gapp-text)!important
+}
+
+/* Mobile-first frame */
+@media(max-width:799px){
+  #appView:not([hidden])>.topbar{
+    height:calc(58px + env(safe-area-inset-top,0px))!important;
+    min-height:calc(58px + env(safe-area-inset-top,0px))!important;
+    padding:env(safe-area-inset-top,0px) 16px 0!important;
+    background:linear-gradient(180deg,rgba(7,9,7,.98),rgba(7,9,7,.92))!important;
+    -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
+    border-bottom:1px solid rgba(255,255,255,.035)!important
+  }
+  #appView:not([hidden])>#main{
+    width:100%!important;max-width:560px!important;
+    margin:calc(58px + env(safe-area-inset-top,0px)) auto 0!important;
+    padding:14px 16px calc(96px + env(safe-area-inset-bottom,0px))!important
+  }
+  #appView:not([hidden])>#bottomNav{
+    left:50%!important;right:auto!important;bottom:0!important;
+    width:min(100%,560px)!important;translate:-50% 0!important;
+    min-height:calc(70px + env(safe-area-inset-bottom,0px))!important;
+    padding:6px 10px env(safe-area-inset-bottom,0px)!important;
+    grid-template-columns:repeat(4,1fr)!important;
+    border-top:1px solid rgba(255,255,255,.06)!important;
+    background:rgba(8,10,8,.96)!important;
+    -webkit-backdrop-filter:blur(24px)!important;backdrop-filter:blur(24px)!important;
+    box-shadow:0 -14px 40px rgba(0,0,0,.34)!important
+  }
+  #appView:not([hidden])>#bottomNav button{
+    min-height:58px!important;display:grid!important;grid-template-rows:25px 16px!important;
+    place-items:center!important;align-content:center!important;gap:2px!important;
+    padding:5px 3px!important;border:0!important;background:transparent!important;
+    color:var(--gapp-text-3)!important;border-radius:15px!important
+  }
+  #appView:not([hidden])>#bottomNav button>span{
+    position:relative!important;display:block!important;width:23px!important;height:23px!important;
+    border:1.5px solid currentColor!important;border-radius:7px!important;
+    opacity:.92!important
+  }
+  #appView:not([hidden])>#bottomNav button[data-page="today"]>span::after{
+    content:"";position:absolute;left:5px;right:5px;bottom:5px;height:5px;border-radius:2px;background:currentColor
+  }
+  #appView:not([hidden])>#bottomNav button[data-page="log"]>span::before,
+  #appView:not([hidden])>#bottomNav button[data-page="log"]>span::after{
+    content:"";position:absolute;background:currentColor;border-radius:2px
+  }
+  #appView:not([hidden])>#bottomNav button[data-page="log"]>span::before{width:11px;height:2px;left:5px;top:10px}
+  #appView:not([hidden])>#bottomNav button[data-page="log"]>span::after{height:11px;width:2px;left:10px;top:5px}
+  #appView:not([hidden])>#bottomNav button[data-page="coach"]>span{border-radius:10px 10px 10px 4px!important}
+  #appView:not([hidden])>#bottomNav button[data-page="coach"]>span::after{
+    content:"";position:absolute;left:4px;right:4px;top:7px;height:2px;background:currentColor;border-radius:2px;
+    box-shadow:0 5px 0 currentColor
+  }
+  #appView:not([hidden])>#bottomNav button[data-page="progress"]>span::after{
+    content:"";position:absolute;left:5px;bottom:4px;width:3px;height:7px;background:currentColor;border-radius:2px;
+    box-shadow:5px -4px 0 currentColor,10px -8px 0 currentColor
+  }
+  #appView:not([hidden])>#bottomNav button b{
+    font-family:"Noto Sans KR",system-ui,sans-serif!important;
+    font-size:9px!important;font-weight:680!important;line-height:1!important;letter-spacing:-.01em!important;color:inherit!important
+  }
+  #appView:not([hidden])>#bottomNav button.active{
+    color:var(--gapp-signal-2)!important;background:rgba(143,226,193,.045)!important
+  }
+
+  #menuBtn{order:3!important;margin-left:auto!important}
+  #appView:not([hidden])>.topbar .brand.mini{order:1!important}
+  #appView:not([hidden])>.topbar .top-actions{order:2!important;margin-left:auto!important}
+  #appView:not([hidden])>.topbar #menuBtn{
+    background:transparent!important;border:0!important;color:var(--gapp-text-2)!important;font-size:18px!important
+  }
+
+  #main .card{padding:16px!important}
+  #main .page-head{margin-bottom:14px!important}
+  #main .section-title{margin-top:20px!important}
+  #main .today-snapshot{grid-template-columns:1fr 1fr!important;border-radius:16px!important}
+  #main .today-snapshot>div{min-height:72px!important;padding:12px!important}
+  #main .today-snapshot strong{font-size:22px!important;font-weight:720!important}
+
+  .garang-record-sheet{
+    width:100%!important;max-height:min(82dvh,740px)!important;
+    padding:12px 16px calc(22px + env(safe-area-inset-bottom,0px))!important
+  }
+
+  .workout-execution-v2 .workout-session-bar{
+    top:calc(env(safe-area-inset-top,0px) + 64px)!important
+  }
+  .workout-execution-v2 .workout-session-bar.is-live{
+    top:calc(env(safe-area-inset-top,0px) + 64px)!important
+  }
+
+  #main[data-garang-screen="coach"] .coach-bottom-stack{
+    bottom:calc(72px + env(safe-area-inset-bottom,0px))!important
+  }
+
+  #main .visual-today-hero,
+  #main .workout-visual-hero,
+  #main .workout-hero-v2,
+  #main .body-hero{grid-template-columns:1fr!important}
+}
+
+/* Motion baseline */
+@media(prefers-reduced-motion:no-preference){
+  .garang-record-sheet{animation:gapp-sheet-in .26s var(--gapp-ease)}
+  #appView:not([hidden])>#bottomNav button,
+  #main .card,#main .primary,#main .ghost{transition:transform .16s var(--gapp-ease),background .16s ease,border-color .16s ease,color .16s ease!important}
+  #appView:not([hidden])>#bottomNav button:active{transform:scale(.94)}
+}
+@keyframes gapp-sheet-in{from{transform:translateY(16px);opacity:.7}to{transform:translateY(0);opacity:1}}
