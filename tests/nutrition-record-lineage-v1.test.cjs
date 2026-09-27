@@ -9,6 +9,15 @@ assert.match(app,/nutritionSource:\{source:'user_entered'\},userOverride:true/,'
 assert.match(app,/function normalizeMealItem/,'meal normalization must preserve lineage fields');
 assert.match(app,/secondaryNutrients\(f,ratio\)/,'official Food DB items must preserve scaled secondary nutrients');
 assert.match(app,/secondaryNutrientCoverage:secondary\.coverage/,'saved meals must expose secondary nutrient coverage instead of fabricating zeroes');
+assert.match(app,/function recentReusableMeals\(limit=3\)/,'Nutrition must expose a bounded recent-meal reuse helper');
+assert.match(app,/data-repeat-meal=/,'recent meals must be reusable from the Nutrition surface');
+assert.match(app,/function reuseMealToDraft\(mealId\)/,'recent meal reuse must route through a draft-only helper');
+assert.match(app,/mealDraft\.push\(\.\.\.rows\)/,'recent meal reuse must add to the editable draft rather than silently saving');
+assert.match(app,/secondaryToday=secondaryNutrientSummary\(dayMeals\(\)\.flatMap/,'Nutrition summary must derive secondary nutrients from actual saved meal items');
+assert.match(app,/fiberToday!==null\|\|sodiumToday!==null/,'Nutrition summary must only surface observed secondary nutrients');
+assert.match(app,/보조 영양소는 출처 값이 모두 있는 항목만 합산/,'Nutrition summary must disclose complete-coverage-only semantics');
+assert.match(app,/normalizeMealItem\(\{\.\.\.item,id:uid\(\)\}\)/,'recent meal reuse must preserve nutrient lineage while generating fresh item ids');
+assert.doesNotMatch(app,/state\.meals\.push\(meal\).*nutrition_recent_meal_reused/s,'recent meal reuse must not silently persist a new meal');
 
 const Food=require('../02_core/food-intelligence-v2.js');
 const canonical=Food.toMealItem({food_id:'F0003',name:'잡곡밥',basis_g:100,kcal:146,protein:5.3,carbs:29.33,fat:.87,fiber:6.1,sodium:3,nutrition_status:'verified',provenance:{provider:'MFDS K-FIND'}},200);

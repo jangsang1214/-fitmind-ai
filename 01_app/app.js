@@ -256,6 +256,17 @@ function render(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.c
 
 function todayWorkouts(){return state.workouts.filter(x=>x.date===today());}
 function dayMeals(date=today()){return state.meals.filter(x=>x.date===date);}
+function reusableMealSignature(meal){return (Array.isArray(meal?.items)?meal.items:[]).map(item=>`${String(item?.foodId||item?.name||'').trim().toLowerCase()}@${Math.round(num(item?.grams,0))}`).sort().join('|');}
+function recentReusableMeals(limit=3){
+  const seen=new Set(),rows=[];
+  for(const meal of (Array.isArray(state.meals)?state.meals:[]).slice().sort((a,b)=>dateMs(b.date)-dateMs(a.date)||String(b.createdAt||'').localeCompare(String(a.createdAt||'')))){
+    if(!Array.isArray(meal?.items)||!meal.items.length)continue;
+    if(!withinDays(meal.date,30))continue;
+    const signature=reusableMealSignature(meal);if(!signature||seen.has(signature))continue;
+    seen.add(signature);rows.push(meal);if(rows.length>=limit)break;
+  }
+  return rows;
+}
 function totalsMeals(date=today()){return dayMeals(date).reduce((a,x)=>({kcal:a.kcal+num(x.kcal),protein:a.protein+num(x.protein),carbs:a.carbs+num(x.carbs),fat:a.fat+num(x.fat)}),{kcal:0,protein:0,carbs:0,fat:0});}
 function latestCheckin(){return state.checkins.filter(x=>x.date===today()).at(-1)||null;}
 function latestBody(){return state.body.slice().sort((a,b)=>dateMs(a.date)-dateMs(b.date)).at(-1)||null;}
@@ -593,11 +604,12 @@ function resetAdaptiveNutritionTarget(){
  saveState({event:'nutrition_target_reset',source:'adaptive_nutrition'});toast('기본 목표 추정으로 돌아갔습니다.');render();
 }
 function nutritionPage(){
- const t=totalsMeals(),scan=mealScanDraft,proteinPct=clamp(Math.round(t.protein/Math.max(1,proteinTarget())*100),0,100);
+ const t=totalsMeals(),scan=mealScanDraft,proteinPct=clamp(Math.round(t.protein/Math.max(1,proteinTarget())*100),0,100),recentMeals=recentReusableMeals(3),secondaryToday=secondaryNutrientSummary(dayMeals().flatMap(meal=>Array.isArray(meal?.items)?meal.items:[])),fiberToday=secondaryToday.totals.fiber,sodiumToday=secondaryToday.totals.sodium;
  const scanItems=Array.isArray(scan?.items)?scan.items:[],unmatched=Array.isArray(scan?.unmatched)?scan.unmatched:[],scanMode=scan?.scanMode==='label'?'label':'meal',labelMode=scanMode==='label',barcode=barcodeDraft,barcodeItem=barcode?.item||null,barcodeValue=String(barcode?.displayBarcode||barcode?.barcode||'');
  return `${pageHead('LOG / NUTRITION','식단','')}
-<section class="card nutrition-quick-summary"><div class="nutrition-summary-main"><span class="eyebrow">TODAY</span><strong>${Math.round(t.kcal)}<small> kcal</small></strong><span>단백질 ${Math.round(t.protein)}g / ${proteinTarget()}g</span></div><div class="nutrition-summary-macros"><span><b>P</b>${Math.round(t.protein)}g</span><span><b>C</b>${Math.round(t.carbs)}g</span><span><b>F</b>${Math.round(t.fat)}g</span></div><div class="nutrition-summary-progress"><i><em style="width:${proteinPct}%"></em></i><small>단백질 목표 ${proteinPct}%</small></div></section>
+<section class="card nutrition-quick-summary"><div class="nutrition-summary-main"><span class="eyebrow">TODAY</span><strong>${Math.round(t.kcal)}<small> kcal</small></strong><span>단백질 ${Math.round(t.protein)}g / ${proteinTarget()}g</span></div><div class="nutrition-summary-macros"><span><b>P</b>${Math.round(t.protein)}g</span><span><b>C</b>${Math.round(t.carbs)}g</span><span><b>F</b>${Math.round(t.fat)}g</span></div>${fiberToday!==null||sodiumToday!==null?`<div class="nutrition-summary-secondary">${fiberToday!==null?`<span><b>Fiber</b>${Math.round(fiberToday*10)/10}g</span>`:''}${sodiumToday!==null?`<span><b>Na</b>${Math.round(sodiumToday)}mg</span>`:''}</div>`:''}<div class="nutrition-summary-progress"><i><em style="width:${proteinPct}%"></em></i><small>단백질 목표 ${proteinPct}%${fiberToday!==null||sodiumToday!==null?' · 보조 영양소는 출처 값이 모두 있는 항목만 합산':''}</small></div></section>
 ${adaptiveNutritionCard()}
+${recentMeals.length?`<details class="card recent-meals-card"><summary><span><b>최근 식사 다시 담기</b><small>지난 30일 · 최대 3개 · 초안으로만 불러옵니다</small></span><span>＋</span></summary><div class="list recent-meals-list">${recentMeals.map(meal=>`<div class="list-item recent-meal-row"><div><strong>${esc(meal.name||meal.items.map(i=>i.name).slice(0,2).join(' + '))}</strong><div class="muted">${meal.date} · ${Math.round(num(meal.kcal))} kcal · P ${Math.round(num(meal.protein))}g</div></div><button class="ghost small" data-repeat-meal="${esc(meal.id)}">초안에 담기</button></div>`).join('')}</div><div class="helper">기존 영양 출처와 보조 영양소 값을 그대로 복사합니다. 저장 전 음식·양을 수정할 수 있습니다.</div></details>`:''}
 <section class="card meal-scan-card">
  <div class="meal-scan-header"><div><span class="eyebrow">${labelMode?'NUTRITION LABEL':'MEAL SCAN'}</span><h3>${labelMode?'영양 라벨을 사진으로 기록하세요':'식사를 사진으로 기록하세요'}</h3><p>${labelMode?'제품명과 영양성분표를 읽고 K-FIND 제품을 먼저 찾습니다. 매칭되지 않으면 사진에 인쇄된 값만 확인용 초안으로 사용합니다.':'분석 후 저장 전에 직접 확인할 수 있습니다. GARANG DB를 먼저 쓰고, 없으면 신뢰 가능한 웹 출처를 찾아 계산합니다.'}</p></div>${scan?.url?`<button id="${labelMode?'pickLabelScan':'pickMealScan'}" class="ghost">사진 변경</button>`:''}</div>
  ${scan?.url?`<div class="meal-scan-workspace"><div class="meal-scan-preview"><img src="${scan.url}" alt="${labelMode?'영양 라벨 사진 미리보기':'식사 사진 미리보기'}"><button id="clearMealScan" class="meal-scan-remove" aria-label="사진 제거">×</button></div><div class="meal-scan-actions"><button id="analyzeMealScan" class="primary">${scanItems.length||unmatched.length?'다시 분석':labelMode?'라벨 읽기':'AI로 분석'}</button><small>${labelMode?'라벨 인식 결과는 K-FIND 제품 매칭을 우선합니다. DB 미매칭 라벨 값은 반드시 확인 후 식사 초안에 추가됩니다.':'사진 인식 결과를 Food DB와 연결했습니다. 저장 전 음식과 양을 확인하세요. 미매칭만 웹 검색하고 확인 후 저장합니다.'}</small></div>
@@ -1004,9 +1016,19 @@ function bindNutrition(){
   installNutritionDraftBridge();
   $('foodSearch')?.addEventListener('input',()=>{supplementalSelectedFood=null;fillFood(false);});if($('fillFood'))$('fillFood').onclick=fillFoodExpanded;if($('addFood'))$('addFood').onclick=addMealDraft;if($('saveMeal'))$('saveMeal').onclick=saveMealGroup;
   document.querySelectorAll('[data-remove-food]').forEach(b=>b.onclick=()=>{mealDraft.splice(num(b.dataset.removeFood),1);render();});document.querySelectorAll('[data-edit-food]').forEach(b=>b.onclick=()=>editMeal(num(b.dataset.editFood)));
+  document.querySelectorAll('[data-repeat-meal]').forEach(button=>button.onclick=()=>reuseMealToDraft(button.dataset.repeatMeal));
   if($('pickMealScan'))$('pickMealScan').onclick=()=>pickNutritionScan('meal');if($('pickLabelScan'))$('pickLabelScan').onclick=()=>pickNutritionScan('label');if($('clearMealScan'))$('clearMealScan').onclick=()=>{window.GarangPhotoEvidence?.revoke(mealScanDraft);mealScanDraft=null;render();};if($('analyzeMealScan'))$('analyzeMealScan').onclick=analyzeMealScan;
   $('confirmMealScan')?.addEventListener('click',()=>{const rows=mealScanDraft.items.map(x=>({...x,id:uid()}));for(const item of rows){const barcode=item?.barcode||item?.scanEvidence?.barcode;if(barcode)rememberBarcodeMapping(barcode,item,{source:item?.scanEvidence?.source||'label',brand:item?.brand||null,reportNo:item?.reportNo||item?.scanEvidence?.reportNo||null});}mealDraft.push(...rows);toast('분석 초안을 식사에 추가했습니다. 저장 전 수정할 수 있습니다.');mealScanDraft.items=[];render();});
   if($('lookupBarcode'))$('lookupBarcode').onclick=()=>lookupBarcodeNutrition($('barcodeInput')?.value||'');$('barcodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();lookupBarcodeNutrition(event.currentTarget.value);}});if($('pickBarcodeImage'))$('pickBarcodeImage').onclick=pickBarcodeImage;if($('clearBarcode'))$('clearBarcode').onclick=()=>{barcodeDraft=null;render();};if($('confirmBarcode'))$('confirmBarcode').onclick=confirmBarcodeDraft;if($('barcodeUseLabel'))$('barcodeUseLabel').onclick=()=>pickNutritionScan('label');$('applyAdaptiveNutritionTarget')?.addEventListener('click',applyAdaptiveNutritionTarget);$('resetAdaptiveNutritionTarget')?.addEventListener('click',resetAdaptiveNutritionTarget);bindPhotoEvidenceHistory();
+}
+function reuseMealToDraft(mealId){
+  const meal=(Array.isArray(state.meals)?state.meals:[]).find(row=>String(row?.id||'')===String(mealId||''));
+  if(!meal?.items?.length)return toast('다시 담을 식사 기록을 찾지 못했습니다.');
+  const rows=meal.items.map(item=>normalizeMealItem({...item,id:uid()}));
+  mealDraft.push(...rows);
+  trackEvent('nutrition_recent_meal_reused',{sourceMealId:String(meal.id||''),items:rows.length});
+  toast(`${rows.length}개 항목을 식사 초안에 담았습니다.`);
+  render();
 }
 function addMealDraft(){const name=$('foodSearch').value.trim();if(!name)return toast('음식을 입력해 주세요.');const primary=findFood(name),supplemental=!primary&&supplementalSelectedFood&&String(supplementalSelectedFood.name||'').trim().toLowerCase()===name.toLowerCase()?supplementalSelectedFood:null,f=primary||supplemental,g=Math.max(1,num($('foodGram').value,100));const x=f?foodItemFromFood(f,g):{id:uid(),foodId:null,name,grams:g,kcal:num($('foodKcal').value),protein:num($('foodProtein').value),carbs:num($('foodCarb').value),fat:num($('foodFat').value),nutritionStatus:'unknown',nutritionSource:{source:'user_entered'},userOverride:true};if(!f&&!x.kcal&&!x.protein&&!x.carbs&&!x.fat)return toast('영양성분을 입력하거나 DB에서 불러와 주세요.');if(!f&&lastFoodSearchMiss&&foodIdentityCore()?.compact?.(lastFoodSearchMiss.value)===foodIdentityCore()?.compact?.(name)){recordFoodIdentityCorrection(name,x);lastFoodSearchMiss=null;}supplementalSelectedFood=null;mealDraft.push(x);toast(`${x.name} 추가`);render();}
 function editMeal(i){const x=mealDraft[i];if(!x)return;$('foodSearch').value=x.name;$('foodGram').value=x.grams;$('foodKcal').value=Math.round(x.kcal);$('foodProtein').value=x.protein.toFixed(1);$('foodCarb').value=x.carbs.toFixed(1);$('foodFat').value=x.fat.toFixed(1);mealDraft.splice(i,1);toast('수정 후 다시 추가해 주세요.');}
