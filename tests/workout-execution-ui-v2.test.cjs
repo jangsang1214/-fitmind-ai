@@ -154,7 +154,7 @@ assert.ok(app.includes('function workoutGroupExecutionContext()')&&app.includes(
 assert.ok(app.includes('function workoutGroupStartIndex(index)')&&app.includes('member.rows[round]?.executionCompleted!==true'),'starting any grouped member must normalize to the earliest incomplete round/member');
 assert.ok(app.includes('executionDraftId:workoutExecutionDraftId||null')&&app.includes('workoutExecutionDraftId=value?.executionDraftId'),'active grouped exercise identity must survive session recovery');
 assert.ok(app.includes('persistExecutionRows(rows)')&&runtime.includes('persistExecutionRows?.(liveSetDraft)'),'live row completion state must persist back into the grouped draft owner');
-assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('activateGroupedExercise?.(grouped.target.index)'),'set completion must auto-advance to the next grouped exercise');
+assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('bridge()?.activateGroupedExercise?.(grouped.target.index);')&&!runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),'set completion must hand off grouped execution synchronously instead of racing a zero-delay timer');
 assert.ok(runtime.includes('if(grouped.roundEnded)startRest')&&runtime.includes('else stopRest()'),'grouped execution must rest only at round boundaries instead of between superset members');
 assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-group-execution-cue'),'group execution must surface current group and round state');
 
@@ -162,3 +162,5 @@ assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-gr
 assert.ok(runtime.includes("readinessScore=context?.readiness?.score")&&runtime.includes("readinessScore===null||readinessScore===undefined?NaN"),'missing readiness must remain unknown instead of coercing to a low score');
 assert.ok(app.includes("if(workoutDraft.length)return toast('진행 중인 운동 초안을 먼저 저장하거나 초기화해 주세요.')"),'starting a Planner program must not overwrite an active unsaved workout draft');
 assert.ok(app.includes("sessionContext(){return {activePlanId:workoutActivePlanId||null")&&app.includes("restoreSessionContext(value)")&&app.includes("workoutActivePlanId=value?.activePlanId")&&runtime.includes("context=bridge()?.sessionContext?.()")&&runtime.includes("restoreSessionContext?.(saved.context||null)"),'active Planner workout identity must survive resilient session persistence and reload');
+
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.4.1-live-session-group-handoff'),'deterministic workout group handoff must be cache-busted');
