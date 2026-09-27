@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
 const Phys=require('../02_core/physiological-signal-intelligence-v1.js');
 const PhysServer=require('../functions/src/physiological-signal-intelligence-v1.cjs');
 const Adaptive=require('../02_core/adaptive-nutrition-learning-v1.js');
@@ -54,6 +55,17 @@ assert.equal(lowAdherence.recommendation.adjustmentEligible,false);
 assert.equal(lowAdherence.recommendation.targetProposal.proposedDailyKcal,2200);
 assert.equal(lowAdherence.recommendation.targetProposal.deltaKcal,0);
 assert.equal(lowAdherence.recommendation.targetProposal.requiresConfirmation,false);
+
+const appSource=fs.readFileSync(path.resolve(__dirname,'../01_app/app.js'),'utf8');
+assert.match(appSource,/const adjustmentEligible=model\?\.recommendation\?\.adjustmentEligible===true/,'Adaptive Nutrition UI must require the engine adjustment gate before offering target application');
+const adherenceStart=appSource.indexOf("if(direction==='improve_target_adherence'");
+const adherenceEnd=appSource.indexOf("if(!adjustmentEligible)",adherenceStart);
+assert.ok(adherenceStart>=0&&adherenceEnd>adherenceStart,'low-adherence coaching branch must exist before generic evidence collection');
+const adherenceBlock=appSource.slice(adherenceStart,adherenceEnd);
+assert.match(adherenceBlock,/data-adaptive-nutrition="adherence"/);
+assert.match(adherenceBlock,/이번 주는 목표를 바꾸지 않습니다/);
+assert.match(adherenceBlock,/자동 변경 없음/);
+assert.doesNotMatch(adherenceBlock,/applyAdaptiveNutritionTarget/,'low adherence must never surface an apply-target action');
 
 const planner=Array.from({length:6},(_,i)=>({id:`p${i+1}`,domain:'training'}));
 const scores=[50,55,60,75,80,85],cycleDates=['2026-09-10','2026-09-12','2026-09-14','2026-09-18','2026-09-20','2026-09-22'];
