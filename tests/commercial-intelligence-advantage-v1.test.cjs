@@ -29,6 +29,20 @@ assert.ok(phys.derived.componentCount>=4,'separate long-form metric rows must fu
 assert.equal(phys.metricLatest.hrvMs.source,'watch');
 assert.equal(phys.guardrails.metricLatestFusion,true);
 assert.equal(phys.guardrails.staleSignalsDownweighted,true);
+assert.equal(phys.guardrails.multiDayRecoveryPersistence,true);
+assert.equal(phys.guardrails.persistenceDescriptiveOnly,true);
+
+const persistentSignals=[];
+for(let day=18;day<=21;day++)persistentSignals.push({source:'watch',capturedAt:`${isoDay(day)}T06:00:00Z`,hrvMs:52,restingHeartRateBpm:58,sleepHours:7.8,sleepScore:84,stressScore:2});
+for(let day=22;day<=24;day++)persistentSignals.push({source:'watch',capturedAt:`${isoDay(day)}T06:00:00Z`,hrvMs:45,restingHeartRateBpm:61,sleepHours:6.5,sleepScore:68,stressScore:3.3});
+const persistentState={healthSignals:persistentSignals,workouts:[],runs:[],meals:[],body:[],dailyCheckins:[]};
+const persistent=Phys.build(persistentState,{now}),persistentServer=PhysServer.build(persistentState,{now});
+assert.deepEqual(persistent,persistentServer,'recovery persistence must stay browser/server deterministic');
+assert.equal(persistent.derived.recoveryPersistence.status,'persistent_strain');
+assert.ok(persistent.derived.recoveryPersistence.consecutiveConstrainedDays>=2);
+assert.ok(persistent.derived.reasonCodes.includes('PERSISTENT_RECOVERY_STRAIN'));
+assert.equal(persistent.derived.recoveryConstraint,'guarded','persistence evidence must not auto-escalate guarded recovery into protect');
+assert.equal(persistent.guardrails.persistenceDoesNotAutoEscalate,true);
 
 const guardedHealthSignals=[];
 for(let day=20;day<=23;day++){
