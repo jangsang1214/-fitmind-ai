@@ -86,6 +86,10 @@ assert.ok(polish.includes("v6MeshSVG(gender,side)")&&polish.includes("side==='ba
 assert.ok(polish.includes('data-garang-classical-model="5"')&&polish.includes('g5-silhouette')&&polish.includes('function v5SideSVG')&&polish.includes('data-g3-view="side"'),'Body Model v5 fallback must preserve FRONT / SIDE / BACK capability and interactive muscle zones');
 assert.ok(html.includes('garang-workout-execution-v2.css'),'execution CSS must load');
 assert.ok(html.includes('garang-workout-execution-v2.js'),'execution runtime must load');
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.3.1-group-transition'),'execution runtime cache must identify the deterministic group-transition build');
+assert.ok(runtime.includes("VERSION='workout-execution-v2.3.1-group-transition'"),'execution runtime must identify deterministic group transitions');
+assert.ok(runtime.includes("bridge()?.activateGroupedExercise?.(grouped.target.index);"),'group transitions must activate the next member synchronously');
+assert.equal(runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),false,'group transitions must not depend on a zero-delay timer');
 assert.ok(html.indexOf('garang-workout-library-v2.js')<html.indexOf('garang-workout-execution-v2.js'),'execution layer must load after the workout library layer');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-execution-v2.js'),'runtime manifest must include execution JS');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-workout-execution-v2.css'),'runtime manifest must include execution CSS');
