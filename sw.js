@@ -1,2 +1,2 @@
-/* GARANG SW loader app-shell-v31-20260925 */
-importScripts('./02_core/sw-runtime.js?v=app-shell-v31-20260925');
+/* GARANG SW loader app-shell-v33-20260927 */
+importScripts('./02_core/sw-runtime.js?v=app-shell-v33-20260927');
