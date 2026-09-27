@@ -3,8 +3,8 @@ const assert=require('node:assert/strict');
 const Core=require('../02_core/nutrition-recommendation-v1.js');
 
 const foods=[
-  {food_id:'F-CHICKEN',name:'닭가슴살',basis_g:100,kcal:109,protein:23,carbs:0,fat:1.2,nutrition_status:'approximate',aliases:[]},
-  {food_id:'F-RICE',name:'현미밥',basis_g:100,kcal:157,protein:3.81,carbs:34.29,fat:.48,nutrition_status:'approximate',aliases:['현미']},
+  {food_id:'F-CHICKEN',name:'닭가슴살',basis_g:100,kcal:109,protein:23,carbs:0,fat:1.2,fiber:0,sodium:45,nutrition_status:'approximate',aliases:[]},
+  {food_id:'F-RICE',name:'현미밥',basis_g:100,kcal:157,protein:3.81,carbs:34.29,fat:.48,fiber:2,sodium:2,nutrition_status:'approximate',aliases:['현미']},
   {food_id:'F-SALMON',name:'연어스테이크',basis_g:100,kcal:154,protein:20,carbs:31,fat:15,nutrition_status:'estimated',aliases:[]},
   {food_id:'F-YOGURT',name:'그릭요거트',basis_g:100,kcal:100,protein:10,carbs:4,fat:4,nutrition_status:'approximate',aliases:[]},
   {food_id:'F-EGG',name:'삶은계란',basis_g:100,kcal:184,protein:12.5,carbs:54.4,fat:27.7,nutrition_status:'estimated',aliases:[]},
@@ -24,6 +24,10 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(result.options.length,3);
   assert.ok(result.options[0].items.some(item=>item.foodId==='F-CHICKEN'));
   assert.ok(result.options[0].estimated.protein>0);
+  assert.ok(result.options[0].estimated.fiber>=0);
+  assert.ok(result.options[0].estimated.sodium>=0);
+  assert.equal(result.actual.fiber,null);
+  assert.equal(result.actual.coverage.fiber,0);
   assert.equal(JSON.stringify(state),before,'nutrition recommendation must remain read-only');
   console.log('PASS nutrition recommendation uses goal, target and Food DB without writing');
 }
@@ -36,6 +40,15 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(result.actual.observed.protein,true,'zero is an observed nutrition value');
   assert.equal(result.remaining.protein,112);
   console.log('PASS zero nutrition records stay distinguishable from missing data');
+}
+
+{
+  const state=base();state.meals=[{id:'m1',date,items:[{name:'A',kcal:100,protein:10,carbs:10,fat:2,fiber:3,sodium:120},{name:'B',kcal:100,protein:10,carbs:10,fat:2,fiber:null,sodium:null}]}];
+  const result=Core.recommend(state,foods,{date});
+  assert.equal(result.actual.fiber,null,'partial fiber coverage must not be presented as a complete daily total');
+  assert.equal(result.actual.sodium,null,'partial sodium coverage must not be presented as a complete daily total');
+  assert.equal(result.actual.coverage.fiber,0,'meal-level fiber coverage is incomplete when the saved meal itself has no complete total');
+  console.log('PASS secondary nutrient totals fail closed when coverage is incomplete');
 }
 
 {
