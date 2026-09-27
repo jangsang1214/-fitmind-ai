@@ -263,13 +263,21 @@ function todayPlans(){return state.planner.filter(x=>x.date===today()).sort((a,b
 function workoutKcalToday(){return sum(todayWorkouts(),x=>num(x.kcal));}
 function proteinTarget(){return Math.round(num(state.profile?.weight,67)*1.6);}
 
+function canonicalRecoveryReadiness(){
+  const c=latestCheckin(),legacy=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
+  let model=null;try{model=window.GarangStateIntelligence?.estimateState?.(state,{now:new Date()})||null;}catch{}
+  const fused=Number(model?.readiness?.value);
+  if(Number.isFinite(fused)){const reasons=Array.isArray(model?.readiness?.reasons)?model.readiness.reasons:[],source=reasons.includes('PHYSIOLOGICAL_SIGNAL_ONLY')?'physiological':reasons.includes('PHYSIOLOGICAL_SIGNAL_FUSED')?'fused':'checkin';return {value:clamp(Math.round(fused),0,100),confidence:clamp(num(model?.readiness?.confidence,0),0,1),source,reasons,physiological:model?.physiological||null};}
+  return {value:legacy,confidence:legacy!==null?(c?.date===today()?0.75:0.65):0,source:legacy!==null?'checkin':'none',reasons:legacy!==null?['LEGACY_CHECKIN_FALLBACK']:[],physiological:null};
+}
+
 function performanceScore(){
   const c=latestCheckin(), sevenW=state.workouts.filter(x=>withinDays(x.date,7)), sevenR=state.runs.filter(x=>withinDays(x.date,7)), sevenM=state.meals.filter(x=>withinDays(x.date,7));
   const activityDays=uniqueDays([...sevenW,...sevenR]);const freq=Math.max(1,num(state.onboarding.weeklyFrequency,4));const consistency=clamp(Math.round(activityDays/freq*100),0,100);
   const mealDays=[...new Set(sevenM.map(x=>x.date))];const proteinScores=mealDays.map(d=>clamp(totalsMeals(d).protein/Math.max(1,proteinTarget())*100,0,100));const nutrition=proteinScores.length?Math.round(sum(proteinScores,x=>x)/proteinScores.length):null;
-  const readiness=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
+  const recovery=canonicalRecoveryReadiness(),readiness=recovery.value;
   const body=state.body.length>=2?75:state.body.length?65:null;
-  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null);const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(c?1:0),evidenceDomains=[sevenW.length||sevenR.length,sevenM.length,c,state.body.length].filter(Boolean).length;
+  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null),recoveryEvidence=readiness!==null;const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(recoveryEvidence?1:0),evidenceDomains=[sevenW.length||sevenR.length,sevenM.length,recoveryEvidence,state.body.length].filter(Boolean).length;
   if(!dataCount||evidenceDomains<2)return {total:null,components:{Consistency:null,Nutrition:null,Recovery:null,Body:null},reasons:['두 개 이상의 기록 영역이 쌓이면 GARANG Score를 판단합니다.']};
   const total=Math.round(sum(vals,x=>x)/vals.length);const reasons=[];
   if(readiness!==null&&readiness<60)reasons.push('오늘 회복 상태가 전체 점수를 낮추고 있습니다.');
@@ -279,18 +287,18 @@ function performanceScore(){
   return {total,components:{Consistency:consistency,Nutrition:nutrition,Recovery:readiness,Body:body},reasons};
 }
 function coachDecision(){
-  const c=latestCheckin();const recentW=state.workouts.filter(x=>withinDays(x.date,3));const recentR=state.runs.filter(x=>withinDays(x.date,3));const available=num(c?.availableMinutes,state.onboarding.availableMinutes||60);let readiness=null;
-  if(c)readiness=clamp(Math.round((num(c.sleep,7)/8*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100);
+  const c=latestCheckin(),recovery=canonicalRecoveryReadiness();const recentW=state.workouts.filter(x=>withinDays(x.date,3));const recentR=state.runs.filter(x=>withinDays(x.date,3));const available=num(c?.availableMinutes,state.onboarding.availableMinutes||60),readiness=recovery.value;
   let decision='KEEP',title=`${available}분 기본 훈련`,summary='현재 기록 기준으로 계획을 유지해도 좋습니다.',reasons=[],confidence=.58;
-  if(!c){reasons.push('오늘 컨디션 체크인이 없어 최근 기록 중심으로 판단했습니다.');confidence=.46;}
-  else {reasons.push(`수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${c.energy}/5 · 스트레스 ${c.stress}/5`);confidence=.82;}
+  if(c){reasons.push(`수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${c.energy}/5 · 스트레스 ${c.stress}/5`);confidence=Math.max(.72,recovery.confidence||0);}
+  else if(readiness!==null){reasons.push('최근 HRV · 안정시 심박 · 수면 등 Health 신호를 회복 판단에 반영했습니다.');confidence=Math.max(.55,recovery.confidence||0);}
+  else {reasons.push('오늘 컨디션 체크인과 충분한 Health 신호가 없어 최근 기록 중심으로 판단했습니다.');confidence=.46;}
   if(c&&num(c.sleep)<4.5){decision='REST';title='회복 우선';summary='수면 부족이 커서 고강도 훈련보다 회복을 우선합니다.';reasons.push('수면이 4.5시간 미만입니다.');}
   else if(c&&readiness<45){decision='RECOVER';title=`${Math.min(30,available)}분 회복 세션`;summary='오늘은 강도를 낮추고 움직임과 회복에 집중하는 편이 좋습니다.';reasons.push(`회복 지표가 ${readiness}점으로 낮습니다.`);}
   else if(c&&num(c.soreness)>=4){decision='REPLACE';title=`${Math.min(40,available)}분 대체 세션`;summary='근육통이 높은 부위를 피하고 다른 부위 또는 Zone 2로 대체합니다.';reasons.push(`근육통 ${c.soreness}/5${c.soreArea?` · ${c.soreArea}`:''}`);}
   else if(recentW.length>=3&&(!c||readiness<68)){decision='REDUCE';title=`${Math.min(45,available)}분 감량 세션`;summary='최근 훈련량을 고려해 오늘 총 볼륨을 약 20% 낮춥니다.';reasons.push(`최근 3일 운동 기록 ${recentW.length}개가 있습니다.`);}
   else {if(recentW.length)reasons.push(`최근 3일 운동 기록 ${recentW.length}개를 반영했습니다.`);if(recentR.length)reasons.push(`최근 러닝 ${recentR.length}회를 함께 반영했습니다.`);}
   const plan=todayPlans()[0];if(plan)reasons.push(`오늘 Planner의 “${plan.title}” 일정과 함께 판단했습니다.`);
-  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available};
+  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available,recoverySource:recovery.source,recoveryConfidence:recovery.confidence,physiological:recovery.physiological};
 }
 function weeklyReview(){const throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today()),w=state.workouts.filter(throughToday),r=state.runs.filter(throughToday),m=state.meals.filter(throughToday),p=state.planner.filter(throughToday);const completed=p.filter(x=>x.completed).length;return {sessions:uniqueDays(w),volume:Math.round(sum(w,workoutRecordVolume)),runKm:sum(r,x=>num(x.distance)),protein:uniqueDays(m)?Math.round(sum([...new Set(m.map(x=>x.date))],d=>totalsMeals(d).protein)/uniqueDays(m)):0,planRate:p.length?Math.round(completed/p.length*100):0};}
 function personalPerformanceDecisionLoop(){
@@ -398,10 +406,29 @@ function todayBodyFocus(){const ci=latestCheckin();if(ci?.soreArea){const key=mu
 function workoutLibraryFor(key){let items=db.exercise||[];if(key&&key!=='all'&&key!=='full')items=items.filter(x=>muscleKeyFromLabel(x.primary_muscle)===key);return items.slice(0,8);}
 function workoutMuscleButtons(active){const groups=[['all','전체'],['chest','가슴'],['back','등'],['shoulders','어깨'],['legs','하체'],['core','코어'],['biceps','이두'],['triceps','삼두']];return `<div class="muscle-filter-strip">${groups.map(([k,l])=>`<button type="button" class="${active===k?'active':''}" data-muscle-pick="${k}">${l}</button>`).join('')}</div>`;}
 
+function recoveryMetricEvidence(label,metric,baseline,unit,digits=0){
+ if(!metric||metric.value===null||metric.value===undefined||!Number.isFinite(Number(metric.value)))return '';
+ const value=Number(metric.value),base=Number(baseline?.median??baseline?.mean),age=Number(metric.ageHours),fmt=n=>digits?Number(n).toFixed(digits):Math.round(Number(n)).toString(),bits=[`${label} ${fmt(value)}${unit}`];
+ if(Number.isFinite(base)&&base>0)bits.push(`기준 ${fmt(base)}${unit}`);
+ if(Number.isFinite(age))bits.push(age<1?'1h 미만':`${Math.round(age)}h 전`);
+ return bits.join(' · ');
+}
+function recoveryEvidenceMarkup(decision){
+ const p=decision?.physiological;if(!p||p.quality==='insufficient')return '';
+ const latest=p.metricLatest||{},base=p.baselines||{},lines=[
+  recoveryMetricEvidence('HRV',latest.hrvMs,base.hrvMs,' ms'),
+  recoveryMetricEvidence('RHR',latest.restingHeartRateBpm,base.restingHeartRateBpm,' bpm'),
+  recoveryMetricEvidence('수면',latest.sleepHours,base.sleepHours,' h',1),
+  recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0)
+ ].filter(Boolean);
+ if(!lines.length)return '';
+ const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100));
+ return `<details class="helper" data-recovery-evidence><summary>Health 근거${score!==null&&score!==undefined?` · 회복 ${Math.round(num(score))}`:''}${band?` · ${esc(band)}`:''}</summary><div>${lines.map(line=>`<span>${esc(line)}</span>`).join('<br>')}</div><small>최근 신호와 개인 기준선 비교 · 신뢰 ${confidence}% · 의료 진단 아님</small></details>`;
+}
 function pageHead(kicker,title,desc='',action=''){return `<div class="page-head"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1>${desc?`<p class="muted">${desc}</p>`:''}</div>${action}</div>`;}
 function todayPage(){
   const score=performanceScore(),dec=coachDecision(),loop=personalPerformanceDecisionLoop(),next=loop?.nextAction,t=totalsMeals(),body=latestBody(),ci=latestCheckin(),plans=todayPlans(),focus=todayBodyFocus();const scoreText=score.total??'—';
-  const readiness=dec.readiness??null,decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
+  const readiness=dec.readiness??null,healthEvidence=recoveryEvidenceMarkup(dec),decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
   return `${pageHead('TODAY','오늘', '', `<button class="ghost small" data-pagego="settings">설정</button>`)}
   <section class="card today-hero visual-today-hero">
     <div class="today-body-panel"><div class="today-body-label"><span class="eyebrow">${esc(focus.kind)}</span><strong>${esc(focus.label)}</strong></div>${muscleMapSvg(focus.key,'todayMuscleMap','compact-map')}</div>
@@ -413,8 +440,8 @@ function todayPage(){
     <div><span>ENERGY</span><strong>${ci?ci.energy:'—'}</strong><small>${ci?'/ 5':'check-in'}</small></div>
     <div><span>BODY</span><strong>${shownWeight(body?.weight||state.profile?.weight||'',1)||'—'}</strong><small>${weightUnit()}</small></div>
   </section>
-  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci?'jade':''}">${ci?'CHECKED':'30 SEC'}</span></div>
-  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':'상태 저장'}</button></section>
+  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci||healthEvidence?'jade':''}">${ci?'CHECKED':healthEvidence?'HEALTH':'30 SEC'}</span></div>
+  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>${healthEvidence}`:healthEvidence?`<div class="status-empty-visual"><div class="status-ring">${readiness??'—'}</div><div><strong>Health 신호로 회복 상태를 읽고 있습니다.</strong><span>체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다.</span></div></div>${healthEvidence}`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':healthEvidence?'체크인 추가':'상태 저장'}</button></section>
   <div class="section-title"><h2>오늘 일정</h2><button class="text-btn" data-pagego="planner">전체 보기</button></div>
   <section class="card today-plan-card">${plans.length?plans.slice(0,3).map(planRow).join(''):`<button class="empty-action" data-pagego="planner" data-golden-path="planner-entry"><span>＋</span><strong>오늘 계획 만들기</strong><small>Planner에서 목표와 오늘의 방향을 확인합니다.</small></button>`}</section>
   <div class="section-title"><h2>빠른 기록</h2></div><div class="quick-visual-grid"><button class="quick-visual workout" data-pagego="workout">${miniBodySvg('chest')}<span><b>운동</b><small>부위를 보고 기록</small></span></button><button class="quick-visual meal" data-pagego="nutrition"><span class="quick-camera">◎</span><span><b>식단</b><small>사진으로 시작</small></span></button><button class="quick-visual run" data-pagego="running"><span class="quick-route">⌁</span><span><b>러닝</b><small>거리와 페이스</small></span></button><button class="quick-visual body" data-pagego="body"><span class="quick-body">◇</span><span><b>바디</b><small>체성분 변화</small></span></button></div>`;
