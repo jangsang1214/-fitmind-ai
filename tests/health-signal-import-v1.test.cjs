@@ -73,4 +73,7 @@ assert.match(appSource,/data-recovery-evidence/,'Today must expose progressive d
 assert.match(appSource,/Health 신호로 회복 상태를 읽고 있습니다/,'Today must not present physiological-only recovery as an empty state');
 assert.match(appSource,/체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다/,'Health evidence must invite subjective context without replacing it');
 assert.match(appSource,/최근 신호와 개인 기준선 비교 · 신뢰/,'Health evidence must disclose baseline/freshness confidence context');
+assert.match(appSource,/data-recovery-persistence/,'Today Health evidence must expose multi-day recovery persistence when available');
+assert.match(appSource,/최근 3일 흐름/,'Today Health evidence must label the bounded recovery trend window');
+assert.match(appSource,/추세는 설명용/,'Today must disclose that recovery persistence is descriptive rather than a diagnosis or automatic mutation');
 console.log('health-signal-import-v1: PASS');
