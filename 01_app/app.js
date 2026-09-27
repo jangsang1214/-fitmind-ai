@@ -493,7 +493,7 @@ function renderRunningInsights(){
  if(!api?.build)return '';
  const x=api.build(state,{asOf:new Date(today()+'T12:00:00')}),pace=v=>Number.isFinite(Number(v))?paceText({duration:Number(v),distance:1}):'—',card=(label,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${value}</strong><small>${meta}</small></article>`;
  if(!x.evidence?.validRuns)return `<div class="section-title"><h2>${ux('러닝 분석','Running insights')}</h2></div><div class="card empty">${ux('러닝을 저장하면 페이스 추세, 부하, split 패턴과 개인 기록이 자동으로 정리됩니다.','Save a run to build pace trend, load, split patterns and personal records.')}</div>`;
- const trend=x.trend||{},load=x.load||{},best=x.bestEfforts||{},analysis=x.analysis||{},split=analysis.split||{},guide=analysis.paceGuide||{},distribution=analysis.distribution||{},projection=analysis.projection||{},progression=analysis.progression||{};
+ const trend=x.trend||{},load=x.load||{},best=x.bestEfforts||{},analysis=x.analysis||{},split=analysis.split||{},guide=analysis.paceGuide||{},distribution=analysis.distribution||{},projection=analysis.projection||{},progression=analysis.progression||{},weekly=analysis.weeklyStructure||{};
  const trendLabel=trend.status==='measured'?(trend.direction==='improving'?ux('개선','Improving'):trend.direction==='slower'?ux('느려짐','Slower'):ux('안정','Stable')):ux('데이터 수집 중','Collecting');
  const loadLabel=load.band==='spike'?ux('급증','Spike'):load.band==='drop'?ux('감소','Drop'):load.band==='stable'?ux('안정','Stable'):ux('미측정','Unknown');
  const patternLabel=split.pattern==='negative_split'?ux('네거티브 스플릿','Negative split'):split.pattern==='positive_split'?ux('포지티브 스플릿','Positive split'):split.pattern==='even_split'?ux('이븐 스플릿','Even split'):ux('측정 대기','Waiting for splits');
@@ -503,6 +503,7 @@ function renderRunningInsights(){
  const buckets=distribution?.buckets||{},distRow=(key,label)=>{const b=buckets[key];return b?`<span class="pill">${label} ${Math.round(num(b.distancePct))}%</span>`:'';};
  const projectionText=projection.status==='estimated'?`${projection.tenKmMin?`10K ${formatRunMinutes(projection.tenKmMin)}`:''}${projection.halfMarathonMin?` · HALF ${formatRunMinutes(projection.halfMarathonMin)}`:''}`:'—';
  const fiveProgress=progression?.fiveKm?.status==='measured'?`+${Math.max(0,num(progression.fiveKm.improvementPct)).toFixed(1)}%`:ux('기록 축적 중','Collecting');
+ const weeklyMix=weekly?.mix||{},weeklyParts=[weeklyMix.recovery?`${ux('회복','Recovery')} ${weeklyMix.recovery}`:'',weeklyMix.easy?`Easy ${weeklyMix.easy}`:'',weeklyMix.steady?`Steady ${weeklyMix.steady}`:'',weeklyMix.tempo?`Tempo ${weeklyMix.tempo}`:'',weeklyMix.long?`Long ${weeklyMix.long}`:''].filter(Boolean).join(' · ');
  return `<section class="record-insights running-performance-v2">
  <div class="section-title"><div><span class="eyebrow">RUNNING PERFORMANCE</span><h2>${ux('최근 페이스·부하·기록','Pace, load and records')}</h2></div><span class="pill">CONFIDENCE ${Math.round(num(x.confidence)*100)}%</span></div>
  <div class="insight-grid run-grid">
@@ -527,6 +528,7 @@ function renderRunningInsights(){
    </div>
    ${guide.status==='measured'?`<div class="section-title compact"><h2>${ux('개인 Pace Guide','Personal pace guide')}</h2><span class="pill">${pace(guide.anchorPaceMinPerKm)} anchor</span></div><div class="list">${zone('easy',ux('Easy','Easy'))}${zone('steady',ux('Steady','Steady'))}${zone('tempo',ux('Tempo','Tempo'))}</div>`:''}
    ${distribution.status==='measured'?`<div class="actions" style="margin-top:10px">${distRow('easy','EASY')}${distRow('steady','STEADY')}${distRow('fast','FAST')}</div>`:''}
+   ${weekly.status&&weekly.status!=='insufficient'?`<div class="section-title compact"><h2>${ux('이번 주 구조','Weekly structure')}</h2><span class="pill">${weekly.sessionsPerWeek||0} / week</span></div><div class="helper"><strong>${Math.round(num(weekly.totalMinutesCap))}분 이내</strong> · ${esc(weeklyParts||ux('최근 부하 유지','Maintain recent load'))}${weekly.longDurationMin?` · Long ${weekly.longDurationMin}분`:''}</div>`:''}
    <p class="helper">${ux('Pace Guide는 최근 28일 페이스의 상대 범위이며 심박·젖산역치 zone이 아닙니다. 예상 기록은 현재 평균 페이스 기반 추정치입니다.','Pace Guide is relative to your recent 28-day pace; it is not a heart-rate or lactate-threshold zone. Race times are estimates from observed average pace.')}</p>
   </div>
  </details>
