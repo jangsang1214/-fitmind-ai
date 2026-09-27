@@ -76,6 +76,13 @@ assert.match(commercialMobileCss,/#main\[data-garang-screen="running"\] \[data-g
 assert.match(commercialMobileCss,/#main\[data-garang-screen="body"\] \.body-hero/,'Body must use the premium diagnostic surface');
 assert.match(commercialMobileCss,/CANONICAL G2 COACH OWNER/,'Coach must style the canonical g2 owner');assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.g2-composer/,'Coach must use the native canonical composer treatment');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="progress"\] #garangAccumulationOverview/,'Progress must use the accumulation-first commercial surface');
+assert.match(commercialMobileCss,/FINAL SECONDARY SURFACES/,'commercial system must include secondary app surfaces');
+assert.match(commercialMobileCss,/\.garang-more-panel\{[\s\S]*border-radius:27px 27px 0 0!important/,'More must remain a native bottom sheet');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="settings"\]/,'Settings must share the commercial mobile grammar');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="profile"\]/,'Profile must share the commercial mobile grammar');
+assert.match(commercialMobileCss,/#main\[data-garang-screen="onboarding"\]/,'Onboarding must share the commercial mobile grammar');
+assert.match(commercialMobileCss,/#authView:not\(\[hidden\]\) \.auth-shell/,'Auth must use the mobile app frame instead of desktop-only layout');
+
 
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
