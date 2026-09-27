@@ -56,6 +56,7 @@
     "02_core/nutrition-recommendation-v1.js",
     "02_core/golden-path-v1.js",
     "02_core/workout-intelligence-v1.js",
+    "02_core/workout-prescription-shadow-v1.js",
     "02_core/running-integrity-v1.js",
     "02_core/running-performance-v1.js",
     "02_core/personal-performance-intelligence-v1.js",
