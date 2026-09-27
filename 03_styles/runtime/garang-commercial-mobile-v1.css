@@ -276,8 +276,8 @@ body{background-image:
     padding:6px 10px env(safe-area-inset-bottom,0px)!important;
     grid-template-columns:repeat(4,1fr)!important;
     border-top:1px solid rgba(255,255,255,.06)!important;
-    background:rgba(8,10,8,.96)!important;
-    -webkit-backdrop-filter:blur(24px)!important;backdrop-filter:blur(24px)!important;
+    background:rgba(8,10,8,.985)!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
     box-shadow:0 -14px 40px rgba(0,0,0,.34)!important
   }
   #appView:not([hidden])>#bottomNav button{
