@@ -74,7 +74,7 @@ assert.match(commercialMobileCss,/FINAL COMMERCIAL SCREEN PASS/,'commercial desi
 assert.match(commercialMobileCss,/#main\[data-garang-screen="nutrition"\] \.nutrition-quick-summary/,'Nutrition must have a dedicated commercial hero');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="running"\] \[data-gapp-role="running-live"\]/,'Running must have a dedicated live performance hero');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="body"\] \.body-hero/,'Body must use the premium diagnostic surface');
-assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.gpt-composer/,'Coach must use the native composer treatment');
+assert.match(commercialMobileCss,/CANONICAL G2 COACH OWNER/,'Coach must style the canonical g2 owner');assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.g2-composer/,'Coach must use the native canonical composer treatment');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="progress"\] #garangAccumulationOverview/,'Progress must use the accumulation-first commercial surface');
 
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
