@@ -16,6 +16,7 @@ const recovery=src.indexOf('/회복|상태|수면|오늘/');
 assert.ok(plan>=0&&recovery>=0&&plan<recovery,'plan intent must be classified before generic 오늘/recovery intent');
 for(const forbidden of ['window.prompt(','window.confirm(','stopImmediatePropagation','addEventListener(\'pointerdown\',close,true)','addEventListener("pointerdown",close,true)'])assert.equal(src.includes(forbidden),false,`Coach must avoid blocking/global-capture interaction: ${forbidden}`);
 assert.ok(src.includes('if(!runtime.root.isConnected)return'),'late Coach answers must not write into a detached route');
+assert.ok(src.includes("function repairScreen(){mountCoach();scheduleRepair();}")&&src.includes("window.addEventListener('garang:screen-rendered',repairScreen)"),'Coach must synchronously claim its canonical root when the screen owner renders, then defer noncritical polish');
 assert.ok(src.includes('function focusComposer(runtime)')&&src.includes('if(!isTouchLike()'),'touch devices must not force composer focus/visual viewport jumps');
 const readyGuard=agent.indexOf("if(!Contract||!Bridge?.ready?.())");
 const seenAfterReady=agent.indexOf('seenAssistantIds.add(messageId)',readyGuard);
@@ -26,7 +27,7 @@ assert.ok(agent.includes("messageEl.dataset.g4AgentPending='1'"),'unhydrated Age
 assert.ok(agent.includes('const contextActions=Array.from(strip.children)'),'Coach prompt refresh must preserve the Core Loop contextual action host');
 assert.ok(agent.includes("garang:coach-prompt-strip-ready"),'Coach Agent must publish prompt-strip readiness');
 assert.ok(coreLoop.includes("garang:coach-prompt-strip-ready"),'Core Loop must reconcile contextual actions when the canonical prompt strip becomes ready');
-assert.ok(html.includes('garang-brand-runtime-v2.js?v=2.3.0-server-action-owner'),'shell must publish the authenticated Coach runtime with a fresh cache key');
+assert.ok(html.includes('garang-brand-runtime-v2.js?v=2.3.1-coach-mount-determinism'),'shell must publish the deterministic Coach mount runtime with a fresh cache key');
 assert.ok(html.includes('agent-state-hook-v1.js?v=1.5.0-auth-write-pinned'),'authenticated Agent state pinning must be cache-busted');
 assert.ok(html.includes('garang-coach-agent-v4.js?v=4.9.2-prompt-strip-handshake'),'canonical Coach Agent must ship prompt-strip preservation and readiness handshake');
 assert.ok(html.includes('garang-core-loop-v1.js?v=1.1.3-coach-handshake'),'Core Loop must ship Coach action lifecycle handshake');
