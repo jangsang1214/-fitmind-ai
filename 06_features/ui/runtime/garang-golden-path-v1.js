@@ -106,7 +106,10 @@ function afterRoute(route,callback){
   if(!ok)window.removeEventListener('garang:route-completed',listener);
 }
 function openRecord(){
-  afterRoute('log',()=>window.GarangSimplifiedShell?.openRecordSheet?.(doc.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]')));
+  const trigger=doc.querySelector('#bottomNav [data-garang-primary-nav="1"][data-page="log"]');
+  return window.GarangSimplifiedShell?.ensureRecordSheetOpen?.(trigger)
+    || window.GarangSimplifiedShell?.openRecordSheet?.(trigger)
+    || false;
 }
 function openPlanner(){afterRoute('planner',()=>doc.querySelector('#garangPlanExecution [data-gx-details]')?.click());}
 function openExecution(model){
@@ -138,5 +141,5 @@ for(const eventName of ['garang:screen-rendered','garang:state-updated','garang:
 doc.documentElement.addEventListener('garang:language-changed',schedule);
 window.addEventListener('pageshow',schedule);
 schedule();
-window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.3',refresh:schedule});
+window.GarangGoldenPathUI=Object.freeze({version:'garang-golden-path-v1.0.4-record-owner',refresh:schedule});
 })();
