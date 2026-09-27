@@ -46,6 +46,7 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     assert.equal(await page.locator('[data-gnr-surface]').count(), 1, 'Nutrition must expose one recommendation surface');
     assert.match(await surface.innerText(), /근육 증가/);
     assert.ok(await surface.locator('[data-gnr-add="0"]').count() === 1, 'the primary recommendation must be actionable');
+    assert.match(await surface.innerText(), /Fiber|Na/, 'source-backed secondary nutrient context should be visible when the selected Food DB rows provide it');
 
     let before = await page.evaluate(() => window.GarangAgentStateBridge.getState());
     assert.equal(before.meals.length, 0, 'a recommendation must not auto-save a meal');
