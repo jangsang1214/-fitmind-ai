@@ -70,7 +70,7 @@ assert.ok(workoutFlow.includes("state.active==='log'")&&workoutFlow.includes("Ga
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
-for(const token of ['LIVE SESSION','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
+for(const token of ['기록 중','workoutSessionFeedback','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
 assert.ok(css.includes('Workout commercial UX v4')&&css.includes('.workout-exercise-search-button')&&css.includes('background:#0c0f0d!important'),'Workout v4 must keep picker and active-set controls on one dark surface system');
