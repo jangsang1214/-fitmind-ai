@@ -42,7 +42,7 @@ function estimateTargets(state,date){
   }
   return {goal,goalLabel:goalLabel(goal),calorieTarget:calorieTarget===null?null:Math.round(calorieTarget),proteinTarget:proteinTarget===null?null:Math.round(proteinTarget),bmr:bmr===null?null:Math.round(bmr),tdee:tdee===null?null:Math.round(tdee),activityFactor:factor,goalAdjustment:calorieTarget===null?null:adjustment,estimateOnly:true,medicalTarget:false,reasons:[...new Set(reasons)]};
 }
-function itemMetric(row,key){const direct=finite(row?.[key]);if(direct!==null)return {value:direct,observed:true};const aliases=key==='carbs'?['carbohydrate']:[];const values=list(row?.items).map(item=>finite(item?.[key]??item?.[aliases[0]])).filter(value=>value!==null);return {value:values.length?values.reduce((sum,value)=>sum+value,0):0,observed:values.length>0};}
+function itemMetric(row,key){const direct=finite(row?.[key]);if(direct!==null)return {value:direct,observed:true};const aliases=key==='carbs'?['carbohydrate']:[],items=list(row?.items),values=items.map(item=>finite(item?.[key]??item?.[aliases[0]])).filter(value=>value!==null),strict=key==='fiber'||key==='sodium',complete=strict?items.length>0&&values.length===items.length:values.length>0;return {value:values.length?values.reduce((sum,value)=>sum+value,0):0,observed:complete};}
 function mealTotals(state,date){
   return list(state?.meals).filter(row=>sameDate(row,date)).reduce((total,row)=>{
     const kcal=itemMetric(row,'kcal'),protein=itemMetric(row,'protein'),carbs=itemMetric(row,'carbs'),fat=itemMetric(row,'fat'),fiber=itemMetric(row,'fiber'),sodium=itemMetric(row,'sodium');
