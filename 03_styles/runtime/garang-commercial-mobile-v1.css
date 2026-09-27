@@ -993,3 +993,15 @@ body{background-image:
   #main[data-garang-screen="onboarding"] .form-grid{grid-template-columns:1fr!important}
   #main[data-garang-screen="onboarding"] .field.full{grid-column:auto!important}
 }
+
+/* Coach conversational action touch ownership — keep inline undo above decorative/mobile layers. */
+#main[data-garang-screen="coach"] .gci-coach-turn{
+  position:relative!important;z-index:3!important;isolation:isolate!important
+}
+#main[data-garang-screen="coach"] .gci-coach-actions{
+  position:relative!important;z-index:4!important;pointer-events:auto!important
+}
+#main[data-garang-screen="coach"] .gci-coach-actions button,
+#main[data-garang-screen="coach"] [data-gci-undo]{
+  position:relative!important;z-index:5!important;pointer-events:auto!important;touch-action:manipulation!important
+}
