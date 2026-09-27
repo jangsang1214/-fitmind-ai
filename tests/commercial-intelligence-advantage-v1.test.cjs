@@ -3,6 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 const Phys=require('../02_core/physiological-signal-intelligence-v1.js');
 const PhysServer=require('../functions/src/physiological-signal-intelligence-v1.cjs');
+const WorkoutShadow=require('../02_core/workout-prescription-shadow-v1.js');
+const WorkoutShadowServer=require('../functions/src/workout-prescription-shadow-v1.cjs');
 const Adaptive=require('../02_core/adaptive-nutrition-learning-v1.js');
 const AdaptiveServer=require('../functions/src/adaptive-nutrition-learning-v1.cjs');
 const Longitudinal=require('../02_core/longitudinal-learning-metrics-v1.js');
@@ -27,6 +29,33 @@ assert.ok(phys.derived.componentCount>=4,'separate long-form metric rows must fu
 assert.equal(phys.metricLatest.hrvMs.source,'watch');
 assert.equal(phys.guardrails.metricLatestFusion,true);
 assert.equal(phys.guardrails.staleSignalsDownweighted,true);
+
+const guardedHealthSignals=[];
+for(let day=20;day<=23;day++){
+ const date=isoDay(day);
+ guardedHealthSignals.push({source:'watch',capturedAt:`${date}T06:00:00Z`,hrvMs:52,restingHeartRateBpm:58,sleepHours:7.5,sleepScore:80,stressScore:2});
+}
+guardedHealthSignals.push({source:'watch',capturedAt:'2026-09-24T06:00:00Z',hrvMs:48,restingHeartRateBpm:61,sleepHours:7,sleepScore:70,stressScore:3});
+const progressionWorkouts=[
+ {id:'gw1',date:'2026-09-22',name:'벤치프레스',sets:3,reps:5,weight:80,rpe:7,rir:2},
+ {id:'gw2',date:'2026-09-23',name:'벤치프레스',sets:3,reps:5,weight:80,rpe:7,rir:2},
+ {id:'gw3',date:'2026-09-24',name:'벤치프레스',sets:3,reps:5,weight:80,rpe:7,rir:2}
+];
+const normalShadow=WorkoutShadow.build({workouts:progressionWorkouts,healthSignals:[],dailyCheckins:[],runs:[],meals:[],body:[]},{asOf:'2026-09-24'});
+assert.equal(normalShadow.exercises[0].prescription.action,'review_progression','normal recovery must preserve existing progression review');
+const guardedState={workouts:progressionWorkouts,healthSignals:guardedHealthSignals,dailyCheckins:[],runs:[],meals:[],body:[]};
+const guardedShadow=WorkoutShadow.build(guardedState,{asOf:'2026-09-24'});
+const guardedShadowServer=WorkoutShadowServer.build(guardedState,{asOf:'2026-09-24'});
+assert.deepEqual(guardedShadow,guardedShadowServer,'graded recovery prescription must stay browser/server deterministic');
+assert.equal(guardedShadow.recoveryConstraint.level,'guarded');
+assert.ok(guardedShadow.recoveryConstraint.reasons.includes('PHYSIOLOGICAL_RECOVERY_GUARDED'));
+assert.equal(guardedShadow.exercises[0].prescription.action,'hold','guarded recovery must block progression without auto-reducing dose');
+assert.equal(guardedShadow.exercises[0].prescription.reason,'RECOVERY_GUARDED_HOLD');
+assert.equal(guardedShadow.exercises[0].prescription.progressionEligibleForReview,false);
+assert.equal(guardedShadow.exercises[0].prescription.recommended.weight,80);
+assert.equal(guardedShadow.guardrails.gradedRecoveryConstraint,true);
+assert.equal(guardedShadow.guardrails.guardedBlocksProgression,true);
+assert.equal(guardedShadow.guardrails.guardedDoesNotAutoReduce,true);
 
 const nutritionDates=Array.from({length:21},(_,i)=>{const d=new Date(Date.UTC(2026,8,4+i));return d.toISOString().slice(0,10);});
 const bodyDates=[0,4,8,12,16,20].map(i=>nutritionDates[i]);
