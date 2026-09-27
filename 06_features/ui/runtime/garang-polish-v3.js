@@ -367,31 +367,31 @@
 
   function v80VolumeDefs(gender='male',side='front'){
     if(gender!=='male')return '';
-    const key=\`g80-\${gender}-\${side}\`;
-    return \`
-      <radialGradient id="\${key}-mass" cx="50%" cy="42%" r="62%">
+    const key=`g80-${gender}-${side}`;
+    return `
+      <radialGradient id="${key}-mass" cx="50%" cy="42%" r="62%">
         <stop offset="0%" stop-color="#d4cfc4" stop-opacity=".92"/>
         <stop offset="58%" stop-color="#aaa79e" stop-opacity=".88"/>
         <stop offset="100%" stop-color="#77776f" stop-opacity=".76"/>
       </radialGradient>
-      <radialGradient id="\${key}-deep" cx="48%" cy="38%" r="68%">
+      <radialGradient id="${key}-deep" cx="48%" cy="38%" r="68%">
         <stop offset="0%" stop-color="#bdb9af" stop-opacity=".88"/>
         <stop offset="72%" stop-color="#8e8c84" stop-opacity=".82"/>
         <stop offset="100%" stop-color="#666760" stop-opacity=".70"/>
       </radialGradient>
-      <filter id="\${key}-volume" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <filter id="${key}-volume" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
         <feGaussianBlur stdDeviation="2.4" result="soft"/>
         <feComponentTransfer in="soft" result="mass">
           <feFuncA type="gamma" amplitude="1" exponent=".82" offset="0"/>
         </feComponentTransfer>
         <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#090a09" flood-opacity=".22"/>
-      </filter>\`;
+      </filter>`;
   }
 
   function v80MuscleVolumeMarkup(side='front',gender='male'){
     if(gender!=='male')return '';
-    const key=\`g80-\${gender}-\${side}\`;
-    if(side==='back')return \`<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#\${key}-volume)" pointer-events="none">
+    const key=`g80-${gender}-${side}`;
+    if(side==='back')return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
       <ellipse class="g80-mass g80-deltoid" cx="205" cy="286" rx="89" ry="69"/>
       <ellipse class="g80-mass g80-deltoid" cx="515" cy="286" rx="89" ry="69"/>
       <path class="g80-mass g80-back" d="M214 298 C245 236 318 238 360 281 C402 238 475 236 506 298 C496 406 470 499 432 565 C405 590 385 599 360 600 C335 599 315 590 288 565 C250 499 224 406 214 298 Z"/>
@@ -401,15 +401,15 @@
       <path class="g80-deep g80-thigh" d="M488 610 C443 583 392 604 370 663 C367 737 383 814 416 849 C450 852 480 817 491 753 Z"/>
       <path class="g80-deep g80-calf" d="M247 809 C274 790 307 817 318 864 C319 929 306 998 281 1025 C258 1027 240 995 239 945 Z"/>
       <path class="g80-deep g80-calf" d="M473 809 C446 790 413 817 402 864 C401 929 414 998 439 1025 C462 1027 480 995 481 945 Z"/>
-    </g>\`;
-    if(side==='side')return \`<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#\${key}-volume)" pointer-events="none">
+    </g>`;
+    if(side==='side')return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
       <ellipse class="g80-mass g80-deltoid" cx="346" cy="278" rx="98" ry="75"/>
       <path class="g80-mass g80-chest" d="M316 292 C361 268 417 294 438 345 C441 395 420 447 388 472 C349 460 322 416 312 352 Z"/>
       <path class="g80-deep g80-arm" d="M392 340 C432 335 466 372 469 424 C462 486 445 531 420 548 C393 526 376 475 376 416 Z"/>
       <path class="g80-deep g80-thigh" d="M261 608 C310 582 357 610 374 679 C371 752 350 817 316 848 C284 835 260 777 254 707 Z"/>
       <path class="g80-deep g80-calf" d="M252 808 C284 792 314 823 321 875 C318 938 307 994 286 1024 C262 1024 247 986 246 933 Z"/>
-    </g>\`;
-    return \`<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#\${key}-volume)" pointer-events="none">
+    </g>`;
+    return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
       <ellipse class="g80-mass g80-deltoid" cx="203" cy="286" rx="91" ry="70"/>
       <ellipse class="g80-mass g80-deltoid" cx="517" cy="286" rx="91" ry="70"/>
       <path class="g80-mass g80-chest" d="M236 281 C278 250 330 252 360 276 C390 252 442 250 484 281 C490 333 478 392 451 423 C421 439 392 440 360 426 C328 440 299 439 269 423 C242 392 230 333 236 281 Z"/>
@@ -420,7 +420,7 @@
       <path class="g80-deep g80-thigh" d="M476 610 C434 584 389 600 367 654 C359 718 370 787 397 830 C425 852 457 827 474 784 C487 731 488 664 476 610 Z"/>
       <path class="g80-deep g80-calf" d="M245 806 C274 788 309 813 320 858 C323 925 309 994 284 1023 C258 1026 239 989 238 935 Z"/>
       <path class="g80-deep g80-calf" d="M475 806 C446 788 411 813 400 858 C397 925 411 994 436 1023 C462 1026 481 989 482 935 Z"/>
-    </g>\`;
+    </g>`;
   }
 
   function v6MeshSVG(gender='male',side='front'){
