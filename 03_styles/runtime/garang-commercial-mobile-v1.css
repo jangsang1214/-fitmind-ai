@@ -773,3 +773,80 @@ body{background-image:
   .photo-evidence-stage:active img{transform:scale(1.015)!important}
 }
 @keyframes gapp-screen-rise{from{opacity:.82;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+
+/* P5 correction — CANONICAL G2 COACH OWNER */
+#main[data-garang-screen="coach"] .garang-coach-v2{
+  min-height:calc(100dvh - 142px)!important;border:1px solid var(--gapp-line)!important;
+  border-radius:24px!important;overflow:hidden!important;background:#080a08!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.30)!important
+}
+#main[data-garang-screen="coach"] .g2-chat-main{background:#080a08!important}
+#main[data-garang-screen="coach"] .g2-chat-head[data-gapp-role="coach-context"],
+#main[data-garang-screen="coach"] .g2-chat-head{
+  height:56px!important;padding:0 14px!important;border-bottom:1px solid rgba(255,255,255,.05)!important;
+  background:rgba(10,13,11,.96)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)
+}
+#main[data-garang-screen="coach"] .g2-chat-head-copy small{
+  color:var(--gapp-signal)!important;font-size:6px!important;font-weight:760!important;letter-spacing:.13em!important
+}
+#main[data-garang-screen="coach"] .g2-chat-head-copy strong{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;font-size:13px!important;font-weight:720!important;
+  letter-spacing:-.025em!important;color:var(--gapp-text)!important
+}
+#main[data-garang-screen="coach"] .g2-head-new,
+#main[data-garang-screen="coach"] .g2-mobile-threads{
+  min-height:34px!important;border-radius:11px!important;border:1px solid var(--gapp-line)!important;
+  background:rgba(255,255,255,.025)!important;color:var(--gapp-text-2)!important
+}
+#main[data-garang-screen="coach"] .g2-chat-scroll[data-gapp-role="coach-thread"],
+#main[data-garang-screen="coach"] .g2-chat-scroll{
+  padding-top:18px!important;padding-bottom:26px!important;background:
+  radial-gradient(circle at 75% 0,rgba(143,226,193,.025),transparent 30%)!important
+}
+#main[data-garang-screen="coach"] .g2-message{margin-bottom:17px!important}
+#main[data-garang-screen="coach"] .g2-message.assistant{
+  grid-template-columns:26px minmax(0,1fr)!important
+}
+#main[data-garang-screen="coach"] .g2-message-avatar{opacity:.78!important}
+#main[data-garang-screen="coach"] .g2-message-text{
+  font-family:"Noto Sans KR",system-ui,sans-serif!important;font-size:13px!important;line-height:1.7!important;color:var(--gapp-text-2)!important
+}
+#main[data-garang-screen="coach"] .g2-message.user .g2-message-body{
+  border:1px solid rgba(143,226,193,.13)!important;border-radius:19px 19px 6px 19px!important;
+  background:#18201b!important;padding:11px 13px!important;box-shadow:none!important
+}
+#main[data-garang-screen="coach"] .g2-message.user .g2-message-text{color:var(--gapp-text)!important}
+#main[data-garang-screen="coach"] .g2-message-meta{color:rgba(242,244,239,.28)!important;font-size:7px!important}
+#main[data-garang-screen="coach"] .g2-composer-wrap{
+  position:sticky!important;bottom:0!important;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))!important;
+  background:linear-gradient(180deg,rgba(8,10,8,0),rgba(8,10,8,.94) 25%,#080a08 55%)!important
+}
+#main[data-garang-screen="coach"] .g2-composer[data-gapp-role="coach-composer"],
+#main[data-garang-screen="coach"] .g2-composer{
+  min-height:54px!important;border-radius:24px!important;border:1px solid var(--gapp-line-strong)!important;
+  background:rgba(22,28,23,.98)!important;padding:7px 7px 7px 14px!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.30)!important
+}
+#main[data-garang-screen="coach"] .g2-composer:focus-within{border-color:rgba(143,226,193,.34)!important}
+#main[data-garang-screen="coach"] .g2-composer textarea{
+  font-size:13px!important;line-height:1.55!important;color:var(--gapp-text)!important
+}
+#main[data-garang-screen="coach"] .g2-send{
+  width:40px!important;height:40px!important;min-width:40px!important;border-radius:50%!important;border:0!important;
+  background:var(--gapp-signal-2)!important;color:#08110c!important;font-size:18px!important;font-weight:800!important;
+  box-shadow:0 8px 18px rgba(143,226,193,.12)!important
+}
+#main[data-garang-screen="coach"] .g2-composer-note{font-size:6px!important;color:rgba(242,244,239,.25)!important}
+#main[data-garang-screen="coach"] .g2-chat-sidebar{
+  background:#090b09!important;border-right:1px solid var(--gapp-line)!important
+}
+#main[data-garang-screen="coach"] .g2-thread-row.active{background:rgba(143,226,193,.06)!important;color:var(--gapp-text)!important}
+@media(max-width:799px){
+  #main[data-garang-screen="coach"]{padding-left:10px!important;padding-right:10px!important}
+  #main[data-garang-screen="coach"] .garang-coach-v2{
+    min-height:calc(100dvh - 144px)!important;border-radius:20px!important
+  }
+  #main[data-garang-screen="coach"] .g2-chat-scroll{padding:16px 13px 24px!important}
+  #main[data-garang-screen="coach"] .g2-message.user{padding-left:32px!important}
+}
