@@ -298,7 +298,7 @@ function coachDecision(){
   else if(recentW.length>=3&&(!c||readiness<68)){decision='REDUCE';title=`${Math.min(45,available)}분 감량 세션`;summary='최근 훈련량을 고려해 오늘 총 볼륨을 약 20% 낮춥니다.';reasons.push(`최근 3일 운동 기록 ${recentW.length}개가 있습니다.`);}
   else {if(recentW.length)reasons.push(`최근 3일 운동 기록 ${recentW.length}개를 반영했습니다.`);if(recentR.length)reasons.push(`최근 러닝 ${recentR.length}회를 함께 반영했습니다.`);}
   const plan=todayPlans()[0];if(plan)reasons.push(`오늘 Planner의 “${plan.title}” 일정과 함께 판단했습니다.`);
-  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available};
+  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available,recoverySource:recovery.source,recoveryConfidence:recovery.confidence,physiological:recovery.physiological};
 }
 function weeklyReview(){const throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today()),w=state.workouts.filter(throughToday),r=state.runs.filter(throughToday),m=state.meals.filter(throughToday),p=state.planner.filter(throughToday);const completed=p.filter(x=>x.completed).length;return {sessions:uniqueDays(w),volume:Math.round(sum(w,workoutRecordVolume)),runKm:sum(r,x=>num(x.distance)),protein:uniqueDays(m)?Math.round(sum([...new Set(m.map(x=>x.date))],d=>totalsMeals(d).protein)/uniqueDays(m)):0,planRate:p.length?Math.round(completed/p.length*100):0};}
 function personalPerformanceDecisionLoop(){
@@ -406,10 +406,29 @@ function todayBodyFocus(){const ci=latestCheckin();if(ci?.soreArea){const key=mu
 function workoutLibraryFor(key){let items=db.exercise||[];if(key&&key!=='all'&&key!=='full')items=items.filter(x=>muscleKeyFromLabel(x.primary_muscle)===key);return items.slice(0,8);}
 function workoutMuscleButtons(active){const groups=[['all','전체'],['chest','가슴'],['back','등'],['shoulders','어깨'],['legs','하체'],['core','코어'],['biceps','이두'],['triceps','삼두']];return `<div class="muscle-filter-strip">${groups.map(([k,l])=>`<button type="button" class="${active===k?'active':''}" data-muscle-pick="${k}">${l}</button>`).join('')}</div>`;}
 
+function recoveryMetricEvidence(label,metric,baseline,unit,digits=0){
+ if(!metric||metric.value===null||metric.value===undefined||!Number.isFinite(Number(metric.value)))return '';
+ const value=Number(metric.value),base=Number(baseline?.median??baseline?.mean),age=Number(metric.ageHours),fmt=n=>digits?Number(n).toFixed(digits):Math.round(Number(n)).toString(),bits=[`${label} ${fmt(value)}${unit}`];
+ if(Number.isFinite(base)&&base>0)bits.push(`기준 ${fmt(base)}${unit}`);
+ if(Number.isFinite(age))bits.push(age<1?'1h 미만':`${Math.round(age)}h 전`);
+ return bits.join(' · ');
+}
+function recoveryEvidenceMarkup(decision){
+ const p=decision?.physiological;if(!p||p.quality==='insufficient')return '';
+ const latest=p.metricLatest||{},base=p.baselines||{},lines=[
+  recoveryMetricEvidence('HRV',latest.hrvMs,base.hrvMs,' ms'),
+  recoveryMetricEvidence('RHR',latest.restingHeartRateBpm,base.restingHeartRateBpm,' bpm'),
+  recoveryMetricEvidence('수면',latest.sleepHours,base.sleepHours,' h',1),
+  recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0)
+ ].filter(Boolean);
+ if(!lines.length)return '';
+ const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100));
+ return `<details class="helper" data-recovery-evidence><summary>Health 근거${score!==null&&score!==undefined?` · 회복 ${Math.round(num(score))}`:''}${band?` · ${esc(band)}`:''}</summary><div>${lines.map(line=>`<span>${esc(line)}</span>`).join('<br>')}</div><small>최근 신호와 개인 기준선 비교 · 신뢰 ${confidence}% · 의료 진단 아님</small></details>`;
+}
 function pageHead(kicker,title,desc='',action=''){return `<div class="page-head"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1>${desc?`<p class="muted">${desc}</p>`:''}</div>${action}</div>`;}
 function todayPage(){
   const score=performanceScore(),dec=coachDecision(),loop=personalPerformanceDecisionLoop(),next=loop?.nextAction,t=totalsMeals(),body=latestBody(),ci=latestCheckin(),plans=todayPlans(),focus=todayBodyFocus();const scoreText=score.total??'—';
-  const readiness=dec.readiness??null,decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
+  const readiness=dec.readiness??null,healthEvidence=recoveryEvidenceMarkup(dec),decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
   return `${pageHead('TODAY','오늘', '', `<button class="ghost small" data-pagego="settings">설정</button>`)}
   <section class="card today-hero visual-today-hero">
     <div class="today-body-panel"><div class="today-body-label"><span class="eyebrow">${esc(focus.kind)}</span><strong>${esc(focus.label)}</strong></div>${muscleMapSvg(focus.key,'todayMuscleMap','compact-map')}</div>
@@ -421,8 +440,8 @@ function todayPage(){
     <div><span>ENERGY</span><strong>${ci?ci.energy:'—'}</strong><small>${ci?'/ 5':'check-in'}</small></div>
     <div><span>BODY</span><strong>${shownWeight(body?.weight||state.profile?.weight||'',1)||'—'}</strong><small>${weightUnit()}</small></div>
   </section>
-  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci?'jade':''}">${ci?'CHECKED':'30 SEC'}</span></div>
-  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':'상태 저장'}</button></section>
+  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci||healthEvidence?'jade':''}">${ci?'CHECKED':healthEvidence?'HEALTH':'30 SEC'}</span></div>
+  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>${healthEvidence}`:healthEvidence?`<div class="status-empty-visual"><div class="status-ring">${readiness??'—'}</div><div><strong>Health 신호로 회복 상태를 읽고 있습니다.</strong><span>체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다.</span></div></div>${healthEvidence}`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':healthEvidence?'체크인 추가':'상태 저장'}</button></section>
   <div class="section-title"><h2>오늘 일정</h2><button class="text-btn" data-pagego="planner">전체 보기</button></div>
   <section class="card today-plan-card">${plans.length?plans.slice(0,3).map(planRow).join(''):`<button class="empty-action" data-pagego="planner" data-golden-path="planner-entry"><span>＋</span><strong>오늘 계획 만들기</strong><small>Planner에서 목표와 오늘의 방향을 확인합니다.</small></button>`}</section>
   <div class="section-title"><h2>빠른 기록</h2></div><div class="quick-visual-grid"><button class="quick-visual workout" data-pagego="workout">${miniBodySvg('chest')}<span><b>운동</b><small>부위를 보고 기록</small></span></button><button class="quick-visual meal" data-pagego="nutrition"><span class="quick-camera">◎</span><span><b>식단</b><small>사진으로 시작</small></span></button><button class="quick-visual run" data-pagego="running"><span class="quick-route">⌁</span><span><b>러닝</b><small>거리와 페이스</small></span></button><button class="quick-visual body" data-pagego="body"><span class="quick-body">◇</span><span><b>바디</b><small>체성분 변화</small></span></button></div>`;
