@@ -65,9 +65,9 @@
     root.querySelectorAll('.exercise-visual-card').forEach(x=>mark(x,'exercise-card'));
   }
   function annotateCoach(root){
-    mark(root.querySelector('.coach-status-card'),'coach-context');
-    mark(root.querySelector('.gpt-composer'),'coach-composer');
-    mark(root.querySelector('.coach-thread'),'coach-thread');
+    mark(root.querySelector('.coach-status-card,.g2-chat-head'),'coach-context');
+    mark(root.querySelector('.gpt-composer,.g2-composer'),'coach-composer');
+    mark(root.querySelector('.coach-thread,.g2-chat-scroll'),'coach-thread');
   }
   function annotateProgress(root){
     const acc=root.querySelector('#garangAccumulationOverview');
