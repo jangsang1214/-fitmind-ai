@@ -8,7 +8,7 @@
   const VERSION='garang-commercial-mobile-v1.0.0';
   const main=()=>document.getElementById('main');
   const screen=()=>main()?.dataset?.garangScreen||'';
-  let scheduled=false,lastScreen='';
+  let scheduled=false,lastScreen='',observer=null,observedMain=null;
 
   const visible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none';
   function mark(el,name){ if(el) el.dataset.gappRole=name; }
@@ -105,7 +105,18 @@
     }
   }
   function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(apply)}
-  window.addEventListener('garang:screen-rendered',schedule);
+  function observeCanonicalSurfaces(){
+    const root=main();if(!root||root===observedMain)return;
+    observer?.disconnect();observedMain=root;
+    observer=new MutationObserver(records=>{
+      for(const record of records){
+        if(record.type!=='childList'||(!record.addedNodes?.length&&!record.removedNodes?.length))continue;
+        schedule();break;
+      }
+    });
+    observer.observe(root,{childList:true,subtree:true});
+  }
+  window.addEventListener('garang:screen-rendered',()=>{observeCanonicalSurfaces();schedule();});
   window.addEventListener('garang:route-completed',schedule);
   window.addEventListener('garang:state-updated',schedule);
   window.addEventListener('pageshow',schedule);
@@ -113,5 +124,5 @@
     if(event.target.closest?.('#bottomNav,[data-garang-record-sheet],#runStart,#runPause,#runResume,#runStop'))setTimeout(schedule,0);
   },true);
   window.GarangCommercialMobileV1=Object.freeze({version:VERSION,apply,schedule});
-  schedule();
+  observeCanonicalSurfaces();schedule();
 })();
