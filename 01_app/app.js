@@ -434,8 +434,8 @@ function recoveryEvidenceMarkup(decision){
   recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0)
  ].filter(Boolean);
  if(!lines.length)return '';
- const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100));
- return `<details class="helper" data-recovery-evidence><summary>Health 근거${score!==null&&score!==undefined?` · 회복 ${Math.round(num(score))}`:''}${band?` · ${esc(band)}`:''}</summary><div>${lines.map(line=>`<span>${esc(line)}</span>`).join('<br>')}</div><small>최근 신호와 개인 기준선 비교 · 신뢰 ${confidence}% · 의료 진단 아님</small></details>`;
+ const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100)),persistence=p?.derived?.recoveryPersistence||null,persistenceText=persistence?.status==='persistent_strain'?`최근 ${Math.max(2,num(persistence.consecutiveConstrainedDays,2))}일 연속 회복 주의`:persistence?.status==='recent_strain'?'오늘 회복 주의':'';
+ return `<details class="helper" data-recovery-evidence><summary>Health 근거${score!==null&&score!==undefined?` · 회복 ${Math.round(num(score))}`:''}${band?` · ${esc(band)}`:''}</summary><div>${lines.map(line=>`<span>${esc(line)}</span>`).join('<br>')}${persistenceText?`<br><span data-recovery-persistence>${esc(persistenceText)} · 최근 3일 흐름</span>`:''}</div><small>최근 신호와 개인 기준선 비교 · 신뢰 ${confidence}% · 추세는 설명용 · 의료 진단 아님</small></details>`;
 }
 function pageHead(kicker,title,desc='',action=''){return `<div class="page-head"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1>${desc?`<p class="muted">${desc}</p>`:''}</div>${action}</div>`;}
 function todayPage(){
