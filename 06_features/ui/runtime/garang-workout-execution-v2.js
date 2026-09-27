@@ -2,7 +2,7 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.3';
+const VERSION='workout-execution-v2.4.1-live-session-group-handoff';
 const SESSION_KEY='garang_workout_session_v2';
 let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
@@ -28,7 +28,20 @@ function applyPrefill({details=[],weight,reps,rpe,rir,setType,duration}={}){if(d
 function draftSummary(){return bridge()?.draftSummary?.()||{exercises:0,sets:0,volume:0,unit:'kg'};}
 function displayUnit(){return String(draftSummary().unit||'kg').toUpperCase();}
 function ensureSession(){if(!sessionStartedAt)sessionStartedAt=Date.now();persistSessionState();startTicker();}
-function startWorkoutSession(){ensureSession();updateLive();}
+function startWorkoutSession(){
+  const wasActive=!!sessionStartedAt;
+  ensureSession();updateLive();
+  if(!wasActive){
+    const bar=document.querySelector('.workout-session-bar');
+    bar?.classList.add('session-just-started');
+    window.setTimeout(()=>bar?.classList.remove('session-just-started'),1100);
+    window.dispatchEvent(new CustomEvent('garang:workout-session-started',{detail:{startedAt:sessionStartedAt}}));
+    requestAnimationFrame(()=>{
+      const current=document.querySelector('.execution-set-row.current-set,[data-set-row]:not(.completed)');
+      current?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+    });
+  }
+}
 function finishWorkoutSession(){
   if(!sessionStartedAt)return false;
   let save=document.getElementById('saveWorkoutSession');
@@ -56,10 +69,16 @@ function startRest(setType='working'){const custom=Math.max(15,num(document.getE
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
-  const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('finishWorkoutSession');
-  if(stateLabel)stateLabel.textContent=active?'LIVE SESSION':'READY';
-  if(start){start.hidden=active;start.disabled=active;}
+  const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('finishWorkoutSession'),bar=document.querySelector('.workout-session-bar'),feedback=document.getElementById('workoutSessionFeedback');
+  if(stateLabel)stateLabel.textContent=active?'기록 중':'세션 준비';
+  if(bar){bar.classList.toggle('is-live',active);bar.setAttribute('data-session-state',active?'live':'ready');}
+  if(start){
+    start.hidden=false;start.disabled=active;start.classList.toggle('is-live',active);start.setAttribute('aria-pressed',String(active));
+    start.setAttribute('aria-label',active?'운동 세션 기록 중':'운동 세션 시작');
+    const label=start.querySelector('[data-session-start-label]');if(label)label.textContent=active?'기록 중':'세션 시작';
+  }
   if(finish){finish.hidden=!active;finish.disabled=!active;}
+  if(feedback){feedback.hidden=false;feedback.textContent=active?'세션이 진행 중입니다 · 타이머가 기록되고 있어요':'시작하면 타이머가 즉시 기록됩니다';feedback.classList.toggle('is-live',active);}
   const summary=draftSummary(),progress=document.getElementById('workoutExecutionProgress');
   if(progress)progress.textContent=(summary.sets+completedCurrent())+' SETS';
   refreshSetStates();
@@ -122,7 +141,7 @@ function enhanceRows(){
     });
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
-      if(!done)ensureSession();captureLiveSetRows();const grouped=!done?bridge()?.nextGroupedExecution?.(i):null;if(!done&&grouped){if(grouped.groupComplete){stopRest();}else{if(grouped.roundEnded)startRest(row.querySelector('[data-set-type]')?.value||'working');else stopRest();setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0);}}else if(!done)startRest(row.querySelector('[data-set-type]')?.value||'working');updateLive();
+      if(!done)ensureSession();captureLiveSetRows();const grouped=!done?bridge()?.nextGroupedExecution?.(i):null;if(!done&&grouped){if(grouped.groupComplete){stopRest();}else{if(grouped.roundEnded)startRest(row.querySelector('[data-set-type]')?.value||'working');else stopRest();bridge()?.activateGroupedExercise?.(grouped.target.index);}}else if(!done)startRest(row.querySelector('[data-set-type]')?.value||'working');updateLive();
     });
   });
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
@@ -147,7 +166,7 @@ function enhance(){
   let bar=builder.querySelector('.workout-session-bar');
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';
-    bar.innerHTML='<div class="workout-session-live"><span><i></i><b id="workoutExecutionState">READY</b></span><strong id="workoutExecutionElapsed">00:00</strong></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="운동 시작" title="운동 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
+    bar.innerHTML='<div class="workout-session-live" role="status" aria-live="polite"><span><i></i><b id="workoutExecutionState">세션 준비</b></span><strong id="workoutExecutionElapsed" aria-label="세션 경과 시간">00:00</strong><small id="workoutSessionFeedback" class="workout-session-feedback">시작하면 타이머가 즉시 기록됩니다</small></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="운동 세션 시작" aria-pressed="false" title="운동 세션 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg><span data-session-start-label>세션 시작</span></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg><span>종료</span></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
     builder.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
