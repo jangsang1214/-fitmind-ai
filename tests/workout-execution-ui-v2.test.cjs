@@ -36,6 +36,9 @@ assert.ok(runtime.includes("function hardHideCanonicalSave()")&&runtime.includes
 assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("updateLive();persistSessionState()"),'adding an exercise must preserve session state without silently starting the workout clock');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
+assert.ok(runtime.includes("const moved=bridge()?.activateGroupedExercise?.(grouped.target.index);if(moved===true)return"),'grouped set completion must synchronously enter the exact computed member without a timer race');
+assert.ok(!runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),'grouped transitions must not depend on timer ordering after a completed set');
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.4.0-deterministic-group-transition'),'app shell must cache-bust the deterministic grouped transition release');
 assert.ok(runtime.includes("headerScope.querySelectorAll('.workout-set-table-head')")&&runtime.includes("forEach(node=>node.remove())"),'active Log enhancement must collapse duplicate set-table headers to exactly one');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("sessionStartedAt=0")&&runtime.includes("restUntil=0"),'clearing a session must reset live execution timing state before rerender');
