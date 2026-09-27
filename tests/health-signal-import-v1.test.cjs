@@ -32,7 +32,7 @@ const firstProviderId=providerParsed.signals[0].id;
 const corrected=Import.parse(JSON.stringify({records:[
  {provider:'Health Connect',dataType:'HeartRateVariabilityRmssd',startTime:'2026-09-24T06:30:00Z',value:55,unit:'ms'}
 ]}),{filename:'native-health.json',source:'native-health'});
-const providerMerged=Import.merge(providerParsed,corrected);
+const providerMerged=Import.merge(providerParsed.signals,corrected);
 assert.equal(providerMerged.length,1,'provider correction at the same source/timestamp must upsert instead of duplicate');
 assert.equal(providerMerged[0].hrvMs,55);
 assert.equal(providerMerged[0].restingHeartRateBpm,57,'upsert must preserve sibling metrics from the prior provider snapshot');
