@@ -31,6 +31,12 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   const nav=page.locator('#bottomNav [data-garang-primary-nav="1"]');assert.equal(await nav.count(),4,'only four primary product surfaces may remain');
   assert.deepEqual(await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page)),['today','log','coach','progress']);
   assert.deepEqual(await nav.locator('b').allTextContents(),['Today','Record','Coach','Progress']);
+  await page.waitForFunction(()=>window.GarangCommercialMobileV1?.version==='garang-commercial-mobile-v1.0.0'&&document.documentElement.dataset.garangCommercialApp==='v1',null,{timeout:5000});
+  const commercial=await page.evaluate(()=>{const root=document.documentElement,nav=document.getElementById('bottomNav'),active=nav?.querySelector('[data-page="today"]'),sheetStyle=[...document.styleSheets].some(x=>String(x.href||'').includes('garang-commercial-mobile-v1.css'));return {root:root.dataset.garangCommercialApp,icons:nav?.querySelectorAll('.gca-tab-icon svg').length||0,activeColor:active?getComputedStyle(active).color:'',sheetStyle};});
+  assert.equal(commercial.root,'v1','commercial mobile shell must boot as the visual architecture owner');
+  assert.equal(commercial.icons,4,'every primary tab must use the unified commercial icon language');
+  assert.equal(commercial.sheetStyle,true,'commercial mobile stylesheet must be loaded');
+  assert.notEqual(commercial.activeColor,'rgb(112, 120, 112)','active tab must visually separate from inactive navigation');
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must stay internalized');
   assert.equal(await page.locator('.status-visual-card').isHidden(),true,'legacy Today state owner must stay internalized');
   assert.ok(await page.locator('.status-visual-card [data-action="open-checkin"]').count()>=1,'canonical check-in write owner must remain in DOM');
