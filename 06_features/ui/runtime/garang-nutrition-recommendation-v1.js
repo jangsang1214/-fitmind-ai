@@ -9,7 +9,7 @@
   const Core = window.GarangNutritionRecommendation;
   if (!main || !Core) return;
 
-  const VERSION = 'garang-nutrition-recommendation-surface-v1.0.0';
+  const VERSION = 'garang-nutrition-recommendation-surface-v1.1.0-outcome-lineage';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const ko = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -94,7 +94,8 @@
       const option = model?.options?.[Number(add.dataset.gnrAdd)];
       if (!option) return;
       event.preventDefault();
-      const result = window.GarangNutritionDraftBridge?.add?.(option.items.map(item => ({ ...item })));
+      const recommendationContext = { recommendationId: `${model.date || currentDate()}:${option.id || Number(add.dataset.gnrAdd)}:${model.version || Core.VERSION || 'nutrition-v1'}`, source: 'next_meal', version: model.version || Core.VERSION || 'nutrition-v1', date: model.date || currentDate(), optionId: option.id || String(Number(add.dataset.gnrAdd)), goal: model.goal || '', basis: model.recommendationBasis || 'goal_and_food_db' };
+      const result = window.GarangNutritionDraftBridge?.add?.(option.items.map(item => ({ ...item, recommendationContext })));
       if (!result?.ok) {
         add.textContent = ko() ? '초안에 담지 못했습니다' : 'Could not add';
         return;

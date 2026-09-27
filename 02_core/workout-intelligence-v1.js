@@ -1,8 +1,9 @@
 (function(root,factory){
- const api=factory();
+ const StateIntelligence=typeof module==='object'&&module.exports?require('./state-intelligence-v1.js'):root.GarangStateIntelligence;
+ const api=factory(StateIntelligence);
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.GarangWorkoutIntelligence=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(StateIntelligence){
 'use strict';
 
 const ENGINE_VERSION='workout-intelligence-v1';
@@ -49,20 +50,29 @@ function normalizedCheckin(state,now=new Date()){
   availableMinutes:num(c.availableMinutes??state?.onboarding?.availableMinutes,60)
  };
 }
+function readinessDose(score){
+ if(score===null||score===undefined||!Number.isFinite(Number(score)))return {score:null,band:'unknown',targetRPE:7,volumeScale:.9};
+ const value=round(Number(score),0);
+ if(value<45)return {score:value,band:'low',targetRPE:5.5,volumeScale:.6};
+ if(value<65)return {score:value,band:'guarded',targetRPE:6.5,volumeScale:.8};
+ if(value<80)return {score:value,band:'ready',targetRPE:7.5,volumeScale:.95};
+ return {score:value,band:'high',targetRPE:8,volumeScale:1};
+}
 function readiness(state,{now=new Date()}={}){
- const c=normalizedCheckin(state,now);
- if(!c)return {score:null,band:'unknown',targetRPE:7,volumeScale:.9,checkin:null,reasons:['NO_TODAY_CHECKIN']};
- const parts=[],reasons=[];
- if(Number.isFinite(c.sleepHours)){parts.push(clamp(c.sleepHours/8*100,0,100));if(c.sleepHours<6)reasons.push('SHORT_SLEEP');}
- if(Number.isFinite(c.energy)){parts.push(clamp((c.energy-1)/4*100,0,100));if(c.energy<=2)reasons.push('LOW_ENERGY');}
- if(Number.isFinite(c.stress)){parts.push(clamp((5-c.stress)/4*100,0,100));if(c.stress>=4)reasons.push('HIGH_STRESS');}
- if(Number.isFinite(c.sorenessMax)){parts.push(clamp((5-c.sorenessMax)/5*100,0,100));if(c.sorenessMax>=4)reasons.push('HIGH_SORENESS');}
- const score=parts.length?round(parts.reduce((a,b)=>a+b,0)/parts.length,0):null;
- if(score===null)return {score:null,band:'unknown',targetRPE:7,volumeScale:.9,checkin:c,reasons:['INSUFFICIENT_CHECKIN']};
- if(score<45)return {score,band:'low',targetRPE:5.5,volumeScale:.6,checkin:c,reasons};
- if(score<65)return {score,band:'guarded',targetRPE:6.5,volumeScale:.8,checkin:c,reasons};
- if(score<80)return {score,band:'ready',targetRPE:7.5,volumeScale:.95,checkin:c,reasons};
- return {score,band:'high',targetRPE:8,volumeScale:1,checkin:c,reasons};
+ const c=normalizedCheckin(state,now),parts=[],reasons=[];
+ if(c){
+  if(Number.isFinite(c.sleepHours)){parts.push(clamp(c.sleepHours/8*100,0,100));if(c.sleepHours<6)reasons.push('SHORT_SLEEP');}
+  if(Number.isFinite(c.energy)){parts.push(clamp((c.energy-1)/4*100,0,100));if(c.energy<=2)reasons.push('LOW_ENERGY');}
+  if(Number.isFinite(c.stress)){parts.push(clamp((5-c.stress)/4*100,0,100));if(c.stress>=4)reasons.push('HIGH_STRESS');}
+  if(Number.isFinite(c.sorenessMax)){parts.push(clamp((5-c.sorenessMax)/5*100,0,100));if(c.sorenessMax>=4)reasons.push('HIGH_SORENESS');}
+ }
+ const manualScore=parts.length?round(parts.reduce((a,b)=>a+b,0)/parts.length,0):null,manualDose=readinessDose(manualScore),base={...manualDose,checkin:c,reasons:c?(manualScore===null?['INSUFFICIENT_CHECKIN']:reasons):['NO_TODAY_CHECKIN'],source:c?'checkin':'none',confidence:c&&manualScore!==null?Math.min(1,parts.length/4):0};
+ let fused=null;
+ try{fused=StateIntelligence?.estimateState?.(state,{now});}catch{}
+ const fusedReasons=Array.isArray(fused?.readiness?.reasons)?fused.readiness.reasons:[],physContributed=fusedReasons.includes('PHYSIOLOGICAL_SIGNAL_ONLY')||fusedReasons.includes('PHYSIOLOGICAL_SIGNAL_FUSED'),fusedScore=Number(fused?.readiness?.value),fusedConfidence=Number(fused?.readiness?.confidence);
+ if(!physContributed||!Number.isFinite(fusedScore)||!(fusedConfidence>=.35))return base;
+ const dose=readinessDose(fusedScore);
+ return {...dose,checkin:c,reasons:[...new Set(fusedReasons)],source:'physiological_fused',confidence:round(fusedConfidence,2),physiological:fused?.physiological||null};
 }
 function setDetails(record){return rows(record?.setDetails||record?.setsDetail);}
 function setDetailVolume(record){

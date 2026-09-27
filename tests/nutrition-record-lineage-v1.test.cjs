@@ -9,6 +9,9 @@ assert.match(app,/nutritionSource:\{source:'user_entered'\},userOverride:true/,'
 assert.match(app,/function normalizeMealItem/,'meal normalization must preserve lineage fields');
 assert.match(app,/secondaryNutrients\(f,ratio\)/,'official Food DB items must preserve scaled secondary nutrients');
 assert.match(app,/secondaryNutrientCoverage:secondary\.coverage/,'saved meals must expose secondary nutrient coverage instead of fabricating zeroes');
+assert.match(app,/function normalizeRecommendationContext/,'Nutrition must normalize recommendation provenance before persistence');
+assert.match(app,/recommendationContexts=\[\.\.\.new Map/,'saved meals must retain explicit recommendation lineage');
+assert.match(app,/nutrition_recommendation_saved/,'accepted recommendations must emit an outcome-linkable save event');
 assert.match(app,/function recentReusableMeals\(limit=3\)/,'Nutrition must expose a bounded recent-meal reuse helper');
 assert.match(app,/data-repeat-meal=/,'recent meals must be reusable from the Nutrition surface');
 assert.match(app,/function reuseMealToDraft\(mealId\)/,'recent meal reuse must route through a draft-only helper');
@@ -33,8 +36,9 @@ const state=ctx.GarangSchema.toTransport({
     id:'i1',foodId:'F0002',name:'현미밥',grams:100,kcal:172,protein:3.1,carbs:38.9,fat:.47,fiber:2,sodium:2,
     nutritionStatus:'verified',
     nutritionSource:{provider:'MFDS K-FIND',dataset:'KDDB_HOME_ANALYZED',recordId:'D101-050000000-0001',matchRule:'name_exact'},
-    userOverride:false
-  }]}],
+    userOverride:false,
+    recommendationContext:{recommendationId:'2026-09-22:protein-rice:garang-nutrition-recommendation-v1',source:'next_meal',version:'garang-nutrition-recommendation-v1',date:'2026-09-22',optionId:'protein-rice',goal:'muscle_gain',basis:'goal_and_food_db'}
+  }],recommendationContexts:[{recommendationId:'2026-09-22:protein-rice:garang-nutrition-recommendation-v1',source:'next_meal',version:'garang-nutrition-recommendation-v1',date:'2026-09-22',optionId:'protein-rice',goal:'muscle_gain',basis:'goal_and_food_db'}]}],
   memory:{entries:[]}
 });
 const item=state.meals[0].items[0];
@@ -45,4 +49,6 @@ assert.equal(item.nutritionSource.recordId,'D101-050000000-0001');
 assert.equal(item.userOverride,false);
 assert.equal(item.fiber,2);
 assert.equal(item.sodium,2);
+assert.equal(item.recommendationContext.optionId,'protein-rice');
+assert.equal(state.meals[0].recommendationContexts[0].source,'next_meal');
 console.log('nutrition-record-lineage-v1: PASS');
