@@ -263,13 +263,21 @@ function todayPlans(){return state.planner.filter(x=>x.date===today()).sort((a,b
 function workoutKcalToday(){return sum(todayWorkouts(),x=>num(x.kcal));}
 function proteinTarget(){return Math.round(num(state.profile?.weight,67)*1.6);}
 
+function canonicalRecoveryReadiness(){
+  const c=latestCheckin(),legacy=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
+  let model=null;try{model=window.GarangStateIntelligence?.estimateState?.(state,{now:new Date()})||null;}catch{}
+  const fused=Number(model?.readiness?.value);
+  if(Number.isFinite(fused)){const reasons=Array.isArray(model?.readiness?.reasons)?model.readiness.reasons:[],source=reasons.includes('PHYSIOLOGICAL_SIGNAL_ONLY')?'physiological':reasons.includes('PHYSIOLOGICAL_SIGNAL_FUSED')?'fused':'checkin';return {value:clamp(Math.round(fused),0,100),confidence:clamp(num(model?.readiness?.confidence,0),0,1),source,reasons,physiological:model?.physiological||null};}
+  return {value:legacy,confidence:legacy!==null?(c?.date===today()?0.75:0.65):0,source:legacy!==null?'checkin':'none',reasons:legacy!==null?['LEGACY_CHECKIN_FALLBACK']:[],physiological:null};
+}
+
 function performanceScore(){
   const c=latestCheckin(), sevenW=state.workouts.filter(x=>withinDays(x.date,7)), sevenR=state.runs.filter(x=>withinDays(x.date,7)), sevenM=state.meals.filter(x=>withinDays(x.date,7));
   const activityDays=uniqueDays([...sevenW,...sevenR]);const freq=Math.max(1,num(state.onboarding.weeklyFrequency,4));const consistency=clamp(Math.round(activityDays/freq*100),0,100);
   const mealDays=[...new Set(sevenM.map(x=>x.date))];const proteinScores=mealDays.map(d=>clamp(totalsMeals(d).protein/Math.max(1,proteinTarget())*100,0,100));const nutrition=proteinScores.length?Math.round(sum(proteinScores,x=>x)/proteinScores.length):null;
-  const readiness=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
+  const recovery=canonicalRecoveryReadiness(),readiness=recovery.value;
   const body=state.body.length>=2?75:state.body.length?65:null;
-  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null);const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(c?1:0),evidenceDomains=[sevenW.length||sevenR.length,sevenM.length,c,state.body.length].filter(Boolean).length;
+  const vals=[consistency,nutrition,readiness,body].filter(v=>v!==null),recoveryEvidence=readiness!==null;const dataCount=sevenW.length+sevenR.length+sevenM.length+state.body.length+(recoveryEvidence?1:0),evidenceDomains=[sevenW.length||sevenR.length,sevenM.length,recoveryEvidence,state.body.length].filter(Boolean).length;
   if(!dataCount||evidenceDomains<2)return {total:null,components:{Consistency:null,Nutrition:null,Recovery:null,Body:null},reasons:['두 개 이상의 기록 영역이 쌓이면 GARANG Score를 판단합니다.']};
   const total=Math.round(sum(vals,x=>x)/vals.length);const reasons=[];
   if(readiness!==null&&readiness<60)reasons.push('오늘 회복 상태가 전체 점수를 낮추고 있습니다.');
@@ -279,18 +287,18 @@ function performanceScore(){
   return {total,components:{Consistency:consistency,Nutrition:nutrition,Recovery:readiness,Body:body},reasons};
 }
 function coachDecision(){
-  const c=latestCheckin();const recentW=state.workouts.filter(x=>withinDays(x.date,3));const recentR=state.runs.filter(x=>withinDays(x.date,3));const available=num(c?.availableMinutes,state.onboarding.availableMinutes||60);let readiness=null;
-  if(c)readiness=clamp(Math.round((num(c.sleep,7)/8*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100);
+  const c=latestCheckin(),recovery=canonicalRecoveryReadiness();const recentW=state.workouts.filter(x=>withinDays(x.date,3));const recentR=state.runs.filter(x=>withinDays(x.date,3));const available=num(c?.availableMinutes,state.onboarding.availableMinutes||60),readiness=recovery.value;
   let decision='KEEP',title=`${available}분 기본 훈련`,summary='현재 기록 기준으로 계획을 유지해도 좋습니다.',reasons=[],confidence=.58;
-  if(!c){reasons.push('오늘 컨디션 체크인이 없어 최근 기록 중심으로 판단했습니다.');confidence=.46;}
-  else {reasons.push(`수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${c.energy}/5 · 스트레스 ${c.stress}/5`);confidence=.82;}
+  if(c){reasons.push(`수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${c.energy}/5 · 스트레스 ${c.stress}/5`);confidence=Math.max(.72,recovery.confidence||0);}
+  else if(readiness!==null){reasons.push('최근 HRV · 안정시 심박 · 수면 등 Health 신호를 회복 판단에 반영했습니다.');confidence=Math.max(.55,recovery.confidence||0);}
+  else {reasons.push('오늘 컨디션 체크인과 충분한 Health 신호가 없어 최근 기록 중심으로 판단했습니다.');confidence=.46;}
   if(c&&num(c.sleep)<4.5){decision='REST';title='회복 우선';summary='수면 부족이 커서 고강도 훈련보다 회복을 우선합니다.';reasons.push('수면이 4.5시간 미만입니다.');}
   else if(c&&readiness<45){decision='RECOVER';title=`${Math.min(30,available)}분 회복 세션`;summary='오늘은 강도를 낮추고 움직임과 회복에 집중하는 편이 좋습니다.';reasons.push(`회복 지표가 ${readiness}점으로 낮습니다.`);}
   else if(c&&num(c.soreness)>=4){decision='REPLACE';title=`${Math.min(40,available)}분 대체 세션`;summary='근육통이 높은 부위를 피하고 다른 부위 또는 Zone 2로 대체합니다.';reasons.push(`근육통 ${c.soreness}/5${c.soreArea?` · ${c.soreArea}`:''}`);}
   else if(recentW.length>=3&&(!c||readiness<68)){decision='REDUCE';title=`${Math.min(45,available)}분 감량 세션`;summary='최근 훈련량을 고려해 오늘 총 볼륨을 약 20% 낮춥니다.';reasons.push(`최근 3일 운동 기록 ${recentW.length}개가 있습니다.`);}
   else {if(recentW.length)reasons.push(`최근 3일 운동 기록 ${recentW.length}개를 반영했습니다.`);if(recentR.length)reasons.push(`최근 러닝 ${recentR.length}회를 함께 반영했습니다.`);}
   const plan=todayPlans()[0];if(plan)reasons.push(`오늘 Planner의 “${plan.title}” 일정과 함께 판단했습니다.`);
-  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available};
+  return {decision,title,summary,reasons:reasons.slice(0,4),confidence,readiness,available,recoverySource:recovery.source,recoveryConfidence:recovery.confidence,physiological:recovery.physiological};
 }
 function weeklyReview(){const throughToday=x=>withinDays(x.date,7)&&dateMs(x.date)<=dateMs(today()),w=state.workouts.filter(throughToday),r=state.runs.filter(throughToday),m=state.meals.filter(throughToday),p=state.planner.filter(throughToday);const completed=p.filter(x=>x.completed).length;return {sessions:uniqueDays(w),volume:Math.round(sum(w,workoutRecordVolume)),runKm:sum(r,x=>num(x.distance)),protein:uniqueDays(m)?Math.round(sum([...new Set(m.map(x=>x.date))],d=>totalsMeals(d).protein)/uniqueDays(m)):0,planRate:p.length?Math.round(completed/p.length*100):0};}
 function personalPerformanceDecisionLoop(){
@@ -307,6 +315,7 @@ function decisionExecutionLabel(loop){
  return '';
 }
 function decisionLearningLabel(loop){const why=String(loop?.nextAction?.whyNow||'').trim();return why||'실행 결과를 다음 판단에 반영합니다.';}
+function decisionEvidenceLabel(loop){const confidence=clamp(num(loop?.confidence,0),0,1);return confidence>=.75?'근거 강함':confidence>=.5?'근거 보통':'근거 수집 중';}
 
 function uiLang(){return state.preferences?.language==='en'?'en':'ko';}
 function unitSystem(){return window.GarangUnits?.normalize(state.preferences?.unit)||((state.preferences?.unit==='imperial')?'imperial':'metric');}
@@ -398,14 +407,33 @@ function todayBodyFocus(){const ci=latestCheckin();if(ci?.soreArea){const key=mu
 function workoutLibraryFor(key){let items=db.exercise||[];if(key&&key!=='all'&&key!=='full')items=items.filter(x=>muscleKeyFromLabel(x.primary_muscle)===key);return items.slice(0,8);}
 function workoutMuscleButtons(active){const groups=[['all','전체'],['chest','가슴'],['back','등'],['shoulders','어깨'],['legs','하체'],['core','코어'],['biceps','이두'],['triceps','삼두']];return `<div class="muscle-filter-strip">${groups.map(([k,l])=>`<button type="button" class="${active===k?'active':''}" data-muscle-pick="${k}">${l}</button>`).join('')}</div>`;}
 
+function recoveryMetricEvidence(label,metric,baseline,unit,digits=0){
+ if(!metric||metric.value===null||metric.value===undefined||!Number.isFinite(Number(metric.value)))return '';
+ const value=Number(metric.value),base=Number(baseline?.median??baseline?.mean),age=Number(metric.ageHours),fmt=n=>digits?Number(n).toFixed(digits):Math.round(Number(n)).toString(),bits=[`${label} ${fmt(value)}${unit}`];
+ if(Number.isFinite(base)&&base>0)bits.push(`기준 ${fmt(base)}${unit}`);
+ if(Number.isFinite(age))bits.push(age<1?'1h 미만':`${Math.round(age)}h 전`);
+ return bits.join(' · ');
+}
+function recoveryEvidenceMarkup(decision){
+ const p=decision?.physiological;if(!p||p.quality==='insufficient')return '';
+ const latest=p.metricLatest||{},base=p.baselines||{},lines=[
+  recoveryMetricEvidence('HRV',latest.hrvMs,base.hrvMs,' ms'),
+  recoveryMetricEvidence('RHR',latest.restingHeartRateBpm,base.restingHeartRateBpm,' bpm'),
+  recoveryMetricEvidence('수면',latest.sleepHours,base.sleepHours,' h',1),
+  recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0)
+ ].filter(Boolean);
+ if(!lines.length)return '';
+ const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100));
+ return `<details class="helper" data-recovery-evidence><summary>Health 근거${score!==null&&score!==undefined?` · 회복 ${Math.round(num(score))}`:''}${band?` · ${esc(band)}`:''}</summary><div>${lines.map(line=>`<span>${esc(line)}</span>`).join('<br>')}</div><small>최근 신호와 개인 기준선 비교 · 신뢰 ${confidence}% · 의료 진단 아님</small></details>`;
+}
 function pageHead(kicker,title,desc='',action=''){return `<div class="page-head"><div><span class="eyebrow">${kicker}</span><h1>${title}</h1>${desc?`<p class="muted">${desc}</p>`:''}</div>${action}</div>`;}
 function todayPage(){
   const score=performanceScore(),dec=coachDecision(),loop=personalPerformanceDecisionLoop(),next=loop?.nextAction,t=totalsMeals(),body=latestBody(),ci=latestCheckin(),plans=todayPlans(),focus=todayBodyFocus();const scoreText=score.total??'—';
-  const readiness=dec.readiness??null,decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
+  const readiness=dec.readiness??null,healthEvidence=recoveryEvidenceMarkup(dec),decisionTitle=next?.title||dec.title,decisionSummary=next?.summary||dec.summary,decisionConfidence=loop?Math.round(num(loop.confidence)*100):Math.round(num(dec.confidence)*100),executionLabel=decisionExecutionLabel(loop),learningLabel=decisionLearningLabel(loop);
   return `${pageHead('TODAY','오늘', '', `<button class="ghost small" data-pagego="settings">설정</button>`)}
   <section class="card today-hero visual-today-hero">
     <div class="today-body-panel"><div class="today-body-label"><span class="eyebrow">${esc(focus.kind)}</span><strong>${esc(focus.label)}</strong></div>${muscleMapSvg(focus.key,'todayMuscleMap','compact-map')}</div>
-    <div class="today-decision-panel"><div class="today-score-line"><div class="score-orb" style="--score:${score.total||0}"><div><strong>${scoreText}</strong><span>GARANG SCORE</span></div></div><div><span class="eyebrow">GARANG DECISION · 오늘 한 가지</span><h2>${esc(decisionTitle)}</h2></div></div><p class="today-decision-copy">${esc(decisionSummary)}</p>${executionLabel?`<div class="helper"><strong>${esc(executionLabel)}</strong></div>`:""}${loop?`<div class="helper">${esc(learningLabel)}</div>`:""}<div class="hero-actions">${loop?`<button class="primary" data-action="performance-decision-accept" ${loop.interaction?.status==="accepted"?"disabled":""}>${loop.interaction?.status==="accepted"?"오늘 계획에 적용됨":"오늘 실행하기"}</button><button class="ghost" data-action="performance-decision-modify">조정</button><button class="ghost" data-action="performance-decision-reject">건너뛰기</button>`:`<button class="primary" data-action="apply-coach-plan">오늘 계획 적용</button><button class="ghost" data-pagego="coach">근거 보기</button>`}</div>${loop?`<div class="helper">신뢰 ${decisionConfidence}% · ${esc(decisionInteractionLabel(loop))} · 실행 결과를 다음 판단에 반영</div>`:""}</div>
+    <div class="today-decision-panel"><div class="today-score-line"><div class="score-orb" style="--score:${score.total||0}"><div><strong>${scoreText}</strong><span>GARANG SCORE</span></div></div><div><span class="eyebrow">GARANG DECISION · 오늘 한 가지</span><h2>${esc(decisionTitle)}</h2></div></div><p class="today-decision-copy">${esc(decisionSummary)}</p>${executionLabel?`<div class="helper"><strong>${esc(executionLabel)}</strong></div>`:""}${loop?`<div class="helper">${esc(learningLabel)}</div>`:""}<div class="hero-actions">${loop?`<button class="primary" data-action="performance-decision-accept" ${loop.interaction?.status==="accepted"?"disabled":""}>${loop.interaction?.status==="accepted"?"오늘 계획에 적용됨":"오늘 실행하기"}</button><button class="ghost" data-action="performance-decision-modify">조정</button><button class="ghost" data-action="performance-decision-reject">건너뛰기</button>`:`<button class="primary" data-action="apply-coach-plan">오늘 계획 적용</button><button class="ghost" data-pagego="coach">근거 보기</button>`}</div>${loop?`<div class="helper">${esc(decisionEvidenceLabel(loop))} · ${esc(decisionInteractionLabel(loop))} · 실행 결과를 다음 판단에 반영</div>`:""}</div>
   </section>
   <section class="today-snapshot">
     <div><span>WORKOUT</span><strong>${todayWorkouts().length}</strong><small>session</small></div>
@@ -413,8 +441,8 @@ function todayPage(){
     <div><span>ENERGY</span><strong>${ci?ci.energy:'—'}</strong><small>${ci?'/ 5':'check-in'}</small></div>
     <div><span>BODY</span><strong>${shownWeight(body?.weight||state.profile?.weight||'',1)||'—'}</strong><small>${weightUnit()}</small></div>
   </section>
-  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci?'jade':''}">${ci?'CHECKED':'30 SEC'}</span></div>
-  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':'상태 저장'}</button></section>
+  <div class="section-title"><h2>오늘의 상태</h2><span class="pill ${ci||healthEvidence?'jade':''}">${ci?'CHECKED':healthEvidence?'HEALTH':'30 SEC'}</span></div>
+  <section class="card status-visual-card">${ci?`<div class="status-meter-grid"><div><span>수면</span><b>${ci.sleep}h</b><i><em style="width:${clamp(ci.sleep/9*100,0,100)}%"></em></i></div><div><span>에너지</span><b>${ci.energy}/5</b><i><em style="width:${clamp(ci.energy/5*100,0,100)}%"></em></i></div><div><span>스트레스</span><b>${ci.stress}/5</b><i class="reverse"><em style="width:${clamp(ci.stress/5*100,0,100)}%"></em></i></div><div><span>근육통</span><b>${ci.soreness}/5</b><i class="reverse"><em style="width:${clamp(ci.soreness/5*100,0,100)}%"></em></i></div></div>${healthEvidence}`:healthEvidence?`<div class="status-empty-visual"><div class="status-ring">${readiness??'—'}</div><div><strong>Health 신호로 회복 상태를 읽고 있습니다.</strong><span>체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다.</span></div></div>${healthEvidence}`:`<div class="status-empty-visual"><div class="status-ring">30</div><div><strong>상태를 저장하면 오늘의 추천이 더 정확해집니다.</strong><span>수면 · 에너지 · 스트레스 · 근육통</span></div></div>`}<button class="ghost" data-action="open-checkin">${ci?'상태 수정':healthEvidence?'체크인 추가':'상태 저장'}</button></section>
   <div class="section-title"><h2>오늘 일정</h2><button class="text-btn" data-pagego="planner">전체 보기</button></div>
   <section class="card today-plan-card">${plans.length?plans.slice(0,3).map(planRow).join(''):`<button class="empty-action" data-pagego="planner" data-golden-path="planner-entry"><span>＋</span><strong>오늘 계획 만들기</strong><small>Planner에서 목표와 오늘의 방향을 확인합니다.</small></button>`}</section>
   <div class="section-title"><h2>빠른 기록</h2></div><div class="quick-visual-grid"><button class="quick-visual workout" data-pagego="workout">${miniBodySvg('chest')}<span><b>운동</b><small>부위를 보고 기록</small></span></button><button class="quick-visual meal" data-pagego="nutrition"><span class="quick-camera">◎</span><span><b>식단</b><small>사진으로 시작</small></span></button><button class="quick-visual run" data-pagego="running"><span class="quick-route">⌁</span><span><b>러닝</b><small>거리와 페이스</small></span></button><button class="quick-visual body" data-pagego="body"><span class="quick-body">◇</span><span><b>바디</b><small>체성분 변화</small></span></button></div>`;
@@ -465,7 +493,7 @@ function renderRunningInsights(){
  if(!api?.build)return '';
  const x=api.build(state,{asOf:new Date(today()+'T12:00:00')}),pace=v=>Number.isFinite(Number(v))?paceText({duration:Number(v),distance:1}):'—',card=(label,value,meta)=>`<article class="insight-card"><span>${label}</span><strong>${value}</strong><small>${meta}</small></article>`;
  if(!x.evidence?.validRuns)return `<div class="section-title"><h2>${ux('러닝 분석','Running insights')}</h2></div><div class="card empty">${ux('러닝을 저장하면 페이스 추세, 부하, split 패턴과 개인 기록이 자동으로 정리됩니다.','Save a run to build pace trend, load, split patterns and personal records.')}</div>`;
- const trend=x.trend||{},load=x.load||{},best=x.bestEfforts||{},analysis=x.analysis||{},split=analysis.split||{},guide=analysis.paceGuide||{},distribution=analysis.distribution||{},projection=analysis.projection||{},progression=analysis.progression||{};
+ const trend=x.trend||{},load=x.load||{},best=x.bestEfforts||{},analysis=x.analysis||{},split=analysis.split||{},guide=analysis.paceGuide||{},distribution=analysis.distribution||{},projection=analysis.projection||{},progression=analysis.progression||{},weekly=analysis.weeklyStructure||{};
  const trendLabel=trend.status==='measured'?(trend.direction==='improving'?ux('개선','Improving'):trend.direction==='slower'?ux('느려짐','Slower'):ux('안정','Stable')):ux('데이터 수집 중','Collecting');
  const loadLabel=load.band==='spike'?ux('급증','Spike'):load.band==='drop'?ux('감소','Drop'):load.band==='stable'?ux('안정','Stable'):ux('미측정','Unknown');
  const patternLabel=split.pattern==='negative_split'?ux('네거티브 스플릿','Negative split'):split.pattern==='positive_split'?ux('포지티브 스플릿','Positive split'):split.pattern==='even_split'?ux('이븐 스플릿','Even split'):ux('측정 대기','Waiting for splits');
@@ -475,6 +503,7 @@ function renderRunningInsights(){
  const buckets=distribution?.buckets||{},distRow=(key,label)=>{const b=buckets[key];return b?`<span class="pill">${label} ${Math.round(num(b.distancePct))}%</span>`:'';};
  const projectionText=projection.status==='estimated'?`${projection.tenKmMin?`10K ${formatRunMinutes(projection.tenKmMin)}`:''}${projection.halfMarathonMin?` · HALF ${formatRunMinutes(projection.halfMarathonMin)}`:''}`:'—';
  const fiveProgress=progression?.fiveKm?.status==='measured'?`+${Math.max(0,num(progression.fiveKm.improvementPct)).toFixed(1)}%`:ux('기록 축적 중','Collecting');
+ const weeklyMix=weekly?.mix||{},weeklyParts=[weeklyMix.recovery?`${ux('회복','Recovery')} ${weeklyMix.recovery}`:'',weeklyMix.easy?`Easy ${weeklyMix.easy}`:'',weeklyMix.steady?`Steady ${weeklyMix.steady}`:'',weeklyMix.tempo?`Tempo ${weeklyMix.tempo}`:'',weeklyMix.long?`Long ${weeklyMix.long}`:''].filter(Boolean).join(' · ');
  return `<section class="record-insights running-performance-v2">
  <div class="section-title"><div><span class="eyebrow">RUNNING PERFORMANCE</span><h2>${ux('최근 페이스·부하·기록','Pace, load and records')}</h2></div><span class="pill">CONFIDENCE ${Math.round(num(x.confidence)*100)}%</span></div>
  <div class="insight-grid run-grid">
@@ -499,6 +528,7 @@ function renderRunningInsights(){
    </div>
    ${guide.status==='measured'?`<div class="section-title compact"><h2>${ux('개인 Pace Guide','Personal pace guide')}</h2><span class="pill">${pace(guide.anchorPaceMinPerKm)} anchor</span></div><div class="list">${zone('easy',ux('Easy','Easy'))}${zone('steady',ux('Steady','Steady'))}${zone('tempo',ux('Tempo','Tempo'))}</div>`:''}
    ${distribution.status==='measured'?`<div class="actions" style="margin-top:10px">${distRow('easy','EASY')}${distRow('steady','STEADY')}${distRow('fast','FAST')}</div>`:''}
+   ${weekly.status&&weekly.status!=='insufficient'?`<div class="section-title compact"><h2>${ux('이번 주 구조','Weekly structure')}</h2><span class="pill">${weekly.sessionsPerWeek||0} / week</span></div><div class="helper"><strong>${Math.round(num(weekly.totalMinutesCap))}분 이내</strong> · ${esc(weeklyParts||ux('최근 부하 유지','Maintain recent load'))}${weekly.longDurationMin?` · Long ${weekly.longDurationMin}분`:''}</div>`:''}
    <p class="helper">${ux('Pace Guide는 최근 28일 페이스의 상대 범위이며 심박·젖산역치 zone이 아닙니다. 예상 기록은 현재 평균 페이스 기반 추정치입니다.','Pace Guide is relative to your recent 28-day pace; it is not a heart-rate or lactate-threshold zone. Race times are estimates from observed average pace.')}</p>
   </div>
  </details>
@@ -639,7 +669,7 @@ function progressLearningHtml(snapshot){
 function progressPage(){const learning=progressLearningSnapshot(),score=performanceScore(),r=weeklyReview(),data=filterProgress(progressRangeDays);const bestWeight=data.workouts.length?Math.max(...data.workouts.map(workoutRecordMaxWeight)):0,bestVolume=data.workouts.length?Math.max(...data.workouts.map(workoutRecordVolume)):0,bestRun=data.runs.length?Math.max(...data.runs.map(x=>num(x.distance))):0;const bodyPts=data.body.map(x=>num(x.weight)).filter(Boolean);return `${pageHead('PROGRESS / 흐름','진행 상황','기록을 쌓는 화면과 해석하는 화면을 분리했습니다.')}
 <div class="progress-tabs">${[[7,'7일'],[30,'30일'],[90,'3개월'],[365,'1년']].map(([d,l])=>`<button data-range="${d}" class="${progressRangeDays===d?'active':''}">${l}</button>`).join('')}</div>
 <div class="grid grid-4" style="margin-top:12px"><section class="card"><div class="stat big">${score.total??'—'}</div><div class="stat-label">GARANG SCORE</div></section><section class="card"><div class="stat">${bestWeight?shownWeight(bestWeight,1):'—'}</div><div class="stat-label">최고 중량 ${weightUnit()}</div></section><section class="card"><div class="stat">${bestVolume?Math.round(shownWeight(bestVolume,0)).toLocaleString():'—'}</div><div class="stat-label">최고 볼륨 ${weightUnit()}</div></section><section class="card"><div class="stat">${bestRun?Number(shownDistance(bestRun,1)).toFixed(1):'—'}</div><div class="stat-label">최장 러닝 ${distanceUnit()}</div></section></div>
-<div class="section-title"><h2>Score 구성</h2></div><div class="grid grid-2"><section class="card">${Object.entries(score.components).map(([k,v])=>`<div class="metric-row"><span>${k}</span><b>${v??'—'}</b></div>`).join('')}<div class="helper">${score.reasons.map(esc).join(' · ')}</div></section><section class="card"><h3>체중 추세</h3>${bodyPts.length>=2?sparkline(bodyPts):'<div class="empty">기간 내 체중 기록이 2개 이상 필요합니다.</div>'}</section></div>
+<details class="card"><summary><span><b>점수와 추세 근거</b><small>필요할 때만 자세히 보기</small></span><span>＋</span></summary><div class="manual-entry-body"><div class="grid grid-2"><section>${Object.entries(score.components).map(([k,v])=>`<div class="metric-row"><span>${k}</span><b>${v??'—'}</b></div>`).join('')}<div class="helper">${score.reasons.map(esc).join(' · ')}</div></section><section><h3>체중 추세</h3>${bodyPts.length>=2?sparkline(bodyPts):'<div class="empty">기간 내 체중 기록이 2개 이상 필요합니다.</div>'}</section></div></div></details>
 <div class="section-title"><h2>GARANG Learning</h2><span class="pill">근거 기반</span></div>${progressLearningHtml(learning)}
 <div class="section-title"><h2>Weekly Review</h2><span class="pill">최근 7일</span></div><section class="card"><div class="review-grid"><div class="review-cell"><strong>${r.sessions}</strong><span>운동 일수</span></div><div class="review-cell"><strong>${Math.round(shownWeight(r.volume,0)||0).toLocaleString()}</strong><span>총 볼륨 ${weightUnit()}</span></div><div class="review-cell"><strong>${Number(shownDistance(r.runKm,1)||0).toFixed(1)}</strong><span>러닝 ${distanceUnit()}</span></div><div class="review-cell"><strong>${r.protein}g</strong><span>평균 단백질</span></div><div class="review-cell"><strong>${r.planRate}%</strong><span>계획 수행률</span></div></div></section>`;}
 function plannerPage(){return `${pageHead('PLANNER / 실행','Planner','AI 추천과 사용자 확정 계획을 구분하고 변경 이력을 남깁니다.')}

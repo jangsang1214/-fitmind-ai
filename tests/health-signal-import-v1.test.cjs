@@ -63,4 +63,14 @@ assert.deepEqual(ctx.GarangSchema.toTransport(transported).physiologicalSignals,
 const state={physiologicalSignals:jr.signals,workouts:[],runs:[],meals:[],body:[],dailyCheckins:[]};
 const now=new Date('2026-09-24T12:00:00Z'),phys=Phys.build(state,{now}),si=State.estimateState(state,{now});
 assert.equal(phys.quality,'usable');assert.ok(phys.derived.readinessScore!==null);assert.ok(si.readiness.value!==null);assert.ok(si.readiness.reasons.includes('PHYSIOLOGICAL_SIGNAL_ONLY'));assert.equal(phys.guardrails.noMedicalDiagnosis,true);assert.equal(Import.GUARDS.noNativeProviderClaim,true);
+const appSource=fs.readFileSync(path.join(root,'01_app/app.js'),'utf8');
+assert.match(appSource,/function canonicalRecoveryReadiness\(/,'Today surface must expose one canonical recovery-readiness bridge');
+assert.match(appSource,/window\.GarangStateIntelligence\?\.estimateState\?\.\(state,\{now:new Date\(\)\}\)/,'canonical recovery readiness must use fused State Intelligence when available');
+assert.match(appSource,/const recovery=canonicalRecoveryReadiness\(\),readiness=recovery\.value/,'fallback Coach must consume fused recovery readiness');
+assert.match(appSource,/recoveryEvidence=readiness!==null/,'GARANG Score must count physiological-only recovery as real evidence');
+assert.match(appSource,/최근 HRV · 안정시 심박 · 수면 등 Health 신호를 회복 판단에 반영했습니다/,'fallback Coach must explain physiological-only evidence instead of pretending a check-in exists');
+assert.match(appSource,/data-recovery-evidence/,'Today must expose progressive disclosure for physiological readiness evidence');
+assert.match(appSource,/Health 신호로 회복 상태를 읽고 있습니다/,'Today must not present physiological-only recovery as an empty state');
+assert.match(appSource,/체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다/,'Health evidence must invite subjective context without replacing it');
+assert.match(appSource,/최근 신호와 개인 기준선 비교 · 신뢰/,'Health evidence must disclose baseline/freshness confidence context');
 console.log('health-signal-import-v1: PASS');

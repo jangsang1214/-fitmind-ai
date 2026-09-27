@@ -44,16 +44,26 @@ assert.equal(result.analysis.nextSession.requiresOutcomeReview,true);
 if(result.load.band==='spike')assert.equal(result.analysis.nextSession.paceZone,'recovery');
 assert.equal(result.guardrails.boundedNextSessionPrescription,true);
 assert.equal(result.guardrails.noAutomaticWeeklyLoadIncrease,true);
+assert.equal(result.guardrails.observedWeeklyStructure,true);
+assert.ok(['ready','guarded'].includes(result.analysis.weeklyStructure.status));
+assert.ok(result.analysis.weeklyStructure.sessionsPerWeek>=2&&result.analysis.weeklyStructure.sessionsPerWeek<=4);
+assert.ok(result.analysis.weeklyStructure.totalMinutesCap>0);
+assert.equal(result.analysis.weeklyStructure.source,'observed_recent_28d_load');
+assert.equal(result.analysis.weeklyStructure.guardrails.noWeeklyLoadIncrease,true);
+assert.equal(result.analysis.weeklyStructure.guardrails.observedVolumeCap,true);
 
 const sparse=Running.build({runs:[{id:'x',date:'2026-09-23',distance:3,duration:18}]},{asOf:new Date('2026-09-24T12:00:00Z')});
 assert.equal(sparse.recommendation.status,'collect_more_data');
 assert.equal(sparse.analysis.paceGuide.status,'insufficient');
 assert.equal(sparse.analysis.split.status,'insufficient');
+assert.equal(sparse.analysis.weeklyStructure.status,'insufficient');
 const appSource=fs.readFileSync('01_app/app.js','utf8');
 assert.match(appSource,/GarangRunningPerformanceV1/);
 assert.match(appSource,/RUNNING PERFORMANCE/);
 assert.match(appSource,/Advanced running analysis|고급 러닝 분석/);
 assert.match(appSource,/Pace Guide는 최근 28일 페이스/);
+assert.match(appSource,/이번 주 구조/);
+assert.match(appSource,/Weekly structure/);
 console.log('running-performance-v1 + analysis-v2: PASS');
 
 const negative=Running.latestSplitAnalysis(Running.validRuns({runs:[{id:'n1',date:'2026-09-24',distance:4,duration:20,splits:[{km:1,paceMinPerKm:5.3},{km:2,paceMinPerKm:5.2},{km:3,paceMinPerKm:4.9},{km:4,paceMinPerKm:4.8}]}]},new Date('2026-09-24T12:00:00Z')));
