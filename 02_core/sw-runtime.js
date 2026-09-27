@@ -1,5 +1,5 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v34-20260927`;
+const CACHE=`${CACHE_PREFIX}v35-20260927-commercial-mobile`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
