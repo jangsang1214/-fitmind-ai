@@ -272,7 +272,8 @@
   function repairAll(){replaceBrandMarks(document);renderBodyModels();mountCoach();}
   let repairQueued=false;
   function scheduleRepair(){if(repairQueued)return;repairQueued=true;requestAnimationFrame(()=>{repairQueued=false;repairAll();});}
-  window.addEventListener('garang:screen-rendered',scheduleRepair);
+  function repairScreen(){mountCoach();scheduleRepair();}
+  window.addEventListener('garang:screen-rendered',repairScreen);
   window.addEventListener('pageshow',scheduleRepair);
   repairAll();
 })();
