@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Foundation){
 'use strict';
 if(!Foundation)throw new Error('FOOD_DATA_FOUNDATION_REQUIRED');
-const VERSION='garang-food-intelligence-v2.1.0';
+const VERSION='garang-food-intelligence-v2.1.1-secondary-lineage';
 const list=v=>Array.isArray(v)?v:[],clean=v=>String(v??'').trim(),clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
 const QUALITY_WEIGHT=Object.freeze({verified:.025,approximate:.012,estimated:.006,unknown:0});
 const BROAD=new Set(['라면','밥','국','탕','찌개','빵','면','우유','치즈','요거트','고기','생선','샐러드','rice','soup','bread','noodle','milk','cheese','yogurt']);
@@ -64,6 +64,6 @@ function resolveVisionRow(corpus,row={},options={}){
  const combined=clamp(top.confidence*(.65+.35*confidence),0,1);if(combined<(options.minCombinedConfidence??.68))return {...top,status:'unmatched',confidence:Number(combined.toFixed(3)),reason:'VISION_DB_COMBINED_CONFIDENCE_LOW'};
  return {...top,confidence:Number(combined.toFixed(3)),visionConfidence:confidence};
 }
-function toMealItem(foodInput,grams=100){const food=Foundation.canonicalize(foodInput),g=Math.max(1,Number(grams)||100),ratio=g/(food.basisG||100);return {foodId:food.foodId||null,name:food.name,grams:g,kcal:(food.nutrients.kcal??0)*ratio,protein:(food.nutrients.protein??0)*ratio,carbs:(food.nutrients.carbs??0)*ratio,fat:(food.nutrients.fat??0)*ratio,nutritionStatus:food.quality,nutritionSource:{provider:food.provenance.provider,dataset:food.provenance.dataset,recordId:food.provenance.recordId,url:food.provenance.url,label:food.provenance.label},userOverride:false};}
+function toMealItem(foodInput,grams=100){const food=Foundation.canonicalize(foodInput),g=Math.max(1,Number(grams)||100),ratio=g/(food.basisG||100),scaled=value=>value===null||value===undefined||value===''||!Number.isFinite(Number(value))?null:Number(value)*ratio;return {foodId:food.foodId||null,name:food.name,grams:g,kcal:(food.nutrients.kcal??0)*ratio,protein:(food.nutrients.protein??0)*ratio,carbs:(food.nutrients.carbs??0)*ratio,fat:(food.nutrients.fat??0)*ratio,sugar:scaled(food.nutrients.sugar),fiber:scaled(food.nutrients.fiber),sodium:scaled(food.nutrients.sodium),cholesterol:scaled(food.nutrients.cholesterol),saturatedFat:scaled(food.nutrients.saturatedFat),transFat:scaled(food.nutrients.transFat),nutritionStatus:food.quality,nutritionSource:{provider:food.provenance.provider,dataset:food.provenance.dataset,recordId:food.provenance.recordId,url:food.provenance.url,label:food.provenance.label},userOverride:false};}
 return Object.freeze({VERSION,normalize,compact,tokens,keyScore,resolve,resolveVisionRow,toMealItem});
 });
