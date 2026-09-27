@@ -63,6 +63,9 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     await page.waitForFunction(() => window.GarangAgentStateBridge.getState()?.meals?.length === 1, null, { timeout: 7000 });
     const saved = await page.evaluate(() => window.GarangAgentStateBridge.getState());
     assert.ok(saved.meals[0].items.some(item => item.name === '닭가슴살'), 'saved meal must contain the recommended item');
+    assert.equal(saved.meals[0].recommendationContexts?.[0]?.source, 'next_meal', 'saved meal must retain recommendation origin');
+    assert.equal(saved.meals[0].recommendationContexts?.[0]?.optionId, 'protein-rice', 'saved meal must retain the selected recommendation option');
+    assert.ok(saved.meals[0].items.some(item => item.recommendationContext?.recommendationId === saved.meals[0].recommendationContexts?.[0]?.recommendationId), 'recommended items must retain the same recommendation lineage');
     assert.deepEqual(errors, [], `Nutrition recommendation browser errors:\n${errors.join('\n')}`);
     await context.close();
     console.log('browser-nutrition-recommendation WebKit mobile: PASS');
