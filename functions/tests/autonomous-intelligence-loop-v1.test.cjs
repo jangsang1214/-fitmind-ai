@@ -137,7 +137,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   const workout=WorkoutPrescriptionShadow.build(state,{asOf:'2026-09-14'}),browserWorkout=BrowserWorkoutPrescriptionShadow.build(state,{asOf:'2026-09-14'});
   assert.deepEqual(workout,browserWorkout);assert.equal(workout.version,'workout-prescription-shadow-v1.2.0');assert.equal(workout.exercises[0].prescription.action,'review_progression');assert.equal(workout.exercises[0].prescription.progressionEligibleForReview,true);assert.ok(workout.exercises[0].prescription.recommended.weight>60);assert.equal(workout.exercises[0].prescription.requiresConfirmation,true);assert.equal(workout.guardrails.exactDoseProposal,true);assert.equal(workout.guardrails.e1rmTrendAware,true);assert.equal(workout.guardrails.rirRpeAware,true);assert.equal(workout.guardrails.neverAutoIncrease,true);
   const nutrition=AdaptiveNutritionLearning.build(state,{asOf:'2026-09-14',days:14}),browserNutrition=BrowserAdaptiveNutritionLearning.build(state,{asOf:'2026-09-14',days:14});
-  assert.deepEqual(nutrition,browserNutrition);assert.equal(nutrition.version,'adaptive-nutrition-learning-v1.2.0');assert.equal(nutrition.estimate.eligible,true);assert.ok(nutrition.estimate.estimatedMaintenanceKcal>0);assert.ok(Math.abs(nutrition.recommendation.targetProposal.deltaKcal)<=100);assert.ok(nutrition.recommendation.targetProposal.proposedDailyKcal>0);assert.equal(nutrition.guardrails.exactTargetProposal,true);assert.equal(nutrition.guardrails.smoothedWeightTrend,true);assert.equal(nutrition.guardrails.multiWindowConsistency,true);assert.equal(nutrition.guardrails.noAutomaticTargetMutation,true);
+  assert.deepEqual(nutrition,browserNutrition);assert.equal(nutrition.version,'adaptive-nutrition-learning-v1.3.0-adherence-aware');assert.equal(nutrition.estimate.eligible,true);assert.ok(nutrition.estimate.estimatedMaintenanceKcal>0);assert.ok(Math.abs(nutrition.recommendation.targetProposal.deltaKcal)<=100);assert.ok(nutrition.recommendation.targetProposal.proposedDailyKcal>0);assert.equal(nutrition.guardrails.exactTargetProposal,true);assert.equal(nutrition.guardrails.smoothedWeightTrend,true);assert.equal(nutrition.guardrails.multiWindowConsistency,true);assert.equal(nutrition.guardrails.adherenceAwareAdjustment,true);assert.equal(nutrition.guardrails.currentTargetAnchored,true);assert.equal(nutrition.guardrails.noAutomaticTargetMutation,true);
  });
 
  await test('physiological signal intelligence normalizes optional wearable-grade inputs without inventing health state',()=>{
@@ -149,7 +149,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   ];
   const options={now:new Date('2026-09-20T12:00:00Z')};
   const server=PhysiologicalSignals.build(state,options),browser=BrowserPhysiologicalSignals.build(state,options);
-  assert.deepEqual(server,browser);assert.equal(server.version,'physiological-signal-intelligence-v1.0.0');assert.equal(server.quality,'usable');assert.ok(server.derived.readinessScore!==null);assert.equal(server.latest.source,'test-wearable');assert.equal(server.guardrails.noMedicalDiagnosis,true);
+  assert.deepEqual(server,browser);assert.equal(server.version,'physiological-signal-intelligence-v1.1.0-freshness-fusion');assert.equal(server.quality,'usable');assert.ok(server.derived.readinessScore!==null);assert.equal(server.latest.source,'test-wearable');assert.equal(server.guardrails.noMedicalDiagnosis,true);assert.equal(server.guardrails.metricLatestFusion,true);assert.equal(server.guardrails.staleSignalsDownweighted,true);
   const empty=PhysiologicalSignals.build(baseState(),options);assert.equal(empty.quality,'insufficient');assert.equal(empty.derived.readinessScore,null);assert.equal(empty.guardrails.missingSignalsDoNotImplyNormal,true);
  });
 
@@ -166,7 +166,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
 
  await test('Agent Context exposes longitudinal learning and deterministic personalization',()=>{
   const context=buildAgentContext(baseState(),{ownerUid:'user-1',now:new Date('2026-09-20T12:00:00Z')});
-  assert.equal(context.longitudinalLearning.version,'longitudinal-learning-metrics-v1.0.0');
+  assert.equal(context.longitudinalLearning.version,'longitudinal-learning-metrics-v1.1.0-trajectory');
   assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.0.0');
   assert.equal(context.personalizationPolicy.guardrails.deterministic,true);
   assert.equal(context.personalizationPolicy.guardrails.llmCannotOverride,true);
@@ -176,15 +176,15 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
   assert.equal(context.offlinePolicyEvaluation.version,'offline-policy-evaluation-v1.1.0');
   assert.equal(context.workoutPrescriptionShadow.version,'workout-prescription-shadow-v1.2.0');
-  assert.equal(context.adaptiveNutritionLearning.version,'adaptive-nutrition-learning-v1.2.0');
+  assert.equal(context.adaptiveNutritionLearning.version,'adaptive-nutrition-learning-v1.3.0-adherence-aware');
   assert.equal(context.offlinePolicyEvaluation.guardrails.noCounterfactualClaim,true);
   assert.equal(context.workoutPrescriptionShadow.guardrails.neverAutoIncrease,true);
-  assert.equal(context.adaptiveNutritionLearning.guardrails.noAutomaticTargetMutation,true);
+  assert.equal(context.adaptiveNutritionLearning.guardrails.noAutomaticTargetMutation,true);assert.equal(context.adaptiveNutritionLearning.guardrails.adherenceAwareAdjustment,true);
   assert.equal(context.intelligenceDataQuality.version,'intelligence-data-quality-v1.1.0');
   assert.equal(context.recommendationQuality.version,'recommendation-quality-eval-v1.1.0');
   assert.equal(context.recommendationQuality.guardrails.noRecommendationMutation,true);
-  assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.0.0');
-  assert.equal(context.physiologicalSignals.guardrails.missingSignalsDoNotImplyNormal,true);
+  assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.1.0-freshness-fusion');
+  assert.equal(context.physiologicalSignals.guardrails.missingSignalsDoNotImplyNormal,true);assert.equal(context.physiologicalSignals.guardrails.metricLatestFusion,true);
  });
 
  await test('LLM structured response accepts only bounded typed tool calls',()=>{

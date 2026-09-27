@@ -37,6 +37,13 @@ assert.ok(result.analysis.projection.halfMarathonMin>result.analysis.projection.
 assert.equal(result.guardrails.paceGuideIsHeuristic,true);
 assert.equal(result.guardrails.noHeartRateZoneClaim,true);
 assert.equal(result.guardrails.raceProjectionEstimateOnly,true);
+assert.ok(['ready','guarded'].includes(result.analysis.nextSession.status));
+assert.ok(result.analysis.nextSession.durationMin>=15&&result.analysis.nextSession.durationMin<=75);
+assert.ok(['recovery','easy','steady'].includes(result.analysis.nextSession.paceZone));
+assert.equal(result.analysis.nextSession.requiresOutcomeReview,true);
+if(result.load.band==='spike')assert.equal(result.analysis.nextSession.paceZone,'recovery');
+assert.equal(result.guardrails.boundedNextSessionPrescription,true);
+assert.equal(result.guardrails.noAutomaticWeeklyLoadIncrease,true);
 
 const sparse=Running.build({runs:[{id:'x',date:'2026-09-23',distance:3,duration:18}]},{asOf:new Date('2026-09-24T12:00:00Z')});
 assert.equal(sparse.recommendation.status,'collect_more_data');

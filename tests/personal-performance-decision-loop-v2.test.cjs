@@ -45,6 +45,7 @@ const expState={profile:{goal:'러닝 퍼포먼스'},planner:[
  {id:'base1',domain:'recovery'},
  {id:'base2',domain:'recovery'},
  {id:'base3',domain:'recovery'},
+ {id:'baseDuring',domain:'recovery'},
  {id:'other',domain:'running'}
 ]};
 const graph={cycles:[
@@ -54,6 +55,7 @@ const graph={cycles:[
  {planId:'other',date:'2026-09-19',outcome:{classification:'completed',score:100}},
  {planId:'p1',date:'2026-09-20',outcome:{classification:'completed',score:90}},
  {planId:'p2',date:'2026-09-22',outcome:{classification:'completed',score:80}},
+ {planId:'baseDuring',date:'2026-09-23',outcome:{classification:'missed',score:5}},
  {planId:'p3',date:'2026-09-24',outcome:{classification:'completed',score:85}}
 ]};
 const experiments=Loop.experimentSummary(expState,graph);
@@ -66,11 +68,13 @@ assert.equal(experiments[0].observedDelta,25);
 assert.equal(experiments[0].status,'observed');
 assert.ok(experiments[0].confidence>=.5);
 assert.equal(experiments[0].guardrail,'observational_not_causal');
+assert.equal(experiments[0].effectBand,'improved');
+assert.equal(experiments[0].baselinePolicy,'same_domain_pre_experiment_only');
 
 const runningInput={
  state:{profile:{goal:'러닝 퍼포먼스'},planner:[],actionLog:[]},
  userState:{readiness:{band:'ready',reasons:[]},fatigue:{band:'low'},load:{band:'stable'}},
- runningPerformance:{confidence:.85,load:{band:'stable'},trend:{direction:'improving',status:'measured'},analysis:{paceGuide:{status:'measured',zones:{steady:{lowMinPerKm:5.1,highMinPerKm:5.55}}}}},
+ runningPerformance:{confidence:.85,load:{band:'stable'},trend:{direction:'improving',status:'measured'},analysis:{paceGuide:{status:'measured',zones:{steady:{lowMinPerKm:5.1,highMinPerKm:5.55}}},nextSession:{status:'ready',reason:'PACE_IMPROVING_LOAD_STABLE',durationMin:35,paceZone:'steady',lowMinPerKm:5.1,highMinPerKm:5.55}}},
  personalPerformance:{candidates:[
   {domain:'running',priority:70,reason:'RUNNING_TREND_HEALTHY',action:'maintain_current_running_structure',confidence:.85,evidence:['running_trend','running_load']}
  ]},
@@ -83,8 +87,11 @@ assert.equal(runDecision.nextAction.execution.kind,'running');
 assert.equal(runDecision.nextAction.execution.paceZone,'steady');
 assert.equal(runDecision.nextAction.execution.lowMinPerKm,5.1);
 assert.equal(runDecision.nextAction.execution.highMinPerKm,5.55);
-assert.equal(runDecision.nextAction.execution.source,'recent_28d_relative_pace');
+assert.equal(runDecision.nextAction.execution.durationMin,35);
+assert.equal(runDecision.nextAction.execution.source,'running_next_session_v1');
 assert.match(runDecision.nextAction.whyNow,/러닝/);
+assert.equal(runDecision.guardrails.experimentBaselinesPreIntervention,true);
+assert.equal(runDecision.guardrails.runningPrescriptionUsesObservedHistory,true);
 
 const app=fs.readFileSync(path.resolve(__dirname,'../01_app/app.js'),'utf8');
 assert.match(app,/performance-decision-accept/);
