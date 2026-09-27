@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 
-const VERSION='running-performance-v1.1.0-analysis-v2';
+const VERSION='running-performance-v1.2.0-action-prescription';
 const DAY=86400000;
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const list=v=>Array.isArray(v)?v.filter(object):[];
@@ -89,6 +89,17 @@ function trainingDistribution(rows,asOf){
  for(const bucket of Object.values(buckets)){bucket.distanceKm=round(bucket.distanceKm,2);bucket.distancePct=total>0?round(bucket.distanceKm/total*100,0):0;}
  return {status:'measured',anchorPaceMinPerKm:round(anchor,2),sessions:recent.length,totalDistanceKm:round(total,2),buckets};
 }
+function nextSessionPrescription(rows,asOf,trend,load,guide){
+ const recent=inWindow(rows,asOf.getTime(),28,0),durations=recent.map(r=>r.durationMin).filter(Number.isFinite),typical=median(durations);
+ if(recent.length<3||guide?.status!=='measured'||typical===null)return {status:'insufficient',reason:'RUN_HISTORY_SPARSE',durationMin:null,paceZone:null,lowMinPerKm:null,highMinPerKm:null,source:null,requiresOutcomeReview:true};
+ let paceZone='easy',factor=.9,reason='RUN_PATTERN_STABLE',status='ready';
+ if(load?.band==='spike'){paceZone='recovery';factor=.65;reason='RUN_LOAD_SPIKE';status='guarded';}
+ else if(trend?.status==='measured'&&trend?.direction==='slower'){paceZone='easy';factor=.8;reason='PACE_TREND_SLOWER';status='guarded';}
+ else if(load?.band==='drop'){paceZone='easy';factor=.8;reason='RUN_LOAD_DROP';status='guarded';}
+ else if(trend?.status==='measured'&&trend?.direction==='improving'&&load?.band==='stable'&&recent.length>=6){paceZone='steady';factor=1;reason='PACE_IMPROVING_LOAD_STABLE';}
+ const zone=guide?.zones?.[paceZone]||{},durationMin=Math.max(15,Math.min(75,Math.round((typical*factor)/5)*5));
+ return {status,reason,durationMin,paceZone,lowMinPerKm:finite(zone.lowMinPerKm),highMinPerKm:finite(zone.highMinPerKm),source:'recent_28d_pace_load',observedSessions:recent.length,typicalDurationMin:round(typical,1),requiresOutcomeReview:true};
+}
 function effortProgression(rows,minKm){
  const candidates=rows.filter(r=>r.distanceKm>=minKm&&r.paceMinPerKm!==null);
  if(!candidates.length)return {status:'insufficient',distanceKm:minKm,attempts:0,firstPaceMinPerKm:null,bestPaceMinPerKm:null,latestPaceMinPerKm:null,improvementPct:null};
@@ -115,20 +126,20 @@ function recommendation({rows,trend,load}){
 }
 function build(stateInput={},options={}){
  const state=object(stateInput)?stateInput:{},asOf=options.asOf instanceof Date?options.asOf:new Date(options.asOf||Date.now()),rows=validRuns(state,asOf),end=Date.parse(asOf.toISOString().slice(0,10)+'T23:59:59Z'),recent7=summarize(inWindow(rows,end,7)),recent28=summarize(inWindow(rows,end,28)),trend=paceTrend(rows,asOf),load=loadSignal(rows,asOf),best1k=bestSplit1k(rows)||bestEffort(rows,1),best5k=bestEffort(rows,5),best10k=bestEffort(rows,10),spanDays=rows.length>1?Math.max(0,Math.round((dateMs(rows.at(-1).date)-dateMs(rows[0].date))/DAY)):0,splitCoverage=rows.length?rows.filter(r=>r.splits.length).length/rows.length:0,confidence=round(clamp((rows.length/8)*.4+(spanDays/42)*.25+splitCoverage*.15+load.confidence*.2,0,1),2),rec=recommendation({rows,trend,load});
- const split=latestSplitAnalysis(rows),guide=paceGuide(rows,asOf),distribution=trainingDistribution(rows,asOf),progression={fiveKm:effortProgression(rows,5),tenKm:effortProgression(rows,10)},projection=raceProjection(best5k,best10k);
+ const split=latestSplitAnalysis(rows),guide=paceGuide(rows,asOf),distribution=trainingDistribution(rows,asOf),progression={fiveKm:effortProgression(rows,5),tenKm:effortProgression(rows,10)},projection=raceProjection(best5k,best10k),nextSession=nextSessionPrescription(rows,asOf,trend,load,guide);
  return Object.freeze({
   version:VERSION,asOf:asOf.toISOString().slice(0,10),confidence,
   recent:Object.freeze({days7:Object.freeze(recent7),days28:Object.freeze(recent28)}),
   trend:Object.freeze(trend),load:Object.freeze(load),
   bestEfforts:Object.freeze({oneKm:best1k?Object.freeze(best1k):null,fiveKm:best5k?Object.freeze(best5k):null,tenKm:best10k?Object.freeze(best10k):null,longest:rows.length?Object.freeze(rows.slice().sort((a,b)=>b.distanceKm-a.distanceKm)[0]):null}),
-  analysis:Object.freeze({split:Object.freeze(split),paceGuide:Object.freeze(guide),distribution:Object.freeze(distribution),progression:Object.freeze(progression),projection:Object.freeze(projection)}),
+  analysis:Object.freeze({split:Object.freeze(split),paceGuide:Object.freeze(guide),distribution:Object.freeze(distribution),progression:Object.freeze(progression),projection:Object.freeze(projection),nextSession:Object.freeze(nextSession)}),
   recommendation:Object.freeze(rec),
   evidence:Object.freeze({validRuns:rows.length,spanDays,splitCoverage:round(splitCoverage,2)}),
-  guardrails:Object.freeze({observational:true,noMedicalClaim:true,noAutomaticProgression:true,noRouteInference:true,averagePaceIsNotSegmentPR:true,paceGuideIsHeuristic:true,noHeartRateZoneClaim:true,raceProjectionEstimateOnly:true,splitAnalysisNeedsRecordedSplits:true})
+  guardrails:Object.freeze({observational:true,noMedicalClaim:true,noAutomaticProgression:true,noAutomaticWeeklyLoadIncrease:true,boundedNextSessionPrescription:true,noRouteInference:true,averagePaceIsNotSegmentPR:true,paceGuideIsHeuristic:true,noHeartRateZoneClaim:true,raceProjectionEstimateOnly:true,splitAnalysisNeedsRecordedSplits:true})
  });
 }
 function compactForContext(v={}){
- return {version:String(v.version||VERSION),asOf:String(v.asOf||''),confidence:finite(v.confidence)??0,recent:object(v.recent)?v.recent:{},trend:object(v.trend)?v.trend:{},load:object(v.load)?v.load:{},bestEfforts:object(v.bestEfforts)?v.bestEfforts:{},analysis:object(v.analysis)?v.analysis:{},recommendation:object(v.recommendation)?v.recommendation:{status:'collect_more_data'},evidence:object(v.evidence)?v.evidence:{},guardrails:{observational:true,noMedicalClaim:true,noAutomaticProgression:true,noRouteInference:true,averagePaceIsNotSegmentPR:true,paceGuideIsHeuristic:true,noHeartRateZoneClaim:true,raceProjectionEstimateOnly:true,splitAnalysisNeedsRecordedSplits:true}};
+ return {version:String(v.version||VERSION),asOf:String(v.asOf||''),confidence:finite(v.confidence)??0,recent:object(v.recent)?v.recent:{},trend:object(v.trend)?v.trend:{},load:object(v.load)?v.load:{},bestEfforts:object(v.bestEfforts)?v.bestEfforts:{},analysis:object(v.analysis)?v.analysis:{},recommendation:object(v.recommendation)?v.recommendation:{status:'collect_more_data'},evidence:object(v.evidence)?v.evidence:{},guardrails:{observational:true,noMedicalClaim:true,noAutomaticProgression:true,noAutomaticWeeklyLoadIncrease:true,boundedNextSessionPrescription:true,noRouteInference:true,averagePaceIsNotSegmentPR:true,paceGuideIsHeuristic:true,noHeartRateZoneClaim:true,raceProjectionEstimateOnly:true,splitAnalysisNeedsRecordedSplits:true}};
 }
-return Object.freeze({VERSION,normalizeRun,validRuns,summarize,paceTrend,loadSignal,bestEffort,bestSplit1k,latestSplitAnalysis,paceGuide,trainingDistribution,effortProgression,raceProjection,build,compactForContext});
+return Object.freeze({VERSION,normalizeRun,validRuns,summarize,paceTrend,loadSignal,bestEffort,bestSplit1k,latestSplitAnalysis,paceGuide,trainingDistribution,nextSessionPrescription,effortProgression,raceProjection,build,compactForContext});
 });
