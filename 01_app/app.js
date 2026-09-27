@@ -267,7 +267,7 @@ function canonicalRecoveryReadiness(){
   const c=latestCheckin(),legacy=c?clamp(Math.round((clamp(num(c.sleep,7)/8,0,1.2)*30)+(num(c.energy,3)/5*30)+((6-num(c.stress,3))/5*20)+((6-num(c.soreness,2))/5*20)),0,100):null;
   let model=null;try{model=window.GarangStateIntelligence?.estimateState?.(state,{now:new Date()})||null;}catch{}
   const fused=Number(model?.readiness?.value);
-  if(Number.isFinite(fused))return {value:clamp(Math.round(fused),0,100),confidence:clamp(num(model?.readiness?.confidence,0),0,1),source:model?.readiness?.reasons?.includes('PHYSIOLOGICAL_SIGNAL_ONLY')?'physiological':'fused',reasons:Array.isArray(model?.readiness?.reasons)?model.readiness.reasons:[],physiological:model?.physiological||null};
+  if(Number.isFinite(fused)){const reasons=Array.isArray(model?.readiness?.reasons)?model.readiness.reasons:[],source=reasons.includes('PHYSIOLOGICAL_SIGNAL_ONLY')?'physiological':reasons.includes('PHYSIOLOGICAL_SIGNAL_FUSED')?'fused':'checkin';return {value:clamp(Math.round(fused),0,100),confidence:clamp(num(model?.readiness?.confidence,0),0,1),source,reasons,physiological:model?.physiological||null};}
   return {value:legacy,confidence:legacy!==null?(c?.date===today()?0.75:0.65):0,source:legacy!==null?'checkin':'none',reasons:legacy!==null?['LEGACY_CHECKIN_FALLBACK']:[],physiological:null};
 }
 
