@@ -445,11 +445,11 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 }
 
 
-/* GARANG Body v7.3 — enlarged anatomical mesh mass; no armor-like volume plates */
-.g3-classical-model[data-garang-visual-revision="7.3"] .g7-definition-layer{
+/* GARANG Body v7.4 — anatomical mass + organic directional muscle fiber texture */
+.g3-classical-model[data-garang-visual-revision="7.4"] .g7-definition-layer{
   pointer-events:none;
 }
-.g3-classical-model[data-garang-visual-revision="7.3"] .g7-definition{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g7-definition{
   fill:none;
   stroke:#756e62;
   stroke-width:.9;
@@ -458,33 +458,42 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
   vector-effect:non-scaling-stroke;
   opacity:.18;
 }
-.g3-classical-model[data-garang-visual-revision="7.3"] .g7-definition.strong{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g7-definition.strong{
   stroke:#655f55;
   stroke-width:1.1;
   opacity:.24;
 }
-.g3-classical-model[data-garang-visual-revision="7.3"] .g7-definition.soft{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g7-definition.soft{
   stroke:#847c6f;
   stroke-width:.75;
   opacity:.12;
 }
-.g3-classical-model[data-garang-visual-revision="7.3"] .g6-visual-layer{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g6-visual-layer{
   opacity:1;
 }
-.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-chest,
-.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-back,
-.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-shoulders,
-.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-biceps,
-.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-triceps,
-.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-core,
-.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7.3"] .muscle-legs{
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-back,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-shoulders,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-biceps,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-triceps,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7.4"] .muscle-legs{
   opacity:.30!important;
   stroke:none!important;
 }
 
-.g3-classical-model[data-garang-visual-revision="7.3"] .g71-overlay-mask{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g71-overlay-mask{
   pointer-events:auto;
 }
-.g3-classical-model[data-garang-visual-revision="7.3"] .g6-interaction-layer .g3-muscle{
+.g3-classical-model[data-garang-visual-revision="7.4"] .g6-interaction-layer .g3-muscle{
   stroke:none!important;
 }
+
+.g3-classical-model[data-garang-visual-revision="7.4"] .g74-fiber-texture-layer{
+  pointer-events:none;opacity:.74;mix-blend-mode:multiply;
+}
+.g3-classical-model[data-garang-visual-revision="7.4"] .g74-fiber-region{
+  fill:#675f54;stroke:none!important;opacity:.16;
+}
+.g3-classical-model[data-garang-visual-revision="7.4"] .g74-fiber-region.g74-soft{opacity:.095}
+.g3-classical-model[data-garang-visual-revision="7.4"] .g6-interaction-layer{position:relative}
