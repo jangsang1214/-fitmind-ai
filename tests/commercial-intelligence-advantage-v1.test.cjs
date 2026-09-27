@@ -47,6 +47,20 @@ assert.equal(adaptive.recommendation.targetProposal.proposedDailyKcal,2100);
 assert.equal(adaptive.recommendation.targetProposal.deltaKcal,-100);
 assert.equal(adaptive.recommendation.targetProposal.requiresConfirmation,true);
 assert.equal(adaptive.guardrails.adherenceAwareAdjustment,true);
+assert.equal(adaptive.evidence.recommendationAdoption.recommendationLinkedMeals,0);
+assert.equal(adaptive.guardrails.recommendationLineageDescriptiveOnly,true);
+assert.equal(adaptive.guardrails.recommendationAdoptionDoesNotChangeTargets,true);
+
+const adoptionState=nutritionState(2200);
+adoptionState.meals[0].recommendationContexts=[{recommendationId:'2026-09-04:protein-rice:garang-nutrition-recommendation-v1',source:'next_meal',optionId:'protein-rice'}];
+adoptionState.meals[1].recommendationContexts=[{recommendationId:'2026-09-05:alternate-protein:garang-nutrition-recommendation-v1',source:'next_meal',optionId:'alternate-protein'}];
+const adoption=Adaptive.build(adoptionState,{asOf:'2026-09-24',days:28});
+const adoptionServer=AdaptiveServer.build(adoptionState,{asOf:'2026-09-24',days:28});
+assert.deepEqual(adoption,adoptionServer,'recommendation adoption evidence must stay browser/server deterministic');
+assert.equal(adoption.evidence.recommendationAdoption.recommendationLinkedMeals,2);
+assert.equal(adoption.evidence.recommendationAdoption.uniqueRecommendations,2);
+assert.equal(adoption.recommendation.direction,adaptive.recommendation.direction,'descriptive recommendation adoption evidence must not change target direction');
+assert.equal(adoption.recommendation.targetProposal.proposedDailyKcal,adaptive.recommendation.targetProposal.proposedDailyKcal,'recommendation adoption evidence must not change proposed calories');
 
 const lowAdherence=Adaptive.build(nutritionState(2750),{asOf:'2026-09-24',days:28});
 assert.equal(lowAdherence.evidence.targetAdherence.status,'above_target');

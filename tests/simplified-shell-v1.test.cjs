@@ -83,7 +83,6 @@ assert.match(commercialMobileCss,/#main\[data-garang-screen="profile"\]/,'Profil
 assert.match(commercialMobileCss,/#main\[data-garang-screen="onboarding"\]/,'Onboarding must share the commercial mobile grammar');
 assert.match(commercialMobileCss,/#authView:not\(\[hidden\]\) \.auth-shell/,'Auth must use the mobile app frame instead of desktop-only layout');
 
-
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
 assert.equal(manifest.runtimeContract.singleOwners.coreLoopStyle,'03_styles/runtime/garang-core-loop-v1.css','runtime contract must name one Core Loop stylesheet owner');
