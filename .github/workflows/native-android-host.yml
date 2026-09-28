@@ -1,0 +1,37 @@
+name: Native Android host
+
+on:
+  pull_request:
+    paths:
+      - 'native/android/**'
+      - 'tests/native-health-android-host-v1.test.cjs'
+      - 'package.json'
+      - '.github/workflows/native-android-host.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Verify Android Health Connect host contract
+        run: node tests/native-health-android-host-v1.test.cjs
+      - name: Install Android SDK 36
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+      - name: Build GARANG Android host
+        run: gradle -p native/android :app:assembleDebug --stacktrace
