@@ -1190,3 +1190,14 @@ body{background-image:
     scroll-margin-bottom:calc(140px + env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+
+@media(max-width:799px){
+  /* Coach shell owns the full viewport above the fixed native tab bar.
+     The Coach Shell runtime hides the topbar, so the generic 178px subtraction is invalid here. */
+  html[data-garang-coach-shell="active"] #main[data-garang-screen="coach"] .garang-coach-v2{
+    height:calc(100dvh - 66px - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 66px - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+  }
+}
