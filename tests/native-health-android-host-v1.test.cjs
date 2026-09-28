@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const bridge=fs.readFileSync('native/android/app/src/main/java/com/garang/nativehost/GARANGHealthBridge.kt','utf8');
+const activity=fs.readFileSync('native/android/app/src/main/java/com/garang/nativehost/MainActivity.kt','utf8');
+const manifest=fs.readFileSync('native/android/app/src/main/AndroidManifest.xml','utf8');
+const gradle=fs.readFileSync('native/android/app/build.gradle','utf8');
+for(const token of ['window.GarangNativeHealthBridge','requestAuthorization(scopes)','syncWorkouts(workouts)','readHealthSignals(request)','HealthConnectClient','HeartRateVariabilityRmssdRecord','RestingHeartRateRecord','SleepSessionRecord','StepsRecord','ExerciseSessionRecord','Metadata.activelyRecorded'])assert.ok(bridge.includes(token),token);
+assert.ok(activity.includes('PermissionController.createRequestPermissionResultContract()'),'permission flow must use Health Connect contract');
+assert.ok(activity.includes('onPageFinished')&&activity.includes('bridgeJavaScript'),'bridge must be injected into GARANG host');
+for(const permission of ['READ_HEART_RATE_VARIABILITY','READ_RESTING_HEART_RATE','READ_SLEEP','READ_STEPS','READ_EXERCISE','WRITE_EXERCISE'])assert.ok(manifest.includes(permission),permission);
+assert.ok(gradle.includes("androidx.health.connect:connect-client:1.1.0"),'pin stable Health Connect 1.1.0');
+assert.doesNotMatch(bridge,/Firebase|Firestore|firebase/i,'native host must not own cloud persistence');
+assert.doesNotMatch(bridge,/stressScore\s*[:=]/i,'must not fabricate stress');
+assert.doesNotMatch(bridge,/sleepScore\s*[:=]/i,'must not fabricate sleep score');
+console.log('native-health-android-host-v1: PASS');
