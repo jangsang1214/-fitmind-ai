@@ -169,12 +169,6 @@ function enhance(){
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
   document.querySelector('.one-rm-panel')?.classList.add('execution-secondary-metric');
   const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='중량·반복만 입력하고 세트를 완료하세요. 휴식은 자동으로 시작됩니다.';if(!toolbar.querySelector('[data-execution-add-set]')){const addSet=document.createElement('button');addSet.type='button';addSet.className='ghost small';addSet.dataset.executionAddSet='true';addSet.textContent='+ 세트';addSet.addEventListener('click',()=>changeSetCount(currentRows().length+1));toolbar.appendChild(addSet);}}
-  const advanced=builder.querySelector('.workout-advanced-tools');
-  if(advanced&&!advanced.closest('.workout-advanced-disclosure')){
-    const disclosure=document.createElement('details');disclosure.className='workout-advanced-disclosure';
-    const summary=document.createElement('summary');summary.innerHTML='<span>고급 설정</span><small>수퍼셋 · 워밍업 · 플레이트</small>';
-    advanced.before(disclosure);disclosure.append(summary,advanced);
-  }
   enhanceRows();
   if(!document.getElementById('workoutExecutionRest')){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
