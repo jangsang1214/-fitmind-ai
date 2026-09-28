@@ -11,6 +11,12 @@ const LOOKUP_ENDPOINT='https://asia-northeast3-fitfind-ai.cloudfunctions.net/api
 const state=()=>({meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Meal Scan',age:29,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'});
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const response=await fetch(baseURL);if(response.ok)return;}catch{}await new Promise(resolve=>setTimeout(resolve,180));}throw new Error('real meal scan preview server did not start');}
 async function route(page,screen){const ok=await page.evaluate(next=>window.GarangRouter?.navigate?.(next,{source:'real-meal-scan-browser',force:true}),screen);assert.equal(ok,true);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,screen,{timeout:7000});}
+async function waitForPickerBinding(page,buttonId){
+ await page.waitForFunction(id=>{
+  const button=document.getElementById(id),input=document.getElementById('mealScanPicker');
+  return !!button&&typeof button.onclick==='function'&&!!input&&input.type==='file'&&typeof window.GarangPhotoEvidence?.pick==='function';
+ },buttonId,{timeout:7000});
+}
 
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
@@ -60,7 +66,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await route(page,'nutrition');
   assert.equal(await page.locator('#pickMealScan').count(),1,'Meal Scan should expose one clear photo entry');
-  const chooserPromise=page.waitForEvent('filechooser');await page.locator('#pickMealScan').click();const chooser=await chooserPromise;
+  await waitForPickerBinding(page,'pickMealScan');const [chooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('#pickMealScan').click()]);
   await chooser.setFiles({name:'meal.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
   await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
@@ -114,7 +120,7 @@ async function route(page,screen){const ok=await page.evaluate(next=>window.Gara
   await page.locator('#clearBarcode').click();
 
   assert.equal(await page.locator('#pickLabelScan').count(),1,'Nutrition must expose a dedicated Label Scan entry');
-  const labelChooserPromise=page.waitForEvent('filechooser');await page.locator('#pickLabelScan').click();const labelChooser=await labelChooserPromise;
+  await waitForPickerBinding(page,'pickLabelScan');const [labelChooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('#pickLabelScan').click()]);
   await labelChooser.setFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
   await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
