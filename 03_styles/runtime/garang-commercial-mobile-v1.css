@@ -1081,8 +1081,8 @@ body{background-image:
     padding:0 12px!important;
   }
   #main[data-garang-screen="coach"] .g2-chat-scroll{
-    padding:12px 13px 88px!important;
-    scroll-padding-bottom:88px!important;
+    padding:12px 13px 116px!important;
+    scroll-padding-bottom:116px!important;
   }
   #main[data-garang-screen="coach"] .g2-message{
     margin-bottom:13px!important;
@@ -1104,7 +1104,7 @@ body{background-image:
   }
   #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
     margin-bottom:12px!important;
-    scroll-margin-bottom:76px!important;
+    scroll-margin-bottom:96px!important;
   }
 
   #appView:not([hidden])>#bottomNav{
