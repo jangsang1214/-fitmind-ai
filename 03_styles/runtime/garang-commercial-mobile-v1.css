@@ -1201,3 +1201,13 @@ body{background-image:
     min-height:0!important;
   }
 }
+
+
+@media(max-width:799px){
+  /* Logged Coach actions temporarily reclaim touch-safe scroll clearance without restoring idle dead space. */
+  #main[data-garang-screen="coach"] .g2-chat-scroll[data-gapp-role="coach-thread"]:has(.gci-coach-turn[data-state="logged"]:last-child),
+  #main[data-garang-screen="coach"] .g2-chat-scroll:has(.gci-coach-turn[data-state="logged"]:last-child){
+    padding-bottom:116px!important;
+    scroll-padding-bottom:116px!important;
+  }
+}
