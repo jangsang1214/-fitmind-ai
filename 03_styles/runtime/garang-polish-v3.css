@@ -543,7 +543,7 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 
 /* GARANG Body v7.6 — quieter mesh, fuller integrated muscle volume */
 .g3-classical-model[data-garang-visual-revision="7.6"]{
-  filter:drop-shadow(0 18px 30px rgba(0,0,0,.22))!important;
+  filter:none!important;
 }
 .g3-classical-model[data-garang-visual-revision="7.6"] .g6-visual-layer{
   opacity:.58!important;
