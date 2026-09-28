@@ -1129,3 +1129,62 @@ body{background-image:
     min-height:0!important;
   }
 }
+
+
+/* Screenshot fidelity v2 — visible density corrections from Founder captures. */
+@media(max-width:799px){
+  #main[data-garang-screen="workout"] .gws-nav{
+    margin-bottom:10px!important;
+  }
+  #main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"]>.gws-reuse{
+    min-height:0!important;
+    margin:0 0 4px!important;
+    padding:5px 0 8px!important;
+    gap:10px!important;
+    border-bottom-color:rgba(255,255,255,.045)!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse-copy{
+    display:flex!important;
+    align-items:baseline!important;
+    gap:7px!important;
+    min-width:0!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse-copy strong{
+    flex:0 0 auto!important;
+    font-size:10px!important;
+    line-height:1.2!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse-copy small{
+    min-width:0!important;
+    font-size:8.5px!important;
+    line-height:1.25!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse button{
+    min-height:34px!important;
+    padding:0 10px!important;
+    font-size:9px!important;
+  }
+  #main[data-garang-screen="workout"] .workout-execution-v2 .workout-session-bar{
+    margin-bottom:10px!important;
+  }
+
+  #main[data-garang-screen="coach"] .g2-chat-scroll{
+    padding:10px 13px 28px!important;
+    scroll-padding-bottom:116px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-message{
+    margin-bottom:10px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-message.assistant .g2-message-body{
+    max-width:94%!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer-wrap{
+    padding:5px 10px calc(6px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer-note{
+    margin-top:4px!important;
+    font-size:7px!important;
+    line-height:1.25!important;
+    opacity:.48!important;
+  }
+}
