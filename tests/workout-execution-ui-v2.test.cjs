@@ -66,7 +66,7 @@ assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must pres
 assert.ok(runtime.includes("builder.closest('.gws-panel[data-garang-workout-surface=\"exercise\"]')")&&runtime.includes("exercise.appendChild(card)"),'session completion card must stay owned by the inline Exercise surface');
 assert.ok(!runtime.includes("builder.after(card)"),'session completion card must not escape the inline Exercise surface');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
-assert.ok(workoutFlow.includes("const SURFACES=[")&&!workoutFlow.includes("{id:'log'")&&workoutFlow.includes("move(builder,exercise)")&&workoutFlow.includes("move(secondary,overview)"),'Workout IA must use two surfaces and distribute execution vs overview capabilities');
+assert.ok(workoutFlow.includes("const SURFACES=[")&&!workoutFlow.includes("{id:'log'")&&workoutFlow.includes("move(builder,exercise)")&&workoutFlow.includes("garangWorkoutProgram")&&workoutFlow.includes("garangWorkoutHealth"),'Workout IA must use two surfaces and redistribute canonical overview utilities after their owner mounts');
 assert.ok(css.includes('Workout IA v8'),'Workout execution CSS must include the two-surface hierarchy pass');
 
 assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Exercise activation must deterministically re-enhance the execution table after surface ownership settles');
