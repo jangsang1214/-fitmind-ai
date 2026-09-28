@@ -1115,3 +1115,23 @@ body{background-image:
     min-height:54px!important;
   }
 }
+
+
+/* Coach touch-safe spacing hotfix v1 — preserve compact composition without entering tab chrome. */
+@media(max-width:799px){
+  #main[data-garang-screen="coach"] .g2-chat-scroll{
+    padding-bottom:116px!important;
+    scroll-padding-bottom:116px!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
+    margin-bottom:20px!important;
+    scroll-margin-bottom:100px!important;
+  }
+  #appView:not([hidden])>#bottomNav{
+    min-height:calc(70px + env(safe-area-inset-bottom,0px))!important;
+    padding:6px 10px env(safe-area-inset-bottom,0px)!important;
+  }
+  #appView:not([hidden])>#bottomNav button{
+    min-height:58px!important;
+  }
+}
