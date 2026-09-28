@@ -698,17 +698,6 @@
 
 
 /* Workout IA v8 — two surfaces, inline execution, advanced capability disclosure */
-.workout-advanced-disclosure{
-  margin:10px 20px 4px;border-top:1px solid rgba(241,237,228,.07);
-}
-.workout-advanced-disclosure>summary{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;
-  color:#9b9b94;cursor:pointer;list-style:none;font-size:10px;font-weight:720;
-}
-.workout-advanced-disclosure>summary::-webkit-details-marker{display:none}
-.workout-advanced-disclosure>summary span{color:#d6d2ca}
-.workout-advanced-disclosure>summary small{font-size:8px;font-weight:600;color:#71756f;letter-spacing:.03em}
-.workout-advanced-disclosure>.workout-advanced-tools{margin:0 0 10px!important}
 .gws-panel[data-garang-workout-surface="exercise"]>.one-rm-panel{
   margin:14px 0 10px;border-radius:16px;background:#101311;color:#f4f1e9;border:1px solid rgba(241,237,228,.08);
 }
@@ -716,7 +705,14 @@
   margin:14px 0 0;
 }
 .gws-panel[data-garang-workout-surface="exercise"]>.workout-builder{
-  margin-top:12px!important;
+  margin-top:10px!important;
+}
+.gws-panel[data-garang-workout-surface="exercise"]>.exercise-visual-library{
+  margin-bottom:10px!important;
+}
+.gws-panel[data-garang-workout-surface="exercise"]>.gws-reuse{
+  min-height:0!important;margin:4px 0 8px!important;padding:4px 0 8px!important;
+  border-bottom-color:rgba(241,237,228,.055)!important;
 }
 @media(max-width:800px){
   .workout-execution-v2 .execution-exercise-field{display:none!important}
@@ -739,8 +735,6 @@
   .workout-execution-v2 .workout-session-bar.is-live .workout-session-progress b{
     color:#d8e8e1!important;
   }
-  .workout-advanced-disclosure{margin:8px 0 2px}
-  .workout-advanced-disclosure>summary{min-height:40px}
   .gws-panel[data-garang-workout-surface="exercise"]>.one-rm-panel{
     margin:10px 0 8px;
   }
