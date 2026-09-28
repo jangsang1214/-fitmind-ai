@@ -611,3 +611,41 @@
   .workout-execution-v2 .workout-session-icon{min-width:68px!important}
   .workout-execution-v2 .workout-session-live>strong{font-size:24px!important}
 }
+
+
+/* GARANG mobile density refinement v7 — screenshot-led spacing rhythm */
+@media(max-width:800px){
+  .workout-execution-v2 .workout-session-bar{
+    margin:0 0 14px!important;
+    padding:14px 15px 12px!important;
+    row-gap:8px!important;
+    column-gap:12px!important;
+    border-radius:18px!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.18)!important;
+  }
+  .workout-execution-v2 .workout-session-live strong{
+    margin-top:4px!important;
+    font-size:36px!important;
+  }
+  .workout-execution-v2 .workout-session-progress{
+    justify-content:flex-start!important;
+    padding-top:8px!important;
+  }
+  .workout-execution-v2>.visual-section-head{
+    margin:0!important;
+    padding:0 0 10px!important;
+  }
+  .workout-execution-v2 .execution-compact-fields{margin-bottom:10px!important}
+  .workout-execution-v2 .workout-set-toolbar{margin-top:4px!important}
+  .workout-execution-v2 .execution-set-row.current-set{
+    padding:13px!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.15)!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .set-complete-button{
+    height:50px!important;
+  }
+}
+@media(max-width:360px){
+  .workout-execution-v2 .workout-session-bar{padding:12px 13px 11px!important}
+  .workout-execution-v2 .workout-session-live strong{font-size:32px!important}
+}
