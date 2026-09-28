@@ -1115,3 +1115,30 @@ body{background-image:
     min-height:54px!important;
   }
 }
+
+
+/* Coach mobile hard viewport boundary — keep all interactive chat content above fixed tab chrome. */
+@media(max-width:799px){
+  #appView:not([hidden])>#main[data-garang-screen="coach"]{
+    position:fixed!important;
+    top:calc(56px + env(safe-area-inset-top,0px))!important;
+    right:0!important;
+    bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;
+    left:0!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:8px 10px!important;
+    overflow:hidden!important;
+    contain:layout paint!important;
+  }
+  #appView:not([hidden])>#main[data-garang-screen="coach"] .garang-coach-v2{
+    width:100%!important;
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+  }
+}
