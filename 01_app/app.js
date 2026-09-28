@@ -303,6 +303,7 @@ function coachDecision(){
   if(c){reasons.push(`수면 ${num(c.sleep).toFixed(1)}시간 · 에너지 ${c.energy}/5 · 스트레스 ${c.stress}/5`);confidence=Math.max(.72,recovery.confidence||0);}
   else if(readiness!==null){reasons.push('최근 HRV · 안정시 심박 · 수면 등 Health 신호를 회복 판단에 반영했습니다.');confidence=Math.max(.55,recovery.confidence||0);}
   else {reasons.push('오늘 컨디션 체크인과 충분한 Health 신호가 없어 최근 기록 중심으로 판단했습니다.');confidence=.46;}
+  const recoveryTrajectory=recovery.physiological?.derived?.trajectory;if(recoveryTrajectory?.persistentStrain===true)reasons.push('최근 여러 날 낮은 회복 신호가 반복되고 있습니다.');else if(recoveryTrajectory?.direction==='declining'&&num(recoveryTrajectory?.recentDays)>=3)reasons.push('최근 회복 흐름이 이전 구간보다 낮아지고 있습니다.');
   if(c&&num(c.sleep)<4.5){decision='REST';title='회복 우선';summary='수면 부족이 커서 고강도 훈련보다 회복을 우선합니다.';reasons.push('수면이 4.5시간 미만입니다.');}
   else if(c&&readiness<45){decision='RECOVER';title=`${Math.min(30,available)}분 회복 세션`;summary='오늘은 강도를 낮추고 움직임과 회복에 집중하는 편이 좋습니다.';reasons.push(`회복 지표가 ${readiness}점으로 낮습니다.`);}
   else if(c&&num(c.soreness)>=4){decision='REPLACE';title=`${Math.min(40,available)}분 대체 세션`;summary='근육통이 높은 부위를 피하고 다른 부위 또는 Zone 2로 대체합니다.';reasons.push(`근육통 ${c.soreness}/5${c.soreArea?` · ${c.soreArea}`:''}`);}
@@ -425,13 +426,23 @@ function recoveryMetricEvidence(label,metric,baseline,unit,digits=0){
  if(Number.isFinite(age))bits.push(age<1?'1h 미만':`${Math.round(age)}h 전`);
  return bits.join(' · ');
 }
+function recoveryTrajectoryEvidence(trajectory){
+ if(!trajectory||Number(trajectory.recentDays)<3)return '';
+ const direction=String(trajectory.direction||'insufficient'),label=direction==='declining'?'저하':direction==='improving'?'개선':direction==='stable'?'안정':'관찰 중',recent=Number(trajectory.recentAverage),prior=Number(trajectory.priorAverage),delta=Number(trajectory.delta),bits=[`회복 흐름 ${label}`];
+ if(Number.isFinite(recent))bits.push(`최근 3일 ${Math.round(recent)}`);
+ if(Number.isFinite(prior))bits.push(`이전 구간 ${Math.round(prior)}`);
+ if(Number.isFinite(delta))bits.push(`${delta>0?'+':''}${Math.round(delta)}`);
+ if(trajectory.persistentStrain===true)bits.push('낮은 회복 신호 반복');
+ return bits.join(' · ');
+}
 function recoveryEvidenceMarkup(decision){
  const p=decision?.physiological;if(!p||p.quality==='insufficient')return '';
  const latest=p.metricLatest||{},base=p.baselines||{},lines=[
   recoveryMetricEvidence('HRV',latest.hrvMs,base.hrvMs,' ms'),
   recoveryMetricEvidence('RHR',latest.restingHeartRateBpm,base.restingHeartRateBpm,' bpm'),
   recoveryMetricEvidence('수면',latest.sleepHours,base.sleepHours,' h',1),
-  recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0)
+  recoveryMetricEvidence('스트레스',latest.stressScore,base.stressScore,'',0),
+  recoveryTrajectoryEvidence(p?.derived?.trajectory)
  ].filter(Boolean);
  if(!lines.length)return '';
  const score=decision.readiness??p?.derived?.readinessScore,band=String(p?.derived?.readinessBand||'').toUpperCase(),confidence=Math.round(clamp(num(decision.recoveryConfidence,0)*100,0,100));
