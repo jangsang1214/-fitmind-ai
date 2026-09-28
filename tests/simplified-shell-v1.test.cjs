@@ -60,7 +60,7 @@ assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose fo
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
 assert.doesNotMatch(css,/@import[^;]*garang-core-loop-v1\.css/,'Simplified Shell must not own Core Loop stylesheet loading through a hidden import');
-assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.1\.1-coach-undo-clearance/,'commercial mobile design system must be the final explicit visual runtime');
+assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.1\.3-coach-shell-height/,'commercial mobile design system must be the final explicit visual runtime');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-commercial-mobile-v1.css'),'runtime manifest must own the commercial mobile design system');
 assert.match(html,/garang-commercial-mobile-v1\.js\?v=1\.0\.0-app-native/,'commercial mobile presentation runtime must boot explicitly');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-commercial-mobile-v1.js'),'runtime manifest must own the commercial mobile presentation runtime');
@@ -73,6 +73,7 @@ assert.match(commercialMobileCss,/\.garang-record-sheet\{[\s\S]*border-radius:26
 assert.match(commercialMobileCss,/FINAL COMMERCIAL SCREEN PASS/,'commercial design system must include the final P2-P5 screen pass');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="nutrition"\] \.nutrition-quick-summary/,'Nutrition must have a dedicated commercial hero');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="running"\] \[data-gapp-role="running-live"\]/,'Running must have a dedicated live performance hero');
+assert.match(commercialMobileCss,/html\[data-garang-coach-shell="active"\] #main\[data-garang-screen="coach"\] \.garang-coach-v2\{[\s\S]*height:calc\(100dvh - 66px - env\(safe-area-inset-bottom,0px\)\)!important/,'active mobile Coach shell must occupy the full viewport above the fixed 66px tab bar');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="body"\] \.body-hero/,'Body must use the premium diagnostic surface');
 assert.match(commercialMobileCss,/CANONICAL G2 COACH OWNER/,'Coach must style the canonical g2 owner');assert.match(commercialMobileCss,/#main\[data-garang-screen="coach"\] \.g2-composer/,'Coach must use the native canonical composer treatment');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="progress"\] #garangAccumulationOverview/,'Progress must use the accumulation-first commercial surface');
