@@ -103,6 +103,7 @@ console.log('workout-execution-ui-v2: PASS');
 assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.includes('value="drop"')&&app.includes('value="failure"'),'workout must support warm-up, drop and failure set semantics');
 assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
 assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
+assert.ok(runtime.includes('function syncRestSurface()')&&runtime.includes('function stabilizeRestSurface()')&&runtime.includes('queueMicrotask')&&runtime.includes('requestAnimationFrame'),'rest timer must reconcile canonical restUntil state after render replacement without relying on test retries');
 assert.ok(runtime.includes('GARANG ')&&runtime.includes('execution-target')&&runtime.includes('TARGET'),'execution table must expose a GARANG target between Previous and Actual');
 assert.ok(runtime.includes('targetFor(row)')&&runtime.includes('progressionContext')&&runtime.includes('recentTrend')&&runtime.includes('readiness'),'GARANG target must adapt from recent performance and readiness instead of copying Previous');
 assert.ok(runtime.includes('workout-result-pr')&&runtime.includes('estimated 1RM'),'session result must surface a PR benchmark');
