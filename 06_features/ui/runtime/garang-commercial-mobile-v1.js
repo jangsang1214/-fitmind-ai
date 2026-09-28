@@ -25,6 +25,7 @@
     });
   }
   function annotateToday(root){
+    root.dataset.garangDecisionOwner='coach';
     const flow=root.querySelector('#garangTodayFlow');
     mark(flow,'today-primary');
     mark(flow?.querySelector('.gtf-state'),'today-state');
@@ -89,6 +90,7 @@
     document.documentElement.dataset.garangCommercialMobile='1';
     document.body.dataset.garangCommercialScreen=s;
     root.dataset.garangCommercialMobile='1';
+    if(s!=='today')root.removeAttribute('data-garang-decision-owner');
     annotatePhotos(root);annotateRecord();
     if(s==='today')annotateToday(root);
     else if(s==='nutrition')annotateNutrition(root);
