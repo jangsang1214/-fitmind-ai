@@ -168,3 +168,7 @@ assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-gr
 assert.ok(runtime.includes("readinessScore=context?.readiness?.score")&&runtime.includes("readinessScore===null||readinessScore===undefined?NaN"),'missing readiness must remain unknown instead of coercing to a low score');
 assert.ok(app.includes("if(workoutDraft.length)return toast('진행 중인 운동 초안을 먼저 저장하거나 초기화해 주세요.')"),'starting a Planner program must not overwrite an active unsaved workout draft');
 assert.ok(app.includes("sessionContext(){return {activePlanId:workoutActivePlanId||null")&&app.includes("restoreSessionContext(value)")&&app.includes("workoutActivePlanId=value?.activePlanId")&&runtime.includes("context=bridge()?.sessionContext?.()")&&runtime.includes("restoreSessionContext?.(saved.context||null)"),'active Planner workout identity must survive resilient session persistence and reload');
+
+assert.ok(css.includes('GARANG screenshot-visible Record v8'),'Workout execution CSS must own the compact screenshot-visible Record pass');
+assert.ok(polishCss.includes('GARANG Body v7.7'),'Body CSS must own the reduced-mesh silhouette-first pass');
+assert.ok(polish.includes("const massTransform=person==='male'")&&polish.includes('transformAttr')&&polish.includes('data-garang-overlay-mask="body-alpha" mask="url(#${maskId})"${transformAttr}'),'Body v7.7 must widen the visual and hit geometry together');

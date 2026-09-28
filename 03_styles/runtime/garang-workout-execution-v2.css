@@ -649,3 +649,55 @@
   .workout-execution-v2 .workout-session-bar{padding:12px 13px 11px!important}
   .workout-execution-v2 .workout-session-live strong{font-size:32px!important}
 }
+
+
+/* GARANG screenshot-visible Record v8 — compact idle state, denser execution rhythm */
+@media(max-width:800px){
+  .workout-execution-v2 .workout-session-bar:not(.is-live){
+    grid-template-areas:"live controls"!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    min-height:62px!important;
+    padding:9px 11px!important;
+    margin-bottom:9px!important;
+    gap:8px!important;
+  }
+  .workout-execution-v2 .workout-session-bar:not(.is-live) .workout-session-feedback,
+  .workout-execution-v2 .workout-session-bar:not(.is-live) .workout-session-progress,
+  .workout-execution-v2 .workout-session-bar:not(.is-live) .workout-group-execution-cue{
+    display:none!important;
+  }
+  .workout-execution-v2 .workout-session-bar.is-live{
+    grid-template-areas:"live controls" "feedback feedback" "progress progress"!important;
+    padding:10px 12px 9px!important;
+    margin-bottom:10px!important;
+    gap:6px 9px!important;
+  }
+  .workout-execution-v2 .workout-session-live>strong{
+    font-size:28px!important;
+  }
+  .workout-execution-v2 .workout-session-bar.is-live .workout-session-live strong{
+    font-size:34px!important;
+  }
+  .workout-execution-v2 .workout-session-icon{
+    height:40px!important;
+    min-height:40px!important;
+    min-width:80px!important;
+    padding:0 10px!important;
+  }
+  .workout-execution-v2 .workout-start{min-width:88px!important}
+  .workout-execution-v2>.visual-section-head{
+    padding:7px 2px 7px!important;
+  }
+  .workout-execution-v2 .execution-compact-fields{
+    margin-bottom:6px!important;
+    gap:6px!important;
+  }
+  .workout-execution-v2 .workout-set-toolbar{
+    margin-top:2px!important;
+    padding:4px 2px!important;
+  }
+  .workout-execution-v2 .workout-entry-actions{
+    margin-top:5px!important;
+    margin-bottom:8px!important;
+  }
+}
