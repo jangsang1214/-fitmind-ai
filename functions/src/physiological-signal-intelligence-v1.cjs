@@ -1,6 +1,6 @@
 
 'use strict';
-const VERSION='physiological-signal-intelligence-v1.1.0-freshness-fusion';
+const VERSION='physiological-signal-intelligence-v1.2.0-recovery-trajectory';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v),list=v=>Array.isArray(v)?v.filter(object):[],finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),round=(v,d=2)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;},mean=v=>{const x=v.filter(Number.isFinite);return x.length?x.reduce((a,b)=>a+b,0)/x.length:null;};
 const DAY=86400000,HOUR=3600000;
 function ts(v){const t=Date.parse(String(v||''));return Number.isFinite(t)?t:null;}
@@ -42,6 +42,13 @@ function metricScore(key,value,base){
  if(key==='stressScore')return value<=5?clamp((5-value)/4*100,0,100):clamp(100-value,0,100);
  return null;
 }
+function dailyReadinessTrajectory(rows,baselines,coreMetrics,weights,nowMs){
+ const start=nowMs-7*DAY,byDate=new Map();
+ for(const row of rows){const t=ts(row.capturedAt||row.date);if(t===null||t<start||t>nowMs)continue;const date=row.date||dayKey(row.capturedAt);if(!date)continue;if(!byDate.has(date))byDate.set(date,[]);byDate.get(date).push(row);}
+ const points=[...byDate.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,dayRows])=>{const parts=[];for(const key of coreMetrics){let latest=null,latestMs=-Infinity;for(const row of dayRows){const value=finite(row[key]),t=ts(row.capturedAt||row.date);if(value===null||t===null||t<latestMs)continue;latest={value};latestMs=t;}if(!latest)continue;const score=metricScore(key,latest.value,baselines[key]);if(score===null)continue;parts.push({key,score,weight:weights[key]||.1});}const den=parts.reduce((s,x)=>s+x.weight,0),score=parts.length>=2&&den>0?round(parts.reduce((s,x)=>s+x.score*x.weight,0)/den,0):null;return {date,score,componentCount:parts.length};}).filter(x=>x.score!==null);
+ const recent=points.slice(-3),prior=points.slice(-6,-3),recentAverage=recent.length?round(mean(recent.map(x=>x.score)),1):null,priorAverage=prior.length?round(mean(prior.map(x=>x.score)),1):null,delta=recentAverage!==null&&priorAverage!==null?round(recentAverage-priorAverage,1):null,guardedOrLowDays=recent.filter(x=>x.score<65).length,persistentStrain=recent.length>=3&&guardedOrLowDays>=2,direction=delta===null?'insufficient':delta<=-8?'declining':delta>=8?'improving':'stable';
+ return {direction,delta,recentAverage,priorAverage,recentDays:recent.length,guardedOrLowDays,persistentStrain,points:points.slice(-7)};
+}
 function build(stateInput={},options={}){
  const state=object(stateInput)?stateInput:{},now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),nowMs=now.getTime();
  const all=sourceRows(state).map(normalize).filter(x=>x.capturedAt||x.date).filter(x=>{const t=ts(x.capturedAt||x.date);return t!==null&&t<=nowMs;}).sort((a,b)=>(ts(a.capturedAt||a.date)||0)-(ts(b.capturedAt||b.date)||0));
@@ -49,6 +56,7 @@ function build(stateInput={},options={}){
  const metrics=['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore','steps','activeMinutes'],coreMetrics=['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore'],weights={hrvMs:.25,restingHeartRateBpm:.25,sleepHours:.2,sleepScore:.15,stressScore:.15};
  const metricLatest=Object.fromEntries(metrics.map(key=>[key,latestMetric(all,key,nowMs,7)]));
  const baselines=Object.fromEntries(metrics.map(key=>[key,baselineForMetric(all,key,metricLatest[key],nowMs)]));
+ const trajectory=dailyReadinessTrajectory(all,baselines,coreMetrics,weights,nowMs);
  const components=[],reasons=[];
  for(const key of coreMetrics){
   const latestValue=metricLatest[key],value=latestValue?.value??null,score=metricScore(key,value,baselines[key]),freshness=freshnessWeight(latestValue?.ageHours);
@@ -67,14 +75,15 @@ function build(stateInput={},options={}){
  const agreement=components.length>=2?round(clamp(1-stdev(components.map(x=>x.score))/35,0,1),2):.35;
  const confidence=round(clamp(coreCoverage*.25+freshCoverage*.2+dayCoverage*.2+baselineSupport*.2+agreement*.15,0,1),2);
  const redFlags=reasons.filter(x=>['HRV_BELOW_RECENT_BASELINE','RHR_ABOVE_RECENT_BASELINE','SHORT_SLEEP_SIGNAL','LOW_SLEEP_SCORE','ELEVATED_STRESS_SIGNAL'].includes(x)).length;
+ if(trajectory.persistentStrain)reasons.push('PERSISTENT_RECOVERY_STRAIN');
  const readinessBand=readinessScore===null?'unknown':readinessScore<45?'low':readinessScore<65?'guarded':readinessScore<80?'ready':'high';
- const recoveryConstraint=readinessScore===null?'unknown':readinessScore<45||redFlags>=2?'protect':readinessScore<65||redFlags===1?'guarded':'normal';
+ const recoveryConstraint=readinessScore===null?'unknown':readinessScore<45||redFlags>=2?'protect':readinessScore<65||redFlags===1||trajectory.persistentStrain?'guarded':'normal';
  const quality=readinessScore!==null&&confidence>=.75&&components.length>=3&&days.size>=5?'strong':readinessScore!==null&&confidence>=.4&&components.length>=2?'usable':'insufficient';
  const latestMap=Object.fromEntries(metrics.map(key=>[key,metricLatest[key]?{value:metricLatest[key].value,capturedAt:metricLatest[key].capturedAt,date:metricLatest[key].date,source:metricLatest[key].source,ageHours:metricLatest[key].ageHours}:null]));
  const componentMap=Object.fromEntries(components.map(x=>[x.key,{value:x.value,score:x.score,ageHours:x.ageHours,freshness:round(x.freshness,2),source:x.source}]));
- return Object.freeze({version:VERSION,asOf:now.toISOString(),quality,confidence,sourceCount:new Set(recent.map(x=>x.source)).size,recentDays:days.size,latest:latest?Object.freeze(latest):null,metricLatest:Object.freeze(latestMap),baselines:Object.freeze(baselines),derived:Object.freeze({readinessScore,readinessBand,recoveryConstraint,signalAgreement:agreement,componentCount:components.length,components:Object.freeze(componentMap),reasonCodes:Object.freeze([...new Set(reasons)])}),guardrails:Object.freeze({optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true})});
+ return Object.freeze({version:VERSION,asOf:now.toISOString(),quality,confidence,sourceCount:new Set(recent.map(x=>x.source)).size,recentDays:days.size,latest:latest?Object.freeze(latest):null,metricLatest:Object.freeze(latestMap),baselines:Object.freeze(baselines),derived:Object.freeze({readinessScore,readinessBand,recoveryConstraint,signalAgreement:agreement,componentCount:components.length,components:Object.freeze(componentMap),trajectory:Object.freeze({...trajectory,points:Object.freeze(trajectory.points.map(x=>Object.freeze(x)))}),reasonCodes:Object.freeze([...new Set(reasons)])}),guardrails:Object.freeze({optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true,multiDayRecoveryTrajectory:true,trajectoryRequiresRepeatedEvidence:true,trajectoryCanOnlyConstrain:true})});
 }
-function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),quality:String(v.quality||'insufficient'),confidence:finite(v.confidence)??0,sourceCount:Number(v.sourceCount)||0,recentDays:Number(v.recentDays)||0,latest:object(v.latest)?v.latest:null,metricLatest:object(v.metricLatest)?v.metricLatest:{},baselines:object(v.baselines)?v.baselines:{},derived:object(v.derived)?v.derived:{readinessScore:null,readinessBand:'unknown',recoveryConstraint:'unknown',reasonCodes:[]},guardrails:{optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true}};}
-const API=Object.freeze({VERSION,normalize,build,compactForContext,latestMetric,baselineForMetric});
+function compactForContext(v={}){return {version:String(v.version||VERSION),asOf:String(v.asOf||''),quality:String(v.quality||'insufficient'),confidence:finite(v.confidence)??0,sourceCount:Number(v.sourceCount)||0,recentDays:Number(v.recentDays)||0,latest:object(v.latest)?v.latest:null,metricLatest:object(v.metricLatest)?v.metricLatest:{},baselines:object(v.baselines)?v.baselines:{},derived:object(v.derived)?v.derived:{readinessScore:null,readinessBand:'unknown',recoveryConstraint:'unknown',reasonCodes:[]},guardrails:{optionalExternalSignals:true,sourcePreserved:true,futureSignalsExcluded:true,robustBaseline:true,latestExcludedFromBaselineWhenPossible:true,metricLatestFusion:true,staleSignalsDownweighted:true,noMedicalDiagnosis:true,noStateMutation:true,missingSignalsDoNotImplyNormal:true,multiDayRecoveryTrajectory:true,trajectoryRequiresRepeatedEvidence:true,trajectoryCanOnlyConstrain:true}};}
+const API=Object.freeze({VERSION,normalize,build,compactForContext,latestMetric,baselineForMetric,dailyReadinessTrajectory});
 
 module.exports=API;
