@@ -585,3 +585,38 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
     max-width:292px!important;
   }
 }
+
+/* Body commercial supremacy v7.7 — highlight anatomical volume, never interaction plates */
+.g3-classical-model[data-garang-visual-revision="7.5"] .g6-interaction-layer .g3-muscle,
+.g3-classical-model[data-garang-visual-revision="7.5"] .g6-interaction-layer .g3-muscle:hover,
+.g3-classical-model[data-garang-visual-revision="7.5"] .g6-interaction-layer .g3-muscle:focus{
+  fill:rgba(0,0,0,.001)!important;stroke:none!important;opacity:1!important;filter:none!important
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  transition:opacity .18s ease,filter .18s ease,transform .18s ease!important;
+  transform-box:fill-box!important;transform-origin:center!important
+}
+.muscle-map[data-muscle="chest"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-chest,
+.muscle-map[data-muscle="back"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-chest,
+.muscle-map[data-muscle="shoulders"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-shoulder,
+.muscle-map[data-muscle="biceps"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-arm,
+.muscle-map[data-muscle="triceps"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-arm,
+.muscle-map[data-muscle="core"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-core,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-thigh,
+.muscle-map[data-muscle="legs"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-calf{
+  opacity:1!important;
+  filter:saturate(1.14) contrast(1.08) brightness(1.08)!important;
+  transform:scale(1.008)!important
+}
+.muscle-map[data-muscle]:not([data-muscle="full"]) .g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  opacity:.72
+}
+.muscle-map[data-muscle="full"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  opacity:.96!important
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g74-fiber-texture-layer{
+  opacity:.085!important
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g74-fiber-region{
+  opacity:.032!important
+}
