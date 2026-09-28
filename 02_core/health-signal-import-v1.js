@@ -4,7 +4,7 @@
  if(root)root.GarangHealthSignalImportV1=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const VERSION='garang-health-signal-import-v1.1.0-provider-ready';
+const VERSION='garang-health-signal-import-v1.2.0-native-pull';
 const list=v=>Array.isArray(v)?v:[],clean=v=>String(v??'').trim(),finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null,round=(v,d=3)=>{const p=10**d;return Math.round((Number(v)+Number.EPSILON)*p)/p;};
 function iso(value){const t=Date.parse(String(value||''));return Number.isFinite(t)?new Date(t).toISOString():null;}
 function dateKey(value){const i=iso(value);return i?i.slice(0,10):clean(value).slice(0,10)||null;}
@@ -30,6 +30,28 @@ function identity(row){return [clean(row?.source||'import'),clean(row?.capturedA
 function signature(row){return [identity(row),...['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore','steps','activeMinutes'].map(k=>finite(row[k])??'')].join('|');}
 function stableId(row){let h=2166136261;for(const ch of identity(row)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return 'health_'+(h>>>0).toString(16).padStart(8,'0');}
 function merge(existing=[],resultOrSignals=[],options={}){const incoming=Array.isArray(resultOrSignals)?resultOrSignals:list(resultOrSignals?.signals),map=new Map();for(const row of list(existing)){const key=identity(row);if(!key||key==='|')continue;map.set(key,{...row,id:row.id||stableId(row)});}for(const row of incoming){const key=identity(row);if(!key||key==='|')continue;const current=map.get(key)||{};const next={...current,...row,source:clean(row.source||current.source||'import')||'import',capturedAt:row.capturedAt||current.capturedAt||null,date:row.date||current.date||dateKey(row.capturedAt||current.capturedAt)};for(const metric of ['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore','steps','activeMinutes']){const value=finite(row[metric]);if(value===null&&finite(current[metric])!==null)next[metric]=finite(current[metric]);}next.id=current.id||row.id||stableId(next);map.set(key,next);}const out=[...map.values()].sort((a,b)=>String(a.capturedAt||a.date).localeCompare(String(b.capturedAt||b.date)));const max=Math.max(100,Math.min(10000,Number(options.maxSignals)||5000));return out.slice(-max);}
-const GUARDS=Object.freeze({explicitUserImport:true,sourcePreserved:true,noDiagnosis:true,noWriteByDefault:true,noNativeProviderClaim:true,dedupeOnMerge:true,incrementalProviderUpsert:true,stableProviderIdentity:true,providerPayloadReady:true});
-return Object.freeze({VERSION,GUARDS,metricName,normalizeWide,normalizeLong,parseJson,parseCsv,parseAppleXml,detectFormat,parse,merge,identity,signature,stableId});
+
+const NATIVE_READ_METRICS=Object.freeze(['heartRateVariability','restingHeartRate','sleep','sleepScore','stress','steps','activeMinutes']);
+function latestCapturedAt(rows=[]){let latest=null,latestMs=null;for(const row of list(rows)){const value=iso(row?.capturedAt||row?.timestamp||row?.date),t=value?Date.parse(value):NaN;if(!Number.isFinite(t))continue;if(latestMs===null||t>latestMs){latest=value;latestMs=t;}}return latest;}
+function authorizationDenied(value){if(value===false)return true;if(!value||typeof value!=='object')return false;if(value.granted===false||value.authorized===false||value.allowed===false)return true;return ['denied','restricted','unavailable','blocked'].includes(clean(value.status).toLowerCase());}
+function validSignals(rows=[]){return aggregate(rows).filter(row=>row.date&&Object.keys(row).some(k=>['hrvMs','restingHeartRateBpm','sleepHours','sleepScore','stressScore','steps','activeMinutes'].includes(k))).map(row=>({...row,id:row.id||stableId(row)}));}
+async function pullNative(native,existing=[],options={}){
+ const current=list(existing).map(row=>({...row})),reader=native&&['readHealthSignals','readSignals','pullHealthSignals'].map(name=>[name,native[name]]).find(([,fn])=>typeof fn==='function');
+ if(!reader)return {version:VERSION,status:'unavailable',signals:[],merged:current,summary:{received:0,accepted:0,added:0,updated:0,unchanged:0,sources:[],since:iso(options.since)||latestCapturedAt(current)||null,latest:null},guardrails:GUARDS};
+ const metrics=(Array.isArray(options.metrics)?options.metrics:NATIVE_READ_METRICS).map(clean).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
+ try{
+  if(options.requestAuthorization===true&&typeof native.requestAuthorization==='function'){
+   const auth=await native.requestAuthorization(metrics);
+   if(authorizationDenied(auth))return {version:VERSION,status:'denied',signals:[],merged:current,summary:{received:0,accepted:0,added:0,updated:0,unchanged:0,sources:[],since:iso(options.since)||latestCapturedAt(current)||null,latest:null},guardrails:GUARDS};
+  }
+  const since=iso(options.since)||latestCapturedAt(current)||null,payload=await reader[1].call(native,{since,metrics}),sourceHint=clean(options.source||payload?.provider||payload?.source||'native-health')||'native-health',normalized=validSignals(parseJson(payload??[],sourceHint)),before=new Map(current.map(row=>[identity(row),row])),incomingKeys=new Set(),stats={added:0,updated:0,unchanged:0};
+  for(const row of normalized){const key=identity(row);if(!key||key==='|'||incomingKeys.has(key))continue;incomingKeys.add(key);const prior=before.get(key);if(!prior){stats.added++;continue;}const next=merge([prior],[row],{maxSignals:10})[0];if(signature(next)===signature(prior))stats.unchanged++;else stats.updated++;}
+  const merged=merge(current,normalized,options),sources=[...new Set(normalized.map(x=>x.source).filter(Boolean))];
+  return {version:VERSION,status:normalized.length?'ready':'empty',signals:normalized,merged,summary:{received:Array.isArray(payload)?payload.length:Array.isArray(payload?.records)?payload.records.length:Array.isArray(payload?.signals)?payload.signals.length:Array.isArray(payload?.data)?payload.data.length:0,accepted:normalized.length,added:stats.added,updated:stats.updated,unchanged:stats.unchanged,sources,since,latest:latestCapturedAt(normalized)},guardrails:GUARDS};
+ }catch(error){
+  return {version:VERSION,status:'error',signals:[],merged:current,summary:{received:0,accepted:0,added:0,updated:0,unchanged:0,sources:[],since:iso(options.since)||latestCapturedAt(current)||null,latest:null},error:String(error?.message||error),guardrails:GUARDS};
+ }
+}
+const GUARDS=Object.freeze({explicitUserImport:true,sourcePreserved:true,noDiagnosis:true,noWriteByDefault:true,noNativeProviderClaim:true,dedupeOnMerge:true,incrementalProviderUpsert:true,stableProviderIdentity:true,providerPayloadReady:true,nativeBridgeContractReady:true,nativePullNoWrite:true,permissionPromptExplicit:true,incrementalCursor:true,idempotentNativePull:true});
+return Object.freeze({VERSION,GUARDS,NATIVE_READ_METRICS,metricName,normalizeWide,normalizeLong,parseJson,parseCsv,parseAppleXml,detectFormat,parse,merge,identity,signature,stableId,latestCapturedAt,authorizationDenied,pullNative});
 });
