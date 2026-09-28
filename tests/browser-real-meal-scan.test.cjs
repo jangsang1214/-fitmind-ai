@@ -17,6 +17,18 @@ async function waitForPickerBinding(page,buttonId){
   return !!button&&typeof button.onclick==='function'&&!!input&&input.type==='file'&&typeof window.GarangPhotoEvidence?.pick==='function';
  },buttonId,{timeout:7000});
 }
+async function armPickerDeterministically(page,buttonId){
+ const armed=await page.evaluate(id=>{
+  const button=document.getElementById(id),input=document.getElementById('mealScanPicker');
+  if(!button||!input)return false;
+  let invoked=false;
+  input.click=()=>{invoked=true;};
+  button.click();
+  delete input.click;
+  return invoked&&typeof input.onchange==='function';
+ },buttonId);
+ assert.equal(armed,true,`${buttonId} must synchronously bind the canonical file input`);
+}
 
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
@@ -66,8 +78,8 @@ async function waitForPickerBinding(page,buttonId){
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await route(page,'nutrition');
   assert.equal(await page.locator('#pickMealScan').count(),1,'Meal Scan should expose one clear photo entry');
-  await waitForPickerBinding(page,'pickMealScan');const [chooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('#pickMealScan').click()]);
-  await chooser.setFiles({name:'meal.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
+  await waitForPickerBinding(page,'pickMealScan');await armPickerDeterministically(page,'pickMealScan');
+  await page.locator('#mealScanPicker').setInputFiles({name:'meal.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
   await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
   await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('GARANG QA 음료 ZX91'),null,{timeout:7000});
@@ -120,8 +132,8 @@ async function waitForPickerBinding(page,buttonId){
   await page.locator('#clearBarcode').click();
 
   assert.equal(await page.locator('#pickLabelScan').count(),1,'Nutrition must expose a dedicated Label Scan entry');
-  await waitForPickerBinding(page,'pickLabelScan');const [labelChooser]=await Promise.all([page.waitForEvent('filechooser'),page.locator('#pickLabelScan').click()]);
-  await labelChooser.setFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
+  await waitForPickerBinding(page,'pickLabelScan');await armPickerDeterministically(page,'pickLabelScan');
+  await page.locator('#mealScanPicker').setInputFiles({name:'label.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC0lEQVR42mP8/x8AAusB9Y9Z2ioAAAAASUVORK5CYII=','base64')});
   await page.waitForFunction(()=>!!document.querySelector('.meal-scan-preview'));
   await page.locator('#analyzeMealScan').click();
   await page.waitForFunction(()=>document.querySelector('.meal-scan-results')?.innerText.includes('GARANG LABS'),null,{timeout:7000});
