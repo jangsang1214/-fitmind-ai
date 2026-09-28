@@ -73,6 +73,10 @@ assert.match(appSource,/data-recovery-evidence/,'Today must expose progressive d
 assert.match(appSource,/Health 신호로 회복 상태를 읽고 있습니다/,'Today must not present physiological-only recovery as an empty state');
 assert.match(appSource,/체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다/,'Health evidence must invite subjective context without replacing it');
 assert.match(appSource,/최근 신호와 개인 기준선 비교 · 신뢰/,'Health evidence must disclose baseline/freshness confidence context');
+assert.match(appSource,/function recoveryTrajectoryEvidence\(trajectory\)/,'Today Health evidence must surface the existing multi-day recovery trajectory');
+assert.match(appSource,/회복 흐름/,'recovery evidence must label multi-day direction without adding a new screen');
+assert.match(appSource,/낮은 회복 신호 반복/,'persistent recovery strain must be disclosed as repeated evidence');
+assert.match(appSource,/최근 여러 날 낮은 회복 신호가 반복되고 있습니다/,'fallback Coach must explain persistent recovery strain without changing the deterministic decision owner');
 assert.match(appSource,/NATIVE_READ_METRICS/,'explicit native sync must request the canonical physiological read scopes');
 assert.match(appSource,/pullNative\(native,state\.physiologicalSignals,\{requestAuthorization:false,maxSignals:5000\}\)/,'native sync must pull through the canonical importer without a second permission prompt');
 assert.match(appSource,/state\.physiologicalSignals=pulled\.merged/,'native pull result must become the canonical physiological signal state only after explicit sync');
