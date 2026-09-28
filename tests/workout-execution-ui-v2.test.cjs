@@ -41,6 +41,7 @@ assert.ok(runtime.includes("current-set"),'execution surface must visually own a
 assert.ok(runtime.includes("headerScope.querySelectorAll('.workout-set-table-head')")&&runtime.includes("forEach(node=>node.remove())"),'active Log enhancement must collapse duplicate set-table headers to exactly one');
 assert.ok(runtime.includes("execution-compact-fields"),'execution surface must collapse the generic workout form into compact controls');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("sessionStartedAt=0")&&runtime.includes("restUntil=0"),'clearing a session must reset live execution timing state before rerender');
+assert.ok(runtime.includes("exerciseComplete=!done&&completedCurrent()>=currentRows().length")&&runtime.includes("else if(exerciseComplete)stopRest()"),'final set completion must suppress unnecessary rest while intermediate sets retain deterministic rest');
 assert.ok(runtime.includes("if(sessionStartedAt||restUntil)startTicker()"),'remounting an active workout must restart elapsed/rest ticking');
 assert.ok(runtime.includes("previousValue"),'Previous values must render from the resolved row value');
 assert.ok(runtime.includes("snapshotSetRows")&&runtime.includes("restoreSetRows"),'changing set count must preserve existing execution rows and completion state');
