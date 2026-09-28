@@ -113,7 +113,24 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
    {date:'2026-09-15',decisionId:'d5',decisionMode:'maintain',recommendationId:'r5',planId:'p5',executionId:null,outcomeId:'o5',execution:{status:'not_observed',score:0},outcome:{classification:'missed',score:0},attribution:{complete:false}}
   ]};
   const episodes=Episodes.build(state,graph,{asOf:'2026-09-20'}),browserEpisodes=BrowserEpisodes.build(state,graph,{asOf:'2026-09-20'});
-  assert.deepEqual(episodes,browserEpisodes);assert.equal(episodes.version,'intelligence-episode-v1.1.0');assert.equal(episodes.episodes.length,5);assert.equal(episodes.episodes[0].userResponse.status,'accepted');assert.equal(episodes.episodes[0].context.timeBucket,'morning');
+  assert.deepEqual(episodes,browserEpisodes);assert.equal(episodes.version,'intelligence-episode-v1.2.0-physiological-recovery-outcome');assert.equal(episodes.episodes.length,5);assert.equal(episodes.episodes[0].userResponse.status,'accepted');assert.equal(episodes.episodes[0].context.timeBucket,'morning');
+  const physState=baseState();
+  physState.planner=[{id:'pp1',recommendationId:'pr1',duration:30,intensityScale:.8,volumeScale:.8,decisionEngineVersion:'decision-intelligence-v1'}];
+  physState.healthSignals=[
+   {source:'watch',capturedAt:'2026-09-08T06:00:00Z',hrvMs:50,restingHeartRateBpm:60,sleepHours:7.2},
+   {source:'watch',capturedAt:'2026-09-09T06:00:00Z',hrvMs:51,restingHeartRateBpm:59,sleepHours:7.4},
+   {source:'watch',capturedAt:'2026-09-10T06:00:00Z',hrvMs:50,restingHeartRateBpm:60,sleepHours:7.3},
+   {source:'watch',capturedAt:'2026-09-11T06:00:00Z',hrvMs:44,restingHeartRateBpm:65,sleepHours:5.8},
+   {source:'watch',capturedAt:'2026-09-12T06:00:00Z',hrvMs:52,restingHeartRateBpm:58,sleepHours:7.8}
+  ];
+  const physGraph={asOf:'2026-09-12',lookbackDays:28,cycles:[{date:'2026-09-11',decisionId:'pd1',decisionMode:'recover',recommendationId:'pr1',planId:'pp1',executionId:'pe1',outcomeId:'po1',execution:{status:'observed',score:100},outcome:{classification:'completed',score:90},attribution:{complete:true}}]};
+  const physEpisodes=Episodes.build(physState,physGraph,{asOf:'2026-09-12'}),physBrowserEpisodes=BrowserEpisodes.build(physState,physGraph,{asOf:'2026-09-12'});
+  assert.deepEqual(physEpisodes,physBrowserEpisodes,'physiological recovery outcome evidence must stay browser/server deterministic');
+  const physOutcome=physEpisodes.episodes[0].outcome.physiologicalRecovery;
+  assert.equal(physOutcome.beforeAsOf,'2026-09-11');assert.equal(physOutcome.afterAsOf,'2026-09-12');
+  assert.ok(Number.isFinite(physOutcome.beforeReadiness));assert.ok(Number.isFinite(physOutcome.afterReadiness));assert.ok(Number.isFinite(physOutcome.deltaScore));
+  assert.equal(physOutcome.descriptiveOnly,true);assert.equal(physEpisodes.guardrails.physiologicalRecoveryOutcome,true);assert.equal(physEpisodes.guardrails.physiologicalOutcomeDescriptiveOnly,true);assert.equal(physEpisodes.guardrails.policyUtilityUnchanged,true);
+  assert.equal(physEpisodes.episodes[0].outcome.recoveryDelta,null,'physiological evidence must not silently replace the established subjective recoveryDelta policy input');
   const response=ResponseModel.build(episodes,{asOf:'2026-09-20'}),browserResponse=BrowserResponseModel.build(browserEpisodes,{asOf:'2026-09-20'});
   assert.deepEqual(response,browserResponse);assert.equal(response.version,'user-response-model-v1.2.0');assert.equal(response.training.preferredDurationBand,'short');assert.equal(response.training.preferredIntensityBand,'full');assert.equal(response.training.preferredVolumeBand,'full');assert.ok(response.behavior.acceptedExecutionRate>0);assert.ok(response.confidence>=.35);
   const decision={decisionId:'d-next',mode:'maintain',recommendation:{duration:50,intensityScale:1,volumeScale:1}};
@@ -186,7 +203,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.0.0');
   assert.equal(context.personalizationPolicy.guardrails.deterministic,true);
   assert.equal(context.personalizationPolicy.guardrails.llmCannotOverride,true);
-  assert.equal(context.intelligenceEpisodes.version,'intelligence-episode-v1.1.0');
+  assert.equal(context.intelligenceEpisodes.version,'intelligence-episode-v1.2.0-physiological-recovery-outcome');
   assert.equal(context.userResponseModel.version,'user-response-model-v1.2.0');
   assert.equal(context.recommendationPolicy.version,'recommendation-policy-eval-v1.2.0');
   assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
