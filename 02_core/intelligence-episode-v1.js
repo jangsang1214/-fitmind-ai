@@ -1,11 +1,12 @@
 (function(root,factory){
- const api=factory();
+ const Phys=typeof module==='object'&&module.exports?require('./physiological-signal-intelligence-v1.js'):root?.GarangPhysiologicalSignalIntelligenceV1;
+ const api=factory(Phys);
  if(typeof module==='object'&&module.exports)module.exports=api;
  if(root)root.GarangIntelligenceEpisodeV1=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(PhysiologicalSignals){
 'use strict';
 
-const VERSION='intelligence-episode-v1.1.0';
+const VERSION='intelligence-episode-v1.2.0-physio-outcome';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const list=v=>Array.isArray(v)?v.filter(object):[];
 const clean=v=>String(v??'').trim();
@@ -36,11 +37,31 @@ function recoveryDelta(before={},after={}){
  if(sleepA!==null&&sleepB!==null)parts.push(clamp((sleepB-sleepA)/3,-1,1));
  return parts.length?round(parts.reduce((a,b)=>a+b,0)/parts.length,3):null;
 }
+function physiologicalRows(state={}){return [...list(state?.physiologicalSignals),...list(state?.healthSignals),...list(state?.wearableSignals)];}
+function physiologicalDate(row={}){try{return dateKey(PhysiologicalSignals?.normalize?.(row)?.date||row?.capturedAt||row?.timestamp||row?.at||row?.date);}catch{return dateKey(row?.capturedAt||row?.timestamp||row?.at||row?.date);}}
+function physiologicalSnapshot(state,date){
+ if(!date||!PhysiologicalSignals?.build)return null;
+ const hasObservedDate=physiologicalRows(state).some(row=>physiologicalDate(row)===date);if(!hasObservedDate)return null;
+ try{
+  const model=PhysiologicalSignals.build(state,{now:new Date(`${date}T23:59:59.999Z`)}),score=finite(model?.derived?.readinessScore);
+  if(score===null||String(model?.quality||'insufficient')==='insufficient')return null;
+  return {date,readinessScore:score,readinessBand:clean(model?.derived?.readinessBand)||'unknown',recoveryConstraint:clean(model?.derived?.recoveryConstraint)||'unknown',confidence:finite(model?.confidence)??0};
+ }catch{return null;}
+}
+function nextPhysiologicalDate(state,date,maxDays=3){
+ const start=Date.parse(`${date}T12:00:00Z`);if(!Number.isFinite(start))return null;
+ return [...new Set(physiologicalRows(state).map(physiologicalDate).filter(Boolean))].filter(d=>{const t=Date.parse(`${d}T12:00:00Z`);return Number.isFinite(t)&&t>start&&t<=start+Math.max(1,maxDays)*86400000;}).sort()[0]||null;
+}
+function physiologicalRecoveryOutcome(state,date){
+ const before=physiologicalSnapshot(state,date),afterDate=nextPhysiologicalDate(state,date,3),after=afterDate?physiologicalSnapshot(state,afterDate):null;
+ if(!before||!after)return {before,after,delta:null,descriptiveOnly:true};
+ return {before,after,delta:round(clamp((after.readinessScore-before.readinessScore)/100,-1,1),3),descriptiveOnly:true};
+}
 function build(stateInput={},graphInput={},options={}){
  const state=object(stateInput)?stateInput:{},graph=object(graphInput)?graphInput:{},events=list(state.actionLog),episodes=[];
  for(const cycle of list(graph.cycles)){
   const recommendationIdValue=clean(cycle?.recommendationId)||null;if(!recommendationIdValue)continue;
-  const date=dateKey(cycle?.date),plan=planFor(state,cycle),checkin=checkinFor(state,date),after=nextCheckin(state,date),response=resolution(events,recommendationIdValue),completion=finite(cycle?.execution?.score),responseAt=response.at||clean(plan?.createdAt||plan?.updatedAt)||null;
+  const date=dateKey(cycle?.date),plan=planFor(state,cycle),checkin=checkinFor(state,date),after=nextCheckin(state,date),physiologicalRecovery=physiologicalRecoveryOutcome(state,date),response=resolution(events,recommendationIdValue),completion=finite(cycle?.execution?.score),responseAt=response.at||clean(plan?.createdAt||plan?.updatedAt)||null;
   const episode={
    version:VERSION,episodeId:'episode_'+hash([cycle?.decisionId,recommendationIdValue,cycle?.planId,date].filter(Boolean).join('|')),date,
    context:{goal:clean(state?.profile?.goal||state?.onboarding?.goal)||null,readiness:finite(checkin?.readiness??checkin?.energy),sleepHours:finite(checkin?.sleepHours??checkin?.sleep),stress:finite(checkin?.stress??checkin?.stressLevel),soreness:finite(checkin?.soreness),availableMinutes:finite(checkin?.availableMinutes),timeBucket:timeBucket(responseAt),dayOfWeek:dayOfWeek(date)},
@@ -48,14 +69,14 @@ function build(stateInput={},graphInput={},options={}){
    recommendation:{recommendationId:recommendationIdValue,duration:finite(plan?.duration),intensityScale:finite(plan?.intensityScale),volumeScale:finite(plan?.volumeScale),revision:finite(cycle?.recommendationRevision)},
    userResponse:response,
    execution:{executionId:clean(cycle?.executionId)||null,status:clean(cycle?.execution?.status)||null,completionRatio:completion===null?null:clamp(completion/100,0,1)},
-   outcome:{outcomeId:clean(cycle?.outcomeId)||null,classification:clean(cycle?.outcome?.classification)||null,score:finite(cycle?.outcome?.score??cycle?.outcome?.rate),nextCheckin:{date:dateKey(after?.date),energy:finite(after?.energy??after?.energyLevel),sleepHours:finite(after?.sleepHours??after?.sleep),stress:finite(after?.stress??after?.stressLevel)},recoveryDelta:recoveryDelta(checkin,after)},
+   outcome:{outcomeId:clean(cycle?.outcomeId)||null,classification:clean(cycle?.outcome?.classification)||null,score:finite(cycle?.outcome?.score??cycle?.outcome?.rate),nextCheckin:{date:dateKey(after?.date),energy:finite(after?.energy??after?.energyLevel),sleepHours:finite(after?.sleepHours??after?.sleep),stress:finite(after?.stress??after?.stressLevel)},recoveryDelta:recoveryDelta(checkin,after),physiologicalRecovery},
    attribution:{complete:cycle?.attribution?.complete===true,confidence:cycle?.attribution?.complete===true?1:cycle?.outcomeId?0.7:cycle?.executionId?0.5:0.25}
   };
   episodes.push(Object.freeze(episode));
  }
- return Object.freeze({version:VERSION,asOf:String(graph.asOf||options.asOf||new Date().toISOString().slice(0,10)),windowDays:Math.max(7,Math.min(56,Number(options.days||graph.lookbackDays)||28)),episodes:Object.freeze(episodes),guardrails:Object.freeze({derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true})});
+ return Object.freeze({version:VERSION,asOf:String(graph.asOf||options.asOf||new Date().toISOString().slice(0,10)),windowDays:Math.max(7,Math.min(56,Number(options.days||graph.lookbackDays)||28)),episodes:Object.freeze(episodes),guardrails:Object.freeze({derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryDescriptiveOnly:true,physiologicalRecoveryDoesNotChangeAttribution:true})});
 }
-function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),asOf:String(v.asOf||''),windowDays:Number(v.windowDays)||28,episodes:list(v.episodes).slice(-12).map(x=>({episodeId:x.episodeId,date:x.date,context:x.context,decision:x.decision,recommendation:x.recommendation,userResponse:x.userResponse,execution:x.execution,outcome:x.outcome,attribution:x.attribution})),guardrails:{derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true}};}
-return Object.freeze({VERSION,build,compactForContext,timeBucket,recoveryDelta});
+function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),asOf:String(v.asOf||''),windowDays:Number(v.windowDays)||28,episodes:list(v.episodes).slice(-12).map(x=>({episodeId:x.episodeId,date:x.date,context:x.context,decision:x.decision,recommendation:x.recommendation,userResponse:x.userResponse,execution:x.execution,outcome:x.outcome,attribution:x.attribution})),guardrails:{derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryDescriptiveOnly:true,physiologicalRecoveryDoesNotChangeAttribution:true}};}
+return Object.freeze({VERSION,build,compactForContext,timeBucket,recoveryDelta,physiologicalRecoveryOutcome});
 
 });
