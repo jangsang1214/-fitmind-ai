@@ -6,7 +6,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(PhysiologicalSignals){
 'use strict';
 
-const VERSION='intelligence-episode-v1.2.0-physiological-recovery-outcome';
+const VERSION='intelligence-episode-v1.3.0-physiological-recovery-summary';
 const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const list=v=>Array.isArray(v)?v.filter(object):[];
 const clean=v=>String(v??'').trim();
@@ -49,6 +49,11 @@ function physiologicalRecoveryOutcome(state,date){
  const beforeReadiness=finite(before?.derived?.readinessScore),afterReadiness=finite(after?.derived?.readinessScore),deltaScore=beforeReadiness!==null&&afterReadiness!==null?round(afterReadiness-beforeReadiness,1):null;
  return {beforeAsOf:date,afterAsOf:nextDate,beforeReadiness,afterReadiness,deltaScore,normalizedDelta:deltaScore===null?null:round(deltaScore/100,3),beforeQuality:clean(before?.quality)||'insufficient',afterQuality:clean(after?.quality)||'insufficient',descriptiveOnly:true};
 }
+function physiologicalRecoverySummary(episodes=[]){
+ const observed=list(episodes).filter(row=>row?.attribution?.complete===true).map(row=>row?.outcome?.physiologicalRecovery).filter(object).map(row=>({deltaScore:finite(row?.deltaScore),normalizedDelta:finite(row?.normalizedDelta)})).filter(row=>row.deltaScore!==null&&row.normalizedDelta!==null);
+ const sampleSize=observed.length,mean=values=>values.length?values.reduce((sum,value)=>sum+value,0)/values.length:null,deltas=observed.map(row=>row.deltaScore);
+ return Object.freeze({status:sampleSize?'observed':'insufficient',sampleSize,improvedCount:deltas.filter(value=>value>0).length,worsenedCount:deltas.filter(value=>value<0).length,unchangedCount:deltas.filter(value=>value===0).length,meanDeltaScore:sampleSize?round(mean(deltas),1):null,meanNormalizedDelta:sampleSize?round(mean(observed.map(row=>row.normalizedDelta)),3):null,descriptiveOnly:true,attributedOnly:true});
+}
 function build(stateInput={},graphInput={},options={}){
  const state=object(stateInput)?stateInput:{},graph=object(graphInput)?graphInput:{},events=list(state.actionLog),episodes=[];
  for(const cycle of list(graph.cycles)){
@@ -66,9 +71,10 @@ function build(stateInput={},graphInput={},options={}){
   };
   episodes.push(Object.freeze(episode));
  }
- return Object.freeze({version:VERSION,asOf:String(graph.asOf||options.asOf||new Date().toISOString().slice(0,10)),windowDays:Math.max(7,Math.min(56,Number(options.days||graph.lookbackDays)||28)),episodes:Object.freeze(episodes),guardrails:Object.freeze({derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryOutcome:true,physiologicalOutcomeDescriptiveOnly:true,policyUtilityUnchanged:true})});
+ const physiologicalRecovery=physiologicalRecoverySummary(episodes);
+ return Object.freeze({version:VERSION,asOf:String(graph.asOf||options.asOf||new Date().toISOString().slice(0,10)),windowDays:Math.max(7,Math.min(56,Number(options.days||graph.lookbackDays)||28)),episodes:Object.freeze(episodes),physiologicalRecovery,guardrails:Object.freeze({derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryOutcome:true,physiologicalOutcomeDescriptiveOnly:true,physiologicalRecoveryAggregateDescriptiveOnly:true,physiologicalRecoveryAggregateDoesNotChangePolicy:true,policyUtilityUnchanged:true})});
 }
-function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),asOf:String(v.asOf||''),windowDays:Number(v.windowDays)||28,episodes:list(v.episodes).slice(-12).map(x=>({episodeId:x.episodeId,date:x.date,context:x.context,decision:x.decision,recommendation:x.recommendation,userResponse:x.userResponse,execution:x.execution,outcome:x.outcome,attribution:x.attribution})),guardrails:{derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryOutcome:true,physiologicalOutcomeDescriptiveOnly:true,policyUtilityUnchanged:true}};}
-return Object.freeze({VERSION,build,compactForContext,timeBucket,recoveryDelta,physiologicalRecoveryOutcome});
+function compactForContext(value={}){const v=object(value)?value:{};return {version:String(v.version||VERSION),asOf:String(v.asOf||''),windowDays:Number(v.windowDays)||28,episodes:list(v.episodes).slice(-12).map(x=>({episodeId:x.episodeId,date:x.date,context:x.context,decision:x.decision,recommendation:x.recommendation,userResponse:x.userResponse,execution:x.execution,outcome:x.outcome,attribution:x.attribution})),physiologicalRecovery:object(v.physiologicalRecovery)?{...v.physiologicalRecovery}:physiologicalRecoverySummary([]),guardrails:{derivedOnly:true,noRawChatRequired:true,noCausalClaim:true,noSilentMutation:true,physiologicalRecoveryOutcome:true,physiologicalOutcomeDescriptiveOnly:true,physiologicalRecoveryAggregateDescriptiveOnly:true,physiologicalRecoveryAggregateDoesNotChangePolicy:true,policyUtilityUnchanged:true}};}
+return Object.freeze({VERSION,build,compactForContext,timeBucket,recoveryDelta,physiologicalRecoveryOutcome,physiologicalRecoverySummary});
 
 });
