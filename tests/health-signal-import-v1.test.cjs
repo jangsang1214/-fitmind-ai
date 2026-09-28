@@ -74,3 +74,47 @@ assert.match(appSource,/Health 신호로 회복 상태를 읽고 있습니다/,'
 assert.match(appSource,/체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다/,'Health evidence must invite subjective context without replacing it');
 assert.match(appSource,/최근 신호와 개인 기준선 비교 · 신뢰/,'Health evidence must disclose baseline/freshness confidence context');
 console.log('health-signal-import-v1: PASS');
+;(async()=>{
+ const existing=providerParsed.signals.map(x=>({...x}));
+ const existingSnapshot=JSON.stringify(existing);
+ const calls={auth:[],read:[]};
+ const native={
+  async requestAuthorization(scopes){calls.auth.push(scopes.slice());return {granted:true};},
+  async readHealthSignals(request){calls.read.push({...request,metrics:request.metrics.slice()});return {provider:'Health Connect',records:[
+   {provider:'Health Connect',dataType:'HeartRateVariabilityRmssd',startTime:'2026-09-24T06:30:00Z',value:56,unit:'ms'},
+   {provider:'Health Connect',dataType:'StepCount',startTime:'2026-09-25T06:30:00Z',value:12500,unit:'count'}
+  ]};}
+ };
+ const pulled=await Import.pullNative(native,existing,{requestAuthorization:true,maxSignals:5000});
+ assert.equal(pulled.status,'ready');
+ assert.equal(calls.auth.length,1,'authorization prompt must happen only when explicitly requested');
+ assert.ok(calls.auth[0].includes('heartRateVariability'));
+ assert.equal(calls.read.length,1);
+ assert.equal(calls.read[0].since,'2026-09-24T06:30:00.000Z','native pull must use latest canonical signal as incremental cursor');
+ assert.equal(pulled.summary.added,1);
+ assert.equal(pulled.summary.updated,1);
+ assert.equal(pulled.merged.length,2);
+ assert.equal(pulled.merged.find(x=>x.date==='2026-09-24').hrvMs,56);
+ assert.equal(pulled.merged.find(x=>x.date==='2026-09-24').restingHeartRateBpm,57,'partial provider correction must preserve sibling metrics');
+ assert.equal(pulled.merged.find(x=>x.date==='2026-09-25').steps,12500);
+ assert.equal(JSON.stringify(existing),existingSnapshot,'native pull must never mutate or persist caller state directly');
+
+ let prompted=false;
+ const passive=await Import.pullNative({async requestAuthorization(){prompted=true;return {granted:true};},async readHealthSignals(){return {provider:'Health Connect',records:[]};}},existing);
+ assert.equal(passive.status,'empty');
+ assert.equal(prompted,false,'background/passive pull must not trigger permission UI by default');
+
+ let readAfterDenial=false;
+ const denied=await Import.pullNative({async requestAuthorization(){return {granted:false};},async readHealthSignals(){readAfterDenial=true;return []; }},existing,{requestAuthorization:true});
+ assert.equal(denied.status,'denied');assert.equal(readAfterDenial,false);assert.deepEqual(denied.merged,existing);
+
+ const unavailable=await Import.pullNative({},existing);
+ assert.equal(unavailable.status,'unavailable');assert.deepEqual(unavailable.merged,existing);
+ assert.equal(Import.GUARDS.nativeBridgeContractReady,true);
+ assert.equal(Import.GUARDS.nativePullNoWrite,true);
+ assert.equal(Import.GUARDS.permissionPromptExplicit,true);
+ assert.equal(Import.GUARDS.incrementalCursor,true);
+ assert.equal(Import.GUARDS.idempotentNativePull,true);
+ console.log('health-signal-import-v1 native pull: PASS');
+})().catch(error=>{console.error(error);process.exitCode=1;});
+
