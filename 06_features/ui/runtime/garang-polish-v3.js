@@ -305,6 +305,66 @@
   }
 
 
+  function v74FiberDefs(person='male',view='front'){
+    if(person!=='male')return '';
+    const key=`g74-${person}-${view}`;
+    return `<filter id="${key}-long" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".004 .075" numOctaves="2" seed="23" stitchTiles="stitch" result="grain"/>
+      <feGaussianBlur in="grain" stdDeviation=".18 .52" result="fiber"/>
+      <feColorMatrix in="fiber" type="matrix" values=".45 0 0 0 .24  0 .42 0 0 .22  0 0 .38 0 .19  0 0 0 .34 0" result="tone"/>
+      <feComposite in="tone" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="${key}-fan" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".006 .052" numOctaves="3" seed="41" stitchTiles="stitch" result="grain"/>
+      <feGaussianBlur in="grain" stdDeviation=".28 .42" result="fiber"/>
+      <feColorMatrix in="fiber" type="matrix" values=".52 0 0 0 .21  0 .47 0 0 .19  0 0 .42 0 .17  0 0 0 .30 0" result="tone"/>
+      <feComposite in="tone" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="${key}-soft" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".0035 .038" numOctaves="2" seed="67" stitchTiles="stitch" result="grain"/>
+      <feGaussianBlur in="grain" stdDeviation=".45 .7" result="fiber"/>
+      <feColorMatrix in="fiber" type="matrix" values=".5 0 0 0 .28  0 .46 0 0 .25  0 0 .4 0 .22  0 0 0 .24 0" result="tone"/>
+      <feComposite in="tone" in2="SourceGraphic" operator="in"/>
+    </filter>`;
+  }
+
+  function v74FiberTextureMarkup(side='front',gender='male'){
+    if(gender!=='male')return '';
+    const key=`g74-${gender}-${side}`;
+    if(side==='back')return `<g class="g74-fiber-texture-layer" data-garang-fiber-texture="organic-v7.4">
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-fan)" transform="rotate(-18 292 356)" d="M223 278 C260 244 315 246 350 286 C338 342 317 404 288 478 C254 456 230 408 218 351 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-fan)" transform="rotate(18 428 356)" d="M497 278 C460 244 405 246 370 286 C382 342 403 404 432 478 C466 456 490 408 502 351 Z"/>
+      <ellipse class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(-28 207 297)" cx="207" cy="297" rx="67" ry="55"/>
+      <ellipse class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(28 513 297)" cx="513" cy="297" rx="67" ry="55"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(8 144 430)" d="M111 337 C143 325 176 348 187 387 L176 501 C163 535 131 537 112 505 L101 398 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(-8 576 430)" d="M609 337 C577 325 544 348 533 387 L544 501 C557 535 589 537 608 505 L619 398 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(7 290 724)" d="M248 628 C285 605 329 619 347 672 C344 731 326 783 295 821 C263 811 242 773 236 716 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(-7 430 724)" d="M472 628 C435 605 391 619 373 672 C376 731 394 783 425 821 C457 811 478 773 484 716 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-long)" d="M253 809 C280 792 309 815 318 861 C316 919 307 972 291 1011 C269 1018 251 991 246 942 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-long)" d="M467 809 C440 792 411 815 402 861 C404 919 413 972 429 1011 C451 1018 469 991 474 942 Z"/>
+    </g>`;
+    if(side==='side')return `<g class="g74-fiber-texture-layer" data-garang-fiber-texture="organic-v7.4">
+      <ellipse class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(-24 342 276)" cx="342" cy="276" rx="83" ry="61"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-fan)" transform="rotate(-12 360 365)" d="M321 301 C366 286 410 307 424 351 C422 394 407 429 386 452 C352 443 330 405 321 301 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(-8 422 430)" d="M385 346 C417 343 448 372 455 414 C454 463 442 502 422 526 C396 510 381 473 378 421 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(5 304 720)" d="M266 625 C307 607 347 630 361 691 C357 753 340 804 315 837 C285 819 264 768 259 705 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-long)" transform="rotate(2 288 908)" d="M262 819 C287 807 311 830 316 873 C313 929 305 975 292 1010 C272 1014 258 984 255 940 Z"/>
+    </g>`;
+    return `<g class="g74-fiber-texture-layer" data-garang-fiber-texture="organic-v7.4">
+      <ellipse class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(-26 220 286)" cx="220" cy="286" rx="78" ry="57"/>
+      <ellipse class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(26 500 286)" cx="500" cy="286" rx="78" ry="57"/>
+      <path class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(8 305 343)" d="M247 284 C278 264 322 263 356 282 L356 397 C322 410 286 405 259 384 C241 360 237 318 247 284 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-fan)" transform="rotate(-8 415 343)" d="M473 284 C442 264 398 263 364 282 L364 397 C398 410 434 405 461 384 C479 360 483 318 473 284 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(8 190 390)" d="M161 305 C190 296 218 322 226 365 C226 410 214 447 195 469 C170 460 156 428 155 388 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(-8 530 390)" d="M559 305 C530 296 502 322 494 365 C494 410 506 447 525 469 C550 460 564 428 565 388 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-soft)" d="M300 411 C320 422 340 428 360 428 C380 428 400 422 420 411 L432 590 C415 641 390 671 360 682 C330 671 305 641 288 590 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(6 296 720)" d="M257 620 C291 603 329 617 347 653 C354 705 349 756 335 798 C321 827 294 840 271 821 C251 790 243 745 245 700 Z"/>
+      <path class="g74-fiber-region" filter="url(#${key}-long)" transform="rotate(-6 424 720)" d="M463 620 C429 603 391 617 373 653 C366 705 371 756 385 798 C399 827 426 840 449 821 C469 790 477 745 475 700 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-long)" d="M258 808 C283 797 309 819 316 857 C318 908 311 963 299 1005 C286 1025 268 1022 258 1004 C250 963 247 915 249 874 Z"/>
+      <path class="g74-fiber-region g74-soft" filter="url(#${key}-long)" d="M462 808 C437 797 411 819 404 857 C402 908 409 963 421 1005 C434 1025 452 1022 462 1004 C470 963 473 915 471 874 Z"/>
+    </g>`;
+  }
+
   function v80VolumeDefs(gender='male',side='front'){
     if(gender!=='male')return '';
     const key='g80-'+gender+'-'+side;
