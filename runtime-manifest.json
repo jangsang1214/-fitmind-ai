@@ -27,7 +27,8 @@
     "03_styles/runtime/garang-app-shell-v1.css",
     "03_styles/runtime/garang-nutrition-recommendation-v1.css",
     "03_styles/runtime/garang-photo-evidence-v1.css",
-    "03_styles/runtime/garang-coach-quiet-surface-v1.css"
+    "03_styles/runtime/garang-coach-quiet-surface-v1.css",
+    "03_styles/runtime/garang-commercial-mobile-v1.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
@@ -118,6 +119,7 @@
     "06_features/ui/runtime/garang-workout-flow-v1.js",
     "06_features/ui/runtime/garang-golden-path-v1.js",
     "06_features/ui/runtime/garang-nutrition-recommendation-v1.js",
+    "06_features/ui/runtime/garang-commercial-mobile-v1.js",
     "06_features/ui/runtime/garang-coach-quiet-surface-v1.js"
   ],
   "runtimeContract": {
