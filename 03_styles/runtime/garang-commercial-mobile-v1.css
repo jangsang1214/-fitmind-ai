@@ -1106,6 +1106,12 @@ body{background-image:
     margin-bottom:12px!important;
     scroll-margin-bottom:96px!important;
   }
+  #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child .gci-coach-actions{
+    padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child [data-gci-undo]{
+    scroll-margin-bottom:calc(140px + env(safe-area-inset-bottom,0px))!important;
+  }
 
   #appView:not([hidden])>#bottomNav{
     min-height:calc(66px + env(safe-area-inset-bottom,0px))!important;
