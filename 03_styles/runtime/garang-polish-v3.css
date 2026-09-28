@@ -620,3 +620,60 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
 .g3-classical-model[data-garang-visual-revision="7.5"] .g74-fiber-region{
   opacity:.032!important
 }
+
+
+/* Body v7.8 — silhouette-first muscular anatomy from Founder visual review. */
+.g3-classical-model[data-garang-visual-revision="7.5"] .g6-visual-layer{
+  opacity:.34!important;
+  filter:saturate(.45) contrast(.90) brightness(.72)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g7-definition-layer{
+  opacity:.38!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume-layer{
+  opacity:1!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  opacity:.88!important;
+  filter:saturate(1.08) contrast(1.14) brightness(1.06) drop-shadow(0 5px 9px rgba(0,0,0,.18))!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-shoulder{
+  transform:scale(1.10,1.06)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-chest,
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-back{
+  transform:scale(1.06,1.04)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-arm{
+  transform:scale(1.08,1.035)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-thigh{
+  transform:scale(1.07,1.035)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g75-volume-calf{
+  transform:scale(1.05,1.03)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g74-fiber-texture-layer{
+  opacity:.13!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.5"] .g74-fiber-region{
+  opacity:.055!important;
+}
+.muscle-map[data-muscle]:not([data-muscle="full"]) .g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  opacity:.82!important;
+}
+.muscle-map[data-muscle="full"] .g3-classical-model[data-garang-visual-revision="7.5"] .g75-muscle-volume{
+  opacity:.94!important;
+}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{
+    padding:4px 8px 8px!important;
+    gap:4px!important;
+  }
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-visual-revision="7.5"]{
+    height:402px!important;
+    width:auto!important;
+    max-width:calc(100vw - 46px)!important;
+    margin:0 auto!important;
+  }
+}
