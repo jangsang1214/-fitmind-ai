@@ -116,7 +116,7 @@ assert.ok(app.includes("groupType!=='none'&&!groupId"),'superset/circuit entries
 assert.ok(app.includes("imperial?(profile==='basic'?[45,25,10,5,2.5]:[45,35,25,10,5,2.5])"),'plate calculator must use imperial denominations and profile-aware inventory in lb mode');
 assert.ok(app.includes("draftPRComparisons")&&runtime.includes("prComparisons=bridge()?.draftPRComparisons"),'PR result must snapshot pre-save all-time exercise baselines');
 assert.ok(runtime.includes("NEW PR")&&runtime.includes("PR 유지"),'session result must distinguish new records from maintained PRs');
-assert.ok(workoutCss.includes('Workout execution v6 — two-input logging')&&workoutCss.includes('grid-template-columns:34px minmax(0,1fr) minmax(0,1fr)')&&workoutCss.includes('.execution-duration-field{display:none!important}')&&workoutCss.includes('@media(max-width:330px)'),'Workout v6 must reduce the active mobile set to weight + reps + complete and include narrow-width collision fallbacks');
+assert.ok(css.includes('Workout execution v6 — two-input logging')&&css.includes('grid-template-columns:34px minmax(0,1fr) minmax(0,1fr)')&&css.includes('.execution-duration-field{display:none!important}')&&css.includes('@media(max-width:330px)'),'Workout v6 must reduce the active mobile set to weight + reps + complete and include narrow-width collision fallbacks');
 
 assert.ok(runtime.includes("seededEdit?existingWeight"),'editing a seeded draft must preserve entered weights ahead of GARANG target prefills');
 assert.ok(app.includes("workoutEditTargetId=x.id")&&app.includes("findIndex(item=>String(item.id)===String(workoutEditTargetId))")&&app.includes("workoutDraft.splice(editIndex,1,x)"),'editing an exercise must use stable draft identity across rerenders and replace atomically');
