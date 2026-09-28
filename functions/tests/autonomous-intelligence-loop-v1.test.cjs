@@ -191,7 +191,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.recommendationPolicy.version,'recommendation-policy-eval-v1.2.0');
   assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
   assert.equal(context.offlinePolicyEvaluation.version,'offline-policy-evaluation-v1.1.0');
-  assert.equal(context.workoutPrescriptionShadow.version,'workout-prescription-shadow-v1.4.0-graded-recovery');
+  assert.equal(context.workoutPrescriptionShadow.version,'workout-prescription-shadow-v1.5.0-load-aware-recovery');
   assert.equal(context.adaptiveNutritionLearning.version,'adaptive-nutrition-learning-v1.4.0-recommendation-adoption');
   assert.equal(context.offlinePolicyEvaluation.guardrails.noCounterfactualClaim,true);
   assert.equal(context.workoutPrescriptionShadow.guardrails.neverAutoIncrease,true);
