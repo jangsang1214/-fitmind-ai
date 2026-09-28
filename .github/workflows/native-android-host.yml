@@ -24,14 +24,14 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.11.1'
       - name: Verify Android Health Connect host contract
         run: node tests/native-health-android-host-v1.test.cjs
-      - name: Install Android SDK 35
+      - name: Install Android SDK 36
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)"
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
       - name: Build GARANG Android host
         run: gradle -p native/android :app:assembleDebug --stacktrace
