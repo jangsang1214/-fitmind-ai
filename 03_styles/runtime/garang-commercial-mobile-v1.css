@@ -1035,3 +1035,20 @@ body{background-image:
     margin-bottom:24px!important;
   }
 }
+
+
+/* Coach mobile scroll ownership — bound message scroller above fixed tab chrome. */
+@media(max-width:799px){
+  #main[data-garang-screen="coach"] .garang-coach-v2{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-scroll{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+}
