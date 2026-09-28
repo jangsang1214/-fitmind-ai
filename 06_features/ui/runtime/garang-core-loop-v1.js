@@ -130,8 +130,9 @@ function mount(root){
   function enhanceCoach(snapshot){
     if(main.dataset.garangScreen!=='coach')return;
     const coachRoot=main.querySelector('.garang-coach-v2');if(!coachRoot)return;
-    const actions=deriveCoachActions(snapshot,{lang:lang()});let host=coachRoot.querySelector('[data-gcl-coach-actions]'),promptStrip=coachRoot.querySelector('.g4-prompt-strip');
+    const actions=deriveCoachActions(snapshot,{lang:lang()});const hosts=[...coachRoot.querySelectorAll('[data-gcl-coach-actions]')];let host=hosts.find(node=>!node.hidden&&!node.classList.contains('gcs-duplicate-action-surface'))||hosts[0]||null,promptStrip=coachRoot.querySelector('.g4-prompt-strip');
     if(!host){host=doc.createElement('div');host.className='gcl-context-actions';host.dataset.gclCoachActions='1';}
+    host.hidden=false;host.removeAttribute('aria-hidden');host.classList.remove('gcs-duplicate-action-surface');hosts.filter(node=>node!==host).forEach(node=>node.remove());
     if(promptStrip&&host.parentElement!==promptStrip)promptStrip.appendChild(host);
     else if(!promptStrip&&!host.parentElement){const composer=coachRoot.querySelector('.g2-composer-wrap');if(composer)composer.insertAdjacentElement('beforebegin',host);}
     const expanded=host.dataset.gclActionsExpanded==='true';host.dataset.gclActionsExpanded=expanded?'true':'false';host.innerHTML=`<button type="button" class="gcl-action-toggle" data-gcl-actions-toggle aria-expanded="${expanded?'true':'false'}" aria-controls="gclCoachActionPanel"><span class="gcl-action-mark" aria-hidden="true"><svg viewBox="0 0 32 40" focusable="false"><path d="M16 2.5C12.8 8.1 5 16.5 5 25.1 5 32.5 9.9 37.2 16 37.2s11-4.7 11-12.1C27 16.5 19.2 8.1 16 2.5Z"></path><text x="16" y="28" text-anchor="middle">+</text></svg></span><span>${lang()==='en'?'Next step':'다음 행동'}</span><span data-gcl-action-symbol aria-hidden="true">${expanded?'−':'+'}</span></button><div id="gclCoachActionPanel" class="gcl-actions-panel" data-gcl-actions-panel${expanded?'':' hidden'}>${actions.map((a,i)=>`<button type="button" data-gcl-coach="${i}">${esc(a.label)}</button>`).join('')}</div>`;host._gclActions=actions;
