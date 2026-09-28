@@ -367,7 +367,7 @@
 
   function v80VolumeDefs(gender='male',side='front'){
     if(gender!=='male')return '';
-    const key=`g80-${gender}-${side}`;
+    const key='g80-'+gender+'-'+side;
     return `
       <radialGradient id="${key}-mass" cx="50%" cy="42%" r="62%">
         <stop offset="0%" stop-color="#d4cfc4" stop-opacity=".92"/>
@@ -390,7 +390,7 @@
 
   function v80MuscleVolumeMarkup(side='front',gender='male'){
     if(gender!=='male')return '';
-    const key=`g80-${gender}-${side}`;
+    const key='g80-'+gender+'-'+side;
     if(side==='back')return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
       <ellipse class="g80-mass g80-deltoid" cx="205" cy="286" rx="89" ry="69"/>
       <ellipse class="g80-mass g80-deltoid" cx="515" cy="286" rx="89" ry="69"/>
