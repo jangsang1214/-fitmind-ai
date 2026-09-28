@@ -113,7 +113,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
    {date:'2026-09-15',decisionId:'d5',decisionMode:'maintain',recommendationId:'r5',planId:'p5',executionId:null,outcomeId:'o5',execution:{status:'not_observed',score:0},outcome:{classification:'missed',score:0},attribution:{complete:false}}
   ]};
   const episodes=Episodes.build(state,graph,{asOf:'2026-09-20'}),browserEpisodes=BrowserEpisodes.build(state,graph,{asOf:'2026-09-20'});
-  assert.deepEqual(episodes,browserEpisodes);assert.equal(episodes.version,'intelligence-episode-v1.2.0-physiological-recovery-outcome');assert.equal(episodes.episodes.length,5);assert.equal(episodes.episodes[0].userResponse.status,'accepted');assert.equal(episodes.episodes[0].context.timeBucket,'morning');
+  assert.deepEqual(episodes,browserEpisodes);assert.equal(episodes.version,'intelligence-episode-v1.3.0-physiological-recovery-summary');assert.equal(episodes.episodes.length,5);assert.equal(episodes.episodes[0].userResponse.status,'accepted');assert.equal(episodes.episodes[0].context.timeBucket,'morning');assert.equal(episodes.physiologicalRecovery.status,'insufficient');assert.equal(episodes.physiologicalRecovery.sampleSize,0);
   const physState=baseState();
   physState.planner=[{id:'pp1',recommendationId:'pr1',duration:30,intensityScale:.8,volumeScale:.8,decisionEngineVersion:'decision-intelligence-v1'}];
   physState.healthSignals=[
@@ -129,7 +129,15 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   const physOutcome=physEpisodes.episodes[0].outcome.physiologicalRecovery;
   assert.equal(physOutcome.beforeAsOf,'2026-09-11');assert.equal(physOutcome.afterAsOf,'2026-09-12');
   assert.ok(Number.isFinite(physOutcome.beforeReadiness));assert.ok(Number.isFinite(physOutcome.afterReadiness));assert.ok(Number.isFinite(physOutcome.deltaScore));
-  assert.equal(physOutcome.descriptiveOnly,true);assert.equal(physEpisodes.guardrails.physiologicalRecoveryOutcome,true);assert.equal(physEpisodes.guardrails.physiologicalOutcomeDescriptiveOnly,true);assert.equal(physEpisodes.guardrails.policyUtilityUnchanged,true);
+  assert.equal(physOutcome.descriptiveOnly,true);assert.equal(physEpisodes.guardrails.physiologicalRecoveryOutcome,true);assert.equal(physEpisodes.guardrails.physiologicalOutcomeDescriptiveOnly,true);assert.equal(physEpisodes.guardrails.physiologicalRecoveryAggregateDescriptiveOnly,true);assert.equal(physEpisodes.guardrails.physiologicalRecoveryAggregateDoesNotChangePolicy,true);assert.equal(physEpisodes.guardrails.policyUtilityUnchanged,true);
+  const physSummary=physEpisodes.physiologicalRecovery;assert.equal(physSummary.status,'observed');assert.equal(physSummary.sampleSize,1);assert.equal(physSummary.improvedCount+physSummary.worsenedCount+physSummary.unchangedCount,1);assert.equal(physSummary.meanDeltaScore,physOutcome.deltaScore);assert.equal(physSummary.meanNormalizedDelta,physOutcome.normalizedDelta);assert.equal(physSummary.descriptiveOnly,true);assert.equal(physSummary.attributedOnly,true);
+  assert.deepEqual(Episodes.compactForContext(physEpisodes).physiologicalRecovery,physSummary,'compact context must preserve aggregate longitudinal recovery evidence');
+  const aggregateFixture=[
+   {attribution:{complete:true},outcome:{physiologicalRecovery:{deltaScore:10,normalizedDelta:.1}}},
+   {attribution:{complete:true},outcome:{physiologicalRecovery:{deltaScore:-5,normalizedDelta:-.05}}},
+   {attribution:{complete:false},outcome:{physiologicalRecovery:{deltaScore:90,normalizedDelta:.9}}}
+  ];
+  const aggregate=Episodes.physiologicalRecoverySummary(aggregateFixture),browserAggregate=BrowserEpisodes.physiologicalRecoverySummary(aggregateFixture);assert.deepEqual(aggregate,browserAggregate);assert.equal(aggregate.sampleSize,2,'unattributed physiological evidence must not enter longitudinal summary');assert.equal(aggregate.improvedCount,1);assert.equal(aggregate.worsenedCount,1);assert.equal(aggregate.unchangedCount,0);assert.equal(aggregate.meanDeltaScore,2.5);assert.equal(aggregate.meanNormalizedDelta,.025);assert.equal(aggregate.descriptiveOnly,true);assert.equal(aggregate.attributedOnly,true);
   assert.equal(physEpisodes.episodes[0].outcome.recoveryDelta,null,'physiological evidence must not silently replace the established subjective recoveryDelta policy input');
   const response=ResponseModel.build(episodes,{asOf:'2026-09-20'}),browserResponse=BrowserResponseModel.build(browserEpisodes,{asOf:'2026-09-20'});
   assert.deepEqual(response,browserResponse);assert.equal(response.version,'user-response-model-v1.2.0');assert.equal(response.training.preferredDurationBand,'short');assert.equal(response.training.preferredIntensityBand,'full');assert.equal(response.training.preferredVolumeBand,'full');assert.ok(response.behavior.acceptedExecutionRate>0);assert.ok(response.confidence>=.35);
