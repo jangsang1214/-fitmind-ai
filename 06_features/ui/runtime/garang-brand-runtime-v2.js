@@ -248,8 +248,9 @@
     const scroller=runtime.root.querySelector('.g2-chat-scroll');const thinking=document.createElement('article');thinking.className='g2-message assistant';thinking.dataset.thinking='1';thinking.innerHTML=`<div class="g2-message-avatar">${markPNG()}</div><div class="g2-message-body"><div class="g2-thinking"><i></i><i></i><i></i></div></div>`;scroller.appendChild(thinking);forceBottom(runtime);
     let result;
     try{result=await getCoachAnswer(text,thread);}catch{result={text:localCoachAnswer(text),local:true};}
+    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local===true,source:String(result.source||'').slice(0,40)||null,requestId:String(result.requestId||'').slice(0,180)||null,toolResults:cleanToolResults(result.toolResults),actionOwner:result.actionOwner==='server'?'server':null};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;
     if(!runtime.root.isConnected)return;
-    thinking.remove();const a={id:uid(),role:'assistant',text:result.text,at:now(),local:result.local===true,source:String(result.source||'').slice(0,40)||null,requestId:String(result.requestId||'').slice(0,180)||null,toolResults:cleanToolResults(result.toolResults),actionOwner:result.actionOwner==='server'?'server':null};thread.messages.push(a);thread.updatedAt=a.at;saveThreadStore(runtime);runtime.sending=false;runtime.send.disabled=false;renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
+    renderThreadList(runtime);renderMessages(runtime);forceBottom(runtime);
   }
 
   function mountCoach(){
