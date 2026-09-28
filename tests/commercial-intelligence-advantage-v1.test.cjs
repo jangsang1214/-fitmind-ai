@@ -51,6 +51,30 @@ assert.equal(trajectoryPhys.derived.recoveryConstraint,'guarded','repeated strai
 assert.equal(trajectoryPhys.guardrails.trajectoryRequiresRepeatedEvidence,true);
 assert.equal(trajectoryPhys.guardrails.trajectoryCanOnlyConstrain,true);
 
+const sleepDebtSignals=[];
+for(let day=10;day<=18;day++){
+ const date=isoDay(day);
+ sleepDebtSignals.push({source:'watch',capturedAt:`${date}T06:00:00Z`,hrvMs:55,restingHeartRateBpm:57,sleepHours:8,sleepScore:86,stressScore:2});
+}
+for(let day=22;day<=24;day++){
+ const date=isoDay(day);
+ sleepDebtSignals.push({source:'watch',capturedAt:`${date}T06:00:00Z`,hrvMs:55,restingHeartRateBpm:57,sleepHours:6.4,sleepScore:86,stressScore:2});
+}
+const sleepDebtState={healthSignals:sleepDebtSignals,workouts:[],runs:[],meals:[],body:[],dailyCheckins:[]};
+const sleepDebtPhys=Phys.build(sleepDebtState,{now});
+const sleepDebtPhysServer=PhysServer.build(sleepDebtState,{now});
+assert.deepEqual(sleepDebtPhys,sleepDebtPhysServer,'personal sleep debt must stay browser/server deterministic');
+assert.equal(sleepDebtPhys.derived.sleepDebt.accumulated,true);
+assert.equal(sleepDebtPhys.derived.sleepDebt.baselineHours,8);
+assert.equal(sleepDebtPhys.derived.sleepDebt.recentAverageHours,6.4);
+assert.equal(sleepDebtPhys.derived.sleepDebt.recentDays,3);
+assert.ok(sleepDebtPhys.derived.reasonCodes.includes('ACCUMULATED_SLEEP_DEBT'));
+assert.equal(sleepDebtPhys.derived.recoveryConstraint,'guarded','repeated sleep loss versus personal baseline may constrain but not protect by itself');
+assert.equal(sleepDebtPhys.guardrails.personalSleepBaseline,true);
+assert.equal(sleepDebtPhys.guardrails.sleepDebtRequiresRepeatedEvidence,true);
+assert.equal(sleepDebtPhys.guardrails.noClinicalSleepTarget,true);
+assert.equal(sleepDebtPhys.guardrails.sleepDebtCanOnlyConstrain,true);
+
 const guardedHealthSignals=[];
 for(let day=20;day<=23;day++){
  const date=isoDay(day);
