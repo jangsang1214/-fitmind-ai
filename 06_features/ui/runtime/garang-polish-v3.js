@@ -432,10 +432,12 @@
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
     const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),volumeDefs=v75VolumeDefs(person,view),volumeMarkup=v75VolumeMarkup(view,person),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person);
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
+    const massTransform=person==='male'?(view==='side'?'translate(360 0) scale(1.045 1) translate(-360 0)':'translate(360 0) scale(1.08 1) translate(-360 0)'):'';
+    const transformAttr=massTransform?` transform="${massTransform}"`:'';
     return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.5" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask>${volumeDefs}${fiberDefs}</defs>
-      <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
-      <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
+      <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"${transformAttr}/>
+      <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})"${transformAttr}>
         ${volumeMarkup}
         ${fiberTexture}
         <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
