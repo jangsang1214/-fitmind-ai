@@ -2,7 +2,7 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.4-live-session';
+const VERSION='workout-execution-v2.5-compact-session';
 const SESSION_KEY='garang_workout_session_v2';
 let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
@@ -70,7 +70,7 @@ function updateLive(){
   const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('finishWorkoutSession'),bar=document.querySelector('.workout-session-bar'),feedback=document.getElementById('workoutSessionFeedback');
   if(stateLabel)stateLabel.textContent=active?'기록 중':'준비';
   if(bar){bar.classList.toggle('is-live',active);bar.dataset.sessionState=active?'live':'ready';bar.setAttribute('aria-label',active?'운동 세션 기록 중':'운동 세션 준비');}
-  if(feedback){feedback.hidden=false;feedback.textContent=active?'타이머 실행 중 · 현재 세트를 기록하세요':'시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.';}
+  if(feedback){feedback.hidden=false;feedback.textContent=active?'현재 세트를 기록하세요':'세션을 시작하세요';}
   if(start){start.hidden=active;start.disabled=active;}
   if(finish){finish.hidden=!active;finish.disabled=!active;}
   const summary=draftSummary(),progress=document.getElementById('workoutExecutionProgress');
@@ -135,7 +135,7 @@ function enhanceRows(){
     });
     row.querySelector('[data-execution-set-complete]')?.addEventListener('click',()=>{
       const done=row.dataset.executionCompleted==='true';row.dataset.executionCompleted=done?'false':'true';row.classList.toggle('completed',!done);const button=row.querySelector('[data-execution-set-complete]');if(button){button.classList.toggle('is-complete',!done);button.textContent=done?'○':'✓';}
-      if(!done)ensureSession();captureLiveSetRows();const grouped=!done?bridge()?.nextGroupedExecution?.(i):null;if(!done&&grouped){if(grouped.groupComplete){stopRest();}else{if(grouped.roundEnded)startRest(row.querySelector('[data-set-type]')?.value||'working');else stopRest();setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0);}}else if(!done)startRest(row.querySelector('[data-set-type]')?.value||'working');updateLive();
+      if(!done)ensureSession();captureLiveSetRows();const grouped=!done?bridge()?.nextGroupedExecution?.(i):null,exerciseComplete=!done&&completedCurrent()>=currentRows().length;if(!done&&grouped){if(grouped.groupComplete){stopRest();}else{if(grouped.roundEnded)startRest(row.querySelector('[data-set-type]')?.value||'working');else stopRest();setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0);}}else if(!done&&!exerciseComplete)startRest(row.querySelector('[data-set-type]')?.value||'working');else if(exerciseComplete)stopRest();updateLive();
     });
   });
   refreshPrevious(prev);captureLiveSetRows();refreshSetStates();
@@ -160,7 +160,7 @@ function enhance(){
   let bar=builder.querySelector('.workout-session-bar');
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';
-    bar.innerHTML='<div class="workout-session-live"><span><i aria-hidden="true"></i><b id="workoutExecutionState">준비</b></span><strong id="workoutExecutionElapsed" role="timer" aria-label="세션 경과 시간">00:00</strong><small id="workoutSessionFeedback" class="workout-session-feedback" role="status" aria-live="polite">시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.</small></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="세션 기록 시작" title="세션 기록 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg><span class="workout-session-action-label">기록 시작</span></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg><span class="workout-session-action-label">종료</span></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
+    bar.innerHTML='<div class="workout-session-live"><span><i aria-hidden="true"></i><b id="workoutExecutionState">준비</b></span><strong id="workoutExecutionElapsed" role="timer" aria-label="세션 경과 시간">00:00</strong><small id="workoutSessionFeedback" class="workout-session-feedback" role="status" aria-live="polite">시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.</small></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="세션 기록 시작" title="세션 기록 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg><span class="workout-session-action-label">시작</span></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg><span class="workout-session-action-label">종료</span></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
     builder.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
@@ -170,7 +170,7 @@ function enhance(){
   const toggle=document.getElementById('toggleSetDetails');if(toggle){toggle.setAttribute('aria-expanded','true');toggle.hidden=true;}
   const fields=document.querySelector('.workout-fields');if(fields){fields.classList.add('execution-compact-fields');const mark=(id,className)=>document.getElementById(id)?.closest('.field')?.classList.add(className);mark('wName','execution-exercise-field');mark('wSets','execution-sets-field');mark('wDuration','execution-duration-field');for(const id of ['wReps','wWeight','wRpe','wBody'])mark(id,'execution-default-field');}
   document.querySelector('.one-rm-panel')?.classList.add('execution-secondary-metric');
-  const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='중량·반복만 입력하고 세트를 완료하세요. 휴식은 자동으로 시작됩니다.';if(!toolbar.querySelector('[data-execution-add-set]')){const addSet=document.createElement('button');addSet.type='button';addSet.className='ghost small';addSet.dataset.executionAddSet='true';addSet.textContent='+ 세트';addSet.addEventListener('click',()=>changeSetCount(currentRows().length+1));toolbar.appendChild(addSet);}}
+  const toolbar=builder.querySelector('.set-detail-toolbar');if(toolbar){toolbar.classList.add('workout-set-toolbar');const note=toolbar.querySelector('span');if(note)note.textContent='중량 · 반복 → 완료';if(!toolbar.querySelector('[data-execution-add-set]')){const addSet=document.createElement('button');addSet.type='button';addSet.className='ghost small';addSet.dataset.executionAddSet='true';addSet.textContent='+ 세트';addSet.addEventListener('click',()=>changeSetCount(currentRows().length+1));toolbar.appendChild(addSet);}}
   enhanceRows();
   if(!document.getElementById('workoutExecutionRest')){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
