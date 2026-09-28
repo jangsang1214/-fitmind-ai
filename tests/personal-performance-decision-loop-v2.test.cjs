@@ -30,6 +30,28 @@ assert.equal(first.guardrails.noSilentMutation,true);
 assert.equal(first.nextAction.execution.kind,'recovery');
 assert.equal(first.nextAction.reviewAfter,'after_execution');
 assert.match(first.nextAction.whyNow,/회복/);
+assert.equal(first.nextAction.execution.focus,'reduce_load');
+assert.equal(first.nextAction.execution.avoidIntensityProgression,true);
+assert.ok(first.nextAction.execution.reasonCodes.includes('CHECKIN_LOW'));
+assert.equal(first.guardrails.recoveryPrescriptionEvidenceSpecific,true);
+assert.equal(first.guardrails.recoveryPrescriptionNeverAddsMedicalTarget,true);
+
+const persistentRecoveryInput={
+ ...recoveryInput,
+ userState:{readiness:{band:'guarded',reasons:[]},fatigue:{band:'moderate',reasons:[]},load:{band:'stable'},physiological:{derived:{reasonCodes:['PERSISTENT_RECOVERY_STRAIN'],trajectory:{persistentStrain:true}}}}
+};
+const persistentRecovery=Loop.build(persistentRecoveryInput,{asOf:'2026-09-25'});
+assert.equal(persistentRecovery.nextAction.domain,'recovery');
+assert.equal(persistentRecovery.nextAction.execution.focus,'sleep_and_low_load');
+assert.ok(persistentRecovery.nextAction.execution.reasonCodes.includes('PERSISTENT_RECOVERY_STRAIN'));
+
+const painRecoveryInput={
+ ...recoveryInput,
+ userState:{readiness:{band:'low',reasons:['PAIN_CAUTION']},fatigue:{band:'high',reasons:['PAIN_CAUTION']},load:{band:'spike'}}
+};
+const painRecovery=Loop.build(painRecoveryInput,{asOf:'2026-09-25'});
+assert.equal(painRecovery.nextAction.execution.focus,'state_check');
+assert.equal(painRecovery.nextAction.execution.avoidIntensityProgression,true);
 
 const acceptedState={...recoveryInput.state,actionLog:[{event:'recommendation_accepted',recommendationId:first.recommendationId,at:'2026-09-25T10:00:00Z'}]};
 assert.equal(Loop.interactionStatus(acceptedState,first.recommendationId).status,'accepted');
@@ -109,6 +131,10 @@ assert.match(app,/food_identity_attempt/);
 assert.match(app,/food_identity_result/);
 assert.match(app,/실행 결과를 다음 판단에 반영/);
 assert.match(app,/function decisionEvidenceLabel/);
+assert.match(app,/state_check:'상태 확인'/);
+assert.match(app,/sleep_and_low_load:'수면·저부하 회복'/);
+assert.match(app,/reduce_load:'부하 낮추기'/);
+assert.match(app,/easy_movement:'가벼운 회복'/);
 assert.match(app,/근거 강함/);
 assert.match(app,/점수와 추세 근거/);
 assert.doesNotMatch(app,/신뢰 \$\{decisionConfidence\}%/);
