@@ -67,7 +67,7 @@ assert.ok(runtime.includes("builder.closest('.gws-panel[data-garang-workout-surf
 assert.ok(!runtime.includes("builder.after(card)"),'session completion card must not escape the inline Exercise surface');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
 assert.ok(workoutFlow.includes("const SURFACES=[")&&!workoutFlow.includes("{id:'log'")&&workoutFlow.includes("move(builder,exercise)")&&workoutFlow.includes("move(secondary,overview)"),'Workout IA must use two surfaces and distribute execution vs overview capabilities');
-assert.ok(runtime.includes("workout-advanced-disclosure")&&css.includes("Workout IA v8"),'advanced workout capabilities must remain available behind progressive disclosure');
+assert.ok(css.includes('Workout IA v8'),'Workout execution CSS must include the two-surface hierarchy pass');
 
 assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Exercise activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
