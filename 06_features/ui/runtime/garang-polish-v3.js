@@ -428,11 +428,69 @@
     </g>`;
   }
 
+  function v80VolumeDefs(gender='male',side='front'){
+    if(gender!=='male')return '';
+    const key='g80-'+gender+'-'+side;
+    return `
+      <radialGradient id="${key}-mass" cx="50%" cy="42%" r="62%">
+        <stop offset="0%" stop-color="#d4cfc4" stop-opacity=".92"/>
+        <stop offset="58%" stop-color="#aaa79e" stop-opacity=".88"/>
+        <stop offset="100%" stop-color="#77776f" stop-opacity=".76"/>
+      </radialGradient>
+      <radialGradient id="${key}-deep" cx="48%" cy="38%" r="68%">
+        <stop offset="0%" stop-color="#bdb9af" stop-opacity=".88"/>
+        <stop offset="72%" stop-color="#8e8c84" stop-opacity=".82"/>
+        <stop offset="100%" stop-color="#666760" stop-opacity=".70"/>
+      </radialGradient>
+      <filter id="${key}-volume" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="2.4" result="soft"/>
+        <feComponentTransfer in="soft" result="mass">
+          <feFuncA type="gamma" amplitude="1" exponent=".82" offset="0"/>
+        </feComponentTransfer>
+        <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#090a09" flood-opacity=".22"/>
+      </filter>`;
+  }
+
+  function v80MuscleVolumeMarkup(side='front',gender='male'){
+    if(gender!=='male')return '';
+    const key='g80-'+gender+'-'+side;
+    if(side==='back')return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
+      <ellipse class="g80-mass g80-deltoid" cx="205" cy="286" rx="89" ry="69"/>
+      <ellipse class="g80-mass g80-deltoid" cx="515" cy="286" rx="89" ry="69"/>
+      <path class="g80-mass g80-back" d="M214 298 C245 236 318 238 360 281 C402 238 475 236 506 298 C496 406 470 499 432 565 C405 590 385 599 360 600 C335 599 315 590 288 565 C250 499 224 406 214 298 Z"/>
+      <path class="g80-deep g80-arm" d="M132 318 C162 298 194 316 202 365 C201 430 187 501 163 543 C137 552 116 522 113 478 L111 375 Z"/>
+      <path class="g80-deep g80-arm" d="M588 318 C558 298 526 316 518 365 C519 430 533 501 557 543 C583 552 604 522 607 478 L609 375 Z"/>
+      <path class="g80-deep g80-thigh" d="M232 610 C277 583 328 604 350 663 C353 737 337 814 304 849 C270 852 240 817 229 753 Z"/>
+      <path class="g80-deep g80-thigh" d="M488 610 C443 583 392 604 370 663 C367 737 383 814 416 849 C450 852 480 817 491 753 Z"/>
+      <path class="g80-deep g80-calf" d="M247 809 C274 790 307 817 318 864 C319 929 306 998 281 1025 C258 1027 240 995 239 945 Z"/>
+      <path class="g80-deep g80-calf" d="M473 809 C446 790 413 817 402 864 C401 929 414 998 439 1025 C462 1027 480 995 481 945 Z"/>
+    </g>`;
+    if(side==='side')return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
+      <ellipse class="g80-mass g80-deltoid" cx="346" cy="278" rx="98" ry="75"/>
+      <path class="g80-mass g80-chest" d="M316 292 C361 268 417 294 438 345 C441 395 420 447 388 472 C349 460 322 416 312 352 Z"/>
+      <path class="g80-deep g80-arm" d="M392 340 C432 335 466 372 469 424 C462 486 445 531 420 548 C393 526 376 475 376 416 Z"/>
+      <path class="g80-deep g80-thigh" d="M261 608 C310 582 357 610 374 679 C371 752 350 817 316 848 C284 835 260 777 254 707 Z"/>
+      <path class="g80-deep g80-calf" d="M252 808 C284 792 314 823 321 875 C318 938 307 994 286 1024 C262 1024 247 986 246 933 Z"/>
+    </g>`;
+    return `<g class="g80-volume-shell" data-garang-volume-shell="integrated-v8" filter="url(#${key}-volume)" pointer-events="none">
+      <ellipse class="g80-mass g80-deltoid" cx="203" cy="286" rx="91" ry="70"/>
+      <ellipse class="g80-mass g80-deltoid" cx="517" cy="286" rx="91" ry="70"/>
+      <path class="g80-mass g80-chest" d="M236 281 C278 250 330 252 360 276 C390 252 442 250 484 281 C490 333 478 392 451 423 C421 439 392 440 360 426 C328 440 299 439 269 423 C242 392 230 333 236 281 Z"/>
+      <path class="g80-deep g80-arm" d="M145 307 C178 291 215 316 226 368 C224 427 208 481 184 510 C157 510 137 477 135 426 Z"/>
+      <path class="g80-deep g80-arm" d="M575 307 C542 291 505 316 494 368 C496 427 512 481 536 510 C563 510 583 477 585 426 Z"/>
+      <path class="g80-mass g80-core" d="M286 403 C315 420 337 427 360 428 C383 427 405 420 434 403 C441 475 439 564 421 621 C401 654 381 674 360 682 C339 674 319 654 299 621 C281 564 279 475 286 403 Z"/>
+      <path class="g80-deep g80-thigh" d="M244 610 C286 584 331 600 353 654 C361 718 350 787 323 830 C295 852 263 827 246 784 C233 731 232 664 244 610 Z"/>
+      <path class="g80-deep g80-thigh" d="M476 610 C434 584 389 600 367 654 C359 718 370 787 397 830 C425 852 457 827 474 784 C487 731 488 664 476 610 Z"/>
+      <path class="g80-deep g80-calf" d="M245 806 C274 788 309 813 320 858 C323 925 309 994 284 1023 C258 1026 239 989 238 935 Z"/>
+      <path class="g80-deep g80-calf" d="M475 806 C446 788 411 813 400 858 C397 925 411 994 436 1023 C462 1026 481 989 482 935 Z"/>
+    </g>`;
+  }
+
   function v6MeshSVG(gender='male',side='front'){
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
-    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),volumeDefs=v75VolumeDefs(person,view),volumeMarkup=v75VolumeMarkup(view,person),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person);
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),useV8=person==='male',volumeDefs=useV8?v80VolumeDefs(person,view):v75VolumeDefs(person,view),volumeMarkup=useV8?v80MuscleVolumeMarkup(view,person):v75VolumeMarkup(view,person),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person),visualRevision=useV8?'8.0':'7.5';
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.5" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="${visualRevision}" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask>${volumeDefs}${fiberDefs}</defs>
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
@@ -465,7 +523,7 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.5':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        const expectedRevision=gender==='male'?'8.0':'7.5';if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision===expectedRevision:old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
