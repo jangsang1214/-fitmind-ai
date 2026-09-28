@@ -1,0 +1,36 @@
+name: Native iOS host
+
+on:
+  pull_request:
+    paths:
+      - 'native/ios/**'
+      - 'tests/native-health-ios-host-v1.test.cjs'
+      - 'package.json'
+      - '.github/workflows/native-ios-host.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-simulator-build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify native host contract
+        run: node tests/native-health-ios-host-v1.test.cjs
+      - name: Build GARANG iOS host for simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project native/ios/GARANGNativeHost.xcodeproj \
+            -scheme GARANGNativeHost \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
