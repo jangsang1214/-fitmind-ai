@@ -585,3 +585,58 @@ html[lang="ko"] body,html[lang="ko"] button,html[lang="ko"] input,html[lang="ko"
     max-width:292px!important;
   }
 }
+
+
+/* GARANG Body v7.6 silhouette-first anatomy — volume changes the body, not just the overlay. */
+.g3-classical-model[data-garang-visual-revision="7.6"]{
+  filter:none!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g76-silhouette-volume{
+  opacity:.96!important;
+  pointer-events:none!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-muscle-volume-layer{
+  opacity:.88!important;
+  mix-blend-mode:normal!important;
+  filter:saturate(.52) brightness(.72) contrast(1.08) drop-shadow(0 8px 15px rgba(0,0,0,.22))!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-muscle-volume{
+  stroke:none!important;
+  transform-box:fill-box!important;
+  transform-origin:center!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-shoulder{transform:scale(1.14,1.09)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-chest{transform:scale(1.08,1.05)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-back{transform:scale(1.09,1.04)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-arm{transform:scale(1.10,1.04)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-core{transform:scale(1.025,1.01)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-thigh{transform:scale(1.10,1.035)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g75-volume-calf{transform:scale(1.075,1.025)!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g6-visual-layer{
+  opacity:.70!important;
+  filter:saturate(.38) contrast(.96) brightness(.84)!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g74-fiber-texture-layer{
+  opacity:.16!important;
+  mix-blend-mode:soft-light!important;
+}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g74-fiber-region{opacity:.055!important}
+.g3-classical-model[data-garang-visual-revision="7.6"] .g74-fiber-region.g74-soft{opacity:.03!important}
+@media(max-width:800px){
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .muscle-map{
+    min-height:0!important;
+    padding:4px 8px 0!important;
+  }
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view{
+    min-height:0!important;
+  }
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view svg.g3-classical-model[data-garang-visual-revision="7.6"]{
+    width:min(100%,318px)!important;
+    max-width:318px!important;
+    height:420px!important;
+    margin:0 auto!important;
+  }
+  .workout-hero-v2 .muscle-map-wrap.g3-upgraded .body-view>span{
+    top:3px!important;
+  }
+}
