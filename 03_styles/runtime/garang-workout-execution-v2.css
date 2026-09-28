@@ -540,7 +540,7 @@
   .workout-execution-v2 .execution-compact-fields{
     grid-template-columns:minmax(0,1fr) 64px!important;gap:8px!important;
   }
-  .workout-execution-v2 .execution-duration-field{display:none!important}
+  .workout-execution-v2 .execution-duration-field{display:grid!important;min-width:0!important}
   .workout-execution-v2 .execution-exercise-field,
   .workout-execution-v2 .execution-sets-field{min-width:0!important}
 
