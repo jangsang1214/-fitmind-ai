@@ -1027,7 +1027,11 @@ body{background-image:
     min-height:0!important;
   }
   #main[data-garang-screen="coach"] .g2-chat-scroll{
-    padding-bottom:28px!important;
-    scroll-padding-bottom:28px!important;
+    padding-bottom:116px!important;
+    scroll-padding-bottom:116px!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
+    scroll-margin-bottom:96px!important;
+    margin-bottom:24px!important;
   }
 }
