@@ -139,8 +139,16 @@ function ensureRecentReuse(shell){
   const button=reuse.querySelector('[data-gws-reuse-latest]');
   if(button&&!button.disabled)button.addEventListener('click',()=>prefillLatest(button));
 }
+function distributeUtilities(shell){
+  const overview=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="overview"]');
+  const exercise=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="exercise"]');
+  if(!overview||!exercise)return;
+  for(const id of ['garangWorkoutProgram','garangWorkoutHealth'])move(document.getElementById(id),overview);
+  for(const id of ['garangWorkoutEntryDetails','garangWorkoutTools','garangWorkoutEvidence'])move(document.getElementById(id),exercise);
+}
 function apply(shell){
   if(!SURFACES.some(item=>item.id===state.active))state.active='exercise';
+  distributeUtilities(shell);
   renderNav(shell);
   shell.querySelectorAll(':scope > .gws-panel').forEach(node=>{
     const on=node.dataset.garangWorkoutSurface===state.active;
@@ -213,6 +221,7 @@ function mount(){
   move(secondary,overview);
 
   apply(shell);
+  root.requestAnimationFrame(()=>{distributeUtilities(shell);root.requestAnimationFrame(()=>distributeUtilities(shell));});
 }
 root.addEventListener('garang:screen-rendered',mount);
 root.addEventListener('garang:route-completed',mount);
