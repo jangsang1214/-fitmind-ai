@@ -1106,6 +1106,15 @@ body{background-image:
     margin-bottom:12px!important;
     scroll-margin-bottom:96px!important;
   }
+  /* WebKit can ignore trailing scroll-container padding when clamping scrollIntoView().
+     A concrete scroll-end spacer keeps inline Coach actions above fixed tab chrome deterministically. */
+  #main[data-garang-screen="coach"] .g2-chat-scroll::after{
+    content:""!important;
+    display:block!important;
+    height:calc(72px + env(safe-area-inset-bottom,0px))!important;
+    min-height:calc(72px + env(safe-area-inset-bottom,0px))!important;
+    pointer-events:none!important;
+  }
   #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child .gci-coach-actions{
     padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;
   }
