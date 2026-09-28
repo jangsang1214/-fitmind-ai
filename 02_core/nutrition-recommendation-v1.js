@@ -58,9 +58,36 @@ function proteinPortion(food,target){const protein=finite(food?.protein);return 
 function totals(items){const base=items.reduce((out,item)=>({kcal:out.kcal+item.kcal,protein:out.protein+item.protein,carbs:out.carbs+item.carbs,fat:out.fat+item.fat}),{kcal:0,protein:0,carbs:0,fat:0}),optional=key=>{const values=items.map(item=>finite(item?.[key]));return values.length&&values.every(value=>value!==null)?round(values.reduce((sum,value)=>sum+value,0),1):null;};return {...base,fiber:optional('fiber'),sodium:optional('sodium')};}
 function buildOption(id,title,summary,specs,reason){const items=specs.map(spec=>portion(spec.food,spec.grams)).filter(Boolean);if(!items.length)return null;const estimated=totals(items);return {id,title,summary,items,estimated:{kcal:round(estimated.kcal),protein:round(estimated.protein,1),carbs:round(estimated.carbs,1),fat:round(estimated.fat,1),fiber:estimated.fiber,sodium:estimated.sodium},reason,basis:'Food DB 영양값을 섭취량으로 환산한 참고치'};}
 
+
+function recommendationFollowThrough(stateInput={},options={}){
+  const state=stateInput&&typeof stateInput==='object'?stateInput:{},asOf=clean(options.asOf||localDate()).slice(0,10),days=Math.max(7,Math.min(56,Number(options.days)||28)),end=dateParts(asOf);
+  if(!end)return {asOf,days,sampleSize:0,targetEvaluated:0,targetReached:0,gapReduced:0,inProgress:0,optionUse:{},recent:[],guardrails:{descriptiveOnly:true,noCausalClaim:true,noRecommendationRankingMutation:true}};
+  const start=end.ms-(days-1)*86400000,contexts=new Map();
+  for(const meal of list(state.meals)){
+    const mealDate=dateParts(meal?.date);if(!mealDate||mealDate.ms<start||mealDate.ms>end.ms)continue;
+    const rows=[...list(meal?.recommendationContexts),...list(meal?.items).map(item=>item?.recommendationContext).filter(Boolean)];
+    for(const context of rows){
+      if(clean(context?.source)!=='next_meal')continue;
+      const id=clean(context?.recommendationId);if(!id)continue;
+      const current=contexts.get(id)||{recommendationId:id,date:clean(context?.date).slice(0,10)||mealDate.s,optionId:clean(context?.optionId)||null,proteinTarget:finite(context?.proteinTarget),proteinActualBefore:finite(context?.proteinActualBefore),proteinRemainingBefore:finite(context?.proteinRemainingBefore),mealIds:[]};
+      if(!current.mealIds.includes(String(meal?.id||'')))current.mealIds.push(String(meal?.id||''));
+      contexts.set(id,current);
+    }
+  }
+  const totalsByDate=new Map(),optionUse={};
+  const recent=[...contexts.values()].sort((a,b)=>a.date.localeCompare(b.date)).map(context=>{
+    if(!totalsByDate.has(context.date))totalsByDate.set(context.date,mealTotals(state,context.date));
+    const finalProtein=round(totalsByDate.get(context.date).protein,1),target=context.proteinTarget,before=context.proteinActualBefore,remaining=context.proteinRemainingBefore??(target!==null&&before!==null?Math.max(0,target-before):null),gapAfter=target===null?null:Math.max(0,target-finalProtein),gapBefore=remaining===null?null:Math.max(0,remaining),targetReached=target!==null&&target>0&&gapBefore!==null&&gapBefore>0&&finalProtein>=target,gapReduction=gapBefore===null||gapAfter===null?null:round(Math.max(0,gapBefore-gapAfter),1),classification=targetReached?'target_reached':context.date===asOf?'in_progress':gapReduction!==null&&gapReduction>0?'gap_reduced':'saved';
+    if(context.optionId)optionUse[context.optionId]=(optionUse[context.optionId]||0)+1;
+    return {recommendationId:context.recommendationId,date:context.date,optionId:context.optionId,mealIds:context.mealIds,proteinTarget:target,proteinActualBefore:before,proteinFinal:finalProtein,proteinGapReduction:gapReduction,classification};
+  });
+  const targetEvaluated=recent.filter(row=>row.proteinTarget!==null).length,targetReached=recent.filter(row=>row.classification==='target_reached').length,gapReduced=recent.filter(row=>row.classification==='gap_reduced').length,inProgress=recent.filter(row=>row.classification==='in_progress').length;
+  return {asOf,days,sampleSize:recent.length,targetEvaluated,targetReached,gapReduced,inProgress,optionUse,recent:recent.slice(-8),guardrails:{descriptiveOnly:true,noCausalClaim:true,noRecommendationRankingMutation:true}};
+}
+
 function recommend(state,foods,options={}){
   const safe=state&&typeof state==='object'?state:{},date=clean(options.date||localDate()).slice(0,10),lang=options.language==='en'?'en':'ko',targets=estimateTargets(safe,date),actual=mealTotals(safe,date),remaining={kcal:targets.calorieTarget===null?null:Math.max(0,Math.round(targets.calorieTarget-actual.kcal)),protein:targets.proteinTarget===null?null:Math.max(0,Math.round(targets.proteinTarget-actual.protein))};
-  const base={version:VERSION,date,goal:targets.goal,goalLabel:goalLabel(targets.goal,lang),target:targets,actual:{meals:actual.meals,kcal:round(actual.kcal),protein:round(actual.protein,1),carbs:round(actual.carbs,1),fat:round(actual.fat,1),fiber:actual.meals>0&&actual.fiberObserved===actual.meals?round(actual.fiber,1):null,sodium:actual.meals>0&&actual.sodiumObserved===actual.meals?round(actual.sodium,1):null,coverage:{fiber:actual.meals?round(actual.fiberObserved/actual.meals,2):0,sodium:actual.meals?round(actual.sodiumObserved/actual.meals,2):0},observed:{kcal:actual.kcalObserved>0,protein:actual.proteinObserved>0,carbs:actual.carbsObserved>0,fat:actual.fatObserved>0,fiber:actual.meals>0&&actual.fiberObserved===actual.meals,sodium:actual.meals>0&&actual.sodiumObserved===actual.meals}},remaining,basis:'saved_meals_only',recommendationBasis:'goal_and_food_db',options:[]};
+  const followThrough=recommendationFollowThrough(safe,{asOf:date,days:28}),base={version:VERSION,date,goal:targets.goal,goalLabel:goalLabel(targets.goal,lang),target:targets,followThrough,actual:{meals:actual.meals,kcal:round(actual.kcal),protein:round(actual.protein,1),carbs:round(actual.carbs,1),fat:round(actual.fat,1),fiber:actual.meals>0&&actual.fiberObserved===actual.meals?round(actual.fiber,1):null,sodium:actual.meals>0&&actual.sodiumObserved===actual.meals?round(actual.sodium,1):null,coverage:{fiber:actual.meals?round(actual.fiberObserved/actual.meals,2):0,sodium:actual.meals?round(actual.sodiumObserved/actual.meals,2):0},observed:{kcal:actual.kcalObserved>0,protein:actual.proteinObserved>0,carbs:actual.carbsObserved>0,fat:actual.fatObserved>0,fiber:actual.meals>0&&actual.fiberObserved===actual.meals,sodium:actual.meals>0&&actual.sodiumObserved===actual.meals}},remaining,basis:'saved_meals_only',recommendationBasis:'goal_and_food_db',options:[]};
   if(!list(foods).some(validFood))return {...base,status:'unavailable',message:lang==='en'?'Food data is not available yet.':'Food DB를 불러오지 못해 추천을 만들 수 없습니다.',reasons:['FOOD_DB_UNAVAILABLE']};
   if(!(targets.proteinTarget>0))return {...base,status:'needs_profile',message:lang==='en'?'Add body weight or a protein target to make this recommendation precise.':'체중 또는 단백질 목표를 입력하면 다음 식사를 더 정확히 제안할 수 있습니다.',reasons:['PROTEIN_TARGET_REQUIRED']};
   const chicken=chooseFood(foods,['닭가슴살','닭가슴살구이','닭안심구이']),salmon=chooseFood(foods,['연어스테이크','연어구이','연어']),tofu=chooseFood(foods,['두부','연두부','순두부']),yogurt=chooseFood(foods,['그릭요거트','저지방그릭요거트']),egg=chooseFood(foods,['삶은계란','계란찜','계란']),rice=chooseFood(foods,['현미밥','잡곡밥','흰쌀밥']),banana=chooseFood(foods,['바나나']),oat=chooseFood(foods,['오트밀']);
@@ -72,5 +99,5 @@ function recommend(state,foods,options={}){
   return {...base,status:limited.length?'ready':'unavailable',message:limited.length?(lang==='en'?'Choose one option and add it to your meal draft.':'한 가지를 골라 식단 초안에 담아보세요.'):lang==='en'?'Matching food entries are not available yet.':'추천에 필요한 음식 항목이 아직 없습니다.',options:limited,reasons:limited.length?['SAVED_RECORDS_AND_GOAL_USED','NUTRITION_VALUES_ARE_ESTIMATES']:['MATCHING_FOOD_UNAVAILABLE']};
 }
 
-return Object.freeze({VERSION,localDate,goalClass,goalLabel,estimateTargets,mealTotals,recommend,recommendation:recommend});
+return Object.freeze({VERSION,localDate,goalClass,goalLabel,estimateTargets,mealTotals,recommendationFollowThrough,recommend,recommendation:recommend});
 });

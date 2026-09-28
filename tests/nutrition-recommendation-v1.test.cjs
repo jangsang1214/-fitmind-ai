@@ -68,4 +68,33 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   console.log('PASS Food DB failure is explicit and fail-closed');
 }
 
+
+{
+  const state=base();
+  state.meals=[
+    {id:'m-follow-1',date,protein:55,kcal:500,recommendationContexts:[{recommendationId:'r-follow',source:'next_meal',version:Core.VERSION,date,optionId:'protein-rice',goal:'muscle_gain',basis:'goal_and_food_db',proteinTarget:112,proteinActualBefore:20,proteinRemainingBefore:92}]},
+    {id:'m-follow-2',date,protein:60,kcal:550}
+  ];
+  const before=JSON.stringify(state),history=Core.recommendationFollowThrough(state,{asOf:'2026-09-11',days:28});
+  assert.equal(history.sampleSize,1);
+  assert.equal(history.targetEvaluated,1);
+  assert.equal(history.targetReached,1);
+  assert.equal(history.optionUse['protein-rice'],1);
+  assert.equal(history.recent[0].proteinFinal,115);
+  assert.equal(history.recent[0].proteinGapReduction,92);
+  assert.equal(history.guardrails.noCausalClaim,true);
+  assert.equal(JSON.stringify(state),before,'follow-through must remain read-only');
+  console.log('PASS saved recommendation lineage becomes descriptive follow-through without changing ranking');
+}
+
+{
+  const state=base();
+  state.meals=[{id:'m-already-met',date,protein:130,kcal:600,recommendationContexts:[{recommendationId:'r-already-met',source:'next_meal',version:Core.VERSION,date,optionId:'protein-rice',proteinTarget:112,proteinActualBefore:120,proteinRemainingBefore:0}]}];
+  const history=Core.recommendationFollowThrough(state,{asOf:'2026-09-11',days:28});
+  assert.equal(history.targetEvaluated,1);
+  assert.equal(history.targetReached,0,'a target already satisfied before the recommendation must not be credited as follow-through');
+  assert.equal(history.recent[0].classification,'saved');
+  console.log('PASS pre-satisfied targets are not credited to recommendation follow-through');
+}
+
 console.log('nutrition-recommendation-v1: PASS');
