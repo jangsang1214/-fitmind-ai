@@ -40,6 +40,7 @@ function demoState(){const date=localDate(),confirmedAt=new Date(Date.now()-60_0
 
   await sendCoach(page,'각각 4세트');
   await page.waitForFunction(()=>document.querySelector('.gci-coach-turn[data-state="logged"] [data-gci-undo]'),null,{timeout:7000});
+  const undoReach=await page.locator('.gci-coach-turn[data-state="logged"] [data-gci-undo]').last().evaluate(el=>{el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});const r=el.getBoundingClientRect(),nav=document.getElementById('bottomNav')?.getBoundingClientRect();return {bottom:r.bottom,navTop:nav?.top??Infinity};});assert.ok(undoReach.bottom<undoReach.navTop,`latest inline Coach action must remain above mobile tab chrome: ${JSON.stringify(undoReach)}`);
   const logged=await page.evaluate(()=>{const s=window.GarangAgentStateBridge?.getState?.()||{};return (s.workouts||[]).filter(row=>row?.source==='coach-conversation').at(-1)||null;});
   assert.ok(logged,'Coach conversation must write into the canonical workouts collection');assert.equal(logged.sets,8);assert.match(logged.name,/랫풀다운/);assert.match(logged.name,/시티드로우/);assert.deepEqual((logged.exercises||[]).map(x=>x.name).sort(),['랫풀다운','시티드로우'].sort());assert.match(logged.conversationRaw,/오늘 운동했어/);assert.match(logged.conversationRaw,/4세트/);
   assert.equal(await page.evaluate(()=>window.GarangConversationalIntelligenceV1.getPending()),null,'successful auto-log must close the follow-up transaction');
