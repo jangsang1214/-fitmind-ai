@@ -57,6 +57,25 @@ assert.equal(guardedShadow.guardrails.gradedRecoveryConstraint,true);
 assert.equal(guardedShadow.guardrails.guardedBlocksProgression,true);
 assert.equal(guardedShadow.guardrails.guardedDoesNotAutoReduce,true);
 
+const baselineLoadDates=['2026-08-20','2026-08-24','2026-08-28','2026-09-01','2026-09-05','2026-09-09','2026-09-13','2026-09-17'];
+const baselineLoadWorkouts=baselineLoadDates.map((date,i)=>({id:`lb-${i}`,date,name:'로잉',sets:3,reps:8,weight:40,rpe:5,rir:3,duration:30}));
+const spikeProgressionWorkouts=progressionWorkouts.map(row=>({...row,duration:90}));
+const loadSpikeState={workouts:[...baselineLoadWorkouts,...spikeProgressionWorkouts],healthSignals:[],dailyCheckins:[],runs:[],meals:[],body:[]};
+const loadSpikeShadow=WorkoutShadow.build(loadSpikeState,{asOf:'2026-09-24'});
+const loadSpikeShadowServer=WorkoutShadowServer.build(loadSpikeState,{asOf:'2026-09-24'});
+assert.deepEqual(loadSpikeShadow,loadSpikeShadowServer,'load-aware recovery guard must stay browser/server deterministic');
+assert.equal(loadSpikeShadow.recoveryConstraint.level,'guarded','high-confidence recent load spike must guard progression');
+assert.ok(loadSpikeShadow.recoveryConstraint.reasons.includes('RECENT_LOAD_SPIKE'));
+assert.equal(loadSpikeShadow.recoveryConstraint.load.band,'spike');
+assert.ok(loadSpikeShadow.recoveryConstraint.load.confidence>=.45);
+const loadSpikeBench=loadSpikeShadow.exercises.find(row=>row.exercise==='벤치프레스');
+assert.equal(loadSpikeBench.prescription.action,'hold','load spike alone must hold rather than progress');
+assert.equal(loadSpikeBench.prescription.reason,'RECOVERY_GUARDED_HOLD');
+assert.equal(loadSpikeBench.prescription.recommended.weight,80,'load spike alone must not auto-reduce dose');
+assert.equal(loadSpikeShadow.guardrails.loadAwareRecovery,true);
+assert.equal(loadSpikeShadow.guardrails.loadSpikeBlocksProgression,true);
+assert.equal(loadSpikeShadow.guardrails.loadSpikeDoesNotAutoReduce,true);
+
 const nutritionDates=Array.from({length:21},(_,i)=>{const d=new Date(Date.UTC(2026,8,4+i));return d.toISOString().slice(0,10);});
 const bodyDates=[0,4,8,12,16,20].map(i=>nutritionDates[i]);
 function nutritionState(kcal){
