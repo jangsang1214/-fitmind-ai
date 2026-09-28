@@ -649,3 +649,55 @@
   .workout-execution-v2 .workout-session-bar{padding:12px 13px 11px!important}
   .workout-execution-v2 .workout-session-live strong{font-size:32px!important}
 }
+
+
+/* Screenshot issues v2 — session card uses only the space its state needs. */
+@media(max-width:800px){
+  .workout-execution-v2 .workout-session-bar{
+    position:relative!important;
+    top:auto!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:"live controls" "progress progress"!important;
+    gap:8px 10px!important;
+    margin:0 0 10px!important;
+    padding:11px 12px!important;
+    border-radius:15px!important;
+    min-height:0!important;
+  }
+  .workout-execution-v2 .workout-session-live{
+    align-self:center!important;
+  }
+  .workout-execution-v2 .workout-session-live>strong{
+    font-size:28px!important;
+  }
+  .workout-execution-v2 .workout-session-feedback{
+    display:none!important;
+  }
+  .workout-execution-v2 .workout-session-progress{
+    grid-area:progress!important;
+    justify-content:space-between!important;
+    padding-top:7px!important;
+    margin-top:1px!important;
+    border-top:1px solid rgba(255,255,255,.055)!important;
+  }
+  .workout-execution-v2 .workout-group-execution-cue{
+    display:none!important;
+  }
+  .workout-execution-v2 .workout-session-icon{
+    min-width:78px!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:0 10px!important;
+    border-radius:11px!important;
+  }
+  .workout-execution-v2 .workout-start{min-width:92px!important}
+  .workout-execution-v2 .execution-compact-fields{margin-bottom:8px!important}
+  .workout-execution-v2 .execution-set-row.current-set{
+    padding:11px!important;
+    border-radius:14px!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .set-complete-button{
+    min-height:46px!important;
+    height:46px!important;
+  }
+}
