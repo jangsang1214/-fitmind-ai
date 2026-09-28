@@ -4,7 +4,7 @@ plugins {
 }
 android {
     namespace 'com.garang.nativehost'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.garang.nativehost'
         minSdk 28
