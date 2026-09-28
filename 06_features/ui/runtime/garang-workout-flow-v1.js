@@ -217,9 +217,10 @@ function mount(){
 
   const oneRm=builder.querySelector(':scope > .one-rm-panel');
   if(oneRm)exercise.insertBefore(oneRm,builder);
-  const secondary=builder.querySelector(':scope > .workout-secondary-capabilities');
-  move(secondary,overview);
 
+  /* Program/Health cards must remain in the canonical builder long enough for
+     garang-experience-v4 to create their progressive-disclosure drawers.
+     distributeUtilities() then moves the finished drawers to Overview. */
   apply(shell);
   root.requestAnimationFrame(()=>{distributeUtilities(shell);root.requestAnimationFrame(()=>distributeUtilities(shell));});
 }
