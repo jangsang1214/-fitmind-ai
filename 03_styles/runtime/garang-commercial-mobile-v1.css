@@ -1022,8 +1022,8 @@ body{background-image:
 /* Coach mobile viewport contract — shell must fit between native app bar and tab bar. */
 @media(max-width:799px){
   #main[data-garang-screen="coach"] .garang-coach-v2{
-    height:calc(100dvh - 142px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
-    max-height:calc(100dvh - 142px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    height:calc(100dvh - 178px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 178px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
     min-height:0!important;
   }
   #main[data-garang-screen="coach"] .g2-chat-scroll{
