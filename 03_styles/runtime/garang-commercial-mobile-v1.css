@@ -1121,3 +1121,69 @@ body{background-image:
     min-height:54px!important;
   }
 }
+
+
+/* GARANG screenshot-visible spacing v2 — compact Record and short-thread Coach */
+@media(max-width:799px){
+  #main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"]>.gws-reuse{
+    min-height:42px!important;
+    margin:0 0 5px!important;
+    padding:0 0 7px!important;
+    gap:8px!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse-copy{
+    gap:0!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse-copy small{
+    display:none!important;
+  }
+  #main[data-garang-screen="workout"] .gws-reuse button{
+    min-height:34px!important;
+    padding:0 11px!important;
+    font-size:9px!important;
+  }
+
+  #main[data-garang-screen="coach"] .garang-coach-v2{
+    border-radius:16px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-head{
+    height:44px!important;
+    min-height:44px!important;
+    padding:0 10px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-scroll{
+    padding:10px 12px 30px!important;
+    scroll-padding-bottom:30px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-message{
+    margin-bottom:10px!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
+    margin-bottom:8px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer-wrap{
+    padding:4px 9px calc(5px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer{
+    min-height:46px!important;
+    padding:4px 5px 4px 11px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer textarea{
+    min-height:36px!important;
+    padding:7px 0!important;
+  }
+  #main[data-garang-screen="coach"] .g2-send{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer-note{
+    display:none!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child .gci-coach-actions{
+    padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child [data-gci-undo]{
+    scroll-margin-bottom:calc(140px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
