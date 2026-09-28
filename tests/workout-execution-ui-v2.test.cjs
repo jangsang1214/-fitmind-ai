@@ -28,7 +28,7 @@ assert.ok(runtime.includes("lastResult.unit||'kg'"),'session result volume must 
 assert.ok(app.includes("garang:workout-session-clearing"),'session reset must publish before the app rerenders workout rows');
 assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes("liveSetDraft=[]")&&runtime.includes("liveSetCount=0"),'execution layer must clear live row state before session reset rerender');
 assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'successful exercise add must publish import status and group execution metadata');
-assert.ok(runtime.includes('id="startWorkoutSession"')&&runtime.includes('id="finishWorkoutSession"')&&runtime.includes('aria-label="세션 기록 시작"')&&runtime.includes('aria-label="운동 종료 및 저장"')&&runtime.includes("bar.querySelector('#startWorkoutSession')")&&runtime.includes("bar.querySelector('#finishWorkoutSession')"),'live timer must expose explicit session start and finish controls');
+assert.ok(runtime.includes('id="startWorkoutSession"')&&runtime.includes('id="finishWorkoutSession"')&&runtime.includes('aria-label="운동 세션 시작"')&&runtime.includes('aria-label="운동 종료 및 저장"')&&runtime.includes("bar.querySelector('#startWorkoutSession')")&&runtime.includes("bar.querySelector('#finishWorkoutSession')"),'live timer must expose explicit session start and finish controls');
 assert.ok(runtime.includes("bar.classList.toggle('is-live',active)")&&runtime.includes("stateLabel.textContent=active?'기록 중':'준비'")&&runtime.includes('workoutSessionFeedback')&&runtime.includes('navigator.vibrate?.(24)'),'session start must immediately produce visible live-state feedback');
 assert.ok(css.includes('Workout live session feedback v4')&&css.includes('.workout-session-bar.is-live')&&css.includes('position:sticky')&&css.includes('garang-live-pulse'),'active workout sessions must expose a sticky animated timer state');
 assert.ok(runtime.includes("function finishWorkoutSession()")&&runtime.includes("if(save?.disabled)")&&runtime.includes("add.click()")&&runtime.includes("save.click()"),'finish control must recover from the canonical save button disabled state by staging the current exercise before saving');
@@ -53,9 +53,9 @@ assert.ok(runtime.includes("summary.exercises>liveDraftCount")&&!runtime.include
 assert.ok(runtime.includes("setsInput.value=String(liveSetCount)")&&runtime.includes("setsInput.dispatchEvent(new Event('input'"),'remount must restore the saved set count before enhancing rows');
 assert.ok(runtime.includes("saved?displayBufferedWeight(saved.weightMetric")&&runtime.includes("saved?.reps")&&runtime.includes("saved?.rpe"),'execution enhancement must restore buffered per-set values before falling back to defaults');
 assert.ok(runtime.includes("execution-duration-field"),'manual execution must keep duration editable');
-assert.ok(app.includes('id="openWorkoutExerciseSearch"')&&app.includes(".garang-exercise-search input")&&app.includes("[data-gws-step=\"exercise\"]"),'Log must expose a magnifier control that routes to the existing exercise search');
-assert.ok(app.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"log\"]')?.click())"),'exercise selection must return directly to Log for fast execution');
-assert.ok(workoutLibrary.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"log\"]')?.click())"),'expanded/search exercise picks must also return directly to Log');
+assert.ok(app.includes('id="openWorkoutExerciseSearch"')&&app.includes(".garang-exercise-search input")&&app.includes("[data-gws-step=\"exercise\"]"),'inline Exercise execution must expose a magnifier control that routes to the existing exercise search');
+assert.ok(app.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"exercise\"]')?.click())"),'exercise selection must remain on the inline execution surface');
+assert.ok(workoutLibrary.includes("requestAnimationFrame(()=>document.querySelector('[data-gws-step=\"exercise\"]')?.click())"),'expanded/search exercise picks must remain on the inline execution surface');
 assert.ok(runtime.includes("applyPrefill"),'execution surface must expose a visible-row prefill bridge');
 assert.ok(runtime.includes("durationInput.value=liveDuration"),'recent-workout prefill must own duration before live-state recapture');
 assert.ok(app.includes("executionCompleted:true"),'draft edit rows must reopen as completed execution sets');
@@ -63,10 +63,13 @@ assert.ok(app.includes("workoutEditForm={index:i,name:x.name"),'draft edit must 
 assert.ok(app.includes("if(workoutEditForm){const edit=workoutEditForm;workoutEditForm=null"),'bindWorkout must restore persisted edit form state after render');
 assert.ok(app.includes("data-execution-completed=\"'+(row.executionCompleted===true?'true':'false')+'\""),'set renderer must preserve execution completion metadata');
 assert.ok(runtime.includes("initiallyComplete"),'execution enhancement must preserve pre-rendered completion state');
-assert.ok(runtime.includes("builder.closest('.gws-panel[data-garang-workout-surface=\"log\"]')")&&runtime.includes("log.appendChild(card)"),'session completion card must stay owned by the Log surface');
-assert.ok(!runtime.includes("builder.after(card)"),'session completion card must not escape the Log surface');
+assert.ok(runtime.includes("builder.closest('.gws-panel[data-garang-workout-surface=\"exercise\"]')")&&runtime.includes("exercise.appendChild(card)"),'session completion card must stay owned by the inline Exercise surface');
+assert.ok(!runtime.includes("builder.after(card)"),'session completion card must not escape the inline Exercise surface');
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
-assert.ok(workoutFlow.includes("state.active==='log'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Log activation must deterministically re-enhance the execution table after surface ownership settles');
+assert.ok(workoutFlow.includes("const SURFACES=[")&&!workoutFlow.includes("{id:'log'")&&workoutFlow.includes("move(builder,exercise)")&&workoutFlow.includes("move(secondary,overview)"),'Workout IA must use two surfaces and distribute execution vs overview capabilities');
+assert.ok(runtime.includes("workout-advanced-disclosure")&&css.includes("Workout IA v8"),'advanced workout capabilities must remain available behind progressive disclosure');
+
+assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Exercise activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
