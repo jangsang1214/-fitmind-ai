@@ -159,6 +159,9 @@ assert.ok(app.includes('executionDraftId:workoutExecutionDraftId||null')&&app.in
 assert.ok(app.includes('persistExecutionRows(rows)')&&runtime.includes('persistExecutionRows?.(liveSetDraft)'),'live row completion state must persist back into the grouped draft owner');
 assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('activateGroupedExercise?.(grouped.target.index)'),'set completion must auto-advance to the next grouped exercise');
 assert.ok(runtime.includes('if(grouped.roundEnded)startRest')&&runtime.includes('else stopRest()'),'grouped execution must rest only at round boundaries instead of between superset members');
+assert.ok(runtime.includes("const moved=bridge()?.activateGroupedExercise?.(grouped.target.index);if(moved===true)return"),'grouped set completion must synchronously enter the already-computed exact member');
+assert.ok(!runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),'grouped transitions must not depend on timer ordering after completed sets');
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.4.1-deterministic-group-transition'),'app shell must cache-bust the deterministic grouped transition runtime');
 assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-group-execution-cue'),'group execution must surface current group and round state');
 
 
