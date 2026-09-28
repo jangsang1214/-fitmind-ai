@@ -1188,3 +1188,20 @@ body{background-image:
     opacity:.48!important;
   }
 }
+
+/* Coach context actions remain touch-owner after density reduction. */
+@media(max-width:799px){
+  #main[data-garang-screen="coach"] .gcl-context-actions{
+    position:relative!important;
+    z-index:70!important;
+    pointer-events:auto!important;
+    isolation:isolate!important;
+  }
+  #main[data-garang-screen="coach"] .gcl-context-actions [data-gcl-actions-toggle],
+  #main[data-garang-screen="coach"] .gcl-context-actions [data-gcl-coach]{
+    position:relative!important;
+    z-index:71!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+}
