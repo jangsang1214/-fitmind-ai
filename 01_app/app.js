@@ -322,7 +322,7 @@ function decisionExecutionLabel(loop){
  const x=loop?.nextAction?.execution;if(!x)return '';
  if(x.kind==='running'){const zone={recovery:'Recovery',easy:'Easy',steady:'Steady',tempo:'Tempo'}[x.paceZone]||'Run',range=Number.isFinite(Number(x.lowMinPerKm))&&Number.isFinite(Number(x.highMinPerKm))?`${paceText({duration:Number(x.lowMinPerKm),distance:1})}–${paceText({duration:Number(x.highMinPerKm),distance:1})} /${distanceUnit()}`:'';return `${Math.round(num(x.durationMin,30))}분 · ${zone}${range?` · ${range}`:''}`;}
  if(x.kind==='nutrition_target'&&Number.isFinite(Number(x.targetKcal)))return `${Math.round(Number(x.targetKcal)).toLocaleString()} kcal / day`;
- if(x.kind==='recovery')return `${Math.round(num(x.durationMin,20))}분 · 회복 우선`;
+ if(x.kind==='recovery'){const focus={state_check:'상태 확인',sleep_and_low_load:'수면·저부하 회복',reduce_load:'부하 낮추기',easy_movement:'가벼운 회복'}[String(x.focus||'')]||'회복 우선';return `${Math.round(num(x.durationMin,20))}분 · ${focus}`;}
  if(Number.isFinite(Number(x.durationMin)))return `${Math.round(Number(x.durationMin))}분`;
  return '';
 }
