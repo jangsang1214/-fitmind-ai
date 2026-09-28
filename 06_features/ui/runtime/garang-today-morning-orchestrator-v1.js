@@ -141,11 +141,12 @@
     }catch{}
   }
 
-  function schedule(delay=120){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(render)),delay);}
+  function claimDecisionOwner(){const m=main(),f=flow();if(!m||m.dataset.garangScreen!=='today'||!f)return false;m.dataset.garangDecisionOwner='coach';f.dataset.decisionOwner='coach';return true;}
+  function schedule(delay=120){claimDecisionOwner();clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(render)),delay);}
   document.addEventListener('click',event=>{const target=event.target.closest?.('[data-garang-checkin-access="1"],.gtf-next[data-gtf-action="open-checkin"],[data-action="open-checkin"]');if(target&&main()?.dataset.garangScreen==='today')snapshotBaseline();},true);
   ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:agent-write','garang:route-completed'].forEach(name=>window.addEventListener(name,()=>schedule(name==='garang:state-updated'?180:100)));
   window.addEventListener('pageshow',()=>schedule(80));
-  window.GarangTodayMorningOrchestratorV1=Object.freeze({version:VERSION,render,schedule,snapshotBaseline,canonicalNext});
+  window.GarangTodayMorningOrchestratorV1=Object.freeze({version:VERSION,render,schedule,snapshotBaseline,canonicalNext,claimDecisionOwner});
   observeMounts();
   schedule(120);
 })();
