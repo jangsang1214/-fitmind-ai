@@ -63,7 +63,7 @@ function finishWorkoutSession(){
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
 function hardHideCanonicalSave(){const save=document.getElementById('saveWorkoutSession');if(!save)return null;save.classList.add('workout-canonical-save');save.hidden=true;save.setAttribute('aria-hidden','true');save.tabIndex=-1;save.style.setProperty('display','none','important');save.style.setProperty('pointer-events','none','important');return save;}
 function stopRest(){restUntil=0;persistSessionState();updateLive();}
-function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;const rest=document.getElementById('workoutExecutionRest');if(rest){rest.hidden=false;rest.classList.add('active');}persistSessionState();updateLive();}
+function syncRestSurface(){const rest=document.getElementById('workoutExecutionRest'),restClock=document.getElementById('workoutExecutionRestClock'),left=Math.max(0,restUntil-Date.now());if(rest){rest.hidden=!left;rest.classList.toggle('active',!!left);}if(restClock)restClock.textContent=clock(left);if(restUntil&&left<=0)restUntil=0;return left;}function stabilizeRestSurface(){queueMicrotask?.(()=>syncRestSurface());requestAnimationFrame?.(()=>syncRestSurface());}function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;syncRestSurface();persistSessionState();updateLive();stabilizeRestSurface();}
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
@@ -77,10 +77,7 @@ function updateLive(){
   if(progress)progress.textContent=(summary.sets+completedCurrent())+' SETS';
   refreshSetStates();
   const group=bridge()?.groupExecutionContext?.(),groupCue=document.getElementById('workoutGroupExecutionCue');if(groupCue){groupCue.hidden=!group;if(group)groupCue.textContent=String(group.groupType||'group').toUpperCase()+' '+String(group.groupId||'')+' · ROUND '+Math.min(group.rounds,group.round+1)+'/'+group.rounds+' · '+String(group.members?.[group.position]?.name||'');}
-  const rest=document.getElementById('workoutExecutionRest'),restClock=document.getElementById('workoutExecutionRestClock'),left=Math.max(0,restUntil-Date.now());
-  if(rest){rest.hidden=!left;rest.classList.toggle('active',!!left);}
-  if(restClock)restClock.textContent=clock(left);
-  if(restUntil&&left<=0)restUntil=0;
+  syncRestSurface();
 }
 function targetFor(row){
   if(!row)return null;
