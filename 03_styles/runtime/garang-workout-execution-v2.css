@@ -721,7 +721,7 @@
 @media(max-width:800px){
   .workout-execution-v2 .execution-exercise-field{display:none!important}
   .workout-execution-v2 .execution-compact-fields{
-    grid-template-columns:72px 82px!important;justify-content:start!important;
+    grid-template-columns:72px!important;justify-content:start!important;
     margin-bottom:10px!important;
   }
   .workout-execution-v2 .execution-sets-field,
