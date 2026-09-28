@@ -165,7 +165,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   ];
   const options={now:new Date('2026-09-20T12:00:00Z')};
   const server=PhysiologicalSignals.build(state,options),browser=BrowserPhysiologicalSignals.build(state,options);
-  assert.deepEqual(server,browser);assert.equal(server.version,'physiological-signal-intelligence-v1.1.0-freshness-fusion');assert.equal(server.quality,'usable');assert.ok(server.derived.readinessScore!==null);assert.equal(server.latest.source,'test-wearable');assert.equal(server.guardrails.noMedicalDiagnosis,true);assert.equal(server.guardrails.metricLatestFusion,true);assert.equal(server.guardrails.staleSignalsDownweighted,true);
+  assert.deepEqual(server,browser);assert.equal(server.version,'physiological-signal-intelligence-v1.2.0-recovery-trajectory');assert.equal(server.quality,'usable');assert.ok(server.derived.readinessScore!==null);assert.equal(server.latest.source,'test-wearable');assert.equal(server.guardrails.noMedicalDiagnosis,true);assert.equal(server.guardrails.metricLatestFusion,true);assert.equal(server.guardrails.staleSignalsDownweighted,true);
   const empty=PhysiologicalSignals.build(baseState(),options);assert.equal(empty.quality,'insufficient');assert.equal(empty.derived.readinessScore,null);assert.equal(empty.guardrails.missingSignalsDoNotImplyNormal,true);
  });
 
@@ -199,7 +199,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.intelligenceDataQuality.version,'intelligence-data-quality-v1.1.0');
   assert.equal(context.recommendationQuality.version,'recommendation-quality-eval-v1.1.0');
   assert.equal(context.recommendationQuality.guardrails.noRecommendationMutation,true);
-  assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.1.0-freshness-fusion');
+  assert.equal(context.physiologicalSignals.version,'physiological-signal-intelligence-v1.2.0-recovery-trajectory');
   assert.equal(context.physiologicalSignals.guardrails.missingSignalsDoNotImplyNormal,true);assert.equal(context.physiologicalSignals.guardrails.metricLatestFusion,true);
  });
 
