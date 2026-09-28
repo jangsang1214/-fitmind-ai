@@ -10,10 +10,11 @@ function readinessBand(v){const n=finite(v);if(n===null)return null;if(n<=2)retu
 function scoreEpisode(ep){const outcome=finite(ep?.outcome?.score);if(outcome!==null)return clamp(outcome,0,100);const c=String(ep?.outcome?.classification||'').toLowerCase();return c==='completed'?100:c==='partial'?50:c==='missed'?0:null;}
 function executed(ep){return !!(ep?.execution?.executionId||ep?.execution?.status==='observed'||finite(ep?.execution?.completionRatio)>0);}
 function accepted(ep){return ['accepted','edited'].includes(String(ep?.userResponse?.status||''));}
+function negativeResponse(ep){return ['rejected','dismissed','ignored'].includes(String(ep?.userResponse?.status||''));}
 function stats(rows){
- const n=rows.length;if(!n)return {sampleSize:0,acceptanceRate:null,editRate:null,executionRate:null,outcomeScore:null,recoveryDelta:null,confidence:0};
- const outcomes=rows.map(scoreEpisode),recovery=rows.map(r=>finite(r?.outcome?.recoveryDelta)),exec=rows.filter(executed).length,accept=rows.filter(accepted).length,edits=rows.filter(r=>String(r?.userResponse?.status||'')==='edited').length;
- return {sampleSize:n,acceptanceRate:posteriorRate(accept,n,.65,3),editRate:posteriorRate(edits,n,.2,4),executionRate:posteriorRate(exec,n,.6,3),outcomeScore:mean(outcomes)===null?null:round(mean(outcomes),1),recoveryDelta:mean(recovery)===null?null:round(mean(recovery),3),confidence:round(clamp(n/(n+4),0,1),2)};
+ const n=rows.length;if(!n)return {sampleSize:0,resolvedSampleSize:0,acceptanceRate:null,editRate:null,rejectionCount:0,rejectionRate:null,executionRate:null,outcomeScore:null,recoveryDelta:null,confidence:0};
+ const outcomes=rows.map(scoreEpisode),recovery=rows.map(r=>finite(r?.outcome?.recoveryDelta)),exec=rows.filter(executed).length,accept=rows.filter(accepted).length,edits=rows.filter(r=>String(r?.userResponse?.status||'')==='edited').length,resolved=rows.filter(r=>!['unresolved',''].includes(String(r?.userResponse?.status||''))),rejections=resolved.filter(negativeResponse).length;
+ return {sampleSize:n,resolvedSampleSize:resolved.length,acceptanceRate:posteriorRate(accept,n,.65,3),editRate:posteriorRate(edits,n,.2,4),rejectionCount:rejections,rejectionRate:resolved.length?posteriorRate(rejections,resolved.length,.25,4):null,executionRate:posteriorRate(exec,n,.6,3),outcomeScore:mean(outcomes)===null?null:round(mean(outcomes),1),recoveryDelta:mean(recovery)===null?null:round(mean(recovery),3),confidence:round(clamp(n/(n+4),0,1),2)};
 }
 function group(episodes,keyFn,keys=[]){const map=new Map(keys.map(k=>[k,[]]));for(const ep of episodes){const k=keyFn(ep);if(!k)continue;if(!map.has(k))map.set(k,[]);map.get(k).push(ep);}return Object.fromEntries([...map].map(([k,v])=>[k,stats(v)]));}
 function utility(s){return (s.executionRate??.6)*.4+(s.acceptanceRate??.65)*.2+((s.outcomeScore??50)/100)*.3+((s.recoveryDelta??0)+1)/2*.1;}
