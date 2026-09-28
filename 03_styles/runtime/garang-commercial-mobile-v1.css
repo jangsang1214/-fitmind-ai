@@ -1052,3 +1052,14 @@ body{background-image:
     -webkit-overflow-scrolling:touch!important;
   }
 }
+
+/* P2 WebKit inline Coach action reachability — reserve real scroll range above the fixed tab bar. */
+@media(max-width:799px){
+  #main[data-garang-screen="coach"] .g2-chat-scroll .g2-message.assistant:last-of-type .gci-coach-turn:has(.gci-coach-actions){
+    margin-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
+    scroll-margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-scroll .g2-message.assistant:last-of-type .gci-coach-actions button{
+    scroll-margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
