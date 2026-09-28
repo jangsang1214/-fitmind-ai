@@ -334,7 +334,7 @@
   function v75VolumeMarkup(side='front',gender='male'){
     if(gender!=='male')return '';
     const key=`g75-${gender}-${side}`;
-    if(side==='back')return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+    if(side==='back')return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5" data-garang-volume-presentation="7.6" transform="translate(360 550) scale(1.035 1.008) translate(-360 -550)">
       <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="222" cy="288" rx="73" ry="60" fill="url(#${key}-bulge)"/>
       <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="498" cy="288" rx="73" ry="60" fill="url(#${key}-bulge)"/>
       <path class="g75-muscle-volume g75-volume-back" fill="url(#${key}-deep)" d="M254 291 C286 260 326 252 352 273 C351 353 327 440 286 512 C246 476 223 410 226 344 Z"/>
@@ -346,14 +346,14 @@
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M253 819 C279 793 311 809 321 856 C319 922 308 982 290 1018 C266 1019 249 983 246 929 Z"/>
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M467 819 C441 793 409 809 399 856 C401 922 412 982 430 1018 C454 1019 471 983 474 929 Z"/>
     </g>`;
-    if(side==='side')return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+    if(side==='side')return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5" data-garang-volume-presentation="7.6" transform="translate(360 550) scale(1.035 1.008) translate(-360 -550)">
       <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="346" cy="278" rx="88" ry="67" fill="url(#${key}-bulge)"/>
       <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M323 304 C372 284 412 305 429 348 C428 399 407 438 379 459 C345 446 324 399 315 343 Z"/>
       <path class="g75-muscle-volume g75-volume-arm" fill="url(#${key}-long)" d="M389 349 C423 340 452 372 459 416 C456 470 443 511 421 535 C394 516 379 472 380 421 Z"/>
       <path class="g75-muscle-volume g75-volume-thigh" fill="url(#${key}-long)" d="M262 620 C306 598 351 623 366 683 C363 755 343 816 314 848 C282 823 260 766 255 701 Z"/>
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M259 818 C288 800 315 826 321 870 C318 930 307 982 291 1017 C269 1018 254 981 253 930 Z"/>
     </g>`;
-    return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+    return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5" data-garang-volume-presentation="7.6" transform="translate(360 550) scale(1.035 1.008) translate(-360 -550)">
       <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="218" cy="286" rx="82" ry="62" fill="url(#${key}-bulge)"/>
       <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="502" cy="286" rx="82" ry="62" fill="url(#${key}-bulge)"/>
       <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M243 286 C282 258 327 258 357 279 L357 398 C322 414 281 406 253 382 C236 356 234 316 243 286 Z"/>
@@ -432,10 +432,11 @@
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
     const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),volumeDefs=v75VolumeDefs(person,view),volumeMarkup=v75VolumeMarkup(view,person),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person);
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.5" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.6" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
       <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask>${volumeDefs}${fiberDefs}</defs>
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
+        <rect class="g76-body-wash" x="0" y="0" width="720" height="1100"/>
         ${volumeMarkup}
         ${fiberTexture}
         <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
@@ -465,7 +466,7 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.5':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.6':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
