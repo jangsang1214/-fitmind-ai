@@ -63,7 +63,7 @@ function finishWorkoutSession(){
 function startTicker(){if(timer)return;timer=setInterval(()=>{if(!document.querySelector('.workout-execution-v2')){clearInterval(timer);timer=null;return;}updateLive();},500);}
 function hardHideCanonicalSave(){const save=document.getElementById('saveWorkoutSession');if(!save)return null;save.classList.add('workout-canonical-save');save.hidden=true;save.setAttribute('aria-hidden','true');save.tabIndex=-1;save.style.setProperty('display','none','important');save.style.setProperty('pointer-events','none','important');return save;}
 function stopRest(){restUntil=0;persistSessionState();updateLive();}
-function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;persistSessionState();updateLive();}
+function startRest(setType='working'){const custom=Math.max(15,num(document.getElementById('workoutRestSeconds')?.value,90)),type=String(setType||'working');if(type==='drop'){restUntil=0;persistSessionState();updateLive();return;}const seconds=type==='warmup'?Math.min(custom,60):type==='failure'?Math.max(custom,120):custom;restUntil=Date.now()+seconds*1000;const rest=document.getElementById('workoutExecutionRest');if(rest){rest.hidden=false;rest.classList.add('active');}persistSessionState();updateLive();}
 function updateLive(){
   const elapsed=document.getElementById('workoutExecutionElapsed');
   if(elapsed)elapsed.textContent=clock(sessionStartedAt?Date.now()-sessionStartedAt:0);
