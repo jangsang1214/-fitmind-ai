@@ -65,7 +65,12 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     assert.ok(saved.meals[0].items.some(item => item.name === '닭가슴살'), 'saved meal must contain the recommended item');
     assert.equal(saved.meals[0].recommendationContexts?.[0]?.source, 'next_meal', 'saved meal must retain recommendation origin');
     assert.equal(saved.meals[0].recommendationContexts?.[0]?.optionId, 'protein-rice', 'saved meal must retain the selected recommendation option');
+    assert.equal(saved.meals[0].recommendationContexts?.[0]?.proteinTarget, 112, 'saved recommendation must retain its protein target snapshot');
+    assert.equal(saved.meals[0].recommendationContexts?.[0]?.proteinActualBefore, 0, 'saved recommendation must retain pre-choice protein state');
+    assert.equal(saved.meals[0].recommendationContexts?.[0]?.proteinRemainingBefore, 112, 'saved recommendation must retain pre-choice remaining protein');
     assert.ok(saved.meals[0].items.some(item => item.recommendationContext?.recommendationId === saved.meals[0].recommendationContexts?.[0]?.recommendationId), 'recommended items must retain the same recommendation lineage');
+    await page.waitForFunction(() => /최근 추천 선택 1회 저장/.test(document.querySelector('[data-gnr-follow-through]')?.textContent || ''), null, { timeout: 7000 });
+    assert.match(await page.locator('[data-gnr-follow-through]').innerText(), /최근 추천 선택 1회 저장/);
     assert.deepEqual(errors, [], `Nutrition recommendation browser errors:\n${errors.join('\n')}`);
     await context.close();
     console.log('browser-nutrition-recommendation WebKit mobile: PASS');
