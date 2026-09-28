@@ -73,6 +73,11 @@ assert.match(appSource,/data-recovery-evidence/,'Today must expose progressive d
 assert.match(appSource,/Health 신호로 회복 상태를 읽고 있습니다/,'Today must not present physiological-only recovery as an empty state');
 assert.match(appSource,/체크인을 더하면 에너지 · 스트레스 · 근육통을 함께 반영합니다/,'Health evidence must invite subjective context without replacing it');
 assert.match(appSource,/최근 신호와 개인 기준선 비교 · 신뢰/,'Health evidence must disclose baseline/freshness confidence context');
+assert.match(appSource,/NATIVE_READ_METRICS/,'explicit native sync must request the canonical physiological read scopes');
+assert.match(appSource,/pullNative\(native,state\.physiologicalSignals,\{requestAuthorization:false,maxSignals:5000\}\)/,'native sync must pull through the canonical importer without a second permission prompt');
+assert.match(appSource,/state\.physiologicalSignals=pulled\.merged/,'native pull result must become the canonical physiological signal state only after explicit sync');
+assert.match(appSource,/saveState\(\{event:'health_signals_synced',source:'native_health'\}\)/,'native signal persistence must use the canonical app save owner');
+assert.match(appSource,/trackEvent\('health_signals_synced'/,'native signal persistence must emit measurable sync evidence');
 console.log('health-signal-import-v1: PASS');
 ;(async()=>{
  const existing=providerParsed.signals.map(x=>({...x}));
