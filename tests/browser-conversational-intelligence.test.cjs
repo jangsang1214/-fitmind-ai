@@ -26,6 +26,7 @@ function demoState(){const date=localDate(),confirmedAt=new Date(Date.now()-60_0
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await tap(page,'#bottomNav button[data-page="coach"]','open Coach');
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach'&&document.querySelector('.garang-coach-v2'),null,{timeout:10000});
+  const coachViewport=await page.evaluate(()=>{const main=document.getElementById('main'),nav=document.getElementById('bottomNav'),m=main?.getBoundingClientRect(),n=nav?.getBoundingClientRect();return m&&n?{mainBottom:m.bottom,navTop:n.top}:null;});assert.ok(coachViewport&&coachViewport.mainBottom<=coachViewport.navTop+1,`Coach viewport must end above fixed tab chrome: ${JSON.stringify(coachViewport)}`);
   await page.waitForFunction(()=>window.GarangConversationalIntelligenceV1?.version==='garang-conversational-intelligence-v1.1.0',null,{timeout:7000});
   await page.waitForFunction(()=>window.GarangConversationalIntelligenceV1?.getKnowledge?.()?.version==='garang-coach-followup-kb-v1',null,{timeout:7000});
   assert.equal(await page.evaluate(date=>window.GarangPlanExecution.daily(window.GarangAgentStateBridge.getState(),date).plan.rate,localDate()),0,'three confirmed tracks must start unexecuted');
