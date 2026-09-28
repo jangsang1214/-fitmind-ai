@@ -25,6 +25,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - uses: android-actions/setup-android@v3
       - name: Verify Android Health Connect host contract
         run: node tests/native-health-android-host-v1.test.cjs
       - name: Install Android SDK 35
