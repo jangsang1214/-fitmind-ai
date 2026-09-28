@@ -29,6 +29,27 @@ assert.ok(phys.derived.componentCount>=4,'separate long-form metric rows must fu
 assert.equal(phys.metricLatest.hrvMs.source,'watch');
 assert.equal(phys.guardrails.metricLatestFusion,true);
 assert.equal(phys.guardrails.staleSignalsDownweighted,true);
+assert.equal(phys.guardrails.multiDayRecoveryTrajectory,true);
+
+const trajectorySignals=[];
+for(let day=15;day<=21;day++){
+ const date=isoDay(day);
+ trajectorySignals.push({source:'watch',capturedAt:`${date}T06:00:00Z`,hrvMs:60,restingHeartRateBpm:55,sleepHours:8,sleepScore:90,stressScore:1});
+}
+trajectorySignals.push({source:'watch',capturedAt:'2026-09-22T06:00:00Z',hrvMs:48,restingHeartRateBpm:60,sleepHours:6.4,sleepScore:62,stressScore:3.8});
+trajectorySignals.push({source:'watch',capturedAt:'2026-09-23T06:00:00Z',hrvMs:49,restingHeartRateBpm:60,sleepHours:6.5,sleepScore:64,stressScore:3.7});
+trajectorySignals.push({source:'watch',capturedAt:'2026-09-24T06:00:00Z',hrvMs:58,restingHeartRateBpm:56,sleepHours:7.7,sleepScore:84,stressScore:2});
+const trajectoryState={healthSignals:trajectorySignals,workouts:[],runs:[],meals:[],body:[],dailyCheckins:[]};
+const trajectoryPhys=Phys.build(trajectoryState,{now});
+const trajectoryPhysServer=PhysServer.build(trajectoryState,{now});
+assert.deepEqual(trajectoryPhys,trajectoryPhysServer,'recovery trajectory must stay browser/server deterministic');
+assert.equal(trajectoryPhys.derived.trajectory.recentDays,3);
+assert.equal(trajectoryPhys.derived.trajectory.guardedOrLowDays,2);
+assert.equal(trajectoryPhys.derived.trajectory.persistentStrain,true);
+assert.ok(trajectoryPhys.derived.reasonCodes.includes('PERSISTENT_RECOVERY_STRAIN'));
+assert.equal(trajectoryPhys.derived.recoveryConstraint,'guarded','repeated strain must constrain recovery even after a single improved day');
+assert.equal(trajectoryPhys.guardrails.trajectoryRequiresRepeatedEvidence,true);
+assert.equal(trajectoryPhys.guardrails.trajectoryCanOnlyConstrain,true);
 
 const guardedHealthSignals=[];
 for(let day=20;day<=23;day++){
