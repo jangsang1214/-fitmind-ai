@@ -60,7 +60,7 @@ assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose fo
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
 assert.doesNotMatch(css,/@import[^;]*garang-core-loop-v1\.css/,'Simplified Shell must not own Core Loop stylesheet loading through a hidden import');
-assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.1\.1-coach-undo-clearance/,'commercial mobile design system must be the final explicit visual runtime');
+assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.1\.2-webkit-scroll-end/,'commercial mobile design system must be the final explicit visual runtime');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-commercial-mobile-v1.css'),'runtime manifest must own the commercial mobile design system');
 assert.match(html,/garang-commercial-mobile-v1\.js\?v=1\.0\.0-app-native/,'commercial mobile presentation runtime must boot explicitly');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-commercial-mobile-v1.js'),'runtime manifest must own the commercial mobile presentation runtime');
