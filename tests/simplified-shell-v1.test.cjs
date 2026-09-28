@@ -87,7 +87,7 @@ const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
 assert.equal(manifest.runtimeContract.singleOwners.coreLoopStyle,'03_styles/runtime/garang-core-loop-v1.css','runtime contract must name one Core Loop stylesheet owner');
 assert.match(coreSource,/garang:coach-mounted/,'Core Loop must resync after canonical Coach mount so contextual actions cannot miss a late Coach DOM mount');
-assert.match(html,/garang-core-loop-v1\.js\?v=1\.1\.3-coach-mount-owner/,'Coach-mount Core Loop fix must be cache-busted');
+assert.match(html,/garang-core-loop-v1\.js\?v=1\.1\.4-single-action-owner/,'Coach-mount Core Loop fix must be cache-busted');
 assert.doesNotMatch(runtime,/createElement\('script'\)|garang-core-loop-v1\.js|goal-alignment-v1\.js/,'Simplified Shell must not dynamically own runtime boot dependencies');
 assert.doesNotMatch(experienceV4,/createElement\('script'\)|data-garang-today-single-next-action-v1|garang-today-single-next-action-v1\.js/,'Experience v4 must not dynamically own Today Next Action boot');
 assert.match(nextAction,/window\.GarangTodaySingleNextActionV1/,'Today Next Action must remain a first-class runtime');

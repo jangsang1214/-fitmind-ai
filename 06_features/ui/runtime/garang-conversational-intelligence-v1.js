@@ -98,6 +98,9 @@ function nearestAssistantAfter(userEl){for(let node=userEl?.nextElementSibling;n
 function renderOutcomeForUser(root,userId){
  if(!root)return;const user=[...root.querySelectorAll('.g2-message.user[data-message-id]')].find(el=>String(el.dataset.messageId)===String(userId));if(!user)return;const assistant=nearestAssistantAfter(user);if(!assistant)return;const body=assistant.querySelector('.g2-message-body');if(!body)return;
  const outcome=outcomes.get(userId);if(!outcome)return;let card=body.querySelector(`[data-gci-for="${CSS.escape(String(userId))}"]`);if(!card){card=document.createElement('section');card.className='gci-coach-turn';card.dataset.gciFor=String(userId);body.appendChild(card);}card.dataset.state=outcome.state||outcome.type;
+ const renderKey=JSON.stringify({language:english()?'en':'ko',type:outcome.type,state:outcome.state||'',summary:outcome.summary||'',question:outcome.question||'',undo:!!outcome.undo,impact:outcome.impact||null});
+ if(card.dataset.gciRenderKey===renderKey)return;
+ card.dataset.gciRenderKey=renderKey;
  if(outcome.type==='ask'){
   card.dataset.sourceIds=(outcome.sourceIds||[]).join(',');
   card.innerHTML=`<small>GARANG FOLLOW-UP</small><strong>${esc(outcome.question)}</strong><p>${english()?'I will ask only what changes the log or next decision.':'기록이나 다음 판단에 필요한 것만 한 가지씩 물어볼게.'}</p>`;
