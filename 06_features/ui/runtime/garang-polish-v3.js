@@ -354,15 +354,15 @@
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M259 818 C288 800 315 826 321 870 C318 930 307 982 291 1017 C269 1018 254 981 253 930 Z"/>
     </g>`;
     return `<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
-      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="218" cy="286" rx="82" ry="62" fill="url(#${key}-bulge)"/>
-      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="502" cy="286" rx="82" ry="62" fill="url(#${key}-bulge)"/>
-      <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M243 286 C282 258 327 258 357 279 L357 398 C322 414 281 406 253 382 C236 356 234 316 243 286 Z"/>
-      <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M477 286 C438 258 393 258 363 279 L363 398 C398 414 439 406 467 382 C484 356 486 316 477 286 Z"/>
-      <path class="g75-muscle-volume g75-volume-arm" fill="url(#${key}-long)" d="M157 310 C190 294 220 319 230 364 C229 417 215 459 193 481 C167 468 151 430 151 386 Z"/>
-      <path class="g75-muscle-volume g75-volume-arm" fill="url(#${key}-long)" d="M563 310 C530 294 500 319 490 364 C491 417 505 459 527 481 C553 468 569 430 569 386 Z"/>
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="218" cy="286" rx="94" ry="69" fill="url(#${key}-bulge)"/>
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="502" cy="286" rx="94" ry="69" fill="url(#${key}-bulge)"/>
+      <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M232 286 C278 248 328 250 357 276 L357 406 C319 426 273 416 244 388 C226 358 222 317 232 286 Z"/>
+      <path class="g75-muscle-volume g75-volume-chest" fill="url(#${key}-bulge)" d="M488 286 C442 248 392 250 363 276 L363 406 C401 426 447 416 476 388 C494 358 498 317 488 286 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#${key}-long)" d="M148 307 C187 286 223 313 236 362 C236 421 220 469 194 493 C163 480 144 435 143 385 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#${key}-long)" d="M572 307 C533 286 497 313 484 362 C484 421 500 469 526 493 C557 480 576 435 577 385 Z"/>
       <path class="g75-muscle-volume g75-volume-core" fill="url(#${key}-deep)" d="M292 406 C318 421 338 428 360 428 C382 428 402 421 428 406 L439 582 C425 633 397 669 360 686 C323 669 295 633 281 582 Z"/>
-      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#${key}-long)" d="M251 617 C287 596 329 608 351 650 C360 708 353 766 334 812 C315 839 284 846 263 818 C246 782 239 737 242 692 Z"/>
-      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#${key}-long)" d="M469 617 C433 596 391 608 369 650 C360 708 367 766 386 812 C405 839 436 846 457 818 C474 782 481 737 478 692 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#${key}-long)" d="M240 615 C282 588 331 601 356 647 C367 711 359 774 337 823 C315 854 279 860 254 827 C235 786 228 736 232 686 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#${key}-long)" d="M480 615 C438 588 389 601 364 647 C353 711 361 774 383 823 C405 854 441 860 466 827 C485 786 492 736 488 686 Z"/>
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M253 806 C281 789 311 813 320 855 C321 913 311 972 296 1013 C278 1028 259 1011 253 987 C247 942 245 891 249 850 Z"/>
       <path class="g75-muscle-volume g75-volume-calf" fill="url(#${key}-bulge)" d="M467 806 C439 789 409 813 400 855 C399 913 409 972 424 1013 C442 1028 461 1011 467 987 C473 942 475 891 471 850 Z"/>
     </g>`;
