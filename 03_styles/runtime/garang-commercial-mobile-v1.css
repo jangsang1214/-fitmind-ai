@@ -1106,15 +1106,6 @@ body{background-image:
     margin-bottom:12px!important;
     scroll-margin-bottom:96px!important;
   }
-  /* WebKit can ignore trailing scroll-container padding when clamping scrollIntoView().
-     A concrete scroll-end spacer keeps inline Coach actions above fixed tab chrome deterministically. */
-  #main[data-garang-screen="coach"] .g2-chat-scroll::after{
-    content:""!important;
-    display:block!important;
-    height:calc(72px + env(safe-area-inset-bottom,0px))!important;
-    min-height:calc(72px + env(safe-area-inset-bottom,0px))!important;
-    pointer-events:none!important;
-  }
   #main[data-garang-screen="coach"] .gci-coach-turn[data-state="logged"]:last-child .gci-coach-actions{
     padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;
   }
@@ -1128,5 +1119,13 @@ body{background-image:
   }
   #appView:not([hidden])>#bottomNav button{
     min-height:54px!important;
+  }
+
+  /* Coach shell owns the full viewport above the fixed native tab bar.
+     The Coach Shell runtime hides the topbar, so the generic 178px subtraction is invalid here. */
+  html[data-garang-coach-shell="active"] #main[data-garang-screen="coach"] .garang-coach-v2{
+    height:calc(100dvh - 66px - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 66px - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
   }
 }
