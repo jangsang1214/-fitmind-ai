@@ -1112,16 +1112,16 @@ body{background-image:
   }
 
   #main[data-garang-screen="coach"] .garang-coach-v2{
-    height:calc(100dvh - 170px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
-    max-height:calc(100dvh - 170px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    height:calc(100dvh - 178px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 178px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
     min-height:0!important;
   }
   #main[data-garang-screen="coach"] .g2-chat-head{
     height:52px!important;padding:0 12px!important;
   }
   #main[data-garang-screen="coach"] .g2-chat-scroll{
-    padding:12px 12px 88px!important;
-    scroll-padding-bottom:88px!important;
+    padding:12px 12px 116px!important;
+    scroll-padding-bottom:116px!important;
   }
   #main[data-garang-screen="coach"] .g2-message{
     margin-bottom:12px!important;
@@ -1139,7 +1139,7 @@ body{background-image:
     width:38px!important;height:38px!important;min-width:38px!important;
   }
   #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
-    margin-bottom:10px!important;scroll-margin-bottom:76px!important;
+    margin-bottom:24px!important;scroll-margin-bottom:96px!important;
   }
 }
 @media(max-width:380px){
