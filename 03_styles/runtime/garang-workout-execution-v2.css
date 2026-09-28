@@ -843,3 +843,31 @@
     grid-area:delete!important;justify-self:start!important
   }
 }
+
+/* v2.5.2 — rest state keeps one explicit skip action visible on compact mobile */
+@media(max-width:800px){
+  .workout-execution-v2 .workout-rest-timer.active:not([hidden]){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(88px,auto)!important;
+    align-items:center!important;
+    gap:8px!important;
+    overflow:visible!important
+  }
+  .workout-execution-v2 .workout-rest-timer.active:not([hidden])>label{
+    display:none!important
+  }
+  .workout-execution-v2 .workout-rest-timer.active:not([hidden]) #skipWorkoutRest{
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:static!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:auto!important;
+    min-width:88px!important;
+    min-height:40px!important;
+    margin:0!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important
+  }
+}
