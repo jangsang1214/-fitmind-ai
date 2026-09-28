@@ -1135,3 +1135,16 @@ body{background-image:
     min-height:58px!important;
   }
 }
+
+
+/* Coach active-shell scroll owner v2 — keep final conversational actions scrollable clear of fixed tab chrome. */
+@media(max-width:799px){
+  html[data-garang-coach-shell="active"] .g2-chat-scroll{
+    padding-bottom:160px!important;
+    scroll-padding-bottom:160px!important;
+  }
+  html[data-garang-coach-shell="active"] .gci-coach-turn:last-child{
+    margin-bottom:20px!important;
+    scroll-margin-bottom:104px!important;
+  }
+}
