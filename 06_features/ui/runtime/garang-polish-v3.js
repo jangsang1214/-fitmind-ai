@@ -304,6 +304,70 @@
       </g>`;
   }
 
+
+  function v75VolumeDefs(person='male',view='front'){
+    if(person!=='male')return '';
+    const key=\`g75-\${person}-\${view}\`;
+    return \`<radialGradient id="\${key}-bulge" cx="48%" cy="34%" r="72%">
+      <stop offset="0%" stop-color="#d3a18a" stop-opacity=".58"/>
+      <stop offset="46%" stop-color="#a86f5c" stop-opacity=".36"/>
+      <stop offset="82%" stop-color="#6f4d43" stop-opacity=".18"/>
+      <stop offset="100%" stop-color="#3c302c" stop-opacity=".04"/>
+    </radialGradient>
+    <linearGradient id="\${key}-long" x1="0%" y1="0%" x2="100%" y2="18%">
+      <stop offset="0%" stop-color="#5a443d" stop-opacity=".12"/>
+      <stop offset="32%" stop-color="#c38f78" stop-opacity=".46"/>
+      <stop offset="63%" stop-color="#9a6959" stop-opacity=".34"/>
+      <stop offset="100%" stop-color="#493b36" stop-opacity=".08"/>
+    </linearGradient>
+    <radialGradient id="\${key}-deep" cx="50%" cy="42%" r="74%">
+      <stop offset="0%" stop-color="#b6816d" stop-opacity=".42"/>
+      <stop offset="64%" stop-color="#765247" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#342b28" stop-opacity=".03"/>
+    </radialGradient>
+    <filter id="\${key}-depth" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="1.15" result="soft"/>
+      <feBlend in="SourceGraphic" in2="soft" mode="normal"/>
+    </filter>\`;
+  }
+
+  function v75VolumeMarkup(side='front',gender='male'){
+    if(gender!=='male')return '';
+    const key=\`g75-\${gender}-\${side}\`;
+    if(side==='back')return \`<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="222" cy="288" rx="73" ry="60" fill="url(#\${key}-bulge)"/>
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="498" cy="288" rx="73" ry="60" fill="url(#\${key}-bulge)"/>
+      <path class="g75-muscle-volume g75-volume-back" fill="url(#\${key}-deep)" d="M254 291 C286 260 326 252 352 273 C351 353 327 440 286 512 C246 476 223 410 226 344 Z"/>
+      <path class="g75-muscle-volume g75-volume-back" fill="url(#\${key}-deep)" d="M466 291 C434 260 394 252 368 273 C369 353 393 440 434 512 C474 476 497 410 494 344 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#\${key}-long)" d="M117 340 C146 322 177 340 188 382 C185 432 174 482 154 518 C129 524 109 497 105 454 L101 391 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#\${key}-long)" d="M603 340 C574 322 543 340 532 382 C535 432 546 482 566 518 C591 524 611 497 615 454 L619 391 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#\${key}-long)" d="M248 625 C281 600 327 610 350 658 C350 726 332 791 299 834 C269 836 246 798 239 744 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#\${key}-long)" d="M472 625 C439 600 393 610 370 658 C370 726 388 791 421 834 C451 836 474 798 481 744 Z"/>
+      <path class="g75-muscle-volume g75-volume-calf" fill="url(#\${key}-bulge)" d="M253 819 C279 793 311 809 321 856 C319 922 308 982 290 1018 C266 1019 249 983 246 929 Z"/>
+      <path class="g75-muscle-volume g75-volume-calf" fill="url(#\${key}-bulge)" d="M467 819 C441 793 409 809 399 856 C401 922 412 982 430 1018 C454 1019 471 983 474 929 Z"/>
+    </g>\`;
+    if(side==='side')return \`<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="346" cy="278" rx="88" ry="67" fill="url(#\${key}-bulge)"/>
+      <path class="g75-muscle-volume g75-volume-chest" fill="url(#\${key}-bulge)" d="M323 304 C372 284 412 305 429 348 C428 399 407 438 379 459 C345 446 324 399 315 343 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#\${key}-long)" d="M389 349 C423 340 452 372 459 416 C456 470 443 511 421 535 C394 516 379 472 380 421 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#\${key}-long)" d="M262 620 C306 598 351 623 366 683 C363 755 343 816 314 848 C282 823 260 766 255 701 Z"/>
+      <path class="g75-muscle-volume g75-volume-calf" fill="url(#\${key}-bulge)" d="M259 818 C288 800 315 826 321 870 C318 930 307 982 291 1017 C269 1018 254 981 253 930 Z"/>
+    </g>\`;
+    return \`<g class="g75-muscle-volume-layer" data-garang-volume-layer="anatomical-v7.5">
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="218" cy="286" rx="82" ry="62" fill="url(#\${key}-bulge)"/>
+      <ellipse class="g75-muscle-volume g75-volume-shoulder" cx="502" cy="286" rx="82" ry="62" fill="url(#\${key}-bulge)"/>
+      <path class="g75-muscle-volume g75-volume-chest" fill="url(#\${key}-bulge)" d="M243 286 C282 258 327 258 357 279 L357 398 C322 414 281 406 253 382 C236 356 234 316 243 286 Z"/>
+      <path class="g75-muscle-volume g75-volume-chest" fill="url(#\${key}-bulge)" d="M477 286 C438 258 393 258 363 279 L363 398 C398 414 439 406 467 382 C484 356 486 316 477 286 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#\${key}-long)" d="M157 310 C190 294 220 319 230 364 C229 417 215 459 193 481 C167 468 151 430 151 386 Z"/>
+      <path class="g75-muscle-volume g75-volume-arm" fill="url(#\${key}-long)" d="M563 310 C530 294 500 319 490 364 C491 417 505 459 527 481 C553 468 569 430 569 386 Z"/>
+      <path class="g75-muscle-volume g75-volume-core" fill="url(#\${key}-deep)" d="M292 406 C318 421 338 428 360 428 C382 428 402 421 428 406 L439 582 C425 633 397 669 360 686 C323 669 295 633 281 582 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#\${key}-long)" d="M251 617 C287 596 329 608 351 650 C360 708 353 766 334 812 C315 839 284 846 263 818 C246 782 239 737 242 692 Z"/>
+      <path class="g75-muscle-volume g75-volume-thigh" fill="url(#\${key}-long)" d="M469 617 C433 596 391 608 369 650 C360 708 367 766 386 812 C405 839 436 846 457 818 C474 782 481 737 478 692 Z"/>
+      <path class="g75-muscle-volume g75-volume-calf" fill="url(#\${key}-bulge)" d="M253 806 C281 789 311 813 320 855 C321 913 311 972 296 1013 C278 1028 259 1011 253 987 C247 942 245 891 249 850 Z"/>
+      <path class="g75-muscle-volume g75-volume-calf" fill="url(#\${key}-bulge)" d="M467 806 C439 789 409 813 400 855 C399 913 409 972 424 1013 C442 1028 461 1011 467 987 C473 942 475 891 471 850 Z"/>
+    </g>\`;
+  }
+
   function v74FiberDefs(person='male',view='front'){
     if(person!=='male')return '';
     const key=`g74-${person}-${view}`;
@@ -366,12 +430,13 @@
 
   function v6MeshSVG(gender='male',side='front'){
     const person=gender==='female'?'female':'male',view=['front','side','back'].includes(side)?side:'front';
-    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person);
+    const asset=`./05_assets/body-model-v6/${person}-${view}.svg?v=7.3.0-anatomical-mass`,zones=v73ZoneMarkup(view,person,v6ZoneMarkup(view,person)),volumeDefs=v75VolumeDefs(person,view),volumeMarkup=v75VolumeMarkup(view,person),fiberDefs=v74FiberDefs(person,view),fiberTexture=v74FiberTextureMarkup(view,person);
     const viewLabel=view==='front'?'전면':view==='side'?'측면':'후면',maskId=`g71-body-mask-${person}-${view}`;
-    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.4" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
-      <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask>${fiberDefs}</defs>
+    return `<svg class="g3-body-model g3-performance-silhouette g3-classical-model g3-real-human g6-mesh-model g7-muscular-model" data-garang-classical-model="6" data-garang-visual-revision="7.5" data-garang-body-v2="${view}" data-garang-anatomy-v6="${view}" data-garang-gender="${person}" viewBox="0 0 720 1100" role="img" aria-label="${person==='female'?'여성':'남성'} ${viewLabel} mesh 기반 근육 지도">
+      <defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="720" height="1100" style="mask-type:alpha"><image href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet"/></mask>${volumeDefs}${fiberDefs}</defs>
       <image class="g6-visual-layer" data-garang-visual-layer="mesh" href="${asset}" x="0" y="0" width="720" height="1100" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>
       <g class="g71-overlay-mask" data-garang-overlay-mask="body-alpha" mask="url(#${maskId})">
+        ${volumeMarkup}
         ${fiberTexture}
         <g class="g6-interaction-layer" data-garang-interaction-layer="zones">${zones}</g>
       </g>
@@ -400,7 +465,7 @@
       const order=['front','side','back'];
       views.slice(0,3).forEach((view,i)=>{
         const side=order[i]||'front',old=view.querySelector('svg'),useMesh=(gender==='male'||gender==='female')&&order.includes(side);
-        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.4':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
+        if(useMesh?old?.dataset?.garangAnatomyV6===side&&old?.dataset?.garangGender===gender&&old?.dataset?.garangVisualRevision==='7.5':old?.dataset?.garangAnatomyV5===side&&old?.dataset?.garangGender===gender)return;
         const markup=useMesh?v6MeshSVG(gender,side):(side==='front'?v5FrontSVG(gender):side==='side'?v5SideSVG(gender):v5BackSVG(gender));
         const tpl=document.createElement('template');tpl.innerHTML=markup.trim();
         const next=tpl.content.firstElementChild;view.querySelectorAll('svg').forEach(node=>node.remove());view.appendChild(next);
