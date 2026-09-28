@@ -211,7 +211,7 @@ const baseState=()=>({schemaVersion:6,profile:{goal:'근육 증가'},onboarding:
   assert.equal(context.personalizationPolicy.version,'personalization-policy-v1.0.0');
   assert.equal(context.personalizationPolicy.guardrails.deterministic,true);
   assert.equal(context.personalizationPolicy.guardrails.llmCannotOverride,true);
-  assert.equal(context.intelligenceEpisodes.version,'intelligence-episode-v1.2.0-physiological-recovery-outcome');
+  assert.equal(context.intelligenceEpisodes.version,'intelligence-episode-v1.3.0-physiological-recovery-summary');
   assert.equal(context.userResponseModel.version,'user-response-model-v1.2.0');
   assert.equal(context.recommendationPolicy.version,'recommendation-policy-eval-v1.2.0');
   assert.equal(context.recommendationPolicy.guardrails.neverExceedsDeterministicDecision,true);
