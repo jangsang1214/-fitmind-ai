@@ -1052,3 +1052,101 @@ body{background-image:
     -webkit-overflow-scrolling:touch!important;
   }
 }
+
+
+/* GARANG mobile density pass v1 — screenshot-driven spacing correction */
+#main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse{
+  min-height:0!important;margin:0 0 8px!important;padding:8px 2px 10px!important;align-items:center!important;
+}
+#main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse-copy{
+  gap:2px!important;
+}
+#main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse-copy strong{
+  font-size:11px!important;line-height:1.25!important;
+}
+#main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse-copy small{
+  font-size:8.5px!important;line-height:1.35!important;
+}
+#main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse button{
+  min-height:38px!important;padding:0 12px!important;
+}
+#main[data-garang-screen="workout"] .workout-builder-v2{
+  margin-top:0!important;
+}
+#main[data-garang-screen="workout"] .workout-session-bar{
+  margin-top:0!important;margin-bottom:10px!important;
+}
+#main[data-garang-screen="workout"] .garang-workout-primary-hint{
+  margin:0 0 8px!important;font-size:9.5px!important;line-height:1.45!important;
+}
+#main[data-garang-screen="workout"] .garang-essential-workout-fields{
+  gap:8px!important;margin-bottom:8px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails{
+  margin:8px 0 10px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails>summary{
+  min-height:52px!important;padding:0 14px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails>summary span{
+  gap:2px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails>summary b{
+  font-size:12px!important;
+}
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails>summary small{
+  font-size:8px!important;
+}
+#main[data-garang-screen="workout"] .set-detail-toolbar{
+  margin-top:8px!important;padding-top:8px!important;
+}
+@media(max-width:799px){
+  #main[data-garang-screen="workout"]{
+    padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="workout"] .workout-session-bar{
+    border-radius:16px!important;padding:11px 12px 10px!important;
+  }
+  #main[data-garang-screen="workout"] .workout-session-live>strong{
+    font-size:28px!important;
+  }
+
+  #main[data-garang-screen="coach"] .garang-coach-v2{
+    height:calc(100dvh - 170px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 170px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-head{
+    height:52px!important;padding:0 12px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-chat-scroll{
+    padding:12px 12px 88px!important;
+    scroll-padding-bottom:88px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-message{
+    margin-bottom:12px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-message-text{
+    font-size:12.5px!important;line-height:1.62!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer-wrap{
+    padding:7px 10px calc(9px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #main[data-garang-screen="coach"] .g2-composer{
+    min-height:50px!important;padding:5px 6px 5px 12px!important;
+  }
+  #main[data-garang-screen="coach"] .g2-send{
+    width:38px!important;height:38px!important;min-width:38px!important;
+  }
+  #main[data-garang-screen="coach"] .gci-coach-turn:last-child{
+    margin-bottom:10px!important;scroll-margin-bottom:76px!important;
+  }
+}
+@media(max-width:380px){
+  #main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse{
+    gap:8px!important;
+  }
+  #main[data-garang-screen="workout"] .gws-panel[data-garang-workout-surface="log"] .gws-reuse button{
+    padding:0 10px!important;
+  }
+}
