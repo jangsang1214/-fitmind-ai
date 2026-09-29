@@ -12,22 +12,23 @@ const decisionUI=read('06_features/ui/runtime/garang-coach-decision-v1.js');
 const tests=[];
 function test(name,fn){fn();tests.push(name);console.log('PASS',name);}
 
-test('Daily Workout becomes compact by default and can expand/collapse again',()=>{
+test('Daily Workout keeps one canonical disclosure owner',()=>{
   assert.match(workoutUI,/garang-daily-workout/);
+  assert.match(workoutUI,/data-daily-toggle/);
+  assert.match(workoutUI,/setExpanded\(card,card\.dataset\.expanded!=='1'\)/);
   assert.match(runtime,/enhanceDaily/);
-  assert.match(runtime,/readOpen\('daily',false\)/);
-  assert.match(runtime,/gci-collapse-body/);
-  assert.match(runtime,/간소화/);
-  assert.match(runtime,/더보기/);
+  assert.doesNotMatch(runtime,/readOpen\('daily',false\)/,'generic collapsible must not own Daily Workout open state');
+  assert.match(runtime,/card\.classList\.remove\('gci-collapsible','gci-expanded'\)/);
 });
 
-test('Daily Workout advanced generation controls remain structurally preserved behind disclosure',()=>{
+test('Daily Workout generation controls stay under the canonical preparation disclosure',()=>{
+  assert.match(workoutUI,/data-daily-expand/);
   assert.match(workoutUI,/data-daily-target/);
   assert.match(workoutUI,/data-daily-generate/);
   assert.match(workoutUI,/data-daily-intensity/);
-  assert.match(runtime,/enhanceDaily/);
-  assert.match(runtime,/wrapAfter\(card,head\)/);
-  assert.match(runtime,/body\.hidden=!open/);
+  assert.match(runtime,/const legacyBody=directBody\(card\)/);
+  assert.match(runtime,/expand\.appendChild\(legacyBody\.firstChild\)/);
+  assert.match(runtime,/card\.querySelectorAll\('\.gci-toggle,\.gci-compact-summary'\)/);
 });
 
 test('set-by-set entry has one canonical app owner with reversible details behavior',()=>{
