@@ -99,6 +99,14 @@
         width:100%!important;
         min-height:46px!important;
       }
+      html body #main[data-garang-screen="today"] .garang-daily-workout [data-daily-generate]{
+        box-sizing:border-box!important;
+        min-height:46px!important;
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        touch-action:manipulation!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-summary{
         grid-template-columns:minmax(0,1fr) 36px!important;
       }
@@ -179,6 +187,10 @@
     if (!card) return;
     if (card.hidden) card.hidden = false;
     if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
+    if (card.dataset.expanded === '1') {
+      const expand = card.querySelector('[data-daily-expand]');
+      if (expand?.hidden) expand.hidden = false;
+    }
     if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
     setImportant(card,'display','grid');
     setImportant(card,'visibility','visible');
