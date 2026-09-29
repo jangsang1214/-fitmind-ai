@@ -1,4 +1,4 @@
-/* GARANG FUNCTIONAL RECOVERY v1.4
+/* GARANG FUNCTIONAL RECOVERY v1.5
    Keep canonical app.js in control; repair only UI regressions introduced by reference facades.
    Destructive visible actions use non-blocking in-app confirmation for iOS/WebView safety.
    Data recovery ownership is delegated to GarangDataMigrationV2 so observers cannot fight over #importLegacy. */
@@ -68,50 +68,19 @@
     target.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  function readLiveSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
-  function writeLiveSession(value) { if (value) sessionStorage.setItem(SESSION_KEY, JSON.stringify(value)); else sessionStorage.removeItem(SESSION_KEY); }
-  function formatElapsed(ms) { const total=Math.max(0,Math.floor(ms/1000)),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;return h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-  function updateLiveSessionBar() { const bar=main.querySelector('.garang-live-session');if(!bar)return;const live=readLiveSession();if(!live){bar.remove();clearInterval(sessionTimer);sessionTimer=null;clearTimeout(cancelConfirmTimer);cancelConfirmTimer=null;return;}const time=bar.querySelector('[data-live-elapsed]');const next=formatElapsed(Date.now()-live.startedAt);if(time&&time.textContent!==next)time.textContent=next; }
-  function startLiveSession(builder) { let live=readLiveSession();if(!live){live={startedAt:Date.now()};writeLiveSession(live);}ensureLiveSessionBar(builder);builder.scrollIntoView({behavior:'smooth',block:'start'});requestAnimationFrame(()=>main.querySelector('#wName')?.focus()); }
-  function bindLiveCancel(button){
-    if(!button||button.dataset.garangCancelBound==='1')return;
-    button.dataset.garangCancelBound='1';
-    button.onclick=()=>{
-      if(button.dataset.confirming!=='1'){
-        button.dataset.confirming='1';
-        button.textContent='한 번 더 누르면 종료';
-        clearTimeout(cancelConfirmTimer);
-        cancelConfirmTimer=setTimeout(()=>{
-          if(!button.isConnected)return;
-          button.dataset.confirming='0';
-          button.textContent='종료';
-        },4000);
-        return;
-      }
-      clearTimeout(cancelConfirmTimer);cancelConfirmTimer=null;
-      writeLiveSession(null);
-      updateLiveSessionBar();
-    };
-  }
-  function ensureLiveSessionBar(builder) {
-    if (!readLiveSession()) return;
-    let bar=main.querySelector('.garang-live-session');
-    if(!bar){
-      bar=document.createElement('section');bar.className='garang-live-session';bar.innerHTML=`<div><small>ACTIVE SESSION</small><strong data-live-elapsed>00:00</strong><span>종목을 추가하고 세션 저장을 누르면 실제 기록에 저장됩니다.</span></div><button type="button" data-live-cancel>종료</button>`;
-      builder.parentNode.insertBefore(bar,builder);
-    }
-    bindLiveCancel(bar.querySelector('[data-live-cancel]'));
-    updateLiveSessionBar();if(!sessionTimer)sessionTimer=setInterval(updateLiveSessionBar,1000);
+  function retireLegacyWorkoutSessionOwner(){
+    try{sessionStorage.removeItem(SESSION_KEY);}catch{}
+    main.querySelectorAll('.garang-session-start,.garang-live-session').forEach(node=>node.remove());
+    if(sessionTimer){clearInterval(sessionTimer);sessionTimer=null;}
+    if(cancelConfirmTimer){clearTimeout(cancelConfirmTimer);cancelConfirmTimer=null;}
   }
 
   function repairWorkout() {
     const hero=main.querySelector('.workout-hero-v2'),builder=main.querySelector('.workout-builder-v2');if(!hero||!builder)return;
     hero.querySelectorAll('img,picture,canvas').forEach(el=>el.remove());document.querySelectorAll('.grx-anatomy,.workout-reference-image').forEach(el=>el.remove());main.querySelectorAll('.gx-screen-tabs,.gx-workout-start,.gx-workout-summary').forEach(el=>el.remove());delete main.dataset.gxWorkoutTab;
     main.querySelectorAll('.garang-workout-tabs').forEach(el=>el.remove());
-    if(!main.querySelector('.garang-session-start')){const start=document.createElement('button');start.type='button';start.className='garang-session-start';start.textContent=readLiveSession()?'진행 중인 세션 계속':'세션 기록 시작';start.onclick=()=>startLiveSession(builder);hero.insertAdjacentElement('afterend',start);}
-    [builder,main.querySelector('#addWorkout'),main.querySelector('#clearWorkoutDraft'),main.querySelector('#saveWorkoutSession')].filter(Boolean).forEach(el=>{el.style.setProperty('display',el.tagName==='BUTTON'?'flex':'block','important');el.style.setProperty('visibility','visible','important');el.style.setProperty('opacity','1','important');});
-    const save=main.querySelector('#saveWorkoutSession');if(save&&save.dataset.garangRecoveryBound!=='1'){save.dataset.garangRecoveryBound='1';save.addEventListener('click',()=>{if(main.querySelectorAll('[data-remove-workout]').length>0)setTimeout(()=>{writeLiveSession(null);clearInterval(sessionTimer);sessionTimer=null;},100);},true);}
-    ensureLiveSessionBar(builder);makeModelInteractive();
+    retireLegacyWorkoutSessionOwner();
+    makeModelInteractive();
   }
 
   function navigateAny(page) {
