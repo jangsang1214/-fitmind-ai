@@ -99,6 +99,14 @@
         width:100%!important;
         min-height:46px!important;
       }
+      html body #main[data-garang-screen="today"] .garang-daily-workout [data-daily-generate]{
+        box-sizing:border-box!important;
+        min-height:46px!important;
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        touch-action:manipulation!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-summary{
         grid-template-columns:minmax(0,1fr) 36px!important;
       }
