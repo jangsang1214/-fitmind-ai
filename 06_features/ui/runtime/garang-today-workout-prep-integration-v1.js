@@ -66,6 +66,9 @@
         opacity:1!important;
         pointer-events:auto!important;
       }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .gci-toggle{
+        display:none!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-action{
         max-height:0!important;
         min-height:0!important;
@@ -187,9 +190,16 @@
     if (!card) return;
     if (card.hidden) card.hidden = false;
     if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
-    if (card.dataset.expanded === '1') {
-      const expand = card.querySelector('[data-daily-expand]');
-      if (expand?.hidden) expand.hidden = false;
+    const expanded = card.dataset.expanded === '1';
+    const expand = card.querySelector('[data-daily-expand]');
+    if (expand && expand.hidden === expanded) expand.hidden = !expanded;
+    const gciBody = [...card.children].find(node => node.classList?.contains('gci-collapse-body')) || null;
+    if (gciBody && gciBody.hidden === expanded) gciBody.hidden = !expanded;
+    if (gciBody) {
+      card.classList.toggle('gci-expanded', expanded);
+      if (card.dataset.gciExpanded !== (expanded ? 'true' : 'false')) card.dataset.gciExpanded = expanded ? 'true' : 'false';
+      const gciToggle = card.querySelector('.gci-toggle');
+      if (gciToggle?.getAttribute('aria-expanded') !== (expanded ? 'true' : 'false')) gciToggle?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     }
     if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
     setImportant(card,'display','grid');
