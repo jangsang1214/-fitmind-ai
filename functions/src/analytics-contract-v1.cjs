@@ -15,7 +15,8 @@ module.exports=Object.freeze({
   daily_plan_applied:{stage:'activation',allowedProperties:['source']},
   planned_action_started:{stage:'execution',allowedProperties:['actionType','source']},
   planned_action_completed:{stage:'execution',allowedProperties:['actionType','source']},
-  accumulation_viewed:{stage:'retention',allowedProperties:['source']}
+  accumulation_viewed:{stage:'retention',allowedProperties:['source']},
+  meal_reminder_configured:{stage:'activation',allowedProperties:['enabledCount','timezoneMode','source']}
  }),
  legacyEventMapping:Object.freeze({
   workout_saved:{canonical:'record_created',recordType:'workout'},
