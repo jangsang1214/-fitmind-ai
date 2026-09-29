@@ -320,7 +320,10 @@ async function assertCoachSettles(page){
     await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'바벨 벤치프레스');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2,{timeout:3000});
     await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
-    for(let i=0;i<2;i++){await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(i).click();await tap(page,'#skipWorkoutRest');}
+    await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(0).click();await tap(page,'#skipWorkoutRest');
+    await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(1).click();
+    await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===2,{timeout:3000});
+    if(await page.locator('#skipWorkoutRest').isVisible())await tap(page,'#skipWorkoutRest');
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'draft edit must re-add without forcing completed sets to be checked again');
