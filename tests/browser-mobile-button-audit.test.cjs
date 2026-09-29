@@ -142,11 +142,15 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
     const dailyWorkout=page.locator('.garang-daily-workout');
     await dailyWorkout.waitFor({state:'visible',timeout:10000});
     await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
-    assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'Workout start must not exist before a routine is generated');
+    assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'canonical generated Workout start must not exist before a routine is generated');
+    assert.equal(await page.locator('.garang-daily-workout [data-garang-workout-prep-start="1"]').count(),0,'prep Workout start must not exist before a routine is generated');
     await tap(page,'.garang-daily-workout [data-daily-generate]','generate routine');
-    const generatedStart=page.locator('.garang-daily-workout [data-daily-import]');
+    const generatedStart=page.locator('.garang-daily-workout [data-garang-workout-prep-start="1"]');
     await generatedStart.waitFor({state:'visible',timeout:10000});
-    assert.match(await generatedStart.innerText(),/운동 시작|Start workout/,'generated routine must reveal Workout start');
+    assert.match(await generatedStart.innerText(),/운동 시작|Start workout/,'generated routine must reveal the single prep Workout start');
+    const canonicalGeneratedStart=page.locator('.garang-daily-workout [data-daily-import]');
+    assert.equal(await canonicalGeneratedStart.count(),1,'generated routine must retain the canonical import action behind the prep owner');
+    assert.equal(await canonicalGeneratedStart.isHidden(),true,'canonical generated start must stay hidden while the prep owner exposes the single visible CTA');
 
     await route(page,'coach');
     await tapRecordRoute(page,'workout','audit workout');
