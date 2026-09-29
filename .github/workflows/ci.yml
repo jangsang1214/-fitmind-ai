@@ -114,6 +114,8 @@ jobs:
         run: node tests/browser-mobile-layout-boundary.test.cjs
       - name: Verify Today action flow
         run: node tests/browser-today-action-flow.test.cjs
+      - name: Verify in-app meal reminder to Meal Scan
+        run: node tests/browser-meal-reminder-v1.test.cjs
       - name: Verify Today bottom Check-in CTA
         run: node tests/browser-today-checkin-override.test.cjs
       - name: Verify mobile Check-in CTA and Planner shortcut
