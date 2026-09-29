@@ -10,7 +10,7 @@
   'use strict';
   if (window.GarangTodayWorkoutPrepIntegrationV1) return;
 
-  const VERSION = '1.0.2';
+  const VERSION = '1.0.3';
   const STYLE_ID = 'garang-today-workout-prep-integration-v1-style';
   const PLAN_KEY = 'garang_daily_workout_plan_v1';
   const main = () => document.getElementById('main');
@@ -25,6 +25,10 @@
   function readPlan() {
     try { return JSON.parse(sessionStorage.getItem(PLAN_KEY) || 'null')?.plan || null; }
     catch { return null; }
+  }
+  function planReady() {
+    const plan = readPlan();
+    return Array.isArray(plan?.exercises) && plan.exercises.length > 0;
   }
 
   function workoutExpected(button) {
@@ -132,10 +136,7 @@
       return true;
     }
 
-    const canonical = canonicalWorkoutExecute();
-    if (!canonical) return false;
-    canonical.click();
-    return true;
+    return false;
   }
 
   function ensureStartButton(card) {
@@ -143,6 +144,10 @@
     const head = expand?.querySelector('.garang-daily-head');
     if (!expand || !head) return null;
     let actionRow = expand.querySelector(':scope > [data-garang-workout-prep-actions="1"]');
+    if (!planReady()) {
+      actionRow?.remove();
+      return null;
+    }
     if (!actionRow) {
       actionRow = document.createElement('div');
       actionRow.className = 'garang-daily-actions garang-workout-prep-actions';
@@ -245,10 +250,11 @@
       const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
       const expected = workoutExpected(execute);
       const card = m.querySelector('.garang-daily-workout');
+      const ready = planReady();
       const start = card ? ensureStartButton(card) : null;
-      if (!expected || (card && start)) {
+      if (!expected || (card && (!ready || start))) {
         stopMountRecovery();
-        if (card && start) stabilizeExpectedPresentation(m);
+        if (card) stabilizeExpectedPresentation(m);
         schedule();
         return;
       }
@@ -297,15 +303,27 @@
     const card = m.querySelector('.garang-daily-workout');
     const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     const expected = workoutExpected(execute);
+    const ready = planReady();
     const start = card ? ensureStartButton(card) : null;
 
-    if (expected && card && start) {
+    if (expected && card && (!ready || start)) {
       stopMountRecovery();
       stabilizeExpectedPresentation(m);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
-        generate.classList.remove('primary');
-        generate.classList.add('ghost');
+        generate.classList.toggle('primary', !ready);
+        generate.classList.toggle('ghost', ready);
+        if (!ready) {
+          generate.hidden = false;
+          generate.removeAttribute('aria-hidden');
+          generate.removeAttribute('tabindex');
+          setImportant(generate,'display','inline-flex');
+          setImportant(generate,'visibility','visible');
+          setImportant(generate,'opacity','1');
+          setImportant(generate,'pointer-events','auto');
+        } else {
+          for (const property of ['display','visibility','opacity','pointer-events']) generate.style.removeProperty(property);
+        }
       }
       return;
     }
