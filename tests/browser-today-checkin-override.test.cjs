@@ -38,7 +38,7 @@ function seed(){const today=localDate(),yesterday=localDate(-1),now=new Date().t
   assert.match(initial.toggleText,/오늘 운동 준비하기/);
   assert.equal(initial.checkinAria,'체크인','bottom utility must remain Check-in');
 
-  await page.evaluate(()=>{const toggle=document.querySelector('.garang-daily-workout [data-daily-toggle]');if(!toggle)throw new Error('Today workout preparation toggle missing at interaction boundary');toggle.click();});
+  await page.evaluate(()=>{const card=document.querySelector('.garang-daily-workout'),toggle=card?.querySelector('[data-daily-toggle]'),generate=card?.querySelector('[data-daily-generate]');if(!toggle)throw new Error('Today workout preparation toggle missing at interaction boundary');const s=generate?getComputedStyle(generate):null,b=generate?.getBoundingClientRect();const generationVisible=!!generate&&s?.display!=='none'&&s?.visibility!=='hidden'&&(b?.width||0)>0&&(b?.height||0)>=44;if(card?.dataset?.expanded!=='1'||!generationVisible)toggle.click();});
   try{
     await page.waitForFunction(()=>{const card=document.querySelector('.garang-daily-workout'),generate=card?.querySelector('[data-daily-generate]'),start=card?.querySelector('[data-garang-workout-prep-start="1"]');if(card?.dataset?.expanded!=='1'||!generate||start)return false;const s=getComputedStyle(generate),b=generate.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&b.width>0&&b.height>=44;},null,{timeout:5000});
   }catch(error){
