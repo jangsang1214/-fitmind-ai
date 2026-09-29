@@ -329,7 +329,15 @@
           generate.hidden = false;
           generate.removeAttribute('aria-hidden');
           generate.removeAttribute('tabindex');
+          const generateRow = generate.parentElement;
+          setImportant(generateRow,'display','flex');
+          setImportant(generateRow,'width','100%');
+          setImportant(generateRow,'min-height','46px');
+          setImportant(generateRow,'overflow','visible');
           setImportant(generate,'display','inline-flex');
+          setImportant(generate,'width','100%');
+          setImportant(generate,'min-height','46px');
+          setImportant(generate,'flex','1 1 100%');
           setImportant(generate,'visibility','visible');
           setImportant(generate,'opacity','1');
           setImportant(generate,'pointer-events','auto');
