@@ -143,7 +143,11 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
     await dailyWorkout.waitFor({state:'visible',timeout:10000});
     const routineGenerate=page.locator('.garang-daily-workout [data-daily-generate]');
     if(!(await routineGenerate.isVisible())){
-      await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+      const nativeToggle=page.locator('.garang-daily-workout [data-daily-toggle]');
+      const disclosureToggle=page.locator('.garang-daily-workout .gci-toggle');
+      if(await nativeToggle.isVisible()) await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+      else if(await disclosureToggle.isVisible()) await tap(page,'.garang-daily-workout .gci-toggle','open routine recommendation disclosure');
+      else throw new Error('Today workout preparation has no visible disclosure owner');
     }
     await routineGenerate.waitFor({state:'visible',timeout:3000});
     assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'canonical generated Workout start must not exist before a routine is generated');
