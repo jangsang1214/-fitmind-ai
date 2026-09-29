@@ -800,3 +800,11 @@
 @media(max-width:800px){
   #workoutDraftArea .workout-draft-record{min-width:68px!important}
 }
+
+
+/* Workout action clarity v9.2 — keep an open management menu above later draft rows. */
+@media(max-width:800px){
+  .workout-execution-v2 .draft-area .list-item:has(.workout-draft-manage[open]){
+    z-index:35!important;
+  }
+}
