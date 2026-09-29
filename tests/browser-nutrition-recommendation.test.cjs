@@ -44,6 +44,8 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
       return !!node && /근육 증가/.test(node.innerText || '') && !!node.querySelector('[data-gnr-add="0"]');
     }, null, { timeout: 8000 });
     assert.equal(await page.locator('[data-gnr-surface]').count(), 1, 'Nutrition must expose one recommendation surface');
+    assert.equal(await page.locator('.nutrition-quick-summary').evaluate(el => el.tagName), 'DETAILS', 'technical macro dashboard must use progressive disclosure');
+    assert.equal(await page.locator('.nutrition-quick-summary').getAttribute('open'), null, 'technical nutrition numbers must be collapsed by default');
     assert.match(await surface.innerText(), /근육 증가/);
     assert.ok(await surface.locator('[data-gnr-add="0"]').count() === 1, 'the primary recommendation must be actionable');
     assert.match(await surface.innerText(), /Fiber|Na/, 'source-backed secondary nutrient context should be visible when the selected Food DB rows provide it');
@@ -71,6 +73,16 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     assert.ok(saved.meals[0].items.some(item => item.recommendationContext?.recommendationId === saved.meals[0].recommendationContexts?.[0]?.recommendationId), 'recommended items must retain the same recommendation lineage');
     await page.waitForFunction(() => /최근 추천 선택 1회 저장/.test(document.querySelector('[data-gnr-follow-through]')?.textContent || ''), null, { timeout: 7000 });
     assert.match(await page.locator('[data-gnr-follow-through]').innerText(), /최근 추천 선택 1회 저장/);
+    const review = page.locator('[data-gnr-review="1"]');
+    await review.waitFor({ state: 'visible', timeout: 7000 });
+    assert.match(await review.innerText(), /식사 잘 기록했어요/, 'post-meal review must lead with beginner language');
+    assert.match(await review.innerText(), /단백질/);
+    const detail = review.locator('.gnr-review-detail');
+    assert.equal(await detail.count(), 1, 'numeric meal detail must remain available');
+    assert.equal(await detail.getAttribute('open'), null, 'numeric meal detail must stay collapsed by default');
+    await detail.locator('summary').click();
+    assert.match(await detail.innerText(), /kcal/);
+    assert.match(await detail.innerText(), /단백질/);
     assert.deepEqual(errors, [], `Nutrition recommendation browser errors:\n${errors.join('\n')}`);
     await context.close();
     console.log('browser-nutrition-recommendation WebKit mobile: PASS');
