@@ -151,6 +151,12 @@
   visibility:visible!important;
   opacity:1!important;
 }
+#main[data-garang-screen="workout"] #garangWorkoutEntryDetails[open] .compact-secondary{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
 #main[data-garang-screen="workout"] .garang-luxury-drawer[open] .workout-program-card,
 #main[data-garang-screen="workout"] .garang-luxury-drawer[open] .workout-health-card{
   display:block!important;
