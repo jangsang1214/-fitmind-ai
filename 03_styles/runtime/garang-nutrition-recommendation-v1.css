@@ -13,3 +13,7 @@
 
 .gnr-option-foods{margin-top:7px;color:#9b9d98!important;font-size:10px!important}
 .gnr-option-detail,.gnr-learning-detail{margin-top:7px}.gnr-option-detail summary,.gnr-learning-detail summary{color:#6f746f;font-size:8px;cursor:pointer;list-style:none}.gnr-option-detail summary::-webkit-details-marker,.gnr-learning-detail summary::-webkit-details-marker{display:none}.gnr-option-detail summary::after,.gnr-learning-detail summary::after{content:'＋';margin-left:6px;color:#4fae92}.gnr-option-detail[open] summary::after,.gnr-learning-detail[open] summary::after{content:'−'}.gnr-option-detail>div{padding-top:6px}.gnr-option-detail small{margin-top:2px}.gnr-learning-detail>small{display:block;padding-top:6px;color:#707570;font-size:8px}
+
+.gnr-dismiss{display:block;margin:9px 0 0;padding:4px 0;border:0;background:transparent;color:#666c67;font:500 8px/1.3 var(--g2-ui,system-ui,sans-serif);cursor:pointer}
+.gnr-dismiss:hover,.gnr-dismiss:focus-visible,.gnr-reopen:hover,.gnr-reopen:focus-visible{color:#9db9ae}
+.gnr-dismissed{padding:4px 0 2px}.gnr-dismissed p{margin:8px 0 7px;color:#8c918d;font-size:10px}.gnr-reopen{padding:0;border:0;background:transparent;color:#78988c;font-size:9px;cursor:pointer}
