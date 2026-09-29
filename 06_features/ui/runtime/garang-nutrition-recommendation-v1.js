@@ -9,7 +9,7 @@
   const Core = window.GarangNutritionRecommendation;
   if (!main || !Core) return;
 
-  const VERSION = 'garang-nutrition-recommendation-surface-v1.3.0-beginner-review';
+  const VERSION = 'garang-nutrition-recommendation-surface-v1.4.0-beginner-next-meal';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const ko = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -37,13 +37,15 @@
 
   function optionMarkup(option, index, language) {
     const label = language === 'en' ? `Option ${index + 1}` : `선택 ${index + 1}`;
-    const items = option.items.map(item => `${esc(item.name)} ${Math.round(item.grams)}g`).join(' · ');
+    const names = option.items.map(item => esc(item.name)).join(' · ');
+    const portions = option.items.map(item => `${esc(item.name)} ${Math.round(item.grams)}g`).join(' · ');
     const secondary = [Number.isFinite(Number(option.estimated?.fiber)) ? `Fiber ${Math.round(Number(option.estimated.fiber) * 10) / 10}g` : '', Number.isFinite(Number(option.estimated?.sodium)) ? `Na ${Math.round(Number(option.estimated.sodium))}mg` : ''].filter(Boolean).join(' · ');
     const nutrition = `약 ${Math.round(option.estimated.kcal)} kcal · P ${Math.round(option.estimated.protein)}g${secondary ? ` · ${secondary}` : ''}`;
-    return `<article class="gnr-option" data-gnr-option="${index}"><div class="gnr-option-index">${String(index + 1).padStart(2, '0')}</div><div class="gnr-option-copy"><span>${label}</span><strong>${esc(option.title)}</strong><p>${esc(option.summary)}</p><small>${items}</small><small>${nutrition}</small></div><button type="button" class="gnr-add" data-gnr-add="${index}">${language === 'en' ? 'Add to draft' : '초안에 담기'}</button></article>`;
+    const detailLabel = language === 'en' ? 'View portions and nutrition' : '양·영양정보 보기';
+    return `<article class="gnr-option" data-gnr-option="${index}"><div class="gnr-option-index">${String(index + 1).padStart(2, '0')}</div><div class="gnr-option-copy"><span>${label}</span><strong>${esc(option.title)}</strong><p>${esc(option.summary)}</p><small class="gnr-option-foods">${names}</small><details class="gnr-option-detail"><summary>${detailLabel}</summary><div><small>${portions}</small><small>${nutrition}</small></div></details></div><button type="button" class="gnr-add" data-gnr-add="${index}">${language === 'en' ? 'Use this meal' : '이 추천 담기'}</button></article>`;
   }
 
-  function reviewMarkup(review, language) {
+    function reviewMarkup(review, language) {
     if (!review || review.status !== 'ready') return '';
     const koLang = language !== 'en';
     const headline = review.proteinState === 'enough'
@@ -68,22 +70,22 @@
 
   function surfaceMarkup(model, review) {
     const language = model.goalLabel && !ko() ? 'en' : 'ko';
-    const target = model.target?.proteinTarget;
-    const actual = Math.round(model.actual?.protein || 0);
-    const targetLine = target ? (language === 'en' ? `Saved protein ${actual}g / ${target}g` : `저장된 단백질 ${actual}g / 목표 ${target}g`) : (language === 'en' ? 'Add a body-weight target to make this precise.' : '체중을 입력하면 목표 기준을 더 정확히 맞출 수 있습니다.');
+    const direction = model.direction || {};
     const follow = model.followThrough || {};
     const followLine = Number(follow.sampleSize) > 0
       ? (language === 'en'
-        ? `Recent recommendation saves ${follow.sampleSize} · ${follow.inProgress ? `${follow.inProgress} still in progress` : `${follow.targetReached} same-day protein targets reached`}`
-        : `최근 추천 선택 ${follow.sampleSize}회 저장 · ${follow.inProgress ? `${follow.inProgress}회 결과 기록 중` : `같은 날 저장 단백질 목표 도달 ${follow.targetReached}회`}`)
+        ? `Recent saved recommendations ${follow.sampleSize}`
+        : `최근 추천 선택 ${follow.sampleSize}회 저장`)
       : '';
     const reviewHtml = reviewMarkup(review, language);
     if (model.status !== 'ready') {
-      return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${language === 'en' ? 'The next meal needs one clear signal.' : '다음 한 끼는 기준 하나면 충분합니다.'}</h2><p>${esc(model.message || '')}</p></div></div><small class="gnr-footnote">${language === 'en' ? 'Saved records only · no automatic save' : '저장된 기록 기준 · 자동 저장하지 않음'}</small></section>`;
+      return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${esc(direction.headline || (language === 'en' ? 'One more signal will improve the next meal.' : '다음 한 끼는 기준 하나면 충분합니다.'))}</h2><p>${esc(model.message || direction.reason || '')}</p></div></div><small class="gnr-footnote">${language === 'en' ? 'Saved records only · no automatic save' : '저장된 기록 기준 · 자동 저장하지 않음'}</small></section>`;
     }
     const alternatives = model.options.slice(1).map((option, index) => optionMarkup(option, index + 1, language)).join('');
-    return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${language === 'en' ? 'One useful next meal' : '다음 한 끼를 정하세요'}</h2><p>${esc(model.goalLabel)} · ${targetLine}</p>${followLine ? `<small class="gnr-footnote" data-gnr-follow-through="1">${esc(followLine)}</small>` : ''}</div><button type="button" class="gnr-refresh" data-gnr-refresh aria-label="${language === 'en' ? 'Refresh recommendation' : '추천 다시 계산'}">↻</button></div><div class="gnr-primary-option">${optionMarkup(model.options[0], 0, language)}</div>${alternatives ? `<details class="gnr-alternatives"><summary>${language === 'en' ? 'Other options' : '다른 선택 보기'}</summary><div>${alternatives}</div></details>` : ''}<small class="gnr-footnote">${language === 'en' ? 'Food DB reference values · secondary nutrients appear only when source data exists · add to draft before saving' : 'Food DB 참고치 · 보조 영양소는 출처 값이 있을 때만 표시 · 저장 전 식단 초안에 담습니다'}</small></section>`;
+    const learning = followLine ? `<details class="gnr-learning-detail"><summary>${language === 'en' ? 'Recent recommendation history' : '최근 추천 반영 보기'}</summary><small data-gnr-follow-through="1">${esc(followLine)}</small></details>` : '';
+    return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${esc(direction.headline || (language === 'en' ? 'Keep the next meal simple.' : '다음 끼니는 간단하게 이어가면 돼요.'))}</h2><p>${esc(direction.reason || '')}</p></div><button type="button" class="gnr-refresh" data-gnr-refresh aria-label="${language === 'en' ? 'Refresh recommendation' : '추천 다시 계산'}">↻</button></div><div class="gnr-primary-option">${optionMarkup(model.options[0], 0, language)}</div>${alternatives ? `<details class="gnr-alternatives"><summary>${language === 'en' ? 'Other options' : '다른 선택 보기'}</summary><div>${alternatives}</div></details>` : ''}${learning}<small class="gnr-footnote">${language === 'en' ? 'Food DB based · review or edit before saving' : 'Food DB 기준 · 저장 전에 언제든 수정할 수 있어요'}</small></section>`;
   }
+
   function mount(model, review) {
     if (main.dataset.garangScreen !== 'nutrition') return;
     removeSurface();
