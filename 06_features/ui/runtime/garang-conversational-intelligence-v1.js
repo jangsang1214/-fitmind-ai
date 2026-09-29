@@ -95,6 +95,21 @@ function undoOutcome(userId){
 }
 
 function nearestAssistantAfter(userEl){for(let node=userEl?.nextElementSibling;node;node=node.nextElementSibling){if(node.classList?.contains('user'))break;if(node.classList?.contains('assistant'))return node;}return null;}
+function revealLatestLoggedAction(root,assistant,card){
+ if(!root||!assistant||!card)return;
+ const assistants=[...root.querySelectorAll('.g2-message.assistant')],latest=assistants.at(-1);
+ if(assistant!==latest)return;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  if(!card.isConnected)return;
+  const action=card.querySelector('[data-gci-undo]'),scroller=action?.closest('.g2-chat-scroll');
+  if(!action||!scroller)return;
+  const a=action.getBoundingClientRect(),s=scroller.getBoundingClientRect(),bottomGuard=s.bottom-14,topGuard=s.top+14,max=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+  let next=scroller.scrollTop;
+  if(a.bottom>bottomGuard)next+=a.bottom-bottomGuard;
+  else if(a.top<topGuard)next-=topGuard-a.top;
+  scroller.scrollTop=Math.max(0,Math.min(max,next));
+ }));
+}
 function renderOutcomeForUser(root,userId){
  if(!root)return;const user=[...root.querySelectorAll('.g2-message.user[data-message-id]')].find(el=>String(el.dataset.messageId)===String(userId));if(!user)return;const assistant=nearestAssistantAfter(user);if(!assistant)return;const body=assistant.querySelector('.g2-message-body');if(!body)return;
  const outcome=outcomes.get(userId);if(!outcome)return;let card=body.querySelector(`[data-gci-for="${CSS.escape(String(userId))}"]`);if(!card){card=document.createElement('section');card.className='gci-coach-turn';card.dataset.gciFor=String(userId);body.appendChild(card);}card.dataset.state=outcome.state||outcome.type;
@@ -102,7 +117,7 @@ function renderOutcomeForUser(root,userId){
   card.dataset.sourceIds=(outcome.sourceIds||[]).join(',');
   card.innerHTML=`<small>GARANG FOLLOW-UP</small><strong>${esc(outcome.question)}</strong><p>${english()?'I will ask only what changes the log or next decision.':'기록이나 다음 판단에 필요한 것만 한 가지씩 물어볼게.'}</p>`;
  }else if(outcome.type==='record'){
-  const undone=outcome.state==='undone';card.innerHTML=`<small>${undone?(english()?'LOG UNDONE':'기록 취소됨'):(english()?'AUTO LOGGED':'자동 기록')}</small><strong>${esc(outcome.summary||'')}</strong><p>${undone?(english()?'The automatic record was removed.':'자동 기록을 되돌렸어.'):(english()?'Your report was saved and GARANG recalculated today from the canonical record.':'네 답을 실제 기록에 저장했고 오늘 판단과 계획을 바로 다시 계산했어.')}</p>${impactMarkup(outcome.impact)}${!undone&&outcome.undo?`<div class="gci-coach-actions"><button type="button" data-gci-undo>${english()?'Undo':'실행 취소'}</button></div>`:''}`;card.querySelector('[data-gci-undo]')?.addEventListener('click',()=>undoOutcome(userId),{once:true});
+  const undone=outcome.state==='undone';card.innerHTML=`<small>${undone?(english()?'LOG UNDONE':'기록 취소됨'):(english()?'AUTO LOGGED':'자동 기록')}</small><strong>${esc(outcome.summary||'')}</strong><p>${undone?(english()?'The automatic record was removed.':'자동 기록을 되돌렸어.'):(english()?'Your report was saved and GARANG recalculated today from the canonical record.':'네 답을 실제 기록에 저장했고 오늘 판단과 계획을 바로 다시 계산했어.')}</p>${impactMarkup(outcome.impact)}${!undone&&outcome.undo?`<div class="gci-coach-actions"><button type="button" data-gci-undo>${english()?'Undo':'실행 취소'}</button></div>`:''}`;card.querySelector('[data-gci-undo]')?.addEventListener('click',()=>undoOutcome(userId),{once:true});if(!undone&&outcome.undo)revealLatestLoggedAction(root,assistant,card);
  }else if(outcome.type==='cancel')card.innerHTML=`<small>${english()?'LOG CANCELLED':'기록 취소'}</small><strong>${esc(outcome.summary||'')}</strong>`;
 }
 function renderOutcomes(root){for(const id of outcomes.keys())renderOutcomeForUser(root,id);}
