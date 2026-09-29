@@ -329,6 +329,7 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'draft edit must re-add without forcing completed sets to be checked again');
     const beforeReplace=await page.locator('#workoutDraftArea .list-item strong').first().textContent();
+    await tap(page,'#workoutDraftArea .workout-draft-manage>summary','open workout draft management before replacement');
     await tap(page,'[data-replace-workout="0"]');
     await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="exercise"]')?.hidden===false,{timeout:3000});
     const replacement=page.locator('.gws-panel[data-garang-workout-surface="exercise"] [data-exercise-pick]').filter({hasNotText:beforeReplace}).first();const replacementName=await replacement.getAttribute('data-exercise-pick');await replacement.tap();
