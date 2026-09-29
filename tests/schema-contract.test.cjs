@@ -56,6 +56,15 @@ test('meal schedule is canonical, local-time based, and migration safe',()=>{
  assert.equal(G.validateContract(x).length,0);
 });
 
+test('meal reminder is deterministic, local-time only, and bounded',()=>{
+ const schedule=G.normalizeMealSchedule({configured:true,meals:{breakfast:{enabled:false,preferredTime:'08:00'},lunch:{enabled:true,preferredTime:'12:30'},dinner:{enabled:true,preferredTime:'19:00'}}});
+ assert.equal(G.mealReminderDue(schedule,{now:new Date(2026,8,29,12,40),windowMinutes:90}).mealType,'lunch');
+ assert.equal(G.mealReminderDue(schedule,{now:new Date(2026,8,29,12,29),windowMinutes:90}),null);
+ assert.equal(G.mealReminderDue(schedule,{now:new Date(2026,8,29,14,1),windowMinutes:90}),null);
+ assert.ok(G.nextMealReminderDelay(schedule,{now:new Date(2026,8,29,12,40)})>0);
+ assert.equal(G.mealReminderDue({...schedule,configured:false},{now:new Date(2026,8,29,12,40)}),null);
+});
+
 test('legacy normalized memory importance is upgraded to the 1-5 contract scale',()=>{
  const x=G.migrate({schemaVersion:7,memory:{entries:[{id:'m',importance:.5,confidence:.5,value:'x'}],legacyMigrated:true}});
  assert.equal(x.memory.entries[0].importance,3);
