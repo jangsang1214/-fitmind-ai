@@ -141,7 +141,11 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
 
     const dailyWorkout=page.locator('.garang-daily-workout');
     await dailyWorkout.waitFor({state:'visible',timeout:10000});
-    await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+    const routineGenerate=page.locator('.garang-daily-workout [data-daily-generate]');
+    if(!(await routineGenerate.isVisible())){
+      await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+    }
+    await routineGenerate.waitFor({state:'visible',timeout:3000});
     assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'canonical generated Workout start must not exist before a routine is generated');
     assert.equal(await page.locator('.garang-daily-workout [data-garang-workout-prep-start="1"]').count(),0,'prep Workout start must not exist before a routine is generated');
     await tap(page,'.garang-daily-workout [data-daily-generate]','generate routine');
