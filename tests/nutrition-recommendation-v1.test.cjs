@@ -21,6 +21,8 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(result.actual.meals,0);
   assert.equal(result.actual.observed.protein,false);
   assert.equal(result.remaining.protein,112);
+  assert.equal(result.direction.code,'protein_first');
+  assert.match(result.direction.headline,/단백질/);
   assert.equal(result.options.length,3);
   assert.ok(result.options[0].items.some(item=>item.foodId==='F-CHICKEN'));
   assert.ok(result.options[0].estimated.protein>0);
@@ -95,6 +97,37 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(history.targetReached,0,'a target already satisfied before the recommendation must not be credited as follow-through');
   assert.equal(history.recent[0].classification,'saved');
   console.log('PASS pre-satisfied targets are not credited to recommendation follow-through');
+}
+
+
+{
+  const state=base();state.meals=[{id:'review-1',date,name:'점심',kcal:520,protein:32,carbs:58,fat:18,items:[{name:'닭가슴살',kcal:220,protein:32,carbs:0,fat:5,fiber:0,sodium:180},{name:'현미밥',kcal:300,protein:0,carbs:58,fat:13,fiber:4,sodium:10}]}];
+  const before=JSON.stringify(state),review=Core.reviewLatestMeal(state,{date});
+  assert.equal(review.status,'ready');
+  assert.equal(review.meal.id,'review-1');
+  assert.equal(review.proteinState,'more');
+  assert.equal(review.details.kcal,520);
+  assert.equal(review.details.fiber,4);
+  assert.equal(review.guardrails.noInventedNutrients,true);
+  assert.equal(JSON.stringify(state),before,'beginner meal review must remain read-only');
+  console.log('PASS beginner meal review stays deterministic and read-only');
+}
+
+{
+  const state=base();state.meals=[{id:'review-partial',date,kcal:400,protein:120,carbs:40,fat:10,items:[{name:'A',fiber:3,sodium:100},{name:'B',fiber:null,sodium:null}]}];
+  const review=Core.reviewLatestMeal(state,{date});
+  assert.equal(review.proteinState,'enough');
+  assert.equal(review.details.fiber,null,'partial secondary nutrient coverage must stay hidden');
+  assert.equal(review.details.sodium,null,'partial sodium coverage must stay hidden');
+  console.log('PASS beginner review hides incomplete secondary nutrients');
+}
+
+{
+  const state=base();state.meals=[{id:'enough-direction',date,protein:120,kcal:900,carbs:100,fat:25}];
+  const result=Core.recommend(state,foods,{date});
+  assert.equal(result.direction.code,'balanced');
+  assert.doesNotMatch(result.direction.headline,/g|kcal|%/,'beginner direction must not expose technical numbers');
+  console.log('PASS next-meal direction stays simple after protein signal is covered');
 }
 
 console.log('nutrition-recommendation-v1: PASS');
