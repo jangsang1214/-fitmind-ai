@@ -21,6 +21,8 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(result.actual.meals,0);
   assert.equal(result.actual.observed.protein,false);
   assert.equal(result.remaining.protein,112);
+  assert.equal(result.direction.code,'protein_first');
+  assert.match(result.direction.headline,/단백질/);
   assert.equal(result.options.length,3);
   assert.ok(result.options[0].items.some(item=>item.foodId==='F-CHICKEN'));
   assert.ok(result.options[0].estimated.protein>0);
@@ -118,6 +120,14 @@ const base=()=>({profile:{age:29,height:174,weight:70,gender:'male',goal:'근육
   assert.equal(review.details.fiber,null,'partial secondary nutrient coverage must stay hidden');
   assert.equal(review.details.sodium,null,'partial sodium coverage must stay hidden');
   console.log('PASS beginner review hides incomplete secondary nutrients');
+}
+
+{
+  const state=base();state.meals=[{id:'enough-direction',date,protein:120,kcal:900,carbs:100,fat:25}];
+  const result=Core.recommend(state,foods,{date});
+  assert.equal(result.direction.code,'balanced');
+  assert.doesNotMatch(result.direction.headline,/g|kcal|%/,'beginner direction must not expose technical numbers');
+  console.log('PASS next-meal direction stays simple after protein signal is covered');
 }
 
 console.log('nutrition-recommendation-v1: PASS');
