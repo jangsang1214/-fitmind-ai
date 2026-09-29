@@ -52,7 +52,7 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     await page.waitForFunction(() => window.GarangAgentStateBridge.getState()?.analytics?.events?.some(event => event.name === 'next_meal_recommendation_shown'), null, { timeout: 5000 });
     const shownEvidence = await page.evaluate(() => window.GarangAgentStateBridge.getState().analytics.events.find(event => event.name === 'next_meal_recommendation_shown'));
     assert.ok(shownEvidence?.props?.recommendationId,'shown recommendation must carry a stable lineage id');
-    assert.doesNotMatch(shownEvidence.props.recommendationId,/112|protein/i,'analytics recommendation id must not encode nutrient measurements');
+    assert.match(shownEvidence.props.recommendationId,/^\d{4}-\d{2}-\d{2}:[a-z0-9-]+:garang-nutrition-recommendation-v1:m\d+:(?:protein_first|balanced)$/,'analytics recommendation id may carry semantic direction but must not encode nutrient measurements');
     await surface.locator('[data-gnr-dismiss]').click();
     await page.waitForFunction(() => document.querySelector('[data-gnr-reopen]') && window.GarangAgentStateBridge.getState()?.analytics?.events?.some(event => event.name === 'next_meal_recommendation_dismissed'), null, { timeout: 5000 });
     await page.locator('[data-gnr-reopen]').click();
