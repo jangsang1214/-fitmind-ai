@@ -8,7 +8,7 @@ const Core=window.GarangConversationalIntelligenceCore;
 const main=document.getElementById('main');
 if(!Core||!main||window.GarangConversationalIntelligenceV1)return;
 
-const VERSION='garang-conversational-intelligence-v1.1.0';
+const VERSION='garang-conversational-intelligence-v1.1.1';
 const KB_URL='./04_data/knowledge/coach-followup-kb-v1.json?v=1.0.0';
 const STYLE_ID='garang-conversational-intelligence-v1-style';
 const PLAN_DOMAINS=Object.freeze(['training','recovery','nutrition']);
