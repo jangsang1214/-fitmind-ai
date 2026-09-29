@@ -118,6 +118,65 @@
         "localDate",
         "source"
       ]
+    },
+    "meal_scan_confirmed": {
+      "stage": "activation",
+      "allowedProperties": [
+        "itemCount",
+        "source"
+      ]
+    },
+    "meal_review_viewed": {
+      "stage": "engagement",
+      "allowedProperties": [
+        "mealId",
+        "proteinState",
+        "source"
+      ]
+    },
+    "next_meal_recommendation_shown": {
+      "stage": "intelligence",
+      "allowedProperties": [
+        "recommendationId",
+        "optionId",
+        "direction",
+        "source"
+      ]
+    },
+    "next_meal_recommendation_accepted": {
+      "stage": "execution",
+      "allowedProperties": [
+        "recommendationId",
+        "optionId",
+        "direction",
+        "source"
+      ]
+    },
+    "next_meal_recommendation_modified": {
+      "stage": "execution",
+      "allowedProperties": [
+        "recommendationId",
+        "optionId",
+        "source"
+      ]
+    },
+    "next_meal_recommendation_dismissed": {
+      "stage": "engagement",
+      "allowedProperties": [
+        "recommendationId",
+        "optionId",
+        "direction",
+        "source"
+      ]
+    },
+    "next_meal_recorded": {
+      "stage": "execution",
+      "allowedProperties": [
+        "recommendationId",
+        "optionId",
+        "mealId",
+        "source"
+      ]
     }
   },
   "derivedMetrics": {
