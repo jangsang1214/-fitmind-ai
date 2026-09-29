@@ -196,6 +196,15 @@
     const gciBody = [...card.children].find(node => node.classList?.contains('gci-collapse-body')) || null;
     if (gciBody && gciBody.hidden === expanded) gciBody.hidden = !expanded;
     if (gciBody) {
+      if (expanded) {
+        if (gciBody.hidden) gciBody.hidden = false;
+        setImportant(gciBody,'display','grid');
+        setImportant(gciBody,'visibility','visible');
+        setImportant(gciBody,'opacity','1');
+        setImportant(gciBody,'overflow','visible');
+      } else {
+        for (const property of ['display','visibility','opacity','overflow']) gciBody.style.removeProperty(property);
+      }
       card.classList.toggle('gci-expanded', expanded);
       if (card.dataset.gciExpanded !== (expanded ? 'true' : 'false')) card.dataset.gciExpanded = expanded ? 'true' : 'false';
       const gciToggle = card.querySelector('.gci-toggle');
