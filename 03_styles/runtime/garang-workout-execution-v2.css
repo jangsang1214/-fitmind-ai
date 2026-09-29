@@ -775,3 +775,28 @@
   .workout-draft-actions{align-items:center}
   .workout-draft-record{min-width:68px!important}
 }
+
+/* Workout action clarity v9.1 — final touch-target guard after shared button utilities. */
+#workoutDraftArea .workout-draft-record{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  min-width:72px!important;
+  padding-block:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#workoutDraftArea .workout-draft-manage>summary{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  min-width:64px!important;
+  padding:0 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:800px){
+  #workoutDraftArea .workout-draft-record{min-width:68px!important}
+}
