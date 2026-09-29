@@ -9,7 +9,7 @@
 'use strict';
 const main=document.getElementById('main');if(!main)return;
 const Core=window.GarangWorkoutIntelligence;if(!Core)return;
-const VERSION='garang-workout-intelligence-ui-v1';
+const VERSION='garang-workout-intelligence-ui-v1.1-import-execution';
 const PLAN_KEY='garang_daily_workout_plan_v1';
 const IMPORT_KEY='garang_workout_import_queue_v1';
 let dbPromise=null,queued=false,importBusy=false;
