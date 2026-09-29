@@ -88,14 +88,11 @@
         pointer-events:none!important;
       }
       html body #main[data-garang-screen="today"] .garang-daily-workout [data-garang-workout-prep-actions="1"]{
-        display:none!important;
-      }
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-garang-workout-prep-actions="1"]{
         display:flex!important;
         gap:8px!important;
         padding:0 0 10px!important;
       }
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-garang-workout-prep-start="1"]{
+      html body #main[data-garang-screen="today"] .garang-daily-workout [data-garang-workout-prep-start="1"]{
         display:inline-flex!important;
         align-items:center!important;
         justify-content:center!important;
@@ -123,7 +120,7 @@
         min-height:32px!important;
         justify-content:flex-end!important;
       }
-      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .garang-daily-result [data-daily-import]{
+      html body #main[data-garang-screen="today"] .garang-daily-workout .garang-daily-result [data-daily-import]{
         display:none!important;
       }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout [data-daily-generate]{
