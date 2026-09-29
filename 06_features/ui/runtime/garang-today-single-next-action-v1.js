@@ -36,6 +36,7 @@
   const hasActivationRecordEvent = snapshot => list(snapshot?.analytics?.events).some(event => activationRecordEvents.has(event?.name));
   let scheduled = false;
   let delayedTimer = 0;
+  let mealTimer = 0;
   let latestModel = null;
   let observedFlow = null;
   let flowObserver = null;
@@ -98,8 +99,16 @@
     return false;
   }
 
+  function mealReminderAction() {
+    const reminder = window.GarangMealReminderBridge?.current?.() || null;
+    if (!reminder) return null;
+    const labels = isKo() ? { breakfast:'아침', lunch:'점심', dinner:'저녁' } : { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner' };
+    const mealLabel = labels[reminder.mealType] || (isKo() ? '식사' : 'Meal');
+    return { id:'meal-reminder', label:isKo() ? `${mealLabel} 사진 찍기` : `Scan ${mealLabel.toLowerCase()}`, reminder, mealLabel };
+  }
+
   function todayActionFor(model) {
-    return actionFor(model);
+    return mealReminderAction() || actionFor(model);
   }
 
   function workoutPrepOwnsExecution(model, action) {
@@ -139,8 +148,26 @@
     });
   }
 
-  function writeButtonLabel(button, label) {
-    if (!button) return;
+  function rememberReminderCopy(flow) {
+    for (const [selector,key] of [['.gtf-decision h2','GsnDecision'],['.gtf-decision p','GsnReason']]) {
+      const node=flow?.querySelector(selector);if(node&&node.dataset[key]===undefined)node.dataset[key]=node.textContent||'';
+    }
+  }
+  function applyReminderCopy(flow, action) {
+    if (!flow || action?.id!=='meal-reminder') return;
+    rememberReminderCopy(flow);
+    const title=flow.querySelector('.gtf-decision h2'),reason=flow.querySelector('.gtf-decision p');
+    if(title)title.textContent=isKo()?`${action.mealLabel} 드실 시간이네요.`:`It’s time for ${action.mealLabel.toLowerCase()}.`;
+    if(reason)reason.textContent=isKo()?'사진 한 장만 찍어주세요. 나머지는 GARANG이 이어서 볼게요.':'Take one photo. GARANG will handle the rest.';
+  }
+  function restoreReminderCopy(flow) {
+    if(!flow)return;
+    for (const [selector,key] of [['.gtf-decision h2','GsnDecision'],['.gtf-decision p','GsnReason']]) {
+      const node=flow.querySelector(selector);if(node&&node.dataset[key]!==undefined){node.textContent=node.dataset[key];delete node.dataset[key];}
+    }
+  }
+
+  function writeButtonLabel(button, label) {    if (!button) return;
     let textNode = Array.from(button.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
     if (!textNode) {
       textNode = document.createTextNode('');
@@ -232,6 +259,7 @@
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
     const action = todayActionFor(model);
+    if(action?.id==='meal-reminder'){window.GarangMealReminderBridge?.markShown?.(action.reminder);applyReminderCopy(flow,action);}else restoreReminderCopy(flow);
 
     if (!action) {
       main.removeAttribute('data-garang-next-owner');
@@ -268,9 +296,15 @@
     suppressLegacyCheckin(flow, true);
   }
 
+  function scheduleMealWake() {
+    clearTimeout(mealTimer);mealTimer=0;
+    const delay=Number(window.GarangMealReminderBridge?.nextDelayMs?.());
+    if(Number.isFinite(delay)&&delay>0&&delay<=86400000)mealTimer=setTimeout(schedule,Math.max(1000,delay+50));
+  }
+
   function schedule() {
-    if (!scheduled) {
-      scheduled = true;
+    scheduleMealWake();
+    if (!scheduled) {      scheduled = true;
       requestAnimationFrame(() => requestAnimationFrame(sync));
     }
     clearTimeout(delayedTimer);
@@ -319,6 +353,7 @@
     if (action === 'coach') return afterRoute('coach');
     if (action === 'execute') return execute(model);
     if (action === 'accumulation') return afterRoute('progress');
+    if (action === 'meal-reminder') return window.GarangMealReminderBridge?.open?.() || false;
   }
 
   document.addEventListener('click', event => {
@@ -333,7 +368,7 @@
   document.documentElement.addEventListener('garang:language-changed', schedule);
   window.addEventListener('pageshow', schedule);
 
-  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, syncNow, currentModel, actionFor, todayActionFor, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
+  window.GarangTodaySingleNextActionV1 = Object.freeze({ version:VERSION, refresh:schedule, syncNow, currentModel, actionFor, todayActionFor, mealReminderAction, hasTodayCheckin, hasTodayRecord, activationBeforeCheckin, hasActivationRecordEvent });
   ensureStyle();
   schedule();
 })();
