@@ -191,7 +191,7 @@ document.addEventListener('click',event=>{
     },120);
   }
   const target=event.target.closest?.('#saveWorkoutSession');if(!target)return;
-  const s=draftSummary(),prComparisons=bridge()?.draftPRComparisons?.()||[];pendingResult={...s,prComparisons,elapsedMs:sessionStartedAt?Date.now()-sessionStartedAt:0};
+  const s=bridge()?.sessionRecordedSummary?.()||draftSummary(),prComparisons=bridge()?.draftPRComparisons?.()||[];pendingResult={...s,prComparisons,elapsedMs:sessionStartedAt?Date.now()-sessionStartedAt:0};
 },true);
 window.addEventListener('garang:state-updated',event=>{
   if(event.detail?.event!=='workout_saved'||!pendingResult)return;
