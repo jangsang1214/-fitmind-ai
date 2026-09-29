@@ -313,10 +313,11 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'draft edit must reopen previously completed sets as completed');
     assert.equal(await page.locator('#wSets').inputValue(),'2','draft edit must preserve the accepted completed-set count across render');
     assert.equal(await page.locator('#wDuration').inputValue(),'30','draft edit must preserve workout duration across render');
-    await page.locator('#wName').fill('Squat');await page.locator('#wName').dispatchEvent('change');
+    assert.equal(await page.locator('#wName').isVisible(),false,'duplicate workout-name input must stay internalized on the unified exercise surface');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'Squat');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2&&document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===0,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'changing exercise must reset completion state and establish a fresh current set');
-    await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'바벨 벤치프레스');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2,{timeout:3000});
     await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(i).click();await tap(page,'#skipWorkoutRest');}
