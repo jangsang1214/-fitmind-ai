@@ -15,7 +15,7 @@ for(const key of ['rawHealthPayloads','rawChatPayloads','email','displayName','p
   assert.equal(contract.privacy[key],false,`${key} must remain excluded from analytics`);
 }
 
-for(const name of ['signup_completed','onboarding_completed','record_created','first_record_created','today_viewed','coach_opened','coach_recommendation_shown','daily_plan_applied','planned_action_started','planned_action_completed','accumulation_viewed','meal_reminder_configured']){
+for(const name of ['signup_completed','onboarding_completed','record_created','first_record_created','today_viewed','coach_opened','coach_recommendation_shown','daily_plan_applied','planned_action_started','planned_action_completed','accumulation_viewed','meal_reminder_configured','meal_reminder_shown','meal_reminder_opened','meal_scan_started_from_reminder']){
   assert.ok(contract.canonicalEvents[name],`missing canonical analytics event: ${name}`);
 }
 
@@ -32,6 +32,8 @@ assert.match(app,/privacy:\{consent:\{analytics:false\}\}/,'analytics consent mu
 assert.match(app,/analyticsConsentSetting/,'Settings must expose an explicit analytics consent control');
 assert.match(app,/saveMealSchedule/,'Settings must expose beginner meal schedule configuration');
 assert.match(app,/meal_reminder_configured/,'meal schedule configuration must emit the canonical analytics event');
+assert.match(app,/GarangMealReminderBridge/,'app must keep Meal Scan reminder action ownership explicit');
+assert.doesNotMatch(app,/Notification\.requestPermission/,'meal schedule/reminder v1 must not request browser notification permission implicitly');
 assert.match(app,/SERVICES\.analyticsEndpoint&&state\.privacy\?\.consent\?\.analytics===true/,'remote analytics must require explicit in-app consent');
 assert.match(app,/delete out\.analytics;delete out\.errors/,'analytics and local error logs must not piggyback on general Cloud Sync');
 assert.match(app,/FIRST_RECORD_EVENT_TYPES/);
