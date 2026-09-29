@@ -742,3 +742,19 @@
     margin:12px 0 0;
   }
 }
+
+
+/* Workout IA v8.1 — Overview utility drawers remain visible after surface redistribution. */
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutProgram,
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutHealth{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutProgram>summary,
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutHealth>summary{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
