@@ -91,6 +91,33 @@
         "timezoneMode",
         "source"
       ]
+    },
+    "meal_reminder_shown": {
+      "stage": "activation",
+      "allowedProperties": [
+        "mealType",
+        "preferredTime",
+        "localDate",
+        "source"
+      ]
+    },
+    "meal_reminder_opened": {
+      "stage": "activation",
+      "allowedProperties": [
+        "mealType",
+        "preferredTime",
+        "localDate",
+        "source"
+      ]
+    },
+    "meal_scan_started_from_reminder": {
+      "stage": "activation",
+      "allowedProperties": [
+        "mealType",
+        "preferredTime",
+        "localDate",
+        "source"
+      ]
     }
   },
   "derivedMetrics": {
