@@ -4,7 +4,7 @@
 (() => {
 'use strict';
 const main=document.getElementById('main');if(!main)return;
-const VERSION='garang-collapsible-intelligence-ui-v1.2';
+const VERSION='garang-collapsible-intelligence-ui-v1.1';
 const STORE_PREFIX='garang_ui_expand_v1_';
 let queued=false;
 const english=()=>document.documentElement.lang==='en';
