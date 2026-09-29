@@ -16,6 +16,7 @@
   const raf = callback => typeof window.requestAnimationFrame === 'function' ? window.requestAnimationFrame(callback) : window.setTimeout(callback, 0);
   let foodPromise = null;
   let scheduled = false;
+  const dismissedRecommendationIds = new Set();
 
   function currentDate() {
     return Core.localDate();
@@ -33,6 +34,27 @@
 
   function removeSurface() {
     main.querySelector('[data-gnr-surface]')?.remove();
+  }
+
+  function recommendationEvidence(model, option, index = 0) {
+    if (!model || !option) return null;
+    const recommendationVersion = String(model.version || Core.VERSION || 'nutrition-v1');
+    const recommendationDate = String(model.date || currentDate()).slice(0, 10);
+    const optionId = String(option.id || index);
+    const direction = String(model.direction?.code || 'balanced');
+    const mealOrdinal = Math.max(0, Number(model.actual?.meals) || 0);
+    const recommendationId = [recommendationDate, optionId, recommendationVersion, `m${mealOrdinal}`, direction].join(':');
+    const proteinTarget = Number.isFinite(Number(model.target?.proteinTarget)) ? Number(model.target.proteinTarget) : null;
+    const proteinActualBefore = Number.isFinite(Number(model.actual?.protein)) ? Number(model.actual.protein) : null;
+    const proteinRemainingBefore = Number.isFinite(Number(model.remaining?.protein)) ? Number(model.remaining.protein) : null;
+    return {
+      analytics:{recommendationId,optionId,direction,source:'nutrition'},
+      context:{recommendationId,source:'next_meal',version:recommendationVersion,date:recommendationDate,optionId,goal:model.goal || '',basis:model.recommendationBasis || 'goal_and_food_db',proteinTarget,proteinActualBefore,proteinRemainingBefore}
+    };
+  }
+
+  function recordEvidence(name, props, once = true) {
+    try { return window.GarangNutritionEvidenceBridge?.record?.(name, props, once) === true; } catch { return false; }
   }
 
   function optionMarkup(option, index, language) {
@@ -83,7 +105,11 @@
     }
     const alternatives = model.options.slice(1).map((option, index) => optionMarkup(option, index + 1, language)).join('');
     const learning = followLine ? `<details class="gnr-learning-detail"><summary>${language === 'en' ? 'Recent recommendation history' : '최근 추천 반영 보기'}</summary><small data-gnr-follow-through="1">${esc(followLine)}</small></details>` : '';
-    return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${esc(direction.headline || (language === 'en' ? 'Keep the next meal simple.' : '다음 끼니는 간단하게 이어가면 돼요.'))}</h2><p>${esc(direction.reason || '')}</p></div><button type="button" class="gnr-refresh" data-gnr-refresh aria-label="${language === 'en' ? 'Refresh recommendation' : '추천 다시 계산'}">↻</button></div><div class="gnr-primary-option">${optionMarkup(model.options[0], 0, language)}</div>${alternatives ? `<details class="gnr-alternatives"><summary>${language === 'en' ? 'Other options' : '다른 선택 보기'}</summary><div>${alternatives}</div></details>` : ''}${learning}<small class="gnr-footnote">${language === 'en' ? 'Food DB based · review or edit before saving' : 'Food DB 기준 · 저장 전에 언제든 수정할 수 있어요'}</small></section>`;
+    const primaryEvidence = recommendationEvidence(model, model.options[0], 0);
+    if (primaryEvidence && dismissedRecommendationIds.has(primaryEvidence.analytics.recommendationId)) {
+      return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-dismissed"><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><p>${language === 'en' ? 'Recommendation hidden for now.' : '이번 추천은 잠시 숨겼어요.'}</p><button type="button" class="gnr-reopen" data-gnr-reopen="${esc(primaryEvidence.analytics.recommendationId)}">${language === 'en' ? 'Show again' : '다시 보기'}</button></div></section>`;
+    }
+    return `<section class="gnr-surface" data-gnr-surface="1" data-gnr-version="${VERSION}">${reviewHtml}<div class="gnr-head"><div><span class="gnr-eyebrow">GARANG / NEXT MEAL</span><h2>${esc(direction.headline || (language === 'en' ? 'Keep the next meal simple.' : '다음 끼니는 간단하게 이어가면 돼요.'))}</h2><p>${esc(direction.reason || '')}</p></div><button type="button" class="gnr-refresh" data-gnr-refresh aria-label="${language === 'en' ? 'Refresh recommendation' : '추천 다시 계산'}">↻</button></div><div class="gnr-primary-option">${optionMarkup(model.options[0], 0, language)}</div>${alternatives ? `<details class="gnr-alternatives"><summary>${language === 'en' ? 'Other options' : '다른 선택 보기'}</summary><div>${alternatives}</div></details>` : ''}<button type="button" class="gnr-dismiss" data-gnr-dismiss>${language === 'en' ? 'Skip for now' : '오늘은 건너뛰기'}</button>${learning}<small class="gnr-footnote">${language === 'en' ? 'Food DB based · review or edit before saving' : 'Food DB 기준 · 저장 전에 언제든 수정할 수 있어요'}</small></section>`;
   }
 
   function mount(model, review) {
@@ -99,6 +125,11 @@
     if (!node) return;
     node._garangNutritionModel = model || null;
     hero.insertAdjacentElement('afterend', node);
+    if (review?.status === 'ready' && review?.meal?.id) recordEvidence('meal_review_viewed',{mealId:review.meal.id,proteinState:review.proteinState || 'unknown',source:'nutrition'},true);
+    if (model?.status === 'ready' && model.options?.[0]) {
+      const evidence = recommendationEvidence(model, model.options[0], 0);
+      if (evidence && !dismissedRecommendationIds.has(evidence.analytics.recommendationId)) recordEvidence('next_meal_recommendation_shown',evidence.analytics,true);
+    }
   }
 
   async function refresh() {
@@ -119,20 +150,41 @@
   }
 
   document.addEventListener('click', event => {
+    const reopen = event.target.closest?.('[data-gnr-reopen]');
+    if (reopen) {
+      event.preventDefault();
+      dismissedRecommendationIds.delete(String(reopen.dataset.gnrReopen || ''));
+      schedule();
+      return;
+    }
+    const dismiss = event.target.closest?.('[data-gnr-dismiss]');
+    if (dismiss) {
+      const surface = dismiss.closest('[data-gnr-surface]');
+      const model = surface?._garangNutritionModel;
+      const option = model?.options?.[0];
+      const evidence = recommendationEvidence(model, option, 0);
+      if (!evidence) return;
+      event.preventDefault();
+      dismissedRecommendationIds.add(evidence.analytics.recommendationId);
+      recordEvidence('next_meal_recommendation_dismissed', evidence.analytics, true);
+      schedule();
+      return;
+    }
     const add = event.target.closest?.('[data-gnr-add]');
     if (add) {
       const surface = add.closest('[data-gnr-surface]');
       const model = surface?._garangNutritionModel;
-      const option = model?.options?.[Number(add.dataset.gnrAdd)];
-      if (!option) return;
+      const index = Number(add.dataset.gnrAdd);
+      const option = model?.options?.[index];
+      const evidence = recommendationEvidence(model, option, index);
+      if (!option || !evidence) return;
       event.preventDefault();
-      const proteinTarget = Number.isFinite(Number(model.target?.proteinTarget)) ? Number(model.target.proteinTarget) : null, proteinActualBefore = Number.isFinite(Number(model.actual?.protein)) ? Number(model.actual.protein) : null, proteinRemainingBefore = Number.isFinite(Number(model.remaining?.protein)) ? Number(model.remaining.protein) : null, recommendationVersion = model.version || Core.VERSION || 'nutrition-v1', recommendationDate = model.date || currentDate(), optionId = option.id || String(Number(add.dataset.gnrAdd)), recommendationId = [recommendationDate, optionId, recommendationVersion, proteinTarget ?? 'na', proteinActualBefore ?? 'na', proteinRemainingBefore ?? 'na'].join(':');
-      const recommendationContext = { recommendationId, source: 'next_meal', version: recommendationVersion, date: recommendationDate, optionId, goal: model.goal || '', basis: model.recommendationBasis || 'goal_and_food_db', proteinTarget, proteinActualBefore, proteinRemainingBefore };
-      const result = window.GarangNutritionDraftBridge?.add?.(option.items.map(item => ({ ...item, recommendationContext })));
+      const result = window.GarangNutritionDraftBridge?.add?.(option.items.map(item => ({ ...item, recommendationContext:evidence.context })));
       if (!result?.ok) {
         add.textContent = ko() ? '초안에 담지 못했습니다' : 'Could not add';
         return;
       }
+      recordEvidence('next_meal_recommendation_accepted', evidence.analytics, true);
       add.disabled = true;
       add.textContent = ko() ? '초안에 담김' : 'Added to draft';
       raf(() => document.querySelector('.manual-entry')?.setAttribute('open', ''));
