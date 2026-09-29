@@ -10,6 +10,7 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const polish=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-polish-v3.js'),'utf8');
 const polishCss=fs.readFileSync(path.join(root,'03_styles','runtime','garang-polish-v3.css'),'utf8');
 const workoutLibrary=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-library-v2.js'),'utf8');
+const functionalRecovery=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-functional-recovery.js'),'utf8');
 const swRuntime=fs.readFileSync(path.join(root,'02_core','sw-runtime.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
@@ -36,6 +37,12 @@ assert.ok(runtime.includes("function hardHideCanonicalSave()")&&runtime.includes
 assert.ok(runtime.includes("draftSummary().exercises===0&&completedCurrent()===0")&&runtime.includes("sessionStartedAt=0;restUntil=0;pendingResult=null")&&runtime.includes("clearPersistedSession()"),'finishing a zero-set session must end cleanly instead of leaving an inert disabled finish control');
 assert.ok(runtime.includes("function hardHideCanonicalSave()")&&runtime.includes("save.hidden=true")&&runtime.includes("workout-canonical-save")&&runtime.includes("style.setProperty('display','none','important')")&&runtime.includes("save.setAttribute('aria-hidden','true')"),'legacy text save control must be hard-hidden while remaining the canonical persistence owner');
 assert.ok(runtime.includes("garang:workout-exercise-added")&&runtime.includes("updateLive();persistSessionState()"),'adding an exercise must preserve session state without silently starting the workout clock');
+assert.equal(functionalRecovery.includes("bar.className='garang-live-session'"),false,'functional recovery must not create a second Workout session UI');
+assert.equal(functionalRecovery.includes("start.className='garang-session-start'"),false,'functional recovery must not create a duplicate session-start control');
+assert.ok(functionalRecovery.includes("retireLegacyWorkoutSessionOwner()"),'functional recovery must actively remove stale duplicate Workout session chrome');
+assert.ok(intelligence.includes("ko()?'루틴 추천 생성':'Generate routine'"),'Today must lead with routine generation before workout start');
+assert.ok(intelligence.includes("ko()?'운동 시작':'Start workout'"),'generated routine must expose the single workout-start action');
+assert.ok(app.includes('class="workout-draft-actions"')&&app.includes('class="workout-draft-manage"')&&app.includes("revealWorkoutAction('execution')"),'draft exercise actions must keep one primary record action and visible post-action feedback');
 assert.ok(!runtime.includes("executionSessionBound"),'raw Add clicks must not start the live session timer');
 assert.ok(runtime.includes("current-set"),'execution surface must visually own a current set state');
 assert.ok(runtime.includes("headerScope.querySelectorAll('.workout-set-table-head')")&&runtime.includes("forEach(node=>node.remove())"),'active Log enhancement must collapse duplicate set-table headers to exactly one');
