@@ -187,6 +187,10 @@
     if (!card) return;
     if (card.hidden) card.hidden = false;
     if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
+    if (card.dataset.expanded === '1') {
+      const expand = card.querySelector('[data-daily-expand]');
+      if (expand?.hidden) expand.hidden = false;
+    }
     if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
     setImportant(card,'display','grid');
     setImportant(card,'visibility','visible');
