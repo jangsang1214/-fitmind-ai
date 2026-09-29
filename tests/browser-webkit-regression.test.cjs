@@ -306,8 +306,12 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets===2,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'only completed execution sets must be serialized into the workout draft');
     assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'committing an exercise must collapse advanced tools so draft actions return to the active viewport hierarchy');
-    const draftActions=await page.locator('#workoutDraftArea [data-edit-workout],#workoutDraftArea [data-replace-workout],#workoutDraftArea [data-execute-workout],#workoutDraftArea [data-remove-workout]').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {h:r.height,w:r.width};}));
-    assert.ok(draftActions.every(x=>x.h>=44&&x.w>0),'mobile workout draft actions must keep touch-safe hit targets');
+    const primaryDraftAction=await page.locator('#workoutDraftArea [data-execute-workout="0"]').evaluate(node=>{const r=node.getBoundingClientRect();return {h:r.height,w:r.width};});
+    const manageSummary=await page.locator('#workoutDraftArea .workout-draft-manage>summary').evaluate(node=>{const r=node.getBoundingClientRect();return {h:r.height,w:r.width};});
+    assert.ok(primaryDraftAction.h>=44&&primaryDraftAction.w>0&&manageSummary.h>=44&&manageSummary.w>0,'mobile workout draft must keep only the primary record action and management disclosure touch-safe');
+    await tap(page,'#workoutDraftArea .workout-draft-manage>summary','open workout draft management');
+    const disclosedActions=await page.locator('#workoutDraftArea [data-edit-workout],#workoutDraftArea [data-replace-workout],#workoutDraftArea [data-remove-workout]').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {h:r.height,w:r.width};}));
+    assert.ok(disclosedActions.every(x=>x.h>=38&&x.w>0),'disclosed workout management actions must own usable touch targets');
     await tap(page,'[data-edit-workout="0"]');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===2,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'draft edit must reopen previously completed sets as completed');
