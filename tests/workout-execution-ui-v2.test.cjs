@@ -143,6 +143,7 @@ assert.ok(app.includes('exercisePRBaseline(exerciseName){return bestEstimated1RM
 assert.ok(runtime.includes('function updateLivePR()')&&runtime.includes("NEW PR · +"),'execution must surface an immediate PR delta when the active set improves the baseline');
 assert.ok(runtime.includes("BEST ")&&runtime.includes("현재 "),'execution must keep the baseline/current comparison understandable before a new PR');
 assert.ok(css.includes('.set-delete-button')&&css.includes('.workout-live-pr'),'direct set controls and live PR cue must be styled');
+assert.ok(css.includes('.list-item:has(.workout-draft-manage[open])')&&css.includes('z-index:35!important'),'an open Workout draft management menu must rise above later mobile draft rows');
 
 assert.ok(runtime.includes("startRest(setType='working')")&&runtime.includes("type==='drop'")&&runtime.includes("type==='warmup'")&&runtime.includes("type==='failure'"),'set types must change execution rest semantics');
 assert.ok(app.includes("latestWorkoutNote")&&runtime.includes("LAST NOTE"),'exercise notes must carry forward into the next execution session');
