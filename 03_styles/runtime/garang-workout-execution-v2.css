@@ -758,3 +758,53 @@
   opacity:1!important;
   pointer-events:auto!important;
 }
+
+/* Workout action clarity v9 — one primary record action, management on demand. */
+.workout-draft-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:8px;flex:0 0 auto}
+.workout-draft-record{min-width:72px!important;min-height:44px!important}
+.workout-draft-manage{position:relative}
+.workout-draft-manage>summary{list-style:none;display:grid;place-items:center;min-width:64px;min-height:44px;padding:0 12px;border:1px solid rgba(241,237,228,.12);border-radius:13px;background:#0d100e;color:#c3c3bd;font:650 10px/1 var(--g2-ui,system-ui);cursor:pointer;touch-action:manipulation}
+.workout-draft-manage>summary::-webkit-details-marker{display:none}
+.workout-draft-manage[open]>summary{border-color:rgba(121,181,163,.32);color:#d9eee6}
+.workout-draft-manage-actions{position:absolute;right:0;top:calc(100% + 7px);z-index:34;display:grid;grid-template-columns:repeat(2,minmax(58px,1fr));gap:6px;min-width:152px;padding:8px;border:1px solid rgba(241,237,228,.12);border-radius:14px;background:#0b0e0c;box-shadow:0 16px 36px rgba(0,0,0,.38)}
+.workout-draft-manage-actions button{min-height:38px!important;margin:0!important}
+.workout-draft-manage-actions .danger{color:#dca59b!important}
+@media(max-width:800px){
+  #workoutDraftArea .list-item{align-items:center!important;gap:12px!important}
+  #workoutDraftArea .list-item>div:first-child{min-width:0;flex:1 1 auto}
+  .workout-draft-actions{align-items:center}
+  .workout-draft-record{min-width:68px!important}
+}
+
+/* Workout action clarity v9.1 — final touch-target guard after shared button utilities. */
+#workoutDraftArea .workout-draft-record{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  min-width:72px!important;
+  padding-block:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#workoutDraftArea .workout-draft-manage>summary{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  min-width:64px!important;
+  padding:0 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:800px){
+  #workoutDraftArea .workout-draft-record{min-width:68px!important}
+}
+
+
+/* Workout action clarity v9.2 — keep an open management menu above later draft rows. */
+@media(max-width:800px){
+  .workout-execution-v2 .draft-area .list-item:has(.workout-draft-manage[open]){
+    z-index:35!important;
+  }
+}

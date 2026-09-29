@@ -1,9 +1,9 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v35-20260927`;
+const CACHE=`${CACHE_PREFIX}v36-20260929`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
-  './06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.2',
+  './06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.3',
   './06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js?v=1.0.0',
   './05_assets/body-model-v6/male-front.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-side.svg?v=7.3.0-anatomical-mass',

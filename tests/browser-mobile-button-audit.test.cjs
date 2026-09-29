@@ -139,8 +139,43 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
     await page.waitForFunction(()=>window.GarangDataMigrationV2?.version==='v4.0.0',null,{timeout:7000});
     await heartbeat(page,'initial boot');
 
+    const dailyWorkout=page.locator('.garang-daily-workout');
+    await dailyWorkout.waitFor({state:'visible',timeout:10000});
+    const routineGenerate=page.locator('.garang-daily-workout [data-daily-generate]');
+    if(!(await routineGenerate.isVisible())){
+      await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+    }
+    await routineGenerate.waitFor({state:'visible',timeout:3000});
+    assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'canonical generated Workout start must not exist before a routine is generated');
+    assert.equal(await page.locator('.garang-daily-workout [data-garang-workout-prep-start="1"]').count(),0,'prep Workout start must not exist before a routine is generated');
+    await tap(page,'.garang-daily-workout [data-daily-generate]','generate routine');
+    const generatedStart=page.locator('.garang-daily-workout [data-garang-workout-prep-start="1"]');
+    await generatedStart.waitFor({state:'visible',timeout:10000});
+    assert.match(await generatedStart.innerText(),/운동 시작|Start workout/,'generated routine must reveal the single prep Workout start');
+    const canonicalGeneratedStart=page.locator('.garang-daily-workout [data-daily-import]');
+    assert.equal(await canonicalGeneratedStart.count(),1,'generated routine must retain the canonical import action behind the prep owner');
+    assert.equal(await canonicalGeneratedStart.isHidden(),true,'canonical generated start must stay hidden while the prep owner exposes the single visible CTA');
+
     await route(page,'coach');
     await tapRecordRoute(page,'workout','audit workout');
+    await tap(page,'[data-gws-step="exercise"]','Workout exercise + record');
+    assert.equal(await page.locator('.garang-session-start,.garang-live-session').count(),0,'legacy duplicate Workout session controls must not render');
+    const canonicalStart=page.locator('#startWorkoutSession');
+    await canonicalStart.waitFor({state:'visible',timeout:7000});
+    await tap(page,'#startWorkoutSession','canonical Workout session start');
+    await page.waitForFunction(()=>document.getElementById('workoutExecutionState')?.textContent?.includes('LIVE')&&document.querySelector('.workout-session-bar')?.classList.contains('is-live'),null,{timeout:4000});
+    assert.equal(await page.locator('#startWorkoutSession').isHidden(),true,'session start must disappear once live');
+    assert.equal(await page.locator('#finishWorkoutSession').isVisible(),true,'session finish must replace start in the same card');
+    await tap(page,'#finishWorkoutSession','canonical Workout session finish');
+    await page.waitForFunction(()=>document.getElementById('workoutExecutionState')?.textContent==='준비',null,{timeout:4000});
+
+    await page.evaluate(()=>window.GarangWorkoutIntelligenceUI?.queueImport?.([{name:'바벨 벤치프레스',sets:3,reps:8,weight:40,rpe:7,duration:15,body:67}],'button-audit'));
+    await page.waitForFunction(()=>document.querySelectorAll('[data-execute-workout]').length===1,null,{timeout:7000});
+    assert.equal(await page.locator('.workout-draft-record').count(),1,'draft must expose one primary record action');
+    assert.equal(await page.locator('.workout-draft-manage').count(),1,'secondary draft management must stay progressively disclosed');
+    await tap(page,'[data-execute-workout]','open drafted exercise record');
+    await page.waitForFunction(()=>document.querySelector('#workoutSetDetails .current-set')&&document.getElementById('wName')?.value==='바벨 벤치프레스',null,{timeout:5000});
+
     await tapRecordRoute(page,'body','audit body');
     await route(page,'progress');
     await route(page,'today');
