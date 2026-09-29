@@ -1,20 +1,19 @@
-/* GARANG Workout Flow v1.4
-   One visible functional workout page at a time:
-   Overview -> Exercise -> Log -> Overview.
+/* GARANG Workout Flow v1.5
+   Two-surface workout architecture:
+   Overview owns session state / interpretation / advanced session capabilities.
+   Exercises owns discovery plus the single canonical recording surface.
    Existing app.js markup and handlers remain the feature owners.
-   Recent-record reuse is read-only and only prefills the existing form.
 */
 (function(root){
 'use strict';
 if(!root||root.__garangWorkoutFlowV1)return;
 root.__garangWorkoutFlowV1=true;
 
-const VERSION='garang-workout-flow-v1.4.0-recent-prefill';
+const VERSION='garang-workout-flow-v1.5.0-two-surface';
 const state={active:'overview'};
 const SURFACES=[
   {id:'overview',en:'Overview',ko:'개요'},
-  {id:'exercise',en:'Exercises',ko:'종목'},
-  {id:'log',en:'Log',ko:'기록'}
+  {id:'exercise',en:'Exercises',ko:'종목'}
 ];
 
 function isKo(){return document.documentElement.lang!=='en';}
@@ -30,7 +29,7 @@ function ensureStyle(){
     '.gws-shell,.gws-panel{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}',
     '.gws-panel>*{min-width:0;max-width:100%;box-sizing:border-box}',
     '.gws-panel input,.gws-panel select,.gws-panel textarea{max-width:100%;box-sizing:border-box}',
-    '.gws-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;margin:0 0 22px;border-bottom:1px solid rgba(242,239,233,.12);overflow:visible}',
+    '.gws-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;margin:0 0 16px;border-bottom:1px solid rgba(242,239,233,.12);overflow:visible}',
     '.gws-step{position:relative;min-width:0;min-height:52px;padding:13px 8px 11px;border:0;border-radius:0;background:transparent;color:#777d77;font:500 11px/1 var(--g2-ui,system-ui);letter-spacing:.03em;white-space:nowrap;cursor:pointer}',
     '.gws-step::after{content:"";position:absolute;left:50%;bottom:-1px;width:0;height:2px;background:#4fae92;transform:translateX(-50%);transition:width .2s ease}',
     '.gws-step.active{color:#ebe9e3}',
@@ -47,7 +46,7 @@ function ensureStyle(){
     '.gws-reuse button{flex:0 0 auto;border:1px solid rgba(79,174,146,.28);border-radius:999px;background:transparent;color:#e9e8e2;padding:9px 12px;font:500 10px/1 var(--g2-ui,system-ui);cursor:pointer}',
     '.gws-reuse button:disabled{opacity:.45;cursor:default}',
     '.gws-panel[data-garang-workout-surface="exercise"] .exercise-visual-library{margin-top:0}',
-    '.gws-panel[data-garang-workout-surface="log"] .workout-builder{margin-top:0}',
+    '.gws-session-host{margin:0 0 14px}.gws-entry-dock{display:grid;gap:10px;margin:18px 0 0}.gws-entry-head{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:0 2px 2px}.gws-entry-head span{display:block;color:#4fae92;font-size:7px;letter-spacing:.16em}.gws-entry-head strong{display:block;margin-top:5px;color:#ebe9e3;font:600 15px/1.2 var(--g2-ui,system-ui)}.gws-entry-head small{color:#777d77;font-size:9px}.gws-entry-dock .workout-builder{margin-top:0}.gws-overview-tools{margin:14px 0 0;border-top:1px solid rgba(242,239,233,.08);padding-top:12px}.gws-overview-tools>summary{cursor:pointer;color:#aeb3ad;font:600 10px/1.2 var(--g2-ui,system-ui);list-style:none}.gws-overview-tools>summary::-webkit-details-marker{display:none}.gws-overview-tools>summary::after{content:"＋";float:right;color:#4fae92}.gws-overview-tools[open]>summary::after{content:"−"}.gws-overview-tools-body{display:grid;gap:12px;margin-top:12px}',
     '@media(max-width:700px){.gws-nav{margin-bottom:18px}.gws-step{min-height:48px;padding:11px 4px 9px;font-size:10px}.gws-step em{font-size:7px}.gws-step.active::after{width:32px}.gws-next{margin-top:14px}.gws-reuse{align-items:flex-start}.gws-reuse button{padding:9px 10px}}'
   ].join('');
   document.head.appendChild(style);
@@ -89,8 +88,8 @@ function renderNext(shell){
     next=document.createElement('div');
     next.className='gws-next';
   }
-  const nextId=state.active==='overview'?'exercise':state.active==='exercise'?'log':'overview';
-  const label=isKo()?(state.active==='overview'?'종목 보기':state.active==='exercise'?'기록 입력':'개요 보기'):(state.active==='overview'?'View exercises':state.active==='exercise'?'Open log':'View overview');
+  const nextId=state.active==='overview'?'exercise':'overview';
+  const label=isKo()?(state.active==='overview'?'종목 선택':'개요 보기'):(state.active==='overview'?'Choose exercise':'View overview');
   next.innerHTML='<button type="button" data-gws-next="'+nextId+'">'+label+'</button>';
   next.querySelector('[data-gws-next]').addEventListener('click',()=>{
     state.active=nextId;
@@ -136,16 +135,17 @@ function prefillLatest(button){
   button.dataset.gwsReuseApplied='1';
 }
 function ensureRecentReuse(shell){
-  const log=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="log"]');
-  const builder=log?.querySelector(':scope > .workout-builder');
-  if(!log||!builder)return;
-  let reuse=log.querySelector(':scope > .gws-reuse');
+  const exercise=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="exercise"]');
+  const dock=exercise?.querySelector(':scope > .gws-entry-dock');
+  const builder=dock?.querySelector(':scope > .workout-builder');
+  if(!exercise||!dock||!builder)return;
+  let reuse=dock.querySelector(':scope > .gws-reuse');
   const found=latestWorkout();
   if(!reuse){
     reuse=document.createElement('div');
     reuse.className='gws-reuse';
     reuse.dataset.gwsReuse='latest-workout';
-    log.insertBefore(reuse,builder);
+    dock.insertBefore(reuse,builder);
   }
   const label=found?.record?.name||'';
   reuse.innerHTML='<div class="gws-reuse-copy"><strong>'+(isKo()?'최근 운동 재사용':'Reuse recent workout')+'</strong><small>'+(found?(isKo()?'저장하지 않고 입력값만 채웁니다 · ':'Prefills only · ')+String(label):isKo()?'저장된 운동 기록이 생기면 사용할 수 있습니다.':'Available after your first saved workout.')+'</small></div><button type="button" data-gws-reuse-latest '+(found?'':'disabled')+'>'+(isKo()?'불러오기':'Prefill')+'</button>';
@@ -165,7 +165,7 @@ function apply(shell){
   renderNext(shell);
   const main=shell.parentElement;
   if(main)main.dataset.garangWorkoutSurface=state.active;
-  if(state.active==='log')root.requestAnimationFrame(()=>root.requestAnimationFrame(()=>root.GarangWorkoutExecutionV2?.enhance?.()));
+  root.requestAnimationFrame(()=>root.requestAnimationFrame(()=>root.GarangWorkoutExecutionV2?.enhance?.()));
 }
 function findWorkoutAnalysis(main){
   const section=direct(main,'.record-insights');
@@ -206,7 +206,11 @@ function mount(){
 
   const overview=panel(shell,'overview');
   const exercise=panel(shell,'exercise');
-  const log=panel(shell,'log');
+
+  const sessionHost=document.createElement('div');
+  sessionHost.className='gws-session-host';
+  sessionHost.dataset.garangWorkoutSessionHost='1';
+  overview.appendChild(sessionHost);
 
   move(hero,overview);
   move(history,overview);
@@ -214,13 +218,29 @@ function mount(){
   move(analysis.section,overview);
   move(analysis.title,overview);
   move(analysis.empty,overview);
+
+  const overviewTools=document.createElement('details');
+  overviewTools.className='gws-overview-tools';
+  overviewTools.innerHTML='<summary>'+(isKo()?'세션 설정 · 프로그램 · Health':'Session settings · Program · Health')+'</summary><div class="gws-overview-tools-body"></div>';
+  overview.appendChild(overviewTools);
+  const toolsBody=overviewTools.querySelector('.gws-overview-tools-body');
+  move(builder.querySelector('.workout-advanced-tools'),toolsBody);
+  move(builder.querySelector('.workout-secondary-capabilities'),toolsBody);
+  move(cert,toolsBody);
+
   move(title,exercise);
   move(library,exercise);
-  move(builder,log);
-  move(cert,log);
+
+  const dock=document.createElement('section');
+  dock.className='gws-entry-dock';
+  dock.dataset.garangWorkoutEntry='1';
+  dock.innerHTML='<div class="gws-entry-head"><div><span>RECORD</span><strong>'+(isKo()?'선택한 종목 기록':'Record selected exercise')+'</strong></div><small>'+(isKo()?'중량 · 반복 · 완료 중심':'Weight · reps · complete')+'</small></div>';
+  exercise.appendChild(dock);
+  move(builder,dock);
 
   apply(shell);
 }
+root.addEventListener('garang:workout-entry-focus',()=>{const main=document.getElementById('main'),shell=main?.querySelector(':scope > .gws-shell');if(!shell)return;state.active='exercise';apply(shell);root.requestAnimationFrame(()=>{const dock=shell.querySelector('.gws-entry-dock');dock?.scrollIntoView({block:'start',behavior:'smooth'});const weight=dock?.querySelector('[data-set-weight],#wWeight');try{weight?.focus?.({preventScroll:true});}catch{weight?.focus?.();}});});
 root.addEventListener('garang:screen-rendered',mount);
 root.addEventListener('garang:route-completed',mount);
 root.addEventListener('garang:state-updated',mount);
