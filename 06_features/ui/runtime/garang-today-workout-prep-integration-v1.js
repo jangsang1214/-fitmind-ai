@@ -10,7 +10,7 @@
   'use strict';
   if (window.GarangTodayWorkoutPrepIntegrationV1) return;
 
-  const VERSION = '1.0.2';
+  const VERSION = '1.0.3';
   const STYLE_ID = 'garang-today-workout-prep-integration-v1-style';
   const PLAN_KEY = 'garang_daily_workout_plan_v1';
   const main = () => document.getElementById('main');
@@ -127,14 +127,13 @@
 
     const storedPlan = readPlan();
     const importButton = storedPlan?.exercises?.length ? card.querySelector('[data-daily-import]:not([disabled])') : null;
-    if (importButton) {
-      importButton.click();
-      return true;
+    if (!importButton) {
+      const toggle=card.querySelector('[data-daily-toggle]');
+      if(card.dataset.expanded!=='1')toggle?.click();
+      requestAnimationFrame(()=>card.querySelector('[data-daily-generate]')?.focus?.());
+      return false;
     }
-
-    const canonical = canonicalWorkoutExecute();
-    if (!canonical) return false;
-    canonical.click();
+    importButton.click();
     return true;
   }
 
@@ -142,7 +141,12 @@
     const expand = card?.querySelector('[data-daily-expand]');
     const head = expand?.querySelector('.garang-daily-head');
     if (!expand || !head) return null;
+    const plan=readPlan();
     let actionRow = expand.querySelector(':scope > [data-garang-workout-prep-actions="1"]');
+    if(!plan?.exercises?.length){
+      actionRow?.remove();
+      return null;
+    }
     if (!actionRow) {
       actionRow = document.createElement('div');
       actionRow.className = 'garang-daily-actions garang-workout-prep-actions';
@@ -297,15 +301,15 @@
     const card = m.querySelector('.garang-daily-workout');
     const execute = m.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="execute"]');
     const expected = workoutExpected(execute);
-    const start = card ? ensureStartButton(card) : null;
 
-    if (expected && card && start) {
+    if (expected && card) {
       stopMountRecovery();
       stabilizeExpectedPresentation(m);
+      const start=ensureStartButton(card);
       const generate = card.querySelector('[data-daily-generate]');
       if (generate) {
-        generate.classList.remove('primary');
-        generate.classList.add('ghost');
+        generate.classList.toggle('ghost',!!start);
+        generate.classList.toggle('primary',!start);
       }
       return;
     }
