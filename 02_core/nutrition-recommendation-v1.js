@@ -49,6 +49,17 @@ function mealTotals(state,date){
     return {meals:total.meals+1,kcal:total.kcal+kcal.value,protein:total.protein+protein.value,carbs:total.carbs+carbs.value,fat:total.fat+fat.value,fiber:total.fiber+fiber.value,sodium:total.sodium+sodium.value,kcalObserved:total.kcalObserved+(kcal.observed?1:0),proteinObserved:total.proteinObserved+(protein.observed?1:0),carbsObserved:total.carbsObserved+(carbs.observed?1:0),fatObserved:total.fatObserved+(fat.observed?1:0),fiberObserved:total.fiberObserved+(fiber.observed?1:0),sodiumObserved:total.sodiumObserved+(sodium.observed?1:0)};
   },{meals:0,kcal:0,protein:0,carbs:0,fat:0,fiber:0,sodium:0,kcalObserved:0,proteinObserved:0,carbsObserved:0,fatObserved:0,fiberObserved:0,sodiumObserved:0});
 }
+function latestMealForDate(state,date){
+  const rows=list(state?.meals).filter(row=>sameDate(row,date));
+  return rows.slice().sort((a,b)=>{const aa=Date.parse(a?.createdAt||a?.updatedAt||'')||0,bb=Date.parse(b?.createdAt||b?.updatedAt||'')||0;return aa-bb;}).at(-1)||null;
+}
+function reviewLatestMeal(stateInput={},options={}){
+  const state=stateInput&&typeof stateInput==='object'?stateInput:{},date=clean(options.date||localDate()).slice(0,10),meal=latestMealForDate(state,date);
+  if(!meal)return {status:'empty',date,meal:null,proteinState:'unknown',details:{}};
+  const targets=estimateTargets(state,date),day=mealTotals(state,date),metric=key=>itemMetric(meal,key),kcal=metric('kcal'),protein=metric('protein'),carbs=metric('carbs'),fat=metric('fat'),fiber=metric('fiber'),sodium=metric('sodium'),proteinTarget=targets.proteinTarget,proteinRemaining=proteinTarget===null||!day.proteinObserved?null:Math.max(0,round(proteinTarget-day.protein,1)),proteinState=proteinRemaining===null?'unknown':proteinRemaining<=0?'enough':'more';
+  const detailValue=m=>m.observed?round(m.value,1):null;
+  return {status:'ready',date,meal:{id:String(meal.id||''),name:clean(meal.name),items:list(meal.items).length},proteinState,proteinTarget,proteinRemaining,dayProtein:day.proteinObserved?round(day.protein,1):null,nextDirection:proteinState==='more'?'protein':'balanced',details:{kcal:detailValue(kcal),protein:detailValue(protein),carbs:detailValue(carbs),fat:detailValue(fat),fiber:detailValue(fiber),sodium:detailValue(sodium)},guardrails:{savedMealOnly:true,noDiagnosis:true,noInventedNutrients:true}};
+}
 function normalizedName(value){return clean(value).toLowerCase().replace(/[\s·_-]/g,'');}
 function validFood(food){return !!food&&clean(food.name)&&finite(food.kcal)!==null&&finite(food.protein)!==null&&finite(food.carbs??food.carbohydrate)!==null&&finite(food.fat)!==null;}
 function chooseFood(foods,names){const valid=list(foods).filter(validFood),wanted=names.map(normalizedName),exact=wanted.map(name=>valid.find(food=>normalizedName(food.name)===name)||valid.find(food=>list(food.aliases).some(alias=>normalizedName(alias)===name))).find(Boolean);return exact||wanted.map(name=>valid.find(food=>normalizedName(food.name).includes(name)||name.includes(normalizedName(food.name)))).find(Boolean)||null;}
@@ -99,5 +110,5 @@ function recommend(state,foods,options={}){
   return {...base,status:limited.length?'ready':'unavailable',message:limited.length?(lang==='en'?'Choose one option and add it to your meal draft.':'한 가지를 골라 식단 초안에 담아보세요.'):lang==='en'?'Matching food entries are not available yet.':'추천에 필요한 음식 항목이 아직 없습니다.',options:limited,reasons:limited.length?['SAVED_RECORDS_AND_GOAL_USED','NUTRITION_VALUES_ARE_ESTIMATES']:['MATCHING_FOOD_UNAVAILABLE']};
 }
 
-return Object.freeze({VERSION,localDate,goalClass,goalLabel,estimateTargets,mealTotals,recommendationFollowThrough,recommend,recommendation:recommend});
+return Object.freeze({VERSION,localDate,goalClass,goalLabel,estimateTargets,mealTotals,reviewLatestMeal,recommendationFollowThrough,recommend,recommendation:recommend});
 });
