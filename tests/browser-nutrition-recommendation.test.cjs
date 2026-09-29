@@ -41,14 +41,15 @@ async function route(page, screen) { const ok = await page.evaluate(next => wind
     await surface.waitFor({ state: 'visible', timeout: 10000 });
     await page.waitForFunction(() => {
       const node = document.querySelector('[data-gnr-surface]');
-      return !!node && /근육 증가/.test(node.innerText || '') && !!node.querySelector('[data-gnr-add="0"]');
+      return !!node && /다음 끼니|단백질/.test(node.innerText || '') && !!node.querySelector('[data-gnr-add="0"]');
     }, null, { timeout: 8000 });
     assert.equal(await page.locator('[data-gnr-surface]').count(), 1, 'Nutrition must expose one recommendation surface');
     assert.equal(await page.locator('.nutrition-quick-summary').evaluate(el => el.tagName), 'DETAILS', 'technical macro dashboard must use progressive disclosure');
     assert.equal(await page.locator('.nutrition-quick-summary').getAttribute('open'), null, 'technical nutrition numbers must be collapsed by default');
-    assert.match(await surface.innerText(), /근육 증가/);
+    assert.match(await surface.innerText(), /다음 끼니|단백질/);
     assert.ok(await surface.locator('[data-gnr-add="0"]').count() === 1, 'the primary recommendation must be actionable');
-    assert.match(await surface.innerText(), /Fiber|Na/, 'source-backed secondary nutrient context should be visible when the selected Food DB rows provide it');
+    assert.doesNotMatch(await surface.innerText(), /Fiber|Na|약 \d+ kcal|P \d+g/, 'default next-meal guidance must hide technical nutrition numbers');
+    const optionDetail=surface.locator('.gnr-primary-option .gnr-option-detail');assert.equal(await optionDetail.getAttribute('open'),null,'portion and nutrient detail must be collapsed by default');await optionDetail.locator('summary').click();assert.match(await optionDetail.innerText(),/kcal/,'technical option detail must remain available on demand');
 
     let before = await page.evaluate(() => window.GarangAgentStateBridge.getState());
     assert.equal(before.meals.length, 0, 'a recommendation must not auto-save a meal');
