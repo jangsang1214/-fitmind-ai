@@ -146,7 +146,7 @@ function observeFlow(){
   flowObserver?.disconnect();
   observedFlow=flow;
   flowObserver=new MutationObserver(schedule);
-  flowObserver.observe(flow,{childList:true,subtree:false});
+  flowObserver.observe(flow,{childList:true,subtree:true});
 }
 
 function reconcile(){
