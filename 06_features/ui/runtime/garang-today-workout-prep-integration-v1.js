@@ -66,6 +66,9 @@
         opacity:1!important;
         pointer-events:auto!important;
       }
+      html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] .garang-daily-workout .gci-toggle{
+        display:none!important;
+      }
       html body #main[data-garang-screen="today"][data-garang-workout-prep-execution="1"] #garangTodayFlow .gtf-action{
         max-height:0!important;
         min-height:0!important;
@@ -187,9 +190,25 @@
     if (!card) return;
     if (card.hidden) card.hidden = false;
     if (card.getAttribute('aria-hidden') === 'true') card.removeAttribute('aria-hidden');
-    if (card.dataset.expanded === '1') {
-      const expand = card.querySelector('[data-daily-expand]');
-      if (expand?.hidden) expand.hidden = false;
+    const expanded = card.dataset.expanded === '1';
+    const expand = card.querySelector('[data-daily-expand]');
+    if (expand && expand.hidden === expanded) expand.hidden = !expanded;
+    const gciBody = [...card.children].find(node => node.classList?.contains('gci-collapse-body')) || null;
+    if (gciBody && gciBody.hidden === expanded) gciBody.hidden = !expanded;
+    if (gciBody) {
+      if (expanded) {
+        if (gciBody.hidden) gciBody.hidden = false;
+        setImportant(gciBody,'display','grid');
+        setImportant(gciBody,'visibility','visible');
+        setImportant(gciBody,'opacity','1');
+        setImportant(gciBody,'overflow','visible');
+      } else {
+        for (const property of ['display','visibility','opacity','overflow']) gciBody.style.removeProperty(property);
+      }
+      card.classList.toggle('gci-expanded', expanded);
+      if (card.dataset.gciExpanded !== (expanded ? 'true' : 'false')) card.dataset.gciExpanded = expanded ? 'true' : 'false';
+      const gciToggle = card.querySelector('.gci-toggle');
+      if (gciToggle?.getAttribute('aria-expanded') !== (expanded ? 'true' : 'false')) gciToggle?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     }
     if (card.dataset.garangWorkoutPrepVisibilityOwner !== '1') card.dataset.garangWorkoutPrepVisibilityOwner = '1';
     setImportant(card,'display','grid');
@@ -329,7 +348,15 @@
           generate.hidden = false;
           generate.removeAttribute('aria-hidden');
           generate.removeAttribute('tabindex');
+          const generateRow = generate.parentElement;
+          setImportant(generateRow,'display','flex');
+          setImportant(generateRow,'width','100%');
+          setImportant(generateRow,'min-height','46px');
+          setImportant(generateRow,'overflow','visible');
           setImportant(generate,'display','inline-flex');
+          setImportant(generate,'width','100%');
+          setImportant(generate,'min-height','46px');
+          setImportant(generate,'flex','1 1 100%');
           setImportant(generate,'visibility','visible');
           setImportant(generate,'opacity','1');
           setImportant(generate,'pointer-events','auto');
