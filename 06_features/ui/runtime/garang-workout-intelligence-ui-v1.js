@@ -9,7 +9,7 @@
 'use strict';
 const main=document.getElementById('main');if(!main)return;
 const Core=window.GarangWorkoutIntelligence;if(!Core)return;
-const VERSION='garang-workout-intelligence-ui-v1.1-import-execution';
+const VERSION='garang-workout-intelligence-ui-v1.2-today-mount-recovery';
 const PLAN_KEY='garang_daily_workout_plan_v1';
 const IMPORT_KEY='garang_workout_import_queue_v1';
 let dbPromise=null,queued=false,importBusy=false;
@@ -56,5 +56,6 @@ async function mountProgressTrainingReview(){if(currentPage()!=='progress'||main
 
 function run(){queued=false;ensureStyle();mountDailyWorkout();mountProgressTrainingReview();enhanceCoach();processImportQueue();try{window.dispatchEvent(new CustomEvent('garang:workout-intelligence-rendered'));}catch{}}
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(run));}
+new MutationObserver(()=>{if(currentPage()!=='today'||main.querySelector('.garang-daily-workout')||!main.querySelector('.visual-today-hero'))return;schedule();}).observe(main,{childList:true,subtree:true});
 window.addEventListener('garang:screen-rendered',schedule);window.addEventListener('garang:state-updated',schedule);window.addEventListener('garang:state-hydrated',schedule);window.addEventListener('garang:coach-message-rendered',schedule);new MutationObserver(schedule).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});document.addEventListener('click',e=>{if(e.target.closest('[data-page],[data-pagego],#addWorkout,#clearWorkoutDraft,#saveWorkoutSession,[data-edit-workout],[data-remove-workout]'))setTimeout(schedule,0);},true);window.addEventListener('garang:agent-write',schedule);window.GarangWorkoutIntelligenceUI=Object.freeze({version:VERSION,queueImport,processImportQueue});schedule();
 })();
