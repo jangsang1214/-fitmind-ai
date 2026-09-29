@@ -70,7 +70,8 @@ function updateLive(){
   const active=!!sessionStartedAt,stateLabel=document.getElementById('workoutExecutionState'),start=document.getElementById('startWorkoutSession'),finish=document.getElementById('finishWorkoutSession'),bar=document.querySelector('.workout-session-bar'),feedback=document.getElementById('workoutSessionFeedback');
   if(stateLabel)stateLabel.textContent=active?'기록 중':'준비';
   if(bar){bar.classList.toggle('is-live',active);bar.dataset.sessionState=active?'live':'ready';bar.setAttribute('aria-label',active?'운동 세션 기록 중':'운동 세션 준비');}
-  if(feedback){feedback.hidden=false;feedback.textContent=active?'타이머 실행 중 · 현재 세트를 기록하세요':'시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.';}
+  const main=document.getElementById('main');if(main){main.dataset.workoutSession=active?'live':'ready';main.classList.toggle('workout-session-active',active);}
+  if(feedback){feedback.hidden=false;feedback.textContent=active?'세션 기록 중 · 종목 탭에서 중량과 반복을 입력하세요':'기록 시작을 누르면 타이머와 세션 상태가 즉시 시작됩니다.';}
   if(start){start.hidden=active;start.disabled=active;}
   if(finish){finish.hidden=!active;finish.disabled=!active;}
   const summary=draftSummary(),progress=document.getElementById('workoutExecutionProgress');
@@ -154,11 +155,13 @@ function enhance(){
   document.querySelector('.workout-visual-hero')?.classList.add('workout-execution-hero');
   const oldHead=builder.querySelector('.visual-section-head');
   if(oldHead){oldHead.classList.add('workout-exercise-head');const exerciseName=document.getElementById('wName')?.value||'운동',title=oldHead.querySelector('h3'),eyebrow=oldHead.querySelector('.eyebrow');if(eyebrow)eyebrow.textContent='CURRENT EXERCISE';if(title)title.textContent=exerciseName;let cue=oldHead.querySelector('.workout-previous-cue');if(!cue){cue=document.createElement('p');cue.className='workout-previous-cue';oldHead.querySelector('div')?.appendChild(cue);}cue.textContent=cueText(previous());let note=oldHead.querySelector('.workout-previous-note');const previousNote=String(bridge()?.previousContext?.(exerciseName)?.notes||'').trim();if(previousNote&&!note){note=document.createElement('p');note.className='workout-previous-note';oldHead.querySelector('div')?.appendChild(note);}if(note){note.hidden=!previousNote;note.textContent=previousNote?('LAST NOTE · '+previousNote):'';}}
-  let bar=builder.querySelector('.workout-session-bar');
+  const sessionHost=document.querySelector('.gws-session-host')||builder;
+  let bar=sessionHost.querySelector('.workout-session-bar')||document.querySelector('.workout-session-bar');
+  if(bar&&bar.parentElement!==sessionHost)sessionHost.prepend(bar);
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';
     bar.innerHTML='<div class="workout-session-live"><span><i aria-hidden="true"></i><b id="workoutExecutionState">준비</b></span><strong id="workoutExecutionElapsed" role="timer" aria-label="세션 경과 시간">00:00</strong><small id="workoutSessionFeedback" class="workout-session-feedback" role="status" aria-live="polite">시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.</small></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="세션 기록 시작" title="세션 기록 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg><span class="workout-session-action-label">기록 시작</span></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg><span class="workout-session-action-label">종료</span></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
-    builder.prepend(bar);
+    sessionHost.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
     hardHideCanonicalSave();
@@ -180,7 +183,8 @@ function enhance(){
   updateLive();updateLivePR();persistSessionState();resultCard();
 }
 document.addEventListener('click',event=>{
-  if(event.target.closest?.('[data-gws-step="log"]'))setTimeout(enhance,0);
+  if(event.target.closest?.('[data-gws-step="exercise"]'))setTimeout(enhance,0);
+  if(event.target.closest?.('[data-gws-next="exercise"]'))setTimeout(enhance,0);
   if(event.target.closest?.('#addWorkout')){
     setTimeout(()=>{
       const drawer=document.getElementById('garangWorkoutTools');
