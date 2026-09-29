@@ -695,3 +695,66 @@
 @media(max-width:360px){
   .workout-execution-v2 .execution-set-row.current-set::before{font-size:6.5px!important;right:8px!important}
 }
+
+
+/* Workout IA v8 — two surfaces, inline execution, advanced capability disclosure */
+.gws-panel[data-garang-workout-surface="exercise"]>.one-rm-panel{
+  margin:14px 0 10px;border-radius:16px;background:#101311;color:#f4f1e9;border:1px solid rgba(241,237,228,.08);
+}
+.gws-panel[data-garang-workout-surface="overview"]>.workout-secondary-capabilities{
+  margin:14px 0 0;
+}
+.gws-panel[data-garang-workout-surface="exercise"]>.workout-builder{
+  margin-top:10px!important;
+}
+.gws-panel[data-garang-workout-surface="exercise"]>.exercise-visual-library{
+  margin-bottom:10px!important;
+}
+.gws-panel[data-garang-workout-surface="exercise"]>.gws-reuse{
+  min-height:0!important;margin:4px 0 8px!important;padding:4px 0 8px!important;
+  border-bottom-color:rgba(241,237,228,.055)!important;
+}
+@media(max-width:800px){
+  .workout-execution-v2 .execution-exercise-field{display:none!important}
+  .workout-execution-v2 .execution-compact-fields{
+    grid-template-columns:72px!important;justify-content:start!important;
+    margin-bottom:10px!important;
+  }
+  .workout-execution-v2 .execution-sets-field,
+  .workout-execution-v2 .execution-duration-field{display:grid!important}
+  .workout-execution-v2 .workout-session-bar.is-live{
+    border-color:rgba(116,208,175,.52)!important;
+    box-shadow:0 16px 34px rgba(0,0,0,.32),inset 3px 0 0 #74d0af!important;
+  }
+  .workout-execution-v2 .workout-session-bar[data-session-confirmation="started"]{
+    transform:translateY(-1px);
+  }
+  .workout-execution-v2 .workout-session-bar.is-live .workout-session-feedback{
+    display:block!important;color:#b7d5ca!important;font-weight:650!important;
+  }
+  .workout-execution-v2 .workout-session-bar.is-live .workout-session-progress b{
+    color:#d8e8e1!important;
+  }
+  .gws-panel[data-garang-workout-surface="exercise"]>.one-rm-panel{
+    margin:10px 0 8px;
+  }
+  .gws-panel[data-garang-workout-surface="overview"]>.workout-secondary-capabilities{
+    margin:12px 0 0;
+  }
+}
+
+
+/* Workout IA v8.1 — Overview utility drawers remain visible after surface redistribution. */
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutProgram,
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutHealth{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutProgram>summary,
+.gws-panel[data-garang-workout-surface="overview"]>#garangWorkoutHealth>summary{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}

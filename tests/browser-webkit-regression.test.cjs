@@ -226,7 +226,7 @@ async function assertCoachSettles(page){
     await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
     assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
-    await tap(page,'[data-gws-step="log"]');
+    await tap(page,'[data-gws-step="exercise"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
     const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
     assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
@@ -264,14 +264,14 @@ async function assertCoachSettles(page){
     await page.locator('#settingsTopBtn').click();
     await page.locator('#unitSetting').selectOption('imperial');await page.locator('#savePreferences').click();
     await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'workout-unit-regression',force:true}));
-    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="exercise"]');
     await page.waitForFunction(()=>Math.abs(Number(document.querySelector('#workoutSetDetails [data-set-weight]')?.value)-110.2)<0.2,{timeout:5000});
     assert.ok(Math.abs(Number(await page.locator('#workoutSetDetails [data-set-weight]').first().inputValue())-110.2)<0.2,'active 50 kg set must restore as about 110.2 lb after unit change');
     if(!(await page.locator('#wBarPreset').isVisible()))await tap(page,'#garangWorkoutTools > summary');
     await page.locator('#wBarPreset').selectOption('20kg');assert.ok(Math.abs(Number(await page.locator('#wBarWeight').inputValue())-44.1)<0.2,'20 kg bar preset must convert to about 44.1 lb in imperial mode');
     await page.locator('#settingsTopBtn').click();await page.locator('#unitSetting').selectOption('metric');await page.locator('#savePreferences').click();
     await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'workout-unit-regression-return',force:true}));
-    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="exercise"]');
     await page.waitForFunction(()=>document.querySelector('#workoutSetDetails [data-set-weight]')?.value==='50',{timeout:5000});
     assert.equal(await page.locator('#workoutSetDetails [data-set-weight]').first().inputValue(),'50','unit round-trip must preserve canonical active-set weight');
     await page.locator('#wSets').fill('5');
@@ -313,10 +313,11 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),2,'draft edit must reopen previously completed sets as completed');
     assert.equal(await page.locator('#wSets').inputValue(),'2','draft edit must preserve the accepted completed-set count across render');
     assert.equal(await page.locator('#wDuration').inputValue(),'30','draft edit must preserve workout duration across render');
-    await page.locator('#wName').fill('Squat');await page.locator('#wName').dispatchEvent('change');
+    assert.equal(await page.locator('#wName').isVisible(),false,'duplicate workout-name input must stay internalized on the unified exercise surface');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'Squat');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2&&document.querySelectorAll('#workoutSetDetails [data-execution-set-complete].is-complete').length===0,{timeout:3000});
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'changing exercise must reset completion state and establish a fresh current set');
-    await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'바벨 벤치프레스');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-execution-set-complete]').length===2,{timeout:3000});
     await page.locator('#workoutSetDetails [data-set-reps]').first().fill('9');
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails [data-execution-set-complete]').nth(i).click();await tap(page,'#skipWorkoutRest');}
@@ -328,9 +329,10 @@ async function assertCoachSettles(page){
     await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="exercise"]')?.hidden===false,{timeout:3000});
     const replacement=page.locator('.gws-panel[data-garang-workout-surface="exercise"] [data-exercise-pick]').filter({hasNotText:beforeReplace}).first();const replacementName=await replacement.getAttribute('data-exercise-pick');await replacement.tap();
     await page.waitForFunction(name=>document.querySelector('#workoutDraftArea .list-item strong')?.textContent===name,replacementName,{timeout:4000});
-    await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="log"]')?.hidden===false,{timeout:3000});
+    await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="exercise"]')?.hidden===false,{timeout:3000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary()?.sets||0),2,'direct exercise replacement must preserve completed set count');
-    assert.equal(await page.locator('#garangWorkoutProgram').getAttribute('open'),null,'Program Builder must stay collapsed by default');await tap(page,'#garangWorkoutProgram > summary');await page.locator('#wProgramName').waitFor({state:'visible',timeout:3000});
+    await tap(page,'[data-gws-step="overview"]');await page.waitForFunction(()=>document.querySelector('.gws-panel[data-garang-workout-surface="overview"]')?.hidden===false,{timeout:3000});
+    assert.equal(await page.locator('#garangWorkoutProgram').getAttribute('open'),null,'Program Builder must stay collapsed by default on Overview');await tap(page,'#garangWorkoutProgram > summary');await page.locator('#wProgramName').waitFor({state:'visible',timeout:3000});
     await page.locator('#wProgramName').fill('WebKit Strength');await page.locator('#wProgramWeeks').fill('2');await page.locator('#wProgramFrequency').fill('2');await tap(page,'#scheduleWorkoutProgram');
     await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length===4;},{timeout:4000});
     assert.equal(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}');return (s.planner||[]).filter(x=>x.source==='workout_program'&&x.programName==='WebKit Strength').length;}),4,'two-week twice-weekly Program Builder must create four Planner executions');
@@ -341,14 +343,14 @@ async function assertCoachSettles(page){
     assert.equal(await page.evaluate(()=>document.getElementById('main')?.dataset?.garangScreen),'planner','Planner program start must refuse to overwrite an existing unsaved workout draft');
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary?.().sets),2,'blocked program start must preserve the existing draft');
     await page.evaluate(()=>window.GarangRouter?.navigate?.('workout',{source:'program-clear-existing',force:true}));
-    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="log"]');await tap(page,'#clearWorkoutDraft');
+    await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});await tap(page,'[data-gws-step="exercise"]');await tap(page,'#clearWorkoutDraft');
     await page.evaluate(()=>window.GarangRouter?.navigate?.('planner',{source:'program-browser-regression-empty',force:true}));
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='planner',{timeout:5000});
     await tap(page,`[data-plan-start="${programPlanId}"]`);
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',{timeout:5000});
     await page.waitForFunction(()=>window.GarangWorkoutExecutionBridge?.draftSummary?.().sets===2,{timeout:5000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.draftSummary?.().sets),2,'Planner program action must load its template into Workout Log');
-    await tap(page,'[data-gws-step="log"]');
+    await tap(page,'[data-gws-step="exercise"]');
     await page.waitForFunction(id=>{try{return JSON.parse(sessionStorage.getItem('garang_workout_session_v2')||'{}')?.context?.activePlanId===id;}catch{return false;}},programPlanId,{timeout:5000});
     assert.equal(await page.evaluate(()=>window.GarangWorkoutExecutionBridge?.sessionContext?.().activePlanId),programPlanId,'active Planner identity must be exposed before persistence recovery');
     const persistedProgramContext=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('garang_workout_session_v2')||'{}').context);
@@ -362,13 +364,13 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutExecutionRest').isHidden(),true,'session reset must clear the rest state');
     assert.equal(await page.locator('#workoutSetDetails [data-execution-set-complete].is-complete').count(),0,'session reset must not restore stale completed rows');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'session reset must return execution to one fresh current set');
-    await page.locator('#wName').fill('바벨 벤치프레스');await page.locator('#wName').dispatchEvent('change');await page.locator('#wSets').fill('2');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'바벨 벤치프레스');await page.locator('#wSets').fill('2');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===2,{timeout:3000});
     await page.evaluate(()=>{const type=document.getElementById('wGroupType'),id=document.getElementById('wGroupId');if(!type||!id)throw new Error('workout grouping controls missing');type.value='superset';type.dispatchEvent(new Event('change',{bubbles:true}));id.value='A';id.dispatchEvent(new Event('input',{bubbles:true}));id.dispatchEvent(new Event('change',{bubbles:true}));});
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails .current-set [data-execution-set-complete]').click();if(!(await page.locator('#workoutExecutionRest').isHidden()))await tap(page,'#skipWorkoutRest');}
     await tap(page,'#addWorkout');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutDraftArea [data-workout-group="superset:A"]').length===1,{timeout:3000});
-    await page.locator('#wName').fill('Squat');await page.locator('#wName').dispatchEvent('change');await page.locator('#wSets').fill('2');
+    await page.locator('#wName').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},'Squat');await page.locator('#wSets').fill('2');
     await page.waitForFunction(()=>document.querySelectorAll('#workoutSetDetails [data-set-row]').length===2,{timeout:3000});
     await page.evaluate(()=>{const type=document.getElementById('wGroupType'),id=document.getElementById('wGroupId');if(!type||!id)throw new Error('workout grouping controls missing');type.value='superset';type.dispatchEvent(new Event('change',{bubbles:true}));id.value='A';id.dispatchEvent(new Event('input',{bubbles:true}));id.dispatchEvent(new Event('change',{bubbles:true}));});
     for(let i=0;i<2;i++){await page.locator('#workoutSetDetails .current-set [data-execution-set-complete]').click();if(!(await page.locator('#workoutExecutionRest').isHidden()))await tap(page,'#skipWorkoutRest');}
