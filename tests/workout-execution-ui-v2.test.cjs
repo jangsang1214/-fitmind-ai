@@ -179,7 +179,7 @@ assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('activ
 assert.ok(runtime.includes('if(grouped.roundEnded)startRest')&&runtime.includes('else stopRest()'),'grouped execution must rest only at round boundaries instead of between superset members');
 assert.ok(runtime.includes("const moved=bridge()?.activateGroupedExercise?.(grouped.target.index);if(moved===true)return"),'grouped set completion must synchronously enter the already-computed exact member');
 assert.ok(!runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),'grouped transitions must not depend on timer ordering after completed sets');
-assert.ok(html.includes('garang-workout-execution-v2.js?v=2.5.0-inline-simplified'),'app shell must cache-bust the deterministic grouped transition runtime inside the simplified inline execution owner');
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.6.0-mobile-layout'),'app shell must cache-bust the deterministic grouped transition runtime inside the canonical mobile execution owner');
 assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-group-execution-cue'),'group execution must surface current group and round state');
 
 
