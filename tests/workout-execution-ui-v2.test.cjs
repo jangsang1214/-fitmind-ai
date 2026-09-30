@@ -12,6 +12,7 @@ const polishCss=fs.readFileSync(path.join(root,'03_styles','runtime','garang-pol
 const workoutLibrary=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-workout-library-v2.js'),'utf8');
 const functionalRecovery=fs.readFileSync(path.join(root,'06_features','ui','runtime','garang-functional-recovery.js'),'utf8');
 const swRuntime=fs.readFileSync(path.join(root,'02_core','sw-runtime.js'),'utf8');
+const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8'));
 
 assert.match(app,/GarangWorkoutExecutionBridge/,'app must expose a read-only workout execution bridge');
@@ -31,7 +32,9 @@ assert.ok(runtime.includes("garang:workout-session-clearing")&&runtime.includes(
 assert.ok(app.includes("garang:workout-exercise-added")&&app.includes("detail:{imported,groupType:x.groupType,groupId:x.groupId}"),'successful exercise add must publish import status and group execution metadata');
 assert.ok(runtime.includes('id="startWorkoutSession"')&&runtime.includes('id="finishWorkoutSession"')&&runtime.includes('aria-label="운동 세션 시작"')&&runtime.includes('aria-label="운동 종료 및 저장"')&&runtime.includes("bar.querySelector('#startWorkoutSession')")&&runtime.includes("bar.querySelector('#finishWorkoutSession')"),'live timer must expose explicit session start and finish controls');
 assert.ok(runtime.includes("bar.classList.toggle('is-live',active)")&&runtime.includes("stateLabel.textContent=active?'LIVE · 기록 중':'준비'")&&runtime.includes('세션 시작됨 · 타이머 기록 중')&&runtime.includes('data-session-confirmation')&&runtime.includes('navigator.vibrate?.(24)'),'session start must immediately produce visible live-state feedback');
-assert.ok(css.includes('Workout live session feedback v4')&&css.includes('.workout-session-bar.is-live')&&css.includes('position:sticky')&&css.includes('garang-live-pulse'),'active workout sessions must expose a sticky animated timer state');
+assert.ok(css.includes('Workout live session feedback v4')&&css.includes('.workout-session-bar.is-live')&&css.includes('garang-live-pulse'),'active workout sessions must expose unmistakable animated timer state');
+assert.ok(runtime.includes("if(oldHead?.isConnected)oldHead.after(bar);else builder.prepend(bar)"),'session rail must mount directly after the current exercise heading');
+assert.ok(css.includes('Workout mobile layout v10')&&css.includes('position:relative!important')&&css.includes('grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important'),'canonical mobile layout must anchor the session rail and give active weight/reps equal full-width columns');
 assert.ok(runtime.includes("function finishWorkoutSession()")&&runtime.includes("if(save?.disabled)")&&runtime.includes("add.click()")&&runtime.includes("save.click()"),'finish control must recover from the canonical save button disabled state by staging the current exercise before saving');
 assert.ok(runtime.includes("function hardHideCanonicalSave()")&&runtime.includes("hardHideCanonicalSave();\n  }\n  hardHideCanonicalSave();"),'canonical save owner must be hard-hidden again on every execution enhancement after app rerenders');
 assert.ok(runtime.includes("draftSummary().exercises===0&&completedCurrent()===0")&&runtime.includes("sessionStartedAt=0;restUntil=0;pendingResult=null")&&runtime.includes("clearPersistedSession()"),'finishing a zero-set session must end cleanly instead of leaving an inert disabled finish control');
@@ -79,7 +82,8 @@ assert.ok(css.includes('Workout IA v8'),'Workout execution CSS must include the 
 assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Exercise activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
-assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
+assert.ok(html.includes('garang-workout-execution-v2.css?v=2.11.0-mobile-layout')&&html.includes('garang-workout-execution-v2.js?v=2.6.0-mobile-layout'),'Workout layout assets must rotate their cache keys');
+assert.ok(swRuntime.includes('v37-20260930')&&sw.includes('app-shell-v37-20260930'),'app shell cache must rotate with the Workout mobile layout so iPhone clients cannot remain on stale geometry');
 for(const token of ['기록 중','workoutSessionFeedback','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
