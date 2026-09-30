@@ -2,7 +2,7 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.5.0-inline-simplified';
+const VERSION='workout-execution-v2.6.0-mobile-layout';
 const SESSION_KEY='garang_workout_session_v2';
 let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
 
@@ -159,7 +159,7 @@ function enhance(){
   if(!bar){
     bar=document.createElement('div');bar.className='workout-session-bar';
     bar.innerHTML='<div class="workout-session-live"><span><i aria-hidden="true"></i><b id="workoutExecutionState">준비</b></span><strong id="workoutExecutionElapsed" role="timer" aria-label="세션 경과 시간">00:00</strong><small id="workoutSessionFeedback" class="workout-session-feedback" role="status" aria-live="polite">시작하면 타이머와 현재 세션 상태가 여기에 표시됩니다.</small></div><div class="workout-session-controls" role="group" aria-label="운동 세션 제어"><button id="startWorkoutSession" class="workout-session-icon workout-start" type="button" aria-label="운동 세션 시작" title="운동 세션 시작"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5Z"/></svg><span class="workout-session-action-label">세션 시작</span></button><button id="finishWorkoutSession" class="workout-session-icon workout-finish" type="button" aria-label="운동 종료 및 저장" title="운동 종료 및 저장" hidden disabled><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg><span class="workout-session-action-label">종료 · 저장</span></button></div><div class="workout-session-progress"><small>SESSION</small><b id="workoutExecutionProgress">0 SETS</b></div><div id="workoutGroupExecutionCue" class="workout-group-execution-cue" hidden></div>';
-    builder.prepend(bar);
+    if(oldHead?.isConnected)oldHead.after(bar);else builder.prepend(bar);
     bar.querySelector('#startWorkoutSession')?.addEventListener('click',startWorkoutSession);
     bar.querySelector('#finishWorkoutSession')?.addEventListener('click',finishWorkoutSession);
     hardHideCanonicalSave();
