@@ -808,3 +808,199 @@
     z-index:35!important;
   }
 }
+
+
+/* Workout mobile layout v10 — canonical full-width execution geometry */
+@media(max-width:800px){
+  .workout-execution-v2 .workout-session-bar{
+    position:relative!important;
+    top:auto!important;
+    left:auto!important;
+    right:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"live" "controls" "progress" "feedback" "cue"!important;
+    gap:10px!important;
+    margin:0 0 14px!important;
+    padding:14px!important;
+    border-radius:18px!important;
+  }
+  .workout-execution-v2 .workout-session-live{
+    grid-area:live!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .workout-execution-v2 .workout-session-live>span{
+    flex:0 1 auto!important;
+    min-width:0!important;
+  }
+  .workout-execution-v2 .workout-session-live>strong{
+    flex:0 0 auto!important;
+    margin:0 0 0 auto!important;
+    justify-self:auto!important;
+    font-size:34px!important;
+    line-height:1!important;
+    text-align:right!important;
+  }
+  .workout-execution-v2 .workout-session-controls{
+    grid-area:controls!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:0!important;
+  }
+  .workout-execution-v2 .workout-session-icon,
+  .workout-execution-v2 .workout-start,
+  .workout-execution-v2 .workout-finish{
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    height:48px!important;
+    justify-content:center!important;
+    padding:0 16px!important;
+  }
+  .workout-execution-v2 .workout-session-progress{
+    grid-area:progress!important;
+    width:100%!important;
+    min-width:0!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    padding-top:8px!important;
+    margin:0!important;
+  }
+  .workout-execution-v2 .workout-session-feedback{
+    grid-area:feedback!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  .workout-execution-v2 .workout-session-bar.is-live{
+    position:relative!important;
+    top:auto!important;
+    border-color:rgba(116,208,175,.52)!important;
+    box-shadow:0 16px 34px rgba(0,0,0,.32),inset 3px 0 0 #74d0af!important;
+  }
+  .workout-execution-v2 .workout-session-bar.is-live .workout-session-live>strong{
+    font-size:38px!important;
+  }
+
+  .workout-execution-v2 .execution-compact-fields{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    justify-content:stretch!important;
+    align-items:stretch!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0 0 12px!important;
+    padding:0!important;
+    gap:8px!important;
+  }
+  .workout-execution-v2 .execution-sets-field{
+    grid-column:1/-1!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .workout-execution-v2 .execution-sets-field input{
+    width:100%!important;
+    min-width:0!important;
+  }
+  .workout-execution-v2 .workout-execution-sets,
+  .workout-execution-v2 #workoutSetDetails{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-inline:0!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    gap:10px!important;
+    padding:42px 14px 14px!important;
+    border-radius:18px!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set>.execution-set-index{
+    position:absolute!important;
+    top:13px!important;
+    left:14px!important;
+    width:auto!important;
+    min-width:0!important;
+    height:auto!important;
+    padding:0!important;
+    background:transparent!important;
+    color:#8fa198!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set::before{
+    top:12px!important;
+    right:14px!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-weight-field{
+    grid-column:1!important;
+    padding-top:0!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-reps-field{
+    grid-column:2!important;
+    padding-top:0!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-weight-field,
+  .workout-execution-v2 .execution-set-row.current-set .execution-reps-field{
+    width:100%!important;
+    min-width:0!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-weight-field input,
+  .workout-execution-v2 .execution-set-row.current-set .execution-reps-field input{
+    width:100%!important;
+    min-width:0!important;
+    height:58px!important;
+    padding:0 10px!important;
+    font-size:26px!important;
+    text-align:center!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .set-complete-button,
+  .workout-execution-v2 .execution-set-row.current-set .set-detail-toggle{
+    grid-column:1/-1!important;
+    width:100%!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-previous{
+    grid-column:1!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-target{
+    grid-column:2!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-rpe-field{
+    grid-column:1!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-type-field{
+    grid-column:2!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .execution-rir-field,
+  .workout-execution-v2 .execution-set-row.current-set.is-details-open .set-delete-button{
+    grid-column:1/-1!important;
+  }
+}
+@media(max-width:360px){
+  .workout-execution-v2 .workout-session-live>strong{font-size:30px!important}
+  .workout-execution-v2 .workout-session-bar.is-live .workout-session-live>strong{font-size:34px!important}
+  .workout-execution-v2 .execution-set-row.current-set{
+    gap:8px!important;
+    padding:40px 12px 12px!important;
+  }
+  .workout-execution-v2 .execution-set-row.current-set .execution-weight-field input,
+  .workout-execution-v2 .execution-set-row.current-set .execution-reps-field input{
+    height:54px!important;
+    font-size:23px!important;
+  }
+}
