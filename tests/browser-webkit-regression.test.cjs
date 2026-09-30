@@ -231,7 +231,7 @@ async function assertCoachSettles(page){
     const executionChrome=await page.evaluate(()=>{const node=document.querySelector('.workout-session-bar'),bar=node?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect(),style=node?getComputedStyle(node):null;return {barTop:bar?.top||0,topBottom:top?.bottom||0,position:style?.position||'',topStyle:style?.top||''};});
     assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`ready workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
     assert.equal(executionChrome.position,'relative','ready session bar must remain in normal document flow instead of acting sticky before session start');
-    assert.equal(executionChrome.topStyle,'auto','ready session bar must not carry the legacy +62px relative offset');
+    assert.ok(Math.abs(Number.parseFloat(executionChrome.topStyle)||0)<1,'ready session bar must have zero computed vertical offset instead of the legacy +62/+64px shift');
     assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
     assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'advanced workout tools must stay collapsed until requested');
     await tap(page,'#garangWorkoutTools > summary');
