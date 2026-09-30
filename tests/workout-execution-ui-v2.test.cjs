@@ -83,6 +83,7 @@ assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.include
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(html.includes('garang-workout-execution-v2.css?v=2.11.0-mobile-layout')&&html.includes('garang-workout-execution-v2.js?v=2.6.0-mobile-layout'),'Workout layout assets must rotate their cache keys');
+assert.ok(html.includes('garang-commercial-mobile-v1.css?v=1.2.1-workout-geometry'),'final commercial mobile stylesheet must rotate with the Workout geometry authority');
 assert.ok(swRuntime.includes('v37-20260930')&&sw.includes('app-shell-v37-20260930'),'app shell cache must rotate with the Workout mobile layout so iPhone clients cannot remain on stale geometry');
 for(const token of ['기록 중','workoutSessionFeedback','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
