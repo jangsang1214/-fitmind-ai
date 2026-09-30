@@ -211,7 +211,7 @@
   const NOTICE_ID='garangMealReminderNotification';
   const STYLE_ID='garangMealReminderNotificationStyle';
   const SETTINGS_ID='garangMealScheduleShortcut';
-  let timer=null;
+  let timer=null,frame=null;
   const label={breakfast:{ko:'아침',en:'Breakfast'},lunch:{ko:'점심',en:'Lunch'},dinner:{ko:'저녁',en:'Dinner'}};
   const ko=()=>document.documentElement.lang!=='en';
   const bridge=()=>window.GarangMealReminderBridge||null;
@@ -247,9 +247,10 @@
     notice.querySelector('[data-gmr-open]')?.addEventListener('click',event=>{event.preventDefault();if(b?.open?.(candidate)===true)notice.remove();});
     document.body.appendChild(notice);
   }
-  function refresh(){ensureStyle();mountSettings();mountNotice();clearTimeout(timer);timer=setTimeout(refresh,60000);}
-  for(const eventName of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:cloud-state-ready'])window.addEventListener(eventName,refresh);
-  document.addEventListener('visibilitychange',refresh);document.documentElement.addEventListener('garang:language-changed',refresh);
-  window.GarangMealReminderNotificationV1=Object.freeze({version:VERSION,refresh});
-  refresh();
+  function refresh(){ensureStyle();mountSettings();mountNotice();clearTimeout(timer);timer=setTimeout(scheduleRefresh,60000);}
+  function scheduleRefresh(){if(frame!==null)return;frame=requestAnimationFrame(()=>{frame=null;refresh();});}
+  for(const eventName of ['garang:screen-rendered','garang:route-completed'])window.addEventListener(eventName,scheduleRefresh);
+  document.addEventListener('visibilitychange',scheduleRefresh);document.documentElement.addEventListener('garang:language-changed',scheduleRefresh);
+  window.GarangMealReminderNotificationV1=Object.freeze({version:VERSION,refresh:scheduleRefresh});
+  ensureStyle();scheduleRefresh();
 })();
