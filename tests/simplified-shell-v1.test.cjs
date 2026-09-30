@@ -106,8 +106,8 @@ assert.match(html,/goal-alignment-v1\.js\?v=1\.0\.0-explicit-boot/,'Goal Alignme
 assert.match(html,/garang-experience-v4\.js\?v=1\.7\.0-essential-first/,'Experience v4 cache key must ship essential-first simplification without changing boot ownership');
 assert.match(html,/garang-today-single-next-action-v1\.js\?v=1\.2\.0-record-owner/,'Today Next Action cache key must ship deterministic Record ownership');
 assert.match(html,/garang-golden-path-v1\.js\?v=1\.0\.4-record-owner/,'Golden Path cache key must share deterministic Record ownership');
-assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.2\.0-record-owner/,'Simplified Shell runtime cache key must ship deterministic Record ownership');
-assert.match(html,/garang-router-v1\.js\?v=1\.3\.1-touch-intent/,'router cache key must match the touch-intent app-bridge implementation');
+assert.match(html,/garang-simplified-shell-v1\.js\?v=1\.2\.1-record-idempotent/,'Simplified Shell runtime cache key must ship idempotent Record ownership');
+assert.match(html,/garang-router-v1\.js\?v=1\.3\.2-record-touch-intent/,'router cache key must ship first-record touch preservation');
 const nav=html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0]||'';
 const primary=[...nav.matchAll(/<button(?=[^>]*data-garang-primary-nav="1")(?=[^>]*data-page="([^"]+)")[^>]*>/g)].map(x=>x[1]);
 assert.deepEqual(primary,['today','log','coach','progress'],'only Today, Record, Coach and Accumulation may be visible first-level navigation');
