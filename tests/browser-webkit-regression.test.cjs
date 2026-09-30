@@ -228,8 +228,20 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="exercise"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
-    const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
-    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
+    const executionChrome=await page.evaluate(()=>{
+      const builder=document.querySelector('.workout-execution-v2'),head=builder?.querySelector('.workout-exercise-head'),bar=builder?.querySelector('.workout-session-bar'),control=bar?.querySelector('#startWorkoutSession:not([hidden]),#finishWorkoutSession:not([hidden])'),sets=document.querySelector('.workout-execution-v2 .execution-sets-field input'),host=document.getElementById('workoutSetDetails'),row=host?.querySelector('.current-set'),weight=row?.querySelector('[data-set-weight]'),reps=row?.querySelector('[data-set-reps]');
+      const rect=node=>node?.getBoundingClientRect?.()||{top:0,bottom:0,width:0,height:0};
+      const b=rect(builder),h=rect(head),s=rect(bar),a=rect(control),setBox=rect(sets),hostBox=rect(host),rowBox=rect(row),weightBox=rect(weight),repsBox=rect(reps);
+      return {position:bar?getComputedStyle(bar).position:null,headBottom:h.bottom,barTop:s.top,builderWidth:b.width,barWidth:s.width,controlWidth:a.width,setsWidth:setBox.width,hostWidth:hostBox.width,rowWidth:rowBox.width,weightWidth:weightBox.width,repsWidth:repsBox.width,barAfterHead:!!(head&&bar&&(head.compareDocumentPosition(bar)&Node.DOCUMENT_POSITION_FOLLOWING))};
+    });
+    assert.equal(executionChrome.position,'relative',`mobile session rail must stay anchored in the workout flow: ${JSON.stringify(executionChrome)}`);
+    assert.equal(executionChrome.barAfterHead,true,'session rail must sit directly after the current-exercise heading instead of floating above it');
+    assert.ok(executionChrome.barTop>=executionChrome.headBottom-1,`session rail must follow the exercise heading: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.barWidth>=executionChrome.builderWidth*.96,`session rail must fill the execution surface: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.controlWidth>=executionChrome.barWidth*.86,`visible session control must use the full mobile rail width: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.setsWidth>=executionChrome.builderWidth*.92,`set-count control must not collapse into a narrow left column: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.rowWidth>=executionChrome.hostWidth*.98,`current set must fill its canonical set host: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.weightWidth+executionChrome.repsWidth>=executionChrome.rowWidth*.72,`weight and reps inputs must consume the active-set width instead of leaving dead space: ${JSON.stringify(executionChrome)}`);
     assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
     assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'advanced workout tools must stay collapsed until requested');
     await tap(page,'#garangWorkoutTools > summary');
