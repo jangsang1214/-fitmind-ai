@@ -22,7 +22,15 @@ function seed(){const date=localDate(),time=localTime();return {meta:{schemaVers
   assert.match(await page.locator('#garangTodayFlow .gtf-decision h2').innerText(),/점심 드실 시간이네요/);
   assert.match(await page.locator('#garangTodayFlow .gtf-decision p').innerText(),/사진 한 장만 찍어주세요/);
   assert.match(await button.innerText(),/점심 사진 찍기/);
-  const chooserPromise=page.waitForEvent('filechooser',{timeout:5000});await button.click();const chooser=await chooserPromise;
+  await page.waitForFunction(()=>window.GarangMealReminderNotificationV1?.version==='garang-meal-reminder-notification-v1.0.0',{timeout:9000});
+  const globalNotice=page.locator('#garangMealReminderNotification');await globalNotice.waitFor({state:'visible',timeout:9000});
+  assert.match(await globalNotice.innerText(),/점심 드실 시간이에요/);
+  await page.evaluate(()=>window.GarangRouter?.navigate?.('nutrition',{source:'meal-reminder-test',force:true}));
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='nutrition',{timeout:5000});
+  const shortcut=page.locator('#garangMealScheduleShortcut');await shortcut.waitFor({state:'visible',timeout:5000});assert.match(await shortcut.innerText(),/식사 시간 알림/);
+  await page.evaluate(()=>window.GarangRouter?.navigate?.('today',{source:'meal-reminder-test-return',force:true}));
+  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
+  const chooserPromise=page.waitForEvent('filechooser',{timeout:5000});await page.locator('#garangMealReminderNotification [data-gmr-open]').click();const chooser=await chooserPromise;
   assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'nutrition');
   assert.equal(await chooser.element().getAttribute('id'),'mealScanPicker','reminder CTA must reuse the canonical Meal Scan picker');
   const events=await page.evaluate(()=>JSON.parse(localStorage.getItem('garang_user_mock-user_v3')||'{}').analytics?.events?.map(row=>row.name)||[]);
