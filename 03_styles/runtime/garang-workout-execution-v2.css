@@ -881,13 +881,21 @@
   }
   .workout-execution-v2 .execution-sets-field,
   .workout-execution-v2 .execution-duration-field{
+    grid-column:1/-1!important;
+    justify-self:stretch!important;
+    align-self:stretch!important;
     width:100%!important;
+    max-width:none!important;
     min-width:0!important;
+    box-sizing:border-box!important;
   }
   .workout-execution-v2 .execution-sets-field input,
   .workout-execution-v2 .execution-duration-field input{
+    display:block!important;
     width:100%!important;
+    max-width:none!important;
     min-width:0!important;
+    box-sizing:border-box!important;
   }
 
   .workout-execution-v2 .execution-set-row.current-set,
