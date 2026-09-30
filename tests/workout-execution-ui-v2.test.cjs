@@ -80,6 +80,8 @@ assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.include
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
 assert.ok(intelligence.includes("GarangRouter?.navigate?.('workout'"),'Daily Workout import must use the canonical Router');
 assert.ok(css.includes("safe-area-inset-top")&&css.includes("+ 62px"),'mobile sticky session controls must clear the fixed app header');
+assert.ok(css.includes('.workout-execution-v2 .workout-session-bar{top:auto!important}')&&css.includes('.workout-session-bar.is-live{top:calc(env(safe-area-inset-top,0px) + 62px)!important}'),'ready session chrome must stay in normal flow while LIVE chrome alone becomes header-safe sticky');
+assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important')&&css.includes('.execution-set-row.current-set>.execution-set-index')&&css.includes('grid-column:1/-1!important'),'current-set weight/reps inputs must own the full mobile content width instead of reserving a permanent set-number gutter');
 for(const token of ['기록 중','workoutSessionFeedback','PREVIOUS','workoutExecutionRest','data-execution-set-complete','workout-result-card','garang:screen-rendered','workout_saved'])assert.ok(runtime.includes(token),token);
 assert.ok(!runtime.includes('MutationObserver'),'workout execution must use lifecycle events, not a DOM observer');
 for(const token of ['.workout-session-bar','.execution-set-row','.set-complete-button','.workout-rest-timer','.workout-result-card','@media(max-width:720px)'])assert.ok(css.includes(token),token);
