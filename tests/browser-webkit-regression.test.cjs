@@ -237,6 +237,7 @@ async function assertCoachSettles(page){
     assert.equal(executionChrome.position,'relative',`mobile session rail must stay anchored in the workout flow: ${JSON.stringify(executionChrome)}`);
     assert.equal(executionChrome.barAfterHead,true,'session rail must sit directly after the current-exercise heading instead of floating above it');
     assert.ok(executionChrome.barTop>=executionChrome.headBottom-1,`session rail must follow the exercise heading: ${JSON.stringify(executionChrome)}`);
+    assert.ok(executionChrome.barTop-executionChrome.headBottom<=18,`session rail must not leave a floating dead gap below the exercise heading: ${JSON.stringify(executionChrome)}`);
     assert.ok(executionChrome.barWidth>=executionChrome.builderWidth*.96,`session rail must fill the execution surface: ${JSON.stringify(executionChrome)}`);
     assert.ok(executionChrome.controlWidth>=executionChrome.barWidth*.86,`visible session control must use the full mobile rail width: ${JSON.stringify(executionChrome)}`);
     assert.ok(executionChrome.setsWidth>=executionChrome.builderWidth*.92,`set-count control must not collapse into a narrow left column: ${JSON.stringify(executionChrome)}`);
