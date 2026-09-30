@@ -18,6 +18,29 @@
  const clone=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(new Date(x+'T12:00:00Z').getTime())&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const validTime=x=>typeof x==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(x);
+ const DEFAULT_MEAL_TIMES=Object.freeze({breakfast:'08:00',lunch:'12:30',dinner:'19:00'});
+ function normalizeMealSchedule(input={}){
+  const source=isObject(input)?input:{},meals=isObject(source.meals)?source.meals:{};
+  const meal=type=>{const item=isObject(meals[type])?meals[type]:{};return {enabled:item.enabled!==false,preferredTime:validTime(item.preferredTime)?item.preferredTime:DEFAULT_MEAL_TIMES[type]};};
+  return {configured:source.configured===true,timezoneMode:'local',timezoneId:typeof source.timezoneId==='string'?source.timezoneId.slice(0,80):'',meals:{breakfast:meal('breakfast'),lunch:meal('lunch'),dinner:meal('dinner')}};
+ }
+ const mealMinute=value=>{if(!validTime(value))return null;const [h,m]=value.split(':').map(Number);return h*60+m;};
+ const localDateOf=value=>{const d=value instanceof Date?value:new Date(value??Date.now());if(Number.isNaN(d.getTime()))return null;return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+ function mealReminderDue(input={},options={}){
+  const schedule=normalizeMealSchedule(input);if(!schedule.configured)return null;
+  const now=options.now instanceof Date?options.now:new Date(options.now??Date.now());if(Number.isNaN(now.getTime()))return null;
+  const localDate=String(options.localDate||localDateOf(now)||''),minute=Number.isFinite(Number(options.minuteOfDay))?Number(options.minuteOfDay):(now.getHours()*60+now.getMinutes()),windowMinutes=clamp(Math.round(numeric(options.windowMinutes)??90),5,180),candidates=[];
+  for(const type of ['breakfast','lunch','dinner']){const meal=schedule.meals[type],target=mealMinute(meal.preferredTime);if(!meal.enabled||target===null)continue;const delta=minute-target;if(delta>=0&&delta<=windowMinutes)candidates.push({mealType:type,preferredTime:meal.preferredTime,localDate,minutesSince:delta,timezoneMode:'local'});}
+  return candidates.sort((a,b)=>a.minutesSince-b.minutesSince)[0]||null;
+ }
+ function nextMealReminderDelay(input={},options={}){
+  const schedule=normalizeMealSchedule(input);if(!schedule.configured)return null;
+  const now=options.now instanceof Date?options.now:new Date(options.now??Date.now());if(Number.isNaN(now.getTime()))return null;
+  const minute=now.getHours()*60+now.getMinutes(),seconds=now.getSeconds(),millis=now.getMilliseconds(),targets=Object.values(schedule.meals).filter(meal=>meal.enabled).map(meal=>mealMinute(meal.preferredTime)).filter(Number.isFinite);if(!targets.length)return null;
+  let deltaMinutes=Math.min(...targets.filter(target=>target>minute));if(!Number.isFinite(deltaMinutes)){deltaMinutes=Math.min(...targets)+1440;}else deltaMinutes-=minute;
+  const targetMinute=targets.filter(target=>target>minute).length?Math.min(...targets.filter(target=>target>minute)):Math.min(...targets)+1440;
+  const delta=((targetMinute-minute)*60000)-(seconds*1000)-millis;return Math.max(1000,delta);
+ }
  const row=x=>({...x,id:String(x.id||id()),date:validDate(x.date)?x.date:date()});
  const canonicalTopLevel=Object.freeze(['contractVersion','schemaVersion','profile','userModel','workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','memory','aiChats','scoreHistory','plan','language','settings','updatedAtMs']);
  const collectionDomains=Object.freeze(['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','aiChats','scoreHistory']);
@@ -45,7 +68,7 @@
   profile:null,userModel:null,
   workouts:[],meals:[],runs:[],body:[],planner:[],dailyCheckins:[],physiologicalSignals:[],
   memory:{facts:[],preferences:[],goals:[],events:[],entries:[],deletedIds:[],legacyMigrated:true},
-  aiChats:[],scoreHistory:[],plan:'FREE',language:'ko',settings:{notifications:true,unit:'metric'},updatedAtMs:0
+  aiChats:[],scoreHistory:[],plan:'FREE',language:'ko',settings:{notifications:true,unit:'metric',mealSchedule:normalizeMealSchedule()},updatedAtMs:0
  };}
 
  function hasUserData(s){return !!s&&(!!s.profile||!!s.userModel||['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals','aiChats'].some(k=>Array.isArray(s[k])&&s[k].length>0)||['facts','preferences','goals','events','entries'].some(k=>Array.isArray(s.memory?.[k])&&s.memory[k].length>0));}
@@ -99,7 +122,8 @@
   if(!Array.isArray(input.aiChats)&&Array.isArray(input.aiChat))s.aiChats=input.aiChat;
   if(!isObject(input.userModel)&&isObject(input.onboarding))s.userModel=input.onboarding;
   if(!('language' in input)&&isObject(input.preferences)&&input.preferences.language)s.language=input.preferences.language;
-  s.settings={notifications:true,unit:'metric',...(isObject(input.settings)?input.settings:{})};
+  s.settings={notifications:true,unit:'metric',mealSchedule:normalizeMealSchedule(),...(isObject(input.settings)?input.settings:{})};
+  s.settings.mealSchedule=normalizeMealSchedule(s.settings.mealSchedule);
   if(isObject(input.preferences)&&['metric','imperial'].includes(input.preferences.unit))s.settings.unit=input.preferences.unit;
 
   const weight=x=>numeric(x.weight??x.bodyWeight??x.body_weight??x['체중']);
@@ -162,6 +186,17 @@
   if(!['ko','en'].includes(state.language))errors.push('language');
   if(!['FREE','PRO'].includes(state.plan))errors.push('plan');
   if(!['metric','imperial'].includes(state.settings?.unit))errors.push('settings.unit');
+  const mealSchedule=state.settings?.mealSchedule;
+  if(!isObject(mealSchedule))errors.push('settings.mealSchedule');
+  else{
+   if(typeof mealSchedule.configured!=='boolean')errors.push('settings.mealSchedule.configured');
+   if(mealSchedule.timezoneMode!=='local')errors.push('settings.mealSchedule.timezoneMode');
+   for(const type of ['breakfast','lunch','dinner']){
+    const meal=mealSchedule.meals?.[type];
+    if(!isObject(meal))errors.push(`settings.mealSchedule.${type}`);
+    else{if(typeof meal.enabled!=='boolean')errors.push(`settings.mealSchedule.${type}.enabled`);if(!validTime(meal.preferredTime))errors.push(`settings.mealSchedule.${type}.preferredTime`);}
+   }
+  }
 
   for(const domain of ['workouts','meals','runs','body','planner','dailyCheckins','physiologicalSignals'])for(const item of state[domain]||[]){
    if(typeof item.id!=='string'||!item.id)errors.push(`${domain}.id`);
@@ -183,5 +218,5 @@
   return migrate(x);
  }
 
- root.GarangSchema={VERSION,CONTRACT_VERSION,CONTRACT,SCORE_FORMULA_VERSION,BODY_ESTIMATE_VERSION,empty,migrate,toTransport,validateContract,assertContract,validateImport,validDate,numeric,deriveBodyMetrics,id,date,hasUserData,accountBootstrap,mergeStates};
+ root.GarangSchema={VERSION,CONTRACT_VERSION,CONTRACT,SCORE_FORMULA_VERSION,BODY_ESTIMATE_VERSION,DEFAULT_MEAL_TIMES,normalizeMealSchedule,mealReminderDue,nextMealReminderDelay,empty,migrate,toTransport,validateContract,assertContract,validateImport,validDate,numeric,deriveBodyMetrics,id,date,hasUserData,accountBootstrap,mergeStates};
 })(typeof window==='undefined'?globalThis:window);

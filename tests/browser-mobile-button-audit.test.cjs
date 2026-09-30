@@ -112,16 +112,23 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
     await installAuthenticatedFirebaseMock(context);
     await context.addInitScript(()=>{
       try{Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});}catch{}
+      const now=new Date().toISOString(),d=new Date();d.setHours(12,0,0,0);
+      const date=value=>{const x=new Date(d);x.setDate(x.getDate()+value);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;};
+      const today=date(0),yesterday=date(-1);
       const current={
-        meta:{schemaVersion:5,updatedAt:'2026-09-07T00:00:00Z'},profile:{name:'Button Audit',age:23,height:174,weight:67,goal:'퍼포먼스 향상'},
+        meta:{schemaVersion:5,updatedAt:now},profile:{name:'Button Audit',age:23,height:174,weight:67,goal:'퍼포먼스 향상'},
         onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',weeklyFrequency:4,availableMinutes:60,preferences:''},
-        preferences:{language:'ko',unit:'metric'},checkins:[],planner:[],workouts:[],meals:[],runs:[],body:[],aiChat:[],actionLog:[],errors:[],
-        memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},plan:'FREE'
+        preferences:{language:'ko',unit:'metric'},
+        checkins:[{id:'audit-checkin',date:today,sleep:7.2,energy:4,stress:2,soreness:2,createdAt:now}],
+        planner:[{id:'audit-workout-plan',date:today,time:'18:00',type:'workout',title:'상체 45분',completed:false,source:'ai',createdAt:now}],
+        workouts:[{id:'audit-prior-workout',date:yesterday,name:'Squat',sets:3,reps:8,weight:60,rpe:7,duration:45,createdAt:now}],
+        meals:[],runs:[],body:[],aiChat:[],actionLog:[],errors:[],
+        memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[{name:'coach_recommendation_shown',date:today,at:now,props:{screen:'coach',date:today}}]},plan:'FREE'
       };
       const backup=JSON.parse(JSON.stringify(current));
-      backup.meta.updatedAt='2026-09-06T23:00:00Z';
-      backup.workouts=[{id:'audit-w1',date:'2026-09-06',name:'Squat',updatedAt:'2026-09-06T23:00:00Z'}];
-      backup.meals=[{id:'audit-m1',date:'2026-09-06',name:'Meal',updatedAt:'2026-09-06T23:00:00Z',items:[]}];
+      backup.meta.updatedAt=new Date(Date.now()-3600000).toISOString();
+      backup.workouts=[{id:'audit-w1',date:yesterday,name:'Squat',updatedAt:backup.meta.updatedAt}];
+      backup.meals=[{id:'audit-m1',date:yesterday,name:'Meal',updatedAt:backup.meta.updatedAt,items:[]}];
 
       localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(current));
       localStorage.setItem('garang_state_recovery_backup_v1::garang_user_mock-user_v3::audit',JSON.stringify(backup));
@@ -143,7 +150,11 @@ async function tapRecordRoute(page,name,label=`Record ${name}`){
     await dailyWorkout.waitFor({state:'visible',timeout:10000});
     const routineGenerate=page.locator('.garang-daily-workout [data-daily-generate]');
     if(!(await routineGenerate.isVisible())){
-      await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+      const nativeToggle=page.locator('.garang-daily-workout [data-daily-toggle]');
+      const disclosureToggle=page.locator('.garang-daily-workout .gci-toggle');
+      if(await nativeToggle.isVisible()) await tap(page,'.garang-daily-workout [data-daily-toggle]','open routine recommendation');
+      else if(await disclosureToggle.isVisible()) await tap(page,'.garang-daily-workout .gci-toggle','open routine recommendation disclosure');
+      else throw new Error('Today workout preparation has no visible disclosure owner');
     }
     await routineGenerate.waitFor({state:'visible',timeout:3000});
     assert.equal(await page.locator('.garang-daily-workout [data-daily-import]').count(),0,'canonical generated Workout start must not exist before a routine is generated');
