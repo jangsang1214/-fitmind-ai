@@ -228,8 +228,10 @@ async function assertCoachSettles(page){
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="exercise"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
-    const executionChrome=await page.evaluate(()=>{const bar=document.querySelector('.workout-session-bar')?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0};});
-    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`sticky workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
+    const executionChrome=await page.evaluate(()=>{const node=document.querySelector('.workout-session-bar'),bar=node?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect(),style=node?getComputedStyle(node):null;return {barTop:bar?.top||0,topBottom:top?.bottom||0,position:style?.position||'',topStyle:style?.top||''};});
+    assert.ok(executionChrome.barTop>=executionChrome.topBottom-1,`ready workout session bar must clear the fixed mobile header: ${JSON.stringify(executionChrome)}`);
+    assert.equal(executionChrome.position,'relative','ready session bar must remain in normal document flow instead of acting sticky before session start');
+    assert.equal(executionChrome.topStyle,'auto','ready session bar must not carry the legacy +62px relative offset');
     assert.equal(await page.locator('.workout-previous-note').textContent(),'LAST NOTE · 무릎 정렬 유지 · 다음 세션에도 체크','previous exercise note must carry into the next session');
     assert.equal(await page.locator('#garangWorkoutTools').getAttribute('open'),null,'advanced workout tools must stay collapsed until requested');
     await tap(page,'#garangWorkoutTools > summary');
@@ -247,6 +249,10 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').first().isVisible(),false,'mobile workout must internalize the legacy ten-column table header');
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
+    const activeSetGeometry=await page.evaluate(()=>{const row=document.querySelector('#workoutSetDetails .current-set'),weight=row?.querySelector('.execution-weight-field'),reps=row?.querySelector('.execution-reps-field'),badge=row?.querySelector('.execution-set-index');if(!row||!weight||!reps||!badge)return null;const rr=row.getBoundingClientRect(),wr=weight.getBoundingClientRect(),pr=reps.getBoundingClientRect(),br=badge.getBoundingClientRect();return {rowWidth:rr.width,weightWidth:wr.width,repsWidth:pr.width,leftInset:wr.left-rr.left,rightInset:rr.right-pr.right,badgeTop:br.top,badgeBottom:br.bottom,weightTop:wr.top};});
+    assert.ok(activeSetGeometry&&activeSetGeometry.weightWidth>=activeSetGeometry.rowWidth*.4&&activeSetGeometry.repsWidth>=activeSetGeometry.rowWidth*.4,`active weight/reps must fill the mobile card width: ${JSON.stringify(activeSetGeometry)}`);
+    assert.ok(activeSetGeometry.leftInset<=18&&activeSetGeometry.rightInset<=18,`active inputs must not retain the legacy set-number side gutter: ${JSON.stringify(activeSetGeometry)}`);
+    assert.ok(activeSetGeometry.badgeBottom<=activeSetGeometry.weightTop+1,`SET badge must sit above, not beside, the primary weight/reps row: ${JSON.stringify(activeSetGeometry)}`);
     assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
     assert.equal(await page.locator('#finishWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-controls')&&node.closest('.workout-session-bar')!==null),true,'Finish symbol control must live in the top-level live session control group');
     assert.equal(await page.locator('#saveWorkoutSession').isHidden(),true,'canonical save owner must stay hidden behind the visible finish control');
@@ -289,6 +295,10 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('#workoutSetDetails .completed').count(),1,'completed set must have an explicit completed state');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'completion must advance exactly one current set');
     assert.match(await page.locator('#workoutExecutionElapsed').textContent(),/^\d{2}:\d{2}$/,'live session timer must be visible');
+    const liveChrome=await page.evaluate(()=>{const node=document.querySelector('.workout-session-bar'),bar=node?.getBoundingClientRect(),top=document.querySelector('.topbar')?.getBoundingClientRect(),style=node?getComputedStyle(node):null,timer=document.getElementById('workoutExecutionElapsed')?.getBoundingClientRect();return {barTop:bar?.top||0,topBottom:top?.bottom||0,position:style?.position||'',timerTop:timer?.top||0,timerBottom:timer?.bottom||0,barBottom:bar?.bottom||0};});
+    assert.equal(liveChrome.position,'sticky','LIVE session bar must become sticky only after the session actually starts');
+    assert.ok(liveChrome.barTop>=liveChrome.topBottom-1,`LIVE timer must stay below the fixed mobile header: ${JSON.stringify(liveChrome)}`);
+    assert.ok(liveChrome.timerTop>=liveChrome.barTop&&liveChrome.timerBottom<=liveChrome.barBottom,`LIVE timer must remain vertically contained in the session card: ${JSON.stringify(liveChrome)}`);
     await tap(page,'#workoutSetDetails .current-set [data-execution-set-detail]');assert.equal(await page.locator('#workoutSetDetails .current-set [data-set-type]').isVisible(),true,'next current set must expose advanced type only after detail disclosure');
     await page.locator('#workoutSetDetails .current-set [data-set-type]').selectOption('warmup');
     await page.locator('.gws-panel:not([hidden]) [data-execution-set-complete]').nth(1).click();
