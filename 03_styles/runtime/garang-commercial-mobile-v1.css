@@ -337,7 +337,7 @@ body{background-image:
   }
 
   .workout-execution-v2 .workout-session-bar{
-    top:calc(env(safe-area-inset-top,0px) + 64px)!important
+    top:auto!important
   }
   .workout-execution-v2 .workout-session-bar.is-live{
     top:calc(env(safe-area-inset-top,0px) + 64px)!important
