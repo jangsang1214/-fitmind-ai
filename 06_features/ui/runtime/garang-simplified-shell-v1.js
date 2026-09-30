@@ -139,7 +139,8 @@
   }
 
   function openRecordSheet(trigger) {
-    if (sheet) return closeRecordSheet();
+    if (sheet?.isConnected) return sheet;
+    if (sheet && !sheet.isConnected) sheet = null;
     try { window.GarangRouter?.cleanup?.(); } catch {}
     previousFocus = trigger || document.activeElement;
     const ko = isKo();
