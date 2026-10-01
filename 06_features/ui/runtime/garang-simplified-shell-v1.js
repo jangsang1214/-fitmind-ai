@@ -5,7 +5,7 @@
   'use strict';
   if (window.GarangSimplifiedShell) return;
 
-  const VERSION = '1.2.0-record-owner';
+  const VERSION = '1.2.1-record-idempotent';
   const RECORD_ROUTES = Object.freeze([
     { route:'workout', ko:'운동', en:'Workout', koMeta:'세트 · 인증', enMeta:'Sets · verification' },
     { route:'nutrition', ko:'식단', en:'Nutrition', koMeta:'사진 · 직접 입력', enMeta:'Photo · manual entry' },
@@ -139,7 +139,8 @@
   }
 
   function openRecordSheet(trigger) {
-    if (sheet) return closeRecordSheet();
+    if (sheet?.isConnected) return sheet;
+    if (sheet && !sheet.isConnected) sheet = null;
     try { window.GarangRouter?.cleanup?.(); } catch {}
     previousFocus = trigger || document.activeElement;
     const ko = isKo();

@@ -75,6 +75,8 @@ assert.ok(!runtime.includes("builder.after(card)"),'session completion card must
 assert.ok(workoutFlow.includes("GarangWorkoutExecutionV2?.applyPrefill"),'recent-workout reuse must synchronize values into visible execution rows');
 assert.ok(workoutFlow.includes("const SURFACES=[")&&!workoutFlow.includes("{id:'log'")&&workoutFlow.includes("move(builder,exercise)")&&workoutFlow.includes("garangWorkoutProgram")&&workoutFlow.includes("garangWorkoutHealth"),'Workout IA must use two surfaces and redistribute canonical overview utilities after their owner mounts');
 assert.ok(css.includes('Workout IA v8'),'Workout execution CSS must include the two-surface hierarchy pass');
+assert.ok(css.includes('Workout mobile execution geometry v9')&&css.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important')&&css.includes('grid-template-columns:minmax(0,1fr)!important')&&css.includes('font-size:28px!important'),'mobile execution v9 must give the timer and active weight/reps controls the full available width');
+assert.ok(runtime.includes("workout-execution-v2.6.0-mobile-geometry")&&runtime.includes('</div><div class="workout-session-controls"')&&runtime.includes('</div><small id="workoutSessionFeedback"'),'session feedback must be a direct session-bar grid item instead of being nested inside the timer block');
 
 assert.ok(workoutFlow.includes("state.active==='exercise'")&&workoutFlow.includes("GarangWorkoutExecutionV2?.enhance"),'Exercise activation must deterministically re-enhance the execution table after surface ownership settles');
 assert.ok(intelligence.includes("main?.dataset?.garangScreen"),'workout imports must use canonical screen identity instead of bottom-nav identity');
@@ -175,7 +177,7 @@ assert.ok(runtime.includes('nextGroupedExecution?.(i)')&&runtime.includes('activ
 assert.ok(runtime.includes('if(grouped.roundEnded)startRest')&&runtime.includes('else stopRest()'),'grouped execution must rest only at round boundaries instead of between superset members');
 assert.ok(runtime.includes("const moved=bridge()?.activateGroupedExercise?.(grouped.target.index);if(moved===true)return"),'grouped set completion must synchronously enter the already-computed exact member');
 assert.ok(!runtime.includes("setTimeout(()=>bridge()?.activateGroupedExercise?.(grouped.target.index),0)"),'grouped transitions must not depend on timer ordering after completed sets');
-assert.ok(html.includes('garang-workout-execution-v2.js?v=2.5.0-inline-simplified'),'app shell must cache-bust the deterministic grouped transition runtime inside the simplified inline execution owner');
+assert.ok(html.includes('garang-workout-execution-v2.js?v=2.6.0-mobile-geometry'),'app shell must cache-bust the deterministic grouped transition runtime inside the mobile geometry owner');
 assert.ok(runtime.includes('workoutGroupExecutionCue')&&css.includes('workout-group-execution-cue'),'group execution must surface current group and round state');
 
 

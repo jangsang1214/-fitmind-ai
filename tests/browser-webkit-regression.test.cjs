@@ -248,6 +248,16 @@ async function assertCoachSettles(page){
     assert.equal(await page.locator('.gws-panel:not([hidden]) #workoutSetDetails').first().isVisible(),true,'per-set execution rows must be visible by default');
     assert.equal(await page.locator('#workoutSetDetails .current-set').count(),1,'exactly one unfinished set must own the current execution state');
     assert.equal(await page.locator('#workoutSetDetails .upcoming-set').count(),2,'remaining unfinished sets must be visually distinct from the current set');
+    const workoutGeometry=await page.evaluate(()=>{
+      const bar=document.querySelector('.workout-session-bar'),state=document.getElementById('workoutExecutionState'),timer=document.getElementById('workoutExecutionElapsed'),controls=document.querySelector('.workout-session-controls'),row=document.querySelector('#workoutSetDetails .current-set'),weight=row?.querySelector('[data-set-weight]'),reps=row?.querySelector('[data-set-reps]'),sets=document.getElementById('wSets'),compact=sets?.closest('.execution-compact-fields');
+      const box=node=>{const r=node?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom}:null;};
+      return {bar:box(bar),barParent:box(bar?.parentElement),state:box(state),timer:box(timer),controls:box(controls),row:box(row),weight:box(weight),reps:box(reps),sets:box(sets),compact:box(compact)};
+    });
+    assert.ok(workoutGeometry.bar.w>=workoutGeometry.barParent.w*.94,'mobile session bar must use the available execution width');
+    assert.ok(workoutGeometry.timer.y>=workoutGeometry.state.bottom-1&&workoutGeometry.timer.x<workoutGeometry.controls.x,'session timer must sit directly below the live state instead of being cramped beside the action');
+    assert.ok(workoutGeometry.weight.w>=workoutGeometry.row.w*.35&&workoutGeometry.reps.w>=workoutGeometry.row.w*.35,'active weight and reps inputs must each own a substantial half of the set card');
+    assert.ok(workoutGeometry.weight.w+workoutGeometry.reps.w>=workoutGeometry.row.w*.72,'active set inputs must fill the set card instead of leaving a dead side gutter');
+    assert.ok(workoutGeometry.sets.w>=workoutGeometry.compact.w*.92,'essential set-count input must fill its compact control row instead of staying in a 72px column');
     assert.equal(await page.locator('#finishWorkoutSession').evaluate(node=>node.parentElement?.classList.contains('workout-session-controls')&&node.closest('.workout-session-bar')!==null),true,'Finish symbol control must live in the top-level live session control group');
     assert.equal(await page.locator('#saveWorkoutSession').isHidden(),true,'canonical save owner must stay hidden behind the visible finish control');
     assert.equal(await page.locator('.gws-panel:not([hidden]) .workout-set-table-head').count(),1,'active workout Log must own exactly one set-table header');

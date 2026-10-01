@@ -95,7 +95,7 @@ async function gotoMoreRoute(page,routeName){
 }
 async function waitForStabilityRuntimes(page,errors){
   try{
-    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.1-touch-intent'&&window.GarangPrivacySecurityRuntime?.version==='v1.5'&&window.GarangNonblockingActions?.version==='1.2.3',null,{timeout:7000});
+    await page.waitForFunction(()=>window.GarangRouter?.version==='garang-router-v1.3.2-record-touch-intent'&&window.GarangPrivacySecurityRuntime?.version==='v1.5'&&window.GarangNonblockingActions?.version==='1.2.3',null,{timeout:7000});
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       readyState:document.readyState,
