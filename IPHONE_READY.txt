@@ -1,3 +1,0 @@
-GARANG iPhone verification deployment marker
-Created to force GitHub Pages to publish the latest main branch containing Coach Shell v5.
-No runtime functionality is changed by this file.
