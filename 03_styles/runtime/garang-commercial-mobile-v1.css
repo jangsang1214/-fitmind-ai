@@ -274,7 +274,7 @@ body{background-image:
     width:min(100%,560px)!important;translate:-50% 0!important;
     min-height:calc(70px + env(safe-area-inset-bottom,0px))!important;
     padding:6px 10px env(safe-area-inset-bottom,0px)!important;
-    grid-template-columns:repeat(4,1fr)!important;
+    grid-template-columns:repeat(5,1fr)!important;
     border-top:1px solid rgba(255,255,255,.06)!important;
     background:rgba(8,10,8,.985)!important;
     -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
