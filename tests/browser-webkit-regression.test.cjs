@@ -184,7 +184,7 @@ async function assertCoachSettles(page){
     assert.equal(layout.flowVisible,true,'decision-first C surface must be visible');
     assert.equal(layout.bodyHeroHidden,true,'body anatomy must not be the default WebKit hero');
     assert.equal(layout.quickHidden,true,'Today duplicate quick-record grid must stay internalized on WebKit');
-    assert.equal(layout.primaryCount,4,'WebKit must expose exactly four primary navigation axes');
+    assert.equal(layout.primaryCount,5,'WebKit must expose exactly five primary navigation axes including HOT');
     assert.ok(layout.record.height>=44&&layout.record.hit,'Record must replace the hidden quick cards as a real touch target');
     assert.ok(layout.top.height>=50&&layout.top.bottom>0,'physical-iOS topbar must remain on screen');
     assert.notEqual(layout.menu.display,'none');
