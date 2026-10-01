@@ -102,16 +102,6 @@ function hideSourceCard(flow){
   for(const node of flow?.querySelectorAll?.('.gpc-coach-explain,.gpc-today-plan')||[]){node.dataset.gtdwHidden='1';node.style.setProperty('display','none','important');}
   const card=main()?.querySelector('.garang-daily-workout');if(card){card.dataset.gtdwHidden='1';card.style.setProperty('display','none','important');}
 }
-function showDirectAction(action){
-  if(!action)return;
-  action.hidden=false;action.removeAttribute('hidden');action.removeAttribute('aria-hidden');
-  action.style.setProperty('display','block','important');action.style.setProperty('position','relative','important');action.style.setProperty('z-index','4','important');action.style.setProperty('pointer-events','auto','important');action.style.setProperty('width','100%','important');action.style.setProperty('min-width','0','important');
-}
-function normalizeDirectButton(button){
-  if(!button)return;
-  button.hidden=false;button.removeAttribute('hidden');button.removeAttribute('aria-hidden');if(button.tabIndex===-1)button.removeAttribute('tabindex');
-  button.style.setProperty('display','flex','important');button.style.setProperty('width','100%','important');button.style.setProperty('min-height','48px','important');button.style.setProperty('position','relative','important');button.style.setProperty('z-index','5','important');button.style.setProperty('pointer-events','auto','important');
-}
 function render({snapshot=state(),flow=null}={}){
   const m=main();if(!m||m.dataset.garangScreen!=='today'||!snapshot)return false;
   const target=flow||m.querySelector('#garangTodayFlow');if(!target)return false;remember(target);
@@ -119,7 +109,7 @@ function render({snapshot=state(),flow=null}={}){
   const summary=sessionSummary(snapshot);
   if(summary){
     const next=nextChange(snapshot,summary);setCopy(target,'오늘 운동을 완료했습니다.',next,resultReason(summary),'GARANG이 다음 운동을 다시 계산했습니다.');
-    showDirectAction(action);action.innerHTML=`<div class="gtdw-result" data-garang-today-workout-result="1"><span>SESSION INTERPRETATION</span><strong>${esc(next)}</strong><small>Coach나 Progress를 열지 않아도 다음 방문의 운동 추천에 반영됩니다.</small></div>`;hideSourceCard(target);m.dataset.gsnAction='workout-result';return true;
+    action.style.setProperty('display','block','important');action.innerHTML=`<div class="gtdw-result" data-garang-today-workout-result="1"><span>SESSION INTERPRETATION</span><strong>${esc(next)}</strong><small>Coach나 Progress를 열지 않아도 다음 방문의 운동 추천에 반영됩니다.</small></div>`;hideSourceCard(target);m.dataset.gsnAction='workout-result';return true;
   }
   const training=dailyTraining(snapshot);if(!training){restore(target);return false;}
   if(isRest(training)){
@@ -128,7 +118,7 @@ function render({snapshot=state(),flow=null}={}){
   }
   const payload=ensurePlan(training,snapshot);
   setCopy(target,`오늘은 ${String(training.title||'이 운동')} 하세요.`,reasonForTraining(training),'종목 · 세트 · 중량 · 반복을 GARANG이 준비했습니다.',payload?.plan?.adjusted?'오늘 컨디션 반영 · 강도 조정됨':'오늘 기록 기준 · 실행 준비');
-  showDirectAction(action);action.innerHTML=`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${payload?.plan?.exercises?.length?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`;normalizeDirectButton(action.querySelector('[data-garang-direct-workout-start="1"]'));hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
+  action.style.setProperty('display','block','important');action.innerHTML=`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${payload?.plan?.exercises?.length?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`;hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
 }
 function startWorkout(){
   const snapshot=state(),training=dailyTraining(snapshot);if(!snapshot||!training)return false;
