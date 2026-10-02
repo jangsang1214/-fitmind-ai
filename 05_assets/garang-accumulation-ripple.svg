@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 260" fill="none">
+  <defs>
+    <linearGradient id="line" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2EFE9" stop-opacity="0"/>
+      <stop offset="0.62" stop-color="#F2EFE9" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#79B5A3" stop-opacity="0.24"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2EFE9" stop-opacity="0.52"/>
+      <stop offset="1" stop-color="#79B5A3" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(210 190) rotate(90) scale(74 150)">
+      <stop stop-color="#79B5A3" stop-opacity="0.13"/>
+      <stop offset="0.58" stop-color="#79B5A3" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#79B5A3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.2"/>
+    </filter>
+  </defs>
+  <ellipse cx="210" cy="194" rx="150" ry="58" fill="url(#glow)"/>
+  <g stroke="#8FC6B5" stroke-opacity="0.18">
+    <ellipse cx="210" cy="196" rx="42" ry="13"/>
+    <ellipse cx="210" cy="196" rx="67" ry="21"/>
+    <ellipse cx="210" cy="196" rx="96" ry="31"/>
+    <ellipse cx="210" cy="196" rx="130" ry="43"/>
+    <ellipse cx="210" cy="196" rx="164" ry="55" stroke-opacity="0.1"/>
+  </g>
+  <line x1="210" y1="8" x2="210" y2="142" stroke="url(#line)"/>
+  <path d="M210 132C202 143 198 150 198 157C198 165 203 171 210 171C217 171 222 165 222 157C222 150 218 143 210 132Z" stroke="#F2EFE9" stroke-opacity="0.72"/>
+  <rect x="208.5" y="169" width="3" height="36" rx="1.5" fill="url(#stem)" filter="url(#soft)"/>
+  <ellipse cx="210" cy="195" rx="19" ry="6" stroke="#F2EFE9" stroke-opacity="0.34"/>
+</svg>
