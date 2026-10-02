@@ -2,6 +2,24 @@ const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_pro
 const root=path.resolve(__dirname,'..');
 function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(x=>['.git','dist','node_modules'].includes(x.name)?[]:x.isDirectory()?walk(path.join(dir,x.name)):[path.join(dir,x.name)]);}
 const files=walk(root),failures=[],counts={javascript:0,json:0,jsonl:0,activeAssets:0};
+const relativeFiles=files.map(f=>path.relative(root,f).replace(/\\/g,'/'));
+const repositoryJunkRules=[
+  {name:'committed archive',test:p=>/(^|\/)archive\//.test(p)},
+  {name:'legacy script directory',test:p=>p.startsWith('scripts/legacy/')},
+  {name:'deprecated style source tree',test:p=>p.startsWith('03_styles/core/')||p.startsWith('03_styles/mobile/')},
+  {name:'deprecated feature source tree',test:p=>['06_features/misc/','06_features/nutrition/','06_features/planner/','06_features/running/','06_features/workout/'].some(prefix=>p.startsWith(prefix))},
+  {name:'deprecated AI coach snapshot',test:p=>p.startsWith('06_features/ai-coach/')&&p!=='06_features/ai-coach/coach-endpoint.example.js'},
+  {name:'known retired artifact',test:p=>new Set([
+    '01_app/launch.html',
+    '04_data/ui-translations.js','04_data/ui-final-translations.js',
+    '05_assets/garang-v10.4-certification-overlay-mockup.png',
+    '07_config/GOOGLE_MAPS_CONFIG.txt','07_config/fitmind-manifest.json','07_config/services-config.js',
+    'scripts/apply_repo_structure_i18n.py','scripts/apply_unit_system.py','scripts/post_repo_structure_i18n_fix.py',
+    '03_styles/features/garang-final-ai.css','03_styles/features/garang-planner-v10.css','03_styles/features/garang-premium-v9.9.css','03_styles/features/garang-v99-premium-sync.css',
+    '06_features/ui/garang-global-ui-v95.js','06_features/ui/garang-v8.5.3-ui-bridge.js','06_features/ui/garang-v9.5-global-ai.js','06_features/ui/garang-v9.5.2-touch-hotfix.js','06_features/ui/garang-v9.9-touch-final.js','06_features/ui/ui-v5.6.js'
+  ]).has(p)}
+];
+for(const relative of relativeFiles)for(const rule of repositoryJunkRules)if(rule.test(relative)){failures.push({file:relative,error:`Repository hygiene violation: ${rule.name}. Git history is the archive; do not recommit retired snapshots.`});break;}
 for(const f of files){const ext=path.extname(f);if(['.js','.cjs'].includes(ext)){counts.javascript++;const result=cp.spawnSync(process.execPath,['--check',f],{encoding:'utf8'});if(result.status!==0)failures.push({file:path.relative(root,f),error:result.stderr});}
  if(['.json','.webmanifest','.jsonl'].includes(ext)){try{const text=fs.readFileSync(f,'utf8').replace(/^\uFEFF/,'');if(ext==='.jsonl'){text.split(/\r?\n/).filter(x=>x.trim()).forEach(x=>JSON.parse(x));counts.jsonl++;}else{JSON.parse(text);counts.json++;}}catch(e){failures.push({file:path.relative(root,f),error:e.message});}}}
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),manifest=JSON.parse(fs.readFileSync(path.join(root,'runtime-manifest.json'),'utf8')),pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
