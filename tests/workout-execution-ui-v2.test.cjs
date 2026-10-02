@@ -113,6 +113,7 @@ assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-workout-execu
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-workout-execution-v2.css'),'runtime manifest must include execution CSS');
 console.log('workout-execution-ui-v2: PASS');
 assert.ok(app.includes('id="wSetType"')&&app.includes('value="warmup"')&&app.includes('value="drop"')&&app.includes('value="failure"'),'workout must support warm-up, drop and failure set semantics');
+assert.ok(app.includes("$('wDuration')?.value")&&app.includes("$('wBody')?.value"),'Workout save must tolerate simplified secondary fields being absent during runtime remounts');
 assert.ok(app.includes('id="wRir"')&&app.includes('id="wNotes"'),'workout must support RIR and exercise notes');
 assert.ok(app.includes('data-move-workout')&&app.includes('workoutDraft.splice(to,0,item)'),'draft exercises must be reorderable');
 assert.ok(runtime.includes('function syncRestSurface()')&&runtime.includes('function stabilizeRestSurface()')&&runtime.includes('queueMicrotask')&&runtime.includes('requestAnimationFrame'),'rest timer must reconcile canonical restUntil state after render replacement without relying on test retries');
