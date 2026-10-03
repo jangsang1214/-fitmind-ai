@@ -10,7 +10,7 @@
   const main = document.getElementById('main');
   if (!main) return;
 
-  const VERSION = 'garang-today-single-next-action-v1.2.0-record-owner';
+  const VERSION = 'garang-today-single-next-action-v1.3.0-direct-workout';
   const STYLE_ID = 'garang-today-single-next-action-v1-style';
   const isKo = () => document.documentElement.lang !== 'en';
   const state = () => { try { return window.GarangAgentStateBridge?.ready?.() ? window.GarangAgentStateBridge.getState() : null; } catch { return null; } };
@@ -119,6 +119,8 @@
 
   function flowOwnsExpectedAction(flow, model, snapshot) {
     if (!flow || !model || !snapshot) return true;
+    const direct = window.GarangTodayDirectWorkoutLoopV1;
+    if (!mealReminderAction() && direct?.owns?.(snapshot, model)) return true;
     const action = todayActionFor(model);
     const button = flow.querySelector('.gtf-next');
     if (!action) return true;
@@ -230,6 +232,7 @@
     scheduled = false;
     ensureStyle();
     if (main.dataset.garangScreen !== 'today') {
+      try { window.GarangTodayDirectWorkoutLoopV1?.restore?.(main.querySelector('#garangTodayFlow')); } catch {}
       main.removeAttribute('data-garang-next-owner');
       main.removeAttribute('data-gsn-action');
       main.removeAttribute('data-gsn-checked');
@@ -256,9 +259,20 @@
     const flow = main.querySelector('#garangTodayFlow');
     if (!flow) return;
     ensureFlowObserver(flow);
+    const direct = window.GarangTodayDirectWorkoutLoopV1;
+    const mealAction = mealReminderAction();
+    if (!mealAction && direct?.owns?.(snapshot, model)) {
+      restoreReminderCopy(flow);
+      main.dataset.garangNextOwner = 'today-direct-workout';
+      flow.dataset.garangNextOwner = 'today-direct-workout';
+      suppressLegacyCheckin(flow, true);
+      direct.render?.({ snapshot, model, flow });
+      return;
+    }
+    try { direct?.restore?.(flow); } catch {}
     const button = flow.querySelector('.gtf-next');
     const actionWrap = flow.querySelector('.gtf-action');
-    const action = todayActionFor(model);
+    const action = mealAction || actionFor(model);
     if(action?.id==='meal-reminder'){window.GarangMealReminderBridge?.markShown?.(action.reminder);applyReminderCopy(flow,action);}else restoreReminderCopy(flow);
 
     if (!action) {

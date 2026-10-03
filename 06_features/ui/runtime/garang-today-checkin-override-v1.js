@@ -118,9 +118,10 @@
     const flow = m.querySelector('#garangTodayFlow');
     if (!flow) { removeBottomCheckin(); return; }
     const execute = flow.querySelector('.gtf-next[data-gsn-action="execute"]');
-    const workout = isWorkoutExecute(execute);
+    const direct = flow.querySelector('[data-garang-direct-workout-start="1"]');
+    const workout = !!direct || isWorkoutExecute(execute);
     if (execute) {
-      if (workout) {
+      if (isWorkoutExecute(execute)) {
         execute.dataset.garangTodayWorkoutExecute = '1';
         execute.setAttribute('aria-label', document.documentElement.lang === 'en' ? "Start today's workout" : '오늘 운동 실행');
       } else delete execute.dataset.garangTodayWorkoutExecute;
