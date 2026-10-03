@@ -5,7 +5,7 @@
   'use strict';
   if (window.GarangSimplifiedShell) return;
 
-  const VERSION = '1.2.1-record-idempotent';
+  const VERSION = '1.2.2-hot-nav';
   const RECORD_ROUTES = Object.freeze([
     { route:'workout', ko:'운동', en:'Workout', koMeta:'세트 · 인증', enMeta:'Sets · verification' },
     { route:'nutrition', ko:'식단', en:'Nutrition', koMeta:'사진 · 직접 입력', enMeta:'Photo · manual entry' },
@@ -35,6 +35,7 @@
   function navGroup(screen = currentScreen()) {
     if (RECORD_SCREENS.has(screen) || screen === 'log') return 'log';
     if (screen === 'progress') return 'progress';
+    if (screen === 'hot') return 'hot';
     if (screen === 'coach') return 'coach';
     if (screen === 'today') return 'today';
     return null;
@@ -42,8 +43,8 @@
 
   function labelNavigation() {
     const labels = isKo()
-      ? { today:'Today', log:'Record', coach:'Coach', progress:'누적.' }
-      : { today:'Today', log:'Record', coach:'Coach', progress:'Accumulation' };
+      ? { today:'Today', hot:'HOT', log:'Record', coach:'Coach', progress:'누적.' }
+      : { today:'Today', hot:'HOT', log:'Record', coach:'Coach', progress:'Accumulation' };
     primaryButtons().forEach(button => {
       const label = button.querySelector('b');
       if (label && labels[button.dataset.page]) text(label, labels[button.dataset.page]);
