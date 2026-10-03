@@ -1,13 +1,18 @@
-# Legacy inventory
+# Legacy / source inventory
 
-The only active entry point is /index.html, governed by /runtime-manifest.json.
+The only active browser entry point is `/index.html`, governed by `/runtime-manifest.json`.
 
-| Area | Status | Rule |
-| --- | --- | --- |
-| Flat root runtime | Active | GitHub Pages deployment source |
-| Categorized copies under 01_app–09_docs | Maintained source mirror | Exact-copy checks protect synchronized modules |
-| Historical V8/V9/V99 or stability/integrated variants | Legacy only | Must never appear in the active runtime manifest |
-| Recovery ZIPs and comparison artifacts outside this directory | Evidence only | Never imported by the runtime |
-| Server reference under /backend | Development foundation | Not served by GitHub Pages and not represented as connected |
+Repository files use four explicit classes:
 
-CI rejects a missing runtime asset, a package/manifest version mismatch, an unsynchronized maintained copy, and activation of named historical runtime families.
+| Class | Rule |
+| --- | --- |
+| Active runtime | Listed by `runtime-manifest.json` or dynamically loaded by an active runtime owner |
+| Test / tooling | Used by package scripts, CI, tests, migration/import tooling, or explicit examples |
+| Compatibility / evidence | Retained because historical-data compatibility, provenance, validation, or release evidence still depends on it |
+| Dead / orphan | No runtime, dynamic-load, test, tooling, compatibility, or evidence role; delete it |
+
+As of 2026-10-02, historical source archives, disconnected V8/V9/V99 UI/runtime families, obsolete launch/config duplicates, and unused visual assets were removed from PRODUCT. Git history is the archive.
+
+`scripts/check.cjs` fails CI if those retired source families or known orphan assets/configs are reintroduced.
+
+Do not create new `archive/`, `legacy/`, backup-copy, version-snapshot, deploy-marker, or superseded runtime files inside PRODUCT. Durable project history belongs in Git history and CONTROL state, not copied source trees.
