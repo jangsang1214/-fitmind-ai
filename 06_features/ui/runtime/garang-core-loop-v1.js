@@ -144,6 +144,7 @@ function mount(root){
   }
   function render(){
     scheduled=false;ensureCoachActionLayoutStyle();ensureCoachActionDisclosureStyle();const snapshot=state();if(!snapshot)return;
+    if(main.dataset.garangScreen!=='coach')coachActionsExpanded=false;
     enhanceToday(snapshot);enhanceCoach(snapshot);enhanceAccumulation(snapshot);enhanceRecord(snapshot);
     if(pendingPrefill&&main.dataset.garangScreen===pendingPrefill.route){const item=pendingPrefill;pendingPrefill=null;root.requestAnimationFrame(()=>prefill(root,item.kind,item.payload));}
   }
