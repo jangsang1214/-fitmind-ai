@@ -159,6 +159,6 @@ function ensureStyle(){
 }
 function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>requestAnimationFrame(()=>{scheduled=false;window.GarangTodaySingleNextActionV1?.refresh?.();decorateWorkoutResult();}));}
 document.addEventListener('click',event=>{const button=event.target.closest?.('[data-garang-direct-workout-start="1"]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();startWorkout();},true);
-for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:workout-intelligence-rendered'])window.addEventListener(name,schedule);
+for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:workout-intelligence-rendered','garang:daily-workout-plan-ready'])window.addEventListener(name,schedule);
 ensureStyle();window.GarangTodayDirectWorkoutLoopV1=Object.freeze({version:VERSION,owns,render,restore,start:startWorkout,nextChange,sessionSummary,schedule});schedule();
 })();
