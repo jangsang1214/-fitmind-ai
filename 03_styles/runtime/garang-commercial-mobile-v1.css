@@ -1359,3 +1359,30 @@ body{background-image:
   #main[data-garang-screen] .visual-section-head{align-items:flex-start!important}
   #main[data-garang-screen] .visual-section-head>.pill{font-size:7px!important}
 }
+
+
+/* Workout live set-count visibility guard v1 */
+@media(max-width:799px){
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .garang-essential-workout-fields.execution-compact-fields{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .execution-sets-field{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .execution-sets-field #wSets{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+  }
+}
