@@ -69,11 +69,17 @@ function configureGenerator(card,training,snapshot){
 }
 function ensurePlan(training,snapshot){
   if(!training||isRest(training))return null;
-  const card=main()?.querySelector('.garang-daily-workout');if(!card)return null;
   const fingerprint=trainingFingerprint(training,snapshot),storedFingerprint=String(readJSON(FINGERPRINT_KEY)?.fingerprint||''),payload=currentPlan();
   if(payload?.plan?.exercises?.length&&storedFingerprint===fingerprint){generating='';return payload;}
-  const generate=configureGenerator(card,training,snapshot);if(!generate)return null;
-  if(generating!==fingerprint){generating=fingerprint;generate.click();for(const ms of [120,450,1000])setTimeout(schedule,ms);}
+  const spec={target:'auto',minutes:Math.max(15,num(training.duration,45)),intensity:intensityFromScale(training.intensityScale),equipmentProfile:snapshot?.onboarding?.equipmentProfile||'full_gym'};
+  const api=window.GarangWorkoutIntelligenceUI;
+  if(generating!==fingerprint&&typeof api?.generateDailyWorkout==='function'){
+    generating=fingerprint;
+    Promise.resolve(api.generateDailyWorkout(spec)).then(()=>schedule()).catch(()=>{generating='';schedule();});
+  }else if(generating!==fingerprint){
+    const card=main()?.querySelector('.garang-daily-workout'),generate=configureGenerator(card,training,snapshot);
+    if(generate){generating=fingerprint;generate.click();for(const ms of [120,450,1000])setTimeout(schedule,ms);}
+  }
   const next=currentPlan();
   if(next?.plan?.exercises?.length){writeJSON(FINGERPRINT_KEY,{fingerprint,at:Date.now()});generating='';return next;}
   return null;
