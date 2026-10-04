@@ -19,6 +19,7 @@ let scheduled=false,generating='',originalActionHtml=null,originalCopy=null;
 function todayWorkouts(snapshot,date=localDate()){return list(snapshot?.workouts).filter(row=>sameDate(row,date));}
 function dailyTraining(snapshot,date=localDate()){
   let draft=null;try{draft=window.GarangDailyPlanV1?.readDraft?.(snapshot,date)||null;}catch{}
+  if(!draft)try{draft=window.GarangDailyPlanV1?.ensureDailyDraft?.(snapshot,{date})?.group||null;}catch{}
   const items=list(draft?.items),training=items.find(row=>String(row?.domain||'')==='training')||items[0]||null;
   return training&&String(training?.type||'')==='workout'?training:null;
 }
