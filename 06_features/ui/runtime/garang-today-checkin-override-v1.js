@@ -105,8 +105,10 @@
     }
     if (m.lastElementChild !== button) m.appendChild(button);
     const english = document.documentElement.lang === 'en';
-    button.querySelector('strong').textContent = english ? 'Check-in' : '체크인';
-    button.setAttribute('aria-label', english ? 'Check-in' : '체크인');
+    const label = english ? 'Check-in' : '체크인';
+    const strong = button.querySelector('strong');
+    if (strong && strong.textContent !== label) strong.textContent = label;
+    if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
     return button;
   }
 
@@ -152,5 +154,5 @@
   observe();
   ensureStyle();
   schedule();
-  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.1',reconcile:schedule,openCheckin:canonicalCheckin});
+  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.2',reconcile:schedule,openCheckin:canonicalCheckin});
 })();
