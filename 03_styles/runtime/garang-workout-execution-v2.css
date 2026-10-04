@@ -1082,7 +1082,6 @@
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .gws-tabs,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .execution-compact-fields,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-advanced-disclosure,
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-entry-actions,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-draft-head,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .draft-area{
     display:none!important
@@ -1095,4 +1094,17 @@
   .workout-execution-v2 .workout-session-live>strong{font-size:34px!important}
   .workout-execution-v2 .workout-session-action-label{font-size:9px!important}
   .workout-execution-v2 .workout-session-icon{min-width:78px!important;padding:0 8px!important}
+}
+
+@media(max-width:800px){
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-entry-actions{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;
+    margin:8px 0 12px!important
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-entry-actions #addWorkout{
+    display:grid!important;width:100%!important;min-height:50px!important
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-entry-actions #clearWorkoutDraft{
+    display:none!important
+  }
 }
