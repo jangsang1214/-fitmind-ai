@@ -1100,7 +1100,6 @@
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .execution-compact-fields #wSets{
     width:100%!important;min-width:0!important
   }
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .workout-entry-actions,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .workout-draft-head,
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .draft-area{
     display:none!important
