@@ -14,7 +14,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const state=()=>{try{return window.GarangAgentStateBridge?.ready?.()?window.GarangAgentStateBridge.getState():null;}catch{return null;}};
 const readJSON=key=>{try{return JSON.parse(sessionStorage.getItem(key)||'null');}catch{return null;}};
 const writeJSON=(key,value)=>{try{value==null?sessionStorage.removeItem(key):sessionStorage.setItem(key,JSON.stringify(value));}catch{}};
-let scheduled=false,generating='',originalActionHtml=null,originalCopy=null;
+let scheduled=false,generating='',originalActionHtml=null,originalCopy=null,lastReadyPayload=null,lastReadyFingerprint='';
 
 function todayWorkouts(snapshot,date=localDate()){return list(snapshot?.workouts).filter(row=>sameDate(row,date));}
 function dailyTraining(snapshot,date=localDate()){
@@ -69,9 +69,9 @@ function configureGenerator(card,training,snapshot){
 }
 function ensurePlan(training,snapshot){
   if(!training||isRest(training))return null;
-  const fingerprint=trainingFingerprint(training,snapshot),storedFingerprint=String(readJSON(FINGERPRINT_KEY)?.fingerprint||''),payload=currentPlan();
-  if(payload?.plan?.exercises?.length&&storedFingerprint===fingerprint){generating='';return payload;}
-  const spec={target:'auto',minutes:Math.max(15,num(training.duration,45)),intensity:intensityFromScale(training.intensityScale),equipmentProfile:snapshot?.onboarding?.equipmentProfile||'full_gym'};
+  const fingerprint=trainingFingerprint(training,snapshot),storedFingerprint=String(readJSON(FINGERPRINT_KEY)?.fingerprint||''),payload=currentPlan(),ready=value=>(value?.plan?.exercises?.length||0)>=2;
+  if(ready(payload)&&storedFingerprint===fingerprint){generating='';lastReadyPayload=payload;lastReadyFingerprint=fingerprint;return payload;}
+  const spec={target:'auto',minutes:Math.max(15,num(training.duration,45)),intensity:intensityFromScale(training.intensityScale),equipmentProfile:snapshot?.onboarding?.equipmentProfile||'full_gym',minExercises:2};
   const api=window.GarangWorkoutIntelligenceUI;
   if(generating!==fingerprint&&typeof api?.generateDailyWorkout==='function'){
     generating=fingerprint;
@@ -81,12 +81,13 @@ function ensurePlan(training,snapshot){
     if(generate){generating=fingerprint;generate.click();for(const ms of [120,450,1000])setTimeout(schedule,ms);}
   }
   const next=currentPlan();
-  if(next?.plan?.exercises?.length){writeJSON(FINGERPRINT_KEY,{fingerprint,at:Date.now()});generating='';return next;}
+  if(ready(next)){writeJSON(FINGERPRINT_KEY,{fingerprint,at:Date.now()});generating='';lastReadyPayload=next;lastReadyFingerprint=fingerprint;return next;}
+  if(lastReadyFingerprint===fingerprint&&ready(lastReadyPayload))return lastReadyPayload;
   return null;
 }
 function compactPlanMarkup(payload){
   const plan=payload?.plan;
-  if(!plan?.exercises?.length)return '<div class="gtdw-loading"><strong>오늘 루틴을 준비하고 있습니다.</strong><span>최근 중량 · 반복 · 회복 상태를 읽는 중</span></div>';
+  if((plan?.exercises?.length||0)<2)return '<div class="gtdw-loading"><strong>오늘 루틴을 준비하고 있습니다.</strong><span>최근 중량 · 반복 · 회복 상태를 읽는 중</span></div>';
   const rows=plan.exercises.slice(0,5).map(x=>`<div class="gtdw-row"><strong>${esc(x.name)}</strong><span>${Math.max(1,num(x.sets,1))} × ${Math.max(1,num(x.reps,1))} · ${num(x.suggestedWeight)>0?`${x.suggestedWeight}kg`:'중량 선택'}</span></div>`).join('');
   return `<div class="gtdw-plan"><div class="gtdw-plan-head"><span>TODAY WORKOUT</span><b>${esc(plan.minutes||'')}분 · RPE ${esc(plan.targetRPE||'—')}</b></div>${rows}</div>`;
 }
@@ -114,7 +115,7 @@ function setActionMarkup(action,key,html){
   return true;
 }
 function planSignature(payload){
-  const plan=payload?.plan;if(!plan?.exercises?.length)return'loading';
+  const plan=payload?.plan;if((plan?.exercises?.length||0)<2)return'loading';
   return [plan.minutes||'',plan.targetRPE||'',...plan.exercises.slice(0,5).map(x=>[x.name,x.sets,x.reps,x.suggestedWeight].join(':'))].join('|');
 }
 function hideSourceCard(flow){
@@ -137,7 +138,7 @@ function render({snapshot=state(),flow=null}={}){
   }
   const payload=ensurePlan(training,snapshot);
   setCopy(target,`오늘은 ${String(training.title||'이 운동')} 하세요.`,reasonForTraining(training),'종목 · 세트 · 중량 · 반복을 GARANG이 준비했습니다.',payload?.plan?.adjusted?'오늘 컨디션 반영 · 강도 조정됨':'오늘 기록 기준 · 실행 준비');
-  action.style.setProperty('display','block','important');setActionMarkup(action,`workout|${trainingFingerprint(training,snapshot)}|${planSignature(payload)}`,`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${payload?.plan?.exercises?.length?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`);hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
+  action.style.setProperty('display','block','important');setActionMarkup(action,`workout|${trainingFingerprint(training,snapshot)}|${planSignature(payload)}`,`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${(payload?.plan?.exercises?.length||0)>=2?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`);hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
 }
 function startWorkout(){
   const snapshot=state(),training=dailyTraining(snapshot);if(!snapshot||!training)return false;
