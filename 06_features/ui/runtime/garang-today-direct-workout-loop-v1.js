@@ -90,14 +90,26 @@ function remember(flow){
 }
 function restore(flow){
   if(!flow)return;
-  const action=flow.querySelector('.gtf-action');if(action&&originalActionHtml!==null&&action.dataset.gtdwOwner==='1'){action.innerHTML=originalActionHtml;delete action.dataset.gtdwOwner;action.style.removeProperty('display');}
+  const action=flow.querySelector('.gtf-action');if(action&&originalActionHtml!==null&&action.dataset.gtdwOwner==='1'){action.innerHTML=originalActionHtml;delete action.dataset.gtdwOwner;delete action.dataset.gtdwRenderKey;action.style.removeProperty('display');}
   if(originalCopy)for(const [selector,key] of [['.gtf-context span','contextSpan'],['.gtf-context strong','contextStrong'],['.gtf-decision h2','title'],['.gtf-decision p','reason']]){const node=flow.querySelector(selector);if(node)node.textContent=originalCopy[key]||'';}
   for(const node of flow.querySelectorAll('.gpc-coach-explain,.gpc-today-plan'))if(node.dataset.gtdwHidden==='1'){delete node.dataset.gtdwHidden;node.style.removeProperty('display');}
   const card=main()?.querySelector('.garang-daily-workout');if(card?.dataset?.gtdwHidden==='1'){delete card.dataset.gtdwHidden;card.style.removeProperty('display');}
 }
 function setCopy(flow,title,reason,context,strong){
   const values=[['.gtf-decision h2',title],['.gtf-decision p',reason],['.gtf-context span',context],['.gtf-context strong',strong]];
-  for(const [selector,value] of values){const node=flow.querySelector(selector);if(node)node.textContent=value;}
+  for(const [selector,value] of values){const node=flow.querySelector(selector),next=String(value??'');if(node&&node.textContent!==next)node.textContent=next;}
+}
+function setActionMarkup(action,key,html){
+  if(!action)return false;
+  const nextKey=String(key||'');
+  if(action.dataset.gtdwRenderKey===nextKey)return false;
+  action.dataset.gtdwRenderKey=nextKey;
+  action.innerHTML=html;
+  return true;
+}
+function planSignature(payload){
+  const plan=payload?.plan;if(!plan?.exercises?.length)return'loading';
+  return [plan.minutes||'',plan.targetRPE||'',...plan.exercises.slice(0,5).map(x=>[x.name,x.sets,x.reps,x.suggestedWeight].join(':'))].join('|');
 }
 function hideSourceCard(flow){
   for(const node of flow?.querySelectorAll?.('.gpc-coach-explain,.gpc-today-plan')||[]){node.dataset.gtdwHidden='1';node.style.setProperty('display','none','important');}
@@ -110,16 +122,16 @@ function render({snapshot=state(),flow=null}={}){
   const summary=sessionSummary(snapshot);
   if(summary){
     const next=nextChange(snapshot,summary);setCopy(target,'오늘 운동을 완료했습니다.',next,resultReason(summary),'GARANG이 다음 운동을 다시 계산했습니다.');
-    action.style.setProperty('display','block','important');action.innerHTML=`<div class="gtdw-result" data-garang-today-workout-result="1"><span>SESSION INTERPRETATION</span><strong>${esc(next)}</strong><small>Coach나 Progress를 열지 않아도 다음 방문의 운동 추천에 반영됩니다.</small></div>`;hideSourceCard(target);m.dataset.gsnAction='workout-result';return true;
+    action.style.setProperty('display','block','important');setActionMarkup(action,`result|${summary.sets}|${summary.volume}|${next}`,`<div class="gtdw-result" data-garang-today-workout-result="1"><span>SESSION INTERPRETATION</span><strong>${esc(next)}</strong><small>Coach나 Progress를 열지 않아도 다음 방문의 운동 추천에 반영됩니다.</small></div>`);hideSourceCard(target);m.dataset.gsnAction='workout-result';return true;
   }
   const training=dailyTraining(snapshot);if(!training){restore(target);return false;}
   if(isRest(training)){
     setCopy(target,'오늘은 고강도 운동을 쉬세요.',reasonForTraining(training),'쉬는 것도 다음 운동을 위한 계획입니다.','RECOVERY DAY');
-    action.style.setProperty('display','none','important');action.innerHTML='';hideSourceCard(target);m.dataset.gsnAction='today-rest';return true;
+    action.style.setProperty('display','none','important');setActionMarkup(action,`rest|${trainingFingerprint(training,snapshot)}|${reasonForTraining(training)}`,'');hideSourceCard(target);m.dataset.gsnAction='today-rest';return true;
   }
   const payload=ensurePlan(training,snapshot);
   setCopy(target,`오늘은 ${String(training.title||'이 운동')} 하세요.`,reasonForTraining(training),'종목 · 세트 · 중량 · 반복을 GARANG이 준비했습니다.',payload?.plan?.adjusted?'오늘 컨디션 반영 · 강도 조정됨':'오늘 기록 기준 · 실행 준비');
-  action.style.setProperty('display','block','important');action.innerHTML=`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${payload?.plan?.exercises?.length?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`;hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
+  action.style.setProperty('display','block','important');setActionMarkup(action,`workout|${trainingFingerprint(training,snapshot)}|${planSignature(payload)}`,`${compactPlanMarkup(payload)}<button type="button" class="gtf-next gtdw-start" data-garang-direct-workout-start="1" ${payload?.plan?.exercises?.length?'':'disabled'}>오늘 운동 시작<span aria-hidden="true">→</span></button>`);hideSourceCard(target);m.dataset.gsnAction='today-workout';return true;
 }
 function startWorkout(){
   const snapshot=state(),training=dailyTraining(snapshot);if(!snapshot||!training)return false;
