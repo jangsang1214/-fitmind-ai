@@ -70,7 +70,7 @@ async function waitForServer(){
       assert.equal(value.cards.length,4,`${label}: all four legacy quick-record capabilities must remain in DOM`);
       assert.equal(value.quickGridHidden,true,`${label}: duplicate Today quick-record surface must remain internalized`);
       assert.ok(value.cards.every(card=>card.hidden),`${label}: Today record cards must not paint while Record is the canonical entry point`);
-      assert.equal(value.visiblePrimary,4,`${label}: exactly four primary nav items must be visible`);
+      assert.equal(value.visiblePrimary,5,`${label}: exactly five primary nav items must be visible`);
       assert.equal(value.visibleBridges,0,`${label}: internal route bridges must never paint`);
       assert.ok(value.recordBox&&value.recordBox.width>40&&value.recordBox.height>=44,`${label}: Record must provide a real mobile touch target: ${JSON.stringify(value.recordBox)}`);
       assert.ok(!value.navBackdrop||value.navBackdrop==='none',`${label}: mobile fixed nav must not create a blur compositor: ${value.navBackdrop}`);

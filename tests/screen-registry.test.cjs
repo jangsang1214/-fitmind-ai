@@ -30,13 +30,15 @@ function fakeDoc(active='today',lang='ko'){
   };
 }
 
-assert.equal(GarangScreens.version,'1.2.2');
+assert.equal(GarangScreens.version,'1.2.3-hot');
 assert.equal(GarangScreens.label('planner','ko'),'PLANNER / 실행');
 assert.equal(GarangScreens.label('planner','en'),'PLANNER');
 assert.equal(GarangScreens.label('memory','ko'),'MEMORY / 장기 기억');
 assert.equal(GarangScreens.label('memory','en'),'MEMORY');
 assert.equal(GarangScreens.label('progress','ko'),'PROGRESS / 누적.');
 assert.equal(GarangScreens.label('progress','en'),'PROGRESS');
+assert.equal(GarangScreens.label('hot','ko'),'HOT / 운동 자극');
+assert.equal(GarangScreens.label('hot','en'),'HOT');
 assert.equal(GarangScreens.isCompact('profile'),true);
 assert.equal(GarangScreens.isCompact('planner'),false);
 assert.equal(GarangScreens.isCompact('memory'),false);

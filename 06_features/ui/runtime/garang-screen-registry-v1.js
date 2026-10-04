@@ -6,6 +6,7 @@
 
   const SCREENS = Object.freeze({
     today: Object.freeze({key:'today',labelKo:'TODAY / 오늘',labelEn:'TODAY',compactTitle:true,selectors:['.today-body-panel'],patterns:[/\btoday\b|오늘/i]}),
+    hot: Object.freeze({key:'hot',labelKo:'HOT / 운동 자극',labelEn:'HOT',compactTitle:true,selectors:['#garangHotRoot'],patterns:[/\bhot\b|운동 자극/i]}),
     coach: Object.freeze({key:'coach',labelKo:'COACH / 코치',labelEn:'COACH',compactTitle:false,selectors:['#coachInput'],patterns:[/\bcoach\b|코치/i]}),
     log: Object.freeze({key:'log',labelKo:'RECORD / 기록',labelEn:'RECORD',compactTitle:true,selectors:['.visual-log-grid'],patterns:[/\blog\b|record|기록/i]}),
     workout: Object.freeze({key:'workout',labelKo:'WORKOUT / 운동',labelEn:'WORKOUT',compactTitle:true,selectors:['#saveWorkoutSession','#wName'],patterns:[/\bworkout\b|log\s*\/\s*workout|운동/i]}),
@@ -20,7 +21,7 @@
     modeling: Object.freeze({key:'modeling',labelKo:'MODELING / 모델링',labelEn:'MODELING',compactTitle:true,selectors:['#saveOnboarding'],patterns:[/\bmodeling\b|사용자 모델|garang이 먼저 알아야 할 것|\bstart\b/i]})
   });
 
-  const DETECTION_ORDER=Object.freeze(['planner','memory','settings','profile','modeling','running','nutrition','body','workout','log','progress','coach','today']);
+  const DETECTION_ORDER=Object.freeze(['planner','memory','settings','profile','modeling','running','nutrition','body','workout','log','progress','coach','hot','today']);
   const definition=key=>key&&SCREENS[key]?SCREENS[key]:null;
   const label=(key,lang='ko')=>{const def=definition(key);return def?(lang==='en'?def.labelEn:def.labelKo):'';};
 
@@ -70,7 +71,7 @@
     return applyHeader(main,doc);
   }
 
-  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.2'});
+  root.GarangScreens=Object.freeze({SCREENS,DETECTION_ORDER,definition,label,detect,applyHeader,reconcile,activeNavPage,isCompact:key=>!!definition(key)?.compactTitle,version:'1.2.3-hot'});
 
   /* app.js owns rendering and emits this after each screen tree is complete. Screen Registry owns identity. */
   if(typeof root.addEventListener==='function'&&root.document){

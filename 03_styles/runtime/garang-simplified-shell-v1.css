@@ -1,5 +1,5 @@
 /* GARANG Simplified Shell v1.3 — quiet navigation + luxury Today hierarchy. */
-#appView:not([hidden])>#bottomNav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#appView:not([hidden])>#bottomNav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 #appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"]{min-width:0!important}
 #appView:not([hidden])>#bottomNav [data-garang-primary-nav="1"] b{font-size:11px;letter-spacing:.01em;white-space:nowrap}
 #appView:not([hidden])>#bottomNav [data-garang-route-bridge="1"]{display:none!important}

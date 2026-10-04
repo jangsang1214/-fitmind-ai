@@ -6,7 +6,7 @@
 (() => {
 'use strict';
 if(window.GarangRouter)return;
-const VERSION='garang-router-v1.3.2-record-touch-intent';
+const VERSION='garang-router-v1.3.3-hot-route';
 const main=()=>document.getElementById('main');
 const registry=()=>window.GarangScreenRegistry;
 const normalize=route=>String(route||'').trim().toLowerCase();
@@ -19,7 +19,7 @@ function current(){
 function valid(route){
   const r=normalize(route);if(!r)return false;
   try{const entry=registry()?.get?.(r);if(entry)return true;}catch{}
-  return ['today','coach','workout','body','progress','running','nutrition','planner','memory','profile','settings','onboarding','modeling','log'].includes(r);
+  return ['today','hot','coach','workout','body','progress','running','nutrition','planner','memory','profile','settings','onboarding','modeling','log'].includes(r);
 }
 function removeTransient(){
   const appMain=main();
