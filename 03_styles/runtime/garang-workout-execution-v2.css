@@ -1086,9 +1086,9 @@
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-advanced-disclosure{
     display:none!important
   }
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails .execution-set-row.current-set) .workout-entry-actions,
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails .execution-set-row.current-set) .workout-draft-head,
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails .execution-set-row.current-set) .draft-area{
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .workout-entry-actions,
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .workout-draft-head,
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .draft-area{
     display:none!important
   }
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-exercise-head{
@@ -1106,7 +1106,7 @@
     display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;
     margin:8px 0 12px!important
   }
-  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails .execution-set-row.current-set) .workout-entry-actions{
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live):has(#workoutSetDetails:not([hidden]) .execution-set-row.current-set) .workout-entry-actions{
     display:none!important
   }
   #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-entry-actions #addWorkout{
