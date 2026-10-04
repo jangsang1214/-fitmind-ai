@@ -123,6 +123,8 @@
     if (!mealReminderAction() && direct?.owns?.(snapshot, model)) {
       const start=flow.querySelector('[data-garang-direct-workout-start="1"]');
       if(start&&!start.disabled&&flow.querySelectorAll('.gtdw-row').length<2)return false;
+      const competing=[...flow.querySelectorAll('.gpc-coach-explain,.gpc-today-plan')];
+      if(competing.some(node=>!node.hidden&&getComputedStyle(node).display!=='none'))return false;
       return true;
     }
     const action = todayActionFor(model);
