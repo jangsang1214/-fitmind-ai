@@ -62,7 +62,7 @@ assert.match(css,/repeat\(4,minmax\(0,1fr\)\)/,'bottom navigation must expose fo
 assert.match(css,/data-garang-route-bridge="1"\]\{display:none!important\}/,'internal route bridge must never be visible');
 assert.match(css,/body\.garang-record-open\{overflow-y:hidden/,'record sheet must explicitly lock vertical background scrolling');
 assert.doesNotMatch(css,/@import[^;]*garang-core-loop-v1\.css/,'Simplified Shell must not own Core Loop stylesheet loading through a hidden import');
-assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.2\.0-screenshot-fidelity/,'commercial mobile design system must be the final explicit visual runtime');
+assert.match(html,/garang-commercial-mobile-v1\.css\?v=1\.3\.0-unified-product/,'commercial mobile design system must be the final explicit visual runtime');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-commercial-mobile-v1.css'),'runtime manifest must own the commercial mobile design system');
 assert.match(html,/garang-commercial-mobile-v1\.js\?v=1\.0\.0-app-native/,'commercial mobile presentation runtime must boot explicitly');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-commercial-mobile-v1.js'),'runtime manifest must own the commercial mobile presentation runtime');
@@ -85,6 +85,8 @@ assert.match(commercialMobileCss,/#main\[data-garang-screen="settings"\]/,'Setti
 assert.match(commercialMobileCss,/#main\[data-garang-screen="profile"\]/,'Profile must share the commercial mobile grammar');
 assert.match(commercialMobileCss,/#main\[data-garang-screen="onboarding"\]/,'Onboarding must share the commercial mobile grammar');
 assert.match(commercialMobileCss,/#authView:not\(\[hidden\]\) \.auth-shell/,'Auth must use the mobile app frame instead of desktop-only layout');
+assert.match(commercialMobileCss,/UNIFIED PRODUCT UI v2/,'commercial design system must expose one beginner-first app grammar');
+assert.match(html,/<b>오늘<\/b>[\s\S]*<b>기록<\/b>[\s\S]*<b>코치<\/b>[\s\S]*<b>누적<\/b>/,'primary navigation labels must be immediately understandable in Korean');
 
 const coreStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-core-loop-v1.css'),shellStyleIndex=manifest.styles.indexOf('03_styles/runtime/garang-simplified-shell-v1.css');
 assert.ok(coreStyleIndex>=0&&coreStyleIndex<shellStyleIndex,'manifest must explicitly own Core Loop -> Simplified Shell stylesheet order');
