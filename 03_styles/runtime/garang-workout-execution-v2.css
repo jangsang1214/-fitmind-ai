@@ -991,9 +991,11 @@
 }
 .workout-execution-v2 .execution-compact-fields .compact-secondary,
 .workout-execution-v2 .workout-advanced-tools,
-.workout-execution-v2 .execution-duration-field{display:none!important}
+.workout-execution-v2 .execution-duration-field,
+.workout-execution-v2 .one-rm-panel{display:none!important}
 .workout-execution-v2:has(#workoutAdvancedSettings[open]) .execution-compact-fields .compact-secondary,
-.workout-execution-v2:has(#workoutAdvancedSettings[open]) .execution-duration-field{display:grid!important}
+.workout-execution-v2:has(#workoutAdvancedSettings[open]) .execution-duration-field,
+.workout-execution-v2:has(#workoutAdvancedSettings[open]) .one-rm-panel{display:grid!important}
 .workout-execution-v2:has(#workoutAdvancedSettings[open]) .workout-advanced-tools{display:grid!important}
 .workout-execution-v2:has(#workoutAdvancedSettings[open]) .execution-secondary-metric{display:grid!important}
 .workout-execution-v2 .execution-compact-fields{
