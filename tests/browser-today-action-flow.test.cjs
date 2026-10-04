@@ -5,50 +5,41 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const {webkit}=require('playwright');
 const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),port=8778,baseURL=`http://127.0.0.1:${port}`;
-const pad=n=>String(n).padStart(2,'0');const date=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const pad=n=>String(n).padStart(2,'0'),date=(offset=0)=>{const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 async function waitForServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{const r=await fetch(baseURL);if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,180));}throw new Error('GARANG Today preview server did not start');}
-function seed(){const today=date();return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Today Flow',age:27,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',weeklyFrequency:4,availableMinutes:60},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[{id:'seed-workout',date:today,name:'벤치프레스',sets:3,reps:8,weight:60,rpe:7,duration:45}],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[{name:'coach_recommendation_shown',date:today,props:{screen:'coach',date:today}}]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
-const visiblePrimary=page=>page.locator('#garangTodayFlow .gtf-next[data-gsn-action],#garangTodayFlow [data-garang-checkin-access="1"]').evaluateAll(nodes=>nodes.filter(el=>{const s=getComputedStyle(el),b=el.getBoundingClientRect();return !el.hidden&&s.display!=='none'&&s.visibility!=='hidden'&&b.width>0&&b.height>0;}).length);
+function seed(){const today=date(),now=new Date().toISOString();return {meta:{schemaVersion:5,updatedAt:now},profile:{name:'Today Flow',age:27,height:174,weight:70,gender:'male',goal:'근육 증가'},onboarding:{complete:true,skipped:false,goal:'근육 증가',experience:'intermediate',equipmentProfile:'full_gym',weeklyFrequency:7,availableMinutes:45},preferences:{language:'ko',unit:'metric'},planner:[],workouts:[{id:'seed-workout',date:date(-2),name:'벤치프레스',sets:3,reps:8,weight:60,rpe:7,duration:45}],meals:[],runs:[],body:[],checkins:[{id:'c1',date:today,sleep:7.5,energy:4,stress:2,soreness:2,availableMinutes:45}],dailyCheckins:[],aiChat:[],actionLog:[],errors:[],analytics:{events:[]},memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},plan:'FREE'};}
+function seedRest(){const s=seed(),today=date();s.meta.dailyPlanDrafts={[today]:{id:'gdp-rest',date:today,status:'draft',userEdited:true,revision:1,items:[{id:'gdp-rest-training',domain:'training',type:'workout',title:'회복 중심 하루',focus:'rest',duration:0,intensityScale:0,volumeScale:0,reason:'최근 회복 상태를 반영해 고강도 운동을 쉬는 날입니다.'},{id:'gdp-rest-recovery',domain:'recovery',type:'recovery',title:'회복',duration:20},{id:'gdp-rest-nutrition',domain:'nutrition',type:'nutrition',title:'식단'}]}};return s;}
 (async()=>{
  const server=startStaticServer(serveRoot,port);let browser;
  try{
   await waitForServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  await installAuthenticatedFirebaseMock(context);
-  await context.addInitScript(payload=>{localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));},seed());
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangTodayMorningOrchestratorV1?.version==='1.2.0'&&window.GarangProductConsolidationV1?.version==='garang-product-consolidation-v1.2.0',{timeout:9000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1'&&document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='precheckin',null,{timeout:9000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach'&&document.querySelector('#garangTodayFlow')?.dataset?.decisionOwner==='coach',null,{timeout:5000});
-  const flow=page.locator('#garangTodayFlow');await flow.waitFor({state:'visible',timeout:5000});
-  assert.equal(await page.locator('#main').getAttribute('data-garang-screen'),'today');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today shows the deterministic judgment summary while Coach remains the canonical decision disclosure owner');
-  assert.equal(await flow.getAttribute('data-decision-owner'),'coach');
-  assert.match(await flow.getAttribute('aria-label'),/오늘 상태/,'Morning Orchestrator remains the canonical Today accessibility owner');
-  assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must answer what GARANG thinks today');
-  assert.equal(await flow.locator('.gtf-disclosure').isHidden(),true,'detailed rationale must remain progressive and Coach-owned');
-  assert.equal(await flow.locator('.gpc-coach-explain').isVisible(),true,'Today must offer one quiet explanation entry');
-  assert.equal(await flow.locator('.gpc-today-plan .gtf-track').count(),3,'Today keeps the three domain tracks in the internalized plan contract');assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'Today keeps one compact Planner utility row');assert.equal(await flow.locator('.gpc-today-plan .gtf-track-visual').isHidden(),true,'three-domain plan detail must stay internalized');
-  assert.equal(await page.locator('#garangTodayBrandHero').isHidden(),true,'decorative hero must not compete with Today question');
-  assert.equal(await page.locator('#garangTodayDensity').isHidden(),true,'duplicate metric density must not compete with Today judgment');
+  await installAuthenticatedFirebaseMock(context);await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),seed());
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.stack||e?.message||e)));await page.goto(baseURL,{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
+  await page.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:9000});
+  const start=page.locator('[data-garang-direct-workout-start="1"]');await start.waitFor({state:'visible',timeout:10000});await page.waitForFunction(()=>!document.querySelector('[data-garang-direct-workout-start="1"]')?.disabled,{timeout:10000});
+  const flow=page.locator('#garangTodayFlow');
+  assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must lead with a judgment');
+  assert.match(await flow.locator('.gtf-decision h2').innerText(),/오늘은 .* 하세요/,'Today must tell the user exactly what to do');
+  assert.ok((await flow.locator('.gtf-decision p').innerText()).trim().length>4,'Today must expose one-line reasoning without opening Coach');
+  assert.ok(await flow.locator('.gtdw-row').count()>=2,'Today must show the concrete workout prescription');
+  assert.equal(await flow.locator('.gpc-coach-explain:visible').count(),0,'Coach explanation must stay out of the core path');
+  assert.equal(await flow.locator('.gpc-today-plan:visible').count(),0,'Planner utility must stay out of the core path');
+  assert.equal(await page.locator('[data-garang-direct-workout-start="1"]:visible').count(),1,'Today must expose exactly one workout primary action');
+  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today must not overflow mobile viewport: ${JSON.stringify(width)}`);
+  assert.deepEqual(errors,[],`Today direct action browser errors:\n${errors.join('\n')}`);
+  await context.close();
 
-  const checkin=flow.locator('[data-garang-checkin-access="1"]');await checkin.waitFor({state:'visible',timeout:5000});assert.match(await checkin.innerText(),/오늘 상태/);assert.equal(await flow.locator('.gtf-action').isHidden(),true,'before recovery evidence only check-in may own the next action');assert.equal(await visiblePrimary(page),1,'pre-check-in Today must expose one primary action');
-  await checkin.click();const save=page.locator('.modal #saveCheckin');await save.waitFor({state:'visible',timeout:3000});await page.locator('#ciSleep').fill('5.5');await page.locator('#ciEnergy').fill('2');await page.locator('#ciStress').fill('4');await page.locator('#ciSoreness').fill('5');await page.locator('#ciMinutes').fill('35');await save.click();
-  await page.waitForFunction(today=>{const s=window.GarangAgentStateBridge?.getState?.();return [...(s?.dailyCheckins||[]),...(s?.checkins||[])].some(row=>String(row?.date||'').slice(0,10)===today);},date(),{timeout:5000});
-  await page.waitForFunction(()=>document.querySelector('#garangTodayFlow')?.dataset?.gtoPhase==='checked'&&document.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),null,{timeout:9000});
-  await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangDecisionOwner==='coach',null,{timeout:3000});
-  await page.waitForTimeout(220);
-  await page.waitForFunction(()=>{const visible=el=>{if(!el)return false;const style=getComputedStyle(el),box=el.getBoundingClientRect();return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&box.width>0&&box.height>0;};const root=document.querySelector('#garangTodayFlow');return root?.dataset?.gtoPhase==='checked'&&visible(root.querySelector('.gtf-decision'))&&visible(root.querySelector('.gtf-action'))&&visible(root.querySelector('.gpc-today-plan'))&&!visible(root.querySelector('.gpc-today-plan .gtf-track-visual'));},null,{timeout:3000});
-  assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'post-check-in GARANG judgment must stay visible on Today');
-  assert.equal(await flow.locator('.gpc-today-plan').isVisible(),true,'compact Planner utility remains reachable');assert.equal(await flow.locator('.gpc-today-plan .gtf-track-visual').isHidden(),true,'full plan details remain internalized so Today stays state -> judgment -> action');
-  assert.equal(await flow.locator('.gtf-action').isVisible(),true,'canonical next action must return after check-in');
-  assert.equal(await checkin.isHidden(),true,'state edit becomes secondary while another next action owns Today');
-  assert.equal(await visiblePrimary(page),1,'Today still exposes exactly one primary action after check-in');
-  const next=flow.locator('.gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]');assert.match(await next.innerText(),/Coach/,'planning must still route through Coach proposal/confirmation boundary');
-  const stableDom=await page.evaluate(async()=>{const probe=async()=>{const before=document.querySelector('#garangTodayFlow'),button=before?.querySelector('.gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),beforeKey=before?.dataset?.gtfRenderKey||null;window.dispatchEvent(new CustomEvent('garang:state-updated',{detail:{source:'lifecycle-noop-test'}}));window.dispatchEvent(new CustomEvent('garang:route-completed',{detail:{route:'today',source:'lifecycle-noop-test'}}));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));const after=document.querySelector('#garangTodayFlow'),afterButton=after?.querySelector('.gtf-next[data-gsn-action="coach"][data-gsn-step="plan"]'),afterKey=after?.dataset?.gtfRenderKey||null;return {sameFlow:before===after,sameButton:button===afterButton,beforeKey,afterKey};};const first=await probe();if(first.beforeKey&&first.afterKey&&first.beforeKey!==first.afterKey){const second=await probe();return {...second,rebasedFrom:first};}return first;});
-  assert.ok(stableDom.beforeKey&&stableDom.afterKey,`Today flow must publish render identity keys: ${JSON.stringify(stableDom)}`);assert.equal(stableDom.beforeKey,stableDom.afterKey,`no-op lifecycle events must preserve the semantic Today render key after at most one concurrent-state rebase: ${JSON.stringify(stableDom)}`);assert.equal(stableDom.sameFlow,true,`same-key lifecycle events must preserve the Today flow DOM identity: ${JSON.stringify(stableDom)}`);assert.equal(stableDom.sameButton,true,`same-key lifecycle events must preserve the active route button identity: ${JSON.stringify(stableDom)}`);
-  await flow.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',{timeout:5000});assert.equal(await page.locator('.garang-coach-v2').count(),1);
-  await page.locator('#bottomNav [data-page="today"]').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.gpcToday==='1',null,{timeout:7000});
-  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(width.scroll<=width.client+1,`Today consolidation must not overflow mobile viewport: ${JSON.stringify(width)}`);
-  assert.deepEqual(errors,[],`Today consolidation browser errors:\n${errors.join('\n')}`);await context.close();console.log('browser-today-action-flow state -> judgment -> single action with plan internalized: PASS');
+  const restContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  await installAuthenticatedFirebaseMock(restContext);await restContext.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),seedRest());
+  const restPage=await restContext.newPage(),restErrors=[];restPage.on('pageerror',e=>restErrors.push(String(e?.stack||e?.message||e)));await restPage.goto(baseURL,{waitUntil:'domcontentloaded'});
+  await restPage.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:15000});
+  await restPage.waitForFunction(()=>document.getElementById('main')?.dataset?.gsnAction==='today-rest',{timeout:10000});
+  const restFlow=restPage.locator('#garangTodayFlow');
+  assert.match(await restFlow.locator('.gtf-decision h2').innerText(),/고강도 운동을 쉬세요/,'rest day must explicitly tell the user not to train hard');
+  assert.match(await restFlow.locator('.gtf-decision p').innerText(),/회복 상태|쉬는 날/,'rest day must explain why in one line');
+  assert.equal(await restPage.locator('[data-garang-direct-workout-start="1"]:visible').count(),0,'rest day must not expose a contradictory workout start CTA');
+  assert.deepEqual(restErrors,[],`Today rest-day browser errors:\n${restErrors.join('\n')}`);
+  await restContext.close();console.log('browser-today-action-flow workout day + explicit rest day: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});
