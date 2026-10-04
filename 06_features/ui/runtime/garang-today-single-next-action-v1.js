@@ -120,7 +120,11 @@
   function flowOwnsExpectedAction(flow, model, snapshot) {
     if (!flow || !model || !snapshot) return true;
     const direct = window.GarangTodayDirectWorkoutLoopV1;
-    if (!mealReminderAction() && direct?.owns?.(snapshot, model)) return true;
+    if (!mealReminderAction() && direct?.owns?.(snapshot, model)) {
+      const start=flow.querySelector('[data-garang-direct-workout-start="1"]');
+      if(start&&!start.disabled&&flow.querySelectorAll('.gtdw-row').length<2)return false;
+      return true;
+    }
     const action = todayActionFor(model);
     const button = flow.querySelector('.gtf-next');
     if (!action) return true;
