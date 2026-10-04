@@ -1038,7 +1038,7 @@
 }
 @media(max-width:800px){
   .workout-execution-v2 .workout-session-bar{
-    margin:0 0 10px!important;padding:13px 13px 11px!important;border-radius:17px!important;
+    width:calc(100% + 24px)!important;margin:0 -12px 10px!important;padding:13px 13px 11px!important;border-radius:17px!important;
     grid-template-columns:minmax(0,1fr) auto!important;
     grid-template-areas:"live controls" "feedback feedback" "progress progress" "cue cue"!important;
     gap:7px 9px!important
