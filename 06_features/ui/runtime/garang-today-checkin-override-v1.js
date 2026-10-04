@@ -133,7 +133,8 @@
   function schedule() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => requestAnimationFrame(reconcile));
+    const enqueue = typeof queueMicrotask === 'function' ? queueMicrotask : fn => Promise.resolve().then(fn);
+    enqueue(reconcile);
   }
 
   function observe() {
@@ -151,5 +152,5 @@
   observe();
   ensureStyle();
   schedule();
-  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.0',reconcile:schedule,openCheckin:canonicalCheckin});
+  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.1',reconcile:schedule,openCheckin:canonicalCheckin});
 })();
