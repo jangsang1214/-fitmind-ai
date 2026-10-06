@@ -12,6 +12,32 @@
 
   const visible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none';
   function mark(el,name){ if(el) el.dataset.gappRole=name; }
+  function ensureRuntimeStyle(){
+    if(document.getElementById('garangCommercialMobileRuntimeStyle'))return;
+    const style=document.createElement('style');
+    style.id='garangCommercialMobileRuntimeStyle';
+    style.textContent=`
+@media(max-width:800px){
+  #main[data-garang-screen="workout"]:has(#workoutDraftArea .list-item) .workout-draft-head{
+    display:flex!important;
+  }
+  #main[data-garang-screen="workout"]:has(#workoutDraftArea .list-item) #workoutDraftArea{
+    display:block!important;visibility:visible!important;opacity:1!important;
+  }
+  #workoutDraftArea .workout-draft-actions{
+    display:flex!important;align-items:center!important;justify-content:flex-end!important;
+    gap:8px!important;min-width:0!important;overflow:visible!important;
+  }
+  #workoutDraftArea .workout-draft-record,
+  #workoutDraftArea .workout-draft-manage>summary{
+    box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    min-height:44px!important;height:44px!important;min-width:64px!important;width:auto!important;
+    padding:0 12px!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  }
+}
+`;
+    document.head.appendChild(style);
+  }
   function pctFromWidth(el){
     if(!el)return 0;
     const raw=el.style?.width||'';
@@ -85,6 +111,7 @@
   }
   function apply(){
     scheduled=false;
+    ensureRuntimeStyle();
     const root=main(); if(!root)return;
     const s=screen();
     document.documentElement.dataset.garangCommercialMobile='1';
@@ -126,5 +153,6 @@
     if(event.target.closest?.('#bottomNav,[data-garang-record-sheet],#runStart,#runPause,#runResume,#runStop'))setTimeout(schedule,0);
   },true);
   window.GarangCommercialMobileV1=Object.freeze({version:VERSION,apply,schedule});
+  ensureRuntimeStyle();
   observeCanonicalSurfaces();schedule();
 })();
