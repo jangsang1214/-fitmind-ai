@@ -160,6 +160,19 @@
     if (noResults) noResults.hidden = true;
   }
 
+  function expandReplacementChoices() {
+    const library = main.querySelector('.exercise-visual-library');
+    const button = main.querySelector('.garang-library-more-button');
+    if (!library || !button) return false;
+    button.dataset.expanded = 'true';
+    library.classList.add('garang-library-expanded');
+    const ko = document.documentElement.lang !== 'en';
+    setHTML(button, `<span>${ko ? '접기' : 'Show less'}</span><b>↑</b>`);
+    applySearchVisibility(library);
+    requestAnimationFrame(() => library.scrollIntoView({ block:'start', inline:'nearest', behavior:'auto' }));
+    return true;
+  }
+
   function ensureExerciseSearch(library) {
     ensureSearchStyle();
     let wrap = main.querySelector('.garang-exercise-search');
@@ -233,6 +246,16 @@
   window.addEventListener('garang:state-updated', schedule);
   window.addEventListener('garang:state-hydrated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
-  document.addEventListener('click', e => { if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0); }, true);
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-replace-workout]')) {
+      setTimeout(() => {
+        if (!expandReplacementChoices()) {
+          schedule();
+          setTimeout(expandReplacementChoices, 80);
+        }
+      }, 0);
+    }
+    if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0);
+  }, true);
   schedule();
 })();
