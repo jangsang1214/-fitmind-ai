@@ -8,7 +8,7 @@
   const VERSION='garang-commercial-mobile-v1.0.0';
   const main=()=>document.getElementById('main');
   const screen=()=>main()?.dataset?.garangScreen||'';
-  let scheduled=false,lastScreen='',observer=null,observedMain=null;
+  let scheduled=false,lastScreen='',observer=null,observedMain=null,focusWorkoutDraft=false;
 
   const visible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none';
   function mark(el,name){ if(el) el.dataset.gappRole=name; }
@@ -23,6 +23,7 @@
   }
   #main[data-garang-screen="workout"]:has(#workoutDraftArea .list-item) #workoutDraftArea{
     display:block!important;visibility:visible!important;opacity:1!important;
+    scroll-margin-top:96px!important;scroll-margin-bottom:96px!important;
   }
   #workoutDraftArea .workout-draft-actions{
     display:flex!important;align-items:center!important;justify-content:flex-end!important;
@@ -90,6 +91,13 @@
     mark(root.querySelector('.workout-session-bar'),'workout-live');
     mark(root.querySelector('.cert-entry-card'),'workout-media');
     root.querySelectorAll('.exercise-visual-card').forEach(x=>mark(x,'exercise-card'));
+    if(focusWorkoutDraft){
+      const draft=root.querySelector('#workoutDraftArea .list-item')?.closest('#workoutDraftArea');
+      if(draft&&visible(draft)){
+        focusWorkoutDraft=false;
+        requestAnimationFrame(()=>draft.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'}));
+      }
+    }
   }
   function annotateCoach(root){
     mark(root.querySelector('.coach-status-card,.g2-chat-head'),'coach-context');
@@ -150,6 +158,10 @@
   window.addEventListener('garang:state-updated',schedule);
   window.addEventListener('pageshow',schedule);
   document.addEventListener('click',event=>{
+    if(event.target.closest?.('#addWorkout')){
+      focusWorkoutDraft=true;
+      setTimeout(schedule,0);
+    }
     if(event.target.closest?.('#bottomNav,[data-garang-record-sheet],#runStart,#runPause,#runResume,#runStop'))setTimeout(schedule,0);
   },true);
   window.GarangCommercialMobileV1=Object.freeze({version:VERSION,apply,schedule});
