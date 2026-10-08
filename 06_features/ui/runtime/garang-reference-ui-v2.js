@@ -9,11 +9,19 @@ const VERSION='garang-reference-ui-v2.0.0';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
-const qsa=(root,sel)=>[...(root?.querySelectorAll?.(sel)||[])];
 const isNode=n=>n&&n.nodeType===1;
 
 function node(tag,cls,html=''){
   const el=document.createElement(tag);if(cls)el.className=cls;if(html)el.innerHTML=html;return el;
+}
+function ensureInteractionGuards(){
+  if(document.getElementById('garangReferenceUIV2Guards'))return;
+  const style=document.createElement('style');style.id='garangReferenceUIV2Guards';style.textContent=`
+.g-ref-body-primary .g3-anatomy-legend,.g-ref-body-primary .g3-anatomy-legend *{pointer-events:none!important}
+.g-ref-body-primary .g3-view-switch{position:relative!important;z-index:24!important;pointer-events:auto!important;scroll-margin-top:104px!important}
+.g-ref-body-primary .g3-view-switch button{position:relative!important;z-index:25!important;pointer-events:auto!important;min-height:44px!important}
+`;
+  document.head.appendChild(style);
 }
 function screenName(){return String(main()?.dataset?.garangScreen||'').trim();}
 function setScreenClass(m,screen){
@@ -104,7 +112,7 @@ function decorateAuth(){
   const view=document.getElementById('authView');if(view)view.classList.add('g-ref-auth');
 }
 function decorateChrome(){
-  document.documentElement.dataset.garangReferenceUi='v2';document.body.classList.add('garang-reference-ui-v2');
+  ensureInteractionGuards();document.documentElement.dataset.garangReferenceUi='v2';document.body.classList.add('garang-reference-ui-v2');
   app()?.classList.add('g-ref-app');document.querySelector('.topbar')?.classList.add('g-ref-topbar');document.getElementById('bottomNav')?.classList.add('g-ref-bottom-nav');
   decorateAuth();
 }
