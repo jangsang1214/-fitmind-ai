@@ -78,8 +78,19 @@
       .garang-exercise-search input:focus{border-color:rgba(255,255,255,.32)}
       .garang-exercise-search small{font-size:11px;opacity:.58}
       .garang-exercise-no-results{padding:14px 4px;font-size:12px;opacity:.6}
+      @media(max-width:800px){
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .exercise-visual-library{display:grid!important}
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .garang-library-more-wrap{display:block!important}
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .garang-exercise-search{display:grid!important}
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  function setReplacementMode(active) {
+    replacementRequested = active === true;
+    if (replacementRequested) main.dataset.garangWorkoutReplacement = '1';
+    else main.removeAttribute('data-garang-workout-replacement');
   }
 
   function polishPageHeader() {
@@ -199,7 +210,7 @@
   }
 
   async function enhanceWorkoutLibrary() {
-    if (currentScreen() !== 'workout') return;
+    if (currentScreen() !== 'workout') { setReplacementMode(false); return; }
     const library = main.querySelector('.exercise-visual-library');
     if (!library) return;
     const initialCards = [...library.querySelectorAll('.exercise-visual-card[data-exercise-pick]')];
@@ -222,7 +233,7 @@
       const existing = new Set(cards.map(card => card.dataset.exercisePick));
       const template = cards[0], additions = document.createDocumentFragment();
       matching.forEach(ex => {
-        const name = String(ex.exercise_name || '').trim(); if (!name || existing.has(name)) return;
+        const name = String(ex?.exercise_name || '').trim(); if (!name || existing.has(name)) return;
         existing.add(name); const clone = template.cloneNode(true); setCardContent(clone, ex, filterKey); clone.classList.add('garang-library-extra'); clone.hidden = true;
         clone.addEventListener('click', () => selectExpandedExercise(clone)); additions.appendChild(clone);
       });
@@ -242,7 +253,10 @@
     }
     ensureExerciseSearch(library);
     applySearchVisibility(library);
-    if (replacementModeActive()) expandReplacementChoices();
+    if (replacementModeActive()) {
+      main.dataset.garangWorkoutReplacement = '1';
+      expandReplacementChoices();
+    }
   }
 
   async function run() {
@@ -255,14 +269,14 @@
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', e => {
     if (e.target.closest('[data-replace-workout]')) {
-      replacementRequested = true;
+      setReplacementMode(true);
       schedule();
       setTimeout(expandReplacementChoices, 0);
     }
     if (replacementRequested && e.target.closest('[data-exercise-pick]')) {
-      setTimeout(() => { replacementRequested = false; }, 0);
+      setTimeout(() => setReplacementMode(false), 0);
     }
-    if (e.target.closest('[data-remove-workout],[data-edit-workout],[data-execute-workout]')) replacementRequested = false;
+    if (e.target.closest('[data-remove-workout],[data-edit-workout],[data-execute-workout]')) setReplacementMode(false);
     if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0);
   }, true);
   schedule();
