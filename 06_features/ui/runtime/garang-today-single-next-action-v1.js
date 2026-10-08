@@ -123,6 +123,8 @@
     if (!mealReminderAction() && direct?.owns?.(snapshot, model)) {
       const start=flow.querySelector('[data-garang-direct-workout-start="1"]');
       if(start&&!start.disabled&&flow.querySelectorAll('.gtdw-row').length<2)return false;
+      const title=String(flow.querySelector('.gtf-decision h2')?.textContent||'').trim();
+      if(start&&!start.disabled&&isKo()&&!/^오늘은 .+ 하세요\.?$/.test(title))return false;
       const competing=[...flow.querySelectorAll('.gpc-coach-explain,.gpc-today-plan')];
       if(competing.some(node=>!node.hidden&&getComputedStyle(node).display!=='none'))return false;
       return true;
@@ -151,6 +153,7 @@
     flowObserver.observe(flow, {
       childList:true,
       subtree:true,
+      characterData:true,
       attributes:true,
       attributeFilter:['data-gtf-route','data-gtf-action','data-golden-path','data-gsn-action','data-gsn-step','style','hidden','aria-hidden','tabindex']
     });
