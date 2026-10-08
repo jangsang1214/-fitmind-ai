@@ -10,6 +10,11 @@
      link.rel='stylesheet';link.href='./03_styles/runtime/garang-reference-ui-v2.css?v=2.0.0';link.dataset.garangReferenceUiV2='1';
      document.head.appendChild(link);
    }
+   if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
+     const guard=document.createElement('link');
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.0.0';guard.dataset.garangReferenceUiV2Guards='1';
+     document.head.appendChild(guard);
+   }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
      script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.0';script.defer=true;script.dataset.garangReferenceUiV2='1';
