@@ -1,0 +1,27 @@
+/* GARANG Reference UI v2 interaction guards.
+   Shared Body Model v6 controls are used on Workout and Body surfaces.
+   Decorative anatomy labels must never intercept the canonical view switch. */
+#main .g3-anatomy-legend,
+#main .g3-anatomy-legend *{
+  pointer-events:none!important;
+}
+#main .g3-view-switch{
+  position:relative!important;
+  z-index:180!important;
+  pointer-events:auto!important;
+  scroll-margin-top:176px!important;
+  scroll-margin-block-start:176px!important;
+}
+#main .g3-view-switch button{
+  position:relative!important;
+  z-index:181!important;
+  pointer-events:auto!important;
+  min-height:44px!important;
+  touch-action:manipulation!important;
+}
+/* Keep the physical target below fixed app chrome after WebKit scrollIntoView. */
+#main[data-garang-screen="workout"] .g3-view-switch,
+#main[data-garang-screen="body"] .g3-view-switch{
+  margin-top:8px!important;
+  margin-bottom:8px!important;
+}
