@@ -10,7 +10,7 @@ const PLAN_KEY='garang_daily_workout_plan_v1',FINGERPRINT_KEY='garang_today_dire
 const main=()=>document.getElementById('main'),list=v=>Array.isArray(v)?v:[],num=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f,pad=v=>String(v).padStart(2,'0');
 const localDate=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 const sameDate=(row,date)=>String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10)===date;
-const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const state=()=>{try{return window.GarangAgentStateBridge?.ready?.()?window.GarangAgentStateBridge.getState():null;}catch{return null;}};
 const readJSON=key=>{try{return JSON.parse(sessionStorage.getItem(key)||'null');}catch{return null;}};
 const writeJSON=(key,value)=>{try{value==null?sessionStorage.removeItem(key):sessionStorage.setItem(key,JSON.stringify(value));}catch{}};
