@@ -112,9 +112,16 @@
     return button;
   }
 
+  function reconcilePrimaryOwner() {
+    const m = main();
+    if (!m || m.dataset.garangScreen !== 'today' || !m.querySelector('#garangTodayFlow')) return;
+    try { window.GarangTodaySingleNextActionV1?.syncNow?.(); } catch {}
+  }
+
   function reconcile() {
     queued = false;
     ensureStyle();
+    reconcilePrimaryOwner();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') { removeBottomCheckin(); return; }
     const flow = m.querySelector('#garangTodayFlow');
