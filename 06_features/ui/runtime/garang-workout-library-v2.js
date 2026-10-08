@@ -15,6 +15,7 @@
   let exerciseDBPromise = null;
   let scheduled = false;
   let exerciseSearchQuery = '';
+  let replacementRequested = false;
 
   function setText(node, value) {
     if (!node) return false;
@@ -77,8 +78,19 @@
       .garang-exercise-search input:focus{border-color:rgba(255,255,255,.32)}
       .garang-exercise-search small{font-size:11px;opacity:.58}
       .garang-exercise-no-results{padding:14px 4px;font-size:12px;opacity:.6}
+      @media(max-width:800px){
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .exercise-visual-library{display:grid!important}
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .garang-library-more-wrap{display:block!important}
+        #main[data-garang-screen="workout"][data-garang-workout-replacement="1"]:has(.workout-session-bar.is-live) .garang-exercise-search{display:grid!important}
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  function setReplacementMode(active) {
+    replacementRequested = active === true;
+    if (replacementRequested) main.dataset.garangWorkoutReplacement = '1';
+    else main.removeAttribute('data-garang-workout-replacement');
   }
 
   function polishPageHeader() {
@@ -160,6 +172,24 @@
     if (noResults) noResults.hidden = true;
   }
 
+  function replacementModeActive() {
+    if (replacementRequested) return true;
+    return [...main.querySelectorAll('[data-replace-workout]')].some(button => /선택\s*중|select/i.test(String(button.textContent || '')));
+  }
+
+  function expandReplacementChoices() {
+    const library = main.querySelector('.exercise-visual-library');
+    const button = main.querySelector('.garang-library-more-button');
+    if (!library || !button) return false;
+    button.dataset.expanded = 'true';
+    library.classList.add('garang-library-expanded');
+    const ko = document.documentElement.lang !== 'en';
+    setHTML(button, `<span>${ko ? '접기' : 'Show less'}</span><b>↑</b>`);
+    applySearchVisibility(library);
+    requestAnimationFrame(() => library.scrollIntoView({ block:'start', inline:'nearest', behavior:'auto' }));
+    return true;
+  }
+
   function ensureExerciseSearch(library) {
     ensureSearchStyle();
     let wrap = main.querySelector('.garang-exercise-search');
@@ -180,7 +210,7 @@
   }
 
   async function enhanceWorkoutLibrary() {
-    if (currentScreen() !== 'workout') return;
+    if (currentScreen() !== 'workout') { setReplacementMode(false); return; }
     const library = main.querySelector('.exercise-visual-library');
     if (!library) return;
     const initialCards = [...library.querySelectorAll('.exercise-visual-card[data-exercise-pick]')];
@@ -203,7 +233,7 @@
       const existing = new Set(cards.map(card => card.dataset.exercisePick));
       const template = cards[0], additions = document.createDocumentFragment();
       matching.forEach(ex => {
-        const name = String(ex.exercise_name || '').trim(); if (!name || existing.has(name)) return;
+        const name = String(ex?.exercise_name || '').trim(); if (!name || existing.has(name)) return;
         existing.add(name); const clone = template.cloneNode(true); setCardContent(clone, ex, filterKey); clone.classList.add('garang-library-extra'); clone.hidden = true;
         clone.addEventListener('click', () => selectExpandedExercise(clone)); additions.appendChild(clone);
       });
@@ -223,6 +253,10 @@
     }
     ensureExerciseSearch(library);
     applySearchVisibility(library);
+    if (replacementModeActive()) {
+      main.dataset.garangWorkoutReplacement = '1';
+      expandReplacementChoices();
+    }
   }
 
   async function run() {
@@ -233,6 +267,17 @@
   window.addEventListener('garang:state-updated', schedule);
   window.addEventListener('garang:state-hydrated', schedule);
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
-  document.addEventListener('click', e => { if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0); }, true);
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-replace-workout]')) {
+      setReplacementMode(true);
+      schedule();
+      setTimeout(expandReplacementChoices, 0);
+    }
+    if (replacementRequested && e.target.closest('[data-exercise-pick]')) {
+      setTimeout(() => setReplacementMode(false), 0);
+    }
+    if (e.target.closest('[data-remove-workout],[data-edit-workout],[data-execute-workout]')) setReplacementMode(false);
+    if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0);
+  }, true);
   schedule();
 })();

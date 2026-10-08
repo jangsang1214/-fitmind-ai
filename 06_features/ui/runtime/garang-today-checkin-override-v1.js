@@ -105,9 +105,17 @@
     }
     if (m.lastElementChild !== button) m.appendChild(button);
     const english = document.documentElement.lang === 'en';
-    button.querySelector('strong').textContent = english ? 'Check-in' : '체크인';
-    button.setAttribute('aria-label', english ? 'Check-in' : '체크인');
+    const label = english ? 'Check-in' : '체크인';
+    const strong = button.querySelector('strong');
+    if (strong && strong.textContent !== label) strong.textContent = label;
+    if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
     return button;
+  }
+
+  function reconcilePrimaryOwner() {
+    const m = main();
+    if (!m || m.dataset.garangScreen !== 'today' || !m.querySelector('#garangTodayFlow')) return;
+    try { window.GarangTodaySingleNextActionV1?.syncNow?.(); } catch {}
   }
 
   function reconcile() {
@@ -118,9 +126,10 @@
     const flow = m.querySelector('#garangTodayFlow');
     if (!flow) { removeBottomCheckin(); return; }
     const execute = flow.querySelector('.gtf-next[data-gsn-action="execute"]');
-    const workout = isWorkoutExecute(execute);
+    const direct = flow.querySelector('[data-garang-direct-workout-start="1"]');
+    const workout = !!direct || isWorkoutExecute(execute);
     if (execute) {
-      if (workout) {
+      if (isWorkoutExecute(execute)) {
         execute.dataset.garangTodayWorkoutExecute = '1';
         execute.setAttribute('aria-label', document.documentElement.lang === 'en' ? "Start today's workout" : '오늘 운동 실행');
       } else delete execute.dataset.garangTodayWorkoutExecute;
@@ -132,7 +141,14 @@
   function schedule() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => requestAnimationFrame(reconcile));
+    const enqueue = typeof queueMicrotask === 'function' ? queueMicrotask : fn => Promise.resolve().then(fn);
+    enqueue(reconcile);
+  }
+
+  function flowWasReplaced(records) {
+    return records.some(record => record.type === 'childList' && [...record.addedNodes].some(node =>
+      node?.nodeType === 1 && (node.id === 'garangTodayFlow' || node.querySelector?.('#garangTodayFlow'))
+    ));
   }
 
   function observe() {
@@ -140,7 +156,10 @@
     if (!m || m === observedMain) return;
     observer?.disconnect();
     observedMain = m;
-    observer = new MutationObserver(schedule);
+    observer = new MutationObserver(records => {
+      if (flowWasReplaced(records)) reconcilePrimaryOwner();
+      schedule();
+    });
     observer.observe(m,{childList:true,subtree:true,attributes:true,attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen']});
   }
 
@@ -150,5 +169,5 @@
   observe();
   ensureStyle();
   schedule();
-  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.0',reconcile:schedule,openCheckin:canonicalCheckin});
+  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.2',reconcile:schedule,openCheckin:canonicalCheckin});
 })();

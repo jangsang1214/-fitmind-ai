@@ -2,9 +2,9 @@
 'use strict';
 if(window.__GARANG_WORKOUT_EXECUTION_V2__)return;
 window.__GARANG_WORKOUT_EXECUTION_V2__=true;
-const VERSION='workout-execution-v2.6.0-mobile-geometry';
+const VERSION='workout-execution-v2.6.1-draft-return';
 const SESSION_KEY='garang_workout_session_v2';
-let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false;
+let sessionStartedAt=0,restUntil=0,timer=null,pendingResult=null,lastResult=null,setSnapshot=[],liveSetDraft=[],liveSetCount=0,liveDuration='',liveDraftCount=-1,liveExercise='',restoringLiveSetCount=false,sessionHydrated=false,holdDraftAfterAdd=false;
 
 function num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -113,7 +113,7 @@ function replaceSetPlan(rows=[]){
 function enhanceRows(){
   const host=document.getElementById('workoutSetDetails');if(!host)return;
   const disclosure=host.closest('details');if(disclosure&&!disclosure.open)disclosure.open=true;
-  if(host.hidden){window.dispatchEvent(new CustomEvent('garang:set-options-toggled',{detail:{open:true,source:VERSION}}));if(host.hidden)return;}
+  if(host.hidden){if(holdDraftAfterAdd)return;window.dispatchEvent(new CustomEvent('garang:set-options-toggled',{detail:{open:true,source:VERSION}}));if(host.hidden)return;}
   host.classList.add('workout-execution-sets');
   const summary=draftSummary(),exercise=document.getElementById('wName')?.value||'',rowsBefore=currentRows(),seededEdit=rowsBefore.some(row=>row.dataset.executionCompleted==='true'&&!row.dataset.executionEnhanced),durationInput=document.getElementById('wDuration');if(liveExercise&&exercise!==liveExercise){liveSetDraft=[];liveSetCount=0;}if(liveDraftCount>=0&&summary.exercises>liveDraftCount){liveSetDraft=[];liveSetCount=0;liveDuration='';}if(seededEdit){liveSetDraft=[];liveSetCount=Math.max(1,num(document.getElementById('wSets')?.value,rowsBefore.length||1));if(durationInput?.value)liveDuration=durationInput.value;}liveDraftCount=summary.exercises;liveExercise=exercise;if(liveDuration&&durationInput)durationInput.value=liveDuration;
   const setsInput=document.getElementById('wSets');if(liveSetCount>0&&setsInput&&(Math.max(1,num(setsInput.value,1))!==liveSetCount||currentRows().length!==liveSetCount)){restoringLiveSetCount=true;setsInput.value=String(liveSetCount);setsInput.dispatchEvent(new Event('input',{bubbles:true}));restoringLiveSetCount=false;}
@@ -174,14 +174,15 @@ function enhance(){
     const host=document.getElementById('workoutSetDetails');if(host){const rest=document.createElement('div');rest.id='workoutExecutionRest';rest.className='workout-rest-timer';rest.hidden=true;rest.innerHTML='<div><span>REST</span><strong id="workoutExecutionRestClock">01:30</strong><small>NEXT SET · 다음 세트를 준비하세요</small></div><label>휴식 <input id="workoutRestSeconds" type="number" min="15" max="600" step="15" value="90">초</label><button id="skipWorkoutRest" class="ghost small" type="button">건너뛰기</button>';host.after(rest);document.getElementById('skipWorkoutRest')?.addEventListener('click',stopRest);}}
   const add=document.getElementById('addWorkout');if(add)add.textContent='이 운동 세션에 추가';
   const clear=document.getElementById('clearWorkoutDraft');if(clear)clear.textContent='세션 초기화';
-  const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>{liveSetDraft=[];liveSetCount=0;setSnapshot=[];liveExercise=name.value||'';bridge()?.resetExerciseRows?.();setTimeout(enhance,0);});}
+  const name=document.getElementById('wName');if(name&&!name.dataset.executionBound){name.dataset.executionBound='true';name.addEventListener('change',()=>{holdDraftAfterAdd=false;liveSetDraft=[];liveSetCount=0;setSnapshot=[];liveExercise=name.value||'';bridge()?.resetExerciseRows?.();setTimeout(enhance,0);});}
   const sets=document.getElementById('wSets');if(sets&&!sets.dataset.executionBound){sets.dataset.executionBound='true';sets.addEventListener('input',snapshotSetRows,true);sets.addEventListener('input',()=>setTimeout(()=>{enhance();restoreSetRows();updateLive();},0));}
   const setHost=document.getElementById('workoutSetDetails');if(setHost&&!setHost.dataset.executionLiveBound){setHost.dataset.executionLiveBound='true';setHost.addEventListener('input',captureLiveSetRows);}
   if(sessionStartedAt||restUntil)startTicker();
   updateLive();updateLivePR();persistSessionState();resultCard();
 }
 document.addEventListener('click',event=>{
-  if(event.target.closest?.('[data-gws-step="exercise"]'))setTimeout(enhance,0);
+  if(event.target.closest?.('[data-gws-step="exercise"]')){holdDraftAfterAdd=false;setTimeout(enhance,0);}
+  if(event.target.closest?.('[data-execute-workout]')){holdDraftAfterAdd=false;setTimeout(enhance,0);}
   if(event.target.closest?.('#addWorkout')){
     setTimeout(()=>{
       const drawer=document.getElementById('garangWorkoutTools');
@@ -195,10 +196,10 @@ document.addEventListener('click',event=>{
 },true);
 window.addEventListener('garang:state-updated',event=>{
   if(event.detail?.event!=='workout_saved'||!pendingResult)return;
-  lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();
+  holdDraftAfterAdd=false;lastResult=pendingResult;pendingResult=null;sessionStartedAt=0;restUntil=0;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();
 });
-window.addEventListener('garang:workout-session-clearing',()=>{sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();stopRest();updateLive();});
-window.addEventListener('garang:workout-exercise-added',()=>{updateLive();persistSessionState();});
+window.addEventListener('garang:workout-session-clearing',()=>{holdDraftAfterAdd=false;sessionStartedAt=0;restUntil=0;pendingResult=null;setSnapshot=[];liveSetDraft=[];liveSetCount=0;liveDuration='';liveDraftCount=0;liveExercise='';clearPersistedSession();stopRest();updateLive();});
+window.addEventListener('garang:workout-exercise-added',()=>{holdDraftAfterAdd=true;updateLive();persistSessionState();});
 window.addEventListener('garang:workout-set-rows-rendered',()=>{enhanceRows();updateLive();});
 window.addEventListener('garang:screen-rendered',event=>{if(event.detail?.screen==='workout')enhance();});
 if(document.querySelector('.workout-builder-v2'))enhance();

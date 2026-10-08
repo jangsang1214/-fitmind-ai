@@ -1216,3 +1216,173 @@ body{background-image:
     scroll-margin-bottom:140px!important;
   }
 }
+
+/* UNIFIED PRODUCT UI v2 — one app grammar, beginner-first density */
+:root{
+  --gapp-page-x:16px;
+  --gapp-section-gap:12px;
+  --gapp-card-pad:15px;
+  --gapp-control-h:48px;
+}
+#main[data-garang-screen]{font-family:"Noto Sans KR",system-ui,sans-serif}
+#main[data-garang-screen]>*{max-width:100%}
+#main[data-garang-screen]>.page-head{
+  display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:12px!important;
+  margin:0 0 12px!important;padding:0!important
+}
+#main[data-garang-screen]>.page-head>div{min-width:0}
+#main[data-garang-screen]>.page-head h1{
+  font-size:clamp(25px,6.5vw,34px)!important;line-height:1.08!important;letter-spacing:-.045em!important
+}
+#main[data-garang-screen]>.page-head p{
+  max-width:38rem!important;margin-top:5px!important;font-size:11px!important;line-height:1.55!important
+}
+#main[data-garang-screen]>.section-title{
+  min-height:32px!important;margin:15px 0 7px!important;padding:0 1px!important;
+  align-items:center!important
+}
+#main[data-garang-screen]>.section-title h2{font-size:12px!important}
+#main[data-garang-screen]>.card,
+#main[data-garang-screen]>.compact-history,
+#main[data-garang-screen]>.photo-evidence-card{
+  margin-top:0!important;margin-bottom:var(--gapp-section-gap)!important
+}
+#main[data-garang-screen] .visual-section-head{
+  gap:10px!important;margin-bottom:10px!important
+}
+#main[data-garang-screen] .visual-section-head>div,
+#main[data-garang-screen] .list-item>div,
+#main[data-garang-screen] .actions>*{min-width:0}
+#main[data-garang-screen] .visual-section-head h3{
+  margin:2px 0 0!important;font-size:15px!important;line-height:1.25!important;letter-spacing:-.025em!important
+}
+#main[data-garang-screen] .helper,
+#main[data-garang-screen] .muted,
+#main[data-garang-screen] small,
+#main[data-garang-screen] p{
+  overflow-wrap:anywhere
+}
+#main[data-garang-screen] .actions{gap:8px!important}
+#main[data-garang-screen] button,
+#main[data-garang-screen] .primary,
+#main[data-garang-screen] .ghost{
+  max-width:100%;line-height:1.22!important;text-wrap:balance
+}
+#main[data-garang-screen] .form-grid{gap:9px!important}
+#main[data-garang-screen] .field{min-width:0}
+#main[data-garang-screen] .field label{line-height:1.35}
+#main[data-garang-screen] .list{gap:7px}
+#main[data-garang-screen] .list-item{
+  min-width:0!important;gap:10px!important
+}
+
+/* Workout entry is one compact preparation object, not a dashboard stack. */
+#main[data-garang-screen="workout"] .workout-visual-hero{
+  min-height:0!important;margin:0 0 10px!important;padding:12px!important;
+  display:grid!important;grid-template-columns:94px minmax(0,1fr)!important;align-items:center!important;gap:12px!important;
+  border-radius:18px!important
+}
+#main[data-garang-screen="workout"] .workout-visual-hero>svg{
+  width:94px!important;height:118px!important;min-height:0!important;margin:0!important
+}
+#main[data-garang-screen="workout"] .workout-visual-copy{
+  min-width:0!important;padding:0!important
+}
+#main[data-garang-screen="workout"] .workout-visual-copy h2{
+  margin:2px 0 2px!important;font-size:21px!important;line-height:1.1!important
+}
+#main[data-garang-screen="workout"] .workout-selected-name{
+  margin:0 0 8px!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+  font-size:10px!important;line-height:1.4!important
+}
+#main[data-garang-screen="workout"] .workout-mini-stats{
+  margin-top:8px!important;padding-top:8px!important;gap:8px!important
+}
+#main[data-garang-screen="workout"] .exercise-visual-library{
+  margin:0 0 9px!important;gap:7px!important
+}
+#main[data-garang-screen="workout"] .exercise-visual-card{
+  min-height:82px!important;padding:9px!important;border-radius:14px!important
+}
+#main[data-garang-screen="workout"] .exercise-visual-card strong{
+  font-size:11px!important;line-height:1.3!important
+}
+#main[data-garang-screen="workout"] .exercise-visual-card span{
+  font-size:8px!important;line-height:1.35!important;white-space:normal!important
+}
+#main[data-garang-screen="workout"] .workout-builder-v2{
+  margin:0 0 10px!important;padding:12px!important;border-radius:18px!important
+}
+
+/* Long text must wrap instead of colliding with controls. */
+#main[data-garang-screen] .pill,
+#main[data-garang-screen] .badge{max-width:100%;white-space:normal;text-align:center}
+#main[data-garang-screen] .list-item strong,
+#main[data-garang-screen] .card h2,
+#main[data-garang-screen] .card h3{overflow-wrap:anywhere}
+#bottomNav button b{line-height:1.15!important;white-space:nowrap!important}
+
+@media(max-width:799px){
+  :root{--gapp-page-x:14px;--gapp-card-pad:14px;--gapp-section-gap:10px}
+  #appView:not([hidden])>#main{
+    padding:12px var(--gapp-page-x) calc(92px + env(safe-area-inset-bottom,0px))!important
+  }
+  #appView:not([hidden])>#bottomNav{
+    min-height:calc(64px + env(safe-area-inset-bottom,0px))!important;
+    padding:4px 8px env(safe-area-inset-bottom,0px)!important
+  }
+  #appView:not([hidden])>#bottomNav button{
+    min-width:0!important;min-height:56px!important;padding:6px 3px!important;gap:4px!important
+  }
+  #appView:not([hidden])>#bottomNav button b{
+    font-size:10px!important;font-weight:700!important;letter-spacing:-.025em!important
+  }
+  #main[data-garang-screen]>.page-head{margin-bottom:10px!important}
+  #main[data-garang-screen] .card{scroll-margin-top:74px}
+  #main[data-garang-screen] .actions{
+    display:grid!important;grid-template-columns:repeat(auto-fit,minmax(0,1fr))!important
+  }
+  #main[data-garang-screen] .actions>button{
+    width:100%!important;min-width:0!important;min-height:46px!important;padding-inline:10px!important
+  }
+  #main[data-garang-screen="workout"] .workout-visual-hero{
+    grid-template-columns:76px minmax(0,1fr)!important;padding:10px 11px!important;gap:10px!important
+  }
+  #main[data-garang-screen="workout"] .workout-visual-hero>svg{
+    width:76px!important;height:98px!important
+  }
+  #main[data-garang-screen="workout"] .workout-mini-stats strong{font-size:13px!important}
+  #main[data-garang-screen="workout"] .workout-mini-stats span{font-size:6.5px!important}
+}
+@media(max-width:360px){
+  #appView:not([hidden])>#main{padding-inline:12px!important}
+  #main[data-garang-screen] .visual-section-head{align-items:flex-start!important}
+  #main[data-garang-screen] .visual-section-head>.pill{font-size:7px!important}
+}
+
+
+/* Workout live set-count visibility guard v1 */
+@media(max-width:799px){
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .garang-essential-workout-fields.execution-compact-fields{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .execution-sets-field{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  #main[data-garang-screen="workout"]:has(.workout-session-bar.is-live) .workout-builder-v2 .execution-sets-field #wSets{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+  }
+}

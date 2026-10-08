@@ -32,7 +32,7 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
   assert.deepEqual(await nav.evaluateAll(nodes=>nodes.map(x=>x.dataset.page)),['today','log','coach','progress']);
   assert.deepEqual(await nav.locator('b').allTextContents(),['Today','Record','Coach','Progress']);
   const mobileChrome=await page.evaluate(()=>{const style=s=>getComputedStyle(document.querySelector(s));return {sync:style('#syncBadge').display,plan:style('#planBadge').display,logout:style('#logoutBtn').display,navPosition:style('#bottomNav').position,mainMax:style('#main').maxWidth,mainLeft:style('#main').paddingLeft,mainRight:style('#main').paddingRight,brandTagline:style('.topbar .brand.mini span').display};});
-  assert.equal(mobileChrome.sync,'none','sync status must leave the primary mobile chrome');assert.equal(mobileChrome.plan,'none','membership badge must leave the primary mobile chrome');assert.equal(mobileChrome.logout,'none','logout must leave the primary mobile chrome');assert.equal(mobileChrome.brandTagline,'none','brand tagline must not consume app-bar space');assert.equal(mobileChrome.navPosition,'fixed','primary navigation must behave like a native persistent tab bar');assert.equal(mobileChrome.mainMax,'560px','mobile content must use a deliberate app-width frame');assert.equal(mobileChrome.mainLeft,'16px');assert.equal(mobileChrome.mainRight,'16px');
+  assert.equal(mobileChrome.sync,'none','sync status must leave the primary mobile chrome');assert.equal(mobileChrome.plan,'none','membership badge must leave the primary mobile chrome');assert.equal(mobileChrome.logout,'none','logout must leave the primary mobile chrome');assert.equal(mobileChrome.brandTagline,'none','brand tagline must not consume app-bar space');assert.equal(mobileChrome.navPosition,'fixed','primary navigation must behave like a native persistent tab bar');assert.equal(mobileChrome.mainMax,'560px','mobile content must use a deliberate app-width frame');assert.equal(mobileChrome.mainLeft,'14px');assert.equal(mobileChrome.mainRight,'14px');
 
   assert.equal(await page.locator('.quick-visual-grid').isHidden(),true,'Today duplicate quick-record grid must stay internalized');
   assert.equal(await page.locator('.status-visual-card').isHidden(),true,'legacy Today state owner must stay internalized');
@@ -42,15 +42,16 @@ async function verifyCapabilityRoute(page,screen,selector){const ok=await page.e
 
   const today=page.locator('#garangTodayFlow');await today.waitFor({state:'visible',timeout:5000});
   assert.equal(await today.locator('.gtf-decision').isVisible(),true,'Today must show the deterministic GARANG judgment summary');
-  assert.equal(await today.locator('.gpc-today-plan').count(),1,'Today must keep one compact Planner utility section');
-  assert.equal(await today.locator('.gpc-today-plan').isVisible(),true,'compact Planner utility must remain visible');
+  assert.equal(await today.locator('.gpc-today-plan').count(),1,'Today must preserve the internal Planner contract in DOM');
+  assert.equal(await today.locator('.gpc-today-plan').isHidden(),true,'Planner must be internalized so Today can state the concrete workout directly');
   assert.equal(await today.locator('.gpc-today-plan .gtf-track').count(),3,'Training, Recovery and Nutrition remain attached to the internal plan contract');
   assert.equal(await today.locator('.gpc-today-plan .gtf-track-visual').isHidden(),true,'three-domain plan detail must stay internalized on the default Today surface');
-  assert.equal(await today.locator('.gpc-coach-explain').count(),1,'Today must provide one natural entry to Coach rationale');
-  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Today may show a judgment summary while Coach remains the canonical decision disclosure owner');
+  assert.equal(await today.locator('.gpc-coach-explain').count(),1,'Coach rationale capability must remain attached');
+  assert.equal(await today.locator('.gpc-coach-explain').isHidden(),true,'Coach must not interrupt the direct Today workout path');
+  assert.equal(await page.locator('#main').getAttribute('data-garang-decision-owner'),'coach','Coach remains the canonical deep decision disclosure owner behind Today');
   assert.equal(await today.locator('.gtf-disclosure').isHidden(),true,'detailed rationale stays out of Today');
-  await today.locator('.gpc-coach-explain').click();await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:5000});
-  assert.equal(await page.locator('.garang-coach-v2').count(),1,'Coach remains the explanation/exploration/action surface');await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('garang-coach-luxury-v2'),null,{timeout:4000});assert.equal(await page.locator('.garang-coach-v2.garang-coach-luxury-v2').count(),1,'Coach must use the restrained luxury presentation owner');
+  await verifyCapabilityRoute(page,'coach','.garang-coach-v2');
+  await page.waitForFunction(()=>document.querySelector('.garang-coach-v2')?.classList.contains('garang-coach-luxury-v2'),null,{timeout:4000});assert.equal(await page.locator('.garang-coach-v2.garang-coach-luxury-v2').count(),1,'Coach must remain available as the restrained deep explanation surface');
   await route(page,'today');
 
   let sheet=await openRecord(page);
