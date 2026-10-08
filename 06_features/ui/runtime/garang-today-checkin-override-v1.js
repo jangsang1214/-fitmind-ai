@@ -121,7 +121,6 @@
   function reconcile() {
     queued = false;
     ensureStyle();
-    reconcilePrimaryOwner();
     const m = main();
     if (!m || m.dataset.garangScreen !== 'today') { removeBottomCheckin(); return; }
     const flow = m.querySelector('#garangTodayFlow');
@@ -146,12 +145,21 @@
     enqueue(reconcile);
   }
 
+  function flowWasReplaced(records) {
+    return records.some(record => record.type === 'childList' && [...record.addedNodes].some(node =>
+      node?.nodeType === 1 && (node.id === 'garangTodayFlow' || node.querySelector?.('#garangTodayFlow'))
+    ));
+  }
+
   function observe() {
     const m = main();
     if (!m || m === observedMain) return;
     observer?.disconnect();
     observedMain = m;
-    observer = new MutationObserver(schedule);
+    observer = new MutationObserver(records => {
+      if (flowWasReplaced(records)) reconcilePrimaryOwner();
+      schedule();
+    });
     observer.observe(m,{childList:true,subtree:true,attributes:true,attributeFilter:['data-gsn-action','data-gsn-step','data-garang-screen']});
   }
 
