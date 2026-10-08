@@ -186,8 +186,8 @@ html[data-garang-ui-v2="2"] #main[data-garang-screen="coach"] .g2-send,
 html[data-garang-ui-v2="2"] #main[data-garang-screen="coach"] .gpt-send{background:#6366f1!important;color:#fff!important;box-shadow:0 8px 20px rgba(79,70,229,.28)!important}
 
 @media(max-width:799px){
-  html[data-garang-ui-v2="2"] #appView:not([hidden])>#main{max-width:480px!important;padding-left:14px!important;padding-right:14px!important}
-  html[data-garang-ui-v2="2"] #appView:not([hidden])>#bottomNav{max-width:480px!important}
+  html[data-garang-ui-v2="2"] #appView:not([hidden])>#main{max-width:560px!important;padding-left:14px!important;padding-right:14px!important}
+  html[data-garang-ui-v2="2"] #appView:not([hidden])>#bottomNav{max-width:560px!important}
   html[data-garang-ui-v2="2"] #main .page-head h1{font-size:27px!important}
   html[data-garang-ui-v2="2"] #main[data-garang-screen="today"] #garangTodayFlow[data-gapp-role="today-primary"]{min-height:340px!important;padding:17px!important}
   html[data-garang-ui-v2="2"] #main[data-garang-screen="today"] #garangTodayFlow[data-gapp-role="today-primary"]::before{right:-20px;bottom:55px;width:155px;height:212px}
