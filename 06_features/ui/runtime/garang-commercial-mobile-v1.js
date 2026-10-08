@@ -104,7 +104,7 @@ html[data-garang-ui-v2="2"] .auth-card{background:#101319!important;border-color
 
 /* Today: one decisive hero, body evidence in the hero, compact evidence below */
 html[data-garang-ui-v2="2"] #main[data-garang-screen="today"] #garangTodayFlow[data-gapp-role="today-primary"]{
-  position:relative!important;overflow:hidden!important;min-height:330px!important;padding:20px!important;border-radius:21px!important;
+  position:relative!important;overflow:hidden!important;min-height:330px!important;padding:20px!important;border-radius:26px!important;
   background:radial-gradient(circle at 84% 25%,rgba(99,102,241,.16),transparent 30%),linear-gradient(150deg,#121723,#0b0e14 72%)!important;
   border:1px solid rgba(129,140,248,.2)!important;box-shadow:0 24px 58px rgba(0,0,0,.36)!important
 }
@@ -153,7 +153,7 @@ html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .meal-scan-emp
   background:radial-gradient(circle at 50% 48%,rgba(99,102,241,.14),transparent 38%),#0b0e14!important;box-shadow:inset 0 0 0 1px rgba(129,140,248,.04)!important
 }
 html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .photo-evidence-stage.gapp-has-media{min-height:280px!important;border-radius:17px!important}
-html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .nutrition-quick-summary[data-gapp-role="nutrition-hero"]{background:linear-gradient(145deg,#121722,#0b0e14 72%)!important;border-color:rgba(148,163,184,.14)!important;border-radius:19px!important}
+html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .nutrition-quick-summary[data-gapp-role="nutrition-hero"]{background:linear-gradient(145deg,#121722,#0b0e14 72%)!important;border-color:rgba(148,163,184,.14)!important;border-radius:25px!important}
 html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .nutrition-quick-summary[data-gapp-role="nutrition-hero"]::before{
   background:radial-gradient(circle at center,#0d1118 62%,transparent 63%),conic-gradient(#6366f1 calc(var(--gapp-nutrition-progress,0)*1%),rgba(255,255,255,.075) 0)!important;
   box-shadow:0 0 0 1px rgba(99,102,241,.18),0 0 32px rgba(99,102,241,.1)!important
@@ -162,7 +162,7 @@ html[data-garang-ui-v2="2"] #main[data-garang-screen="nutrition"] .nutrition-sum
 
 /* Body: anatomy is the hero */
 html[data-garang-ui-v2="2"] #main[data-garang-screen="body"] .body-hero[data-gapp-role="body-hero"]{
-  min-height:410px!important;grid-template-columns:1fr!important;padding:16px!important;border-radius:20px!important;
+  min-height:410px!important;grid-template-columns:1fr!important;padding:16px!important;border-radius:25px!important;
   background:radial-gradient(circle at 50% 34%,rgba(99,102,241,.14),transparent 31%),linear-gradient(145deg,#121621,#0a0d13 74%)!important
 }
 html[data-garang-ui-v2="2"] #main[data-garang-screen="body"] .body-hero-anatomy{width:100%!important;min-width:0!important;height:285px!important;border-radius:20px!important;background:radial-gradient(circle,rgba(99,102,241,.1),transparent 64%)!important}
