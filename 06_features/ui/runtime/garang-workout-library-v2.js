@@ -15,6 +15,7 @@
   let exerciseDBPromise = null;
   let scheduled = false;
   let exerciseSearchQuery = '';
+  let replacementRequested = false;
 
   function setText(node, value) {
     if (!node) return false;
@@ -160,6 +161,11 @@
     if (noResults) noResults.hidden = true;
   }
 
+  function replacementModeActive() {
+    if (replacementRequested) return true;
+    return [...main.querySelectorAll('[data-replace-workout]')].some(button => /선택\s*중|select/i.test(String(button.textContent || '')));
+  }
+
   function expandReplacementChoices() {
     const library = main.querySelector('.exercise-visual-library');
     const button = main.querySelector('.garang-library-more-button');
@@ -236,6 +242,7 @@
     }
     ensureExerciseSearch(library);
     applySearchVisibility(library);
+    if (replacementModeActive()) expandReplacementChoices();
   }
 
   async function run() {
@@ -248,13 +255,14 @@
   new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
   document.addEventListener('click', e => {
     if (e.target.closest('[data-replace-workout]')) {
-      setTimeout(() => {
-        if (!expandReplacementChoices()) {
-          schedule();
-          setTimeout(expandReplacementChoices, 80);
-        }
-      }, 0);
+      replacementRequested = true;
+      schedule();
+      setTimeout(expandReplacementChoices, 0);
     }
+    if (replacementRequested && e.target.closest('[data-exercise-pick]')) {
+      setTimeout(() => { replacementRequested = false; }, 0);
+    }
+    if (e.target.closest('[data-remove-workout],[data-edit-workout],[data-execute-workout]')) replacementRequested = false;
     if (e.target.closest('[data-page],[data-pagego],[data-muscle-pick]')) setTimeout(schedule, 0);
   }, true);
   schedule();
