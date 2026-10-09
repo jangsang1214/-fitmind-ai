@@ -40,6 +40,10 @@
      }
      return false;
    }
+   function reconcileDependentPresentation(main){
+     if(String(main?.dataset?.garangScreen||'')!=='today')return;
+     setTimeout(()=>root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.(),420);
+   }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
      const main=document.getElementById('main');
@@ -50,14 +54,20 @@
        queued=false;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.schedule?.();
+       reconcileDependentPresentation(main);
      };
      const observer=new MutationObserver(()=>{
        if(queued||!referenceStructureNeedsRepair(main))return;
        queued=true;requestAnimationFrame(repair);
      });
      observer.observe(main,{childList:true,subtree:true});
-     root.addEventListener('garang:screen-rendered',()=>{if(referenceStructureNeedsRepair(main))root.GarangReferenceUIV2?.schedule?.();},{passive:true});
-     root.addEventListener('garang:route-completed',()=>{if(referenceStructureNeedsRepair(main))root.GarangReferenceUIV2?.schedule?.();},{passive:true});
+     const repairOnLifecycle=()=>{
+       if(!referenceStructureNeedsRepair(main))return;
+       root.GarangReferenceUIV2?.schedule?.();
+       reconcileDependentPresentation(main);
+     };
+     root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
+     root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
