@@ -15,10 +15,56 @@
      guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.0.0';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
+   function referenceStructureNeedsRepair(main){
+     if(!main)return false;
+     const screen=String(main.dataset?.garangScreen||'');
+     if(screen==='today'){
+       const flow=main.querySelector('#garangTodayFlow');
+       return !!flow&&!flow.parentElement?.classList?.contains('g-ref-today-stage');
+     }
+     if(screen==='nutrition'){
+       const scan=main.querySelector('.meal-scan-card');
+       return !!scan&&!scan.parentElement?.classList?.contains('g-ref-nutrition-stage');
+     }
+     if(screen==='body'){
+       const hero=main.querySelector('.body-hero');
+       return !!hero&&!hero.parentElement?.classList?.contains('g-ref-body-stage');
+     }
+     if(screen==='coach'){
+       const shell=main.querySelector('.coach-app-shell');
+       return !!shell&&!shell.classList.contains('g-ref-coach-shell');
+     }
+     if(screen==='workout'){
+       const execution=main.querySelector('.workout-execution-v2');
+       return !!execution&&!execution.classList.contains('g-ref-workout-execution');
+     }
+     return false;
+   }
+   function attachReferenceStructureGuard(){
+     if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
+     const main=document.getElementById('main');
+     if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
+     root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
+     let queued=false;
+     const repair=()=>{
+       queued=false;
+       if(!referenceStructureNeedsRepair(main))return;
+       root.GarangReferenceUIV2?.schedule?.();
+     };
+     const observer=new MutationObserver(()=>{
+       if(queued||!referenceStructureNeedsRepair(main))return;
+       queued=true;requestAnimationFrame(repair);
+     });
+     observer.observe(main,{childList:true,subtree:true});
+     root.addEventListener('garang:screen-rendered',()=>{if(referenceStructureNeedsRepair(main))root.GarangReferenceUIV2?.schedule?.();},{passive:true});
+     root.addEventListener('garang:route-completed',()=>{if(referenceStructureNeedsRepair(main))root.GarangReferenceUIV2?.schedule?.();},{passive:true});
+   }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
      script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.0';script.defer=true;script.dataset.garangReferenceUiV2='1';
+     script.addEventListener('load',()=>{root.GarangReferenceUIV2?.schedule?.();attachReferenceStructureGuard();},{once:true});
      document.head.appendChild(script);
    }
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attachReferenceStructureGuard,{once:true});else attachReferenceStructureGuard();
  }
 })(typeof window==='undefined'?globalThis:window);
