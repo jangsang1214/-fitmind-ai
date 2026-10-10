@@ -77,7 +77,7 @@
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
-     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.2-stable-ownership';script.defer=true;script.dataset.garangReferenceUiV2='1';
+     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.3-screen-readiness';script.defer=true;script.dataset.garangReferenceUiV2='1';
      script.addEventListener('load',()=>{root.GarangReferenceUIV2?.schedule?.();attachReferenceStructureGuard();},{once:true});
      document.head.appendChild(script);
    }
