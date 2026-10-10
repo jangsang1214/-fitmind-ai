@@ -30,7 +30,11 @@
    Presentation only: canonical session/timer/set/save state remains owned by Workout Execution v2. */
 #main.g-ref-screen-workout .workout-session-bar{
   width:100%!important;
+  max-width:none!important;
   min-width:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  box-sizing:border-box!important;
 }
 #main.g-ref-screen-workout .workout-session-bar.is-live .workout-session-live>strong{
   min-width:0!important;
