@@ -78,8 +78,20 @@ function decorateToday(m){
   const support=ensureStage(m,'g-ref-today-support',stage);
   for(const child of directRemainder(m,[head,intro,stage,support]))move(support,child);
 }
+function cleanupWorkoutRestPortal(){
+  const rest=document.getElementById('workoutExecutionRest');
+  if(!rest||rest.dataset.garangReferenceRestPortal!=='v2')return false;
+  if(screenName()==='workout'&&!app()?.hidden)return false;
+  rest.remove();
+  return true;
+}
 function pinWorkoutRest(rest){
   if(!rest)return;
+  if(screenName()==='workout'&&!app()?.hidden&&rest.parentElement!==document.body){
+    rest.dataset.garangReferenceRestPortal='v2';
+    rest.classList.add('g-ref-workout-rest-portal');
+    document.body.appendChild(rest);
+  }
   const set=(name,value)=>rest.style.setProperty(name,value,'important');
   set('position','fixed');set('left','50%');set('right','auto');set('top','auto');
   set('bottom','calc(84px + env(safe-area-inset-bottom, 0px))');set('transform','translateX(-50%)');
@@ -107,7 +119,7 @@ function decorateWorkout(m){
   if(tabs)tabs.classList.add('g-ref-workout-tabs');
   const panel=qs(m,'.gws-panel[data-garang-workout-surface="exercise"]');if(panel)panel.classList.add('g-ref-workout-panel');
   const overview=qs(m,'.gws-panel[data-garang-workout-surface="overview"]');if(overview)overview.classList.add('g-ref-workout-overview');
-  pinWorkoutRest(qs(m,'#workoutExecutionRest'));
+  pinWorkoutRest(document.getElementById('workoutExecutionRest'));
   if(head)head.classList.add('g-ref-original-head');
 }
 function decorateNutrition(m){
@@ -162,7 +174,9 @@ function decorateChrome(){
   decorateAuth();
 }
 function apply(){
-  decorateChrome();const m=main(),screen=screenName();if(!m||!screen)return false;setScreenClass(m,screen);
+  decorateChrome();const m=main(),screen=screenName();if(!m||!screen)return false;
+  if(screen!=='workout')cleanupWorkoutRestPortal();
+  setScreenClass(m,screen);
   if(screen==='today'){
     decorateToday(m);
     const flow=qs(m,'#garangTodayFlow');
