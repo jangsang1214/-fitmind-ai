@@ -182,7 +182,7 @@ async function assertCoachSettles(page){
     assert.equal(layout.max,'none');
     assert.equal(layout.cMode,'1','WebKit Today must use C direction');
     assert.equal(layout.flowVisible,true,'decision-first C surface must be visible');
-    assert.equal(layout.bodyHeroHidden,false,'Founder v2 keeps Body/Status evidence visible below the primary decision');
+    assert.equal(layout.bodyHeroHidden,true,'body anatomy must not be the default WebKit hero');
     assert.equal(layout.quickHidden,true,'Today duplicate quick-record grid must stay internalized on WebKit');
     assert.equal(layout.primaryCount,4,'WebKit must expose exactly four primary navigation axes');
     assert.ok(layout.record.height>=44&&layout.record.hit,'Record must replace the hidden quick cards as a real touch target');
@@ -200,7 +200,7 @@ async function assertCoachSettles(page){
       return {
         topVisible:!!top&&top.bottom>0&&top.top>=-1,
         menuHit:!!mh&&(mh===menu||menu?.contains(mh)),
-        recordHit:!!rh&&(rh===record||record?.contains(recordHit)),
+        recordHit:!!rh&&(rh===record||record?.contains(rh)),
         scrollY:window.scrollY
       };
     });
@@ -224,7 +224,7 @@ async function assertCoachSettles(page){
     await tap(page,'#bottomNav [data-garang-primary-nav="1"][data-page="today"]');
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:5000});
     await page.locator('#garangTodayFlow').waitFor({state:'visible',timeout:5000});
-    assert.equal(await page.locator('.visual-today-hero').isHidden(),false,'returning to Today must preserve visible secondary Body/Status evidence');
+    assert.equal(await page.locator('.visual-today-hero').isHidden(),true,'returning to Today must preserve the no-body C hero');
     await tapRecordRoute(page,'workout');
     await tap(page,'[data-gws-step="exercise"]');
     await page.locator('.workout-execution-v2 .workout-session-bar').waitFor({state:'visible',timeout:5000});
