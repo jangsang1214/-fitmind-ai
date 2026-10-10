@@ -143,12 +143,11 @@ function decorateBody(m){
   for(const child of directRemainder(m,[head,intro,stage,support]))move(support,child);
 }
 function decorateCoach(m){
-  const shell=qs(m,'.coach-app-shell');if(!shell)return false;
+  const shell=qs(m,'.coach-app-shell');if(!shell)return;
   shell.classList.add('g-ref-coach-shell');
   const status=qs(shell,'.coach-status-card');if(status)status.classList.add('g-ref-coach-status');
   const thread=qs(shell,'.coach-thread');if(thread)thread.classList.add('g-ref-coach-thread');
   const composer=qs(shell,'.coach-bottom-stack');if(composer)composer.classList.add('g-ref-coach-composer');
-  return shell.classList.contains('g-ref-coach-shell');
 }
 function decorateProgress(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');if(head)head.classList.add('g-ref-progress-head');
@@ -167,9 +166,7 @@ function apply(){
     decorateToday(m);
     const flow=qs(m,'#garangTodayFlow');
     if(!flow||!flow.parentElement?.classList?.contains('g-ref-today-stage')){delete m.dataset.garangReferenceUi;return false;}
-  }else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach'){
-    if(!decorateCoach(m)){delete m.dataset.garangReferenceUi;return false;}
-  }else if(screen==='progress')decorateProgress(m);
+  }else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach')decorateCoach(m);else if(screen==='progress')decorateProgress(m);
   m.dataset.garangReferenceUi='v2';
   return true;
 }
