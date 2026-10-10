@@ -105,16 +105,21 @@
 
 /* Rest is an execution state, not a floating utility. */
 #main.g-ref-screen-workout .workout-rest-timer.active:not([hidden]){
-  position:sticky!important;
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
   top:auto!important;
   bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
+  transform:translateX(-50%)!important;
   z-index:125!important;
   display:grid!important;
   grid-template-columns:minmax(0,1fr)!important;
   justify-items:stretch!important;
   gap:10px!important;
-  width:100%!important;
+  width:min(calc(100vw - 24px),430px)!important;
+  max-width:calc(100vw - 24px)!important;
   min-width:0!important;
+  box-sizing:border-box!important;
   padding:14px!important;
   border-radius:18px!important;
   scroll-margin-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;
