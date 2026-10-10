@@ -72,6 +72,18 @@ function pinWorkoutRest(rest){
   set('width','calc(100vw - 24px)');set('max-width','430px');set('min-width','0');set('box-sizing','border-box');
   set('margin','0');set('z-index','125');
 }
+function settleWorkoutRest(){
+  if(screenName()!=='workout')return false;
+  const rest=document.getElementById('workoutExecutionRest');
+  if(!rest||rest.hidden||!rest.classList.contains('active'))return false;
+  pinWorkoutRest(rest);
+  const nav=document.getElementById('bottomNav'),r=rest.getBoundingClientRect(),n=nav?.getBoundingClientRect?.();
+  if(n&&r.bottom>n.top-10){
+    const lift=Math.ceil(r.bottom-(n.top-10));
+    rest.style.setProperty('transform',`translate(-50%, -${lift}px)`,'important');
+  }
+  return true;
+}
 function decorateWorkout(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
   const intro=ensureIntro(m);intro.innerHTML='<div class="g-ref-workout-title"><span>WORKOUT</span><strong>바로 실행하고, 짧게 기록</strong></div>';
@@ -143,7 +155,13 @@ function schedule(){
   requestAnimationFrame(()=>{apply();setTimeout(apply,60);setTimeout(apply,220);});
 }
 for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready','garang:workout-set-rows-rendered','garang:workout-session-started'])window.addEventListener(evt,schedule,{passive:true});
+document.addEventListener('click',event=>{
+  if(!event.target.closest?.('[data-execution-set-complete]'))return;
+  setTimeout(settleWorkoutRest,0);
+  requestAnimationFrame(()=>requestAnimationFrame(settleWorkoutRest));
+  setTimeout(settleWorkoutRest,80);
+},true);
 document.addEventListener('DOMContentLoaded',schedule,{once:true});
 schedule();
-window.GarangReferenceUIV2=Object.freeze({version:VERSION,apply,schedule});
+window.GarangReferenceUIV2=Object.freeze({version:VERSION,apply,schedule,settleWorkoutRest});
 })();
