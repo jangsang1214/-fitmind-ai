@@ -26,7 +26,7 @@ function ensureInteractionGuards(){
 function screenName(){return String(main()?.dataset?.garangScreen||'').trim();}
 function setScreenClass(m,screen){
   for(const c of [...m.classList])if(c.startsWith('g-ref-screen-'))m.classList.remove(c);
-  m.classList.add('g-ref-screen','g-ref-screen-'+screen);m.dataset.garangReferenceUi='v2';
+  m.classList.add('g-ref-screen','g-ref-screen-'+screen);
 }
 function ensureIntro(m){
   let intro=qs(m,':scope > .g-ref-screen-intro');
@@ -118,7 +118,12 @@ function decorateChrome(){
 }
 function apply(){
   decorateChrome();const m=main(),screen=screenName();if(!m||!screen)return false;setScreenClass(m,screen);
-  if(screen==='today')decorateToday(m);else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach')decorateCoach(m);else if(screen==='progress')decorateProgress(m);
+  if(screen==='today'){
+    decorateToday(m);
+    const flow=qs(m,'#garangTodayFlow');
+    if(!flow||!flow.parentElement?.classList?.contains('g-ref-today-stage')){delete m.dataset.garangReferenceUi;return false;}
+  }else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach')decorateCoach(m);else if(screen==='progress')decorateProgress(m);
+  m.dataset.garangReferenceUi='v2';
   return true;
 }
 function schedule(){
