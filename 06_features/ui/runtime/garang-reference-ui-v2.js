@@ -10,6 +10,8 @@ const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
 const isNode=n=>n&&n.nodeType===1;
+const isEnglish=()=>document.documentElement.lang==='en';
+const copy=(ko,en)=>isEnglish()?en:ko;
 
 function node(tag,cls,html=''){
   const el=document.createElement(tag);if(cls)el.className=cls;if(html)el.innerHTML=html;return el;
@@ -20,6 +22,7 @@ function ensureInteractionGuards(){
 .g-ref-body-primary .g3-anatomy-legend,.g-ref-body-primary .g3-anatomy-legend *{pointer-events:none!important}
 .g-ref-body-primary .g3-view-switch{position:relative!important;z-index:24!important;pointer-events:auto!important;scroll-margin-top:104px!important}
 .g-ref-body-primary .g3-view-switch button{position:relative!important;z-index:25!important;pointer-events:auto!important;min-height:44px!important}
+.g-ref-today-stage .visual-today-hero .today-decision-panel[hidden]{display:none!important}
 `;
   document.head.appendChild(style);
 }
@@ -40,14 +43,17 @@ function ensureIntro(m){
   if(head?.nextSibling)m.insertBefore(intro,head.nextSibling);else m.prepend(intro);
   return intro;
 }
-function koreanDay(d){return ['일','월','화','수','목','금','토'][d.getDay()];}
+function dayLabel(d){
+  const ko=['일','월','화','수','목','금','토'],en=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  return (isEnglish()?en:ko)[d.getDay()];
+}
 function todayStrip(){
   const now=new Date(),cells=[];
   for(let offset=-3;offset<=3;offset++){
     const d=new Date(now);d.setDate(now.getDate()+offset);
-    cells.push(`<span class="${offset===0?'is-today':''}"><small>${koreanDay(d)}</small><b>${d.getDate()}</b></span>`);
+    cells.push(`<span class="${offset===0?'is-today':''}"><small>${dayLabel(d)}</small><b>${d.getDate()}</b></span>`);
   }
-  return `<div class="g-ref-date-copy"><strong>안녕하세요!</strong><span>오늘도 좋은 하루예요.</span></div><div class="g-ref-date-strip">${cells.join('')}</div>`;
+  return `<div class="g-ref-date-copy"><strong>${copy('안녕하세요!','Hello!')}</strong><span>${copy('오늘도 좋은 하루예요.','Here is what matters today.')}</span></div><div class="g-ref-date-strip">${cells.join('')}</div>`;
 }
 function ensureStage(m,cls,after){
   let stage=qs(m,':scope > .'+cls);if(stage)return stage;
@@ -64,7 +70,11 @@ function decorateToday(m){
   const flow=qs(m,'#garangTodayFlow'),hero=qs(m,'.visual-today-hero');
   const stage=ensureStage(m,'g-ref-today-stage',intro);move(stage,flow,hero);
   if(flow)flow.classList.add('g-ref-primary-decision');
-  if(hero)hero.classList.add('g-ref-today-body-card');
+  if(hero){
+    hero.classList.add('g-ref-today-body-card');
+    const legacy=qs(hero,'.today-decision-panel');
+    if(legacy){legacy.hidden=!!flow;legacy.setAttribute('aria-hidden',flow?'true':'false');}
+  }
   const support=ensureStage(m,'g-ref-today-support',stage);
   for(const child of directRemainder(m,[head,intro,stage,support]))move(support,child);
 }
@@ -90,7 +100,7 @@ function settleWorkoutRest(){
 }
 function decorateWorkout(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
-  const intro=ensureIntro(m);intro.innerHTML='<div class="g-ref-workout-title"><span>WORKOUT</span><strong>바로 실행하고, 짧게 기록</strong></div>';
+  const intro=ensureIntro(m);intro.innerHTML=`<div class="g-ref-workout-title"><span>WORKOUT</span><strong>${copy('바로 실행하고, 짧게 기록','Start immediately. Log only what matters.')}</strong></div>`;
   const execution=qs(m,'.workout-execution-v2'),hero=qs(m,'.workout-visual-hero'),tabs=qs(m,'.gws-tabs');
   if(execution)execution.classList.add('g-ref-workout-execution');
   if(hero)hero.classList.add('g-ref-workout-hero');
@@ -102,7 +112,7 @@ function decorateWorkout(m){
 }
 function decorateNutrition(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
-  const intro=ensureIntro(m);intro.innerHTML='<div class="g-ref-section-copy"><span>NUTRITION</span><strong>찍기만 하면 분석하고, 다음 식사까지 연결</strong></div>';
+  const intro=ensureIntro(m);intro.innerHTML=`<div class="g-ref-section-copy"><span>NUTRITION</span><strong>${copy('찍기만 하면 분석하고, 다음 식사까지 연결','Scan it. GARANG interprets it and guides the next meal.')}</strong></div>`;
   const scan=qs(m,'.meal-scan-card');
   const stage=ensureStage(m,'g-ref-nutrition-stage',intro);move(stage,scan);
   if(scan)scan.classList.add('g-ref-meal-scan-primary');
@@ -111,15 +121,24 @@ function decorateNutrition(m){
   const support=ensureStage(m,'g-ref-nutrition-support',status);
   for(const child of directRemainder(m,[head,intro,stage,status,support]))move(support,child);
 }
+function ensureBodyModelSource(hero){
+  const visual=qs(hero,'.body-hero-anatomy');if(!visual)return null;
+  let wrap=qs(visual,'.muscle-map-wrap');if(wrap)return wrap;
+  const female=/\bWOMEN\b/.test(hero?.textContent||'');
+  const gender=female?'female':'male',label=female?'WOMEN':'MEN';
+  wrap=node('div','muscle-map-wrap g-ref-body-model-source');
+  wrap.innerHTML=`<div class="muscle-map anatomical-pro" id="bodyHeroMuscleMap" data-muscle="full" data-gender="${gender}"><div class="body-view"><span>FRONT · ${label}</span></div><div class="body-view"><span>BACK · ${label}</span></div></div>`;
+  visual.replaceChildren(wrap);
+  return wrap;
+}
 function decorateBody(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
-  const intro=ensureIntro(m);intro.innerHTML='<div class="g-ref-section-copy"><span>BODY</span><strong>내 몸을 더 직관적이고, 입체적으로 이해</strong></div>';
+  const intro=ensureIntro(m);intro.innerHTML=`<div class="g-ref-section-copy"><span>BODY</span><strong>${copy('내 몸을 더 직관적이고, 입체적으로 이해','Understand your body clearly, in three dimensions.')}</strong></div>`;
   const hero=qs(m,'.body-hero'),trend=qs(m,'.body-trend-card');
   const stage=ensureStage(m,'g-ref-body-stage',intro);move(stage,hero,trend);
   if(hero)hero.classList.add('g-ref-body-primary');
   if(trend)trend.classList.add('g-ref-body-trend');
-  const model=qs(m,'.g3-body-model[data-garang-classical-model="6"]');
-  const visual=qs(hero,'.body-hero-anatomy');if(model&&visual&&!visual.contains(model))visual.replaceChildren(model);
+  ensureBodyModelSource(hero);
   const support=ensureStage(m,'g-ref-body-support',stage);
   for(const child of directRemainder(m,[head,intro,stage,support]))move(support,child);
 }
@@ -162,6 +181,7 @@ function schedule(){
   requestAnimationFrame(()=>{apply();setTimeout(apply,60);setTimeout(apply,220);});
 }
 for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready','garang:workout-set-rows-rendered','garang:workout-session-started'])window.addEventListener(evt,schedule,{passive:true});
+new MutationObserver(mutations=>{if(mutations.some(m=>m.type==='attributes'&&m.target===document.documentElement&&m.attributeName==='lang'))schedule();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 document.addEventListener('click',event=>{
   if(!event.target.closest?.('[data-execution-set-complete]'))return;
   setTimeout(settleWorkoutRest,0);
