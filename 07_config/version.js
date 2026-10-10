@@ -12,7 +12,7 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
      const guard=document.createElement('link');
-     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.0-founder-workout';guard.dataset.garangReferenceUiV2Guards='1';
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.1-rest-portal';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
    function referenceStructureNeedsRepair(main){
@@ -77,7 +77,7 @@
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
-     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.4-canonical-coach';script.defer=true;script.dataset.garangReferenceUiV2='1';
+     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.5-rest-portal';script.defer=true;script.dataset.garangReferenceUiV2='1';
      script.addEventListener('load',()=>{root.GarangReferenceUIV2?.schedule?.();attachReferenceStructureGuard();},{once:true});
      document.head.appendChild(script);
    }
