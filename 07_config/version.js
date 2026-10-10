@@ -49,17 +49,12 @@
      const main=document.getElementById('main');
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
-     let queued=false;
      const repair=()=>{
-       queued=false;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
      };
-     const observer=new MutationObserver(()=>{
-       if(queued||!referenceStructureNeedsRepair(main))return;
-       queued=true;requestAnimationFrame(repair);
-     });
+     const observer=new MutationObserver(repair);
      observer.observe(main,{childList:true,subtree:true});
      const repairOnLifecycle=()=>{
        if(!referenceStructureNeedsRepair(main))return;
