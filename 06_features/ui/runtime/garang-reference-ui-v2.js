@@ -10,6 +10,7 @@ const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
 const isNode=n=>n&&n.nodeType===1;
+let scheduled=false;
 
 function node(tag,cls,html=''){
   const el=document.createElement(tag);if(cls)el.className=cls;if(html)el.innerHTML=html;return el;
@@ -121,7 +122,20 @@ function apply(){
   if(screen==='today')decorateToday(m);else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach')decorateCoach(m);else if(screen==='progress')decorateProgress(m);
   return true;
 }
-function schedule(){requestAnimationFrame(()=>{apply();setTimeout(apply,60);setTimeout(apply,220);});}
+function schedule(){
+  apply();
+  if(scheduled)return;
+  scheduled=true;
+  const enqueue=typeof queueMicrotask==='function'?queueMicrotask:fn=>Promise.resolve().then(fn);
+  enqueue(()=>{
+    apply();
+    requestAnimationFrame(()=>{
+      apply();
+      scheduled=false;
+      setTimeout(apply,80);
+    });
+  });
+}
 for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready'])window.addEventListener(evt,schedule,{passive:true});
 document.addEventListener('DOMContentLoaded',schedule,{once:true});
 schedule();
