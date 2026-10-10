@@ -126,6 +126,8 @@ jobs:
         run: node tests/browser-daily-plan-draft.test.cjs
       - name: Verify Simplified Shell WebKit
         run: node tests/browser-simplified-shell.test.cjs
+      - name: Verify MD-driven Reference UI v2
+        run: node tests/browser-reference-ui-v2.test.cjs
       - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify Nutrition recommendation flow
