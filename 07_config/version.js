@@ -44,12 +44,22 @@
      if(String(main?.dataset?.garangScreen||'')!=='today')return;
      setTimeout(()=>root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.(),420);
    }
+   function repairTodayOwnership(main){
+     if(String(main?.dataset?.garangScreen||'')!=='today')return false;
+     const flow=main.querySelector('#garangTodayFlow'),stage=main.querySelector(':scope > .g-ref-today-stage');
+     if(!flow||!stage||flow.parentElement===stage)return false;
+     stage.prepend(flow);
+     main.dataset.garangReferenceUi='v2';
+     reconcileDependentPresentation(main);
+     return true;
+   }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
      const main=document.getElementById('main');
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
      const repair=()=>{
+       if(repairTodayOwnership(main))return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
@@ -57,6 +67,7 @@
      const observer=new MutationObserver(repair);
      observer.observe(main,{childList:true,subtree:true});
      const repairOnLifecycle=()=>{
+       if(repairTodayOwnership(main))return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
@@ -66,7 +77,7 @@
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
-     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.1-dom-ownership';script.defer=true;script.dataset.garangReferenceUiV2='1';
+     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.2-stable-ownership';script.defer=true;script.dataset.garangReferenceUiV2='1';
      script.addEventListener('load',()=>{root.GarangReferenceUIV2?.schedule?.();attachReferenceStructureGuard();},{once:true});
      document.head.appendChild(script);
    }
