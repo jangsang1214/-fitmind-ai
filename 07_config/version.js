@@ -53,7 +53,7 @@
      const repair=()=>{
        queued=false;
        if(!referenceStructureNeedsRepair(main))return;
-       root.GarangReferenceUIV2?.schedule?.();
+       root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
      };
      const observer=new MutationObserver(()=>{
@@ -63,7 +63,7 @@
      observer.observe(main,{childList:true,subtree:true});
      const repairOnLifecycle=()=>{
        if(!referenceStructureNeedsRepair(main))return;
-       root.GarangReferenceUIV2?.schedule?.();
+       root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
      };
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
