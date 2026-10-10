@@ -46,20 +46,23 @@
    }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
-     const host=document.body||document.documentElement;
-     if(!host){setTimeout(attachReferenceStructureGuard,80);return;}
+     const main=document.getElementById('main');
+     if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
      const repair=()=>{
-       const main=document.getElementById('main');
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
-       reconcileDependentPresentation(document.getElementById('main'));
+       reconcileDependentPresentation(main);
      };
      const observer=new MutationObserver(repair);
-     observer.observe(host,{childList:true,subtree:true});
-     root.addEventListener('garang:screen-rendered',repair,{passive:true});
-     root.addEventListener('garang:route-completed',repair,{passive:true});
-     repair();
+     observer.observe(main,{childList:true,subtree:true});
+     const repairOnLifecycle=()=>{
+       if(!referenceStructureNeedsRepair(main))return;
+       root.GarangReferenceUIV2?.apply?.();
+       reconcileDependentPresentation(main);
+     };
+     root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
+     root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
