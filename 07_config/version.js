@@ -31,7 +31,7 @@
        return !!hero&&!hero.parentElement?.classList?.contains('g-ref-body-stage');
      }
      if(screen==='coach'){
-       const shell=main.querySelector('.coach-app-shell');
+       const shell=main.querySelector('.garang-coach-v2')||main.querySelector('.coach-app-shell');
        return !!shell&&!shell.classList.contains('g-ref-coach-shell');
      }
      if(screen==='workout'){
@@ -77,7 +77,7 @@
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
-     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.3-screen-readiness';script.defer=true;script.dataset.garangReferenceUiV2='1';
+     script.src='./06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.4-canonical-coach';script.defer=true;script.dataset.garangReferenceUiV2='1';
      script.addEventListener('load',()=>{root.GarangReferenceUIV2?.schedule?.();attachReferenceStructureGuard();},{once:true});
      document.head.appendChild(script);
    }
