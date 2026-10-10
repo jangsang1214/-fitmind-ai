@@ -64,6 +64,14 @@ function decorateToday(m){
   const support=ensureStage(m,'g-ref-today-support',stage);
   for(const child of directRemainder(m,[head,intro,stage,support]))move(support,child);
 }
+function pinWorkoutRest(rest){
+  if(!rest)return;
+  const set=(name,value)=>rest.style.setProperty(name,value,'important');
+  set('position','fixed');set('left','50%');set('right','auto');set('top','auto');
+  set('bottom','calc(84px + env(safe-area-inset-bottom, 0px))');set('transform','translateX(-50%)');
+  set('width','calc(100vw - 24px)');set('max-width','430px');set('min-width','0');set('box-sizing','border-box');
+  set('margin','0');set('z-index','125');
+}
 function decorateWorkout(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
   const intro=ensureIntro(m);intro.innerHTML='<div class="g-ref-workout-title"><span>WORKOUT</span><strong>바로 실행하고, 짧게 기록</strong></div>';
@@ -73,6 +81,7 @@ function decorateWorkout(m){
   if(tabs)tabs.classList.add('g-ref-workout-tabs');
   const panel=qs(m,'.gws-panel[data-garang-workout-surface="exercise"]');if(panel)panel.classList.add('g-ref-workout-panel');
   const overview=qs(m,'.gws-panel[data-garang-workout-surface="overview"]');if(overview)overview.classList.add('g-ref-workout-overview');
+  pinWorkoutRest(qs(m,'#workoutExecutionRest'));
   if(head)head.classList.add('g-ref-original-head');
 }
 function decorateNutrition(m){
@@ -133,7 +142,7 @@ function schedule(){
   }
   requestAnimationFrame(()=>{apply();setTimeout(apply,60);setTimeout(apply,220);});
 }
-for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready'])window.addEventListener(evt,schedule,{passive:true});
+for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready','garang:workout-set-rows-rendered','garang:workout-session-started'])window.addEventListener(evt,schedule,{passive:true});
 document.addEventListener('DOMContentLoaded',schedule,{once:true});
 schedule();
 window.GarangReferenceUIV2=Object.freeze({version:VERSION,apply,schedule});
