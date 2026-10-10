@@ -15,6 +15,11 @@
      guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.1-rest-portal';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
+   if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
+     const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
+     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}';
+     document.head.appendChild(style);
+   }
    function referenceStructureNeedsRepair(main){
      if(!main)return false;
      const screen=String(main.dataset?.garangScreen||'');
