@@ -12,12 +12,12 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
      const guard=document.createElement('link');
-     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.4-draft-primary-touch';guard.dataset.garangReferenceUiV2Guards='1';
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.5-draft-manage-safe';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
-     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}';
+     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}@media(max-width:800px){#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{order:1!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,#main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{order:2!important}}';
      document.head.appendChild(style);
    }
    function referenceStructureNeedsRepair(main){
