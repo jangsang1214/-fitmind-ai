@@ -17,7 +17,7 @@
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
-     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}@media(max-width:800px){#main.g-ref-screen-workout #workoutDraftArea .list-item{row-gap:6px!important}#main.g-ref-screen-workout #workoutDraftArea .list-item>div:first-child{display:contents!important}#main.g-ref-screen-workout #workoutDraftArea .workout-group-chip{order:1!important;justify-self:start!important}#main.g-ref-screen-workout #workoutDraftArea .list-item>div:first-child>strong{order:2!important;min-width:0!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions{order:3!important;display:grid!important;grid-template-columns:minmax(0,1fr) 72px!important;align-items:stretch!important;width:100%!important;min-width:0!important;gap:8px!important;overflow:visible!important;position:relative!important;z-index:40!important;isolation:isolate!important}#main.g-ref-screen-workout #workoutDraftArea .list-item>div:first-child>.muted{order:4!important;min-width:0!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,#main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{order:1!important;width:100%!important;min-width:0!important;position:relative!important;z-index:2!important;pointer-events:auto!important;touch-action:manipulation!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{order:2!important;width:72px!important;min-width:72px!important;min-height:44px!important;justify-self:stretch!important;position:relative!important;z-index:3!important;isolation:isolate!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{width:100%!important;min-width:0!important;min-height:44px!important;margin-left:0!important;position:relative!important;pointer-events:auto!important;touch-action:manipulation!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage-actions{top:auto!important;bottom:calc(100% + 7px)!important;right:0!important;z-index:34!important}#main.g-ref-screen-workout #workoutDraftArea:has(.workout-draft-manage[open]){position:relative!important;z-index:120!important;overflow:visible!important}#main.g-ref-screen-workout #workoutDraftArea .list-item:has(.workout-draft-manage[open]){position:relative!important;z-index:121!important;overflow:visible!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions:has(.workout-draft-manage[open]){z-index:122!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]{z-index:123!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions{z-index:124!important;pointer-events:auto!important}}';
+     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}@media(max-width:800px){#main.g-ref-screen-workout #workoutDraftArea .list-item{row-gap:6px!important}#main.g-ref-screen-workout #workoutDraftArea .list-item>div:first-child{width:100%!important;min-width:0!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 72px!important;align-items:stretch!important;width:100%!important;min-width:0!important;gap:8px!important;overflow:visible!important;position:relative!important;z-index:40!important;isolation:isolate!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,#main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{order:1!important;width:100%!important;min-width:0!important;position:relative!important;z-index:2!important;pointer-events:auto!important;touch-action:manipulation!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{order:2!important;width:72px!important;min-width:72px!important;min-height:44px!important;justify-self:stretch!important;position:relative!important;z-index:3!important;isolation:isolate!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{width:100%!important;min-width:0!important;min-height:44px!important;margin-left:0!important;position:relative!important;pointer-events:auto!important;touch-action:manipulation!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage-actions{top:auto!important;bottom:calc(100% + 7px)!important;right:0!important;z-index:34!important}#main.g-ref-screen-workout #workoutDraftArea:has(.workout-draft-manage[open]){position:relative!important;z-index:120!important;overflow:visible!important}#main.g-ref-screen-workout #workoutDraftArea .list-item:has(.workout-draft-manage[open]){position:relative!important;z-index:121!important;overflow:visible!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions:has(.workout-draft-manage[open]){z-index:122!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]{z-index:123!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions{z-index:124!important;pointer-events:auto!important}}';
      document.head.appendChild(style);
    }
    function referenceStructureNeedsRepair(main){
@@ -65,31 +65,14 @@
      reconcileDependentPresentation(main);
      return true;
    }
-   function reconcileWorkoutDraftDomOrder(main){
-     if(String(main?.dataset?.garangScreen||'')!=='workout')return false;
-     const compact=root.matchMedia?.('(max-width:800px)')?.matches??Number(root.innerWidth||0)<=800;
-     let changed=false;
-     main.querySelectorAll('#workoutDraftArea .list-item').forEach(row=>{
-       const info=row.firstElementChild,actions=row.querySelector('.workout-draft-actions'),details=info?.querySelector(':scope > .muted');
-       if(!info||!actions||!details)return;
-       if(compact){
-         if(actions.parentElement!==info||actions.nextElementSibling!==details){info.insertBefore(actions,details);changed=true;}
-       }else if(actions.parentElement===info){
-         info.after(actions);changed=true;
-       }
-     });
-     return changed;
-   }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
      const main=document.getElementById('main');
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
-     reconcileWorkoutDraftDomOrder(main);
      const repair=()=>{
        const owned=repairTodayOwnership(main);
        ensureTodayPlannerShortcut(main);
-       reconcileWorkoutDraftDomOrder(main);
        if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
@@ -100,7 +83,6 @@
      const repairOnLifecycle=()=>{
        const owned=repairTodayOwnership(main);
        ensureTodayPlannerShortcut(main);
-       reconcileWorkoutDraftDomOrder(main);
        if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
@@ -108,7 +90,6 @@
      };
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
-     root.addEventListener('resize',()=>reconcileWorkoutDraftDomOrder(main),{passive:true});
      reconcileDependentPresentation(main);
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
