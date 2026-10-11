@@ -30,6 +30,7 @@ function ensureInteractionGuards(){
 .g-ref-body-primary .g3-view-switch{position:relative!important;z-index:24!important;pointer-events:auto!important;scroll-margin-top:104px!important}
 .g-ref-body-primary .g3-view-switch button{position:relative!important;z-index:25!important;pointer-events:auto!important;min-height:44px!important}
 .g-ref-today-stage .visual-today-hero .today-decision-panel[hidden]{display:none!important}
+#main.g-ref-screen-today[data-gto="1"] #garangTodayFlow.g-ref-primary-decision .gtf-decision{display:block!important}
 `;
   document.head.appendChild(style);
 }
