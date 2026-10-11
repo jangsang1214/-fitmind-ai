@@ -15,6 +15,11 @@
      guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.4-draft-primary-touch';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
+   if(!document.getElementById('garangWorkoutDraftTouchGuard')){
+     const draftTouch=document.createElement('style');draftTouch.id='garangWorkoutDraftTouchGuard';
+     draftTouch.textContent='@media(max-width:800px){#main.g-ref-screen-workout #workoutDraftArea{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important;scroll-padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;box-sizing:border-box!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{scroll-margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}}';
+     document.head.appendChild(draftTouch);
+   }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
      style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}';
