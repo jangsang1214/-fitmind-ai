@@ -12,12 +12,12 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
      const guard=document.createElement('link');
-     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.4-draft-primary-touch';guard.dataset.garangReferenceUiV2Guards='1';
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.5-draft-manage-safe';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
-     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}';
+     style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}@media(max-width:800px){#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{order:1!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]{z-index:5!important}#main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,#main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{order:2!important}}';
      document.head.appendChild(style);
    }
    function referenceStructureNeedsRepair(main){
@@ -45,9 +45,16 @@
      }
      return false;
    }
+   function ensureTodayPlannerShortcut(main){
+     if(String(main?.dataset?.garangScreen||'')!=='today')return false;
+     if(main.querySelector('[data-garang-planner-shortcut="1"]'))return true;
+     if(!main.querySelector('.gpc-today-plan-head'))return false;
+     return root.GarangMobileCheckinPlannerShortcutV1?.ensurePlannerShortcut?.()===true;
+   }
    function reconcileDependentPresentation(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return;
-     setTimeout(()=>root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.(),420);
+     ensureTodayPlannerShortcut(main);
+     setTimeout(()=>{root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.();ensureTodayPlannerShortcut(main);},420);
    }
    function repairTodayOwnership(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return false;
@@ -64,7 +71,9 @@
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
      const repair=()=>{
-       if(repairTodayOwnership(main))return;
+       const owned=repairTodayOwnership(main);
+       ensureTodayPlannerShortcut(main);
+       if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
@@ -72,13 +81,16 @@
      const observer=new MutationObserver(repair);
      observer.observe(main,{childList:true,subtree:true});
      const repairOnLifecycle=()=>{
-       if(repairTodayOwnership(main))return;
+       const owned=repairTodayOwnership(main);
+       ensureTodayPlannerShortcut(main);
+       if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
      };
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
+     reconcileDependentPresentation(main);
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
