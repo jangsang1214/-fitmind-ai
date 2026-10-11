@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 if (window.GarangReferenceUIV2) return;
-const VERSION='garang-reference-ui-v2.0.1-stable-markup';
+const VERSION='garang-reference-ui-v2.0.0';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
