@@ -12,7 +12,7 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
      const guard=document.createElement('link');
-     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.3-record-touch';guard.dataset.garangReferenceUiV2Guards='1';
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.4-draft-primary-touch';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
