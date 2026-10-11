@@ -317,7 +317,7 @@ body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal.active
   }
   /* Keep final draft actions physically scrollable above the fixed bottom navigation. */
   #main.g-ref-screen-workout #workoutDraftArea{
-    padding-bottom:128px!important;
+    padding-bottom:208px!important;
   }
   #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{
     scroll-margin-bottom:96px!important;
