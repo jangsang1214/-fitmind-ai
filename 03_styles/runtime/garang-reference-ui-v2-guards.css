@@ -28,6 +28,10 @@
 
 /* Founder-approved Workout reference contract.
    Presentation only: canonical session/timer/set/save state remains owned by Workout Execution v2. */
+#main.g-ref-screen-workout .workout-execution-v2{
+  padding-left:0!important;
+  padding-right:0!important;
+}
 #main.g-ref-screen-workout .workout-session-bar{
   width:100%!important;
   max-width:none!important;
