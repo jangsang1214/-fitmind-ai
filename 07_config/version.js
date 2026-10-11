@@ -15,6 +15,11 @@
      guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.4-draft-primary-touch';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
    }
+   if(!document.querySelector('link[data-garang-workout-manage-hit-target-hotfix]')){
+     const manageHotfix=document.createElement('link');
+     manageHotfix.rel='stylesheet';manageHotfix.href='./03_styles/runtime/garang-workout-manage-hit-target-hotfix.css?v=1.0.0';manageHotfix.dataset.garangWorkoutManageHitTargetHotfix='1';
+     document.head.appendChild(manageHotfix);
+   }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
      style.textContent='#main.g-ref-screen-today .g-ref-today-body-card{display:none!important}#main.g-ref-screen-today[data-gtf-body-evidence="1"] .g-ref-today-body-card{display:grid!important}#main[data-garang-screen="workout"] .workout-session-bar{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;align-self:stretch!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}';
