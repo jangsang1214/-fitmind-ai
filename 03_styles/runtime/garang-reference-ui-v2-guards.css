@@ -277,6 +277,46 @@ body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal.active
   background:linear-gradient(145deg,rgba(99,102,241,.11),rgba(13,16,23,.88))!important;
 }
 
+/* Mobile draft hierarchy: logging is the primary action; management stays secondary and cannot cover the touch center. */
+@media(max-width:800px){
+  #main.g-ref-screen-workout #workoutDraftArea .list-item{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    overflow:visible!important;
+  }
+  #main.g-ref-screen-workout #workoutDraftArea .list-item>div:first-child{
+    width:100%!important;
+    min-width:0!important;
+  }
+  #main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:8px!important;
+    overflow:visible!important;
+  }
+  #main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,
+  #main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{
+    display:flex!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    position:relative!important;
+    z-index:4!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{
+    justify-self:end!important;
+    position:relative!important;
+    z-index:1!important;
+  }
+}
+
 @media(max-width:360px){
   #main.g-ref-screen-workout .execution-set-row.current-set{
     padding-left:9px!important;
