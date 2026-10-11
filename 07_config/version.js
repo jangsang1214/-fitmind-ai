@@ -65,14 +65,31 @@
      reconcileDependentPresentation(main);
      return true;
    }
+   function reconcileWorkoutDraftDomOrder(main){
+     if(String(main?.dataset?.garangScreen||'')!=='workout')return false;
+     const compact=root.matchMedia?.('(max-width:800px)')?.matches??Number(root.innerWidth||0)<=800;
+     let changed=false;
+     main.querySelectorAll('#workoutDraftArea .list-item').forEach(row=>{
+       const info=row.firstElementChild,actions=row.querySelector('.workout-draft-actions'),details=info?.querySelector(':scope > .muted');
+       if(!info||!actions||!details)return;
+       if(compact){
+         if(actions.parentElement!==info||actions.nextElementSibling!==details){info.insertBefore(actions,details);changed=true;}
+       }else if(actions.parentElement===info){
+         info.after(actions);changed=true;
+       }
+     });
+     return changed;
+   }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
      const main=document.getElementById('main');
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
+     reconcileWorkoutDraftDomOrder(main);
      const repair=()=>{
        const owned=repairTodayOwnership(main);
        ensureTodayPlannerShortcut(main);
+       reconcileWorkoutDraftDomOrder(main);
        if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
@@ -83,6 +100,7 @@
      const repairOnLifecycle=()=>{
        const owned=repairTodayOwnership(main);
        ensureTodayPlannerShortcut(main);
+       reconcileWorkoutDraftDomOrder(main);
        if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
@@ -90,6 +108,7 @@
      };
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
+     root.addEventListener('resize',()=>reconcileWorkoutDraftDomOrder(main),{passive:true});
      reconcileDependentPresentation(main);
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
