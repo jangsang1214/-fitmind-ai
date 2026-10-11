@@ -40,6 +40,20 @@
   align-self:stretch!important;
   box-sizing:border-box!important;
 }
+#main.g-ref-screen-workout .workout-draft-actions{
+  position:relative!important;
+  isolation:isolate!important;
+}
+#main.g-ref-screen-workout .workout-draft-record{
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+#main.g-ref-screen-workout .workout-draft-manage{
+  position:relative!important;
+  z-index:1!important;
+}
 #main.g-ref-screen-workout .workout-session-bar.is-live .workout-session-live>strong{
   min-width:0!important;
   font-size:clamp(36px,11vw,44px)!important;
