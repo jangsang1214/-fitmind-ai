@@ -45,9 +45,16 @@
      }
      return false;
    }
+   function ensureTodayPlannerShortcut(main){
+     if(String(main?.dataset?.garangScreen||'')!=='today')return false;
+     if(main.querySelector('[data-garang-planner-shortcut="1"]'))return true;
+     if(!main.querySelector('.gpc-today-plan-head'))return false;
+     return root.GarangMobileCheckinPlannerShortcutV1?.ensurePlannerShortcut?.()===true;
+   }
    function reconcileDependentPresentation(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return;
-     setTimeout(()=>root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.(),420);
+     ensureTodayPlannerShortcut(main);
+     setTimeout(()=>{root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.();ensureTodayPlannerShortcut(main);},420);
    }
    function repairTodayOwnership(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return false;
@@ -64,7 +71,9 @@
      if(!main){setTimeout(attachReferenceStructureGuard,80);return;}
      root.__GARANG_REFERENCE_STRUCTURE_GUARD__=true;
      const repair=()=>{
-       if(repairTodayOwnership(main))return;
+       const owned=repairTodayOwnership(main);
+       ensureTodayPlannerShortcut(main);
+       if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
@@ -72,13 +81,16 @@
      const observer=new MutationObserver(repair);
      observer.observe(main,{childList:true,subtree:true});
      const repairOnLifecycle=()=>{
-       if(repairTodayOwnership(main))return;
+       const owned=repairTodayOwnership(main);
+       ensureTodayPlannerShortcut(main);
+       if(owned)return;
        if(!referenceStructureNeedsRepair(main))return;
        root.GarangReferenceUIV2?.apply?.();
        reconcileDependentPresentation(main);
      };
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
+     reconcileDependentPresentation(main);
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
      const script=document.createElement('script');
