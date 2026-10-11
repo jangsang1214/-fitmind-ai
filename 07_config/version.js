@@ -91,6 +91,14 @@
        target?.scrollIntoView?.({block:'center',inline:'nearest',behavior:'auto'});
      }));
    }
+   function resyncWorkoutAfterSetCompletion(){
+     const main=document.getElementById('main');
+     if(String(main?.dataset?.garangScreen||'')!=='workout')return;
+     const sync=()=>root.GarangWorkoutExecutionV2?.enhance?.();
+     requestAnimationFrame(()=>requestAnimationFrame(sync));
+     setTimeout(sync,120);
+     setTimeout(sync,420);
+   }
    function attachReferenceStructureGuard(){
      if(root.__GARANG_REFERENCE_STRUCTURE_GUARD__)return;
      const main=document.getElementById('main');
@@ -120,6 +128,7 @@
      root.addEventListener('garang:screen-rendered',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:route-completed',repairOnLifecycle,{passive:true});
      root.addEventListener('garang:workout-exercise-added',revealWorkoutDraftPrimaryAction,{passive:true});
+     document.addEventListener('click',event=>{if(event.target.closest?.('[data-execution-set-complete]'))resyncWorkoutAfterSetCompletion();},true);
      reconcileDependentPresentation(main);
    }
    if(!document.querySelector('script[data-garang-reference-ui-v2]')){
