@@ -25,7 +25,7 @@
      const screen=String(main.dataset?.garangScreen||'');
      if(screen==='today'){
        const flow=main.querySelector('#garangTodayFlow');
-       return !!flow&&!flow.parentElement?.classList?.contains('g-ref-today-stage');
+       return !!flow&&(!flow.parentElement?.classList?.contains('g-ref-today-stage')||!flow.classList.contains('g-ref-primary-decision'));
      }
      if(screen==='nutrition'){
        const scan=main.querySelector('.meal-scan-card');
@@ -59,8 +59,11 @@
    function repairTodayOwnership(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return false;
      const flow=main.querySelector('#garangTodayFlow'),stage=main.querySelector(':scope > .g-ref-today-stage');
-     if(!flow||!stage||flow.parentElement===stage)return false;
-     stage.prepend(flow);
+     if(!flow||!stage)return false;
+     let changed=false;
+     if(flow.parentElement!==stage){stage.prepend(flow);changed=true;}
+     if(!flow.classList.contains('g-ref-primary-decision')){flow.classList.add('g-ref-primary-decision');changed=true;}
+     if(!changed)return false;
      main.dataset.garangReferenceUi='v2';
      reconcileDependentPresentation(main);
      return true;
