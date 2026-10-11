@@ -315,9 +315,9 @@ body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal.active
     position:relative!important;
     z-index:1!important;
   }
-  /* Reserve only the fixed-nav clearance needed for the final draft disclosure to scroll above chrome. */
+  /* Keep final draft actions physically scrollable above the fixed bottom navigation. */
   #main.g-ref-screen-workout #workoutDraftArea{
-    padding-bottom:48px!important;
+    padding-bottom:128px!important;
   }
   #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{
     scroll-margin-bottom:96px!important;
