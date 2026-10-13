@@ -5,11 +5,10 @@
 (() => {
 'use strict';
 if (window.GarangGoldenMasterContinuationV1) return;
-const VERSION='garang-golden-master-continuation-v1.0.0';
+const VERSION='garang-golden-master-continuation-v1.0.1';
 const doc=document;
-let activeRoute=null,queued=false;
+let activeRoute=null,rafQueued=false;
 const main=()=>doc.getElementById('main');
-const app=()=>doc.getElementById('appView');
 const surfaceFor=route=>({today:'home',workout:'training',nutrition:'nutrition',coach:'coach'}[String(route||'')]||null);
 function goldenNodes(){return ['garangGoldenTop','garangGoldenNav','garangGoldenMaster'].map(id=>doc.getElementById(id)).filter(Boolean);}
 function normalizeHeader(){
@@ -20,20 +19,29 @@ function normalizeHeader(){
   bell.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.6a7 7 0 0 0-.7-1.7l1-1.8-2.1-2.1-1.8 1A7 7 0 0 0 11.5 4L11 2H8l-.6 2a7 7 0 0 0-1.7.7l-1.8-1L1.8 5.8l1 1.8A7 7 0 0 0 2 9.5L0 10v3l2 .6a7 7 0 0 0 .8 1.8l-1 1.8 2.1 2.1 1.8-1a7 7 0 0 0 1.7.7L8 21h3l.6-2a7 7 0 0 0 1.8-.8l1.8 1 2.1-2.1-1-1.8a7 7 0 0 0 .7-1.8z"/></svg>';
 }
 function keepCanonicalVisible(){
-  queued=false;
+  rafQueued=false;
   normalizeHeader();
   if(!activeRoute)return;
   doc.body.classList.add('gm-canonical-continuation');
-  const m=main();
-  m?.classList.remove('gm-shell-active');
+  main()?.classList.remove('gm-shell-active');
   doc.querySelector('.topbar')?.removeAttribute('data-gm-canonical');
   doc.getElementById('bottomNav')?.removeAttribute('data-gm-canonical');
   for(const node of goldenNodes())node.style.setProperty('display','none','important');
 }
-function maintain(){if(queued)return;queued=true;queueMicrotask(keepCanonicalVisible);}
+function maintain(){
+  if(rafQueued)return;
+  rafQueued=true;
+  requestAnimationFrame(keepCanonicalVisible);
+}
+function pulse(){
+  keepCanonicalVisible();
+  maintain();
+  setTimeout(keepCanonicalVisible,90);
+  setTimeout(keepCanonicalVisible,190);
+}
 function enter(route){
   activeRoute=String(route||'')||null;
-  keepCanonicalVisible();
+  if(activeRoute)pulse();
   return !!activeRoute;
 }
 function restoreGolden(){
@@ -49,6 +57,7 @@ function exit(surface=null){
 }
 function proxy(id){const target=doc.getElementById(id);if(!target)return false;target.click();return true;}
 function canonicalCoachSend(value){
+  keepCanonicalVisible();
   const input=doc.querySelector('#coachInput,#aiQuestion,.g2-composer textarea,.g2-composer input,.coach-bottom-stack textarea,.coach-bottom-stack input');
   if(!input)return false;
   input.value=value;
@@ -57,6 +66,7 @@ function canonicalCoachSend(value){
   const send=input.closest('form')?.querySelector('button[type="submit"]')||doc.querySelector('.g2-send,#askAI,[data-coach-send],#coachSend,#askCoach,.g2-composer button[type="submit"]');
   if(!send)return false;
   send.click();
+  maintain();
   return true;
 }
 doc.addEventListener('click',event=>{
@@ -86,8 +96,7 @@ for(const name of ['garang:screen-rendered','garang:state-updated','garang:state
   activeRoute=route;
   maintain();
 },{passive:true});
-const observer=new MutationObserver(maintain);
-function observe(){const root=app()||doc.body;if(root)observer.observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-gm-canonical']});maintain();}
-if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',observe,{once:true});else observe();
+function boot(){normalizeHeader();}
+if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 window.GarangGoldenMasterContinuationV1=Object.freeze({version:VERSION,enter,exit,get activeRoute(){return activeRoute;}});
 })();
