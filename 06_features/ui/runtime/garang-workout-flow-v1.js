@@ -47,7 +47,7 @@ function ensureStyle(){
     '.gws-reuse button:disabled{opacity:.45;cursor:default}',
     '.gws-panel[data-garang-workout-surface="exercise"] .exercise-visual-library{margin-top:0}',
     '.gws-panel[data-garang-workout-surface="exercise"] .workout-builder{margin-top:16px}',
-    '@media(max-width:700px){.gws-nav{margin-bottom:18px}.gws-step{min-height:48px;padding:11px 4px 9px;font-size:10px}.gws-step em{font-size:7px}.gws-step.active::after{width:32px}.gws-next{margin-top:14px}.gws-reuse{align-items:flex-start}.gws-reuse button{padding:9px 10px}}'
+    '@media(max-width:700px){.gws-nav{margin-bottom:18px}.gws-step{min-height:48px;padding:11px 4px 9px;font-size:10px}.gws-step em{font-size:7px}.gws-step.active::after{width:32px}.gws-next{margin-top:14px}.gws-reuse{align-items:flex-start}.gws-reuse button{padding:9px 10px}#main[data-garang-screen="workout"] #workoutDraftArea{padding-bottom:96px!important;scroll-margin-bottom:104px!important}}'
   ].join('');
   document.head.appendChild(style);
 }
