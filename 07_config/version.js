@@ -17,7 +17,7 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-commercial]')){
      const commercial=document.createElement('link');
-     commercial.rel='stylesheet';commercial.href='./03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.0-founder-approved';commercial.dataset.garangReferenceUiCommercial='1';
+     commercial.rel='stylesheet';commercial.href='./03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe';commercial.dataset.garangReferenceUiCommercial='1';
      document.head.appendChild(commercial);
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
