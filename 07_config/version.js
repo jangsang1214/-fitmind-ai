@@ -5,12 +5,12 @@
  if(!root.document)return;
  document.documentElement.dataset.garangVersion=build.version;
  document.documentElement.dataset.garangChannel=build.channel;
- function ensureStyle(){
-   if(document.querySelector('link[data-garang-golden-master]'))return;
+ function ensureStyle(href,key){
+   if(document.querySelector(`link[data-garang-golden-master="${key}"]`))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-golden-master-v1.css?v=20261013-golden-master-2';
-   link.dataset.garangGoldenMaster='1';
+   link.href=href;
+   link.dataset.garangGoldenMaster=key;
    document.head.appendChild(link);
  }
  function ensureRuntime(){
@@ -21,6 +21,7 @@
    script.dataset.garangGoldenMaster='1';
    document.head.appendChild(script);
  }
- ensureStyle();
+ ensureStyle('./03_styles/runtime/garang-golden-master-v1.css?v=20261013-golden-master-2','core');
+ ensureStyle('./03_styles/runtime/garang-golden-master-assets-v1.css?v=20261013-golden-master-2','assets');
  ensureRuntime();
 })(typeof window==='undefined'?globalThis:window);
