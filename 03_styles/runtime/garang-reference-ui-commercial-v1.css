@@ -34,7 +34,7 @@ body.garang-reference-ui-v2 summary:focus-visible{
   outline-offset:2px!important;
 }
 
-/* App chrome: quieter, denser and more product-like. */
+/* App chrome: quieter and more product-like without changing layout geometry. */
 .g-ref-topbar{
   border-bottom-color:rgba(255,255,255,.052)!important;
   box-shadow:0 10px 34px rgba(0,0,0,.18)!important;
@@ -43,9 +43,6 @@ body.garang-reference-ui-v2 summary:focus-visible{
   background:linear-gradient(180deg,#151820,#0e1117)!important;
   border-color:rgba(255,255,255,.08)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
-}
-#main.g-ref-screen{
-  padding-top:15px!important;
 }
 .g-ref-bottom-nav{
   background:linear-gradient(180deg,rgba(9,11,15,.955),rgba(7,9,13,.99))!important;
@@ -146,7 +143,7 @@ body.garang-reference-ui-v2 summary:focus-visible{
   box-shadow:0 14px 34px rgba(0,0,0,.20)!important;
 }
 
-/* WORKOUT — execution dominates; preparation recedes. */
+/* WORKOUT — execution dominates; preparation geometry stays owned by the approved guards. */
 .g-ref-screen-workout .gws-tabs{
   box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.02)!important;
 }
