@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 if (window.GarangGoldenMasterContinuationV1) return;
-const VERSION='garang-golden-master-continuation-v1.0.1';
+const VERSION='garang-golden-master-continuation-v1.0.2';
 const doc=document;
 let activeRoute=null,rafQueued=false;
 const main=()=>doc.getElementById('main');
@@ -69,6 +69,12 @@ function canonicalCoachSend(value){
   maintain();
   return true;
 }
+function dispatchCoach(value,attempt=0){
+  if(canonicalCoachSend(value))return true;
+  if(attempt>=3)return false;
+  setTimeout(()=>dispatchCoach(value,attempt+1),120+attempt*80);
+  return false;
+}
 doc.addEventListener('click',event=>{
   if(event.target.closest?.('[data-gm-start]')){enter('workout');return;}
   if(event.target.closest?.('[data-gm-meal-scan]')){enter('nutrition');return;}
@@ -84,19 +90,19 @@ doc.addEventListener('submit',event=>{
   const value=String(form.querySelector('input')?.value||'').trim();
   if(!value)return;
   enter('coach');
-  setTimeout(()=>canonicalCoachSend(value),160);
+  setTimeout(()=>dispatchCoach(value),160);
 },true);
 for(const name of ['garang:screen-rendered','garang:state-updated','garang:state-hydrated','garang:route-completed'])window.addEventListener(name,event=>{
-  normalizeHeader();
+  maintain();
   if(!activeRoute)return;
   const route=String(event?.detail?.route||event?.detail?.screen||main()?.dataset?.garangScreen||'');
-  if(!route||route===activeRoute){maintain();return;}
+  if(!route||route===activeRoute)return;
   const surface=surfaceFor(route);
   if(surface){exit(surface);return;}
   activeRoute=route;
   maintain();
 },{passive:true});
-function boot(){normalizeHeader();}
+function boot(){maintain();}
 if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 window.GarangGoldenMasterContinuationV1=Object.freeze({version:VERSION,enter,exit,get activeRoute(){return activeRoute;}});
 })();
