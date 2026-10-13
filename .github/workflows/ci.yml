@@ -128,6 +128,8 @@ jobs:
         run: node tests/browser-simplified-shell.test.cjs
       - name: Verify MD-driven Reference UI v2
         run: node tests/browser-reference-ui-v2.test.cjs
+      - name: Verify Founder-approved commercial polish
+        run: node tests/browser-founder-approved-polish.test.cjs
       - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify Nutrition recommendation flow
