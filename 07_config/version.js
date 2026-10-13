@@ -99,7 +99,12 @@
    function resyncWorkoutAfterSetCompletion(){
      const main=document.getElementById('main');
      if(String(main?.dataset?.garangScreen||'')!=='workout')return;
-     const sync=()=>root.GarangWorkoutExecutionV2?.enhance?.();
+     const host=main.querySelector('#workoutSetDetails');
+     if(!host)return;
+     const sync=()=>{
+       if(!host.isConnected||host!==document.getElementById('workoutSetDetails'))return;
+       root.GarangWorkoutExecutionV2?.enhance?.();
+     };
      requestAnimationFrame(()=>requestAnimationFrame(sync));
      setTimeout(sync,120);
      setTimeout(sync,420);
