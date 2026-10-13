@@ -10,15 +10,26 @@
    link.dataset.garangGoldenMaster=key;
    document.head.appendChild(link);
  }
- function ensureRuntime(){
-   if(root.GarangGoldenMasterV1||document.querySelector('script[data-garang-golden-master]'))return;
+ function ensureContinuation(){
+   if(root.GarangGoldenMasterContinuationV1||document.querySelector('script[data-garang-golden-master="continuation"]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-golden-master-v1.js?v=20261013-golden-master-2';
+   script.src='./06_features/ui/runtime/garang-golden-master-continuation-v1.js?v=20261013-golden-master-3';
    script.defer=true;
-   script.dataset.garangGoldenMaster='runtime';
+   script.dataset.garangGoldenMaster='continuation';
    document.head.appendChild(script);
  }
- ensureStyle('./03_styles/runtime/garang-golden-master-v1.css?v=20261013-golden-master-2','core');
- ensureStyle('./03_styles/runtime/garang-golden-master-assets-v1.css?v=20261013-golden-master-2','assets');
+ function ensureRuntime(){
+   const existing=document.querySelector('script[data-garang-golden-master="runtime"]');
+   if(root.GarangGoldenMasterV1){ensureContinuation();return;}
+   if(existing){existing.addEventListener('load',ensureContinuation,{once:true});return;}
+   const script=document.createElement('script');
+   script.src='./06_features/ui/runtime/garang-golden-master-v1.js?v=20261013-golden-master-3';
+   script.defer=true;
+   script.dataset.garangGoldenMaster='runtime';
+   script.addEventListener('load',ensureContinuation,{once:true});
+   document.head.appendChild(script);
+ }
+ ensureStyle('./03_styles/runtime/garang-golden-master-v1.css?v=20261013-golden-master-3','core');
+ ensureStyle('./03_styles/runtime/garang-golden-master-assets-v1.css?v=20261013-golden-master-3','assets');
  ensureRuntime();
 })(typeof window==='undefined'?globalThis:window);
