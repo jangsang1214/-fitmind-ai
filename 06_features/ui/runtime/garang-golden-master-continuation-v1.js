@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 if (window.GarangGoldenMasterContinuationV1) return;
-const VERSION='garang-golden-master-continuation-v1.0.2';
+const VERSION='garang-golden-master-continuation-v1.0.1';
 const doc=document;
 let activeRoute=null,rafQueued=false;
 const main=()=>doc.getElementById('main');
