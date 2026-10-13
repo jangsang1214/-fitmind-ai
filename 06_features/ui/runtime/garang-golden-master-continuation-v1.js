@@ -1,6 +1,6 @@
 /* GARANG Golden Master continuation bridge v1
    The Golden Master owns discovery/decision surfaces; canonical owners remain visible
-   for execution, meal-scan confirmation, and full Coach conversation workflows.
+   for execution, meal-scan confirmation, check-in, and full Coach conversation workflows.
 */
 (() => {
 'use strict';
@@ -12,6 +12,7 @@ const main=()=>doc.getElementById('main');
 const surfaceFor=route=>({today:'home',workout:'training',nutrition:'nutrition',coach:'coach'}[String(route||'')]||null);
 function goldenNodes(){return ['garangGoldenTop','garangGoldenNav','garangGoldenMaster'].map(id=>doc.getElementById(id)).filter(Boolean);}
 function canonicalMealReminder(){return doc.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="meal-reminder"]');}
+function canonicalCheckin(){return doc.querySelector('[data-garang-bottom-checkin="1"]');}
 function normalizeHeader(){
   const bell=doc.querySelector('[data-gm-top="bell"]');
   if(!bell)return;
@@ -36,10 +37,27 @@ function normalizeHomeContext(){
     row.dataset.gmOpen='nutrition';
   }
 }
+function normalizeRecoveryContext(){
+  const surface=doc.querySelector('#garangGoldenMaster .gm-recovery');
+  if(!surface)return;
+  const owner=canonicalCheckin();
+  let button=surface.querySelector('[data-gm-checkin="1"]');
+  if(!owner){button?.remove();return;}
+  if(!button){
+    button=doc.createElement('button');
+    button.type='button';
+    button.className='gm-primary';
+    button.dataset.gmCheckin='1';
+    button.textContent='CHECK IN';
+    button.setAttribute('aria-label','체크인');
+    surface.appendChild(button);
+  }
+}
 function keepCanonicalVisible(){
   rafQueued=false;
   normalizeHeader();
   normalizeHomeContext();
+  normalizeRecoveryContext();
   if(!activeRoute)return;
   doc.body.classList.add('gm-canonical-continuation');
   main()?.classList.remove('gm-shell-active');
@@ -95,6 +113,8 @@ function dispatchCoach(value,attempt=0){
   return false;
 }
 doc.addEventListener('click',event=>{
+  const checkin=event.target.closest?.('[data-gm-checkin="1"]');
+  if(checkin){event.preventDefault();canonicalCheckin()?.click();return;}
   const reminderRow=event.target.closest?.('[data-gm-meal-reminder="1"]');
   if(reminderRow){
     event.preventDefault();
