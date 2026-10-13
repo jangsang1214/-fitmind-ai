@@ -1,0 +1,301 @@
+/* GARANG Founder-approved commercial polish v1
+   Quality layer only. The approved Reference UI v2 remains the presentation owner.
+   No state, routing, persistence, recommendation, or save ownership changes.
+*/
+:root{
+  --grc-line:rgba(255,255,255,.075);
+  --grc-line-strong:rgba(165,180,252,.18);
+  --grc-glow:rgba(99,102,241,.16);
+  --grc-panel:linear-gradient(155deg,rgba(24,27,38,.98),rgba(12,15,21,.98));
+  --grc-panel-soft:linear-gradient(160deg,rgba(18,22,30,.98),rgba(11,14,19,.98));
+  --grc-elevated:0 18px 46px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+html[data-garang-reference-ui="v2"] body.garang-reference-ui-v2{
+  background:
+    radial-gradient(circle at 50% -110px,rgba(99,102,241,.12),transparent 29%),
+    radial-gradient(circle at 110% 36%,rgba(79,70,229,.045),transparent 30%),
+    #080b0f!important;
+}
+
+body.garang-reference-ui-v2 .card,
+body.garang-reference-ui-v2 details{
+  border-color:var(--grc-line)!important;
+}
+body.garang-reference-ui-v2 button{
+  -webkit-tap-highlight-color:transparent;
+}
+body.garang-reference-ui-v2 button:focus-visible,
+body.garang-reference-ui-v2 input:focus-visible,
+body.garang-reference-ui-v2 textarea:focus-visible,
+body.garang-reference-ui-v2 select:focus-visible,
+body.garang-reference-ui-v2 summary:focus-visible{
+  outline:2px solid rgba(129,140,248,.72)!important;
+  outline-offset:2px!important;
+}
+
+/* App chrome: quieter, denser and more product-like. */
+.g-ref-topbar{
+  border-bottom-color:rgba(255,255,255,.052)!important;
+  box-shadow:0 10px 34px rgba(0,0,0,.18)!important;
+}
+.g-ref-topbar #menuBtn,.g-ref-topbar #settingsTopBtn{
+  background:linear-gradient(180deg,#151820,#0e1117)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+#main.g-ref-screen{
+  padding-top:15px!important;
+}
+.g-ref-bottom-nav{
+  background:linear-gradient(180deg,rgba(9,11,15,.955),rgba(7,9,13,.99))!important;
+  box-shadow:0 -18px 46px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.028)!important;
+}
+.g-ref-bottom-nav button{
+  transition:background-color .16s ease,color .16s ease,transform .16s ease!important;
+}
+.g-ref-bottom-nav button:active{
+  transform:scale(.97)!important;
+}
+.g-ref-bottom-nav button.active{
+  background:linear-gradient(180deg,rgba(99,102,241,.11),rgba(99,102,241,.055))!important;
+}
+
+/* TODAY — one decisive recommendation, then evidence. */
+.g-ref-screen-today .g-ref-screen-intro{
+  gap:14px!important;
+  padding-top:10px!important;
+}
+.g-ref-date-copy strong{
+  font-size:clamp(22px,6vw,27px)!important;
+  line-height:1.12!important;
+}
+.g-ref-date-copy span{
+  margin-top:2px!important;
+  font-size:12px!important;
+  color:#8e95a0!important;
+}
+.g-ref-date-strip{
+  gap:6px!important;
+  padding:8px 0 3px!important;
+}
+.g-ref-date-strip>span{
+  min-height:50px!important;
+  border:1px solid transparent!important;
+}
+.g-ref-date-strip .is-today{
+  border-color:rgba(129,140,248,.18)!important;
+  background:linear-gradient(180deg,rgba(99,102,241,.20),rgba(99,102,241,.075))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 22px rgba(21,24,49,.22)!important;
+}
+#garangTodayFlow.g-ref-primary-decision{
+  border-color:var(--grc-line-strong)!important;
+  background:
+    radial-gradient(circle at 88% 14%,rgba(99,102,241,.18),transparent 28%),
+    var(--grc-panel)!important;
+  box-shadow:var(--grc-elevated)!important;
+}
+#garangTodayFlow .gtf-context{
+  padding:17px 17px 9px!important;
+}
+#garangTodayFlow .gtf-decision{
+  padding:6px 17px 14px!important;
+}
+#garangTodayFlow .gtf-decision h2{
+  max-width:84%!important;
+  font-size:clamp(24px,7vw,29px)!important;
+  line-height:1.14!important;
+  text-wrap:balance!important;
+}
+#garangTodayFlow .gtf-decision p{
+  max-width:88%!important;
+  margin-top:8px!important;
+  font-size:12px!important;
+  line-height:1.58!important;
+}
+#garangTodayFlow .gtf-action{
+  padding:0 13px 13px!important;
+}
+#garangTodayFlow .gtdw-plan{
+  padding:11px 12px!important;
+  border-color:rgba(255,255,255,.07)!important;
+  background:rgba(8,11,16,.88)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
+}
+#garangTodayFlow .gtdw-row{
+  min-height:42px!important;
+}
+#garangTodayFlow .gtdw-row strong{
+  font-size:12px!important;
+}
+#garangTodayFlow .gtdw-start,#garangTodayFlow .gtf-next{
+  min-height:52px!important;
+  border:1px solid rgba(199,210,254,.12)!important;
+  box-shadow:0 14px 30px rgba(79,70,229,.27),inset 0 1px 0 rgba(255,255,255,.14)!important;
+  transition:transform .16s ease,filter .16s ease!important;
+}
+#garangTodayFlow .gtdw-start:active,#garangTodayFlow .gtf-next:active{
+  transform:translateY(1px) scale(.995)!important;
+  filter:brightness(.96)!important;
+}
+.g-ref-today-body-card{
+  background:
+    radial-gradient(circle at 80% 32%,rgba(99,102,241,.095),transparent 34%),
+    var(--grc-panel-soft)!important;
+  border-color:var(--grc-line)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20)!important;
+}
+
+/* WORKOUT — execution dominates; preparation recedes. */
+.g-ref-screen-workout .gws-tabs{
+  box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.02)!important;
+}
+.g-ref-screen-workout .workout-visual-hero{
+  background:var(--grc-panel-soft)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20)!important;
+}
+.g-ref-screen-workout .exercise-visual-card{
+  transition:border-color .16s ease,background-color .16s ease,transform .16s ease!important;
+}
+.g-ref-screen-workout .exercise-visual-card:active{
+  transform:scale(.985)!important;
+}
+.g-ref-screen-workout .workout-session-bar{
+  border-color:rgba(129,140,248,.20)!important;
+  background:
+    radial-gradient(circle at 92% 0,rgba(99,102,241,.16),transparent 30%),
+    var(--grc-panel)!important;
+  box-shadow:var(--grc-elevated)!important;
+}
+.g-ref-screen-workout .workout-session-bar.is-live{
+  border-color:rgba(129,140,248,.42)!important;
+  box-shadow:0 20px 48px rgba(0,0,0,.38),inset 3px 0 0 #6366f1,inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+.g-ref-screen-workout .workout-session-live strong{
+  text-shadow:0 0 28px rgba(129,140,248,.10)!important;
+}
+.g-ref-screen-workout .execution-set-row.current-set{
+  border-color:rgba(129,140,248,.30)!important;
+  background:
+    radial-gradient(circle at 90% 8%,rgba(99,102,241,.12),transparent 29%),
+    linear-gradient(180deg,#181c2b,#10141d)!important;
+  box-shadow:0 18px 40px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.g-ref-screen-workout .execution-set-row.current-set input{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
+}
+.g-ref-screen-workout .execution-set-row.current-set input:focus{
+  border-color:rgba(129,140,248,.55)!important;
+  box-shadow:0 0 0 3px rgba(99,102,241,.10)!important;
+}
+.g-ref-screen-workout .execution-set-row.current-set .set-complete-button{
+  border:1px solid rgba(199,210,254,.10)!important;
+  box-shadow:0 12px 26px rgba(79,70,229,.24),inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
+.g-ref-screen-workout .execution-set-row.completed{
+  border-color:rgba(34,197,94,.08)!important;
+}
+.g-ref-screen-workout .workout-rest-timer,
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal{
+  background:
+    radial-gradient(circle at 50% 35%,rgba(99,102,241,.12),transparent 42%),
+    linear-gradient(180deg,#141a2a,#0e121c)!important;
+  box-shadow:0 24px 56px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+
+/* NUTRITION — camera/meal evidence first, numerical detail second. */
+.g-ref-meal-scan-primary{
+  border-color:var(--grc-line)!important;
+  background:var(--grc-panel-soft)!important;
+  box-shadow:var(--grc-elevated)!important;
+}
+.g-ref-meal-scan-primary .meal-scan-header{
+  background:linear-gradient(180deg,rgba(24,29,41,.96),rgba(15,18,24,.98))!important;
+}
+.g-ref-meal-scan-primary .meal-scan-empty{
+  min-height:215px!important;
+  border-color:rgba(165,180,252,.24)!important;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(99,102,241,.18),transparent 34%),
+    linear-gradient(155deg,#151b28,#0b0e13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
+}
+.g-ref-meal-scan-primary .meal-scan-empty .camera-glyph{
+  width:54px!important;
+  height:54px!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.20),0 0 0 1px rgba(129,140,248,.18)!important;
+}
+.g-ref-nutrition-status>.card,.g-ref-nutrition-status>details,
+.g-ref-nutrition-support>.barcode-identity-card,.g-ref-nutrition-support>.manual-entry,.g-ref-nutrition-support>.recent-meals-card{
+  background:var(--grc-panel-soft)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16)!important;
+}
+
+/* BODY — anatomy reads as a premium hero instead of a utility panel. */
+.g-ref-body-primary{
+  background:
+    radial-gradient(circle at 50% 31%,rgba(99,102,241,.16),transparent 37%),
+    radial-gradient(circle at 50% 66%,rgba(34,197,94,.035),transparent 28%),
+    linear-gradient(180deg,#151b28,#0b0e13)!important;
+  border-color:var(--grc-line)!important;
+  box-shadow:var(--grc-elevated)!important;
+}
+.g-ref-body-primary .body-hero-anatomy svg,
+.g-ref-body-primary .body-hero-anatomy img,
+.g-ref-body-primary .body-hero-anatomy .g3-body-model{
+  filter:drop-shadow(0 24px 36px rgba(0,0,0,.50)) drop-shadow(0 0 24px rgba(99,102,241,.05))!important;
+}
+.g-ref-body-primary .body-hero-metrics>div{
+  background:linear-gradient(180deg,rgba(24,29,41,.92),rgba(14,18,26,.96))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.g-ref-body-trend{
+  background:var(--grc-panel-soft)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.18)!important;
+}
+
+/* COACH — chat-first, calm and legible. */
+.g-ref-coach-shell{
+  gap:10px!important;
+}
+.g-ref-coach-status{
+  border-color:rgba(129,140,248,.18)!important;
+  background:
+    radial-gradient(circle at 94% 20%,rgba(99,102,241,.13),transparent 32%),
+    var(--grc-panel)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20)!important;
+}
+.g-ref-coach-thread .assistant .gpt-content{
+  background:linear-gradient(155deg,#141a24,#0e1219)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.14)!important;
+}
+.g-ref-coach-thread .user .gpt-content{
+  background:linear-gradient(135deg,#5b61ee,#484bd0)!important;
+  border-color:rgba(199,210,254,.10)!important;
+  box-shadow:0 10px 24px rgba(79,70,229,.18)!important;
+}
+.g-ref-coach-composer .g2-composer{
+  border-color:rgba(255,255,255,.09)!important;
+  background:rgba(13,16,22,.98)!important;
+  box-shadow:0 16px 40px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+
+@media(max-width:360px){
+  #main.g-ref-screen{padding-left:12px!important;padding-right:12px!important}
+  #garangTodayFlow .gtf-context{padding-left:14px!important;padding-right:14px!important}
+  #garangTodayFlow .gtf-decision{padding-left:14px!important;padding-right:14px!important}
+  #garangTodayFlow .gtf-decision h2,#garangTodayFlow .gtf-decision p{max-width:94%!important}
+  .g-ref-date-strip{gap:3px!important}
+  .g-ref-date-strip>span{min-height:46px!important}
+  .g-ref-screen-workout .execution-set-row.current-set{column-gap:8px!important;padding-left:10px!important;padding-right:10px!important}
+  .g-ref-body-primary{min-height:404px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body.garang-reference-ui-v2 *,body.garang-reference-ui-v2 *::before,body.garang-reference-ui-v2 *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+  }
+}
