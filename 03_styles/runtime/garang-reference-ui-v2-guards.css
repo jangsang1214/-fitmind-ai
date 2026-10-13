@@ -4,6 +4,10 @@
 @import url('./garang-reference-ui-v2-guards-base-v2.1.5.css');
 
 @media(max-width:800px){
+  html[data-garang-reference-ui="v2"],
+  html[data-garang-reference-ui="v2"] body.garang-reference-ui-v2{
+    scroll-padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important;
+  }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea{
     padding-bottom:0!important;
     scroll-margin-bottom:0!important;
@@ -13,6 +17,6 @@
     scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;
   }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea [data-execute-workout]{
-    scroll-margin-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important;
+    scroll-margin-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
   }
 }
