@@ -11,6 +11,7 @@ let activeRoute=null,rafQueued=false;
 const main=()=>doc.getElementById('main');
 const surfaceFor=route=>({today:'home',workout:'training',nutrition:'nutrition',coach:'coach'}[String(route||'')]||null);
 function goldenNodes(){return ['garangGoldenTop','garangGoldenNav','garangGoldenMaster'].map(id=>doc.getElementById(id)).filter(Boolean);}
+function canonicalMealReminder(){return doc.querySelector('#garangTodayFlow .gtf-next[data-gsn-action="meal-reminder"]');}
 function normalizeHeader(){
   const bell=doc.querySelector('[data-gm-top="bell"]');
   if(!bell)return;
@@ -18,9 +19,27 @@ function normalizeHeader(){
   bell.setAttribute('aria-label','Settings');
   bell.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.6a7 7 0 0 0-.7-1.7l1-1.8-2.1-2.1-1.8 1A7 7 0 0 0 11.5 4L11 2H8l-.6 2a7 7 0 0 0-1.7.7l-1.8-1L1.8 5.8l1 1.8A7 7 0 0 0 2 9.5L0 10v3l2 .6a7 7 0 0 0 .8 1.8l-1 1.8 2.1 2.1 1.8-1a7 7 0 0 0 1.7.7L8 21h3l.6-2a7 7 0 0 0 1.8-.8l1.8 1 2.1-2.1-1-1.8a7 7 0 0 0 .7-1.8z"/></svg>';
 }
+function normalizeHomeContext(){
+  const row=doc.querySelector('#garangGoldenMaster .gm-home-list [data-gm-open="nutrition"],#garangGoldenMaster .gm-home-list [data-gm-meal-reminder="1"]');
+  if(!row)return;
+  const reminder=canonicalMealReminder();
+  if(reminder){
+    row.removeAttribute('data-gm-open');
+    row.dataset.gmMealReminder='1';
+    const label=row.querySelector('small'),value=row.querySelector('strong');
+    if(label)label.textContent='MEAL REMINDER';
+    if(value)value.textContent=String(reminder.textContent||'식사 사진 찍기').trim()||'식사 사진 찍기';
+    return;
+  }
+  if(row.dataset.gmMealReminder==='1'){
+    delete row.dataset.gmMealReminder;
+    row.dataset.gmOpen='nutrition';
+  }
+}
 function keepCanonicalVisible(){
   rafQueued=false;
   normalizeHeader();
+  normalizeHomeContext();
   if(!activeRoute)return;
   doc.body.classList.add('gm-canonical-continuation');
   main()?.classList.remove('gm-shell-active');
@@ -76,6 +95,15 @@ function dispatchCoach(value,attempt=0){
   return false;
 }
 doc.addEventListener('click',event=>{
+  const reminderRow=event.target.closest?.('[data-gm-meal-reminder="1"]');
+  if(reminderRow){
+    event.preventDefault();
+    const reminder=canonicalMealReminder();
+    enter('nutrition');
+    if(reminder)reminder.click();else setTimeout(()=>doc.getElementById('pickMealScan')?.click(),100);
+    return;
+  }
+  if(event.target.closest?.('#garangTodayFlow .gtf-next[data-gsn-action="meal-reminder"]')){enter('nutrition');return;}
   if(event.target.closest?.('[data-gm-start]')){enter('workout');return;}
   if(event.target.closest?.('[data-gm-meal-scan]')){enter('nutrition');return;}
   const top=event.target.closest?.('[data-gm-top]');
