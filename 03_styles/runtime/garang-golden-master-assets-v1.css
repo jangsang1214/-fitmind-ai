@@ -1,0 +1,7 @@
+/* GARANG Golden Master approved media overrides. */
+.gm-food-hero{
+  background:
+    linear-gradient(180deg,rgba(5,7,6,.04),rgba(5,7,6,.16)),
+    url('../../05_assets/garang-golden-nutrition-hero.jpg?v=20261013-golden-master-2') center 48%/cover no-repeat!important;
+}
+.gm-food-plate{display:none!important}
