@@ -34,6 +34,7 @@
     "07_config/firebase-config.js",
     "07_config/garang-services-config.js",
     "07_config/version.js",
+    "07_config/golden-master-loader-v1.js",
     "02_core/data-schema.js",
     "02_core/error-system-v1.js",
     "02_core/sync-durability.js",
@@ -181,6 +182,7 @@
     "sw.js",
     "02_core/sw-runtime.js",
     "05_assets/garang-logo-exact.png",
-    "05_assets/garang-app-icon-exact.png"
+    "05_assets/garang-app-icon-exact.png",
+    "05_assets/garang-golden-nutrition-hero.jpg"
   ]
 }
