@@ -11,10 +11,19 @@
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea{
     padding-bottom:0!important;
     scroll-margin-bottom:0!important;
+    overflow:visible!important;
   }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"]{
     padding-bottom:calc(196px + env(safe-area-inset-bottom,0px))!important;
     scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;
+  }
+  /*
+    Fixed bottom navigation sits above document content on iPhone/WebKit. Give the
+    final drafted exercise a real scroll tail so physical-tap audits and users can
+    move Record/Manage fully above the nav without changing routing or state owners.
+  */
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .list>.list-item:last-child{
+    margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
   }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea [data-execute-workout]{
     scroll-margin-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
