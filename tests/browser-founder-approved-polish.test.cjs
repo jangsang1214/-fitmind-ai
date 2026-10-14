@@ -58,6 +58,6 @@ function state(){
     console.log('browser-founder-approved-polish commercial quality + approved owner boundary 320/360/390/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
-    await new Promise(resolve=>server.close(resolve));
+    await server.close();
   }
 })().catch(error=>{console.error(error);process.exit(1);});
