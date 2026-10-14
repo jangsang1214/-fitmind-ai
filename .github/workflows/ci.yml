@@ -130,16 +130,6 @@ jobs:
         run: node tests/browser-reference-ui-v2.test.cjs
       - name: Verify Founder-approved commercial polish
         run: node tests/browser-founder-approved-polish.test.cjs
-      - name: Capture Golden Master screenshots
-        run: node tests/browser-golden-master-screenshots.cjs
-      - name: Upload Golden Master screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: golden-master-board-${{ github.sha }}
-          path: artifacts/golden-master/*.png
-          if-no-files-found: ignore
-          retention-days: 7
       - name: Verify Planner WebKit plan execution
         run: node tests/browser-plan-execution.test.cjs
       - name: Verify Nutrition recommendation flow

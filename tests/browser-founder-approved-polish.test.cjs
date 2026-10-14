@@ -16,125 +16,48 @@ async function waitServer(){
     try{const response=await fetch(baseURL);if(response.ok)return;}catch{}
     await new Promise(resolve=>setTimeout(resolve,160));
   }
-  throw new Error('Founder Golden Master board preview server did not start');
+  throw new Error('Founder-approved polish preview server did not start');
 }
-function state({withTargets=true}={}){
-  const now=new Date(),iso=now.toISOString(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  const profile={name:'Founder',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'};
-  if(withTargets)Object.assign(profile,{calorieTarget:2260,proteinTarget:160,carbTarget:260,fatTarget:70});
+
+function state(){
+  const now=new Date().toISOString();
   return {
-    meta:{schemaVersion:5,updatedAt:iso,dailyPlanDrafts:{}},profile,
+    meta:{schemaVersion:5,updatedAt:now,dailyPlanDrafts:{}},
+    profile:{name:'Commercial Polish',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'},
     onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',equipmentProfile:'full_gym',weeklyFrequency:4,availableMinutes:55},
-    preferences:{language:'ko',unit:'metric'},settings:{},privacy:{consent:{analytics:false}},
-    planner:[{id:'board-plan',date,time:'18:00',type:'workout',title:'Upper Body',completed:false,source:'ai',createdAt:iso}],
-    workouts:[{id:'board-workout',date,name:'Bench Press',sets:4,reps:8,weight:70,rpe:7,duration:45,createdAt:iso}],
-    meals:[{id:'board-meal',date,time:'12:30',name:'Chicken Rice Bowl',kcal:620,protein:46,carbs:78,fat:14,items:[],createdAt:iso}],
-    runs:[],body:[],checkins:[{id:'board-checkin',date,sleep:7.4,energy:4,stress:2,soreness:2,createdAt:iso}],dailyCheckins:[],
-    physiologicalSignals:[{id:'hrv',metric:'hrv_ms',value:68,date,at:iso},{id:'rhr',metric:'resting_heart_rate_bpm',value:52,date,at:iso}],
-    aiChat:[{id:'coach',role:'assistant',content:'오늘 회복 상태는 안정적입니다. 계획된 상체 운동을 진행하고 첫 세트 감각으로 강도를 조절하세요.',createdAt:iso}],
-    actionLog:[],errors:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},foodIdentity:{barcodes:[],misses:[],corrections:[]},plan:'FREE'
+    preferences:{language:'ko',unit:'metric'},settings:{},privacy:{consent:{analytics:false}},planner:[],
+    workouts:[],meals:[],runs:[],body:[],checkins:[],dailyCheckins:[],physiologicalSignals:[],aiChat:[],actionLog:[],errors:[],
+    memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},foodIdentity:{barcodes:[],misses:[],corrections:[]},plan:'FREE'
   };
 }
-function workoutFixture(){return {plan:{title:'Upper Body',minutes:52,exercises:[{name:'Bench Press',sets:4,reps:8,weight:70,duration:15},{name:'Incline Dumbbell Press',sets:3,reps:10,weight:24,duration:15},{name:'Lat Pulldown',sets:4,reps:10,weight:55,duration:15}]}};}
-async function tap(page,selector){
-  const loc=page.locator(selector);await loc.waitFor({state:'visible',timeout:7000});await loc.scrollIntoViewIfNeeded();
-  const box=await loc.boundingBox();assert.ok(box,`${selector} needs a touch box`);
-  const hit=await loc.evaluate(el=>{const r=el.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return !!h&&(h===el||el.contains(h));});
-  assert.equal(hit,true,`${selector} must own its touch center`);
-  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
-}
-async function surface(page,name){
-  await tap(page,`#garangGoldenBoardNav [data-gmb-nav="${name}"]`);
-  await page.waitForFunction(value=>document.getElementById('main')?.dataset?.goldenBoardSurface===value,name,{timeout:6000});
-}
-async function waitBoard(page,name){
-  await page.waitForFunction(value=>document.getElementById('main')?.dataset?.goldenBoardSurface===value&&document.getElementById('garangGoldenBoard')&&getComputedStyle(document.getElementById('garangGoldenBoard')).display!=='none',name,{timeout:6000});
-}
+
 (async()=>{
-  const server=startStaticServer(serveRoot,port);let browser;
+  const server=startStaticServer(serveRoot,port);
+  let browser;
   try{
-    await waitServer();browser=await webkit.launch({headless:true});
+    await waitServer();
+    browser=await webkit.launch({headless:true});
     for(const width of [320,360,390,430]){
       const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true});
       await installAuthenticatedFirebaseMock(context);
-      await context.addInitScript(({payload,workout})=>{
-        localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));
-        sessionStorage.setItem('garang_daily_workout_plan_v1',JSON.stringify(workout));
-      },{payload:state({withTargets:width!==320}),workout:workoutFixture()});
-      const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.message||e)));
-      await page.goto(`${baseURL}/?golden-board=1`,{waitUntil:'domcontentloaded'});
+      await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),state());
+      const page=await context.newPage();
+      const errors=[];page.on('pageerror',error=>errors.push(String(error?.message||error)));
+      await page.goto(baseURL,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-      await page.waitForFunction(()=>window.GarangGoldenMasterBoardV1?.version==='garang-golden-master-board-v1.0.0',null,{timeout:10000});
-      await page.waitForFunction(()=>document.querySelector('#garangGoldenBoard .gmb-home'),null,{timeout:10000});
-      assert.equal(await page.locator('#bottomNav[data-gmb-canonical="hidden"]').count(),1,'canonical nav must stay owned behind the board');
-      assert.equal(await page.locator('#bottomNav').isHidden(),true,'canonical four-tab nav must not remain visually exposed under the Golden Board');
-      assert.equal(await page.locator('#appView>.topbar').isHidden(),true,'canonical topbar must not remain visually exposed under the Golden Board');
-      assert.equal(await page.locator('#garangGoldenBoardNav [data-gmb-nav]').count(),5,'Founder board must expose exactly five primary tabs');
-      assert.equal(await page.locator('.gmb-recovery-hero').isVisible(),true,'Home must expose the green Recovery hero');
-      assert.equal(await page.locator('.gmb-home-card').count(),3,'Home must expose separate Sleep / Training / Nutrition cards');
-      assert.match(await page.locator('.gmb-home-card.training em').innerText(),/52 min · 3 exercises/,'Home Training evidence must come from the real fixture plan');
-      const light=await page.evaluate(()=>{const rgb=getComputedStyle(document.body).backgroundColor.match(/\d+/g)?.map(Number)||[];return rgb.slice(0,3);});
-      assert.ok(light.length===3&&light.every(x=>x>220),`Founder board must use a light canvas at ${width}px: ${light}`);
-
-      await surface(page,'recovery');
-      assert.equal(await page.locator('.gmb-recovery .gmb-segments button').count(),3,'Recovery must expose Today / Trends / Insights');
-      assert.equal(await page.locator('.gmb-recovery .gmb-metric-grid article').count(),3,'Recovery must expose HRV / Resting HR / Sleep cards');
-      assert.equal(await page.locator('.gmb-recovery-main .gmb-recovery-arc').isVisible(),true,'Recovery semi-ring must be visible');
-
-      await surface(page,'training');
-      assert.equal(await page.locator('.gmb-training-date').isVisible(),true,'Training date controls must be visible');
-      assert.equal(await page.locator('.gmb-workout-hero').isVisible(),true,'Training workout hero must be visible');
-      assert.equal(await page.locator('.gmb-workout-hero [data-gmb-start]').isVisible(),true,'Training START WORKOUT must be visible on the hero');
-      assert.equal(await page.locator('.gmb-exercise-row').count(),3,'Training rows must be derived from the supplied real plan, not production fallback prescriptions');
-      assert.match(await page.locator('.gmb-exercise-row').first().innerText(),/Bench Press/,'Training must show the actual plan exercise');
-
-      await surface(page,'nutrition');
-      assert.equal(await page.locator('.gmb-nutrition .gmb-segments button').count(),3,'Nutrition must expose Today / Analysis / History');
-      assert.equal(await page.locator('.gmb-calorie-ring').isVisible(),true,'Nutrition calorie ring must be visible');
-      assert.equal(await page.locator('.gmb-macro-card').count(),3,'Nutrition must expose Protein / Carbs / Fat cards');
-      assert.ok(await page.locator('.gmb-meal-row,.gmb-meal-empty').count()>=1,'Nutrition must expose today meal evidence');
-      if(width===320){
-        assert.match(await page.locator('.gmb-calorie-ring').innerText(),/목표 미설정/,'Missing calorie target must stay unknown instead of fabricating 2,260 kcal');
-        assert.ok((await page.locator('.gmb-macro-card').allInnerTexts()).every(text=>/목표 미설정/.test(text)),'Missing macro targets must stay unknown instead of fabricating defaults');
-      }
-      if(width===390){
-        await tap(page,'.gmb-meals-head [data-gmb-meal-scan]');
-        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='nutrition',null,{timeout:7000});
-        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'Meal Scan must hand visible ownership to canonical Nutrition');
-        assert.equal(await page.locator('#saveMeal').count(),1,'Meal Scan continuation must preserve the canonical meal-save owner');
-        await page.evaluate(()=>window.GarangGoldenBoardContinuationV1?.exit?.('nutrition'));
-        await waitBoard(page,'nutrition');
-      }
-
-      await surface(page,'coach');
-      assert.equal(await page.locator('.gmb-coach-message').isVisible(),true,'Coach must open as a native chat surface');
-      assert.equal(await page.locator('.gmb-prompt-grid button').count(),4,'Coach must expose four quick prompts');
-      assert.equal(await page.locator('.gmb-composer input').isVisible(),true,'Coach composer must stay visible');
-
-      const geometry=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,nav:[...document.querySelectorAll('#garangGoldenBoardNav [data-gmb-nav]')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};})}));
-      assert.ok(geometry.doc<=geometry.viewport+2&&geometry.body<=geometry.viewport+2,`Golden Board must not overflow at ${width}px: ${JSON.stringify(geometry)}`);
-      assert.ok(geometry.nav.length===5&&geometry.nav.every(box=>box.w>=44&&box.h>=44),`Golden Board navigation must remain touch safe at ${width}px: ${JSON.stringify(geometry.nav)}`);
-
-      if(width===390){
-        await page.locator('.gmb-composer input').fill('오늘 회복 상태 알려줘');
-        await tap(page,'.gmb-composer button[type="submit"]');
-        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:7000});
-        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'Coach send must hand visible ownership to the canonical chat');
-        await page.evaluate(()=>window.GarangGoldenBoardContinuationV1?.exit?.('coach'));
-        await waitBoard(page,'coach');
-        await surface(page,'training');
-        await tap(page,'.gmb-workout-hero [data-gmb-start]');
-        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
-        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'START WORKOUT must hand visible ownership to canonical Workout execution');
-        await page.waitForFunction(()=>document.getElementById('workoutExecutionState')?.textContent?.includes('LIVE'),null,{timeout:7000});
-        assert.equal(await page.locator('#finishWorkoutSession').isVisible(),true,'Golden Board START must reach the live canonical Workout session');
-      }
-      assert.equal(errors.length,0,`Golden Board must not introduce page errors at ${width}px: ${errors.join('\n')}`);
+      await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.0',null,{timeout:8000});
+      await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangReferenceUi==='v2',null,{timeout:8000});
+      assert.equal(await page.locator('link[data-garang-reference-ui-commercial="1"]').count(),1,'Founder-approved commercial polish stylesheet must be loaded exactly once');
+      assert.equal(await page.locator('#garangGoldenMaster').count(),0,'Commercial polish must not introduce a competing Golden Master shell');
+      const geometry=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,navButtons:[...document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};})}));
+      assert.ok(geometry.doc<=geometry.viewport+2&&geometry.body<=geometry.viewport+2,`Commercial polish must not overflow at ${width}px: ${JSON.stringify(geometry)}`);
+      assert.ok(geometry.navButtons.length===4&&geometry.navButtons.every(box=>box.w>=44&&box.h>=44),`Approved four-tab navigation must remain touch safe at ${width}px: ${JSON.stringify(geometry.navButtons)}`);
+      assert.equal(errors.length,0,`Commercial polish must not introduce page errors at ${width}px: ${errors.join('\\n')}`);
       await context.close();
     }
-    console.log('browser-founder-approved-polish Golden Master board truth + canonical continuation 320/360/390/430: PASS');
+    console.log('browser-founder-approved-polish commercial quality + approved owner boundary 320/360/390/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
-    await server.close();
+    await new Promise(resolve=>server.close(resolve));
   }
 })().catch(error=>{console.error(error);process.exit(1);});
