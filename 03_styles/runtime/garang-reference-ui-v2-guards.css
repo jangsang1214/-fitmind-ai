@@ -1,6 +1,6 @@
 /* GARANG Reference UI v2 guard entry.
-   Keep the approved base contract intact, then apply the mobile-nav clearance fix
-   at the screen boundary instead of mutating Workout draft geometry at runtime. */
+   Keep the approved base contract intact, then apply mobile interaction clearance
+   at screen boundaries instead of mutating canonical runtime ownership. */
 @import url('./garang-reference-ui-v2-guards-base-v2.1.5.css');
 
 @media(max-width:800px){
@@ -27,5 +27,26 @@
   }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea [data-execute-workout]{
     scroll-margin-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
+  }
+
+  /*
+    Reference Coach decoration must not suppress the canonical mobile thread/menu
+    owner after a conversation rerender. Keep the existing control physically
+    visible and touch-safe instead of adding a second menu owner.
+  */
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="coach"] .garang-coach-v2.g-ref-coach-shell .g2-mobile-threads{
+    display:grid!important;
+    place-items:center!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:44px!important;
+    height:44px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+    flex:0 0 44px!important;
+    position:relative!important;
+    z-index:2!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
   }
 }
