@@ -18,23 +18,24 @@ async function waitServer(){
   }
   throw new Error('Founder Golden Master board preview server did not start');
 }
-function state(){
+function state({withTargets=true}={}){
   const now=new Date(),iso=now.toISOString(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const profile={name:'Founder',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'};
+  if(withTargets)Object.assign(profile,{calorieTarget:2260,proteinTarget:160,carbTarget:260,fatTarget:70});
   return {
-    meta:{schemaVersion:5,updatedAt:iso,dailyPlanDrafts:{}},
-    profile:{name:'Founder',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상',calorieTarget:2260,proteinTarget:160,carbTarget:260,fatTarget:70},
+    meta:{schemaVersion:5,updatedAt:iso,dailyPlanDrafts:{}},profile,
     onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',equipmentProfile:'full_gym',weeklyFrequency:4,availableMinutes:55},
     preferences:{language:'ko',unit:'metric'},settings:{},privacy:{consent:{analytics:false}},
     planner:[{id:'board-plan',date,time:'18:00',type:'workout',title:'Upper Body',completed:false,source:'ai',createdAt:iso}],
     workouts:[{id:'board-workout',date,name:'Bench Press',sets:4,reps:8,weight:70,rpe:7,duration:45,createdAt:iso}],
     meals:[{id:'board-meal',date,time:'12:30',name:'Chicken Rice Bowl',kcal:620,protein:46,carbs:78,fat:14,items:[],createdAt:iso}],
-    runs:[],body:[],
-    checkins:[{id:'board-checkin',date,sleep:7.4,energy:4,stress:2,soreness:2,createdAt:iso}],dailyCheckins:[],
+    runs:[],body:[],checkins:[{id:'board-checkin',date,sleep:7.4,energy:4,stress:2,soreness:2,createdAt:iso}],dailyCheckins:[],
     physiologicalSignals:[{id:'hrv',metric:'hrv_ms',value:68,date,at:iso},{id:'rhr',metric:'resting_heart_rate_bpm',value:52,date,at:iso}],
     aiChat:[{id:'coach',role:'assistant',content:'오늘 회복 상태는 안정적입니다. 계획된 상체 운동을 진행하고 첫 세트 감각으로 강도를 조절하세요.',createdAt:iso}],
     actionLog:[],errors:[],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},analytics:{events:[]},foodIdentity:{barcodes:[],misses:[],corrections:[]},plan:'FREE'
   };
 }
+function workoutFixture(){return {plan:{title:'Upper Body',minutes:52,exercises:[{name:'Bench Press',sets:4,reps:8,weight:70,duration:15},{name:'Incline Dumbbell Press',sets:3,reps:10,weight:24,duration:15},{name:'Lat Pulldown',sets:4,reps:10,weight:55,duration:15}]}};}
 async function tap(page,selector){
   const loc=page.locator(selector);await loc.waitFor({state:'visible',timeout:7000});await loc.scrollIntoViewIfNeeded();
   const box=await loc.boundingBox();assert.ok(box,`${selector} needs a touch box`);
@@ -56,7 +57,10 @@ async function waitBoard(page,name){
     for(const width of [320,360,390,430]){
       const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true});
       await installAuthenticatedFirebaseMock(context);
-      await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),state());
+      await context.addInitScript(({payload,workout})=>{
+        localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload));
+        sessionStorage.setItem('garang_daily_workout_plan_v1',JSON.stringify(workout));
+      },{payload:state({withTargets:width!==320}),workout:workoutFixture()});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.message||e)));
       await page.goto(`${baseURL}/?golden-board=1`,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
@@ -68,6 +72,7 @@ async function waitBoard(page,name){
       assert.equal(await page.locator('#garangGoldenBoardNav [data-gmb-nav]').count(),5,'Founder board must expose exactly five primary tabs');
       assert.equal(await page.locator('.gmb-recovery-hero').isVisible(),true,'Home must expose the green Recovery hero');
       assert.equal(await page.locator('.gmb-home-card').count(),3,'Home must expose separate Sleep / Training / Nutrition cards');
+      assert.match(await page.locator('.gmb-home-card.training em').innerText(),/52 min · 3 exercises/,'Home Training evidence must come from the real fixture plan');
       const light=await page.evaluate(()=>{const rgb=getComputedStyle(document.body).backgroundColor.match(/\d+/g)?.map(Number)||[];return rgb.slice(0,3);});
       assert.ok(light.length===3&&light.every(x=>x>220),`Founder board must use a light canvas at ${width}px: ${light}`);
 
@@ -80,13 +85,18 @@ async function waitBoard(page,name){
       assert.equal(await page.locator('.gmb-training-date').isVisible(),true,'Training date controls must be visible');
       assert.equal(await page.locator('.gmb-workout-hero').isVisible(),true,'Training workout hero must be visible');
       assert.equal(await page.locator('.gmb-workout-hero [data-gmb-start]').isVisible(),true,'Training START WORKOUT must be visible on the hero');
-      assert.ok(await page.locator('.gmb-exercise-row').count()>=3,'Training must expose exercise thumbnail rows');
+      assert.equal(await page.locator('.gmb-exercise-row').count(),3,'Training rows must be derived from the supplied real plan, not production fallback prescriptions');
+      assert.match(await page.locator('.gmb-exercise-row').first().innerText(),/Bench Press/,'Training must show the actual plan exercise');
 
       await surface(page,'nutrition');
       assert.equal(await page.locator('.gmb-nutrition .gmb-segments button').count(),3,'Nutrition must expose Today / Analysis / History');
       assert.equal(await page.locator('.gmb-calorie-ring').isVisible(),true,'Nutrition calorie ring must be visible');
       assert.equal(await page.locator('.gmb-macro-card').count(),3,'Nutrition must expose Protein / Carbs / Fat cards');
       assert.ok(await page.locator('.gmb-meal-row,.gmb-meal-empty').count()>=1,'Nutrition must expose today meal evidence');
+      if(width===320){
+        assert.match(await page.locator('.gmb-calorie-ring').innerText(),/목표 미설정/,'Missing calorie target must stay unknown instead of fabricating 2,260 kcal');
+        assert.ok((await page.locator('.gmb-macro-card').allInnerTexts()).every(text=>/목표 미설정/.test(text)),'Missing macro targets must stay unknown instead of fabricating defaults');
+      }
       if(width===390){
         await tap(page,'.gmb-meals-head [data-gmb-meal-scan]');
         await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='nutrition',null,{timeout:7000});
@@ -122,7 +132,7 @@ async function waitBoard(page,name){
       assert.equal(errors.length,0,`Golden Board must not introduce page errors at ${width}px: ${errors.join('\n')}`);
       await context.close();
     }
-    console.log('browser-founder-approved-polish Golden Master board + canonical continuation 320/360/390/430: PASS');
+    console.log('browser-founder-approved-polish Golden Master board truth + canonical continuation 320/360/390/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     await new Promise(resolve=>server.close(resolve));
