@@ -9,6 +9,7 @@ const EXTRA_ASSETS=[
   './03_styles/runtime/garang-golden-master-board-v1.css?v=20261014-board-2',
   './06_features/ui/runtime/garang-golden-master-board-v1.js?v=20261014-board-2',
   './06_features/ui/runtime/garang-golden-master-board-continuation-v1.js?v=20261014-board-2',
+  './05_assets/body-model-v6/male-front.svg',
   './05_assets/body-model-v6/male-front.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-side.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-back.svg?v=7.3.0-anatomical-mass',
