@@ -46,6 +46,9 @@ async function surface(page,name){
   await tap(page,`#garangGoldenBoardNav [data-gmb-nav="${name}"]`);
   await page.waitForFunction(value=>document.getElementById('main')?.dataset?.goldenBoardSurface===value,name,{timeout:6000});
 }
+async function waitBoard(page,name){
+  await page.waitForFunction(value=>document.getElementById('main')?.dataset?.goldenBoardSurface===value&&document.getElementById('garangGoldenBoard')&&getComputedStyle(document.getElementById('garangGoldenBoard')).display!=='none',name,{timeout:6000});
+}
 (async()=>{
   const server=startStaticServer(serveRoot,port);let browser;
   try{
@@ -59,7 +62,9 @@ async function surface(page,name){
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
       await page.waitForFunction(()=>window.GarangGoldenMasterBoardV1?.version==='garang-golden-master-board-v1.0.0',null,{timeout:10000});
       await page.waitForFunction(()=>document.querySelector('#garangGoldenBoard .gmb-home'),null,{timeout:10000});
-      assert.equal(await page.locator('#bottomNav[data-gmb-canonical="hidden"]').count(),1,'canonical nav must stay hidden behind the board');
+      assert.equal(await page.locator('#bottomNav[data-gmb-canonical="hidden"]').count(),1,'canonical nav must stay owned behind the board');
+      assert.equal(await page.locator('#bottomNav').isHidden(),true,'canonical four-tab nav must not remain visually exposed under the Golden Board');
+      assert.equal(await page.locator('#appView>.topbar').isHidden(),true,'canonical topbar must not remain visually exposed under the Golden Board');
       assert.equal(await page.locator('#garangGoldenBoardNav [data-gmb-nav]').count(),5,'Founder board must expose exactly five primary tabs');
       assert.equal(await page.locator('.gmb-recovery-hero').isVisible(),true,'Home must expose the green Recovery hero');
       assert.equal(await page.locator('.gmb-home-card').count(),3,'Home must expose separate Sleep / Training / Nutrition cards');
@@ -82,6 +87,14 @@ async function surface(page,name){
       assert.equal(await page.locator('.gmb-calorie-ring').isVisible(),true,'Nutrition calorie ring must be visible');
       assert.equal(await page.locator('.gmb-macro-card').count(),3,'Nutrition must expose Protein / Carbs / Fat cards');
       assert.ok(await page.locator('.gmb-meal-row,.gmb-meal-empty').count()>=1,'Nutrition must expose today meal evidence');
+      if(width===390){
+        await tap(page,'.gmb-meals-head [data-gmb-meal-scan]');
+        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='nutrition',null,{timeout:7000});
+        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'Meal Scan must hand visible ownership to canonical Nutrition');
+        assert.equal(await page.locator('#saveMeal').count(),1,'Meal Scan continuation must preserve the canonical meal-save owner');
+        await page.evaluate(()=>window.GarangGoldenBoardContinuationV1?.exit?.('nutrition'));
+        await waitBoard(page,'nutrition');
+      }
 
       await surface(page,'coach');
       assert.equal(await page.locator('.gmb-coach-message').isVisible(),true,'Coach must open as a native chat surface');
@@ -91,10 +104,25 @@ async function surface(page,name){
       const geometry=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,nav:[...document.querySelectorAll('#garangGoldenBoardNav [data-gmb-nav]')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};})}));
       assert.ok(geometry.doc<=geometry.viewport+2&&geometry.body<=geometry.viewport+2,`Golden Board must not overflow at ${width}px: ${JSON.stringify(geometry)}`);
       assert.ok(geometry.nav.length===5&&geometry.nav.every(box=>box.w>=44&&box.h>=44),`Golden Board navigation must remain touch safe at ${width}px: ${JSON.stringify(geometry.nav)}`);
+
+      if(width===390){
+        await page.locator('.gmb-composer input').fill('오늘 회복 상태 알려줘');
+        await tap(page,'.gmb-composer button[type="submit"]');
+        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='coach',null,{timeout:7000});
+        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'Coach send must hand visible ownership to the canonical chat');
+        await page.evaluate(()=>window.GarangGoldenBoardContinuationV1?.exit?.('coach'));
+        await waitBoard(page,'coach');
+        await surface(page,'training');
+        await tap(page,'.gmb-workout-hero [data-gmb-start]');
+        await page.waitForFunction(()=>document.body.classList.contains('gmb-canonical-continuation')&&document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
+        assert.equal(await page.locator('#garangGoldenBoard').isHidden(),true,'START WORKOUT must hand visible ownership to canonical Workout execution');
+        await page.waitForFunction(()=>document.getElementById('workoutExecutionState')?.textContent?.includes('LIVE'),null,{timeout:7000});
+        assert.equal(await page.locator('#finishWorkoutSession').isVisible(),true,'Golden Board START must reach the live canonical Workout session');
+      }
       assert.equal(errors.length,0,`Golden Board must not introduce page errors at ${width}px: ${errors.join('\n')}`);
       await context.close();
     }
-    console.log('browser-founder-approved-polish Golden Master board 320/360/390/430: PASS');
+    console.log('browser-founder-approved-polish Golden Master board + canonical continuation 320/360/390/430: PASS');
   }finally{
     if(browser)await browser.close().catch(()=>{});
     await new Promise(resolve=>server.close(resolve));
