@@ -1,10 +1,14 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v39-20261004`;
+const CACHE=`${CACHE_PREFIX}v40-20261014-golden-board`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
   './06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.3',
   './06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js?v=1.0.0',
+  './07_config/golden-master-board-loader-v1.js?v=20261014-board-2',
+  './03_styles/runtime/garang-golden-master-board-v1.css?v=20261014-board-2',
+  './06_features/ui/runtime/garang-golden-master-board-v1.js?v=20261014-board-2',
+  './06_features/ui/runtime/garang-golden-master-board-continuation-v1.js?v=20261014-board-2',
   './05_assets/body-model-v6/male-front.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-side.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-back.svg?v=7.3.0-anatomical-mass',
