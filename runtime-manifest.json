@@ -28,7 +28,8 @@
     "03_styles/runtime/garang-nutrition-recommendation-v1.css",
     "03_styles/runtime/garang-photo-evidence-v1.css",
     "03_styles/runtime/garang-coach-quiet-surface-v1.css",
-    "03_styles/runtime/garang-commercial-mobile-v1.css"
+    "03_styles/runtime/garang-commercial-mobile-v1.css",
+    "03_styles/runtime/garang-golden-master-board-v1.css"
   ],
   "scripts": [
     "07_config/firebase-config.js",
@@ -82,6 +83,9 @@
     "06_features/ui/runtime/garang-router-v1.js",
     "06_features/ui/runtime/garang-auth-route-reconcile-v1.js",
     "06_features/ui/runtime/garang-mobile-auth-v1.js",
+    "07_config/golden-master-board-loader-v1.js",
+    "06_features/ui/runtime/garang-golden-master-board-v1.js",
+    "06_features/ui/runtime/garang-golden-master-board-continuation-v1.js",
     "06_features/ui/runtime/garang-sw-update-v2.js",
     "06_features/ui/runtime/garang-data-migration-v2.js",
     "06_features/ui/runtime/garang-sync-quiet-ux-v1.js",
