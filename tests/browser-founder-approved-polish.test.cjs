@@ -55,7 +55,7 @@ async function surface(page,name){
       await installAuthenticatedFirebaseMock(context);
       await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),state());
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.message||e)));
-      await page.goto(baseURL,{waitUntil:'domcontentloaded'});
+      await page.goto(`${baseURL}/?golden-board=1`,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
       await page.waitForFunction(()=>window.GarangGoldenMasterBoardV1?.version==='garang-golden-master-board-v1.0.0',null,{timeout:10000});
       await page.waitForFunction(()=>document.querySelector('#garangGoldenBoard .gmb-home'),null,{timeout:10000});
