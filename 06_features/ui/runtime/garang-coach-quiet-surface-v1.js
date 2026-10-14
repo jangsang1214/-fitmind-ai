@@ -7,7 +7,7 @@
 
 const main=document.getElementById('main');
 if(!main)return;
-const VERSION='garang-coach-quiet-surface-v1.0.2';
+const VERSION='garang-coach-quiet-surface-v1.0.3';
 const STYLE_ID='garang-coach-quiet-surface-v1-runtime-style';
 const raf=callback=>{
   const frame=window.requestAnimationFrame;
@@ -17,6 +17,7 @@ const raf=callback=>{
 const isEnglish=()=>document.documentElement.lang==='en';
 const coachEvidenceSeen=new Set();
 let coachEvidenceRoot=null;
+let coachActionDisclosureExpanded=false;
 
 function ensureRuntimeOverrides(){
   if(document.getElementById(STYLE_ID))return;
@@ -101,6 +102,19 @@ function syncPromptSurface(root){
       syncPromptSurface(root);
     });
   }
+}
+
+function syncActionDisclosure(root){
+  if(!coachActionDisclosureExpanded)return;
+  const host=root.querySelector('[data-gcl-coach-actions]');
+  const toggle=host?.querySelector('[data-gcl-actions-toggle]');
+  const panel=host?.querySelector('[data-gcl-actions-panel]');
+  if(!host||!toggle||!panel)return;
+  host.dataset.gclActionsExpanded='true';
+  panel.hidden=false;
+  toggle.setAttribute('aria-expanded','true');
+  const symbol=toggle.querySelector('[data-gcl-action-symbol]');
+  if(symbol)symbol.textContent='−';
 }
 
 function hideActionLabels(root){
@@ -192,6 +206,7 @@ function sync(){
   root.dataset.garangCoachQuietSurface=VERSION;
   syncEmptyState(root);
   syncPromptSurface(root);
+  syncActionDisclosure(root);
   hideActionLabels(root);
   syncCoachEvidence(root);
 }
@@ -206,6 +221,14 @@ function schedule(){
   }));
 }
 
+document.addEventListener('click',event=>{
+  const toggle=event.target.closest?.('[data-gcl-actions-toggle]');
+  if(!toggle)return;
+  queueMicrotask(()=>{
+    coachActionDisclosureExpanded=toggle.getAttribute('aria-expanded')==='true';
+    if(coachActionDisclosureExpanded)schedule();
+  });
+},true);
 window.addEventListener('garang:coach-mounted',event=>primeCoachEvidence(event?.detail?.root));
 window.addEventListener('garang:coach-message-rendered',syncCoachEvidenceEvent);
 for(const eventName of ['garang:screen-rendered','garang:coach-mounted','garang:coach-message-rendered','garang:coach-decision-rendered','garang:state-hydrated','garang:state-updated','garang:agent-proposal-resolved','garang:route-completed']){
