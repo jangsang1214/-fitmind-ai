@@ -6,7 +6,15 @@ This document replaces the previous interpretation that generated boards are mer
 
 ## Source image
 
-Conversation artifact name:
+The approved target is stored in this repository so the design contract survives chat replacement:
+
+![Founder-approved GARANG commercial UI target](../design/GARANG_COMMERCIAL_UI_TARGET_2026-10-15.jpg)
+
+Repository asset:
+
+`docs/design/GARANG_COMMERCIAL_UI_TARGET_2026-10-15.jpg`
+
+Original conversation artifact:
 
 `a_wide_high_resolution_ui_showcase_mockup_collage.png`
 
@@ -14,7 +22,7 @@ Founder instruction:
 
 > 지금 보낸 사진대로 진행해 … 이미지도 지금 시안 넣어서 이거랑 똑같이 나와야해
 
-If a new agent takes over, retrieve the approved image from the 2026-10-15 Founder conversation / handoff bundle and compare every real WebKit screenshot against it. Do not substitute an older Golden Master board or the previously rejected actual PR #419 screenshot.
+Do not substitute an older Golden Master board or the previously rejected actual PR #419 screenshot. The image above is the current binding visual target.
 
 ## Product constraints that remain canonical
 
@@ -42,8 +50,6 @@ If a new agent takes over, retrieve the approved image from the 2026-10-15 Found
 
 ### 01 Today
 
-Approved composition:
-
 1. Compact top chrome.
 2. Date/context.
 3. Large decisive headline: user immediately understands today's action.
@@ -54,8 +60,6 @@ Approved composition:
 Do not lead with a generic score graph. Score/readiness is evidence below the decision, not the product's main action.
 
 ### 02 Workout execution
-
-Approved composition:
 
 1. Workout title and compact muscle/equipment context.
 2. Exercise visual/hero occupies meaningful space.
@@ -69,8 +73,6 @@ Once session is LIVE, preparation/configuration controls must collapse or move b
 
 ### 03 Exercise record
 
-Approved composition:
-
 - Compact tabs: 기록 / 분석 / 가이드.
 - Set list is the main content.
 - Completed sets are clearly checked.
@@ -79,8 +81,6 @@ Approved composition:
 - Full-width **세션 완료** action at bottom.
 
 ### 04 Rest timer
-
-Approved composition:
 
 - Rest state takes over the screen rather than appearing as a small overlay on top of clutter.
 - Large circular timer centered and dominant.
@@ -91,8 +91,6 @@ Approved composition:
 
 ### 05 Session summary
 
-Approved composition:
-
 - Celebration is restrained and premium.
 - Duration / total sets / total volume / average RPE as 2×2 compact metrics.
 - Anatomy/muscle response visual is prominent.
@@ -101,16 +99,12 @@ Approved composition:
 
 ### 06 Nutrition
 
-Approved composition:
-
 - One large meal-photo hero and **음식 사진으로 기록하기** as the primary action.
 - Barcode / nutrition label are compact secondary actions.
 - Today's intake progress and meal history below.
 - Empty state must still feel complete; never show a huge blank placeholder or fake meal/photo.
 
 ### 07 Body
-
-Approved composition:
 
 - Anatomy is the dominant visual, not squeezed between cards.
 - FRONT / SIDE / BACK switch is compact and obvious.
@@ -121,8 +115,6 @@ Approved composition:
 
 ### 08 Coach
 
-Approved composition:
-
 - Conversation-first screen with compact identity header.
 - Existing messages occupy the canvas; avoid a large empty black gap.
 - Suggestion chips fit or scroll intentionally.
@@ -131,14 +123,10 @@ Approved composition:
 
 ### 09 History
 
-Approved composition:
-
 - Category tabs, calendar, selected-day summary and high-signal month summary.
 - Keep detail dense but not dashboard-like.
 
 ### 10 Settings
-
-Approved composition:
 
 - Compact profile row.
 - Simple list rows with strong alignment and one clear trailing value/action.
@@ -158,6 +146,15 @@ Required before merge:
 6. Exact-head Release Gate FULL GREEN.
 7. Main drift = zero before merge.
 
+## Current implementation line
+
+- PRODUCT PR: **#419**
+- Branch: `design/founder-approved-commercial-polish`
+- Presentation layer: `03_styles/runtime/garang-commercial-target-v3.css`
+- Loader entry: `03_styles/runtime/garang-reference-ui-commercial-v1.css`
+- Actual-screen capture: `tests/browser-founder-review-screenshots.cjs`
+- The approved target image is now repository-backed at `docs/design/GARANG_COMMERCIAL_UI_TARGET_2026-10-15.jpg`.
+
 ## Handoff rule
 
 If conversation capacity becomes risky, stop code changes at a safe commit, update this file with:
@@ -170,4 +167,4 @@ If conversation capacity becomes risky, stop code changes at a safe commit, upda
 - latest real screenshot artifact run ID
 - next smallest safe action
 
-Then provide the Founder a short handoff prompt that tells the next agent to run `PROJECT START`, open PR #419, read this file first, recover the approved image from the project conversation/handoff bundle, and continue until screenshot parity + FULL GREEN.
+Then provide the Founder a short handoff prompt that tells the next agent to run `PROJECT START`, open PR #419, read this file first, use the embedded approved image as the binding visual source of truth, and continue until screenshot parity + FULL GREEN.
