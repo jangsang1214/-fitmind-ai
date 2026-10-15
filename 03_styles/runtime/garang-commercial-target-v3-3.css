@@ -1,0 +1,38 @@
+/* GARANG Commercial Target v3.3
+   Preserve canonical current-set detail access without diluting the Founder-approved execution hierarchy.
+   Presentation only.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set{
+    position:relative!important;
+    padding-top:44px!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-detail-toggle{
+    display:grid!important;
+    place-items:center!important;
+    position:absolute!important;
+    top:10px!important;
+    right:54px!important;
+    width:40px!important;
+    min-width:40px!important;
+    height:32px!important;
+    min-height:32px!important;
+    margin:0!important;
+    padding:0 8px!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    border-radius:999px!important;
+    background:rgba(13,18,27,.92)!important;
+    color:#8f97a5!important;
+    font-size:9px!important;
+    line-height:1!important;
+    font-weight:700!important;
+    letter-spacing:-.02em!important;
+    z-index:4!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-detail-toggle:focus-visible{
+    outline:2px solid rgba(129,140,248,.72)!important;
+    outline-offset:2px!important;
+  }
+}
