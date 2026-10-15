@@ -1,0 +1,133 @@
+/* GARANG Commercial Target v3.7
+   Screenshot-driven integrity pass for the Founder-approved 390px review.
+   Fixes only presentation: current-set detail geometry, Body anatomy composition,
+   and Coach conversation density. Canonical routing/state/write owners are unchanged.
+*/
+
+@media(max-width:800px){
+  /* WORKOUT — keep the current-set disclosure physically inside its card. */
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set [data-execution-set-detail]{
+    display:grid!important;
+    place-items:center!important;
+    position:absolute!important;
+    inset:10px 52px auto auto!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    border-radius:999px!important;
+    background:#0d131c!important;
+    color:#8f97a5!important;
+    font-size:9px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    z-index:8!important;
+  }
+
+  /* BODY — three anatomical views must share the stage instead of colliding. */
+  body.garang-reference-ui-v2 .g-ref-body-primary{
+    min-height:515px!important;
+    overflow:hidden!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual{
+    min-height:420px!important;
+    overflow:hidden!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy{
+    left:8px!important;
+    right:8px!important;
+    top:52px!important;
+    bottom:86px!important;
+    overflow:hidden!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .muscle-map{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:0!important;
+    align-items:end!important;
+    overflow:hidden!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view{
+    min-width:0!important;
+    width:100%!important;
+    min-height:300px!important;
+    height:300px!important;
+    overflow:hidden!important;
+    place-items:end center!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g3-body-model,
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g2-body-model{
+    width:auto!important;
+    height:292px!important;
+    max-height:292px!important;
+    max-width:108px!important;
+    min-width:0!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual>div:last-child{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:calc((100% - 38px)/3)!important;
+    height:66px!important;
+    min-height:66px!important;
+    max-height:66px!important;
+    overflow:hidden!important;
+    padding:8px 6px!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics{
+    min-height:66px!important;
+    max-height:66px!important;
+    overflow:hidden!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics>div{
+    height:66px!important;
+    min-height:66px!important;
+    max-height:66px!important;
+    overflow:hidden!important;
+  }
+
+  /* COACH — conversation and composer should read as one compact surface, not
+     as two islands separated by an empty viewport. */
+  body.garang-reference-ui-v2 #main.g-ref-screen-coach:has(.garang-coach-v2){
+    min-height:0!important;
+  }
+  body.garang-reference-ui-v2 .garang-coach-v2{
+    height:auto!important;
+    min-height:0!important;
+  }
+  body.garang-reference-ui-v2 .garang-coach-v2 .g2-chat-main{
+    grid-template-rows:54px auto auto!important;
+    align-content:start!important;
+    min-height:0!important;
+  }
+  body.garang-reference-ui-v2 .garang-coach-v2 .g2-chat-scroll{
+    min-height:180px!important;
+    max-height:380px!important;
+    padding-top:14px!important;
+    padding-bottom:14px!important;
+  }
+  body.garang-reference-ui-v2 .garang-coach-v2 .g2-composer-wrap{
+    position:relative!important;
+    bottom:auto!important;
+    padding-top:6px!important;
+  }
+}
+
+@media(max-width:360px){
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view{
+    min-height:272px!important;
+    height:272px!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g3-body-model,
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g2-body-model{
+    height:264px!important;
+    max-height:264px!important;
+    max-width:96px!important;
+  }
+}
