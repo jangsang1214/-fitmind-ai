@@ -4,6 +4,7 @@
 */
 @import url('./garang-commercial-target-v3.css?v=3.0.0-founder-approved');
 @import url('./garang-commercial-target-v3-1.css?v=3.1.0-screenshot-driven');
+@import url('./garang-commercial-target-v3-2.css?v=3.2.0-live-set-contract');
 
 body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
 body.garang-reference-ui-v2 button:focus-visible,
