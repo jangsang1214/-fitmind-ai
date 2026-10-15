@@ -1,0 +1,31 @@
+/* GARANG Commercial Target v3.4
+   Preserve canonical progressive disclosure inside the Founder-approved current-set surface.
+   Presentation only.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    padding-bottom:13px!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-type-field,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rpe-field,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rir-field{
+    display:grid!important;
+    gap:5px!important;
+    min-width:0!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-type-field{grid-column:1/-1!important;grid-row:auto!important}
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rpe-field{grid-column:1!important;grid-row:auto!important}
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rir-field{grid-column:2!important;grid-row:auto!important}
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-type-field>span,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rpe-field>span,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rir-field>span{
+    position:static!important;width:auto!important;height:auto!important;clip:auto!important;overflow:visible!important;
+    font-size:8px!important;color:#7f8795!important;letter-spacing:.04em!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-type-field select,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rpe-field input,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set.is-details-open .execution-rir-field input{
+    min-height:46px!important;border-radius:12px!important;background:#0e141e!important;border-color:rgba(255,255,255,.08)!important;
+  }
+}
