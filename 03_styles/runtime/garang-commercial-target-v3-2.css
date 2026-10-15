@@ -1,0 +1,18 @@
+/* GARANG Commercial Target v3.2
+   Preserve the proven beginner-first live-set contract while keeping the approved visual hierarchy.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-previous,
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-target{
+    display:none!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-weight-field{
+    grid-column:1!important;grid-row:2!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-reps-field{
+    grid-column:2!important;grid-row:2!important;
+  }
+  body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-complete-button{
+    grid-column:1/-1!important;grid-row:3!important;
+  }
+}
