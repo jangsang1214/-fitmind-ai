@@ -25,8 +25,34 @@
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .list>.list-item:last-child{
     margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
   }
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-actions{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:8px!important;
+    position:relative!important;
+    z-index:6!important;
+    isolation:isolate!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+  }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea [data-execute-workout]{
+    display:flex!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    position:relative!important;
+    z-index:8!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
     scroll-margin-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
+  }
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-manage{
+    justify-self:end!important;
+    position:relative!important;
+    z-index:7!important;
   }
 
   /*
