@@ -3,6 +3,7 @@
    Canonical behavior remains owned by existing runtime modules.
 */
 @import url('./garang-commercial-target-v3.css?v=3.0.0-founder-approved');
+@import url('./garang-commercial-target-v3-1.css?v=3.1.0-screenshot-driven');
 
 body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
 body.garang-reference-ui-v2 button:focus-visible,
