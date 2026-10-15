@@ -1,10 +1,11 @@
 /* GARANG Commercial Target v3.6
-   Keep the canonical unsaved-session reset available from the Exercise surface.
-   The execution screen stays focused because this control lives inside the exercise builder surface.
+   Keep the canonical unsaved-session reset available from the Exercise surface
+   only when an unsaved workout draft actually exists. This avoids introducing a
+   competing live-set control before the first exercise has been committed.
    Presentation only.
 */
 @media(max-width:800px){
-  body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) #clearWorkoutDraft{
+  body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live):has(#workoutDraftArea .list-item) #clearWorkoutDraft{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
