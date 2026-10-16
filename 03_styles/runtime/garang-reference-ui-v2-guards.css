@@ -25,9 +25,14 @@
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .list>.list-item:last-child{
     margin-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;
   }
+  /*
+    Keep Record and Manage in separate columns of the same row. The prior one-column
+    override moved the details owner below Record while its popup is positioned above
+    the summary, allowing the management layer to cover Record's physical touch center.
+  */
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-actions{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-columns:minmax(0,1fr) 72px!important;
     align-items:stretch!important;
     width:100%!important;
     min-width:0!important;
@@ -50,9 +55,19 @@
     scroll-margin-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
   }
   html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-manage{
-    justify-self:end!important;
+    width:72px!important;
+    min-width:72px!important;
+    justify-self:stretch!important;
     position:relative!important;
     z-index:7!important;
+  }
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-manage:not([open]) .workout-draft-manage-actions{
+    display:none!important;
+    pointer-events:none!important;
+  }
+  html[data-garang-reference-ui="v2"] body #main[data-garang-screen="workout"] #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions{
+    display:grid!important;
+    pointer-events:auto!important;
   }
 
   /*
