@@ -73,12 +73,19 @@
     flex-direction:column!important;
     align-items:center!important;
     justify-content:center!important;
+    position:absolute!important;
+    top:auto!important;
+    right:auto!important;
+    left:12px!important;
+    bottom:12px!important;
+    transform:none!important;
     width:calc((100% - 38px)/3)!important;
     height:66px!important;
     min-height:66px!important;
     max-height:66px!important;
     overflow:hidden!important;
     padding:8px 6px!important;
+    z-index:24!important;
   }
   body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics{
     min-height:66px!important;
