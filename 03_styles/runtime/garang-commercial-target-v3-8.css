@@ -2,6 +2,8 @@
    Mobile workout draft touch ownership.
    Keep the primary Record action on its own row and management secondary so
    no adjacent disclosure can own the Record button's physical touch center.
+   When management is disclosed, keep its actions in normal flow so every
+   action remains inside the viewport on narrow WebKit layouts.
    Presentation only; canonical workout draft/session handlers are unchanged.
 */
 @media(max-width:800px){
@@ -63,6 +65,42 @@
     margin:0!important;
     position:relative!important;
     z-index:2!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]{
+    justify-self:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    z-index:10!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]>summary{
+    margin-left:auto!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions{
+    position:static!important;
+    inset:auto!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin-top:8px!important;
+    padding:8px!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+    overflow:visible!important;
+    z-index:11!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions button{
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+    margin:0!important;
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
     pointer-events:auto!important;
     touch-action:manipulation!important;
   }
