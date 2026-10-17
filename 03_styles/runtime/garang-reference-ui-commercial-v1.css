@@ -1,0 +1,24 @@
+/* GARANG Founder-approved commercial presentation entry.
+   The 2026-10-15 Founder-approved board is now the binding visual target.
+   Canonical behavior remains owned by existing runtime modules.
+*/
+@import url('./garang-commercial-target-v3.css?v=3.0.0-founder-approved');
+@import url('./garang-commercial-target-v3-1.css?v=3.1.0-screenshot-driven');
+@import url('./garang-commercial-target-v3-2.css?v=3.2.0-live-set-contract');
+@import url('./garang-commercial-target-v3-3.css?v=3.3.0-detail-access');
+@import url('./garang-commercial-target-v3-4.css?v=3.4.0-progressive-details');
+@import url('./garang-commercial-target-v3-5.css?v=3.5.0-nutrition-actions');
+@import url('./garang-commercial-target-v3-6.css?v=3.6.0-draft-reset-access');
+@import url('./garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity');
+@import url('./garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch');
+@import url('./garang-commercial-target-v3-9.css?v=3.9.0-coach-density');
+
+body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
+body.garang-reference-ui-v2 button:focus-visible,
+body.garang-reference-ui-v2 input:focus-visible,
+body.garang-reference-ui-v2 textarea:focus-visible,
+body.garang-reference-ui-v2 select:focus-visible,
+body.garang-reference-ui-v2 summary:focus-visible{
+  outline:2px solid rgba(129,140,248,.72)!important;
+  outline-offset:2px!important;
+}

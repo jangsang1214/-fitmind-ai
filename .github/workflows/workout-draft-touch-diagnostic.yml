@@ -1,0 +1,39 @@
+name: Workout draft touch diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '03_styles/runtime/**'
+      - '06_features/ui/runtime/**'
+      - '07_config/version.js'
+      - '01_app/app.js'
+      - 'tests/browser-workout-draft-touch-diagnostic.cjs'
+      - '.github/workflows/workout-draft-touch-diagnostic.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workout-draft-touch-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked CI dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build browser test bundle
+        run: npm run build
+      - name: Diagnose Workout draft touch ownership
+        run: node tests/browser-workout-draft-touch-diagnostic.cjs

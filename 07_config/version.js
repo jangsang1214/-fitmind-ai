@@ -12,8 +12,13 @@
    }
    if(!document.querySelector('link[data-garang-reference-ui-v2-guards]')){
      const guard=document.createElement('link');
-     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.5-draft-manage-safe';guard.dataset.garangReferenceUiV2Guards='1';
+     guard.rel='stylesheet';guard.href='./03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.6-commercial-nav-safe';guard.dataset.garangReferenceUiV2Guards='1';
      document.head.appendChild(guard);
+   }
+   if(!document.querySelector('link[data-garang-reference-ui-commercial]')){
+     const commercial=document.createElement('link');
+     commercial.rel='stylesheet';commercial.href='./03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe';commercial.dataset.garangReferenceUiCommercial='1';
+     document.head.appendChild(commercial);
    }
    if(!document.getElementById('garangReferenceTodayEvidenceGuard')){
      const style=document.createElement('style');style.id='garangReferenceTodayEvidenceGuard';
@@ -94,7 +99,12 @@
    function resyncWorkoutAfterSetCompletion(){
      const main=document.getElementById('main');
      if(String(main?.dataset?.garangScreen||'')!=='workout')return;
-     const sync=()=>root.GarangWorkoutExecutionV2?.enhance?.();
+     const host=main.querySelector('#workoutSetDetails');
+     if(!host)return;
+     const sync=()=>{
+       if(!host.isConnected||host!==document.getElementById('workoutSetDetails'))return;
+       root.GarangWorkoutExecutionV2?.enhance?.();
+     };
      requestAnimationFrame(()=>requestAnimationFrame(sync));
      setTimeout(sync,120);
      setTimeout(sync,420);

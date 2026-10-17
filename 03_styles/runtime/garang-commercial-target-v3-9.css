@@ -1,0 +1,46 @@
+/* GARANG Commercial Target v3.9
+   Coach conversation density correction.
+   The existing commercial mobile layer gives the Coach shell a viewport-locked
+   height and lets the thread flex-fill it, which creates a large dead canvas when
+   the conversation is short. Override that contract at higher specificity so
+   conversation, suggestions, and composer read as one compact messaging surface.
+   Presentation only; Coach message/action owners remain unchanged.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2{
+    height:auto!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-main{
+    display:grid!important;
+    grid-template-rows:54px auto auto!important;
+    align-content:start!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-scroll{
+    flex:0 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:360px!important;
+    padding:14px 13px 16px!important;
+    scroll-padding-bottom:18px!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-composer-wrap{
+    position:relative!important;
+    inset:auto!important;
+    margin:0!important;
+    padding:6px 8px 8px!important;
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g4-prompt-strip{
+    margin-top:4px!important;
+    padding-bottom:7px!important;
+  }
+}
