@@ -1,9 +1,9 @@
 /* GARANG Commercial Target v3.8
    Mobile workout draft touch ownership.
-   Keep the primary Record action on its own row and management secondary so
-   no adjacent disclosure can own the Record button's physical touch center.
-   When management is disclosed, keep its actions in normal flow so every
-   action remains inside the viewport on narrow WebKit layouts.
+   Closed state keeps Record + Manage on the proven same row so the hidden details
+   owner cannot sit beneath Record and place its popup over the primary touch center.
+   Open state moves management to a full-width second row and keeps actions in normal
+   flow, so narrow WebKit layouts never push management controls off-screen.
    Presentation only; canonical workout draft/session handlers are unchanged.
 */
 @media(max-width:800px){
@@ -17,8 +17,7 @@
   }
   body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
+    grid-template-columns:minmax(0,1fr) 72px!important;
     align-items:stretch!important;
     width:100%!important;
     min-width:0!important;
@@ -47,16 +46,20 @@
     scroll-margin-top:112px!important;
     scroll-margin-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important;
   }
-  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{
-    grid-column:1!important;
-    grid-row:2!important;
-    justify-self:end!important;
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage:not([open]){
+    grid-column:2!important;
+    grid-row:1!important;
+    justify-self:stretch!important;
     width:72px!important;
     min-width:72px!important;
     margin:0!important;
     position:relative!important;
-    z-index:2!important;
+    z-index:7!important;
     isolation:isolate!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage:not([open]) .workout-draft-manage-actions{
+    display:none!important;
+    pointer-events:none!important;
   }
   body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{
     width:72px!important;
@@ -69,10 +72,15 @@
     touch-action:manipulation!important;
   }
   body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]{
+    grid-column:1/-1!important;
+    grid-row:2!important;
     justify-self:stretch!important;
     width:100%!important;
     min-width:0!important;
+    margin:0!important;
+    position:relative!important;
     z-index:10!important;
+    isolation:isolate!important;
   }
   body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open]>summary{
     margin-left:auto!important;
@@ -91,6 +99,7 @@
     box-sizing:border-box!important;
     transform:none!important;
     overflow:visible!important;
+    pointer-events:auto!important;
     z-index:11!important;
   }
   body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage[open] .workout-draft-manage-actions button{
