@@ -1,0 +1,72 @@
+/* GARANG Commercial Target v3.8
+   Mobile workout draft touch ownership.
+   Keep the primary Record action on its own row and management secondary so
+   no adjacent disclosure can own the Record button's physical touch center.
+   Presentation only; canonical workout draft/session handlers are unchanged.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .list-item{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    overflow:visible!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-actions{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-items:stretch!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:8px!important;
+    position:relative!important;
+    z-index:6!important;
+    isolation:isolate!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-record,
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea [data-execute-workout]{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    margin:0!important;
+    position:relative!important;
+    z-index:8!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    scroll-margin-top:112px!important;
+    scroll-margin-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage{
+    grid-column:1!important;
+    grid-row:2!important;
+    justify-self:end!important;
+    width:72px!important;
+    min-width:72px!important;
+    margin:0!important;
+    position:relative!important;
+    z-index:2!important;
+    isolation:isolate!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .workout-draft-manage>summary{
+    width:72px!important;
+    min-width:72px!important;
+    min-height:44px!important;
+    margin:0!important;
+    position:relative!important;
+    z-index:2!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-workout #workoutDraftArea .list>.list-item:last-child{
+    margin-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
