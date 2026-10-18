@@ -10,14 +10,14 @@
    if(document.querySelector('link[data-garang-presentation-v4]'))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-presentation-v4.css?v=4.0.0-clean-architecture';
+   link.href='./03_styles/runtime/garang-presentation-v4.css?v=4.0.2-body-anatomy';
    link.dataset.garangPresentationV4='1';
    document.head.appendChild(link);
  }
  function loadPresentation(){
    if(document.querySelector('script[data-garang-presentation-v4]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-presentation-v4.js?v=4.0.0-clean-architecture';
+   script.src='./06_features/ui/runtime/garang-presentation-v4.js?v=4.0.2-body-anatomy';
    script.defer=true;
    script.dataset.garangPresentationV4='1';
    script.addEventListener('load',()=>root.GarangPresentationV4?.schedule?.(),{once:true});
