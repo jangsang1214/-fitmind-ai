@@ -22,6 +22,25 @@ body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.acti
   body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-head-new::after{
     content:'⋮'!important;font-size:19px!important;line-height:1!important;color:#c1c6d0!important
   }
+  /* The approved Coach board is conversation-first: short threads stay near the header
+     instead of being pushed to the bottom of a viewport-sized empty canvas. */
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-main{
+    grid-template-rows:54px auto auto!important;
+    align-content:start!important;
+    height:auto!important;
+    min-height:calc(100dvh - 62px - env(safe-area-inset-bottom,0px))!important;
+    overflow:visible!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-scroll{
+    height:auto!important;
+    min-height:0!important;
+    max-height:430px!important;
+    overflow-y:auto!important;
+    align-self:start!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-composer-wrap{
+    align-self:start!important
+  }
 }
 body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
   width:100%!important;min-height:44px!important;margin:0!important;padding:0 13px!important;
