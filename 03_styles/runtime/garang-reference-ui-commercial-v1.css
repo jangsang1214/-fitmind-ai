@@ -17,6 +17,26 @@
 @import url('./garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure');
 @import url('./garang-commercial-target-v3-12.css?v=3.12.0-today-action-first');
 
+/* v3.12 hides the Plan heading copy, but the canonical mobile Planner shortcut is
+   mounted inside that same heading. Keep a 44px touch-safe host while hiding only
+   the decorative label copy. */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"]){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:100%!important;
+  min-height:44px!important;
+  margin:0 0 7px!important;
+  padding:0!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>span,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>small{
+  display:none!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head [data-garang-planner-shortcut="1"]{
+  margin:0!important
+}
+
 body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
 body.garang-reference-ui-v2 button:focus-visible,
 body.garang-reference-ui-v2 input:focus-visible,
