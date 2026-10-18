@@ -13,6 +13,7 @@ const isNode=n=>n&&n.nodeType===1;
 const isEnglish=()=>document.documentElement.lang==='en';
 const copy=(ko,en)=>isEnglish()?en:ko;
 const languageKey=()=>isEnglish()?'en':'ko';
+let todayStageRepairQueued=false;
 
 function node(tag,cls,html=''){
   const el=document.createElement(tag);if(cls)el.className=cls;if(html)el.innerHTML=html;return el;
@@ -71,13 +72,34 @@ function ensureStage(m,cls,after){
 }
 function move(stage,...items){for(const item of items.flat()){if(isNode(item)&&item!==stage&&!stage.contains(item))stage.appendChild(item);}}
 function directRemainder(m,excluded=[]){const deny=new Set(excluded.filter(Boolean));return [...m.children].filter(x=>!deny.has(x)&&!x.classList.contains('g-ref-screen-intro')&&!x.className.includes('g-ref-'))}
+function watchTodayStage(m,stage){
+  if(!stage||stage.dataset.garangTodayOwnerWatch==='v2')return;
+  stage.dataset.garangTodayOwnerWatch='v2';
+  new MutationObserver(mutations=>{
+    if(screenName()!=='today'||!mutations.some(item=>item.type==='childList')||todayStageRepairQueued)return;
+    const flow=qs(m,'#garangTodayFlow');
+    if(!flow||flow.parentElement===stage)return;
+    todayStageRepairQueued=true;
+    const enqueue=typeof queueMicrotask==='function'?queueMicrotask:fn=>Promise.resolve().then(fn);
+    enqueue(()=>{
+      todayStageRepairQueued=false;
+      if(screenName()!=='today'||!stage.isConnected)return;
+      const current=qs(m,'#garangTodayFlow');
+      if(current&&current.parentElement!==stage){
+        stage.prepend(current);
+        current.classList.add('g-ref-primary-decision');
+        m.dataset.garangReferenceUi='v2';
+      }
+    });
+  }).observe(stage,{childList:true});
+}
 
 function decorateToday(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
   const intro=ensureIntro(m),now=new Date();
   setStableMarkup(intro,`today-${languageKey()}-${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`,todayStrip());
   const flow=qs(m,'#garangTodayFlow'),hero=qs(m,'.visual-today-hero');
-  const stage=ensureStage(m,'g-ref-today-stage',intro);move(stage,flow,hero);
+  const stage=ensureStage(m,'g-ref-today-stage',intro);watchTodayStage(m,stage);move(stage,flow,hero);
   if(flow)flow.classList.add('g-ref-primary-decision');
   if(hero){
     hero.classList.add('g-ref-today-body-card');
