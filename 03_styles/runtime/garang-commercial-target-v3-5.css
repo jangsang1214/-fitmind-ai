@@ -1,0 +1,42 @@
+/* GARANG Commercial Target v3.5
+   Nutrition draft actions: keep Edit/Delete as distinct mobile touch targets.
+   Presentation only; canonical draft/edit/remove handlers remain unchanged.
+*/
+@media(max-width:800px){
+  body.garang-reference-ui-v2 #mealDraftArea *:has(> [data-edit-food]):has(> [data-remove-food]){
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    flex-wrap:wrap!important;
+    gap:8px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+    position:relative!important;
+  }
+  body.garang-reference-ui-v2 #mealDraftArea [data-edit-food],
+  body.garang-reference-ui-v2 #mealDraftArea [data-remove-food]{
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    float:none!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:58px!important;
+    min-height:44px!important;
+    margin:0!important;
+    padding:9px 13px!important;
+    border-radius:11px!important;
+    z-index:1!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  body.garang-reference-ui-v2 #mealDraftArea [data-edit-food]{
+    border-color:rgba(129,140,248,.20)!important;
+    color:#c7cbff!important;
+  }
+  body.garang-reference-ui-v2 #mealDraftArea [data-remove-food]{
+    border-color:rgba(255,255,255,.07)!important;
+    color:#8d95a3!important;
+  }
+}

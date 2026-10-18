@@ -1,0 +1,192 @@
+/* GARANG Commercial Target v3.1
+   Screenshot-driven correction pass for the Founder-approved 2026-10-15 board.
+   Presentation only. Loaded after v3.0.
+*/
+
+/* ---------- GLOBAL CHROME ---------- */
+body.garang-reference-ui-v2 .g-ref-topbar{
+  position:sticky!important;top:0!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  height:58px!important;min-height:58px!important;padding:0 56px!important;overflow:visible!important
+}
+body.garang-reference-ui-v2 .g-ref-topbar #menuBtn{
+  position:absolute!important;left:10px!important;right:auto!important;top:11px!important;margin:0!important;z-index:5!important
+}
+body.garang-reference-ui-v2 .g-ref-topbar .brand.mini{
+  position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+  width:auto!important;max-width:160px!important;margin:0!important;z-index:3!important
+}
+body.garang-reference-ui-v2 .g-ref-topbar .brand.mini>div>span{display:none!important}
+body.garang-reference-ui-v2 .g-ref-topbar .top-actions{
+  position:static!important;display:block!important;width:0!important;height:0!important;margin:0!important;padding:0!important
+}
+body.garang-reference-ui-v2 .g-ref-topbar .top-actions>*:not(#settingsTopBtn){display:none!important}
+body.garang-reference-ui-v2 .g-ref-topbar #settingsTopBtn{
+  display:grid!important;place-items:center!important;position:absolute!important;right:10px!important;left:auto!important;top:11px!important;margin:0!important;z-index:5!important
+}
+body.garang-reference-ui-v2 .g-ref-bottom-nav button b{display:none!important}
+body.garang-reference-ui-v2 .g-ref-bottom-nav button::after{
+  display:block!important;margin-top:3px!important;font-size:9px!important;line-height:1!important;font-weight:650!important;letter-spacing:-.03em!important;color:currentColor!important
+}
+html[lang="ko"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(1)::after{content:'오늘'}
+html[lang="ko"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(2)::after{content:'기록'}
+html[lang="ko"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(3)::after{content:'코치'}
+html[lang="ko"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(4)::after{content:'누적'}
+html[lang="en"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(1)::after{content:'Today'}
+html[lang="en"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(2)::after{content:'Record'}
+html[lang="en"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(3)::after{content:'Coach'}
+html[lang="en"] body.garang-reference-ui-v2 .g-ref-bottom-nav button:nth-child(4)::after{content:'Progress'}
+
+/* ---------- TODAY: DECISION FIRST ---------- */
+body.garang-reference-ui-v2 #garangTodayFlow.g-ref-primary-decision{
+  display:flex!important;flex-direction:column!important;gap:0!important;min-height:438px!important;padding:0!important
+}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision{order:1!important;padding:25px 18px 6px!important;min-height:186px!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision>span{font-size:8px!important;letter-spacing:.16em!important;color:#969cff!important;font-weight:800!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision h2{margin:7px 0 8px!important;max-width:64%!important;font-size:27px!important;line-height:1.16!important;font-weight:780!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision p{margin:0!important;max-width:59%!important;font-size:10px!important;line-height:1.6!important;color:#a1a8b4!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-context{order:2!important;padding:0 18px 10px!important;display:flex!important;gap:6px!important;flex-direction:column!important;align-items:flex-start!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-context span{max-width:62%!important;font-size:9px!important;line-height:1.45!important;color:#7f8795!important;letter-spacing:0!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-context strong{display:none!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-action{order:3!important;padding:0 14px 12px!important;margin:0!important;position:relative!important;z-index:4!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-next{width:100%!important;min-height:54px!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-state{order:4!important;margin:0 14px 12px!important;padding:10px!important;border:1px solid rgba(255,255,255,.065)!important;border-radius:16px!important;background:rgba(8,12,18,.76)!important;backdrop-filter:blur(12px)!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-state-primary{display:none!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-visual{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track{position:relative!important;display:grid!important;grid-template-columns:24px minmax(0,1fr)!important;grid-template-rows:auto auto!important;min-width:0!important;gap:3px 7px!important;padding:8px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:12px!important;background:#0d121a!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-icon{grid-row:1/3!important;width:23px!important;height:23px!important;align-self:center!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-copy{min-width:0!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-copy span{font-size:7px!important;color:#707887!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-copy strong{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:9px!important;color:#f0f2f6!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-badge{grid-column:2!important;font-size:8px!important;color:#9ea5ff!important;font-style:normal!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-line{position:absolute!important;left:8px!important;right:8px!important;bottom:5px!important;height:2px!important;border-radius:99px!important;background:rgba(255,255,255,.05)!important;overflow:hidden!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-line b{display:block!important;width:calc(var(--gtf-track,0) * 1%)!important;height:100%!important;background:#7077ff!important}
+body.garang-reference-ui-v2 #garangTodayFlow .gtf-disclosure{order:5!important;margin:0 14px 12px!important;min-height:38px!important;border:0!important;background:transparent!important;color:#7e8693!important;font-size:9px!important}
+body.garang-reference-ui-v2 #garangTodayFlow [data-gtf-detail]{order:6!important;margin:0 14px 12px!important}
+body.garang-reference-ui-v2 #garangTodayFlow.g-ref-primary-decision::after{right:0!important;top:36px!important;width:47%!important;height:228px!important;opacity:.72!important;mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)!important}
+body.garang-reference-ui-v2 .g-ref-today-support{margin-top:12px!important}
+
+/* ---------- WORKOUT: EXECUTION IS THE SCREEN ---------- */
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar{scroll-margin-top:72px!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) .execution-compact-fields,
+body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) .workout-set-toolbar,
+body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) #clearWorkoutDraft,
+body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) .one-rm-panel{display:none!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout:has(.workout-session-bar.is-live) .workout-execution-v2>.visual-section-head{padding:4px 2px 10px!important;border:0!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-exercise-head h3{font-size:25px!important;line-height:1.15!important;color:#fff!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-exercise-head .eyebrow{color:#8d94ff!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar.is-live{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:72px!important;padding:12px 14px!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar.is-live .workout-session-live{grid-template-columns:auto 1fr!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar.is-live .workout-session-live span{font-size:0!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar.is-live .workout-session-live span::after{content:'운동 세션';font-size:8px;color:#838b98;letter-spacing:.12em;font-weight:800}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-session-bar.is-live .workout-session-live strong{font-size:31px!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .workout-set-table-head{display:none!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-auto-rows:auto!important;gap:8px!important;
+  margin:10px 0!important;padding:13px!important;overflow:visible!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set::before{content:'현재 세트'!important;grid-column:1/2!important;grid-row:1!important;align-self:center!important;margin:0!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set>.execution-set-index{grid-column:2!important;grid-row:1!important;justify-self:end!important;width:auto!important;min-width:36px!important;height:24px!important;padding:0 8px!important;border-radius:99px!important;background:rgba(110,114,255,.15)!important;color:#a9aeff!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-previous,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-target{display:block!important;position:relative!important;min-height:48px!important;padding:20px 10px 7px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:12px!important;background:#0c1119!important;color:#e6e9ef!important;font-size:11px!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-previous{grid-column:1!important;grid-row:2!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-target{grid-column:2!important;grid-row:2!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-previous::before,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-target::before{position:absolute;left:10px;top:6px;font-size:7px;letter-spacing:.12em;color:#687180;font-weight:800}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-previous::before{content:'이전'}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-target::before{content:'목표'}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-weight-field{grid-column:1!important;grid-row:3!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-reps-field{grid-column:2!important;grid-row:3!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-weight-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-reps-field{display:grid!important;gap:5px!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-weight-field>span,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-reps-field>span{position:static!important;width:auto!important;height:auto!important;clip:auto!important;overflow:visible!important;font-size:8px!important;color:#808897!important;letter-spacing:.04em!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-type-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-rpe-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .execution-rir-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-delete-button,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-detail-toggle{display:none!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.current-set .set-complete-button{grid-column:1/-1!important;grid-row:4!important;width:100%!important;height:54px!important;min-height:54px!important;border-radius:14px!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set){min-height:58px!important;border-radius:14px!important;margin:7px 0!important;background:#0c1118!important}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .execution-target,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .execution-type-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .execution-rpe-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .execution-rir-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .set-delete-button,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row:not(.current-set) .set-detail-toggle{display:none!important}
+
+/* ---------- REST ---------- */
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;gap:12px!important;padding-top:24px!important;background:radial-gradient(circle at 50% 32%,rgba(96,91,255,.20),transparent 31%),linear-gradient(180deg,#11172a,#0a0f19)!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal[hidden]{display:none!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal>div:first-of-type{display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;width:100%!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal>div:first-of-type>span{display:none!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal>div:first-of-type>small{font-size:9px!important;color:#8991a0!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal>label{display:none!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal .g-ref-rest-next{display:grid!important;gap:3px!important;padding:11px 12px!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:14px!important;background:#0d121b!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal .g-ref-rest-next span{font-size:7px!important;letter-spacing:.14em!important;color:#6e7786!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal .g-ref-rest-next strong{font-size:13px!important;color:#f1f3f7!important}
+body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal .g-ref-rest-next small{font-size:10px!important;color:#a2a9b5!important}
+
+/* ---------- NUTRITION ---------- */
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary .meal-scan-entry-stack{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:0 12px 12px!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary .meal-scan-entry-stack .meal-scan-empty{margin:0!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickMealScan{grid-column:1/-1!important;min-height:222px!important;justify-content:flex-end!important;align-items:flex-start!important;text-align:left!important;padding:18px!important;border-radius:18px!important;background:radial-gradient(circle at 50% 34%,rgba(102,104,255,.18),transparent 32%),linear-gradient(145deg,#171d28,#0b0f16)!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickMealScan .camera-glyph{margin:0 0 16px!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickMealScan strong{font-size:18px!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickMealScan small{font-size:9px!important;color:#7e8793!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickLabelScan{grid-column:1/-1!important;min-height:72px!important;display:grid!important;grid-template-columns:40px 1fr!important;grid-template-rows:auto auto!important;align-items:center!important;text-align:left!important;padding:11px 13px!important;border-radius:15px!important;background:#0e131c!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickLabelScan .camera-glyph{grid-row:1/3!important;width:34px!important;height:34px!important;margin:0!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickLabelScan strong{font-size:12px!important}
+body.garang-reference-ui-v2 .g-ref-meal-scan-primary #pickLabelScan small{font-size:8px!important}
+body.garang-reference-ui-v2 .g-ref-nutrition-status{margin-top:10px!important}
+body.garang-reference-ui-v2 .g-ref-nutrition-support{margin-top:10px!important}
+
+/* ---------- BODY: ANATOMY FIRST ---------- */
+body.garang-reference-ui-v2 .g-ref-body-primary{min-height:540px!important;padding:0!important;overflow:hidden!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual{display:block!important;position:relative!important;min-height:445px!important;padding:0!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy{position:absolute!important;left:8px!important;right:8px!important;top:50px!important;bottom:78px!important;min-height:0!important;width:auto!important;margin:0!important;display:block!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .muscle-map-wrap{width:100%!important;height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .muscle-map{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:2px!important;align-items:end!important;width:100%!important;height:100%!important;min-height:0!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view{display:grid!important;place-items:end center!important;min-height:330px!important;height:330px!important;overflow:visible!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g3-body-model{display:block!important;width:auto!important;height:320px!important;max-height:320px!important;max-width:155px!important;min-width:0!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 24px 32px rgba(0,0,0,.5)) contrast(1.13) saturate(1.12)!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view>span{font-size:7px!important;letter-spacing:.14em!important;color:#7f8794!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .g3-anatomy-tools{position:absolute!important;top:-42px!important;left:6px!important;right:6px!important;z-index:20!important;margin:0!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .g3-view-switch{position:static!important;width:100%!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual>div:last-child{position:absolute!important;left:12px!important;bottom:12px!important;z-index:20!important;width:calc((100% - 38px)/3)!important;min-height:66px!important;padding:10px 7px!important;border:1px solid rgba(255,255,255,.07)!important;border-radius:14px!important;background:rgba(15,20,29,.96)!important;text-align:center!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual>div:last-child .eyebrow{font-size:7px!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual>div:last-child strong{display:block!important;font-size:18px!important;line-height:1.15!important;margin-top:5px!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-visual>div:last-child small{display:none!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics{position:absolute!important;left:calc((100% - 38px)/3 + 19px)!important;right:12px!important;bottom:12px!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;z-index:20!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics>div:nth-child(n+3){display:none!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics>div{min-height:66px!important;padding:10px 6px!important}
+body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-metrics b{font-size:18px!important}
+body.garang-reference-ui-v2 .g-ref-body-trend{margin-top:10px!important}
+
+/* ---------- COACH ---------- */
+body.garang-reference-ui-v2 .g-ref-coach-shell .g2-chat-head{height:54px!important;min-height:54px!important;padding:0 12px!important;background:#090d13!important}
+body.garang-reference-ui-v2 .g-ref-coach-shell .g2-chat-head-copy small{color:#8f96ff!important}
+body.garang-reference-ui-v2 .g-ref-coach-shell .g2-chat-head-copy strong{font-family:"Noto Sans KR",system-ui,sans-serif!important;font-size:13px!important;font-weight:720!important;letter-spacing:-.03em!important}
+body.garang-reference-ui-v2 .g-ref-coach-status{margin:7px 10px 0!important;border-color:rgba(255,255,255,.06)!important;background:#0d131a!important}
+body.garang-reference-ui-v2 .g-ref-coach-thread{padding:16px 14px 118px!important}
+body.garang-reference-ui-v2 .g-ref-coach-thread .g2-message{margin-bottom:12px!important}
+body.garang-reference-ui-v2 .g-ref-coach-thread .g2-message:not(.user) .g2-message-body{max-width:92%!important;padding:13px 14px!important;border:1px solid rgba(255,255,255,.07)!important;border-radius:18px!important;background:linear-gradient(155deg,#111720,#0d1219)!important;box-shadow:0 16px 32px rgba(0,0,0,.22)!important}
+body.garang-reference-ui-v2 .g-ref-coach-thread .g2-message-text{font-size:12px!important;line-height:1.7!important;color:#e4e7eb!important}
+body.garang-reference-ui-v2 .g-ref-coach-thread .g2-message-meta{font-size:7px!important;color:#5f6773!important}
+body.garang-reference-ui-v2 .g-ref-coach-composer .g4-prompt-strip{gap:6px!important;padding:0 0 8px!important}
+body.garang-reference-ui-v2 .g-ref-coach-composer .g4-prompt-strip button{min-height:31px!important;padding:0 11px!important;border-color:rgba(113,119,255,.20)!important;background:#0d131b!important;color:#a7adbb!important}
+body.garang-reference-ui-v2 .g-ref-coach-composer .g2-composer{border-color:rgba(122,128,255,.20)!important}
+body.garang-reference-ui-v2 .g-ref-coach-composer .g2-send{background:linear-gradient(135deg,#7376ff,#535aed)!important;color:#fff!important}
+
+/* ---------- RESULT / HISTORY / SETTINGS ---------- */
+body.garang-reference-ui-v2 .workout-result-card{border-radius:22px!important;background:linear-gradient(160deg,#141a25,#0d1118)!important;border-color:rgba(255,255,255,.08)!important}
+body.garang-reference-ui-v2 .workout-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+body.garang-reference-ui-v2 .workout-result-grid>div{background:#0d1219!important;border-color:rgba(255,255,255,.065)!important}
+
+@media(max-width:360px){
+  body.garang-reference-ui-v2 #garangTodayFlow.g-ref-primary-decision{min-height:420px!important}
+  body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision h2{font-size:24px!important;max-width:68%!important}
+  body.garang-reference-ui-v2 #garangTodayFlow .gtf-decision p,body.garang-reference-ui-v2 #garangTodayFlow .gtf-context span{max-width:66%!important}
+  body.garang-reference-ui-v2 #garangTodayFlow .gtf-track{grid-template-columns:1fr!important;padding:7px!important}
+  body.garang-reference-ui-v2 #garangTodayFlow .gtf-track-icon{display:none!important}
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view svg.g3-body-model{height:285px!important;max-height:285px!important;max-width:135px!important}
+  body.garang-reference-ui-v2 .g-ref-body-primary .body-hero-anatomy .body-view{height:295px!important;min-height:295px!important}
+}

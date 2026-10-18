@@ -18,7 +18,7 @@
 
   function copy(lang){
     if(lang==='en')return {
-      accumulation:'ACCUMULATION',planner:'PLAN EXECUTION',recordRhythm:'Recording rhythm',planRhythm:'Plan execution',
+      accumulation:'ACCUMULATION · SIGNAL RECORDS',planner:'PLAN EXECUTION',recordRhythm:'Recording rhythm',planRhythm:'Plan execution',
       accumulationFlow:'As your records build, your rhythm and goal direction become clearer.',planFlow:'This is how much of the planned rhythm was executed this week.',
       accumulated:'WHAT ACCUMULATED',changed:'WHAT CHANGED',nextAction:'NEXT ACTION',insufficientTrend:'It is still early to call this a change. For now, GARANG is learning your rhythm.',
       accumulatedPlans:(executed,planned)=>planned?(executed?`${executed} of ${planned} plans became real actions this week. Each follow-through adds to your rhythm.`:'Your plans are set for the week. The first follow-through will start the rhythm.'):'No plans are set for this week yet.',
@@ -32,7 +32,7 @@
       noGoalJudgement:'GARANG is still learning how your records relate to your goal. A little more history will make the direction clearer.',firstRecord:'Add your first record',closePlan:'Plan entry opens here after the droplet is opened.'
     };
     return {
-      accumulation:'누적.',planner:'계획 실행',recordRhythm:'기록 리듬',planRhythm:'계획 실행',
+      accumulation:'누적 · 신호 기록',planner:'계획 실행',recordRhythm:'기록 리듬',planRhythm:'계획 실행',
       accumulationFlow:'오늘의 기록이 쌓일수록, 당신의 흐름도 더 선명해집니다.',planFlow:'이번 주 계획 중 실제로 실행된 흐름입니다.',
       accumulated:'쌓인 것',changed:'변화',nextAction:'다음 행동',insufficientTrend:'아직은 변화를 말하기보다, 당신의 흐름을 조금 더 지켜볼 때입니다.',
       accumulatedPlans:(executed,planned)=>planned?(executed?`이번 주 ${planned}개의 계획 중 ${executed}개가 실행으로 이어졌습니다. 이어온 행동들이 하나의 흐름이 되어갑니다.`:'이번 주 계획은 준비되어 있습니다. 첫 실행부터 당신의 흐름이 시작됩니다.'):'이번 주 계획은 아직 비어 있습니다. 다음 한 가지부터 시작해보세요.',

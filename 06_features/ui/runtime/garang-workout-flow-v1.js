@@ -149,6 +149,10 @@ function distributeUtilities(shell){
 function apply(shell){
   if(!SURFACES.some(item=>item.id===state.active))state.active='exercise';
   distributeUtilities(shell);
+  const overview=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="overview"]');
+  const exercise=shell.querySelector(':scope > .gws-panel[data-garang-workout-surface="exercise"]');
+  const hero=shell.querySelector('.workout-visual-hero');
+  if(hero&&overview&&exercise)move(hero,state.active==='exercise'?exercise:overview);
   renderNav(shell);
   shell.querySelectorAll(':scope > .gws-panel').forEach(node=>{
     const on=node.dataset.garangWorkoutSurface===state.active;

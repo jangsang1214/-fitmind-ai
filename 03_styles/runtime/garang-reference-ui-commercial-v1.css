@@ -1,0 +1,121 @@
+/* GARANG Founder-approved commercial presentation entry.
+   The 2026-10-15 Founder-approved board is now the binding visual target.
+   Canonical behavior remains owned by existing runtime modules.
+*/
+@import url('./garang-commercial-target-v3.css?v=3.0.0-founder-approved');
+@import url('./garang-commercial-target-v3-1.css?v=3.1.0-screenshot-driven');
+@import url('./garang-commercial-target-v3-2.css?v=3.2.0-live-set-contract');
+@import url('./garang-commercial-target-v3-3.css?v=3.3.0-detail-access');
+@import url('./garang-commercial-target-v3-4.css?v=3.4.0-progressive-details');
+@import url('./garang-commercial-target-v3-5.css?v=3.5.0-nutrition-actions');
+@import url('./garang-commercial-target-v3-6.css?v=3.6.0-draft-reset-access');
+@import url('./garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity');
+@import url('./garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch');
+@import url('./garang-commercial-target-v3-9.css?v=3.9.1-founder-board-exact');
+@import url('./garang-commercial-i18n-v1.css?v=1.0.0-language-safe');
+@import url('./garang-commercial-target-v3-10.css?v=3.10.0-capture-parity');
+@import url('./garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure');
+@import url('./garang-commercial-target-v3-12.css?v=3.12.0-today-action-first');
+
+/* Product Consolidation injects its compatibility style at runtime. These rules resolve only
+   Founder-approved presentation order while preserving canonical Today DOM/action owners. */
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision .gtf-state-primary{
+  display:none!important
+}
+/* Canonical-ID pin: the consolidation compatibility style is injected after linked styles.
+   Readiness remains available through the three canonical tracks, but the duplicate score card
+   must never become the first visual anchor again. */
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow .gtf-state>.gtf-state-primary.gtf-state-primary{
+  display:none!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-decision{
+  order:1!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-action,
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-checkin-access{
+  order:2!important
+}
+/* Canonical-ID pin: Product Consolidation is inserted dynamically after linked styles. Do not
+   depend on decoration classes for the primary action ordering contract. */
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow>.gtf-action.gtf-action,
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow>.gtf-checkin-access.gtf-checkin-access{
+  order:2!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan{
+  order:3!important;
+  display:block!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gtf-context{
+  display:block!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gtf-track-visual{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-coach-explain{
+  order:4!important
+}
+
+/* v3.12 hides the Plan heading copy, but the canonical mobile Planner shortcut is
+   mounted inside that same heading. Keep a 44px touch-safe host while hiding only
+   the decorative label copy. */
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"]){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:100%!important;
+  min-height:44px!important;
+  margin:0 0 7px!important;
+  padding:0!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>span,
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>small{
+  display:none!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head [data-garang-planner-shortcut="1"]{
+  margin:0!important
+}
+
+/* WebKit centers the scroll snap area, not only the button box. Give the bottom side
+   enough virtual clearance for the fixed 72px nav so Record/Manage settle fully above
+   it after any canonical scrollIntoView(center). This changes no document spacing. */
+@media(max-width:800px){
+  html body.garang-reference-ui-v2 #main#main.g-ref-screen-workout #workoutDraftArea#workoutDraftArea [data-execute-workout],
+  html body.garang-reference-ui-v2 #main#main.g-ref-screen-workout #workoutDraftArea#workoutDraftArea .workout-draft-manage>summary{
+    scroll-margin-top:96px!important;
+    scroll-margin-bottom:calc(320px + env(safe-area-inset-bottom,0px))!important
+  }
+}
+
+/* 320px History must size from the viewport, not from a grid child's min-content width.
+   Constrain the frame itself so the canonical History content can shrink normally. */
+@media(max-width:340px){
+  body.garang-reference-ui-v2:has(#main.g-ref-screen-progress) #appView{
+    width:100vw!important;
+    max-width:100vw!important;
+    min-width:0!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress>.page-head,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-board{
+    min-width:0!important;
+    max-width:100%!important
+  }
+}
+
+body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
+body.garang-reference-ui-v2 button:focus-visible,
+body.garang-reference-ui-v2 input:focus-visible,
+body.garang-reference-ui-v2 textarea:focus-visible,
+body.garang-reference-ui-v2 select:focus-visible,
+body.garang-reference-ui-v2 summary:focus-visible{
+  outline:2px solid rgba(129,140,248,.72)!important;
+  outline-offset:2px!important
+}

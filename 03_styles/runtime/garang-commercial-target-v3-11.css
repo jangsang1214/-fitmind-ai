@@ -1,0 +1,169 @@
+/* GARANG Commercial Target v3.11
+   Final History disclosure hierarchy + Rest focus viewport for the Founder-approved board.
+   Presentation only; canonical progress, Coach and workout owners remain unchanged.
+*/
+html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow.g-ref-primary-decision{
+  border-radius:26px!important
+}
+body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.active{
+  left:0!important;right:0!important;top:0!important;bottom:0!important;transform:none!important;
+  width:100vw!important;max-width:none!important;min-width:0!important;min-height:100dvh!important;
+  margin:0!important;border-radius:0!important;box-sizing:border-box!important;overflow-y:auto!important;
+  padding-top:max(68px,env(safe-area-inset-top,0px))!important;
+  padding-bottom:max(26px,env(safe-area-inset-bottom,0px))!important
+}
+@media(max-width:800px){
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-head-new{
+    display:grid!important;place-items:center!important;flex:0 0 34px!important;width:34px!important;height:34px!important;
+    min-width:34px!important;min-height:34px!important;margin-left:auto!important;padding:0!important;
+    border:0!important;border-radius:50%!important;background:transparent!important;color:#aeb4c0!important;
+    font-size:0!important;line-height:1!important;touch-action:manipulation!important;pointer-events:auto!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-head-new::after{
+    content:'⋮'!important;font-size:19px!important;line-height:1!important;color:#c1c6d0!important
+  }
+  /* The approved Coach board is conversation-first: short threads stay near the header
+     instead of being pushed to the bottom of a viewport-sized empty canvas. */
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-main{
+    grid-template-rows:54px auto auto!important;
+    align-content:start!important;
+    height:auto!important;
+    min-height:calc(100dvh - 62px - env(safe-area-inset-bottom,0px))!important;
+    overflow:visible!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-chat-scroll{
+    height:auto!important;
+    min-height:0!important;
+    max-height:430px!important;
+    overflow-y:auto!important;
+    align-self:start!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-composer-wrap{
+    align-self:start!important
+  }
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
+  width:100%!important;min-height:44px!important;margin:0!important;padding:0 13px!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  border:1px solid rgba(255,255,255,.055)!important;border-radius:14px!important;
+  background:#0a0f16!important;color:#8f97a3!important;font-size:9px!important;font-weight:700!important;
+  text-align:left!important;touch-action:manipulation!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle span{
+  color:#858cff!important;font-size:16px!important;line-height:1!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero{
+  display:block!important;min-height:54px!important;margin:10px 0 0!important;padding:10px 12px!important;
+  border:1px solid rgba(255,255,255,.055)!important;border-radius:13px!important;background:#0c1118!important;
+  box-shadow:none!important;overflow:hidden!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero h2,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero strong{
+  font-size:12px!important;line-height:1.28!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero p,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero span{
+  font-size:8px!important;line-height:1.45!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-timeline,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-day-summary,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>[data-gx-meaning-loop]{
+  display:none!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-timeline,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-day-summary,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>[data-gx-meaning-loop]{
+  margin-top:10px!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.g-ref-history-board{
+  display:grid!important
+}
+
+/* 320px History containment: keep the canonical accumulation evidence inside the
+   Founder history surface instead of letting intrinsic grid/flex widths add 4px. */
+@media(max-width:340px){
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.g-ref-history-board,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-timeline,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-day-summary,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>[data-gx-meaning-loop],
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>[data-gx-meaning-loop]>*{
+    width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-calendar,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-summary,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
+    width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs button,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-day,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-summary>div{
+    min-width:0!important;max-width:100%!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs button{
+    padding-left:2px!important;padding-right:2px!important
+  }
+}
+
+/* Founder-approved Workout record density: completed sets collapse to a single readable row. */
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set){
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 44px!important;
+  grid-template-rows:44px!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:62px!important;
+  margin:7px 0!important;
+  padding:8px 10px!important;
+  border-radius:14px!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set)>.execution-set-index{
+  grid-column:1!important;grid-row:1!important;width:30px!important;height:30px!important;place-self:center!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-weight-field{
+  display:block!important;grid-column:2!important;grid-row:1!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-reps-field{
+  display:block!important;grid-column:3!important;grid-row:1!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-weight-field>span,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-reps-field>span,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-previous,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-target,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-type-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-rpe-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-rir-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-delete-button,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-detail-toggle{
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) input{
+  width:100%!important;height:44px!important;min-height:44px!important;padding:0 8px!important;
+  border-radius:11px!important;font-size:17px!important;font-weight:760!important;text-align:center!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-complete-button{
+  display:grid!important;grid-column:4!important;grid-row:1!important;place-items:center!important;
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;
+  border-radius:50%!important;font-size:0!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-complete-button::after{
+  content:'✓'!important;font-size:17px!important;line-height:1!important
+}
+
+/* Session completion is its own approved screen. Hide stale draft/exercise chrome once the result exists. */
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-shell:has(.workout-result-card)>.gws-nav{
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]:has(>.workout-result-card)>
+  :not(.workout-result-card){
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]:has(>.workout-result-card){
+  padding-top:0!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]>.workout-result-card{
+  margin-top:0!important
+}

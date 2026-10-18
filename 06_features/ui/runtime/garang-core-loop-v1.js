@@ -88,7 +88,7 @@ function deriveAccumulation(state,options={}){
   const completed=plans.filter(completedPlan).length,planRate=plans.length?Math.round(completed/plans.length*100):null,activeDays=new Set([...workouts,...runs].map(rowDate).filter(Boolean)).size,recordDays=[...recordDates(safe)].filter(date=>{const diff=daysBetween(date,end);return diff>=0&&diff<days;}).length,delta=bodyDelta(safe,end,days),recordStreak=currentStreak(safe,end),completedPlanStreak=planStreak(safe,end),evidence=streakEvidence(safe,end,recordStreak),rhythm=sevenDayRhythm(safe,end);
   const totalDistance=Math.round(runs.reduce((sum,r)=>sum+(finite(r?.distance)||0),0)*10)/10,proteinRows=meals.map(m=>finite(m?.protein)).filter(v=>v!==null),avgProtein=proteinRows.length?Math.round(proteinRows.reduce((a,b)=>a+b,0)/proteinRows.length):null,streak=recordStreak;
   let headline=lang==='en'?`${recordDays} recorded days in the last ${days}.`:`최근 ${days}일 중 ${recordDays}일이 기록됐습니다.`,support=lang==='en'?'Consistency matters more than isolated best numbers.':'최고 기록 하나보다 이어진 기록의 밀도를 먼저 봅니다.';
-  if(!recordDays){headline=lang==='en'?'Your accumulation starts with one record.':'첫 기록부터 누적이 시작됩니다.';support=lang==='en'?'There is not enough saved data to describe a streak yet.':'아직 저장된 기록이 없어 연속 기록을 판단할 수 없습니다.';}
+  if(!recordDays){headline=lang==='en'?'Accumulation starts with one record. Save a signal record to begin.':'첫 기록부터 누적이 시작됩니다. 신호 기록을 남겨보세요.';support=lang==='en'?'There is not enough saved data to describe a streak yet.':'아직 저장된 기록이 없어 연속 기록을 판단할 수 없습니다.';}
   else if(streak>=3){headline=lang==='en'?`${streak} consecutive recording days.`:`최근 ${streak}일 연속 기록이 이어졌습니다.`;support=lang==='en'?'This is a recording streak, backed by the dates shown below.':'이것은 기록 연속일이며, 아래 날짜와 기록 영역을 근거로 계산했습니다.';}
   return {days,end,lang,workouts:workouts.length,runs:runs.length,meals:meals.length,activeDays,recordDays,planRate,totalDistance,avgProtein,bodyDelta:delta,streak,recordStreak,planStreak:completedPlanStreak,streakEvidence:evidence,hasRecords:recordDays>0,rhythm,headline,support};
 }
@@ -144,7 +144,6 @@ function mount(root){
   }
   function render(){
     scheduled=false;ensureCoachActionLayoutStyle();ensureCoachActionDisclosureStyle();const snapshot=state();if(!snapshot)return;
-    if(main.dataset.garangScreen!=='coach')coachActionsExpanded=false;
     enhanceToday(snapshot);enhanceCoach(snapshot);enhanceAccumulation(snapshot);enhanceRecord(snapshot);
     if(pendingPrefill&&main.dataset.garangScreen===pendingPrefill.route){const item=pendingPrefill;pendingPrefill=null;root.requestAnimationFrame(()=>prefill(root,item.kind,item.payload));}
   }
@@ -159,7 +158,8 @@ function mount(root){
     const coach=event.target.closest?.('[data-gcl-coach]');
     if(coach){const host=coach.closest('[data-gcl-coach-actions]'),action=host?._gclActions?.[Number(coach.dataset.gclCoach)];if(!action)return;event.preventDefault();const input=main.querySelector('.g2-composer textarea,#aiQuestion,.gpt-composer textarea'),send=main.querySelector('.g2-send,#askAI,.gpt-send');if(input&&send){input.value=action.prompt;input.dispatchEvent(new Event('input',{bubbles:true}));if(typeof send.onclick==='function')send.onclick.call(send,{type:'garang-context-action',target:send,currentTarget:send,preventDefault(){},stopPropagation(){}});else send.click();}return;}
   },true);
-  for(const name of ['garang:screen-rendered','garang:coach-mounted','garang:state-updated','garang:state-hydrated','garang:route-completed','garang:agent-proposal-resolved','garang:record-sheet-opened','garang:goal-alignment-ready'])root.addEventListener(name,schedule);
+  root.addEventListener('garang:route-completed',event=>{if(String(event?.detail?.route||main.dataset.garangScreen||'')!=='coach')coachActionsExpanded=false;schedule();});
+  for(const name of ['garang:screen-rendered','garang:coach-mounted','garang:state-updated','garang:state-hydrated','garang:agent-proposal-resolved','garang:record-sheet-opened','garang:goal-alignment-ready'])root.addEventListener(name,schedule);
   doc.documentElement.addEventListener('garang:language-changed',schedule);root.addEventListener('pageshow',schedule);
   schedule();return true;
 }

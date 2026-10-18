@@ -1,0 +1,38 @@
+name: Progress overflow diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '03_styles/runtime/**'
+      - '06_features/ui/runtime/**'
+      - '07_config/version.js'
+      - 'tests/browser-progress-overflow-diagnostic.cjs'
+      - '.github/workflows/progress-overflow-diagnostic.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: progress-overflow-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked CI dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build browser test bundle
+        run: npm run build
+      - name: Diagnose 320px Progress overflow
+        run: node tests/browser-progress-overflow-diagnostic.cjs
