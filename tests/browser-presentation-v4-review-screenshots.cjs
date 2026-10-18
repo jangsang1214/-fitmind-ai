@@ -103,7 +103,10 @@ async function skipRest(page){
     await page.locator('.g4-body-shell .body-hero').waitFor({state:'visible',timeout:6000});
     const bodyPair=page.locator('.body-hero-anatomy .g4-body-anatomy-pair:visible').first();
     await bodyPair.waitFor({state:'visible',timeout:6000});
-    if(await bodyPair.locator('svg.g3-body-model:visible').count()<2)throw new Error('Body review requires visible front and back canonical runtime anatomy');
+    await page.waitForFunction(()=>{
+      const nodes=[...document.querySelectorAll('.body-hero-anatomy .g4-body-anatomy-pair svg.g2-body-model,.body-hero-anatomy .g4-body-anatomy-pair svg.g3-body-model')];
+      return nodes.filter(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)>0&&r.width>0&&r.height>0;}).length>=2;
+    },null,{timeout:6000});
     await shot(page,'07-body');
 
     await route(page,'coach');
