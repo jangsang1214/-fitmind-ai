@@ -1,0 +1,30 @@
+/* GARANG Commercial Target v3.11
+   Final History disclosure hierarchy for the Founder-approved board.
+   Presentation only; canonical accumulated-progress evidence remains in the DOM
+   and is revealed through the local disclosure state owned by Reference UI v2.
+*/
+body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
+  width:100%!important;min-height:44px!important;margin:0!important;padding:0 13px!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  border:1px solid rgba(255,255,255,.055)!important;border-radius:14px!important;
+  background:#0a0f16!important;color:#8f97a3!important;font-size:9px!important;font-weight:700!important;
+  text-align:left!important;touch-action:manipulation!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle span{
+  color:#858cff!important;font-size:16px!important;line-height:1!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-hero,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-timeline,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-day-summary,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>[data-gx-meaning-loop]{
+  display:none!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-hero,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-timeline,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-day-summary,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>[data-gx-meaning-loop]{
+  margin-top:10px!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.g-ref-history-board{
+  display:grid!important
+}
