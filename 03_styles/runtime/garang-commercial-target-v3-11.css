@@ -1,6 +1,6 @@
 /* GARANG Commercial Target v3.11
    Final History disclosure hierarchy + Rest focus viewport for the Founder-approved board.
-   Presentation only; canonical progress and workout owners remain unchanged.
+   Presentation only; canonical progress, Coach and workout owners remain unchanged.
 */
 body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.active{
   left:0!important;right:0!important;top:0!important;bottom:0!important;transform:none!important;
@@ -8,6 +8,17 @@ body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.acti
   margin:0!important;border-radius:0!important;box-sizing:border-box!important;overflow-y:auto!important;
   padding-top:max(68px,env(safe-area-inset-top,0px))!important;
   padding-bottom:max(26px,env(safe-area-inset-bottom,0px))!important
+}
+@media(max-width:800px){
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-head-new{
+    display:grid!important;place-items:center!important;flex:0 0 34px!important;width:34px!important;height:34px!important;
+    min-width:34px!important;min-height:34px!important;margin-left:auto!important;padding:0!important;
+    border:0!important;border-radius:50%!important;background:transparent!important;color:#aeb4c0!important;
+    font-size:0!important;line-height:1!important;touch-action:manipulation!important;pointer-events:auto!important
+  }
+  body.garang-reference-ui-v2 #main[data-garang-screen="coach"] .garang-coach-v2 .g2-head-new::after{
+    content:'⋮'!important;font-size:19px!important;line-height:1!important;color:#c1c6d0!important
+  }
 }
 body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
   width:100%!important;min-height:44px!important;margin:0!important;padding:0 13px!important;
