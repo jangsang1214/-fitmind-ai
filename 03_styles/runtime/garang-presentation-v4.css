@@ -113,6 +113,11 @@ html[lang="en"] #main.g4-screen-workout .execution-set-row.current-set::before{c
  #main.g4-screen-workout .execution-set-row.current-set .execution-reps-field{grid-row:2!important}
  #main.g4-screen-workout .execution-set-row.current-set .set-complete-button,#main.g4-screen-workout .execution-set-row.current-set [data-execution-set-complete]{grid-row:3!important}
  #main.g4-screen-workout .execution-set-row.current-set .set-detail-toggle{grid-row:4!important}
+ #main.g4-screen-workout .execution-set-row.current-set.is-details-open{grid-template-rows:auto auto auto auto auto auto!important}
+ #main.g4-screen-workout .execution-set-row.current-set.is-details-open .execution-type-field{display:grid!important;grid-column:1/-1!important;grid-row:4!important}
+ #main.g4-screen-workout .execution-set-row.current-set.is-details-open .execution-rpe-field{display:grid!important;grid-column:1!important;grid-row:5!important}
+ #main.g4-screen-workout .execution-set-row.current-set.is-details-open .execution-rir-field{display:grid!important;grid-column:2!important;grid-row:5!important}
+ #main.g4-screen-workout .execution-set-row.current-set.is-details-open .set-detail-toggle{grid-row:6!important}
 }
 
 /* 04 Rest — focused canonical timer. */
@@ -160,6 +165,7 @@ body.garang-presentation-v4 #skipWorkoutRest{grid-column:2!important;min-height:
 #main.g4-screen-body .body-hero-anatomy .body-view:nth-child(2):nth-last-child(2){display:none!important}
 #main.g4-screen-body .body-hero-anatomy svg.g3-body-model{display:block!important;width:auto!important;max-width:170px!important;height:380px!important;max-height:380px!important;opacity:1!important;filter:drop-shadow(0 26px 34px rgba(0,0,0,.48)) contrast(1.08)!important}
 #main.g4-screen-body .body-hero-anatomy img{max-height:390px!important;max-width:100%!important;opacity:1!important}
+#main.g4-screen-body .g4-body-anatomy-pair .body-view:has(svg.g3-body-model)>img{display:none!important}
 #main.g4-screen-body .body-model-legend{display:none!important}
 #main.g4-screen-body .body-trend-card{border-radius:18px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
 
