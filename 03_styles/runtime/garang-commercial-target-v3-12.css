@@ -1,0 +1,270 @@
+/* GARANG Commercial Target v3.12
+   Founder-approved Today hierarchy: decision -> primary action -> three compact status signals -> Coach.
+   Presentation only. Canonical Today state, routing, plan/workout generation and writes remain unchanged.
+*/
+
+body.garang-reference-ui-v2 #main.g-ref-screen-today .g-ref-today-stage{
+  display:grid!important;
+  gap:10px!important
+}
+
+/* The canonical Today flow itself is the single hero. The older visual Today card remains
+   a hidden source surface so runtime owners are preserved without duplicating the hero. */
+body.garang-reference-ui-v2 #main.g-ref-screen-today .g-ref-today-stage>.g-ref-today-body-card{
+  display:none!important
+}
+
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow.g-ref-primary-decision{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:26px!important;
+  background:
+    linear-gradient(90deg,rgba(7,10,15,.98) 0%,rgba(7,10,15,.93) 44%,rgba(7,10,15,.34) 70%,rgba(7,10,15,.08) 100%),
+    linear-gradient(180deg,rgba(8,11,17,.04),rgba(8,11,17,.38) 72%,#090d14 100%)!important;
+  box-shadow:0 22px 52px rgba(0,0,0,.36)!important
+}
+
+/* Score/readiness is evidence, never the first visual anchor. */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-state,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-state-primary{
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-state-primary{
+  display:none!important
+}
+
+/* 01 decisive headline + image */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision{
+  order:1!important;
+  position:relative!important;
+  z-index:2!important;
+  min-height:226px!important;
+  margin:0!important;
+  padding:26px 18px 14px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-end!important;
+  background:transparent!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision>span{
+  color:#8f95ff!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.10em!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision h2{
+  max-width:62%!important;
+  margin:7px 0 7px!important;
+  color:#f5f6fa!important;
+  font-size:29px!important;
+  line-height:1.1!important;
+  font-weight:790!important;
+  letter-spacing:-.055em!important;
+  text-wrap:balance!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision p{
+  max-width:60%!important;
+  margin:0!important;
+  color:#a4abb7!important;
+  font-size:10px!important;
+  line-height:1.55!important
+}
+
+/* 02 one unmistakable primary action */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-checkin-access{
+  order:2!important;
+  position:relative!important;
+  z-index:3!important;
+  margin:0!important;
+  padding:0 14px 13px!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action .gtf-next,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action .gtdw-start,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action button.primary{
+  width:100%!important;
+  min-height:56px!important;
+  border-radius:14px!important;
+  font-size:14px!important;
+  font-weight:780!important;
+  justify-content:space-between!important;
+  padding:0 17px!important;
+  background:linear-gradient(135deg,#8585ff 0%,#6668ff 55%,#555cf0 100%)!important;
+  box-shadow:0 16px 34px rgba(86,83,238,.30),inset 0 1px 0 rgba(255,255,255,.16)!important
+}
+
+/* 03 three compact readiness / status signals. Product Consolidation moves the canonical
+   track nodes into .gpc-today-plan; this layer only changes their presentation. */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan{
+  order:3!important;
+  display:block!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:12px 14px 13px!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.055)!important;
+  background:rgba(7,10,15,.78)!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head{
+  display:none!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gtf-context{
+  display:block!important;
+  margin:0 0 9px!important;
+  padding:0!important;
+  border:0!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gtf-context span{
+  display:block!important;
+  overflow:hidden!important;
+  color:#868f9d!important;
+  font-size:9px!important;
+  line-height:1.45!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gtf-context strong{
+  display:none!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gtf-track-visual{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:22px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  gap:1px 6px!important;
+  min-width:0!important;
+  min-height:62px!important;
+  padding:9px 8px 10px!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:13px!important;
+  background:#0b1018!important;
+  overflow:hidden!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-icon{
+  grid-column:1!important;
+  grid-row:1/3!important;
+  width:21px!important;
+  height:21px!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#9298ff!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-icon svg{
+  width:18px!important;
+  height:18px!important;
+  stroke:currentColor!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-copy{
+  grid-column:2!important;
+  grid-row:1/3!important;
+  min-width:0!important;
+  display:grid!important;
+  gap:2px!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-copy>span{
+  color:#757e8b!important;
+  font-size:7px!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-copy>strong{
+  overflow:hidden!important;
+  color:#eef0f5!important;
+  font-size:9px!important;
+  line-height:1.25!important;
+  font-weight:720!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-badge{
+  position:absolute!important;
+  right:7px!important;
+  top:7px!important;
+  margin:0!important;
+  color:#9ca2ff!important;
+  font-size:7px!important;
+  font-style:normal!important;
+  font-weight:800!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-line{
+  position:absolute!important;
+  left:8px!important;
+  right:8px!important;
+  bottom:6px!important;
+  height:2px!important;
+  border-radius:999px!important;
+  overflow:hidden!important;
+  background:rgba(255,255,255,.055)!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-line>b{
+  display:block!important;
+  width:calc(var(--gtf-track,0) * 1%)!important;
+  height:100%!important;
+  border-radius:999px!important;
+  background:#777cff!important
+}
+
+/* 04 Coach interpretation stays short and secondary. */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-coach-explain{
+  order:4!important;
+  display:flex!important;
+  width:auto!important;
+  min-height:48px!important;
+  margin:0 14px 8px!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.05)!important;
+  background:transparent!important;
+  color:#969daa!important;
+  font-size:9px!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-coach-explain b{
+  color:#8c92ff!important;
+  font-size:15px!important
+}
+
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-disclosure,
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-detail{
+  order:5!important
+}
+
+@media(max-width:360px){
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision{
+    min-height:210px!important;
+    padding:22px 15px 12px!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision h2{
+    max-width:66%!important;
+    font-size:26px!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision p{
+    max-width:64%!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan{
+    padding-inline:11px!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track{
+    min-height:58px!important;
+    padding-inline:6px!important;
+    grid-template-columns:19px minmax(0,1fr)!important;
+    gap:4px!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow .gtf-track-icon{
+    width:18px!important;height:18px!important
+  }
+}
