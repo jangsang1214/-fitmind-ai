@@ -79,6 +79,35 @@ body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverv
   display:grid!important
 }
 
+/* 320px History containment: keep the canonical accumulation evidence inside the
+   Founder history surface instead of letting intrinsic grid/flex widths add 4px. */
+@media(max-width:340px){
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.g-ref-history-board,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-timeline,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-day-summary,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>[data-gx-meaning-loop],
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>[data-gx-meaning-loop]>*{
+    width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-calendar,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-summary,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
+    width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs button,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-day,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-summary>div{
+    min-width:0!important;max-width:100%!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-tabs button{
+    padding-left:2px!important;padding-right:2px!important
+  }
+}
+
 /* Founder-approved Workout record density: completed sets collapse to a single readable row. */
 body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set){
   display:grid!important;
