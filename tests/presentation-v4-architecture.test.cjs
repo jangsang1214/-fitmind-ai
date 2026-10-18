@@ -1,0 +1,24 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const version=read('07_config/version.js');
+const css=read('03_styles/runtime/garang-presentation-v4.css');
+const runtime=read('06_features/ui/runtime/garang-presentation-v4.js');
+
+assert.match(version,/garang-presentation-v4\.css/,'version loader must load the clean v4 stylesheet');
+assert.match(version,/garang-presentation-v4\.js/,'version loader must load the clean v4 structural adapter');
+assert.doesNotMatch(version,/garang-reference-ui-v2/,'version loader must not restore the legacy v2 patch chain');
+assert.doesNotMatch(css,/commercial-approved-v3/i,'runtime presentation must not use cropped Founder-board assets');
+assert.doesNotMatch(css,/\.jpg\b/i,'runtime presentation v4 must not hard-code concept-board JPG heroes');
+assert.doesNotMatch(css,/opacity\s*:\s*\.0?15/i,'Body hit geometry must not be hidden behind a static image');
+assert.match(css,/body-hero-anatomy\{[^}]*opacity:1!important/s,'visible Body renderer must remain visible');
+assert.doesNotMatch(runtime,/cloneNode\s*\(/,'presentation adapter must move canonical owners instead of cloning them');
+assert.doesNotMatch(runtime,/replaceChildren\s*\(/,'presentation adapter must not replace canonical interactive geometry');
+assert.match(runtime,/qs\(m,'#garangTodayFlow'\)/,'Today must reuse the canonical decision owner');
+assert.match(runtime,/document\.getElementById\('workoutExecutionRest'\)/,'Workout Rest must reuse the canonical timer owner');
+assert.match(runtime,/qs\(m,'\.meal-scan-card'\)/,'Nutrition must reuse the canonical Meal Scan owner');
+assert.match(runtime,/qs\(m,'\.body-hero'\)/,'Body must reuse the canonical anatomy owner');
+console.log('presentation-v4 clean architecture contract: PASS');
