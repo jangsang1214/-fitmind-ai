@@ -101,7 +101,7 @@ async function skipRest(page){
 
     await route(page,'body');
     await page.locator('.g4-body-shell .body-hero').waitFor({state:'visible',timeout:6000});
-    await page.waitForFunction(()=>document.querySelector('.body-hero-anatomy .g3-body-model[data-garang-classical-model="6"]'),null,{timeout:5000});
+    await page.locator('.body-hero-anatomy svg,.body-hero-anatomy img,.body-hero-anatomy .muscle-map-wrap').first().waitFor({state:'visible',timeout:6000});
     await shot(page,'07-body');
 
     await route(page,'coach');
