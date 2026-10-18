@@ -7,7 +7,7 @@
 
 const main=document.getElementById('main');
 if(!main)return;
-const VERSION='garang-coach-quiet-surface-v1.0.2';
+const VERSION='garang-coach-quiet-surface-v1.0.3';
 const STYLE_ID='garang-coach-quiet-surface-v1-runtime-style';
 const raf=callback=>{
   const frame=window.requestAnimationFrame;
@@ -200,7 +200,10 @@ function syncCoachEvidenceEvent(event){
 
 function sync(){
   ensureRuntimeOverrides();
-  if(main.dataset.garangScreen!=='coach')return;
+  if(main.dataset.garangScreen!=='coach'){
+    coachActionDisclosureExpanded=false;
+    return;
+  }
   const root=main.querySelector('.garang-coach-v2');
   if(!root)return;
   root.dataset.garangCoachQuietSurface=VERSION;
