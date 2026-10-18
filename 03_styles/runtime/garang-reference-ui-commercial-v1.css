@@ -22,6 +22,12 @@
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision .gtf-state-primary{
   display:none!important
 }
+/* Canonical-ID pin: the consolidation compatibility style is injected after linked styles.
+   Readiness remains available through the three canonical tracks, but the duplicate score card
+   must never become the first visual anchor again. */
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow .gtf-state>.gtf-state-primary.gtf-state-primary{
+  display:none!important
+}
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-decision{
   order:1!important
 }
