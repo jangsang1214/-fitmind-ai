@@ -7,7 +7,7 @@ const styles=read('03_styles/runtime/garang-coach-quiet-surface-v1.css');
 const html=read('index.html');
 const manifest=JSON.parse(read('runtime-manifest.json'));
 
-assert.ok(runtime.includes("VERSION='garang-coach-quiet-surface-v1.0.2'"),'quiet Coach runtime must have a canonical version');
+assert.ok(runtime.includes("VERSION='garang-coach-quiet-surface-v1.0.3'"),'quiet Coach runtime must have a canonical version');
 assert.ok(runtime.includes('function primeCoachEvidence'),'Coach evidence must baseline existing answers before first interaction');
 assert.ok(runtime.includes("window.addEventListener('garang:coach-mounted',event=>primeCoachEvidence(event?.detail?.root))"),'Coach mount must synchronously prime the exact mounted root');
 assert.ok(runtime.includes("window.addEventListener('garang:coach-message-rendered',syncCoachEvidenceEvent)"),'Coach message renders must synchronously reconcile answer evidence before deferred presentation work');
@@ -19,13 +19,15 @@ assert.ok(runtime.includes('data-gcl-coach-actions'),'contextual actions must re
 assert.ok(runtime.includes('gcs-legacy-action-surface'),'legacy standalone action surfaces must be hidden');
 assert.ok(runtime.includes('gcs-duplicate-action-surface'),'duplicate contextual action surfaces must be hidden');
 assert.ok(runtime.includes('garang:coach-message-rendered'),'quiet surface must resync after Coach message rerenders');
+assert.ok(runtime.includes("if(main.dataset.garangScreen!=='coach'){"),'quiet surface must explicitly handle leaving Coach');
+assert.ok(runtime.includes('coachActionDisclosureExpanded=false;'),'quiet surface must reset disclosure state outside Coach');
 assert.equal(runtime.includes('new MutationObserver'),false,'quiet presentation runtime must not add a broad observer');
 assert.ok(styles.includes('.g4-prompt-strip.gcs-quiet-strip'),'quiet CSS must own the compact horizontal surface');
 assert.ok(styles.includes('overflow-x:auto!important'),'Coach actions must remain horizontally reachable on mobile');
 assert.ok(styles.includes('writing-mode:horizontal-tb!important'),'Coach action labels must never become vertical pills');
 assert.ok(styles.includes('.g2-empty-chat[data-garang-quiet-empty="1"]'),'empty Coach state must be compact');
 assert.ok(html.includes('garang-coach-quiet-surface-v1.css?v=1.0.1-action-disclosure'),'quiet Coach CSS must be loaded by the shell');
-assert.ok(html.includes('garang-coach-quiet-surface-v1.js?v=1.0.1-action-disclosure'),'quiet Coach runtime must be loaded by the shell');
+assert.ok(html.includes('garang-coach-quiet-surface-v1.js?v=1.0.3-route-reset'),'quiet Coach runtime must be loaded by the shell with the rotated cache key');
 assert.ok(manifest.styles.includes('03_styles/runtime/garang-coach-quiet-surface-v1.css'),'quiet Coach CSS must be tracked in the runtime manifest');
 assert.ok(manifest.scripts.includes('06_features/ui/runtime/garang-coach-quiet-surface-v1.js'),'quiet Coach runtime must be tracked in the runtime manifest');
 assert.equal(manifest.scripts.at(-1),'06_features/ui/runtime/garang-coach-quiet-surface-v1.js','quiet Coach runtime must run after existing Coach action renderers');
