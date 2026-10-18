@@ -2,6 +2,9 @@
    Final History disclosure hierarchy + Rest focus viewport for the Founder-approved board.
    Presentation only; canonical progress, Coach and workout owners remain unchanged.
 */
+body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow.g-ref-primary-decision{
+  border-radius:26px!important
+}
 body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.active{
   left:0!important;right:0!important;top:0!important;bottom:0!important;transform:none!important;
   width:100vw!important;max-width:none!important;min-width:0!important;min-height:100dvh!important;
