@@ -3,6 +3,13 @@
    Presentation only. Canonical Today state, routing, plan/workout generation and writes remain unchanged.
 */
 
+/* Route isolation: Today is presentation-only on the Today screen. A late Today lifecycle
+   callback may leave its read-only flow attached while another canonical route owns #main;
+   never let that stale surface participate in layout or touch geometry. */
+body.garang-reference-ui-v2 #main:not([data-garang-screen="today"]) #garangTodayFlow{
+  display:none!important
+}
+
 body.garang-reference-ui-v2 #main.g-ref-screen-today .g-ref-today-stage{
   display:grid!important;
   gap:10px!important
