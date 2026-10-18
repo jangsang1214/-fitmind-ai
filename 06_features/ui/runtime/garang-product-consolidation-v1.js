@@ -37,8 +37,8 @@ html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan-head small{display:none!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-context{display:none!important}
 html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gpc-today-plan>.gtf-track-visual{display:none!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-action{order:3!important;margin-top:2px!important}
-html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow>.gtf-checkin-access{order:3!important;margin-top:2px!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow .gtf-action{order:2!important;margin-top:2px!important}
+html body #main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow>.gtf-checkin-access{order:2!important;margin-top:2px!important}
 html body #main[data-garang-screen="progress"]>.garang-progress-legacy-internalized{display:none!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview{margin-top:4px!important}
 html body #main[data-garang-screen="progress"]>#garangAccumulationOverview [data-gx-meaning-loop]{margin-top:14px!important}
