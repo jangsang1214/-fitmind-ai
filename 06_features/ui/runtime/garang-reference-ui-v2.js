@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 if (window.GarangReferenceUIV2) return;
-const VERSION='garang-reference-ui-v2.0.0';
+const VERSION='garang-reference-ui-v2.0.1-founder-parity';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
@@ -13,7 +13,10 @@ const isNode=n=>n&&n.nodeType===1;
 const isEnglish=()=>document.documentElement.lang==='en';
 const copy=(ko,en)=>isEnglish()?en:ko;
 const languageKey=()=>isEnglish()?'en':'ko';
+const list=v=>Array.isArray(v)?v:[];
 let todayStageRepairQueued=false;
+let historyDomain='workout';
+let historySelectedDate='';
 
 function node(tag,cls,html=''){
   const el=document.createElement(tag);if(cls)el.className=cls;if(html)el.innerHTML=html;return el;
@@ -57,12 +60,11 @@ function dayLabel(d){
   return (isEnglish()?en:ko)[d.getDay()];
 }
 function todayStrip(){
-  const now=new Date(),cells=[];
-  for(let offset=-3;offset<=3;offset++){
-    const d=new Date(now);d.setDate(now.getDate()+offset);
-    cells.push(`<span class="${offset===0?'is-today':''}"><small>${dayLabel(d)}</small><b>${d.getDate()}</b></span>`);
-  }
-  return `<div class="g-ref-date-copy"><strong>${copy('안녕하세요!','Hello!')}</strong><span>${copy('오늘도 좋은 하루예요.','Here is what matters today.')}</span></div><div class="g-ref-date-strip">${cells.join('')}</div>`;
+  const now=new Date();
+  const label=isEnglish()
+    ?`${new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric'}).format(now)} · ${dayLabel(now)}`
+    :`${now.getMonth()+1}월 ${now.getDate()}일 (${dayLabel(now)})`;
+  return `<div class="g-ref-today-date"><span>${label}</span></div>`;
 }
 function ensureStage(m,cls,after){
   let stage=qs(m,':scope > .'+cls);if(stage)return stage;
@@ -141,6 +143,13 @@ function settleWorkoutRest(){
   }
   return true;
 }
+function focusLiveWorkout(){
+  if(screenName()!=='workout')return;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const target=main()?.querySelector('.workout-visual-hero,.workout-exercise-head,.workout-session-bar');
+    target?.scrollIntoView?.({block:'start',inline:'nearest',behavior:'auto'});
+  }));
+}
 function decorateWorkout(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');
   const intro=ensureIntro(m);
@@ -196,8 +205,68 @@ function decorateCoach(m){
   const composer=qs(shell,'.g2-composer-wrap')||qs(shell,'.coach-bottom-stack');if(composer)composer.classList.add('g-ref-coach-composer');
   return true;
 }
+function snapshot(){try{return window.GarangAgentStateBridge?.ready?.()?window.GarangAgentStateBridge.getState():null;}catch{return null;}}
+function recordDate(row){return String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10);}
+function monthKey(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}
+function inMonth(rows,key){return list(rows).filter(row=>recordDate(row).startsWith(key));}
+function workoutVolume(row){
+  const details=list(row?.setDetails);if(details.length)return details.reduce((sum,set)=>sum+(Number(set?.weight)||0)*(Number(set?.reps??set?.r)||0),0);
+  return (Number(row?.weight)||0)*(Number(row?.reps)||0)*Math.max(1,Number(row?.sets)||1);
+}
+function historyModel(state,domain,date){
+  const key=monthKey(date),workouts=inMonth(state?.workouts,key),meals=inMonth(state?.meals,key),bodyRows=inMonth(state?.body,key),runs=inMonth(state?.runs,key);
+  let rows=workouts,summary=[];
+  if(domain==='nutrition'){
+    rows=meals;const kcal=rows.reduce((s,r)=>s+(Number(r?.kcal)||0),0),protein=rows.length?rows.reduce((s,r)=>s+(Number(r?.protein)||0),0)/rows.length:0;
+    summary=[[copy('식사 기록','Meals'),`${rows.length}${copy('끼','')}`],[copy('총 열량','Calories'),rows.length?`${Math.round(kcal).toLocaleString()} kcal`:'—'],[copy('평균 단백질','Avg protein'),rows.length?`${Math.round(protein)} g`:'—']];
+  }else if(domain==='body'){
+    rows=bodyRows;const latest=rows.slice().sort((a,b)=>recordDate(a).localeCompare(recordDate(b))).at(-1),first=rows.slice().sort((a,b)=>recordDate(a).localeCompare(recordDate(b)))[0],delta=latest&&first&&Number.isFinite(Number(latest?.fatPercent))&&Number.isFinite(Number(first?.fatPercent))?Number(latest.fatPercent)-Number(first.fatPercent):null;
+    summary=[[copy('측정','Entries'),`${rows.length}${copy('회','')}`],[copy('최근 체중','Latest weight'),latest&&Number.isFinite(Number(latest?.weight))?`${Number(latest.weight).toFixed(1)} kg`:'—'],[copy('체지방 변화','Body-fat change'),delta===null?'—':`${delta>0?'+':''}${delta.toFixed(1)}%`]];
+  }else if(domain==='insight'){
+    rows=[...workouts,...meals,...bodyRows,...runs];const dates=new Set(rows.map(recordDate).filter(Boolean)),domains=[workouts.length,meals.length,bodyRows.length,runs.length].filter(Boolean).length;
+    summary=[[copy('기록일','Recorded days'),`${dates.size}${copy('일','')}`],[copy('연결 영역','Domains'),`${domains}/4`],[copy('총 기록','Records'),`${rows.length}${copy('개','')}`]];
+  }else{
+    rows=workouts;const minutes=rows.reduce((s,r)=>s+(Number(r?.duration)||0),0),ordered=rows.slice().sort((a,b)=>recordDate(a).localeCompare(recordDate(b))),first=ordered[0],last=ordered.at(-1),base=first?workoutVolume(first):0,current=last?workoutVolume(last):0,delta=base>0&&ordered.length>1?Math.round((current-base)/base*100):null;
+    summary=[[copy('운동 횟수','Workouts'),`${rows.length}${copy('회','')}`],[copy('총 운동 시간','Training time'),minutes?`${Math.round(minutes/6)/10}${copy('시간',' h')}`:'—'],[copy('볼륨 변화','Volume change'),delta===null?'—':`${delta>0?'+':''}${delta}%`]];
+  }
+  return {rows,summary,key};
+}
+function historyCalendar(model,date){
+  const year=date.getFullYear(),month=date.getMonth(),first=new Date(year,month,1),days=new Date(year,month+1,0).getDate(),leading=first.getDay(),recorded=new Set(model.rows.map(recordDate));
+  const cells=[];for(let i=0;i<leading;i++)cells.push('<span></span>');
+  for(let d=1;d<=days;d++){
+    const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,has=recorded.has(key),selected=historySelectedDate===key;
+    cells.push(`<button type="button" class="g-ref-history-day${has?' has-record':''}${selected?' selected':''}" data-g-ref-history-date="${key}">${d}</button>`);
+  }
+  const monthLabel=isEnglish()?new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}).format(date):`${year}년 ${month+1}월`;
+  const weekdays=isEnglish()?['S','M','T','W','T','F','S']:['일','월','화','수','목','금','토'];
+  return `<div class="g-ref-history-calendar"><div class="g-ref-history-month"><span>‹</span><strong>${monthLabel}</strong><span>›</span></div><div class="g-ref-history-weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="g-ref-history-days">${cells.join('')}</div></div>`;
+}
+function renderHistoryBoard(panel){
+  const state=snapshot();if(!state||!panel)return false;
+  const date=new Date(),model=historyModel(state,historyDomain,date),labels=[['workout',copy('운동','Workout')],['nutrition',copy('식단','Nutrition')],['body',copy('신체','Body')],['insight',copy('인사이트','Insight')]];
+  let board=qs(panel,':scope > .g-ref-history-board');if(!board){board=node('section','g-ref-history-board');panel.prepend(board);}
+  board.innerHTML=`<div class="g-ref-history-tabs">${labels.map(([id,label])=>`<button type="button" data-g-ref-history-domain="${id}" class="${historyDomain===id?'active':''}">${label}</button>`).join('')}</div>${historyCalendar(model,date)}<div class="g-ref-history-summary">${model.summary.map(([label,value])=>`<div><span>${label}</span><strong>${value}</strong></div>`).join('')}</div><button type="button" class="g-ref-history-evidence-toggle" data-g-ref-history-evidence aria-expanded="${panel.dataset.gRefEvidenceOpen==='1'?'true':'false'}">${copy('GARANG 해석과 근거','GARANG interpretation & evidence')} <span>${panel.dataset.gRefEvidenceOpen==='1'?'−':'+'}</span></button>`;
+  if(board.dataset.gRefBound!=='1'){
+    board.dataset.gRefBound='1';
+    board.addEventListener('click',event=>{
+      const domain=event.target.closest('[data-g-ref-history-domain]');if(domain){historyDomain=domain.dataset.gRefHistoryDomain||'workout';renderHistoryBoard(panel);return;}
+      const day=event.target.closest('[data-g-ref-history-date]');if(day){historySelectedDate=day.dataset.gRefHistoryDate||'';renderHistoryBoard(panel);return;}
+      const evidence=event.target.closest('[data-g-ref-history-evidence]');if(evidence){panel.dataset.gRefEvidenceOpen=panel.dataset.gRefEvidenceOpen==='1'?'0':'1';renderHistoryBoard(panel);}
+    });
+  }
+  return true;
+}
 function decorateProgress(m){
   const head=qs(m,':scope > .page-head')||qs(m,'.page-head');if(head)head.classList.add('g-ref-progress-head');
+  const panel=qs(m,':scope > #garangAccumulationOverview')||qs(m,'#garangAccumulationOverview');if(panel){panel.dataset.gRefHistory='1';renderHistoryBoard(panel);}
+}
+function decorateSettings(m){
+  const state=snapshot()||{},profile=state.profile||{},name=String(profile.name||copy('GARANG 사용자','GARANG User'));
+  let card=qs(m,':scope > .g-ref-settings-profile');
+  if(!card){card=node('section','g-ref-settings-profile');const head=qs(m,':scope > .page-head');if(head?.nextSibling)m.insertBefore(card,head.nextSibling);else m.prepend(card);}
+  const key=`${languageKey()}|${name}`;
+  setStableMarkup(card,key,`<div class="g-ref-settings-avatar" aria-hidden="true">${name.slice(0,1).toUpperCase()}</div><div><strong>${name}</strong><span>${copy('프로필 · 목표 · 알림 · 데이터 관리','Profile · goals · notifications · data')}</span></div>`);
 }
 function decorateAuth(){
   const view=document.getElementById('authView');if(view)view.classList.add('g-ref-auth');
@@ -217,7 +286,7 @@ function apply(){
     if(!flow||!flow.parentElement?.classList?.contains('g-ref-today-stage')){delete m.dataset.garangReferenceUi;return false;}
   }else if(screen==='workout')decorateWorkout(m);else if(screen==='nutrition')decorateNutrition(m);else if(screen==='body')decorateBody(m);else if(screen==='coach'){
     if(!decorateCoach(m)){delete m.dataset.garangReferenceUi;return false;}
-  }else if(screen==='progress')decorateProgress(m);
+  }else if(screen==='progress')decorateProgress(m);else if(screen==='settings')decorateSettings(m);
   m.dataset.garangReferenceUi='v2';
   return true;
 }
@@ -229,6 +298,7 @@ function schedule(){
   requestAnimationFrame(()=>{apply();setTimeout(apply,60);setTimeout(apply,220);});
 }
 for(const evt of ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:coach-mounted','garang:coach-message-rendered','garang:daily-workout-plan-ready','garang:workout-set-rows-rendered','garang:workout-session-started'])window.addEventListener(evt,schedule,{passive:true});
+window.addEventListener('garang:workout-session-started',focusLiveWorkout,{passive:true});
 new MutationObserver(mutations=>{if(mutations.some(m=>m.type==='attributes'&&m.target===document.documentElement&&m.attributeName==='lang'))schedule();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 document.addEventListener('click',event=>{
   if(!event.target.closest?.('[data-execution-set-complete]'))return;
