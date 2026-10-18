@@ -1,10 +1,11 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v43-20261018`;
+const CACHE=`${CACHE_PREFIX}v44-20261018`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
   './06_features/ui/runtime/garang-today-workout-prep-integration-v1.js?v=1.0.3',
   './06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js?v=1.0.0',
+  './06_features/ui/runtime/garang-product-consolidation-v1.js?v=1.2.1-reference-ready',
   './03_styles/runtime/garang-reference-ui-v2.css?v=2.0.0',
   './03_styles/runtime/garang-reference-ui-v2-guards.css?v=2.1.6-commercial-nav-safe',
   './03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe',
