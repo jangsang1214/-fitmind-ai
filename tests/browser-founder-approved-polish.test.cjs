@@ -17,11 +17,13 @@ const swSource=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
 const commercialEntrySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-reference-ui-commercial-v1.css'),'utf8');
 const founderVisualSource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-10.css'),'utf8');
 const founderHistorySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-11.css'),'utf8');
+const founderTodaySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-12.css'),'utf8');
 assert.match(indexSource,/garang-core-loop-v1\.js\?v=1\.1\.4-commercial-v3/,'Modified core loop must use a rotated direct-script cache key');
 assert.match(indexSource,/garang-coach-quiet-surface-v1\.js\?v=1\.0\.3-route-reset/,'Modified Coach quiet surface must use a rotated direct-script cache key');
 assert.match(coachQuietSource,/if\(main\.dataset\.garangScreen!=='coach'\)\{\s*coachActionDisclosureExpanded=false;\s*return;/,'Coach disclosure state must reset when leaving Coach');
 assert.match(commercialEntrySource,/garang-commercial-target-v3-10\.css\?v=3\.10\.0-capture-parity/,'Founder capture-parity layer must be loaded');
-assert.match(commercialEntrySource,/garang-commercial-target-v3-11\.css\?v=3\.11\.0-history-disclosure/,'Founder History disclosure layer must be loaded last');
+assert.match(commercialEntrySource,/garang-commercial-target-v3-11\.css\?v=3\.11\.0-history-disclosure/,'Founder History disclosure layer must remain loaded');
+assert.match(commercialEntrySource,/garang-commercial-target-v3-12\.css\?v=3\.12\.0-today-action-first/,'Founder Today action-first layer must be loaded last');
 for(const asset of [
   './03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe',
   './03_styles/runtime/garang-commercial-target-v3.css?v=3.0.0-founder-approved',
@@ -37,6 +39,7 @@ for(const asset of [
   './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
   './03_styles/runtime/garang-commercial-target-v3-10.css?v=3.10.0-capture-parity',
   './03_styles/runtime/garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure',
+  './03_styles/runtime/garang-commercial-target-v3-12.css?v=3.12.0-today-action-first',
   './05_assets/commercial-approved-v3/today-anatomy-hero.jpg',
   './05_assets/commercial-approved-v3/workout-benchpress-hero.jpg',
   './05_assets/commercial-approved-v3/nutrition-meal-hero.jpg',
@@ -47,8 +50,11 @@ for(const asset of [
   'session-summary-anatomy.jpg',
   'nutrition-meal-hero.jpg'
 ])assert.ok(founderVisualSource.includes(asset),`Capture-parity visual layer must consume ${asset}`);
-assert.ok(founderHistorySource.includes('g-ref-history-evidence-toggle'),'Final Founder layer must style the History evidence disclosure');
-assert.ok(founderHistorySource.includes('data-g-ref-evidence-open'),'Final Founder layer must keep canonical History evidence behind progressive disclosure');
+assert.ok(founderHistorySource.includes('g-ref-history-evidence-toggle'),'Founder History layer must style the History evidence disclosure');
+assert.ok(founderHistorySource.includes('data-g-ref-evidence-open'),'Founder History layer must keep canonical History evidence behind progressive disclosure');
+assert.ok(founderTodaySource.includes('.gtf-state-primary'),'Founder Today layer must explicitly demote score/readiness from the first visual anchor');
+assert.ok(founderTodaySource.includes('grid-template-columns:repeat(3,minmax(0,1fr))'),'Founder Today layer must expose three compact status signals');
+assert.ok(founderTodaySource.includes('order:1!important'),'Founder Today layer must make the canonical decision the first content block');
 
 async function waitServer(){
   const deadline=Date.now()+15000;
@@ -93,6 +99,19 @@ function state(){
       assert.ok(geometry.doc<=geometry.viewport+2&&geometry.body<=geometry.viewport+2,`Commercial polish must not overflow at ${width}px: ${JSON.stringify(geometry)}`);
       assert.ok(geometry.navButtons.length===4&&geometry.navButtons.every(box=>box.w>=44&&box.h>=44),`Approved four-tab navigation must remain touch safe at ${width}px: ${JSON.stringify(geometry.navButtons)}`);
       if(width===390){
+        const hierarchy=await page.evaluate(()=>{
+          const flow=document.querySelector('#garangTodayFlow');if(!flow)return null;
+          const state=flow.querySelector('.gtf-state-primary'),decision=flow.querySelector(':scope>.gtf-decision'),action=flow.querySelector(':scope>.gtf-action'),tracks=flow.querySelector('.gpc-today-plan .gtf-track-visual');
+          const style=node=>node?getComputedStyle(node):null;
+          return {stateDisplay:style(state)?.display||'',decisionOrder:style(decision)?.order||'',actionOrder:style(action)?.order||'',tracksDisplay:style(tracks)?.display||'',trackCount:tracks?.querySelectorAll('.gtf-track').length||0};
+        });
+        assert.ok(hierarchy,'Founder Today hierarchy must exist at 390px');
+        assert.equal(hierarchy.stateDisplay,'none','Today score/readiness must be evidence, not the first visual anchor');
+        assert.equal(hierarchy.decisionOrder,'1','Today decision must be first');
+        assert.equal(hierarchy.actionOrder,'2','Today primary action must immediately follow the decision');
+        assert.equal(hierarchy.tracksDisplay,'grid','Today status signals must be visible as a compact grid');
+        assert.equal(hierarchy.trackCount,3,'Today must preserve exactly three canonical status tracks');
+
         const languageState=await page.evaluate(()=>{
           document.documentElement.lang='en';
           document.documentElement.dispatchEvent(new CustomEvent('garang:language-changed'));
