@@ -4,7 +4,7 @@
 (() => {
 'use strict';
 if (window.GarangPresentationV4) return;
-const VERSION='garang-presentation-v4.0.0';
+const VERSION='garang-presentation-v4.0.1';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
@@ -37,11 +37,10 @@ function today(m){
   if(!flow)return false;
   const visual=qs(m,'.visual-today-hero');
   const shell=ensure('section','g4-today-shell',m,head?.nextSibling||m.firstChild);
-  const support=ensure('section','g4-today-support',shell);
   move(shell,flow);
   if(visual){visual.classList.add('g4-today-visual');move(shell,visual);}
+  const support=ensure('section','g4-today-support',shell);
   for(const child of directChildren(m,[head,shell]))move(support,child);
-  if(support.parentElement!==shell)move(shell,support);
   return true;
 }
 function workout(m){
@@ -69,10 +68,9 @@ function nutrition(m){
   const scan=qs(m,'.meal-scan-card');
   if(!scan)return false;
   const shell=ensure('section','g4-nutrition-shell',m,head?.nextSibling||m.firstChild);
-  const support=ensure('section','g4-nutrition-support',shell);
   move(shell,scan);
+  const support=ensure('section','g4-nutrition-support',shell);
   for(const child of directChildren(m,[head,shell]))move(support,child);
-  if(support.parentElement!==shell)move(shell,support);
   return true;
 }
 function body(m){
@@ -90,7 +88,6 @@ function coach(m){
   shell.classList.add('g4-coach-shell');
   return true;
 }
-function generic(){return true;}
 function cleanupRest(){
   const rest=document.getElementById('workoutExecutionRest');
   if(!rest||screen()==='workout')return;
@@ -101,14 +98,12 @@ function apply(){
   const m=main(),name=screen();
   if(!m||!name)return false;
   cleanupRest();markScreen(m,name);
-  let ok=true;
-  if(name==='today')ok=today(m);
-  else if(name==='workout')ok=workout(m);
-  else if(name==='nutrition')ok=nutrition(m);
-  else if(name==='body')ok=body(m);
-  else if(name==='coach')ok=coach(m);
-  else ok=generic(m);
-  return ok;
+  if(name==='today')return today(m);
+  if(name==='workout')return workout(m);
+  if(name==='nutrition')return nutrition(m);
+  if(name==='body')return body(m);
+  if(name==='coach')return coach(m);
+  return true;
 }
 let queued=false;
 function schedule(){
