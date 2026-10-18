@@ -4,7 +4,7 @@
 (() => {
 'use strict';
 if (window.GarangPresentationV4) return;
-const VERSION='garang-presentation-v4.0.1';
+const VERSION='garang-presentation-v4.0.2';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
@@ -71,12 +71,40 @@ function nutrition(m){
   for(const child of directChildren(m,[head,shell]))move(support,child);
   return true;
 }
+function ensureBodyPresentationAnatomy(hero){
+  const anatomy=qs(hero,'.body-hero-anatomy');
+  if(!anatomy)return false;
+  if(qs(anatomy,':scope > .g4-body-anatomy-pair'))return true;
+  const mini=qs(anatomy,':scope > .mini-body-svg');
+  const gender=String(mini?.dataset?.gender||'male')==='female'?'female':'male';
+  const label=gender==='female'?'WOMEN':'MEN';
+  const wrap=document.createElement('div');
+  wrap.className='muscle-map-wrap g4-body-anatomy-pair';
+  wrap.dataset.garangPresentationAnatomy='v4';
+  const map=document.createElement('div');
+  map.className='muscle-map anatomical-pro';
+  map.dataset.gender=gender;
+  map.dataset.muscle='full';
+  for(const side of ['front','back']){
+    const view=document.createElement('div');view.className='body-view';
+    const caption=document.createElement('span');caption.textContent=`${side.toUpperCase()} · ${label}`;
+    const img=document.createElement('img');
+    img.src=`./05_assets/body-model-v6/${gender}-${side}.svg`;
+    img.alt=`${gender==='female'?'여성':'남성'} ${side==='front'?'전면':'후면'} 근육 해부 모델`;
+    img.loading='eager';img.decoding='async';img.draggable=false;
+    view.append(caption,img);map.appendChild(view);
+  }
+  wrap.appendChild(map);anatomy.appendChild(wrap);
+  if(mini){mini.hidden=true;mini.dataset.garangPresentationSuperseded='v4';}
+  return true;
+}
 function body(m){
   const head=qs(m,':scope > .page-head');
   const hero=qs(m,'.body-hero');
   if(!hero)return false;
   const shell=ensure('section','g4-body-shell',m,head?.nextSibling||m.firstChild);
   move(shell,hero,qs(m,'.body-trend-card'));
+  ensureBodyPresentationAnatomy(hero);
   for(const child of directChildren(m,[head,shell]))move(shell,child);
   return true;
 }
