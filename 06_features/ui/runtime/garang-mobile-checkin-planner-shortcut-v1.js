@@ -10,7 +10,7 @@
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
 const VERSION='1.0.0';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
-let bodyObserver=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
+let bodyObserver=null,mainObserver=null,observedMain=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
 const isKo=()=>document.documentElement.lang!=='en';
 
@@ -140,6 +140,21 @@ function ensurePlannerShortcut(){
   return true;
 }
 
+function observeMain(){
+  const m=main();
+  if(!m||m===observedMain)return;
+  mainObserver?.disconnect();
+  observedMain=m;
+  mainObserver=new MutationObserver(records=>{
+    if(m.dataset.garangScreen!=='today')return;
+    for(const record of records){
+      if(record.type!=='childList')continue;
+      const changed=[...record.addedNodes,...record.removedNodes].some(node=>node?.nodeType===1);
+      if(changed){schedule();break;}
+    }
+  });
+  mainObserver.observe(m,{childList:true,subtree:true});
+}
 function observeFlow(){
   const flow=main()?.querySelector?.('#garangTodayFlow');
   if(!flow||flow===observedFlow)return;
@@ -152,6 +167,7 @@ function observeFlow(){
 function reconcile(){
   queued=false;
   ensureStyle();
+  observeMain();
   enhanceCheckin();
   observeFlow();
   ensurePlannerShortcut();
