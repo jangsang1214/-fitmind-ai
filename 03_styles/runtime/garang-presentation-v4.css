@@ -128,7 +128,7 @@ html[lang="en"] body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal:n
 body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>div{display:contents!important}
 body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>div>span{display:none!important}
 body.garang-presentation-v4 #workoutExecutionRestClock{grid-column:1/-1!important;width:210px!important;height:210px!important;margin:14px auto 8px!important;border:8px solid #6d70ff!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:#0a101b!important;font-size:42px!important;font-weight:800!important;color:#fff!important;box-shadow:0 0 0 9px rgba(100,102,255,.08),0 24px 56px rgba(49,49,162,.30)!important}
-body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>div>small{grid-column:1/-1!important;display:block!important;width:min(350px,100%)!important;min-height:72px!important;margin:4px auto 0!important;padding:14px!important;border:1px solid var(--g4-line)!important;border-radius:15px!important;background:#0d121b!important;color:#cbd1dd!important;font-size:11px!important;line-height:1.5!important}
+body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>div>small{grid-column:1/-1!important;display:block!important;width:min(350px,100%)!important;min-height:72px!important;margin:4px auto 0!important;padding:14px!important;border:1px solid var(--g4-line)!important;border-radius:15px!important;background:#0d121b!important;color:#cbd1dc!important;font-size:11px!important;line-height:1.5!important}
 body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>label{grid-column:1!important;min-height:48px!important;padding:8px 10px!important;border:1px solid var(--g4-line)!important;border-radius:14px!important;background:#0d1219!important;color:#aeb5c1!important;font-size:10px!important;text-align:center!important}
 body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal>label input{width:58px!important;min-height:32px!important;margin:0 4px!important;border-radius:9px!important;background:#141b28!important;color:#fff!important;text-align:center!important}
 body.garang-presentation-v4 #skipWorkoutRest{grid-column:2!important;min-height:48px!important;border-radius:14px!important;font-weight:700!important}
@@ -163,9 +163,9 @@ body.garang-presentation-v4 #skipWorkoutRest{grid-column:2!important;min-height:
 #main.g4-screen-body .body-hero-anatomy .muscle-map{width:100%!important;min-height:390px!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:end!important;justify-items:center!important;gap:2px!important}
 #main.g4-screen-body .body-hero-anatomy .body-view{display:grid!important;place-items:center!important;min-width:0!important;min-height:380px!important}
 #main.g4-screen-body .body-hero-anatomy .body-view:nth-child(2):nth-last-child(2){display:none!important}
-#main.g4-screen-body .body-hero-anatomy svg.g3-body-model{display:block!important;width:auto!important;max-width:170px!important;height:380px!important;max-height:380px!important;opacity:1!important;filter:drop-shadow(0 26px 34px rgba(0,0,0,.48)) contrast(1.08)!important}
+#main.g4-screen-body .body-hero-anatomy svg.g2-body-model,#main.g4-screen-body .body-hero-anatomy svg.g3-body-model{display:block!important;width:auto!important;max-width:170px!important;height:380px!important;max-height:380px!important;opacity:1!important;filter:drop-shadow(0 26px 34px rgba(0,0,0,.48)) contrast(1.08)!important}
 #main.g4-screen-body .body-hero-anatomy img{max-height:390px!important;max-width:100%!important;opacity:1!important}
-#main.g4-screen-body .g4-body-anatomy-pair .body-view:has(svg.g3-body-model)>img{display:none!important}
+#main.g4-screen-body .g4-body-anatomy-pair .body-view:has(svg.g2-body-model)>img,#main.g4-screen-body .g4-body-anatomy-pair .body-view:has(svg.g3-body-model)>img{display:none!important}
 #main.g4-screen-body .body-model-legend{display:none!important}
 #main.g4-screen-body .body-trend-card{border-radius:18px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
 
@@ -187,7 +187,7 @@ body.garang-presentation-v4 #skipWorkoutRest{grid-column:2!important;min-height:
  #main.g4-screen-today #garangTodayFlow{padding:17px!important}
  #main.g4-screen-today #garangTodayFlow .gtf-decision h2{font-size:25px!important;max-width:92%!important}
  #main.g4-screen-body .body-hero{min-height:500px!important}
- #main.g4-screen-body .body-hero-anatomy svg.g3-body-model{height:345px!important;max-height:345px!important;max-width:150px!important}
+ #main.g4-screen-body .body-hero-anatomy svg.g2-body-model,#main.g4-screen-body .body-hero-anatomy svg.g3-body-model{height:345px!important;max-height:345px!important;max-width:150px!important}
  body.garang-presentation-v4 #workoutExecutionRestClock{width:190px!important;height:190px!important}
 }
 @media(max-width:330px){#main.g4-screen-today #garangTodayFlow .gtf-decision h2{font-size:23px!important}#main.g4-screen-workout .execution-set-row.current-set{gap:6px!important;padding:10px!important}}
