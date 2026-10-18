@@ -16,7 +16,7 @@ html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow.g-ref
 }
 html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-decision{display:block!important;order:1!important;position:relative!important;z-index:3!important;min-height:158px!important;padding:26px 18px 4px!important}
 html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-context{display:flex!important;order:2!important;position:relative!important;z-index:3!important;padding:0 18px 8px!important;min-height:42px!important}
-html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action{display:block!important;order:3!important;position:relative!important;z-index:4!important;padding:0 14px 14px!important;margin:0!important}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-action{display:block!important;order:2!important;position:relative!important;z-index:4!important;padding:0 14px 14px!important;margin:0!important}
 html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gtf-state{order:4!important;display:none!important}
 html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-coach-explain,
 html body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan{display:none!important}
