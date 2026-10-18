@@ -68,6 +68,15 @@ async function completeVisibleSet(page){
   await page.waitForTimeout(100);
 }
 
+async function skipRest(page){
+  const rest=page.locator('#workoutExecutionRest');
+  await rest.waitFor({state:'visible',timeout:4000});
+  const skip=page.locator('#skipWorkoutRest');
+  await skip.waitFor({state:'visible',timeout:4000});
+  await skip.click();
+  await page.waitForTimeout(120);
+}
+
 (async()=>{
   fs.mkdirSync(outputDir,{recursive:true});
   for(const file of fs.readdirSync(outputDir))if(file.endsWith('.png'))fs.unlinkSync(path.join(outputDir,file));
@@ -82,7 +91,7 @@ async function completeVisibleSet(page){
     const page=await context.newPage();
     await page.goto(baseURL,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-    await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.0',null,{timeout:8000});
+    await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.1-founder-parity',null,{timeout:8000});
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangReferenceUi==='v2',null,{timeout:8000});
 
     /* 01 Today */
@@ -90,29 +99,34 @@ async function completeVisibleSet(page){
     await page.locator('#garangTodayFlow .gtf-decision').waitFor({state:'visible',timeout:6000});
     await shot(page,'01-today');
 
-    /* 02 Workout execution */
+    /* 02 Workout execution — session begins with exercise context still visible. */
     await route(page,'workout');
     await page.locator('[data-gws-step="exercise"]').first().click();
     await page.locator('#workoutSetDetails .execution-set-row.current-set').first().waitFor({state:'visible',timeout:6000});
     await page.locator('#startWorkoutSession').waitFor({state:'visible',timeout:6000});
     await page.locator('#startWorkoutSession').click();
     await page.waitForFunction(()=>document.querySelector('.workout-session-bar')?.classList.contains('is-live'),null,{timeout:4000});
+    await page.waitForTimeout(180);
     await shot(page,'02-workout-live');
 
-    /* 03 Exercise record — current set is the dominant surface */
+    /* 03 Exercise record — prove two completed sets plus the active third set. */
+    let completed=0;
+    await completeVisibleSet(page);completed++;await skipRest(page);
+    await completeVisibleSet(page);completed++;await skipRest(page);
     await page.locator('#workoutSetDetails .execution-set-row.current-set').first().scrollIntoViewIfNeeded();
+    await page.locator('#workoutSetDetails .execution-set-row.completed').nth(1).waitFor({state:'visible',timeout:4000});
     await shot(page,'03-exercise-record');
 
-    /* 04 Rest */
-    await completeVisibleSet(page);
+    /* 04 Rest — capture the real third-set rest state. */
+    await completeVisibleSet(page);completed++;
     await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:4000});
     await shot(page,'04-rest');
-    if(await page.locator('#skipWorkoutRest').isVisible().catch(()=>false))await page.locator('#skipWorkoutRest').click();
+    await page.locator('#skipWorkoutRest').click();
 
     /* 05 Session summary */
     const total=Number(await page.locator('#wSets').inputValue())||4;
-    for(let index=1;index<total;index++){
-      await completeVisibleSet(page);
+    while(completed<total){
+      await completeVisibleSet(page);completed++;
       const rest=page.locator('#workoutExecutionRest');
       if(await rest.isVisible().catch(()=>false))await page.locator('#skipWorkoutRest').click();
     }
@@ -143,11 +157,13 @@ async function completeVisibleSet(page){
 
     /* 09 History / accumulated progress */
     await route(page,'progress');
-    await page.waitForFunction(()=>document.querySelector('#garangAccumulationOverview')?.dataset?.gpcProgress==='1'&&document.querySelector('#garangAccumulationOverview')?.getClientRects().length>0,null,{timeout:6000});
+    await page.locator('#garangAccumulationOverview>.g-ref-history-board').waitFor({state:'visible',timeout:6000});
+    await page.locator('.g-ref-history-calendar').waitFor({state:'visible',timeout:6000});
     await shot(page,'09-history');
 
     /* 10 Settings */
     await route(page,'settings');
+    await page.locator('.g-ref-settings-profile').waitFor({state:'visible',timeout:6000});
     await page.locator('#savePreferences').waitFor({state:'visible',timeout:6000});
     await shot(page,'10-settings');
 
