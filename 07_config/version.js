@@ -29,8 +29,10 @@
    function todayCommercialReady(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return true;
      const flow=main.querySelector('#garangTodayFlow');
-     if(!flow)return false;
-     return !!flow.querySelector(':scope > .gpc-today-plan .gtf-track-visual');
+     if(!flow||!flow.isConnected||!main.contains(flow))return false;
+     const plan=flow.querySelector(':scope > .gpc-today-plan');
+     const tracks=plan?.querySelector(':scope > .gtf-track-visual');
+     return !!plan&&plan.isConnected&&plan.parentElement===flow&&!!tracks&&tracks.isConnected&&tracks.parentElement===plan&&tracks.querySelectorAll('.gtf-track').length===3;
    }
    function reconcileTodayCommercial(main){
      if(String(main?.dataset?.garangScreen||'')!=='today')return true;
