@@ -34,6 +34,13 @@ html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #g
   order:3!important;
   display:block!important
 }
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gtf-context{
+  display:block!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gtf-track-visual{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important
+}
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-coach-explain{
   order:4!important
 }
