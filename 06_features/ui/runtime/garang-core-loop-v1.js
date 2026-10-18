@@ -12,7 +12,7 @@
 
 const list=value=>Array.isArray(value)?value:[];
 const finite=value=>{if(value===null||value===undefined||value==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;};
-const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
 function localDate(offset=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function rowDate(row){return String(row?.date||row?.day||row?.performedAt||row?.createdAt||'').slice(0,10);}
 function daysBetween(a,b){const x=new Date(`${a}T12:00:00`),y=new Date(`${b}T12:00:00`);return Math.round((y-x)/86400000);}
@@ -88,7 +88,7 @@ function deriveAccumulation(state,options={}){
   const completed=plans.filter(completedPlan).length,planRate=plans.length?Math.round(completed/plans.length*100):null,activeDays=new Set([...workouts,...runs].map(rowDate).filter(Boolean)).size,recordDays=[...recordDates(safe)].filter(date=>{const diff=daysBetween(date,end);return diff>=0&&diff<days;}).length,delta=bodyDelta(safe,end,days),recordStreak=currentStreak(safe,end),completedPlanStreak=planStreak(safe,end),evidence=streakEvidence(safe,end,recordStreak),rhythm=sevenDayRhythm(safe,end);
   const totalDistance=Math.round(runs.reduce((sum,r)=>sum+(finite(r?.distance)||0),0)*10)/10,proteinRows=meals.map(m=>finite(m?.protein)).filter(v=>v!==null),avgProtein=proteinRows.length?Math.round(proteinRows.reduce((a,b)=>a+b,0)/proteinRows.length):null,streak=recordStreak;
   let headline=lang==='en'?`${recordDays} recorded days in the last ${days}.`:`최근 ${days}일 중 ${recordDays}일이 기록됐습니다.`,support=lang==='en'?'Consistency matters more than isolated best numbers.':'최고 기록 하나보다 이어진 기록의 밀도를 먼저 봅니다.';
-  if(!recordDays){headline=lang==='en'?'Your accumulation starts with one record.':'첫 기록부터 누적이 시작됩니다.';support=lang==='en'?'There is not enough saved data to describe a streak yet.':'아직 저장된 기록이 없어 연속 기록을 판단할 수 없습니다.';}
+  if(!recordDays){headline=lang==='en'?'Accumulation starts with one signal record.':'신호 기록 하나부터 누적이 시작됩니다.';support=lang==='en'?'There is not enough saved data to describe a streak yet.':'아직 저장된 기록이 없어 연속 기록을 판단할 수 없습니다.';}
   else if(streak>=3){headline=lang==='en'?`${streak} consecutive recording days.`:`최근 ${streak}일 연속 기록이 이어졌습니다.`;support=lang==='en'?'This is a recording streak, backed by the dates shown below.':'이것은 기록 연속일이며, 아래 날짜와 기록 영역을 근거로 계산했습니다.';}
   return {days,end,lang,workouts:workouts.length,runs:runs.length,meals:meals.length,activeDays,recordDays,planRate,totalDistance,avgProtein,bodyDelta:delta,streak,recordStreak,planStreak:completedPlanStreak,streakEvidence:evidence,hasRecords:recordDays>0,rhythm,headline,support};
 }
