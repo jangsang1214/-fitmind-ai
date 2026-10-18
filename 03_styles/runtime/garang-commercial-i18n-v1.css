@@ -1,0 +1,17 @@
+/* GARANG Commercial UI v3 language-safe generated labels.
+   Presentation only: keep runtime-provided localized text visible in English and scope generated labels by html[lang]. */
+
+html[lang="en"] .g-ref-screen-today .g-ref-date-copy span{
+  font-size:10px!important;
+  color:#666f7d!important;
+  letter-spacing:.015em!important;
+}
+html[lang="en"] .g-ref-screen-today .g-ref-date-copy span::after{content:none!important}
+
+html[lang="ko"] .g-ref-screen-workout .workout-session-live::before{content:'LIVE'}
+html[lang="en"] .g-ref-screen-workout .workout-session-live::before{content:'LIVE'}
+html[lang="ko"] .g-ref-screen-workout .execution-set-row.current-set::before{content:'현재 세트'}
+html[lang="en"] .g-ref-screen-workout .execution-set-row.current-set::before{content:'CURRENT SET'}
+
+html[lang="ko"] body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal::before{content:'휴식 중'}
+html[lang="en"] body.garang-reference-ui-v2>.workout-rest-timer.g-ref-workout-rest-portal::before{content:'REST'}
