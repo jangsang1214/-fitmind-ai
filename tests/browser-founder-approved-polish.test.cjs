@@ -14,9 +14,12 @@ const baseURL=`http://127.0.0.1:${port}`;
 const indexSource=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const coachQuietSource=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-quiet-surface-v1.js'),'utf8');
 const swSource=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
+const commercialEntrySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-reference-ui-commercial-v1.css'),'utf8');
+const founderVisualSource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-9.css'),'utf8');
 assert.match(indexSource,/garang-core-loop-v1\.js\?v=1\.1\.4-commercial-v3/,'Modified core loop must use a rotated direct-script cache key');
 assert.match(indexSource,/garang-coach-quiet-surface-v1\.js\?v=1\.0\.3-route-reset/,'Modified Coach quiet surface must use a rotated direct-script cache key');
 assert.match(coachQuietSource,/if\(main\.dataset\.garangScreen!=='coach'\)\{\s*coachActionDisclosureExpanded=false;\s*return;/,'Coach disclosure state must reset when leaving Coach');
+assert.match(commercialEntrySource,/garang-commercial-target-v3-9\.css\?v=3\.9\.1-founder-board-exact/,'Founder-approved final visual layer must use the exact-board cache key');
 for(const asset of [
   './03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe',
   './03_styles/runtime/garang-commercial-target-v3.css?v=3.0.0-founder-approved',
@@ -28,9 +31,21 @@ for(const asset of [
   './03_styles/runtime/garang-commercial-target-v3-6.css?v=3.6.0-draft-reset-access',
   './03_styles/runtime/garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity',
   './03_styles/runtime/garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch',
-  './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.0-coach-density',
-  './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe'
+  './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.1-founder-board-exact',
+  './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
+  './05_assets/commercial-approved-v3/today-anatomy-hero.jpg',
+  './05_assets/commercial-approved-v3/workout-benchpress-hero.jpg',
+  './05_assets/commercial-approved-v3/nutrition-meal-hero.jpg',
+  './05_assets/commercial-approved-v3/body-anatomy-hero.jpg',
+  './05_assets/commercial-approved-v3/session-summary-anatomy.jpg'
 ])assert.ok(swSource.includes(asset),`PWA app shell must precache ${asset}`);
+for(const asset of [
+  'today-anatomy-hero.jpg',
+  'workout-benchpress-hero.jpg',
+  'nutrition-meal-hero.jpg',
+  'body-anatomy-hero.jpg',
+  'session-summary-anatomy.jpg'
+])assert.ok(founderVisualSource.includes(asset),`Final Founder visual layer must actually consume ${asset}`);
 
 async function waitServer(){
   const deadline=Date.now()+15000;
