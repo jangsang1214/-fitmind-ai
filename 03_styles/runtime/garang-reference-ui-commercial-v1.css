@@ -14,6 +14,7 @@
 @import url('./garang-commercial-target-v3-9.css?v=3.9.1-founder-board-exact');
 @import url('./garang-commercial-i18n-v1.css?v=1.0.0-language-safe');
 @import url('./garang-commercial-target-v3-10.css?v=3.10.0-capture-parity');
+@import url('./garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure');
 
 body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
 body.garang-reference-ui-v2 button:focus-visible,
