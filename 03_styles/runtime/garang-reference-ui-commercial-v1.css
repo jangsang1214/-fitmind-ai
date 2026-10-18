@@ -17,10 +17,31 @@
 @import url('./garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure');
 @import url('./garang-commercial-target-v3-12.css?v=3.12.0-today-action-first');
 
+/* Product Consolidation injects its compatibility style at runtime. These higher-specificity
+   commercial rules resolve only the Founder-approved presentation order while preserving all
+   canonical Today DOM/action owners. */
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision .gtf-state-primary{
+  display:none!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-decision{
+  order:1!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-action,
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-checkin-access{
+  order:2!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan{
+  order:3!important;
+  display:block!important
+}
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-coach-explain{
+  order:4!important
+}
+
 /* v3.12 hides the Plan heading copy, but the canonical mobile Planner shortcut is
    mounted inside that same heading. Keep a 44px touch-safe host while hiding only
    the decorative label copy. */
-body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"]){
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"]){
   display:flex!important;
   align-items:center!important;
   justify-content:flex-end!important;
@@ -29,11 +50,11 @@ body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today
   margin:0 0 7px!important;
   padding:0!important
 }
-body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>span,
-body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>small{
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>span,
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head:has([data-garang-planner-shortcut="1"])>small{
   display:none!important
 }
-body.garang-reference-ui-v2 #main.g-ref-screen-today #garangTodayFlow>.gpc-today-plan>.gpc-today-plan-head [data-garang-planner-shortcut="1"]{
+html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan>.gpc-today-plan-head [data-garang-planner-shortcut="1"]{
   margin:0!important
 }
 
