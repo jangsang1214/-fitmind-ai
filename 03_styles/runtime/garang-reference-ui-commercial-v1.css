@@ -76,6 +76,19 @@ html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #g
   margin:0!important
 }
 
+/* The fixed four-tab nav must never cover the primary Workout-draft touch center.
+   Keep the closed Record + Manage row inside the real layout, but pin it 12px above
+   the 72px nav whenever scrolling would otherwise place the row underneath it.
+   Open management stays in normal flow so its secondary controls preserve v3.8 behavior. */
+@media(max-width:800px){
+  html body.garang-reference-ui-v2 #main#main.g-ref-screen-workout #workoutDraftArea#workoutDraftArea .workout-draft-actions:not(:has(.workout-draft-manage[open])){
+    position:sticky!important;
+    bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
+    z-index:24!important;
+    isolation:isolate!important
+  }
+}
+
 /* 320px History must size from the viewport, not from a grid child's min-content width.
    Constrain the frame itself so the canonical History content can shrink normally. */
 @media(max-width:340px){
