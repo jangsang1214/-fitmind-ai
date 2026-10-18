@@ -57,8 +57,20 @@ async function shot(page,name){
   await page.screenshot({path:path.join(outputDir,`${name}.png`),fullPage:false});
 }
 
+async function completeVisibleSet(page){
+  const row=page.locator('#workoutSetDetails .execution-set-row.current-set').first();
+  await row.waitFor({state:'visible',timeout:5000});
+  const weight=row.locator('[data-set-weight]');
+  const reps=row.locator('[data-set-reps]');
+  if(await weight.count())await weight.fill('75');
+  if(await reps.count())await reps.fill('10');
+  await row.locator('[data-execution-set-complete]').click();
+  await page.waitForTimeout(100);
+}
+
 (async()=>{
   fs.mkdirSync(outputDir,{recursive:true});
+  for(const file of fs.readdirSync(outputDir))if(file.endsWith('.png'))fs.unlinkSync(path.join(outputDir,file));
   const server=startStaticServer(serveRoot,port);
   let browser;
   try{
@@ -73,10 +85,12 @@ async function shot(page,name){
     await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.0',null,{timeout:8000});
     await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangReferenceUi==='v2',null,{timeout:8000});
 
+    /* 01 Today */
     await route(page,'today');
     await page.locator('#garangTodayFlow .gtf-decision').waitFor({state:'visible',timeout:6000});
     await shot(page,'01-today');
 
+    /* 02 Workout execution */
     await route(page,'workout');
     await page.locator('[data-gws-step="exercise"]').first().click();
     await page.locator('#workoutSetDetails .execution-set-row.current-set').first().waitFor({state:'visible',timeout:6000});
@@ -85,23 +99,63 @@ async function shot(page,name){
     await page.waitForFunction(()=>document.querySelector('.workout-session-bar')?.classList.contains('is-live'),null,{timeout:4000});
     await shot(page,'02-workout-live');
 
-    await page.locator('#workoutSetDetails .execution-set-row.current-set [data-execution-set-complete]').first().click();
-    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:4000});
-    await shot(page,'03-workout-rest');
+    /* 03 Exercise record — current set is the dominant surface */
+    await page.locator('#workoutSetDetails .execution-set-row.current-set').first().scrollIntoViewIfNeeded();
+    await shot(page,'03-exercise-record');
 
+    /* 04 Rest */
+    await completeVisibleSet(page);
+    await page.locator('#workoutExecutionRest').waitFor({state:'visible',timeout:4000});
+    await shot(page,'04-rest');
+    if(await page.locator('#skipWorkoutRest').isVisible().catch(()=>false))await page.locator('#skipWorkoutRest').click();
+
+    /* 05 Session summary */
+    const total=Number(await page.locator('#wSets').inputValue())||4;
+    for(let index=1;index<total;index++){
+      await completeVisibleSet(page);
+      const rest=page.locator('#workoutExecutionRest');
+      if(await rest.isVisible().catch(()=>false))await page.locator('#skipWorkoutRest').click();
+    }
+    const finish=page.locator('#finishWorkoutSession');
+    await finish.waitFor({state:'visible',timeout:5000});
+    if(await finish.isEnabled())await finish.click();
+    const result=page.locator('.workout-result-card');
+    await result.waitFor({state:'visible',timeout:7000});
+    await result.scrollIntoViewIfNeeded();
+    await shot(page,'05-session-summary');
+
+    /* 06 Nutrition */
     await route(page,'nutrition');
     await page.locator('.g-ref-nutrition-stage>.meal-scan-card').waitFor({state:'visible',timeout:6000});
-    await shot(page,'04-nutrition');
+    await shot(page,'06-nutrition');
 
+    /* 07 Body */
     await route(page,'body');
     await page.locator('.g-ref-body-stage>.body-hero').waitFor({state:'visible',timeout:6000});
     await page.waitForFunction(()=>document.querySelector('.g-ref-body-primary .body-hero-anatomy .g3-body-model[data-garang-classical-model="6"]'),null,{timeout:5000});
-    await shot(page,'05-body');
+    await shot(page,'07-body');
 
+    /* 08 Coach */
     await route(page,'coach');
     await page.locator('.garang-coach-v2.g-ref-coach-shell').waitFor({state:'visible',timeout:6000});
     await page.locator('.g-ref-coach-composer').waitFor({state:'visible',timeout:6000});
-    await shot(page,'06-coach');
+    await shot(page,'08-coach');
+
+    /* 09 History / accumulated progress */
+    await route(page,'progress');
+    await page.locator('.progress-tabs').waitFor({state:'visible',timeout:6000});
+    await shot(page,'09-history');
+
+    /* 10 Settings */
+    await route(page,'settings');
+    await page.locator('#savePreferences').waitFor({state:'visible',timeout:6000});
+    await shot(page,'10-settings');
+
+    /* 11 Bottom navigation — exact persistent four-tab owner */
+    await route(page,'today');
+    const nav=page.locator('#bottomNav');
+    await nav.waitFor({state:'visible',timeout:5000});
+    await nav.screenshot({path:path.join(outputDir,'11-bottom-navigation.png')});
 
     await context.close();
     console.log(`Founder review screenshots saved to ${outputDir}`);
