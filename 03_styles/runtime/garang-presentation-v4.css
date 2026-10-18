@@ -34,10 +34,12 @@ body.garang-presentation-v4 .primary{background:linear-gradient(135deg,var(--g4-
 body.garang-presentation-v4 .ghost{background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
 
 /* frame */
-body.garang-presentation-v4 .topbar{max-width:430px!important;min-height:58px!important;padding:calc(9px + env(safe-area-inset-top,0px)) 16px 8px!important;background:rgba(7,9,13,.96)!important;border-bottom:1px solid rgba(255,255,255,.045)!important;box-shadow:none!important}
-body.garang-presentation-v4 .topbar .brand.mini{position:absolute!important;left:50%!important;transform:translateX(-50%)!important}
+body.garang-presentation-v4 .topbar{position:relative!important;isolation:isolate!important;max-width:430px!important;min-height:58px!important;padding:calc(9px + env(safe-area-inset-top,0px)) 16px 8px!important;background:rgba(7,9,13,.96)!important;border-bottom:1px solid rgba(255,255,255,.045)!important;box-shadow:none!important}
+body.garang-presentation-v4 .topbar .brand.mini{position:absolute!important;left:50%!important;transform:translateX(-50%)!important;z-index:1!important;pointer-events:none!important}
+body.garang-presentation-v4 .topbar .brand.mini *{pointer-events:none!important}
 body.garang-presentation-v4 .topbar .brand.mini img{width:24px!important;height:24px!important}
 body.garang-presentation-v4 .topbar .brand.mini b{font-size:13px!important;letter-spacing:.22em!important}
+body.garang-presentation-v4 .topbar #menuBtn,body.garang-presentation-v4 .topbar .top-actions,body.garang-presentation-v4 .topbar #settingsTopBtn{position:relative!important;z-index:4!important}
 body.garang-presentation-v4 .topbar #menuBtn,body.garang-presentation-v4 .topbar #settingsTopBtn{width:40px!important;height:40px!important;min-width:40px!important;border:0!important;background:transparent!important;color:#cbd1dc!important;box-shadow:none!important}
 body.garang-presentation-v4 #main{max-width:430px!important;padding:14px 16px calc(98px + env(safe-area-inset-bottom,0px))!important}
 body.garang-presentation-v4 #bottomNav{max-width:430px!important;height:72px!important;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))!important;background:rgba(7,9,13,.98)!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:0 -16px 38px rgba(0,0,0,.28)!important}
