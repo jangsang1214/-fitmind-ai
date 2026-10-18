@@ -59,3 +59,63 @@ body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverv
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.g-ref-history-board{
   display:grid!important
 }
+
+/* Founder-approved Workout record density: completed sets collapse to a single readable row. */
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set){
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 44px!important;
+  grid-template-rows:44px!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:62px!important;
+  margin:7px 0!important;
+  padding:8px 10px!important;
+  border-radius:14px!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set)>.execution-set-index{
+  grid-column:1!important;grid-row:1!important;width:30px!important;height:30px!important;place-self:center!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-weight-field{
+  display:block!important;grid-column:2!important;grid-row:1!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-reps-field{
+  display:block!important;grid-column:3!important;grid-row:1!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-weight-field>span,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-reps-field>span,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-previous,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-target,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-type-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-rpe-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .execution-rir-field,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-delete-button,
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-detail-toggle{
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) input{
+  width:100%!important;height:44px!important;min-height:44px!important;padding:0 8px!important;
+  border-radius:11px!important;font-size:17px!important;font-weight:760!important;text-align:center!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-complete-button{
+  display:grid!important;grid-column:4!important;grid-row:1!important;place-items:center!important;
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;
+  border-radius:50%!important;font-size:0!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .execution-set-row.completed:not(.current-set) .set-complete-button::after{
+  content:'✓'!important;font-size:17px!important;line-height:1!important
+}
+
+/* Session completion is its own approved screen. Hide stale draft/exercise chrome once the result exists. */
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-shell:has(.workout-result-card)>.gws-nav{
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]:has(>.workout-result-card)>
+  :not(.workout-result-card){
+  display:none!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]:has(>.workout-result-card){
+  padding-top:0!important
+}
+body.garang-reference-ui-v2 .g-ref-screen-workout .gws-panel[data-garang-workout-surface="exercise"]>.workout-result-card{
+  margin-top:0!important
+}
