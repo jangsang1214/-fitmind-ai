@@ -1,5 +1,5 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v40-20261018`;
+const CACHE=`${CACHE_PREFIX}v41-20261018`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
@@ -17,9 +17,14 @@ const EXTRA_ASSETS=[
   './03_styles/runtime/garang-commercial-target-v3-6.css?v=3.6.0-draft-reset-access',
   './03_styles/runtime/garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity',
   './03_styles/runtime/garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch',
-  './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.0-coach-density',
+  './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.1-founder-board-exact',
   './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
   './06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.6-stable-markup',
+  './05_assets/commercial-approved-v3/today-anatomy-hero.jpg',
+  './05_assets/commercial-approved-v3/workout-benchpress-hero.jpg',
+  './05_assets/commercial-approved-v3/nutrition-meal-hero.jpg',
+  './05_assets/commercial-approved-v3/body-anatomy-hero.jpg',
+  './05_assets/commercial-approved-v3/session-summary-anatomy.jpg',
   './05_assets/body-model-v6/male-front.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-side.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-back.svg?v=7.3.0-anatomical-mass',
