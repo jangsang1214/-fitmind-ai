@@ -101,7 +101,9 @@ async function skipRest(page){
 
     await route(page,'body');
     await page.locator('.g4-body-shell .body-hero').waitFor({state:'visible',timeout:6000});
-    await page.locator('.body-hero-anatomy svg,.body-hero-anatomy img,.body-hero-anatomy .muscle-map-wrap').first().waitFor({state:'visible',timeout:6000});
+    const bodyPair=page.locator('.body-hero-anatomy .g4-body-anatomy-pair:visible').first();
+    await bodyPair.waitFor({state:'visible',timeout:6000});
+    if(await bodyPair.locator('img:visible').count()<2)throw new Error('Body review requires visible front and back v4 anatomy');
     await shot(page,'07-body');
 
     await route(page,'coach');
