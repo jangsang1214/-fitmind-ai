@@ -70,6 +70,29 @@ html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #g
   margin:0!important
 }
 
+/* 320px History must size from the viewport, not from a grid child's min-content width.
+   Constrain the frame itself so the canonical History content can shrink normally. */
+@media(max-width:340px){
+  body.garang-reference-ui-v2:has(#main.g-ref-screen-progress) #appView{
+    width:100vw!important;
+    max-width:100vw!important;
+    min-width:0!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important
+  }
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress>.page-head,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview,
+  body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-board{
+    min-width:0!important;
+    max-width:100%!important
+  }
+}
+
 body.garang-reference-ui-v2 button{-webkit-tap-highlight-color:transparent}
 body.garang-reference-ui-v2 button:focus-visible,
 body.garang-reference-ui-v2 input:focus-visible,
@@ -77,5 +100,5 @@ body.garang-reference-ui-v2 textarea:focus-visible,
 body.garang-reference-ui-v2 select:focus-visible,
 body.garang-reference-ui-v2 summary:focus-visible{
   outline:2px solid rgba(129,140,248,.72)!important;
-  outline-offset:2px!important;
+  outline-offset:2px!important
 }
