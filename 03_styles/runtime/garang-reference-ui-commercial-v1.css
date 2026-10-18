@@ -17,9 +17,8 @@
 @import url('./garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure');
 @import url('./garang-commercial-target-v3-12.css?v=3.12.0-today-action-first');
 
-/* Product Consolidation injects its compatibility style at runtime. These higher-specificity
-   commercial rules resolve only the Founder-approved presentation order while preserving all
-   canonical Today DOM/action owners. */
+/* Product Consolidation injects its compatibility style at runtime. These rules resolve only
+   Founder-approved presentation order while preserving canonical Today DOM/action owners. */
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision .gtf-state-primary{
   display:none!important
 }
@@ -28,6 +27,12 @@ html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #g
 }
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-action,
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gtf-checkin-access{
+  order:2!important
+}
+/* Canonical-ID pin: Product Consolidation is inserted dynamically after linked styles. Do not
+   depend on decoration classes for the primary action ordering contract. */
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow>.gtf-action.gtf-action,
+html body #main#main[data-garang-screen="today"][data-gpc-today="1"] #garangTodayFlow#garangTodayFlow>.gtf-checkin-access.gtf-checkin-access{
   order:2!important
 }
 html body.garang-reference-ui-v2 #main.g-ref-screen-today[data-gpc-today="1"] #garangTodayFlow.g-ref-primary-decision>.gpc-today-plan{
