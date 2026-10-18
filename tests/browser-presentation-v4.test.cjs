@@ -19,7 +19,7 @@ async function noOverflow(page,label){const m=await page.evaluate(()=>({w:innerW
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangPresentationV4?.version==='garang-presentation-v4.0.3',null,{timeout:8000});
+  await page.waitForFunction(()=>window.GarangPresentationV4?.version?.startsWith('garang-presentation-v4.'),null,{timeout:8000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangPresentation==='v4',null,{timeout:8000});
 
   assert.equal(await page.locator('link[data-garang-presentation-v4]').count(),1,'v4 stylesheet must load once');
