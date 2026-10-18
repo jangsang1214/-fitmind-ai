@@ -30,13 +30,24 @@ body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-
 body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle span{
   color:#858cff!important;font-size:16px!important;line-height:1!important
 }
-body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-hero,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero{
+  display:block!important;min-height:54px!important;margin:10px 0 0!important;padding:10px 12px!important;
+  border:1px solid rgba(255,255,255,.055)!important;border-radius:13px!important;background:#0c1118!important;
+  box-shadow:none!important;overflow:hidden!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero h2,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero strong{
+  font-size:12px!important;line-height:1.28!important
+}
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero p,
+body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview>.gx-hero span{
+  font-size:8px!important;line-height:1.45!important
+}
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-timeline,
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>.gx-day-summary,
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview:not([data-g-ref-evidence-open="1"])>[data-gx-meaning-loop]{
   display:none!important
 }
-body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-hero,
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-timeline,
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>.gx-day-summary,
 body.garang-reference-ui-v2 #main.g-ref-screen-progress #garangAccumulationOverview[data-g-ref-evidence-open="1"]>[data-gx-meaning-loop]{
