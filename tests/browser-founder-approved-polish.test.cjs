@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const path=require('node:path');
 const {webkit}=require('playwright');
 const {startStaticServer}=require('./helpers/static-server.cjs');
@@ -9,6 +10,27 @@ const root=path.resolve(__dirname,'..');
 const serveRoot=path.join(root,'dist');
 const port=8799;
 const baseURL=`http://127.0.0.1:${port}`;
+
+const indexSource=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const coachQuietSource=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-quiet-surface-v1.js'),'utf8');
+const swSource=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
+assert.match(indexSource,/garang-core-loop-v1\.js\?v=1\.1\.4-commercial-v3/,'Modified core loop must use a rotated direct-script cache key');
+assert.match(indexSource,/garang-coach-quiet-surface-v1\.js\?v=1\.0\.3-route-reset/,'Modified Coach quiet surface must use a rotated direct-script cache key');
+assert.match(coachQuietSource,/if\(main\.dataset\.garangScreen!=='coach'\)\{\s*coachActionDisclosureExpanded=false;\s*return;/,'Coach disclosure state must reset when leaving Coach');
+for(const asset of [
+  './03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe',
+  './03_styles/runtime/garang-commercial-target-v3.css?v=3.0.0-founder-approved',
+  './03_styles/runtime/garang-commercial-target-v3-1.css?v=3.1.0-screenshot-driven',
+  './03_styles/runtime/garang-commercial-target-v3-2.css?v=3.2.0-live-set-contract',
+  './03_styles/runtime/garang-commercial-target-v3-3.css?v=3.3.0-detail-access',
+  './03_styles/runtime/garang-commercial-target-v3-4.css?v=3.4.0-progressive-details',
+  './03_styles/runtime/garang-commercial-target-v3-5.css?v=3.5.0-nutrition-actions',
+  './03_styles/runtime/garang-commercial-target-v3-6.css?v=3.6.0-draft-reset-access',
+  './03_styles/runtime/garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity',
+  './03_styles/runtime/garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch',
+  './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.0-coach-density',
+  './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe'
+])assert.ok(swSource.includes(asset),`PWA app shell must precache ${asset}`);
 
 async function waitServer(){
   const deadline=Date.now()+15000;
@@ -52,6 +74,18 @@ function state(){
       const geometry=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,navButtons:[...document.querySelectorAll('#bottomNav [data-garang-primary-nav="1"]')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};})}));
       assert.ok(geometry.doc<=geometry.viewport+2&&geometry.body<=geometry.viewport+2,`Commercial polish must not overflow at ${width}px: ${JSON.stringify(geometry)}`);
       assert.ok(geometry.navButtons.length===4&&geometry.navButtons.every(box=>box.w>=44&&box.h>=44),`Approved four-tab navigation must remain touch safe at ${width}px: ${JSON.stringify(geometry.navButtons)}`);
+      if(width===390){
+        const languageState=await page.evaluate(()=>{
+          document.documentElement.lang='en';
+          document.documentElement.dispatchEvent(new CustomEvent('garang:language-changed'));
+          const label=document.querySelector('.g-ref-screen-today .g-ref-date-copy span');
+          if(!label)return null;
+          return {fontSize:getComputedStyle(label).fontSize,after:getComputedStyle(label,'::after').content};
+        });
+        assert.ok(languageState,'Today language-safe label must exist at 390px');
+        assert.notEqual(languageState.fontSize,'0px','English Today runtime text must remain visible');
+        assert.equal(languageState.after,'none','English Today must not receive the Korean generated pseudo-copy');
+      }
       assert.equal(errors.length,0,`Commercial polish must not introduce page errors at ${width}px: ${errors.join('\\n')}`);
       await context.close();
     }
