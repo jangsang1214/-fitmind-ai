@@ -44,18 +44,16 @@ function today(m){
   return true;
 }
 function workout(m){
-  const head=qs(m,':scope > .page-head');
-  const shell=ensure('section','g4-workout-shell',m,head?.nextSibling||m.firstChild);
-  const preferred=[
-    qs(m,'.workout-session-bar'),
-    qs(m,'.workout-visual-hero'),
-    qs(m,'.workout-execution-v2'),
-    qs(m,'.gws-tabs'),
-    qs(m,'.gws-panel[data-garang-workout-surface="exercise"]'),
-    qs(m,'#workoutDraftArea')
-  ].filter(Boolean);
-  preferred.forEach(node=>move(shell,node));
-  for(const child of directChildren(m,[head,shell]))move(shell,child);
+  /* Preserve the canonical Overview/Exercise panel ownership. Presentation v4 only
+     annotates real runtime owners; it never reparents Program/setup content into LIVE. */
+  m.classList.add('g4-workout-shell');
+  const session=qs(m,'.workout-session-bar');if(session)session.classList.add('g4-live-session');
+  const hero=qs(m,'.workout-visual-hero');if(hero)hero.classList.add('g4-exercise-visual');
+  const execution=qs(m,'.workout-execution-v2');if(execution)execution.classList.add('g4-execution');
+  const tabs=qs(m,'.gws-tabs');if(tabs)tabs.classList.add('g4-workout-tabs');
+  const overview=qs(m,'.gws-panel[data-garang-workout-surface="overview"]');if(overview)overview.classList.add('g4-workout-overview');
+  const exercise=qs(m,'.gws-panel[data-garang-workout-surface="exercise"]');if(exercise)exercise.classList.add('g4-workout-exercise');
+  const draft=qs(m,'#workoutDraftArea');if(draft)draft.classList.add('g4-workout-draft');
   const rest=document.getElementById('workoutExecutionRest');
   if(rest&&app()&&!app().hidden&&screen()==='workout'){
     rest.classList.add('g4-rest-portal');
