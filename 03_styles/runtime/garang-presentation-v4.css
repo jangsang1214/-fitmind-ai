@@ -1,0 +1,130 @@
+/* GARANG Presentation v4 — clean commercial layer
+   Presentation only. Canonical routing/state/session/save/intelligence owners stay in existing runtimes.
+   No reference-board crops, fake meal/workout imagery, or hidden hit-map/image split.
+*/
+:root{
+  --g4-bg:#07090d;
+  --g4-surface:#0d1118;
+  --g4-surface-raised:#121823;
+  --g4-surface-soft:#171d28;
+  --g4-line:rgba(255,255,255,.075);
+  --g4-line-strong:rgba(150,155,255,.30);
+  --g4-text:#f6f7fb;
+  --g4-sub:#a2a9b5;
+  --g4-muted:#707986;
+  --g4-accent:#7779ff;
+  --g4-accent-strong:#5c63f1;
+  --g4-good:#5bd6a4;
+  --g4-radius-xl:24px;
+  --g4-radius-lg:18px;
+  --g4-radius-md:14px;
+  --g4-space-1:6px;
+  --g4-space-2:10px;
+  --g4-space-3:14px;
+  --g4-space-4:18px;
+  --g4-space-5:24px;
+  --g4-shadow:0 24px 56px rgba(0,0,0,.36);
+}
+
+html[data-garang-presentation="v4"],html[data-garang-presentation="v4"] body{background:var(--g4-bg)!important;color:var(--g4-text)!important}
+body.garang-presentation-v4{background:radial-gradient(circle at 50% -10%,rgba(98,94,255,.09),transparent 28%),var(--g4-bg)!important;color:var(--g4-text)!important;letter-spacing:-.018em}
+body.garang-presentation-v4 *{box-sizing:border-box}
+body.garang-presentation-v4 .card,body.garang-presentation-v4 details{border-color:var(--g4-line)!important}
+body.garang-presentation-v4 .primary{background:linear-gradient(135deg,var(--g4-accent),var(--g4-accent-strong))!important;border-color:rgba(255,255,255,.10)!important;box-shadow:0 14px 32px rgba(79,77,220,.24)!important}
+body.garang-presentation-v4 .ghost{background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
+
+/* frame */
+body.garang-presentation-v4 .topbar{max-width:430px!important;min-height:58px!important;padding:calc(9px + env(safe-area-inset-top,0px)) 16px 8px!important;background:rgba(7,9,13,.96)!important;border-bottom:1px solid rgba(255,255,255,.045)!important;box-shadow:none!important}
+body.garang-presentation-v4 .topbar .brand.mini{position:absolute!important;left:50%!important;transform:translateX(-50%)!important}
+body.garang-presentation-v4 .topbar .brand.mini img{width:24px!important;height:24px!important}
+body.garang-presentation-v4 .topbar .brand.mini b{font-size:13px!important;letter-spacing:.22em!important}
+body.garang-presentation-v4 .topbar #menuBtn,body.garang-presentation-v4 .topbar #settingsTopBtn{width:40px!important;height:40px!important;min-width:40px!important;border:0!important;background:transparent!important;color:#cbd1dc!important;box-shadow:none!important}
+body.garang-presentation-v4 #main{max-width:430px!important;padding:14px 16px calc(98px + env(safe-area-inset-bottom,0px))!important}
+body.garang-presentation-v4 #bottomNav{max-width:430px!important;height:72px!important;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))!important;background:rgba(7,9,13,.98)!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:0 -16px 38px rgba(0,0,0,.28)!important}
+body.garang-presentation-v4 #bottomNav button{min-height:56px!important;border-radius:14px!important;background:transparent!important;color:#7b8491!important}
+body.garang-presentation-v4 #bottomNav button.active{color:#a9aeff!important;background:linear-gradient(180deg,rgba(108,106,255,.13),rgba(108,106,255,.035))!important}
+body.garang-presentation-v4 #bottomNav button b{font-size:10px!important}
+
+/* semantic presentation primitives */
+.g4-screen{display:grid!important;gap:var(--g4-space-3)!important;min-width:0!important}
+.g4-eyebrow{font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important;color:#9399ff!important}
+.g4-heading{font-size:27px!important;line-height:1.16!important;font-weight:780!important;letter-spacing:-.055em!important;color:#fff!important;text-wrap:balance}
+.g4-subcopy{font-size:12px!important;line-height:1.62!important;color:var(--g4-sub)!important}
+.g4-surface{border:1px solid var(--g4-line)!important;border-radius:var(--g4-radius-lg)!important;background:linear-gradient(160deg,var(--g4-surface-raised),var(--g4-surface))!important;box-shadow:var(--g4-shadow)!important;min-width:0!important}
+
+/* Today: canonical decision is the hero, canonical evidence follows it. */
+#main.g4-screen-today .page-head{display:none!important}
+#main.g4-screen-today .g4-today-shell{display:grid!important;gap:12px!important}
+#main.g4-screen-today #garangTodayFlow{position:relative!important;display:grid!important;gap:12px!important;min-height:0!important;padding:20px!important;border:1px solid var(--g4-line-strong)!important;border-radius:var(--g4-radius-xl)!important;background:radial-gradient(circle at 84% 18%,rgba(119,121,255,.16),transparent 28%),linear-gradient(145deg,#141a27,#0b0f16 72%)!important;box-shadow:0 28px 58px rgba(0,0,0,.40)!important;overflow:hidden!important}
+#main.g4-screen-today #garangTodayFlow .gtf-state-primary{display:none!important}
+#main.g4-screen-today #garangTodayFlow .gtf-decision{order:1!important;display:block!important;padding:0!important;max-width:none!important}
+#main.g4-screen-today #garangTodayFlow .gtf-decision h2{max-width:78%!important;margin:0 0 8px!important;font-size:29px!important;line-height:1.12!important;font-weight:800!important;letter-spacing:-.06em!important;color:#fff!important}
+#main.g4-screen-today #garangTodayFlow .gtf-decision p{max-width:78%!important;margin:0!important;font-size:12px!important;line-height:1.58!important;color:var(--g4-sub)!important}
+#main.g4-screen-today #garangTodayFlow .gtf-context{order:2!important;padding:0!important;color:var(--g4-sub)!important}
+#main.g4-screen-today #garangTodayFlow .gtf-action,#main.g4-screen-today #garangTodayFlow .gtf-checkin-access{order:3!important;padding:0!important;margin:0!important}
+#main.g4-screen-today #garangTodayFlow .gtdw-start,#main.g4-screen-today #garangTodayFlow .gtf-next,#main.g4-screen-today #garangTodayFlow button.primary{width:100%!important;min-height:56px!important;border-radius:15px!important;font-size:15px!important;font-weight:780!important}
+#main.g4-screen-today #garangTodayFlow .gpc-today-plan{order:4!important;display:block!important;margin:0!important;padding:12px!important;border:1px solid var(--g4-line)!important;border-radius:15px!important;background:rgba(7,10,16,.56)!important;backdrop-filter:blur(14px)!important}
+#main.g4-screen-today #garangTodayFlow .gtf-track-visual{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+#main.g4-screen-today .g4-today-visual{display:grid!important;place-items:center!important;min-height:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#main.g4-screen-today .g4-today-visual[hidden]{display:none!important}
+#main.g4-screen-today .g4-today-visual .today-decision-panel{display:none!important}
+#main.g4-screen-today .g4-today-support{display:grid!important;gap:10px!important}
+#main.g4-screen-today .g4-today-support>.card{border-radius:18px!important;background:var(--g4-surface)!important;box-shadow:none!important}
+
+/* Workout: the real live controls dominate; no hard-coded exercise photography. */
+#main.g4-screen-workout .page-head{display:none!important}
+#main.g4-screen-workout .g4-workout-shell{display:grid!important;gap:10px!important}
+#main.g4-screen-workout .workout-session-bar{width:100%!important;min-width:0!important;margin:0!important;padding:13px 14px!important;border:1px solid var(--g4-line)!important;border-radius:17px!important;background:linear-gradient(155deg,#151b28,#0d121a)!important}
+#main.g4-screen-workout .workout-session-bar.is-live{position:sticky!important;top:62px!important;z-index:30!important;border-color:rgba(121,125,255,.40)!important;box-shadow:inset 3px 0 0 var(--g4-accent),0 18px 40px rgba(0,0,0,.30)!important;backdrop-filter:blur(18px)!important}
+#main.g4-screen-workout .workout-session-live strong{font-size:34px!important;line-height:1!important;color:#fff!important}
+#main.g4-screen-workout .workout-visual-hero{min-height:0!important;padding:16px!important;border:1px solid var(--g4-line)!important;border-radius:20px!important;background:linear-gradient(155deg,#151b27,#0d1118)!important;box-shadow:none!important}
+#main.g4-screen-workout:has(.workout-session-bar.is-live) .workout-builder [data-workout-setup],#main.g4-screen-workout:has(.workout-session-bar.is-live) .gws-reuse{display:none!important}
+#main.g4-screen-workout .execution-set-row{border:1px solid var(--g4-line)!important;border-radius:16px!important;background:#0d121a!important;overflow:hidden!important}
+#main.g4-screen-workout .execution-set-row.current-set{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;padding:14px!important;border-color:rgba(122,125,255,.48)!important;background:linear-gradient(155deg,#191f31,#101520)!important;box-shadow:0 20px 42px rgba(0,0,0,.27)!important}
+#main.g4-screen-workout .execution-set-row.current-set::before{content:'현재 세트';grid-column:1/-1!important;font-size:10px!important;font-weight:800!important;letter-spacing:.12em!important;color:#989dff!important}
+html[lang="en"] #main.g4-screen-workout .execution-set-row.current-set::before{content:'CURRENT SET'}
+#main.g4-screen-workout .execution-set-row.current-set input{min-height:62px!important;border-radius:13px!important;background:#111824!important;border-color:rgba(132,136,255,.34)!important;font-size:21px!important;font-weight:780!important;text-align:center!important}
+#main.g4-screen-workout .execution-set-row.current-set .set-complete-button,#main.g4-screen-workout .execution-set-row.current-set [data-execution-set-complete]{grid-column:1/-1!important;width:100%!important;min-height:56px!important;border-radius:14px!important;font-size:15px!important;font-weight:780!important;background:linear-gradient(135deg,var(--g4-accent),var(--g4-accent-strong))!important}
+#main.g4-screen-workout #workoutDraftArea .list-item{border-radius:16px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
+@media(max-width:800px){#main.g4-screen-workout #workoutDraftArea .workout-draft-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 76px!important;gap:8px!important;width:100%!important}#main.g4-screen-workout #workoutDraftArea [data-execute-workout]{min-height:48px!important;width:100%!important}#main.g4-screen-workout #workoutDraftArea .workout-draft-manage{width:76px!important;min-width:76px!important}}
+
+/* Rest: actual timer state owns the screen. */
+body.garang-presentation-v4:has(>.workout-rest-timer.g4-rest-portal:not([hidden])) #bottomNav{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal:not([hidden]){position:fixed!important;inset:0!important;z-index:20000!important;width:100vw!important;max-width:none!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;padding:calc(72px + env(safe-area-inset-top,0px)) 18px calc(28px + env(safe-area-inset-bottom,0px))!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;gap:14px!important;background:radial-gradient(circle at 50% 30%,rgba(90,88,255,.22),transparent 29%),linear-gradient(180deg,#090d17,#06090e 72%)!important;overflow-y:auto!important}
+body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal:not([hidden])::before{content:'휴식 중';text-align:center;font-size:18px!important;font-weight:780!important;color:#969bff!important}
+html[lang="en"] body.garang-presentation-v4>.workout-rest-timer.g4-rest-portal:not([hidden])::before{content:'REST'}
+body.garang-presentation-v4 #workoutExecutionRestClock{width:210px!important;height:210px!important;margin:14px auto!important;border:8px solid #6d70ff!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:#0a101b!important;font-size:42px!important;font-weight:800!important;color:#fff!important;box-shadow:0 0 0 9px rgba(100,102,255,.08),0 24px 56px rgba(49,49,162,.30)!important}
+
+/* Nutrition: real user media or premium empty state only. */
+#main.g4-screen-nutrition .page-head{display:none!important}
+#main.g4-screen-nutrition .g4-nutrition-shell{display:grid!important;gap:12px!important}
+#main.g4-screen-nutrition .meal-scan-card{padding:14px!important;border:1px solid var(--g4-line)!important;border-radius:22px!important;background:linear-gradient(155deg,#151b25,#0c1118)!important;box-shadow:var(--g4-shadow)!important}
+#main.g4-screen-nutrition .meal-scan-empty{min-height:230px!important;display:grid!important;align-content:end!important;padding:18px!important;border:1px dashed rgba(146,151,255,.22)!important;border-radius:17px!important;background:radial-gradient(circle at 50% 30%,rgba(104,105,255,.14),transparent 34%),#0b1017!important}
+#main.g4-screen-nutrition .meal-scan-card img,#main.g4-screen-nutrition .meal-scan-card video{width:100%!important;max-height:330px!important;object-fit:cover!important;border-radius:17px!important}
+#main.g4-screen-nutrition #mealPhotoBtn,#main.g4-screen-nutrition #pickMealScan{min-height:54px!important;border-radius:14px!important}
+#main.g4-screen-nutrition .g4-nutrition-support{display:grid!important;gap:10px!important}
+
+/* Body: visible renderer and hit geometry remain the same canonical object. */
+#main.g4-screen-body .page-head{display:none!important}
+#main.g4-screen-body .g4-body-shell{display:grid!important;gap:12px!important}
+#main.g4-screen-body .body-hero{position:relative!important;min-height:520px!important;padding:14px 14px 92px!important;border:1px solid var(--g4-line)!important;border-radius:24px!important;background:radial-gradient(circle at 50% 34%,rgba(105,103,255,.16),transparent 38%),linear-gradient(180deg,#111824,#090d13)!important;overflow:hidden!important;box-shadow:var(--g4-shadow)!important}
+#main.g4-screen-body .body-hero-anatomy{min-height:390px!important;display:grid!important;place-items:center!important;opacity:1!important;pointer-events:auto!important}
+#main.g4-screen-body .body-hero-anatomy svg,#main.g4-screen-body .body-hero-anatomy img,#main.g4-screen-body .body-hero-anatomy .muscle-map-wrap{max-height:400px!important;max-width:100%!important;opacity:1!important;filter:drop-shadow(0 28px 38px rgba(0,0,0,.50)) contrast(1.08)!important}
+#main.g4-screen-body .body-model-legend{display:none!important}
+#main.g4-screen-body .body-trend-card{border-radius:18px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
+
+/* Coach: conversation first, composer always obvious. */
+#main.g4-screen-coach{padding-left:0!important;padding-right:0!important;padding-top:0!important}
+#main.g4-screen-coach .garang-coach-v2,#main.g4-screen-coach .coach-app-shell{min-height:calc(100dvh - 130px)!important;background:transparent!important}
+#main.g4-screen-coach .g2-chat-main{display:flex!important;flex-direction:column!important;min-height:0!important}
+#main.g4-screen-coach .g2-chat-scroll{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;padding:14px 14px 112px!important}
+#main.g4-screen-coach .gpt-content{border-radius:18px!important;padding:12px 14px!important;font-size:12px!important;line-height:1.65!important}
+#main.g4-screen-coach .g2-composer-wrap{position:relative!important;margin-top:auto!important;padding:8px 10px 10px!important;background:linear-gradient(180deg,rgba(7,9,13,0),rgba(7,9,13,.96) 22%,#07090d 100%)!important}
+#main.g4-screen-coach .g2-composer{min-height:58px!important;border-radius:18px!important;background:#10151e!important;border-color:var(--g4-line)!important;box-shadow:0 14px 38px rgba(0,0,0,.34)!important}
+
+/* Progress / settings */
+#main.g4-screen-progress .card,#main.g4-screen-settings .card,#main.g4-screen-settings details{border-radius:17px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important;box-shadow:none!important}
+
+@media(max-width:360px){body.garang-presentation-v4 #main{padding-left:13px!important;padding-right:13px!important}#main.g4-screen-today #garangTodayFlow{padding:17px!important}#main.g4-screen-today #garangTodayFlow .gtf-decision h2{font-size:25px!important;max-width:88%!important}#main.g4-screen-body .body-hero{min-height:480px!important}}
+@media(max-width:330px){#main.g4-screen-today #garangTodayFlow .gtf-decision h2{font-size:23px!important}#main.g4-screen-workout .execution-set-row.current-set{gap:6px!important;padding:10px!important}}
+@media(prefers-reduced-motion:reduce){body.garang-presentation-v4 *,body.garang-presentation-v4 *::before,body.garang-presentation-v4 *::after{animation:none!important;transition:none!important}}
