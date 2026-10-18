@@ -21,6 +21,7 @@ async function noOverflow(page,label){const m=await page.evaluate(()=>({w:innerW
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
   await page.waitForFunction(()=>window.GarangPresentationV4?.version?.startsWith('garang-presentation-v4.'),null,{timeout:8000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangPresentation==='v4',null,{timeout:8000});
+  await page.waitForFunction(()=>document.querySelector('.g4-today-shell>#garangTodayFlow'),null,{timeout:5000});
 
   assert.equal(await page.locator('link[data-garang-presentation-v4]').count(),1,'v4 stylesheet must load once');
   assert.equal(await page.locator('script[data-garang-presentation-v4]').count(),1,'v4 adapter must load once');
