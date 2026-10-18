@@ -18,6 +18,7 @@ const EXTRA_ASSETS=[
   './03_styles/runtime/garang-commercial-target-v3-7.css?v=3.7.0-screenshot-integrity',
   './03_styles/runtime/garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch',
   './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.0-coach-density',
+  './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
   './06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.6-stable-markup',
   './05_assets/body-model-v6/male-front.svg?v=7.3.0-anatomical-mass',
   './05_assets/body-model-v6/male-side.svg?v=7.3.0-anatomical-mass',
