@@ -1,5 +1,5 @@
 const CACHE_PREFIX='garang-app-shell-';
-const CACHE=`${CACHE_PREFIX}v42-20261018`;
+const CACHE=`${CACHE_PREFIX}v43-20261018`;
 const EXTRA_ASSETS=[
   './06_features/ui/runtime/garang-state-event-durability-v1.js?v=1.1.0',
   './06_features/ui/runtime/garang-today-checkin-override-v1.js?v=1.3.0',
@@ -21,6 +21,7 @@ const EXTRA_ASSETS=[
   './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
   './03_styles/runtime/garang-commercial-target-v3-10.css?v=3.10.0-capture-parity',
   './03_styles/runtime/garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure',
+  './03_styles/runtime/garang-commercial-target-v3-12.css?v=3.12.0-today-action-first',
   './06_features/ui/runtime/garang-reference-ui-v2.js?v=2.0.6-stable-markup',
   './05_assets/commercial-approved-v3/today-anatomy-hero.jpg',
   './05_assets/commercial-approved-v3/workout-benchpress-hero.jpg',
