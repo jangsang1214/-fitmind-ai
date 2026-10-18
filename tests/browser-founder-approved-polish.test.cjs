@@ -15,11 +15,13 @@ const indexSource=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const coachQuietSource=fs.readFileSync(path.join(root,'06_features/ui/runtime/garang-coach-quiet-surface-v1.js'),'utf8');
 const swSource=fs.readFileSync(path.join(root,'02_core/sw-runtime.js'),'utf8');
 const commercialEntrySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-reference-ui-commercial-v1.css'),'utf8');
-const founderVisualSource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-9.css'),'utf8');
+const founderVisualSource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-10.css'),'utf8');
+const founderHistorySource=fs.readFileSync(path.join(root,'03_styles/runtime/garang-commercial-target-v3-11.css'),'utf8');
 assert.match(indexSource,/garang-core-loop-v1\.js\?v=1\.1\.4-commercial-v3/,'Modified core loop must use a rotated direct-script cache key');
 assert.match(indexSource,/garang-coach-quiet-surface-v1\.js\?v=1\.0\.3-route-reset/,'Modified Coach quiet surface must use a rotated direct-script cache key');
 assert.match(coachQuietSource,/if\(main\.dataset\.garangScreen!=='coach'\)\{\s*coachActionDisclosureExpanded=false;\s*return;/,'Coach disclosure state must reset when leaving Coach');
-assert.match(commercialEntrySource,/garang-commercial-target-v3-9\.css\?v=3\.9\.1-founder-board-exact/,'Founder-approved final visual layer must use the exact-board cache key');
+assert.match(commercialEntrySource,/garang-commercial-target-v3-10\.css\?v=3\.10\.0-capture-parity/,'Founder capture-parity layer must be loaded');
+assert.match(commercialEntrySource,/garang-commercial-target-v3-11\.css\?v=3\.11\.0-history-disclosure/,'Founder History disclosure layer must be loaded last');
 for(const asset of [
   './03_styles/runtime/garang-reference-ui-commercial-v1.css?v=1.0.1-layout-safe',
   './03_styles/runtime/garang-commercial-target-v3.css?v=3.0.0-founder-approved',
@@ -33,6 +35,8 @@ for(const asset of [
   './03_styles/runtime/garang-commercial-target-v3-8.css?v=3.8.0-workout-draft-touch',
   './03_styles/runtime/garang-commercial-target-v3-9.css?v=3.9.1-founder-board-exact',
   './03_styles/runtime/garang-commercial-i18n-v1.css?v=1.0.0-language-safe',
+  './03_styles/runtime/garang-commercial-target-v3-10.css?v=3.10.0-capture-parity',
+  './03_styles/runtime/garang-commercial-target-v3-11.css?v=3.11.0-history-disclosure',
   './05_assets/commercial-approved-v3/today-anatomy-hero.jpg',
   './05_assets/commercial-approved-v3/workout-benchpress-hero.jpg',
   './05_assets/commercial-approved-v3/nutrition-meal-hero.jpg',
@@ -40,12 +44,11 @@ for(const asset of [
   './05_assets/commercial-approved-v3/session-summary-anatomy.jpg'
 ])assert.ok(swSource.includes(asset),`PWA app shell must precache ${asset}`);
 for(const asset of [
-  'today-anatomy-hero.jpg',
-  'workout-benchpress-hero.jpg',
-  'nutrition-meal-hero.jpg',
-  'body-anatomy-hero.jpg',
-  'session-summary-anatomy.jpg'
-])assert.ok(founderVisualSource.includes(asset),`Final Founder visual layer must actually consume ${asset}`);
+  'session-summary-anatomy.jpg',
+  'nutrition-meal-hero.jpg'
+])assert.ok(founderVisualSource.includes(asset),`Capture-parity visual layer must consume ${asset}`);
+assert.ok(founderHistorySource.includes('g-ref-history-evidence-toggle'),'Final Founder layer must style the History evidence disclosure');
+assert.ok(founderHistorySource.includes('data-g-ref-evidence-open'),'Final Founder layer must keep canonical History evidence behind progressive disclosure');
 
 async function waitServer(){
   const deadline=Date.now()+15000;
@@ -82,7 +85,7 @@ function state(){
       const errors=[];page.on('pageerror',error=>errors.push(String(error?.message||error)));
       await page.goto(baseURL,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-      await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.0',null,{timeout:8000});
+      await page.waitForFunction(()=>window.GarangReferenceUIV2?.version==='garang-reference-ui-v2.0.1-founder-parity',null,{timeout:8000});
       await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangReferenceUi==='v2',null,{timeout:8000});
       assert.equal(await page.locator('link[data-garang-reference-ui-commercial="1"]').count(),1,'Founder-approved commercial polish stylesheet must be loaded exactly once');
       assert.equal(await page.locator('#garangGoldenMaster').count(),0,'Commercial polish must not introduce a competing Golden Master shell');
@@ -93,13 +96,13 @@ function state(){
         const languageState=await page.evaluate(()=>{
           document.documentElement.lang='en';
           document.documentElement.dispatchEvent(new CustomEvent('garang:language-changed'));
-          const label=document.querySelector('.g-ref-screen-today .g-ref-date-copy span');
+          const label=document.querySelector('.g-ref-screen-today .g-ref-today-date span');
           if(!label)return null;
           return {fontSize:getComputedStyle(label).fontSize,after:getComputedStyle(label,'::after').content};
         });
-        assert.ok(languageState,'Today language-safe label must exist at 390px');
-        assert.notEqual(languageState.fontSize,'0px','English Today runtime text must remain visible');
-        assert.equal(languageState.after,'none','English Today must not receive the Korean generated pseudo-copy');
+        assert.ok(languageState,'Today language-safe date label must exist at 390px');
+        assert.notEqual(languageState.fontSize,'0px','English Today runtime date must remain visible');
+        assert.equal(languageState.after,'none','English Today date must not receive generated pseudo-copy');
       }
       assert.equal(errors.length,0,`Commercial polish must not introduce page errors at ${width}px: ${errors.join('\\n')}`);
       await context.close();
