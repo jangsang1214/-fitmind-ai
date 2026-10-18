@@ -47,15 +47,7 @@ function syncShell(){
  try{ensureStyle();const root=main.querySelector('.garang-coach-v2'),html=document.documentElement;if(!root){html.removeAttribute(ACTIVE_ATTR);return;}html.setAttribute(ACTIVE_ATTR,'active');ensureCombinedSidebar(root);ensureHeader(root);}finally{syncing=false;}
 }
 function queueSync(){if(queued||syncing)return;queued=true;requestAnimationFrame(syncShell);}
-function coachDomChanged(records){
- if(syncing)return false;
- return records.some(record=>{
-  if(record.type!=='childList')return false;
-  const target=record.target;
-  if(target===main)return true;
-  return target instanceof Element&&!!target.closest('.garang-coach-v2,.g2-chat-head,.g2-chat-main');
- });
-}
-window.addEventListener('garang:screen-rendered',queueSync);window.addEventListener('garang:coach-mounted',queueSync);window.addEventListener('garang:state-hydrated',queueSync);new MutationObserver(queueSync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});new MutationObserver(records=>{if(coachDomChanged(records))queueSync();}).observe(main,{childList:true,subtree:true});
-window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.1',sync:queueSync});queueSync();
+function scheduleAfterThreadReset(){queueMicrotask(()=>queueSync());}
+window.addEventListener('garang:screen-rendered',queueSync);window.addEventListener('garang:coach-mounted',queueSync);window.addEventListener('garang:state-hydrated',queueSync);window.addEventListener('garang:coach-message-rendered',queueSync);window.addEventListener('garang:route-completed',queueSync);document.addEventListener('click',event=>{if(event.target.closest?.('.g2-head-new'))scheduleAfterThreadReset();});new MutationObserver(queueSync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.2',sync:queueSync});queueSync();
 })();
