@@ -19,7 +19,7 @@ async function noOverflow(page,label){const m=await page.evaluate(()=>({w:innerW
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e?.message||e)));
   await page.goto(baseURL,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
-  await page.waitForFunction(()=>window.GarangPresentationV4?.version==='garang-presentation-v4.0.1',null,{timeout:8000});
+  await page.waitForFunction(()=>window.GarangPresentationV4?.version==='garang-presentation-v4.0.2',null,{timeout:8000});
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangPresentation==='v4',null,{timeout:8000});
 
   assert.equal(await page.locator('link[data-garang-presentation-v4]').count(),1,'v4 stylesheet must load once');
@@ -45,7 +45,8 @@ async function noOverflow(page,label){const m=await page.evaluate(()=>({w:innerW
 
   await route(page,'body');
   assert.equal(await page.locator('.g4-body-shell>.body-hero').count(),1,'Body must reuse canonical anatomy hero');
-  const anatomy=page.locator('.body-hero-anatomy').first();await anatomy.waitFor({state:'visible',timeout:5000});const opacity=Number(await anatomy.evaluate(el=>getComputedStyle(el).opacity));assert.ok(opacity>=.99,'Visible Body renderer must not be hidden behind a static image');await noOverflow(page,`Body ${width}`);
+  const anatomy=page.locator('.body-hero-anatomy').first();await anatomy.waitFor({state:'visible',timeout:5000});const opacity=Number(await anatomy.evaluate(el=>getComputedStyle(el).opacity));assert.ok(opacity>=.99,'Body presentation surface must remain visible');
+  const pair=page.locator('.body-hero-anatomy>.g4-body-anatomy-pair');await pair.waitFor({state:'visible',timeout:5000});assert.equal(await pair.locator('img').count(),2,'Body v4 must use GARANG front/back anatomy pair');assert.equal(await page.locator('.body-hero-anatomy>.mini-body-svg:not([hidden])').count(),0,'legacy decorative mini mannequin must not compete with v4 anatomy');await noOverflow(page,`Body ${width}`);
 
   await route(page,'coach');assert.ok(await page.locator('.g4-coach-shell').count()>=1,'Coach must retain canonical conversation shell');await noOverflow(page,`Coach ${width}`);
   assert.equal(errors.length,0,`Presentation v4 must not introduce page errors at ${width}: ${errors.join('\n')}`);
