@@ -103,7 +103,17 @@ html[lang="en"] #main.g4-screen-workout .execution-set-row.current-set::before{c
 #main.g4-screen-workout .execution-set-row.current-set .set-complete-button,#main.g4-screen-workout .execution-set-row.current-set [data-execution-set-complete]{grid-column:1/-1!important;grid-row:4!important;width:100%!important;min-height:56px!important;height:56px!important;border-radius:14px!important;font-size:15px!important;font-weight:780!important;background:linear-gradient(135deg,var(--g4-accent),var(--g4-accent-strong))!important;color:#fff!important}
 #main.g4-screen-workout .execution-set-row.completed{opacity:.64!important}#main.g4-screen-workout .execution-set-row.upcoming-set{opacity:.72!important}
 #main.g4-screen-workout #workoutDraftArea .list-item{border-radius:16px!important;background:var(--g4-surface)!important;border-color:var(--g4-line)!important}
-@media(max-width:800px){#main.g4-screen-workout #workoutDraftArea .workout-draft-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 76px!important;gap:8px!important;width:100%!important}#main.g4-screen-workout #workoutDraftArea [data-execute-workout]{min-height:48px!important;width:100%!important}#main.g4-screen-workout #workoutDraftArea .workout-draft-manage{width:76px!important;min-width:76px!important}}
+@media(max-width:800px){
+ #main.g4-screen-workout #workoutDraftArea .workout-draft-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 76px!important;gap:8px!important;width:100%!important}
+ #main.g4-screen-workout #workoutDraftArea [data-execute-workout]{min-height:48px!important;width:100%!important}
+ #main.g4-screen-workout #workoutDraftArea .workout-draft-manage{width:76px!important;min-width:76px!important}
+ #main.g4-screen-workout .execution-set-row.current-set{grid-template-rows:auto auto auto auto!important}
+ #main.g4-screen-workout .execution-set-row.current-set .execution-previous,#main.g4-screen-workout .execution-set-row.current-set .execution-target{display:none!important}
+ #main.g4-screen-workout .execution-set-row.current-set .execution-weight-field{grid-row:2!important}
+ #main.g4-screen-workout .execution-set-row.current-set .execution-reps-field{grid-row:2!important}
+ #main.g4-screen-workout .execution-set-row.current-set .set-complete-button,#main.g4-screen-workout .execution-set-row.current-set [data-execution-set-complete]{grid-row:3!important}
+ #main.g4-screen-workout .execution-set-row.current-set .set-detail-toggle{grid-row:4!important}
+}
 
 /* 04 Rest — focused canonical timer. */
 body.garang-presentation-v4:has(>.workout-rest-timer.g4-rest-portal:not([hidden])) #bottomNav,body.garang-presentation-v4:has(>.workout-rest-timer.g4-rest-portal:not([hidden])) .topbar{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
