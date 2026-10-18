@@ -143,7 +143,7 @@ async function completeVisibleSet(page){
 
     /* 09 History / accumulated progress */
     await route(page,'progress');
-    await page.locator('.progress-tabs').waitFor({state:'visible',timeout:6000});
+    await page.waitForFunction(()=>document.querySelector('#garangAccumulationOverview')?.dataset?.gpcProgress==='1'&&document.querySelector('#garangAccumulationOverview')?.getClientRects().length>0,null,{timeout:6000});
     await shot(page,'09-history');
 
     /* 10 Settings */
