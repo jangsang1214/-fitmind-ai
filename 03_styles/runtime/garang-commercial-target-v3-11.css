@@ -1,8 +1,14 @@
 /* GARANG Commercial Target v3.11
-   Final History disclosure hierarchy for the Founder-approved board.
-   Presentation only; canonical accumulated-progress evidence remains in the DOM
-   and is revealed through the local disclosure state owned by Reference UI v2.
+   Final History disclosure hierarchy + Rest focus viewport for the Founder-approved board.
+   Presentation only; canonical progress and workout owners remain unchanged.
 */
+body.garang-reference-ui-v2>#workoutExecutionRest.g-ref-workout-rest-portal.active{
+  left:0!important;right:0!important;top:0!important;bottom:0!important;transform:none!important;
+  width:100vw!important;max-width:none!important;min-width:0!important;min-height:100dvh!important;
+  margin:0!important;border-radius:0!important;box-sizing:border-box!important;overflow-y:auto!important;
+  padding-top:max(68px,env(safe-area-inset-top,0px))!important;
+  padding-bottom:max(26px,env(safe-area-inset-bottom,0px))!important
+}
 body.garang-reference-ui-v2 #main.g-ref-screen-progress .g-ref-history-evidence-toggle{
   width:100%!important;min-height:44px!important;margin:0!important;padding:0 13px!important;
   display:flex!important;align-items:center!important;justify-content:space-between!important;
