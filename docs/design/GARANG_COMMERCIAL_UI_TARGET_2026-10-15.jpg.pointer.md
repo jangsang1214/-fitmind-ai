@@ -1,1 +1,0 @@
-Source blob SHA: `6c003ee47043020272b39524ade0e4eafdbb11f7` (existing repository object from PR #419). Attach this blob at `docs/design/GARANG_COMMERCIAL_UI_TARGET_2026-10-15.jpg` when binary tree operations are available. This pointer is documentation only and must never be referenced by runtime CSS/JS.
