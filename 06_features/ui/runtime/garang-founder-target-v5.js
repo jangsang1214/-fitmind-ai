@@ -5,7 +5,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderTargetV5)return;
-const VERSION='garang-presentation-v4.5.1-founder-target';
+const VERSION='garang-presentation-v4.5.2-founder-target';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
@@ -13,6 +13,7 @@ const isNode=node=>node&&node.nodeType===1;
 const screen=()=>String(main()?.dataset?.garangScreen||'').trim();
 function move(parent,...nodes){nodes.flat().forEach(node=>{if(isNode(node)&&node!==parent&&node.parentElement!==parent)parent.appendChild(node);});}
 function ensure(tag,cls,parent,before=null){let el=qs(parent,`:scope > .${cls}`);if(el)return el;el=document.createElement(tag);el.className=cls;if(before)parent.insertBefore(el,before);else parent.appendChild(el);return el;}
+function reveal(node,display='block'){if(!isNode(node))return node;node.hidden=false;node.removeAttribute('aria-hidden');node.style.setProperty('display',display,'important');node.style.setProperty('visibility','visible','important');return node;}
 function state(){try{return window.GarangRepositories?.StateRepository?.read?.()||null;}catch{return null;}}
 function gender(){const value=String(state()?.profile?.gender||'male').toLowerCase();return value==='female'?'female':'male';}
 function chrome(){document.documentElement.dataset.garangPresentation='v4';document.body.classList.add('garang-founder-target-v5');}
@@ -23,27 +24,37 @@ function text(node){return String(node?.textContent||'').replace(/\s+/g,' ').tri
 function today(m){
   const flow=qs(m,'#garangTodayFlow');
   if(!flow)return false;
+  reveal(flow,'block');
   const head=qs(m,':scope > .page-head');
   const legacyVisual=qs(m,'.visual-today-hero');
   const shell=ensure('section','g4-today-shell',m,head?.nextSibling||m.firstChild);
+  reveal(shell,'block');
   move(shell,flow);
   let date=qs(flow,':scope > .g5-today-date');
   if(!date){date=document.createElement('span');date.className='g5-today-date';flow.prepend(date);}
-  date.textContent=dateLabel();
+  date.textContent=dateLabel();reveal(date,'block');
+
+  const decision=qs(flow,'.gtf-decision');
+  const context=qs(flow,'.gtf-context');
   const copy=ensure('section','g5-today-hero-copy',flow,date.nextSibling);
-  move(copy,qs(flow,'.gtf-decision'),qs(flow,'.gtf-context'));
+  reveal(copy,'block');move(copy,decision,context);reveal(decision,'block');reveal(context,'block');
+
   let anatomy=qs(flow,':scope > .g4-today-anatomy');
   if(!anatomy){anatomy=document.createElement('img');anatomy.className='g4-today-anatomy';anatomy.alt='';anatomy.setAttribute('aria-hidden','true');anatomy.loading='eager';anatomy.decoding='async';anatomy.draggable=false;flow.appendChild(anatomy);}
   anatomy.src=`./05_assets/body-model-v6/${gender()}-front.svg`;
-  const workout=ensure('section','g5-today-workout-card',flow);
+  anatomy.hidden=false;anatomy.style.setProperty('display','block','important');
+
+  const workout=ensure('section','g5-today-workout-card',flow);reveal(workout,'grid');
   const plan=qs(flow,'.gpc-today-plan')||qs(m,'.gpc-today-plan');
   const action=qs(flow,'.gtf-action')||qs(m,'.gtf-action');
   const bodyPanel=legacyVisual?.querySelector?.('.today-body-panel')||qs(m,'.today-body-panel');
-  move(workout,plan,bodyPanel,action);
-  const status=ensure('section','g5-today-status',flow);
+  move(workout,plan,bodyPanel,action);reveal(plan,'block');reveal(bodyPanel,'grid');reveal(action,'block');
+
+  const status=ensure('section','g5-today-status',flow);reveal(status,'block');
   const tracks=qs(flow,'.gtf-track-visual')||qs(m,'.gtf-track-visual');
-  move(status,tracks);
-  const support=ensure('section','g5-today-support',shell);
+  move(status,tracks);reveal(tracks,'grid');
+
+  const support=ensure('section','g5-today-support',shell);reveal(support,'grid');
   [...m.children].forEach(child=>{if(child!==head&&child!==shell)move(support,child);});
   if(legacyVisual&&legacyVisual!==bodyPanel)legacyVisual.classList.add('g4-today-visual');
   return true;
