@@ -19,6 +19,7 @@ function seedRest(){const s=seed(),today=date();s.meta.dailyPlanDrafts={[today]:
   await page.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:9000});
   const start=page.locator('[data-garang-direct-workout-start="1"]');await start.waitFor({state:'visible',timeout:10000});await page.waitForFunction(()=>!document.querySelector('[data-garang-direct-workout-start="1"]')?.disabled,{timeout:10000});
   const flow=page.locator('#garangTodayFlow');
+  await flow.locator('.gtf-decision').waitFor({state:'visible',timeout:6000});
   assert.equal(await flow.locator('.gtf-decision').isVisible(),true,'Today must lead with a judgment');
   assert.match(await flow.locator('.gtf-decision h2').innerText(),/오늘은 .* 하세요/,'Today must tell the user exactly what to do');
   assert.ok((await flow.locator('.gtf-decision p').innerText()).trim().length>4,'Today must expose one-line reasoning without opening Coach');
@@ -36,6 +37,7 @@ function seedRest(){const s=seed(),today=date();s.meta.dailyPlanDrafts={[today]:
   await restPage.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:15000});
   await restPage.waitForFunction(()=>document.getElementById('main')?.dataset?.gsnAction==='today-rest',{timeout:10000});
   const restFlow=restPage.locator('#garangTodayFlow');
+  await restFlow.locator('.gtf-decision').waitFor({state:'visible',timeout:6000});
   assert.match(await restFlow.locator('.gtf-decision h2').innerText(),/고강도 운동을 쉬세요/,'rest day must explicitly tell the user not to train hard');
   assert.match(await restFlow.locator('.gtf-decision p').innerText(),/회복 상태|쉬는 날/,'rest day must explain why in one line');
   assert.equal(await restPage.locator('[data-garang-direct-workout-start="1"]:visible').count(),0,'rest day must not expose a contradictory workout start CTA');
