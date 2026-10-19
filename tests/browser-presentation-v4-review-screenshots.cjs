@@ -14,7 +14,7 @@ const baseURL=`http://127.0.0.1:${port}`;
 
 function isoDate(offset=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function reviewState(){
-  const yesterday=isoDate(-1),older=isoDate(-18);
+  const today=isoDate(0),yesterday=isoDate(-1),older=isoDate(-18);
   return {
     meta:{schemaVersion:5,updatedAt:new Date().toISOString()},
     profile:{name:'Founder Review',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'},
@@ -23,7 +23,7 @@ function reviewState(){
     workouts:[{id:'w-prev',date:yesterday,name:'바벨 벤치프레스',sets:4,reps:8,weight:72.5,rpe:8,duration:48,setDetails:[{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:7,rpe:8.5},{weight:70,reps:8,rpe:8.5}]}],
     meals:[{id:'m-prev',date:yesterday,name:'닭가슴살 식사',kcal:630,protein:51,carbs:62,fat:14,items:[{name:'닭가슴살',grams:180,kcal:300,protein:48,carbs:0,fat:6},{name:'현미밥',grams:210,kcal:330,protein:3,carbs:62,fat:8}]}],
     runs:[],body:[{id:'b0',date:older,weight:74,muscle:32.2,fatPercent:15.3},{id:'b1',date:yesterday,weight:73,muscle:32.8,fatPercent:14.7}],
-    checkins:[],dailyCheckins:[],physiologicalSignals:[],
+    checkins:[{id:'review-checkin',date:today,sleep:7.6,energy:4,stress:2,soreness:2,availableMinutes:55}],dailyCheckins:[],physiologicalSignals:[],
     aiChat:[{role:'assistant',text:'오늘은 최근 훈련과 회복 상태를 반영해 운동을 준비했습니다.',at:new Date().toISOString()}],
     memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},foodIdentity:{barcodes:[],misses:[],corrections:[]},actionLog:[],analytics:{events:[]},errors:[],plan:'FREE'
   };
@@ -44,6 +44,7 @@ async function skipRest(page){const rest=page.locator('#workoutExecutionRest');a
     const page=await context.newPage();await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>window.GarangPresentationV4?.version?.startsWith('garang-presentation-v4.'),null,{timeout:8000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangPresentation==='v4',null,{timeout:8000});
 
     await route(page,'today');
+    await page.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.querySelector('#garangTodayFlow [data-garang-direct-workout-start="1"]'),null,{timeout:10000});
     await page.locator('#garangTodayFlow .gtf-decision').waitFor({state:'visible',timeout:6000});
     await page.locator('#garangTodayFlow .gtdw-direct-workout').waitFor({state:'visible',timeout:6000});
     assert.equal(await page.locator('#garangTodayFlow .gtf-decision').count(),1,'canonical Today decision owner must remain singular behind the Founder presentation');
