@@ -1,11 +1,11 @@
 /* GARANG Founder Target v5
    Structural presentation owner for the Founder 11-screen board.
-   It moves existing canonical state/action nodes; it does not clone write owners.
+   It moves existing stable canonical nodes where safe, but keeps dynamic Workout owners in their canonical DOM.
 */
 (()=>{
 'use strict';
 if(window.GarangFounderTargetV5)return;
-const VERSION='garang-presentation-v4.5.2-founder-target';
+const VERSION='garang-presentation-v4.5.3-founder-target';
 const main=()=>document.getElementById('main');
 const app=()=>document.getElementById('appView');
 const qs=(root,sel)=>root?.querySelector?.(sel)||null;
@@ -69,21 +69,55 @@ function workout(m){
   m.classList.add('g4-workout-shell');
   const head=qs(m,':scope > .page-head');
   const header=ensure('div','g5-workout-header',m,head?.nextSibling||m.firstChild);
-  if(!header.dataset.ready){header.dataset.ready='1';header.innerHTML='<button type="button" aria-label="뒤로">‹</button><b>운동 세션</b><button type="button" class="g5-workout-end">종료</button>';header.querySelector('.g5-workout-end')?.addEventListener('click',()=>{const end=document.querySelector('#endWorkoutSession,[data-action="end-workout-session"]');end?.click?.();});}
-  let title=qs(m,':scope > .g5-workout-title');if(!title){title=document.createElement('h1');title.className='g5-workout-title';header.insertAdjacentElement('afterend',title);}title.textContent=workoutTitle(m);
-  const session=qs(m,'.workout-session-bar');if(session){session.classList.add('g4-live-session');title.insertAdjacentElement('afterend',session);}
+  if(!header.dataset.ready){
+    header.dataset.ready='1';
+    header.innerHTML='<button type="button" aria-label="뒤로">‹</button><b>운동 세션</b><button type="button" class="g5-workout-end">종료</button>';
+    header.querySelector('.g5-workout-end')?.addEventListener('click',()=>{const end=document.querySelector('#endWorkoutSession,[data-action="end-workout-session"]');end?.click?.();});
+  }
+  let title=qs(m,':scope > .g5-workout-title');
+  if(!title){title=document.createElement('h1');title.className='g5-workout-title';header.insertAdjacentElement('afterend',title);}
+  title.textContent=workoutTitle(m);
+
+  const session=qs(m,'.workout-session-bar');
+  if(session)session.classList.add('g4-live-session');
   const live=!!session?.classList.contains('is-live');
-  const media=ensure('section','g5-workout-media',m,session?.nextSibling||title.nextSibling);
-  const hero=qs(m,'.workout-visual-hero');if(hero){hero.classList.add('g4-exercise-visual');move(media,hero);}
-  let progress=qs(m,':scope > .g5-set-progress');if(!progress){progress=document.createElement('div');progress.className='g5-set-progress';media.insertAdjacentElement('afterend',progress);}const set=currentSetLabel(m);progress.innerHTML=`<span>←</span><b>세트 <strong>${set.index} / ${set.total}</strong></b><span>→</span>`;
-  const execution=qs(m,'.workout-execution-v2');if(execution){execution.classList.add('g4-execution');progress.insertAdjacentElement('afterend',execution);}
-  const tabs=qs(m,'.gws-tabs');if(tabs){tabs.classList.add('g4-workout-tabs');tabs.style.setProperty('display',live?'none':'grid','important');}
-  const overview=qs(m,'.gws-panel[data-garang-workout-surface="overview"]');if(overview){overview.classList.add('g4-workout-overview');if(live)overview.style.setProperty('display','none','important');else overview.style.removeProperty('display');}
-  const exercise=qs(m,'.gws-panel[data-garang-workout-surface="exercise"]');if(exercise)exercise.classList.add('g4-workout-exercise');
-  const draft=qs(m,'#workoutDraftArea');if(draft){draft.classList.add('g4-workout-draft');if(live)draft.style.setProperty('display','none','important');else draft.style.removeProperty('display');}
-  media.style.setProperty('display',live?'block':'none','important');progress.style.setProperty('display',live?'flex':'none','important');
-  let next=qs(m,':scope > .g5-next-set');if(!next){next=document.createElement('div');next.className='g5-next-set';m.appendChild(next);}const nextRow=qs(m,'#workoutSetDetails .execution-set-row.current-set + .execution-set-row');next.textContent=nextRow?`다음 세트 · ${text(nextRow).slice(0,80)}`:'다음 세트 · 현재 목표를 유지하세요';next.style.setProperty('display',live?'block':'none','important');
-  const rest=document.getElementById('workoutExecutionRest');if(rest&&app()&&!app().hidden&&screen()==='workout'){rest.classList.add('g4-rest-portal');if(rest.parentElement!==document.body)document.body.appendChild(rest);}
+
+  const exercise=qs(m,'.gws-panel[data-garang-workout-surface="exercise"]');
+  if(exercise)exercise.classList.add('g4-workout-exercise');
+  const execution=qs(m,'.workout-execution-v2');
+  if(execution)execution.classList.add('g4-execution');
+  const executionHost=execution?.parentElement||exercise||m;
+
+  let media=qs(executionHost,':scope > .g5-workout-media');
+  if(!media){media=document.createElement('section');media.className='g5-workout-media';executionHost.insertBefore(media,execution||executionHost.firstChild);}
+  const hero=qs(m,'.workout-visual-hero');
+  if(hero)hero.classList.add('g4-exercise-visual');
+
+  let progress=qs(executionHost,':scope > .g5-set-progress');
+  if(!progress){progress=document.createElement('div');progress.className='g5-set-progress';executionHost.insertBefore(progress,execution||null);}
+  const set=currentSetLabel(m);
+  progress.innerHTML=`<span>←</span><b>세트 <strong>${set.index} / ${set.total}</strong></b><span>→</span>`;
+
+  const tabs=qs(m,'.gws-tabs');
+  if(tabs){tabs.classList.add('g4-workout-tabs');tabs.style.setProperty('display',live?'none':'grid','important');}
+  const overview=qs(m,'.gws-panel[data-garang-workout-surface="overview"]');
+  if(overview){overview.classList.add('g4-workout-overview');if(live)overview.style.setProperty('display','none','important');else overview.style.removeProperty('display');}
+  const draft=qs(m,'#workoutDraftArea');
+  if(draft){draft.classList.add('g4-workout-draft');if(live)draft.style.setProperty('display','none','important');else draft.style.removeProperty('display');}
+  media.style.setProperty('display',live?'block':'none','important');
+  progress.style.setProperty('display',live?'flex':'none','important');
+
+  let next=qs(executionHost,':scope > .g5-next-set');
+  if(!next){next=document.createElement('div');next.className='g5-next-set';executionHost.appendChild(next);}
+  const nextRow=qs(m,'#workoutSetDetails .execution-set-row.current-set + .execution-set-row');
+  next.textContent=nextRow?`다음 세트 · ${text(nextRow).slice(0,80)}`:'다음 세트 · 현재 목표를 유지하세요';
+  next.style.setProperty('display',live?'block':'none','important');
+
+  const rest=document.getElementById('workoutExecutionRest');
+  if(rest&&app()&&!app().hidden&&screen()==='workout'){
+    rest.classList.add('g4-rest-portal');
+    if(rest.parentElement!==document.body)document.body.appendChild(rest);
+  }
   return true;
 }
 
