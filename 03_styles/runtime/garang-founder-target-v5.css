@@ -16,7 +16,13 @@ body.garang-founder-target-v5 *{box-sizing:border-box}
 body.garang-founder-target-v5 .card{box-shadow:none!important}
 body.garang-founder-target-v5 #main{max-width:430px!important;width:100%!important;padding:14px 14px calc(92px + env(safe-area-inset-bottom,0px))!important;margin:0 auto!important}
 
-body.garang-founder-target-v5 .topbar{display:grid!important;grid-template-columns:44px 1fr 44px!important;align-items:center!important;position:relative!important;isolation:isolate!important;max-width:430px!important;min-height:56px!important;padding:calc(7px + env(safe-area-inset-top,0px)) 12px 6px!important;margin:0 auto!important;background:#05070a!important;border:0!important;box-shadow:none!important}
+/* Shared chrome: same geometry as the Founder board, not the old app shell. */
+body.garang-founder-target-v5 .topbar{
+  display:grid!important;grid-template-columns:44px 1fr 44px!important;align-items:center!important;
+  position:relative!important;isolation:isolate!important;max-width:430px!important;min-height:56px!important;
+  padding:calc(7px + env(safe-area-inset-top,0px)) 12px 6px!important;margin:0 auto!important;
+  background:#05070a!important;border:0!important;box-shadow:none!important
+}
 body.garang-founder-target-v5 .topbar #menuBtn{grid-column:1!important;display:grid!important;place-items:center!important;justify-self:start!important}
 body.garang-founder-target-v5 .topbar .brand.mini{grid-column:2!important;justify-self:center!important;position:static!important;transform:none!important;pointer-events:none!important}
 body.garang-founder-target-v5 .topbar .brand.mini img{display:none!important}
@@ -24,16 +30,27 @@ body.garang-founder-target-v5 .topbar .brand.mini b{font:600 12px/1.1 system-ui,
 body.garang-founder-target-v5 .topbar .brand.mini span{display:none!important}
 body.garang-founder-target-v5 .topbar .top-actions{grid-column:3!important;display:flex!important;width:44px!important;justify-content:flex-end!important;position:relative!important;z-index:5!important}
 body.garang-founder-target-v5 .topbar #syncBadge,body.garang-founder-target-v5 .topbar #planBadge,body.garang-founder-target-v5 .topbar #profileTopBtn,body.garang-founder-target-v5 .topbar #logoutBtn{display:none!important}
-body.garang-founder-target-v5 .topbar #menuBtn,body.garang-founder-target-v5 .topbar #settingsTopBtn{display:grid!important;place-items:center!important;width:40px!important;height:40px!important;min-width:40px!important;margin:0!important;padding:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#d5d9e2!important;box-shadow:none!important;pointer-events:auto!important}
-body.garang-founder-target-v5 #bottomNav{max-width:430px!important;height:72px!important;padding:5px 8px calc(5px + env(safe-area-inset-bottom,0px))!important;margin:0 auto!important;background:rgba(5,7,10,.985)!important;border-top:1px solid rgba(255,255,255,.07)!important;box-shadow:0 -16px 40px rgba(0,0,0,.36)!important}
+body.garang-founder-target-v5 .topbar #menuBtn,body.garang-founder-target-v5 .topbar #settingsTopBtn{
+  display:grid!important;place-items:center!important;width:40px!important;height:40px!important;min-width:40px!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#d5d9e2!important;box-shadow:none!important;pointer-events:auto!important
+}
+body.garang-founder-target-v5 #bottomNav{
+  max-width:430px!important;height:72px!important;padding:5px 8px calc(5px + env(safe-area-inset-bottom,0px))!important;margin:0 auto!important;
+  background:rgba(5,7,10,.985)!important;border-top:1px solid rgba(255,255,255,.07)!important;box-shadow:0 -16px 40px rgba(0,0,0,.36)!important
+}
 body.garang-founder-target-v5 #bottomNav button{min-height:58px!important;border-radius:14px!important;background:transparent!important;color:#707887!important}
 body.garang-founder-target-v5 #bottomNav button.active{color:#8d91ff!important;background:linear-gradient(180deg,rgba(111,115,255,.15),transparent)!important}
 body.garang-founder-target-v5 #bottomNav button b{font-size:10px!important;font-weight:650!important}
-.g5-screen{display:block!important;min-width:0!important}.g5-screen>.page-head{display:none!important}
 
-/* 01 TODAY */
+.g5-screen{display:block!important;min-width:0!important}
+.g5-screen>.page-head{display:none!important}
+
+/* ===================== 01 TODAY ===================== */
 #main.g5-screen-today .g4-today-shell{display:block!important}
-#main.g5-screen-today #garangTodayFlow{position:relative!important;display:block!important;min-height:540px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#main.g5-screen-today #garangTodayFlow{
+  position:relative!important;display:block!important;min-height:540px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important
+}
 #main.g5-screen-today .g5-today-date{display:block!important;margin:4px 0 10px!important;color:#a9afba!important;font-size:11px!important;font-weight:650!important}
 #main.g5-screen-today .g5-today-hero-copy{position:relative!important;z-index:3!important;max-width:64%!important;padding:0 0 12px!important}
 #main.g5-screen-today .g5-today-hero-copy .gtf-decision{display:block!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important}
@@ -41,8 +58,18 @@ body.garang-founder-target-v5 #bottomNav button b{font-size:10px!important;font-
 #main.g5-screen-today .g5-today-hero-copy .gtf-decision h2{margin:0 0 8px!important;font-size:25px!important;line-height:1.08!important;font-weight:850!important;letter-spacing:-.055em!important;color:#fff!important}
 #main.g5-screen-today .g5-today-hero-copy .gtf-decision p{margin:0!important;font-size:11px!important;line-height:1.55!important;color:#a5acb8!important}
 #main.g5-screen-today .g5-today-hero-copy .gtf-context{margin:7px 0 0!important;padding:0!important;background:transparent!important;border:0!important;color:#858e9e!important;font-size:9px!important}
-#main.g5-screen-today .g4-today-anatomy{display:block!important;position:absolute!important;right:-10px!important;top:15px!important;width:47%!important;height:220px!important;object-fit:cover!important;object-position:50% 7%!important;opacity:.94!important;z-index:1!important;pointer-events:none!important;filter:drop-shadow(0 24px 30px rgba(0,0,0,.65)) saturate(.94) contrast(1.1)!important;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 100%)!important}
-#main.g5-screen-today .g5-today-workout-card{position:relative!important;z-index:4!important;display:grid!important;grid-template-columns:minmax(0,1fr) 105px!important;grid-template-rows:auto auto!important;gap:8px 10px!important;margin:10px 0 20px!important;padding:13px 12px 10px!important;min-height:140px!important;border:1px solid var(--g5-line-strong)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(17,22,34,.96),rgba(8,11,17,.96))!important;box-shadow:0 18px 38px rgba(0,0,0,.38),inset 0 0 34px rgba(102,106,255,.055)!important;overflow:hidden!important}
+#main.g5-screen-today .g4-today-anatomy{
+  display:block!important;position:absolute!important;right:-10px!important;top:15px!important;width:47%!important;height:220px!important;
+  object-fit:cover!important;object-position:50% 7%!important;opacity:.94!important;z-index:1!important;pointer-events:none!important;
+  filter:drop-shadow(0 24px 30px rgba(0,0,0,.65)) saturate(.94) contrast(1.1)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 100%)!important
+}
+#main.g5-screen-today .g5-today-workout-card{
+  position:relative!important;z-index:4!important;display:grid!important;grid-template-columns:minmax(0,1fr) 105px!important;grid-template-rows:auto auto!important;
+  gap:8px 10px!important;margin:10px 0 20px!important;padding:13px 12px 10px!important;min-height:140px!important;
+  border:1px solid var(--g5-line-strong)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(17,22,34,.96),rgba(8,11,17,.96))!important;
+  box-shadow:0 18px 38px rgba(0,0,0,.38),inset 0 0 34px rgba(102,106,255,.055)!important;overflow:hidden!important
+}
 #main.g5-screen-today .g5-today-workout-card .gpc-today-plan{grid-column:1!important;grid-row:1!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #main.g5-screen-today .g5-today-workout-card .gpc-today-plan-head{margin:0 0 6px!important}
 #main.g5-screen-today .g5-today-workout-card .gpc-today-plan-head span,#main.g5-screen-today .g5-today-workout-card .gpc-today-plan strong{font-size:14px!important;color:#f7f8fb!important}
@@ -51,7 +78,10 @@ body.garang-founder-target-v5 #bottomNav button b{font-size:10px!important;font-
 #main.g5-screen-today .g5-today-workout-card .today-body-label{display:none!important}
 #main.g5-screen-today .g5-today-workout-card .today-body-panel svg{width:112px!important;height:150px!important;transform:translateY(24px) scale(1.18)!important;transform-origin:center bottom!important;filter:drop-shadow(0 14px 20px rgba(0,0,0,.62))!important}
 #main.g5-screen-today .g5-today-workout-card .gtf-action{grid-column:1!important;grid-row:2!important;margin:0!important;padding:0!important;align-self:end!important}
-#main.g5-screen-today .g5-today-workout-card .gtf-next,#main.g5-screen-today .g5-today-workout-card .primary{width:100%!important;min-height:48px!important;margin:0!important;border:0!important;border-radius:9px!important;background:linear-gradient(135deg,#8b8eff,#6267ff)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:0 12px 30px rgba(76,80,238,.35)!important}
+#main.g5-screen-today .g5-today-workout-card .gtf-next,#main.g5-screen-today .g5-today-workout-card .primary{
+  width:100%!important;min-height:48px!important;margin:0!important;border:0!important;border-radius:9px!important;
+  background:linear-gradient(135deg,#8b8eff,#6267ff)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:0 12px 30px rgba(76,80,238,.35)!important
+}
 #main.g5-screen-today .g5-today-status{display:block!important;margin:0 0 15px!important}
 #main.g5-screen-today .g5-today-status::before{content:'오늘의 상태';display:block;margin:0 0 10px;color:#f1f3f8;font-size:13px;font-weight:800}
 #main.g5-screen-today .g5-today-status .gtf-track-visual{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;margin:0!important}
@@ -60,24 +90,23 @@ body.garang-founder-target-v5 #bottomNav button b{font-size:10px!important;font-
 #main.g5-screen-today .g5-today-status .gtf-track-visual span,#main.g5-screen-today .g5-today-status .gtf-track-visual small{font-size:8px!important;color:#8f98a6!important}
 #main.g5-screen-today .g5-today-support{display:grid!important;gap:9px!important}
 #main.g5-screen-today .g5-today-support>.card{margin:0!important;padding:12px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:14px!important;background:#0b1016!important}
-#main.g5-screen-today .gtf-state,#main.g5-screen-today .gtf-disclosure,#main.g5-screen-today .gtf-detail,#main.g5-screen-today .gtf-checkin-access,#main.g5-screen-today .g4-today-visual{display:none!important}
+#main.g5-screen-today .gtf-state,#main.g5-screen-today .gtf-disclosure,#main.g5-screen-today .gtf-detail,#main.g5-screen-today .gtf-checkin-access{display:none!important}
+#main.g5-screen-today .g4-today-visual{display:none!important}
 
-/* 02 / 03 WORKOUT */
+/* ===================== 02 / 03 WORKOUT ===================== */
 #main.g5-screen-workout{padding-top:5px!important}
 #main.g5-screen-workout.g4-workout-shell{display:block!important}
-#main.g5-screen-workout .g5-workout-header{display:grid!important;grid-template-columns:34px 1fr 48px!important;align-items:center!important;margin:0 0 9px!important;min-height:34px!important;position:relative!important;z-index:40!important}
+#main.g5-screen-workout .g5-workout-header{display:grid!important;grid-template-columns:34px 1fr 48px!important;align-items:center!important;margin:0 0 9px!important;min-height:34px!important}
 #main.g5-screen-workout .g5-workout-header b{text-align:center!important;font-size:12px!important;font-weight:800!important;color:#d9dde5!important}
-#main.g5-screen-workout .g5-workout-header button{min-height:32px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#cbd1db!important;position:relative!important;z-index:41!important;pointer-events:auto!important}
+#main.g5-screen-workout .g5-workout-header button{min-height:32px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#cbd1db!important}
 #main.g5-screen-workout .g5-workout-title{margin:0 0 8px!important;font-size:22px!important;font-weight:850!important;letter-spacing:-.05em!important;color:#fff!important}
 #main.g5-screen-workout .workout-session-bar{width:100%!important;min-width:0!important;margin:0 0 8px!important;padding:8px 11px!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:13px!important;background:#0b1016!important;box-shadow:none!important}
 #main.g5-screen-workout .workout-session-bar.is-live{position:static!important;top:auto!important}
-#main.g5-screen-workout .g5-workout-media{position:relative!important;display:block!important;height:185px!important;margin:0 0 8px!important;border-radius:14px!important;overflow:hidden!important;background:radial-gradient(circle at 70% 35%,rgba(92,99,125,.30),transparent 38%),linear-gradient(160deg,#20252d,#090c10 68%)!important;pointer-events:none!important;isolation:isolate!important}
-#main.g5-screen-workout .g5-workout-media::before{content:'';position:absolute;left:8%;right:8%;top:54%;height:7px;border-radius:99px;background:linear-gradient(90deg,#111 0 8%,#8f969e 8% 44%,#d7d9dd 44% 56%,#8f969e 56% 92%,#111 92%);transform:rotate(-7deg);box-shadow:-5px 0 0 5px #1b1e22,5px 0 0 5px #1b1e22;opacity:.72;pointer-events:none!important}
-#main.g5-screen-workout .g5-workout-media::after{content:'EXERCISE VISUAL';position:absolute;left:14px;bottom:12px;color:#666f7c;font-size:8px;letter-spacing:.18em;pointer-events:none!important}
-#main.g5-screen-workout .workout-visual-hero{position:absolute!important;inset:0!important;margin:0!important;padding:0!important;min-height:0!important;border:0!important;border-radius:0!important;background:transparent!important;overflow:hidden!important;pointer-events:none!important}
-#main.g5-screen-workout .workout-visual-hero *{pointer-events:none!important}
-#main.g5-screen-workout .gws-tabs,#main.g5-screen-workout .g4-workout-tabs{position:relative!important;z-index:50!important;pointer-events:auto!important}
-#main.g5-screen-workout .gws-tabs button,#main.g5-screen-workout .g4-workout-tabs button{position:relative!important;z-index:51!important;pointer-events:auto!important}
+#main.g5-screen-workout .g5-workout-media{position:relative!important;display:block!important;height:185px!important;margin:0 0 8px!important;border-radius:14px!important;overflow:hidden!important;background:radial-gradient(circle at 70% 35%,rgba(92,99,125,.30),transparent 38%),linear-gradient(160deg,#20252d,#090c10 68%)!important}
+#main.g5-screen-workout .g5-workout-media::before{content:'';position:absolute;left:8%;right:8%;top:54%;height:7px;border-radius:99px;background:linear-gradient(90deg,#111 0 8%,#8f969e 8% 44%,#d7d9dd 44% 56%,#8f969e 56% 92%,#111 92%);transform:rotate(-7deg);box-shadow:-5px 0 0 5px #1b1e22,5px 0 0 5px #1b1e22;opacity:.72}
+#main.g5-screen-workout .g5-workout-media::after{content:'EXERCISE VISUAL';position:absolute;left:14px;bottom:12px;color:#666f7c;font-size:8px;letter-spacing:.18em}
+#main.g5-screen-workout .workout-visual-hero{position:absolute!important;inset:0!important;margin:0!important;padding:0!important;min-height:0!important;border:0!important;border-radius:0!important;background:transparent!important;overflow:hidden!important}
+#main.g5-screen-workout .workout-visual-hero>*{position:relative!important;z-index:2!important}
 #main.g5-screen-workout .g5-set-progress{display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;margin:0 0 8px!important;color:#d5d9e3!important;font-size:13px!important;font-weight:800!important}
 #main.g5-screen-workout .g5-set-progress strong{font-size:19px!important;color:#fff!important}
 #main.g5-screen-workout .workout-execution-v2,#main.g5-screen-workout .g4-execution{margin:0!important;padding:0!important;background:transparent!important;border:0!important}
@@ -102,7 +131,7 @@ body.garang-founder-target-v5 #bottomNav button b{font-size:10px!important;font-
 #main.g5-screen-workout .g5-next-set{margin-top:10px!important;padding:12px!important;border:1px solid rgba(255,255,255,.05)!important;border-radius:11px!important;background:#0b1016!important;color:#aeb5c0!important;font-size:10px!important}
 #main.g5-screen-workout .gws-tabs,#main.g5-screen-workout .g4-workout-tabs,#main.g5-screen-workout .g4-workout-overview,#main.g5-screen-workout #workoutDraftArea{display:none!important}
 
-/* 04 REST */
+/* ===================== 04 REST ===================== */
 body.garang-founder-target-v5>.g4-rest-portal:not([hidden]){position:fixed!important;inset:0!important;z-index:2147482600!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;padding:88px 20px 28px!important;background:#05070a!important;color:#fff!important;overflow-y:auto!important}
 body.garang-founder-target-v5>.g4-rest-portal:not([hidden])::before{content:'휴식 중';display:block;margin-bottom:8px;color:#8f93ff;font-size:16px;font-weight:800}
 body.garang-founder-target-v5>.g4-rest-portal:not([hidden])::after{content:'다음 세트까지';display:block;position:absolute;top:131px;color:#868e9b;font-size:10px}
@@ -111,6 +140,13 @@ body.garang-founder-target-v5>.g4-rest-portal #addWorkoutRest30,body.garang-foun
 body.garang-founder-target-v5>.g4-rest-portal #addWorkoutRest30{border-color:rgba(111,115,255,.62)!important;color:#9296ff!important}
 body.garang-founder-target-v5:has(>.g4-rest-portal:not([hidden])) #bottomNav{display:none!important}
 
+/* The remaining screens keep real functional owners visible during the rebuild. */
 #main.g5-screen-nutrition .meal-scan-card,#main.g5-screen-body .body-hero,#main.g5-screen-coach .garang-coach-v2,#main.g5-screen-coach .coach-app-shell{border-radius:18px!important}
 #main.g5-screen-body .body-hero-anatomy{opacity:1!important}
-@media(max-width:360px){#main.g5-screen-today .g5-today-hero-copy{max-width:61%!important}#main.g5-screen-today .g5-today-hero-copy .gtf-decision h2{font-size:23px!important}#main.g5-screen-today .g4-today-anatomy{right:-18px!important;width:49%!important}#main.g5-screen-today .g5-today-workout-card{grid-template-columns:minmax(0,1fr) 88px!important}}
+
+@media(max-width:360px){
+  #main.g5-screen-today .g5-today-hero-copy{max-width:61%!important}
+  #main.g5-screen-today .g5-today-hero-copy .gtf-decision h2{font-size:23px!important}
+  #main.g5-screen-today .g4-today-anatomy{right:-18px!important;width:49%!important}
+  #main.g5-screen-today .g5-today-workout-card{grid-template-columns:minmax(0,1fr) 88px!important}
+}
