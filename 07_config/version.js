@@ -1,6 +1,6 @@
 (function(root){
  'use strict';
- const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'COMMERCIAL HARDENING',buildId:'20261018-presentation-v4',schema:5});
+ const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'COMMERCIAL HARDENING',buildId:'20261019-founder-target-v5',schema:5});
  root.GARANG_BUILD=build;
  if(!root.document)return;
  document.documentElement.dataset.garangVersion=build.version;
@@ -10,17 +10,19 @@
    if(document.querySelector('link[data-garang-presentation-v4]'))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-presentation-v4.css?v=4.0.3-today-body-ownership';
+   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.0-founder-board-structure';
    link.dataset.garangPresentationV4='1';
+   link.dataset.garangFounderTargetV5='1';
    document.head.appendChild(link);
  }
  function loadPresentation(){
    if(document.querySelector('script[data-garang-presentation-v4]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-presentation-v4.js?v=4.0.3-today-body-ownership';
+   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.0-founder-board-structure';
    script.defer=true;
    script.dataset.garangPresentationV4='1';
-   script.addEventListener('load',()=>root.GarangPresentationV4?.schedule?.(),{once:true});
+   script.dataset.garangFounderTargetV5='1';
+   script.addEventListener('load',()=>root.GarangFounderTargetV5?.schedule?.(),{once:true});
    document.head.appendChild(script);
  }
  loadStyle();
