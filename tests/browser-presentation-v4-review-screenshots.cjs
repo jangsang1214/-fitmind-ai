@@ -44,7 +44,8 @@ async function skipRest(page){const rest=page.locator('#workoutExecutionRest');a
     const page=await context.newPage();await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>window.GarangPresentationV4?.version?.startsWith('garang-presentation-v4.'),null,{timeout:8000});await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangPresentation==='v4',null,{timeout:8000});
 
     await route(page,'today');
-    await page.locator('#garangTodayFlow .g5-today-hero-copy').waitFor({state:'visible',timeout:6000});
+    await page.locator('#garangTodayFlow .gtf-decision').waitFor({state:'visible',timeout:6000});
+    await page.locator('#garangTodayFlow .gtdw-direct-workout').waitFor({state:'visible',timeout:6000});
     assert.equal(await page.locator('#garangTodayFlow .gtf-decision').count(),1,'canonical Today decision owner must remain singular behind the Founder presentation');
     await shot(page,'01-today');
 
