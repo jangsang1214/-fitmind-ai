@@ -10,7 +10,7 @@
    if(document.querySelector('link[data-garang-presentation-v4]'))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.4-founder-board-structure';
+   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.5-founder-board-structure';
    link.dataset.garangPresentationV4='1';
    link.dataset.garangFounderTargetV5='1';
    document.head.appendChild(link);
@@ -76,6 +76,20 @@
    show(flow.querySelector(':scope > .g5-today-status'),'block');
    show(flow.querySelector(':scope > .g5-today-coach'),'grid');
  }
+ function reconcileWorkoutTarget(){
+   const main=document.getElementById('main');
+   if(!main||String(main.dataset.garangScreen||'')!=='workout')return;
+   const live=main.querySelector('.workout-session-bar.is-live');
+   if(!live)return;
+   const media=main.querySelector('.g5-workout-media');
+   const hero=main.querySelector('.workout-visual-hero');
+   if(!media||!hero)return;
+   if(hero.parentElement!==media)media.prepend(hero);
+   media.classList.add('g5-has-canonical-workout-visual');
+   show(hero,'block');
+   setImportant(hero,'position','absolute');setImportant(hero,'inset','0');setImportant(hero,'width','100%');setImportant(hero,'height','100%');setImportant(hero,'min-height','0');setImportant(hero,'margin','0');setImportant(hero,'padding','0');setImportant(hero,'border','0');setImportant(hero,'border-radius','0');setImportant(hero,'background','transparent');setImportant(hero,'overflow','hidden');setImportant(hero,'pointer-events','none');
+   hero.querySelectorAll('*').forEach(node=>setImportant(node,'pointer-events','none'));
+ }
  function installSafety(){
    if(!document.getElementById('garang-founder-target-v5-safety')){
      const style=document.createElement('style');
@@ -83,6 +97,10 @@
      style.textContent=`
        #main.g5-screen-workout:not(:has(.workout-session-bar.is-live)) .workout-visual-hero,
        #main.g5-screen-workout:not(:has(.workout-session-bar.is-live)) .workout-visual-hero *{pointer-events:none!important}
+       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual::before,
+       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual::after{display:none!important;content:none!important}
+       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual .workout-visual-hero,
+       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual .workout-visual-hero *{pointer-events:none!important}
        #main.g5-screen-today .g5-today-hero-copy,#main.g5-screen-today .g5-today-workout-copy{display:none!important}
        #main.g5-screen-today .g5-today-workout-card>.gtf-action{position:relative!important;z-index:3!important}
        #main.g5-screen-today .g5-today-workout-card .g5-today-card-anatomy{grid-column:2!important;grid-row:1 / 3!important}
@@ -114,7 +132,7 @@
          const flow=document.getElementById('garangTodayFlow');
          if(flow&&!flow.querySelector(':scope > .g5-today-workout-card'))root.GarangFounderTargetV5?.schedule?.();
          else reconcileTodayTarget();
-       }
+       }else if(name==='workout')reconcileWorkoutTarget();
      },28);
    };
    const reconcile=()=>{syncNav();reconcilePresentation();};
@@ -126,7 +144,7 @@
  function loadPresentation(){
    if(document.querySelector('script[data-garang-presentation-v4]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.4-founder-board-structure';
+   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.5-founder-board-structure';
    script.defer=true;
    script.dataset.garangPresentationV4='1';
    script.dataset.garangFounderTargetV5='1';
