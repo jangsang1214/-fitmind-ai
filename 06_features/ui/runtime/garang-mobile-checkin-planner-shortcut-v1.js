@@ -8,7 +8,7 @@
 (() => {
 'use strict';
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
-const VERSION='1.0.0';
+const VERSION='1.0.1';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
 let bodyObserver=null,mainObserver=null,observedMain=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
@@ -123,7 +123,11 @@ function ensurePlannerShortcut(){
   if(!m||m.dataset.garangScreen!=='today')return false;
   const head=m.querySelector('.gpc-today-plan-head');
   if(!head)return false;
-  let button=head.querySelector('[data-garang-planner-shortcut="1"]');
+
+  const existing=[...m.querySelectorAll('[data-garang-planner-shortcut="1"]')];
+  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing[0]||null;
+  for(const duplicate of existing){if(duplicate!==button)duplicate.remove();}
+
   if(!button){
     button=document.createElement('button');
     button.type='button';
@@ -133,7 +137,12 @@ function ensurePlannerShortcut(){
     const label=head.querySelector(':scope > span');
     if(label)label.insertAdjacentElement('afterend',button);
     else head.prepend(button);
+  }else if(button.dataset.garangPlannerShortcutHost!=='founder'&&button.parentElement!==head){
+    const label=head.querySelector(':scope > span');
+    if(label)label.insertAdjacentElement('afterend',button);
+    else head.prepend(button);
   }
+
   const aria=isKo()?'플래너 열기':'Open Planner';
   if(button.getAttribute('aria-label')!==aria)button.setAttribute('aria-label',aria);
   button.title=aria;
