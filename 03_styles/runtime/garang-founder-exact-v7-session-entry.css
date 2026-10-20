@@ -18,3 +18,7 @@
 #main.g7-screen-workout .workout-session-bar.is-live>*:not(#workoutExecutionState):not(#workoutExecutionElapsed){display:none!important}
 #main.g7-screen-workout .workout-session-bar.is-live #workoutExecutionState,
 #main.g7-screen-workout .workout-session-bar.is-live #workoutExecutionElapsed{display:inline!important;color:#9397ff!important;font-size:7.5px!important}
+body.garang-exact-v7:has(#main.g7-screen-workout .workout-session-bar.is-live) #bottomNav,
+body.garang-exact-v7:has(#main.g7-screen-workout.g7-record-mode) #bottomNav,
+body.garang-exact-v7:has(#main.g7-screen-workout.g7-summary-mode) #bottomNav{display:none!important}
+body.garang-exact-v7:has(#main.g7-screen-workout .workout-session-bar.is-live) #main{padding-bottom:22px!important}
