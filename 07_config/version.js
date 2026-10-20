@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.7',label:'0.11.0 BETA 7',channel:'FOUNDER EXACT',buildId:'20261020-founder-exact-v7.2',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.7',label:'0.11.0 BETA 7',channel:'FOUNDER EXACT',buildId:'20261020-founder-exact-v7.3',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -11,12 +11,12 @@ function reconcile(){canonicalizeWorkoutSession();root.GarangFounderExactV7?.sch
 function install(){let queued=false;const sync=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;reconcile();});};['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-set-rows-rendered','garang:workout-session-started','garang:coach-mounted','garang:coach-message-rendered','pageshow'].forEach(name=>window.addEventListener(name,sync,{passive:true}));document.addEventListener('click',()=>setTimeout(sync,0),true);sync();}
 function loadScript(src,attrs={}){return new Promise(resolve=>{const s=document.createElement('script');s.src=src;s.defer=true;Object.entries(attrs).forEach(([k,v])=>s.dataset[k]=v);s.addEventListener('load',()=>resolve(s),{once:true});document.head.appendChild(s);});}
 async function load(){
- addStyle('./03_styles/runtime/garang-founder-exact-v7.css?v=7.2.0','founder-v7');
- await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.0.0',{garangAnatomyComponent:'exact-v2'});
+ addStyle('./03_styles/runtime/garang-founder-exact-v7.css?v=7.3.0','founder-v7');
+ await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.0.1',{garangAnatomyComponent:'exact-v2'});
  const NativeMutationObserver=root.MutationObserver;
  root.MutationObserver=class{constructor(){}observe(){}disconnect(){}takeRecords(){return[];}};
  try{
-  await loadScript('./06_features/ui/runtime/garang-founder-exact-v7.js?v=7.2.0',{garangPresentationV4:'1',garangFounderExactV7:'1'});
+  await loadScript('./06_features/ui/runtime/garang-founder-exact-v7.js?v=7.3.0',{garangPresentationV4:'1',garangFounderExactV7:'1'});
   await loadScript('./06_features/ui/runtime/garang-founder-exact-v7-compat.js?v=1.0.0',{garangFounderExactV7Compat:'1'});
  }finally{root.MutationObserver=NativeMutationObserver;}
  install();
