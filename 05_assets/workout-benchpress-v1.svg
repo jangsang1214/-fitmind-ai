@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+<title id="title">GARANG bench press training visual</title><desc id="desc">Original dark vector illustration of an athlete performing a barbell bench press.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#222831"/><stop offset=".48" stop-color="#11161d"/><stop offset="1" stop-color="#07090c"/></linearGradient>
+ <radialGradient id="halo" cx="64%" cy="32%" r="54%"><stop stop-color="#9098ac" stop-opacity=".34"/><stop offset=".45" stop-color="#48505f" stop-opacity=".13"/><stop offset="1" stop-color="#0a0d12" stop-opacity="0"/></radialGradient>
+ <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a98670"/><stop offset=".42" stop-color="#725447"/><stop offset="1" stop-color="#3a2d2a"/></linearGradient>
+ <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#343943"/><stop offset=".55" stop-color="#15191f"/><stop offset="1" stop-color="#080a0d"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#2e333a"/><stop offset=".17" stop-color="#b4bac2"/><stop offset=".47" stop-color="#f1f3f5"/><stop offset=".72" stop-color="#8c939d"/><stop offset="1" stop-color="#242930"/></linearGradient>
+ <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#31363f"/><stop offset=".55" stop-color="#14181d"/><stop offset="1" stop-color="#080a0d"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>
+ <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="1200" height="640" fill="url(#bg)"/><rect width="1200" height="640" fill="url(#halo)"/>
+<ellipse cx="650" cy="560" rx="430" ry="58" fill="#000" opacity=".5" filter="url(#shadow)"/>
+<path d="M210 518h702c32 0 58 14 58 32s-26 32-58 32H210c-33 0-59-14-59-32s26-32 59-32Z" fill="#13171c" stroke="#303640" stroke-width="3"/>
+<path d="M370 482h460l58 48H309Z" fill="#20252c" stroke="#3b424c" stroke-width="3"/><path d="M414 522l-55 90h-35l41-90Zm374 0 51 90h35l-37-90Z" fill="#15191e"/>
+<!-- athlete torso -->
+<path d="M468 454c30-73 92-119 177-126 82-7 151 28 207 100l-51 74H495Z" fill="url(#shirt)"/>
+<path d="M512 401c42-34 83-50 132-50 49 0 95 14 138 48-33 42-76 66-135 68-57 1-102-20-135-66Z" fill="#222831" opacity=".72"/>
+<path d="M586 371c24-14 55-20 91-16 37 3 68 16 93 39" fill="none" stroke="#4c5360" stroke-width="7" stroke-linecap="round" opacity=".44"/>
+<!-- head -->
+<path d="M440 407c-14-20-11-50 5-71 20-25 57-35 84-20 30 18 39 59 19 87-21 29-78 35-108 4Z" fill="url(#skin)"/>
+<path d="M449 350c15-31 56-45 84-25 10 7 17 18 20 31-34-13-70-14-104-6Z" fill="#17191d"/>
+<!-- arms -->
+<path d="M518 392c-40-32-74-62-97-103-13-23-4-54 18-65 24-13 52-1 64 23 23 45 51 82 84 112Z" fill="url(#skin)"/>
+<path d="M781 390c42-34 78-67 102-112 12-23 42-32 64-18 23 14 30 44 16 67-25 42-62 79-110 114Z" fill="url(#skin)"/>
+<path d="M423 289c-21-31-40-69-49-108-6-26 9-53 34-59 26-7 52 10 58 36 9 39 20 73 36 103Z" fill="url(#skin)"/>
+<path d="M883 278c17-30 29-64 36-103 5-27 31-45 57-39 27 6 43 33 37 60-9 41-27 80-51 117Z" fill="url(#skin)"/>
+<!-- hands -->
+<path d="M356 149c9-26 35-39 59-28 26 11 37 40 24 64-12 24-41 32-63 19-21-12-29-34-20-55Z" fill="url(#skin)"/>
+<path d="M919 148c8-27 35-41 60-30 25 10 38 39 26 63-11 24-40 34-63 22-22-11-31-32-23-55Z" fill="url(#skin)"/>
+<!-- bar -->
+<rect x="150" y="152" width="900" height="18" rx="9" fill="url(#metal)"/>
+<rect x="224" y="139" width="54" height="44" rx="7" fill="#505762"/><rect x="922" y="139" width="54" height="44" rx="7" fill="#505762"/>
+<!-- plates left -->
+<g transform="translate(104 160)"><ellipse rx="54" ry="108" fill="url(#plate)" stroke="#4b535e" stroke-width="5"/><ellipse rx="34" ry="88" fill="#101318" stroke="#59616c" stroke-width="3"/><ellipse rx="10" ry="25" fill="#8c949d"/></g>
+<g transform="translate(178 160)"><ellipse rx="42" ry="92" fill="url(#plate)" stroke="#4b535e" stroke-width="4"/><ellipse rx="9" ry="23" fill="#858d97"/></g>
+<!-- plates right -->
+<g transform="translate(1096 160)"><ellipse rx="54" ry="108" fill="url(#plate)" stroke="#4b535e" stroke-width="5"/><ellipse rx="34" ry="88" fill="#101318" stroke="#59616c" stroke-width="3"/><ellipse rx="10" ry="25" fill="#8c949d"/></g>
+<g transform="translate(1022 160)"><ellipse rx="42" ry="92" fill="url(#plate)" stroke="#4b535e" stroke-width="4"/><ellipse rx="9" ry="23" fill="#858d97"/></g>
+<!-- highlights -->
+<path d="M468 246c-8-30-18-59-28-87M906 258c12-31 22-61 28-90" stroke="#e2c0aa" stroke-width="7" opacity=".24" stroke-linecap="round"/>
+<path d="M500 452c73 22 161 24 246 2" fill="none" stroke="#5e6672" stroke-width="3" opacity=".34"/>
+<circle cx="706" cy="208" r="170" fill="#7f85ff" opacity=".035" filter="url(#soft)"/>
+<rect y="470" width="1200" height="170" fill="url(#bg)" opacity=".24"/>
+</svg>
