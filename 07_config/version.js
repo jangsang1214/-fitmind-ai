@@ -10,7 +10,7 @@
    if(document.querySelector('link[data-garang-presentation-v4]'))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.7-founder-board-structure';
+   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.8-founder-board-structure';
    link.dataset.garangPresentationV4='1';
    link.dataset.garangFounderTargetV5='1';
    document.head.appendChild(link);
@@ -99,8 +99,32 @@
  function reconcileWorkoutTarget(){
    const main=document.getElementById('main');
    if(!main||String(main.dataset.garangScreen||'')!=='workout')return;
-   const media=main.querySelector('.g5-workout-media');
-   if(media)media.classList.remove('g5-has-canonical-workout-visual');
+   const result=main.querySelector('.workout-result-card');
+   if(result&&getComputedStyle(result).display!=='none'){
+     main.classList.add('g5-workout-summary-mode');
+     let shell=main.querySelector(':scope > .g5-founder-summary-shell');
+     if(!shell){shell=document.createElement('section');shell.className='g5-founder-summary-shell';main.prepend(shell);}
+     let heading=main.querySelector(':scope > .g5-summary-heading')||shell.querySelector(':scope > .g5-summary-heading');
+     if(!heading){heading=document.createElement('section');heading.className='g5-summary-heading';heading.innerHTML='<strong>운동 완료 🎉</strong><span>오늘의 결과와 다음 행동</span>';}
+     if(heading.parentElement!==shell)shell.prepend(heading);
+     if(result.parentElement!==shell)shell.appendChild(result);
+     [...main.children].forEach(child=>{if(child===shell)show(child,'block');else hide(child);});
+     show(shell,'block');show(heading,'grid');show(result,'block');
+     setImportant(shell,'min-height','calc(100dvh - 40px)');setImportant(shell,'padding','10px 0 20px');setImportant(shell,'background','#05070a');
+     setImportant(heading,'gap','4px');setImportant(heading,'margin','2px 0 14px');
+     const headStrong=heading.querySelector('strong'),headSmall=heading.querySelector('span');if(headStrong){setImportant(headStrong,'font-size','25px');setImportant(headStrong,'line-height','1.15');setImportant(headStrong,'color','#fff');}if(headSmall){setImportant(headSmall,'font-size','10px');setImportant(headSmall,'color','#858e9c');}
+     setImportant(result,'position','relative');setImportant(result,'min-height','620px');setImportant(result,'margin','0');setImportant(result,'padding','0');setImportant(result,'border','0');setImportant(result,'background','transparent');setImportant(result,'box-shadow','none');setImportant(result,'overflow','visible');
+     const kicker=result.querySelector('.workout-result-kicker');if(kicker){show(kicker,'flex');setImportant(kicker,'margin','0 0 8px');setImportant(kicker,'color','#858aff');setImportant(kicker,'font-size','9px');}
+     const title=result.querySelector('h2');if(title){setImportant(title,'margin','0 0 14px');setImportant(title,'font-size','19px');setImportant(title,'line-height','1.25');}
+     const grid=result.querySelector('.workout-result-grid');if(grid){setImportant(grid,'display','grid');setImportant(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');setImportant(grid,'gap','8px');grid.querySelectorAll(':scope > div').forEach(cell=>{setImportant(cell,'min-height','82px');setImportant(cell,'padding','12px');setImportant(cell,'border','1px solid rgba(255,255,255,.07)');setImportant(cell,'border-radius','13px');setImportant(cell,'background','#0d1219');});}
+     let anatomy=result.querySelector(':scope > .g5-summary-anatomy');if(!anatomy){anatomy=document.createElement('img');anatomy.className='g5-summary-anatomy';anatomy.alt='';anatomy.setAttribute('aria-hidden','true');anatomy.src='./05_assets/body-model-v6/male-front.svg';result.appendChild(anatomy);}show(anatomy,'block');setImportant(anatomy,'width','126px');setImportant(anatomy,'height','176px');setImportant(anatomy,'object-fit','cover');setImportant(anatomy,'object-position','50% 4%');setImportant(anatomy,'margin','16px auto 8px');setImportant(anatomy,'filter','drop-shadow(0 18px 24px rgba(0,0,0,.55))');
+     const interpretation=result.querySelector('p');if(interpretation){show(interpretation,'block');setImportant(interpretation,'max-width','none');setImportant(interpretation,'margin','8px 0 0');setImportant(interpretation,'padding','13px');setImportant(interpretation,'border','1px solid rgba(255,255,255,.06)');setImportant(interpretation,'border-radius','13px');setImportant(interpretation,'background','#0d1219');setImportant(interpretation,'font-size','11px');setImportant(interpretation,'line-height','1.6');setImportant(interpretation,'color','#b4bbc6');}
+     const pr=result.querySelector('.workout-result-pr');if(pr){setImportant(pr,'margin-top','9px');setImportant(pr,'font-size','10px');setImportant(pr,'color','#61dfb2');}
+     return;
+   }
+   main.classList.remove('g5-workout-summary-mode');
+   const media=main.querySelector('.g5-workout-media');if(media)media.classList.remove('g5-has-canonical-workout-visual');
+   const live=main.querySelector('.workout-session-bar.is-live');if(live){const picker=main.querySelector('#wName')?.closest('.field');if(picker)hide(picker);hide(main.querySelector('#openWorkoutExerciseSearch'));}
  }
  function installSafety(){
    if(!document.getElementById('garang-founder-target-v5-safety')){
@@ -117,6 +141,7 @@
        #main.g5-screen-today .g5-today-workout-card>.gtf-action{position:relative!important;z-index:3!important}
        #main.g5-screen-today .g5-today-workout-card .g5-today-card-anatomy{grid-column:2!important;grid-row:1 / 3!important}
        #main.g5-screen-today [data-garang-planner-shortcut="1"][data-garang-planner-shortcut-host="founder"]{background:rgba(9,13,20,.58)!important;border:1px solid rgba(255,255,255,.06)!important;backdrop-filter:blur(10px)!important}
+       #main.g5-screen-workout.g5-workout-summary-mode>.g5-founder-summary-shell{display:block!important}
      `;
      document.head.appendChild(style);
    }
@@ -156,7 +181,7 @@
  function loadPresentation(){
    if(document.querySelector('script[data-garang-presentation-v4]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.7-founder-board-structure';
+   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.8-founder-board-structure';
    script.defer=true;
    script.dataset.garangPresentationV4='1';
    script.dataset.garangFounderTargetV5='1';
