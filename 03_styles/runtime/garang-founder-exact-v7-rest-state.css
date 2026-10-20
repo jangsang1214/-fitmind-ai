@@ -1,0 +1,11 @@
+/* GARANG Founder Exact v7 — Rest visibility is owned by the canonical timer state. */
+body.garang-exact-v7 > .g4-rest-portal[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+body.garang-exact-v7 > .g4-rest-portal:not([hidden]){
+ display:grid!important;
+ visibility:visible!important;
+ pointer-events:auto!important;
+}
