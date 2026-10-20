@@ -46,8 +46,9 @@ async function skipRest(page){const rest=page.locator('#workoutExecutionRest');a
     await route(page,'today');
     await page.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.querySelector('#garangTodayFlow [data-garang-direct-workout-start="1"]'),null,{timeout:10000});
     await page.locator('#garangTodayFlow .gtf-decision').waitFor({state:'visible',timeout:6000});
-    await page.locator('#garangTodayFlow .gtdw-direct-workout').waitFor({state:'visible',timeout:6000});
+    const directStart=page.locator('#garangTodayFlow [data-garang-direct-workout-start="1"]');await directStart.waitFor({state:'visible',timeout:6000});
     assert.equal(await page.locator('#garangTodayFlow .gtf-decision').count(),1,'canonical Today decision owner must remain singular behind the Founder presentation');
+    assert.equal(await page.locator('#garangTodayFlow [data-garang-direct-workout-start="1"]').count(),1,'canonical Today workout start owner must remain singular in the Founder presentation');
     await shot(page,'01-today');
 
     await route(page,'workout');await page.locator('[data-gws-step="exercise"]').first().click();await page.locator('#workoutSetDetails .execution-set-row.current-set').first().waitFor({state:'visible',timeout:6000});await page.locator('#startWorkoutSession').waitFor({state:'visible',timeout:6000});await page.locator('#startWorkoutSession').click();await page.waitForFunction(()=>document.querySelector('.workout-session-bar')?.classList.contains('is-live'),null,{timeout:4000});await page.waitForFunction(()=>{const main=document.querySelector('#main'),media=document.querySelector('.g5-workout-media');return !!main?.classList.contains('g5-screen-workout')&&!!media&&getComputedStyle(media).display!=='none';},null,{timeout:4000});await shot(page,'02-workout-live');
