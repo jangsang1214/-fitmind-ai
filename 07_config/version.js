@@ -1,25 +1,19 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.7',label:'0.11.0 BETA 7',channel:'FOUNDER EXACT',buildId:'20261020-founder-exact-v7.3',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.7',label:'0.11.0 BETA 7',channel:'FOUNDER EXACT',buildId:'20261020-founder-exact-v7.4',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
 document.documentElement.dataset.garangChannel=build.channel;
 function addStyle(href,key){if(document.querySelector(`link[data-garang-style="${key}"]`))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.garangStyle=key;if(key==='founder-v7')link.dataset.garangPresentationV4='1';document.head.appendChild(link);}
-function canonicalizeWorkoutSession(){const main=document.getElementById('main');if(!main||String(main.dataset.garangScreen||'')!=='workout')return;const bars=[...main.querySelectorAll('.workout-session-bar')];if(bars.length<2)return;const preferred=main.querySelector('.gws-panel[data-garang-workout-surface="exercise"] .workout-session-bar')||bars.find(bar=>bar.closest('.workout-execution-v2'))||bars.at(-1);bars.forEach(bar=>{if(bar===preferred){bar.removeAttribute('aria-hidden');return;}bar.dataset.garangDuplicateSession='1';bar.setAttribute('aria-hidden','true');bar.style.setProperty('display','none','important');bar.querySelectorAll('[id]').forEach(node=>{if(!node.dataset.garangDuplicateId)node.dataset.garangDuplicateId=node.id;node.removeAttribute('id');});});}
+function canonicalizeId(main,id,preferredSelector){const nodes=[...main.querySelectorAll(`[id="${id}"]`)];if(nodes.length<2)return;const preferred=main.querySelector(preferredSelector)||nodes.find(node=>node.closest('.workout-execution-v2'))||nodes.at(-1);nodes.forEach(node=>{if(node===preferred)return;if(!node.dataset.garangDuplicateId)node.dataset.garangDuplicateId=id;node.removeAttribute('id');node.setAttribute('aria-hidden','true');node.style.setProperty('display','none','important');});}
+function canonicalizeWorkoutSession(){const main=document.getElementById('main');if(!main||String(main.dataset.garangScreen||'')!=='workout')return;const bars=[...main.querySelectorAll('.workout-session-bar')];if(bars.length>1){const preferred=main.querySelector('.gws-panel[data-garang-workout-surface="exercise"] .workout-session-bar')||bars.find(bar=>bar.closest('.workout-execution-v2'))||bars.at(-1);bars.forEach(bar=>{if(bar===preferred){bar.removeAttribute('aria-hidden');return;}bar.dataset.garangDuplicateSession='1';bar.setAttribute('aria-hidden','true');bar.style.setProperty('display','none','important');bar.querySelectorAll('[id]').forEach(node=>{if(!node.dataset.garangDuplicateId)node.dataset.garangDuplicateId=node.id;node.removeAttribute('id');});});}
+ canonicalizeId(main,'startWorkoutSession','.gws-panel[data-garang-workout-surface="exercise"] #startWorkoutSession');
+ canonicalizeId(main,'finishWorkoutSession','.gws-panel[data-garang-workout-surface="exercise"] #finishWorkoutSession');
+}
 function reconcile(){canonicalizeWorkoutSession();root.GarangFounderExactV7?.schedule?.();requestAnimationFrame(()=>{canonicalizeWorkoutSession();root.GarangFounderExactV7?.schedule?.();});}
 function install(){let queued=false;const sync=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;reconcile();});};['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-set-rows-rendered','garang:workout-session-started','garang:coach-mounted','garang:coach-message-rendered','pageshow'].forEach(name=>window.addEventListener(name,sync,{passive:true}));document.addEventListener('click',()=>setTimeout(sync,0),true);sync();}
 function loadScript(src,attrs={}){return new Promise(resolve=>{const s=document.createElement('script');s.src=src;s.defer=true;Object.entries(attrs).forEach(([k,v])=>s.dataset[k]=v);s.addEventListener('load',()=>resolve(s),{once:true});document.head.appendChild(s);});}
-async function load(){
- addStyle('./03_styles/runtime/garang-founder-exact-v7.css?v=7.3.0','founder-v7');
- await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.0.1',{garangAnatomyComponent:'exact-v2'});
- const NativeMutationObserver=root.MutationObserver;
- root.MutationObserver=class{constructor(){}observe(){}disconnect(){}takeRecords(){return[];}};
- try{
-  await loadScript('./06_features/ui/runtime/garang-founder-exact-v7.js?v=7.3.0',{garangPresentationV4:'1',garangFounderExactV7:'1'});
-  await loadScript('./06_features/ui/runtime/garang-founder-exact-v7-compat.js?v=1.0.0',{garangFounderExactV7Compat:'1'});
- }finally{root.MutationObserver=NativeMutationObserver;}
- install();
-}
+async function load(){addStyle('./03_styles/runtime/garang-founder-exact-v7.css?v=7.4.0','founder-v7');await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.0.1',{garangAnatomyComponent:'exact-v2'});const NativeMutationObserver=root.MutationObserver;root.MutationObserver=class{constructor(){}observe(){}disconnect(){}takeRecords(){return[];}};try{await loadScript('./06_features/ui/runtime/garang-founder-exact-v7.js?v=7.4.0',{garangPresentationV4:'1',garangFounderExactV7:'1'});await loadScript('./06_features/ui/runtime/garang-founder-exact-v7-compat.js?v=1.0.0',{garangFounderExactV7Compat:'1'});}finally{root.MutationObserver=NativeMutationObserver;}install();}
 load();
 })(typeof window==='undefined'?globalThis:window);
