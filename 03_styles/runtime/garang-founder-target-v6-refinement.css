@@ -23,6 +23,9 @@ body:has(#main.g6-screen-workout.g5-workout-summary-mode) #toast{display:none!im
 #main.g6-screen-workout .g6-record-tabs span.active{color:#f2f4f8!important;box-shadow:inset 0 -2px 0 #7377ff!important}
 #main.g6-screen-workout.g5-record-list-mode .g5-workout-title{margin-bottom:4px!important}
 #main.g6-screen-workout.g5-record-list-mode .g5-workout-tags{display:none!important}
+#main.g6-screen-workout .g6-record-finish-host{display:none!important;margin:12px 0 0!important}
+#main.g6-screen-workout.g5-record-list-mode .g6-record-finish-host{display:block!important}
+#main.g6-screen-workout.g5-record-list-mode .g6-record-finish-host #finishWorkoutSession{display:grid!important;place-items:center!important;width:100%!important;min-height:54px!important;margin:0!important;padding:0 16px!important;border:0!important;border-radius:12px!important;background:linear-gradient(135deg,#7478ff,#4f60f1)!important;color:#fff!important;font-size:14px!important;font-weight:840!important;box-shadow:0 14px 30px rgba(75,81,235,.28)!important;visibility:visible!important;opacity:1!important}
 
 #main.g6-screen-nutrition>:not(.g4-nutrition-shell):not(.page-head){display:none!important}
 #main.g6-screen-nutrition .g4-nutrition-shell>.adaptive-nutrition-card{order:5!important}
