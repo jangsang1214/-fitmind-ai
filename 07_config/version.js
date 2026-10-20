@@ -10,7 +10,7 @@
    if(document.querySelector('link[data-garang-presentation-v4]'))return;
    const link=document.createElement('link');
    link.rel='stylesheet';
-   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.6-founder-board-structure';
+   link.href='./03_styles/runtime/garang-founder-target-v5.css?v=5.0.7-founder-board-structure';
    link.dataset.garangPresentationV4='1';
    link.dataset.garangFounderTargetV5='1';
    document.head.appendChild(link);
@@ -39,6 +39,7 @@
    hide(flow.querySelector(':scope > .g5-today-hero-copy'));
    hide(flow.querySelector(':scope > .g4-today-anatomy'));
 
+   const legacyHero=main.querySelector('.visual-today-hero');
    const canonicalAnatomy=main.querySelector('.today-body-panel');
    if(canonicalAnatomy){
      if(canonicalAnatomy.parentElement!==flow)flow.appendChild(canonicalAnatomy);
@@ -51,29 +52,33 @@
      canonicalAnatomy.querySelectorAll('.body-view').forEach(view=>{setImportant(view,'width','100%');setImportant(view,'height','100%');setImportant(view,'align-items','flex-start');setImportant(view,'justify-content','center');});
      canonicalAnatomy.querySelectorAll('svg.g3-body-model,svg.g2-body-model').forEach(svg=>{show(svg,'block');setImportant(svg,'width','auto');setImportant(svg,'height','330px');setImportant(svg,'max-height','none');setImportant(svg,'max-width','190px');setImportant(svg,'transform','translateY(-2px) scale(1.32)');setImportant(svg,'transform-origin','center top');setImportant(svg,'filter','drop-shadow(0 22px 28px rgba(0,0,0,.60)) contrast(1.07) saturate(1.08)');});
    }
+   hide(legacyHero);
+   hide(main.querySelector('.today-decision-panel'));
 
    const decision=flow.querySelector('.gtf-decision');
    if(decision){
      if(decision.parentElement!==flow){const date=flow.querySelector(':scope > .g5-today-date');flow.insertBefore(decision,date?.nextSibling||flow.firstChild);}
      show(decision,'block');
-     setImportant(decision,'position','relative');setImportant(decision,'z-index','3');setImportant(decision,'width','100%');setImportant(decision,'max-width','none');setImportant(decision,'min-height','205px');setImportant(decision,'margin','0');setImportant(decision,'padding','28px 47% 18px 0');setImportant(decision,'background','transparent');setImportant(decision,'border','0');
+     setImportant(decision,'position','relative');setImportant(decision,'z-index','3');setImportant(decision,'width','100%');setImportant(decision,'max-width','none');setImportant(decision,'min-height','198px');setImportant(decision,'margin','0');setImportant(decision,'padding','22px 47% 14px 0');setImportant(decision,'background','transparent');setImportant(decision,'border','0');
      const h2=decision.querySelector('h2'),p=decision.querySelector('p');
-     if(h2){setImportant(h2,'margin','0 0 10px');setImportant(h2,'font-size','26px');setImportant(h2,'line-height','1.08');setImportant(h2,'letter-spacing','-.055em');setImportant(h2,'font-weight','850');setImportant(h2,'color','#fff');}
-     if(p){setImportant(p,'margin','0');setImportant(p,'font-size','11px');setImportant(p,'line-height','1.55');setImportant(p,'color','#9ba4b2');}
+     if(h2){setImportant(h2,'margin','0 0 9px');setImportant(h2,'font-size','26px');setImportant(h2,'line-height','1.08');setImportant(h2,'letter-spacing','-.055em');setImportant(h2,'font-weight','850');setImportant(h2,'color','#fff');}
+     if(p){setImportant(p,'margin','0');setImportant(p,'font-size','11px');setImportant(p,'line-height','1.5');setImportant(p,'color','#9ba4b2');}
    }
 
    const workoutCard=flow.querySelector(':scope > .g5-today-workout-card');
    const canonicalAction=flow.querySelector('.gtf-action')||main.querySelector('.gtf-action');
    if(workoutCard&&canonicalAction){
+     setImportant(workoutCard,'min-height','148px');setImportant(workoutCard,'margin','6px 0 15px');setImportant(workoutCard,'padding','12px');setImportant(workoutCard,'grid-template-columns','minmax(0,1fr) 100px');setImportant(workoutCard,'grid-template-rows','auto auto');
+     const summary=workoutCard.querySelector(':scope > .g5-today-workout-copy');
+     if(summary){show(summary,'grid');setImportant(summary,'grid-column','1');setImportant(summary,'grid-row','1');setImportant(summary,'gap','4px');setImportant(summary,'padding-right','4px');}
      if(canonicalAction.parentElement!==workoutCard)workoutCard.prepend(canonicalAction);
      show(canonicalAction,'block');
-     setImportant(canonicalAction,'grid-column','1');setImportant(canonicalAction,'grid-row','1 / 3');setImportant(canonicalAction,'position','relative');setImportant(canonicalAction,'z-index','3');setImportant(canonicalAction,'align-self','stretch');setImportant(canonicalAction,'min-width','0');setImportant(canonicalAction,'padding','0');setImportant(canonicalAction,'margin','0');setImportant(canonicalAction,'background','transparent');setImportant(canonicalAction,'border','0');
-     const plan=canonicalAction.querySelector('.gtdw-plan');if(plan){show(plan,'grid');setImportant(plan,'gap','5px');setImportant(plan,'margin','0 0 8px');}
-     const loading=canonicalAction.querySelector('.gtdw-loading');if(loading){show(loading,'grid');setImportant(loading,'gap','4px');}
-     canonicalAction.querySelectorAll('.gtdw-row').forEach(row=>{show(row,'flex');setImportant(row,'min-height','22px');setImportant(row,'align-items','center');setImportant(row,'justify-content','space-between');setImportant(row,'gap','6px');setImportant(row,'font-size','10px');setImportant(row,'color','#a8b0bd');});
-     const start=canonicalAction.querySelector('[data-garang-direct-workout-start="1"]');if(start){show(start,'grid');setImportant(start,'place-items','center');setImportant(start,'width','100%');setImportant(start,'min-height','48px');setImportant(start,'margin-top','6px');setImportant(start,'border-radius','9px');setImportant(start,'border','0');setImportant(start,'background','linear-gradient(135deg,#8b8eff,#6267ff)');setImportant(start,'color','#fff');setImportant(start,'font-size','14px');setImportant(start,'font-weight','800');}
-     const cardAnatomy=workoutCard.querySelector(':scope > .g5-today-card-anatomy');if(cardAnatomy){show(cardAnatomy,'block');setImportant(cardAnatomy,'width','98px');setImportant(cardAnatomy,'height','146px');setImportant(cardAnatomy,'object-fit','cover');setImportant(cardAnatomy,'object-position','50% 4%');setImportant(cardAnatomy,'transform','translateY(13px) scale(1.38)');setImportant(cardAnatomy,'transform-origin','center top');setImportant(cardAnatomy,'opacity','.92');}
-     hide(workoutCard.querySelector(':scope > .g5-today-workout-copy'));
+     setImportant(canonicalAction,'grid-column','1');setImportant(canonicalAction,'grid-row','2');setImportant(canonicalAction,'position','relative');setImportant(canonicalAction,'z-index','3');setImportant(canonicalAction,'align-self','end');setImportant(canonicalAction,'min-width','0');setImportant(canonicalAction,'padding','0');setImportant(canonicalAction,'margin','0');setImportant(canonicalAction,'background','transparent');setImportant(canonicalAction,'border','0');
+     const plan=canonicalAction.querySelector('.gtdw-plan');if(plan)hide(plan);
+     const loading=canonicalAction.querySelector('.gtdw-loading');
+     const start=canonicalAction.querySelector('[data-garang-direct-workout-start="1"]');
+     if(start){if(start.disabled){if(loading)show(loading,'grid');}else if(loading)hide(loading);show(start,'grid');setImportant(start,'place-items','center');setImportant(start,'width','100%');setImportant(start,'min-height','48px');setImportant(start,'margin-top','5px');setImportant(start,'border-radius','9px');setImportant(start,'border','0');setImportant(start,'background','linear-gradient(135deg,#8b8eff,#6267ff)');setImportant(start,'color','#fff');setImportant(start,'font-size','14px');setImportant(start,'font-weight','800');}
+     const cardAnatomy=workoutCard.querySelector(':scope > .g5-today-card-anatomy');if(cardAnatomy){show(cardAnatomy,'block');setImportant(cardAnatomy,'width','94px');setImportant(cardAnatomy,'height','138px');setImportant(cardAnatomy,'object-fit','cover');setImportant(cardAnatomy,'object-position','50% 4%');setImportant(cardAnatomy,'transform','translateY(15px) scale(1.36)');setImportant(cardAnatomy,'transform-origin','center top');setImportant(cardAnatomy,'opacity','.92');}
    }
 
    const shortcut=main.querySelector('[data-garang-planner-shortcut="1"]');
@@ -87,22 +92,15 @@
    hide(flow.querySelector('.gpc-today-plan'));
    hide(flow.querySelector('.gtf-state'));
    [...flow.children].forEach(child=>{if(child!==decision&&child!==canonicalAnatomy&&/GARANG\s*SCORE/i.test(String(child.textContent||'')))hide(child);});
-   show(flow.querySelector(':scope > .g5-today-status'),'block');
-   show(flow.querySelector(':scope > .g5-today-coach'),'grid');
+   const status=flow.querySelector(':scope > .g5-today-status');
+   if(status){show(status,'block');setImportant(status,'margin','0 0 12px');const grid=status.querySelector('.g5-today-status-grid');if(grid){setImportant(grid,'grid-template-columns','repeat(3,78px)');setImportant(grid,'justify-content','space-between');setImportant(grid,'gap','6px');grid.querySelectorAll('.g5-status-meter').forEach(meter=>{setImportant(meter,'width','78px');setImportant(meter,'height','78px');setImportant(meter,'min-height','78px');const value=meter.querySelector('b');if(value)setImportant(value,'font-size','17px');});}}
+   const coach=flow.querySelector(':scope > .g5-today-coach');if(coach){show(coach,'grid');setImportant(coach,'margin','0');setImportant(coach,'min-height','62px');}
  }
  function reconcileWorkoutTarget(){
    const main=document.getElementById('main');
    if(!main||String(main.dataset.garangScreen||'')!=='workout')return;
-   const live=main.querySelector('.workout-session-bar.is-live');
-   if(!live)return;
    const media=main.querySelector('.g5-workout-media');
-   const hero=main.querySelector('.workout-visual-hero');
-   if(!media||!hero)return;
-   if(hero.parentElement!==media)media.prepend(hero);
-   media.classList.add('g5-has-canonical-workout-visual');
-   show(hero,'block');
-   setImportant(hero,'position','absolute');setImportant(hero,'inset','0');setImportant(hero,'width','100%');setImportant(hero,'height','100%');setImportant(hero,'min-height','0');setImportant(hero,'margin','0');setImportant(hero,'padding','0');setImportant(hero,'border','0');setImportant(hero,'border-radius','0');setImportant(hero,'background','transparent');setImportant(hero,'overflow','hidden');setImportant(hero,'pointer-events','none');
-   hero.querySelectorAll('*').forEach(node=>setImportant(node,'pointer-events','none'));
+   if(media)media.classList.remove('g5-has-canonical-workout-visual');
  }
  function installSafety(){
    if(!document.getElementById('garang-founder-target-v5-safety')){
@@ -113,9 +111,8 @@
        #main.g5-screen-workout:not(:has(.workout-session-bar.is-live)) .workout-visual-hero *{pointer-events:none!important}
        #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual::before,
        #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual::after{display:none!important;content:none!important}
-       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual .workout-visual-hero,
-       #main.g5-screen-workout .g5-workout-media.g5-has-canonical-workout-visual .workout-visual-hero *{pointer-events:none!important}
-       #main.g5-screen-today .g5-today-hero-copy,#main.g5-screen-today .g5-today-workout-copy,#main.g5-screen-today #garangTodayFlow>.g4-today-anatomy{display:none!important}
+       #main.g5-screen-today .g5-today-hero-copy,#main.g5-screen-today #garangTodayFlow>.g4-today-anatomy{display:none!important}
+       #main.g5-screen-today .visual-today-hero,#main.g5-screen-today .today-decision-panel{display:none!important}
        #main.g5-screen-today #garangTodayFlow>.today-body-panel[data-garang-founder-anatomy="canonical"]{display:grid!important}
        #main.g5-screen-today .g5-today-workout-card>.gtf-action{position:relative!important;z-index:3!important}
        #main.g5-screen-today .g5-today-workout-card .g5-today-card-anatomy{grid-column:2!important;grid-row:1 / 3!important}
@@ -159,7 +156,7 @@
  function loadPresentation(){
    if(document.querySelector('script[data-garang-presentation-v4]'))return;
    const script=document.createElement('script');
-   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.6-founder-board-structure';
+   script.src='./06_features/ui/runtime/garang-founder-target-v5.js?v=5.0.7-founder-board-structure';
    script.defer=true;
    script.dataset.garangPresentationV4='1';
    script.dataset.garangFounderTargetV5='1';
