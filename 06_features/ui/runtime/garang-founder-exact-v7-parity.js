@@ -15,9 +15,7 @@ function workout(m){
  if(!live)return;
  let stage=q(m,':scope > .g7-execution-stage');if(!stage){stage=document.createElement('section');stage.className='g7-execution-stage';const ctx=q(m,':scope > .g7-set-context');(ctx||q(m,':scope > .g7-set-progress'))?.insertAdjacentElement('afterend',stage);}
  const details=document.getElementById('workoutSetDetails');if(details&&details.parentElement!==stage)stage.appendChild(details);show(stage,'block');
- // The binding board owns execution. Canonical setup/search remains mounted but hidden once the session is live.
  ['.gws-shell','.gws-panel','.workout-builder-v2','.workout-execution-v2','.workout-overview-surface','.exercise-visual-library'].forEach(sel=>qa(m,sel).forEach(n=>{if(n===stage||n.contains(stage))return;hide(n);}));
- // If stage used to live inside a hidden canonical panel, moving it out above preserves all row event owners.
  if(record){
   const tabs=q(m,':scope > .g7-record-tabs');if(tabs)show(tabs,'grid');
   const finish=q(m,':scope > .g7-record-finish');if(finish)show(finish,'block');
@@ -33,6 +31,13 @@ function nutrition(m){
  if(meal&&summary&&meal.nextElementSibling!==summary)meal.insertAdjacentElement('afterend',summary);
  qa(shell,':scope > *').forEach(child=>{const t=String(child.textContent||'').replace(/\s+/g,' ').trim();if(child!==meal&&child!==summary&&child!==head&&(/NEXT MEAL/i.test(t)||t.includes('다음 끼니')))child.classList.add('g7-next-meal-legacy');});
 }
+function body(m){
+ const shell=q(m,':scope > .g7-body-shell'),tabs=q(shell,':scope > .g7-body-tabs'),stage=q(shell,':scope > .g7-body-stage');if(!shell||!tabs||!stage)return;
+ const buttons=qa(tabs,'button'),view=m.dataset.g7BodyView||'front';
+ function render(next){m.dataset.g7BodyView=next;buttons.forEach((b,i)=>b.classList.toggle('active',['front','side','back'][i]===next));qa(stage,':scope > .g7-anatomy').forEach(n=>n.remove());const bars=q(stage,':scope > .g7-body-bars');const make=side=>window.GarangAnatomyExactV2?.create?.(side,'male','full');const add=node=>{if(!node)return;if(bars)stage.insertBefore(node,bars);else stage.appendChild(node);};if(next==='front'){add(make('front'));add(make('back'));}else if(next==='side')add(make('side'));else add(make('back'));}
+ render(view);
+ buttons.forEach((btn,i)=>{btn.onclick=()=>render(['front','side','back'][i]);});
+}
 function settings(m){
  const shell=q(m,':scope > .g7-settings-shell'),stack=q(shell,'.settings-stack');if(!shell||!stack)return;stack.classList.add('g7-settings-list');
  qa(stack,':scope > .card').forEach(card=>{card.classList.add('g7-settings-item');let title=q(card,':scope > .settings-title')||q(card,':scope > h2,:scope > h3');if(!title)return;title.classList.add('g7-settings-item-title');if(!q(title,':scope > .g7-settings-chevron')){const c=document.createElement('span');c.className='g7-settings-chevron';c.textContent='›';title.appendChild(c);}if(title.dataset.g7Bound!=='1'){title.dataset.g7Bound='1';title.tabIndex=0;title.setAttribute('role','button');const toggle=()=>card.classList.toggle('g7-settings-open');title.addEventListener('click',toggle);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});}});
@@ -46,7 +51,7 @@ function today(m){
  cta.hidden=false;cta.removeAttribute('hidden');cta.removeAttribute('aria-hidden');cta.removeAttribute('aria-disabled');cta.disabled=false;
  imp(cta,'display','grid');imp(cta,'visibility','visible');imp(cta,'opacity','1');imp(cta,'pointer-events','auto');
 }
-function apply(){const m=main();if(!m)return;forceNav();const s=screen();if(s==='workout')workout(m);else if(s==='nutrition')nutrition(m);else if(s==='settings')settings(m);else if(s==='coach')coach(m);else if(s==='today')today(m);}
+function apply(){const m=main();if(!m)return;forceNav();const s=screen();if(s==='workout')workout(m);else if(s==='nutrition')nutrition(m);else if(s==='body')body(m);else if(s==='settings')settings(m);else if(s==='coach')coach(m);else if(s==='today')today(m);}
 let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});}
 ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-set-rows-rendered','garang:workout-session-started','garang:coach-mounted','garang:coach-message-rendered','pageshow'].forEach(e=>window.addEventListener(e,schedule,{passive:true}));document.addEventListener('click',()=>setTimeout(schedule,0),true);window.GarangFounderExactV7Parity=Object.freeze({sync:schedule});schedule();
 })();
