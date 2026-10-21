@@ -5,8 +5,9 @@ if(window.__garangExactV7Parity)return;window.__garangExactV7Parity=true;
 const q=(r,s)=>r?.querySelector?.(s)||null,qa=(r,s)=>[...(r?.querySelectorAll?.(s)||[])];
 const main=()=>document.getElementById('main'),screen=()=>String(main()?.dataset?.garangScreen||'');
 function imp(n,k,v){n?.style?.setProperty?.(k,v,'important')}function show(n,d='block'){if(!n)return;n.hidden=false;n.removeAttribute('hidden');n.removeAttribute('aria-hidden');imp(n,'display',d);imp(n,'visibility','visible')}function hide(n){if(!n)return;imp(n,'display','none')}
-function ensure(tag,cls,parent){let n=q(parent,`:scope > .${cls}`);if(n)return n;n=document.createElement(tag);n.className=cls;parent.appendChild(n);return n}
 function forceNav(){const labels=['오늘','기록','코치','누적'];qa(document.getElementById('bottomNav'),'button[data-garang-primary-nav="1"]').slice(0,4).forEach((b,i)=>{const label=q(b,'b')||q(b,'span:last-child');if(label)label.textContent=labels[i];});}
+function changeInput(input,delta){if(!input)return;const current=Number(input.value)||0,next=Math.max(0,Math.round((current+delta)*100)/100);input.value=String(next);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+function enhanceLiveSet(m){const row=q(m,'.g7-execution-stage .execution-set-row.current-set')||q(m,'#workoutSetDetails .execution-set-row.current-set');if(!row)return;[['weight',2.5],['reps',1]].forEach(([kind,step])=>{const input=q(row,`[data-set-${kind}]`);if(!input)return;const field=input.closest('.execution-field')||input.parentElement;if(!field)return;field.classList.add('g7-stepper-field',`g7-stepper-${kind}`);let minus=q(field,`:scope > .g7-${kind}-minus`),plus=q(field,`:scope > .g7-${kind}-plus`);if(!minus){minus=document.createElement('button');minus.type='button';minus.className=`g7-stepper-button g7-${kind}-minus`;minus.textContent='−';minus.setAttribute('aria-label',kind==='weight'?'중량 감소':'횟수 감소');minus.onclick=e=>{e.preventDefault();e.stopPropagation();changeInput(input,-step);};field.insertBefore(minus,input);}if(!plus){plus=document.createElement('button');plus.type='button';plus.className=`g7-stepper-button g7-${kind}-plus`;plus.textContent='+';plus.setAttribute('aria-label',kind==='weight'?'중량 증가':'횟수 증가');plus.onclick=e=>{e.preventDefault();e.stopPropagation();changeInput(input,step);};input.insertAdjacentElement('afterend',plus);}show(minus,'grid');show(plus,'grid');});}
 function workout(m){
  const summary=m.classList.contains('g7-summary-mode')||!!q(m,':scope > .g7-summary-shell');
  if(summary){m.classList.add('g7-summary-mode');const shell=q(m,':scope > .g7-summary-shell');qa(m,':scope > *').forEach(n=>n===shell?show(n,'block'):hide(n));document.getElementById('toast')?.style?.setProperty('display','none','important');if(m.dataset.g7SummaryFocus!=='1'){m.dataset.g7SummaryFocus='1';requestAnimationFrame(()=>{window.scrollTo(0,0);m.scrollTop=0;});}return;}
@@ -22,7 +23,7 @@ function workout(m){
   if(m.dataset.g7RecordFocus!=='1'){m.dataset.g7RecordFocus='1';requestAnimationFrame(()=>{window.scrollTo(0,0);m.scrollTop=0;});}
  }else{
   delete m.dataset.g7RecordFocus;
-  hide(q(m,':scope > .g7-record-tabs'));
+  hide(q(m,':scope > .g7-record-tabs'));enhanceLiveSet(m);
  }
 }
 function nutrition(m){
@@ -34,7 +35,7 @@ function nutrition(m){
 function body(m){
  const shell=q(m,':scope > .g7-body-shell'),tabs=q(shell,':scope > .g7-body-tabs'),stage=q(shell,':scope > .g7-body-stage');if(!shell||!tabs||!stage)return;
  const buttons=qa(tabs,'button'),view=m.dataset.g7BodyView||'front';
- function render(next){m.dataset.g7BodyView=next;buttons.forEach((b,i)=>b.classList.toggle('active',['front','side','back'][i]===next));qa(stage,':scope > .g7-anatomy').forEach(n=>n.remove());const bars=q(stage,':scope > .g7-body-bars');const make=side=>window.GarangAnatomyExactV2?.create?.(side,'male','full');const add=node=>{if(!node)return;if(bars)stage.insertBefore(node,bars);else stage.appendChild(node);};if(next==='front'){add(make('front'));add(make('back'));}else if(next==='side')add(make('side'));else add(make('back'));}
+ function render(next){m.dataset.g7BodyView=next;buttons.forEach((b,i)=>b.classList.toggle('active',['front','side','back'][i]===next));qa(stage,':scope > .g7-anatomy').forEach(n=>n.remove());const bars=q(stage,':scope > .g7-body-bars');const gender=String(window.GarangRepositories?.StateRepository?.read?.()?.profile?.gender||'male').toLowerCase()==='female'?'female':'male';const make=side=>window.GarangAnatomyExactV2?.create?.(side,gender,'full');const add=node=>{if(!node)return;if(bars)stage.insertBefore(node,bars);else stage.appendChild(node);};if(next==='front'){add(make('front'));add(make('back'));}else if(next==='side')add(make('side'));else add(make('back'));}
  render(view);
  buttons.forEach((btn,i)=>{btn.onclick=()=>render(['front','side','back'][i]);});
 }
