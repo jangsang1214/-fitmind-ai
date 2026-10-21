@@ -30,9 +30,10 @@ jobs:
       - name: Capture binding-board review states
         run: node tests/browser-presentation-v4-review-screenshots.cjs
       - name: Upload Presentation v4 review screens
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: presentation-v4-review-screens
           path: artifacts/presentation-v4-review/*.png
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
