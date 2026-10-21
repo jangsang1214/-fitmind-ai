@@ -4,7 +4,7 @@
 if(window.__garangExactV7Parity)return;window.__garangExactV7Parity=true;
 const q=(r,s)=>r?.querySelector?.(s)||null,qa=(r,s)=>[...(r?.querySelectorAll?.(s)||[])];
 const main=()=>document.getElementById('main'),screen=()=>String(main()?.dataset?.garangScreen||'');
-function imp(n,k,v){n?.style?.setProperty?.(k,v,'important')}function show(n,d='block'){if(!n)return;n.hidden=false;n.removeAttribute('aria-hidden');imp(n,'display',d);imp(n,'visibility','visible')}function hide(n){if(!n)return;imp(n,'display','none')}
+function imp(n,k,v){n?.style?.setProperty?.(k,v,'important')}function show(n,d='block'){if(!n)return;n.hidden=false;n.removeAttribute('hidden');n.removeAttribute('aria-hidden');imp(n,'display',d);imp(n,'visibility','visible')}function hide(n){if(!n)return;imp(n,'display','none')}
 function ensure(tag,cls,parent){let n=q(parent,`:scope > .${cls}`);if(n)return n;n=document.createElement(tag);n.className=cls;parent.appendChild(n);return n}
 function forceNav(){const labels=['오늘','기록','코치','누적'];qa(document.getElementById('bottomNav'),'button[data-garang-primary-nav="1"]').slice(0,4).forEach((b,i)=>{const label=q(b,'b')||q(b,'span:last-child');if(label)label.textContent=labels[i];});}
 function workout(m){
@@ -38,7 +38,14 @@ function settings(m){
  qa(stack,':scope > .card').forEach(card=>{card.classList.add('g7-settings-item');let title=q(card,':scope > .settings-title')||q(card,':scope > h2,:scope > h3');if(!title)return;title.classList.add('g7-settings-item-title');if(!q(title,':scope > .g7-settings-chevron')){const c=document.createElement('span');c.className='g7-settings-chevron';c.textContent='›';title.appendChild(c);}if(title.dataset.g7Bound!=='1'){title.dataset.g7Bound='1';title.tabIndex=0;title.setAttribute('role','button');const toggle=()=>card.classList.toggle('g7-settings-open');title.addEventListener('click',toggle);title.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});}});
 }
 function coach(m){const page=q(m,':scope > .g7-coach-page');if(!page)return;const head=q(page,'.g2-chat-head');if(head){head.classList.add('g7-canonical-coach-head');qa(head,'.g5-settings,.g2-head-new').forEach(hide);}const side=q(page,'.g2-chat-sidebar');if(side)hide(side);}
-function today(m){const flow=q(m,'#garangTodayFlow');if(!flow)return;qa(flow,'*').forEach(n=>{if(String(n.textContent||'').trim()==='GARANG SCORE')hide(n);});}
+function today(m){
+ const flow=q(m,'#garangTodayFlow');if(!flow)return;
+ qa(flow,'*').forEach(n=>{if(String(n.textContent||'').trim()==='GARANG SCORE')hide(n);});
+ const action=q(flow,'.gtf-action')||q(m,'.gtf-action');if(!action)return;show(action,'flex');
+ const cta=q(action,'[data-garang-direct-workout-start="1"],.gtf-next');if(!cta)return;
+ cta.hidden=false;cta.removeAttribute('hidden');cta.removeAttribute('aria-hidden');cta.removeAttribute('aria-disabled');cta.disabled=false;
+ imp(cta,'display','grid');imp(cta,'visibility','visible');imp(cta,'opacity','1');imp(cta,'pointer-events','auto');
+}
 function apply(){const m=main();if(!m)return;forceNav();const s=screen();if(s==='workout')workout(m);else if(s==='nutrition')nutrition(m);else if(s==='settings')settings(m);else if(s==='coach')coach(m);else if(s==='today')today(m);}
 let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});}
 ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-set-rows-rendered','garang:workout-session-started','garang:coach-mounted','garang:coach-message-rendered','pageshow'].forEach(e=>window.addEventListener(e,schedule,{passive:true}));document.addEventListener('click',()=>setTimeout(schedule,0),true);window.GarangFounderExactV7Parity=Object.freeze({sync:schedule});schedule();
