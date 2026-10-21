@@ -1,46 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
-<title id="title">GARANG bench press training visual</title><desc id="desc">Original dark vector illustration of an athlete performing a barbell bench press.</desc>
+<title id="title">GARANG bench press training visual</title><desc id="desc">Original dark high-detail vector illustration of a muscular athlete performing a barbell bench press.</desc>
 <defs>
- <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#222831"/><stop offset=".48" stop-color="#11161d"/><stop offset="1" stop-color="#07090c"/></linearGradient>
- <radialGradient id="halo" cx="64%" cy="32%" r="54%"><stop stop-color="#9098ac" stop-opacity=".34"/><stop offset=".45" stop-color="#48505f" stop-opacity=".13"/><stop offset="1" stop-color="#0a0d12" stop-opacity="0"/></radialGradient>
- <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a98670"/><stop offset=".42" stop-color="#725447"/><stop offset="1" stop-color="#3a2d2a"/></linearGradient>
- <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#343943"/><stop offset=".55" stop-color="#15191f"/><stop offset="1" stop-color="#080a0d"/></linearGradient>
- <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#2e333a"/><stop offset=".17" stop-color="#b4bac2"/><stop offset=".47" stop-color="#f1f3f5"/><stop offset=".72" stop-color="#8c939d"/><stop offset="1" stop-color="#242930"/></linearGradient>
- <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#31363f"/><stop offset=".55" stop-color="#14181d"/><stop offset="1" stop-color="#080a0d"/></linearGradient>
- <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>
- <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#222933"/><stop offset=".38" stop-color="#11161d"/><stop offset="1" stop-color="#06080b"/></linearGradient>
+ <radialGradient id="light" cx="64%" cy="27%" r="62%"><stop stop-color="#a9b1c3" stop-opacity=".32"/><stop offset=".42" stop-color="#596170" stop-opacity=".1"/><stop offset="1" stop-color="#090c11" stop-opacity="0"/></radialGradient>
+ <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d0a083"/><stop offset=".28" stop-color="#a97861"/><stop offset=".62" stop-color="#705043"/><stop offset="1" stop-color="#2c2525"/></linearGradient>
+ <linearGradient id="skinDark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9d715e"/><stop offset=".5" stop-color="#63453c"/><stop offset="1" stop-color="#282124"/></linearGradient>
+ <linearGradient id="muscleWarm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d39479"/><stop offset=".42" stop-color="#8f5a4b"/><stop offset="1" stop-color="#4a3130"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#252a31"/><stop offset=".13" stop-color="#d3d7dc"/><stop offset=".5" stop-color="#f7f8f9"/><stop offset=".82" stop-color="#89919b"/><stop offset="1" stop-color="#20252b"/></linearGradient>
+ <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a414b"/><stop offset=".46" stop-color="#181d24"/><stop offset="1" stop-color="#07090c"/></linearGradient>
+ <linearGradient id="bench" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#303640"/><stop offset=".5" stop-color="#151a20"/><stop offset="1" stop-color="#090b0e"/></linearGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="22"/></filter>
+ <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
+ <filter id="depth" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#000" flood-opacity=".6"/></filter>
 </defs>
-<rect width="1200" height="640" fill="url(#bg)"/><rect width="1200" height="640" fill="url(#halo)"/>
-<ellipse cx="650" cy="560" rx="430" ry="58" fill="#000" opacity=".5" filter="url(#shadow)"/>
-<path d="M210 518h702c32 0 58 14 58 32s-26 32-58 32H210c-33 0-59-14-59-32s26-32 59-32Z" fill="#13171c" stroke="#303640" stroke-width="3"/>
-<path d="M370 482h460l58 48H309Z" fill="#20252c" stroke="#3b424c" stroke-width="3"/><path d="M414 522l-55 90h-35l41-90Zm374 0 51 90h35l-37-90Z" fill="#15191e"/>
-<!-- athlete torso -->
-<path d="M468 454c30-73 92-119 177-126 82-7 151 28 207 100l-51 74H495Z" fill="url(#shirt)"/>
-<path d="M512 401c42-34 83-50 132-50 49 0 95 14 138 48-33 42-76 66-135 68-57 1-102-20-135-66Z" fill="#222831" opacity=".72"/>
-<path d="M586 371c24-14 55-20 91-16 37 3 68 16 93 39" fill="none" stroke="#4c5360" stroke-width="7" stroke-linecap="round" opacity=".44"/>
-<!-- head -->
-<path d="M440 407c-14-20-11-50 5-71 20-25 57-35 84-20 30 18 39 59 19 87-21 29-78 35-108 4Z" fill="url(#skin)"/>
-<path d="M449 350c15-31 56-45 84-25 10 7 17 18 20 31-34-13-70-14-104-6Z" fill="#17191d"/>
-<!-- arms -->
-<path d="M518 392c-40-32-74-62-97-103-13-23-4-54 18-65 24-13 52-1 64 23 23 45 51 82 84 112Z" fill="url(#skin)"/>
-<path d="M781 390c42-34 78-67 102-112 12-23 42-32 64-18 23 14 30 44 16 67-25 42-62 79-110 114Z" fill="url(#skin)"/>
-<path d="M423 289c-21-31-40-69-49-108-6-26 9-53 34-59 26-7 52 10 58 36 9 39 20 73 36 103Z" fill="url(#skin)"/>
-<path d="M883 278c17-30 29-64 36-103 5-27 31-45 57-39 27 6 43 33 37 60-9 41-27 80-51 117Z" fill="url(#skin)"/>
+<rect width="1200" height="640" fill="url(#bg)"/><rect width="1200" height="640" fill="url(#light)"/>
+<!-- distant gym rack -->
+<g opacity=".2"><rect x="86" y="18" width="25" height="470" rx="9" fill="#717985"/><rect x="1070" y="15" width="28" height="490" rx="9" fill="#747c87"/><rect x="93" y="55" width="995" height="15" rx="7" fill="#656d77"/><circle cx="102" cy="122" r="7" fill="#d2d5d9"/><circle cx="1083" cy="120" r="7" fill="#d2d5d9"/></g>
+<ellipse cx="618" cy="566" rx="460" ry="57" fill="#000" opacity=".54" filter="url(#shadow)"/>
+<!-- bench -->
+<path d="M230 501h694c39 0 71 17 71 38s-32 38-71 38H230c-40 0-72-17-72-38s32-38 72-38Z" fill="#0f1318" stroke="#323945" stroke-width="3"/>
+<path d="M345 460h501l80 58H292Z" fill="url(#bench)" stroke="#414956" stroke-width="4"/>
+<path d="M393 515l-66 106h-39l48-106Zm401 0 62 106h39l-45-106Z" fill="#101419"/>
+<!-- athlete shadow mass -->
+<path d="M368 445 C430 340 535 309 665 323 C775 335 858 387 918 460 L848 518 L424 515Z" fill="#0a0c0f" opacity=".72" filter="url(#depth)"/>
+<!-- torso base -->
+<path d="M438 446 C477 353 558 318 657 327 C751 335 828 377 883 444 C855 486 812 511 747 522 L483 516 C456 497 440 474 438 446Z" fill="url(#skinDark)"/>
+<!-- chest volumes -->
+<path d="M525 367 C565 337 618 332 657 349 C670 363 674 390 661 415 C615 429 572 423 535 397 C526 386 522 377 525 367Z" fill="url(#muscleWarm)" stroke="#c49178" stroke-opacity=".32" stroke-width="3"/>
+<path d="M663 349 C710 338 761 353 792 385 C797 398 793 412 781 426 C735 435 695 426 661 414 C673 388 674 364 663 349Z" fill="url(#muscleWarm)" stroke="#c49178" stroke-opacity=".28" stroke-width="3"/>
+<!-- abs / serratus -->
+<path d="M611 421 C630 414 651 416 663 430 L659 454 C641 461 625 458 612 449Z" fill="#7c5248" opacity=".7"/>
+<path d="M615 458 C630 452 647 453 658 463 L654 484 C638 490 625 486 614 479Z" fill="#6a4741" opacity=".72"/>
+<path d="M668 429 C684 419 704 421 716 434 L712 456 C694 463 680 458 669 449Z" fill="#704b42" opacity=".66"/>
+<path d="M671 462 C686 454 701 456 710 466 L706 485 C691 492 679 487 670 479Z" fill="#61413c" opacity=".72"/>
+<path d="M513 402 C530 403 548 414 558 432 L546 474 C528 472 513 459 503 440Z" fill="#754b41" opacity=".68"/>
+<path d="M797 402 C780 405 765 417 754 436 L765 477 C786 472 801 458 812 439Z" fill="#71493f" opacity=".66"/>
+<!-- neck + head -->
+<path d="M451 392 C468 376 493 374 514 385 L521 420 C503 434 480 437 460 423Z" fill="url(#skin)"/>
+<path d="M390 386 C378 360 384 329 405 308 C427 286 462 281 485 300 C509 321 509 358 489 383 C466 410 413 411 390 386Z" fill="url(#skin)" stroke="#b48672" stroke-opacity=".25" stroke-width="2"/>
+<path d="M398 323 C420 292 461 289 486 311 C475 300 443 303 417 318 C409 323 403 328 398 323Z" fill="#17191d"/>
+<path d="M405 360 C421 368 446 369 465 359" fill="none" stroke="#d0a58d" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/>
+<!-- rear arm -->
+<path d="M523 396 C490 355 463 316 443 269 C433 245 443 218 465 207 C489 195 517 208 528 234 C548 278 574 316 604 349Z" fill="url(#skinDark)" stroke="#b6816b" stroke-opacity=".24" stroke-width="3"/>
+<path d="M444 269 C423 230 407 188 399 145 C394 117 411 92 438 87 C466 82 490 101 494 129 C501 174 512 211 529 244 C509 259 480 270 444 269Z" fill="url(#skin)"/>
+<!-- front arm -->
+<path d="M788 397 C823 357 852 316 874 270 C885 247 914 237 936 249 C961 262 968 291 953 315 C928 357 896 397 850 438Z" fill="url(#skinDark)" stroke="#b6816b" stroke-opacity=".24" stroke-width="3"/>
+<path d="M874 270 C893 231 906 190 913 146 C917 118 941 99 968 103 C996 108 1013 133 1008 161 C999 207 983 250 959 291 C936 285 907 278 874 270Z" fill="url(#skin)"/>
+<!-- deltoid caps -->
+<path d="M497 367 C514 348 539 347 556 362 C556 380 547 395 530 405 C514 402 503 389 497 367Z" fill="#a26c59" opacity=".74"/>
+<path d="M791 379 C807 357 832 354 851 368 C852 387 842 404 824 416 C808 410 797 398 791 379Z" fill="#9a6655" opacity=".74"/>
 <!-- hands -->
-<path d="M356 149c9-26 35-39 59-28 26 11 37 40 24 64-12 24-41 32-63 19-21-12-29-34-20-55Z" fill="url(#skin)"/>
-<path d="M919 148c8-27 35-41 60-30 25 10 38 39 26 63-11 24-40 34-63 22-22-11-31-32-23-55Z" fill="url(#skin)"/>
+<path d="M379 112 C390 87 419 75 443 87 C467 99 478 128 464 151 C450 174 421 179 399 166 C379 154 370 133 379 112Z" fill="url(#skin)"/>
+<path d="M923 114 C933 88 961 75 986 86 C1011 97 1022 125 1010 149 C998 174 970 181 947 170 C925 160 915 138 923 114Z" fill="url(#skin)"/>
 <!-- bar -->
-<rect x="150" y="152" width="900" height="18" rx="9" fill="url(#metal)"/>
-<rect x="224" y="139" width="54" height="44" rx="7" fill="#505762"/><rect x="922" y="139" width="54" height="44" rx="7" fill="#505762"/>
-<!-- plates left -->
-<g transform="translate(104 160)"><ellipse rx="54" ry="108" fill="url(#plate)" stroke="#4b535e" stroke-width="5"/><ellipse rx="34" ry="88" fill="#101318" stroke="#59616c" stroke-width="3"/><ellipse rx="10" ry="25" fill="#8c949d"/></g>
-<g transform="translate(178 160)"><ellipse rx="42" ry="92" fill="url(#plate)" stroke="#4b535e" stroke-width="4"/><ellipse rx="9" ry="23" fill="#858d97"/></g>
-<!-- plates right -->
-<g transform="translate(1096 160)"><ellipse rx="54" ry="108" fill="url(#plate)" stroke="#4b535e" stroke-width="5"/><ellipse rx="34" ry="88" fill="#101318" stroke="#59616c" stroke-width="3"/><ellipse rx="10" ry="25" fill="#8c949d"/></g>
-<g transform="translate(1022 160)"><ellipse rx="42" ry="92" fill="url(#plate)" stroke="#4b535e" stroke-width="4"/><ellipse rx="9" ry="23" fill="#858d97"/></g>
-<!-- highlights -->
-<path d="M468 246c-8-30-18-59-28-87M906 258c12-31 22-61 28-90" stroke="#e2c0aa" stroke-width="7" opacity=".24" stroke-linecap="round"/>
-<path d="M500 452c73 22 161 24 246 2" fill="none" stroke="#5e6672" stroke-width="3" opacity=".34"/>
-<circle cx="706" cy="208" r="170" fill="#7f85ff" opacity=".035" filter="url(#soft)"/>
-<rect y="470" width="1200" height="170" fill="url(#bg)" opacity=".24"/>
+<rect x="108" y="137" width="982" height="20" rx="10" fill="url(#metal)"/>
+<rect x="260" y="123" width="62" height="48" rx="8" fill="#59616c"/><rect x="879" y="123" width="62" height="48" rx="8" fill="#59616c"/>
+<!-- left plates -->
+<g transform="translate(112 147)"><ellipse rx="60" ry="122" fill="url(#plate)" stroke="#59616c" stroke-width="5"/><ellipse rx="39" ry="96" fill="#11151a" stroke="#69717c" stroke-width="3"/><ellipse rx="11" ry="28" fill="#9aa2ac"/></g>
+<g transform="translate(197 147)"><ellipse rx="45" ry="103" fill="url(#plate)" stroke="#535b66" stroke-width="4"/><ellipse rx="10" ry="25" fill="#929aa4"/></g>
+<!-- right plates, deliberately dominant like the board -->
+<g transform="translate(1094 147)"><ellipse rx="70" ry="140" fill="url(#plate)" stroke="#606873" stroke-width="6"/><ellipse rx="47" ry="111" fill="#11151a" stroke="#737b86" stroke-width="4"/><ellipse rx="12" ry="31" fill="#9ca4ae"/></g>
+<g transform="translate(1002 147)"><ellipse rx="50" ry="112" fill="url(#plate)" stroke="#59616c" stroke-width="5"/><ellipse rx="11" ry="27" fill="#949ca6"/></g>
+<!-- anatomical highlights -->
+<path d="M542 369 C574 386 616 391 653 382 M681 365 C718 378 754 389 786 390" fill="none" stroke="#e2b199" stroke-width="5" opacity=".25" stroke-linecap="round"/>
+<path d="M526 407 C547 422 574 431 602 431 M785 414 C762 428 738 434 714 434" fill="none" stroke="#e0ae95" stroke-width="4" opacity=".18" stroke-linecap="round"/>
+<path d="M474 233 C465 203 456 169 450 132 M932 249 C945 215 954 181 960 144" fill="none" stroke="#f0c0a7" stroke-width="7" opacity=".22" stroke-linecap="round"/>
+<path d="M629 342 C621 372 622 402 630 430 M694 344 C688 372 691 401 700 430" fill="none" stroke="#27191b" stroke-width="4" opacity=".55"/>
+<circle cx="737" cy="234" r="205" fill="#7c82ff" opacity=".035" filter="url(#soft)"/>
+<rect y="505" width="1200" height="135" fill="#05070a" opacity=".34"/>
 </svg>
