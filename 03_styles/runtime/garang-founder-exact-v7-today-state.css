@@ -1,0 +1,5 @@
+/* GARANG Founder Exact v7 — Today secondary actions. */
+#main.g7-screen-today .g7-status{position:relative!important}
+#main.g7-screen-today .g7-status-all{position:absolute!important;top:-6px!important;right:0!important;display:grid!important;place-items:center!important;min-width:44px!important;min-height:32px!important;margin:0!important;padding:0 4px!important;border:0!important;background:transparent!important;color:#808998!important;font-size:8px!important;font-weight:700!important}
+#main.g7-screen-today .g7-coach{cursor:pointer!important}
+#main.g7-screen-today .g7-coach:active{transform:scale(.99)!important}
