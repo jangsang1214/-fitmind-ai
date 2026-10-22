@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261022-founder-v8.22',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261022-founder-v8.23',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
