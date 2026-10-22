@@ -163,3 +163,32 @@ html.garang-v8 body #main.g8-screen-settings .g8-settings-content .primary,html.
  html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .execution-set-row.current-set{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 24px!important;min-height:168px!important;padding-inline:8px!important}
  html.garang-v8 body #main.g8-screen-coach .g2-chat-scroll{min-height:200px!important;max-height:330px!important}
 }
+
+/* v8.6.1 visual correction after full 11-screen review. */
+html.garang-v8 body #bottomNav.bottom-nav>button>b{font-size:0!important;line-height:1!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="today"]>b:after{content:"오늘"!important;display:inline!important;font-size:10px!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="log"]>b:after{content:"기록"!important;display:inline!important;font-size:10px!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="coach"]>b:after{content:"코치"!important;display:inline!important;font-size:10px!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="progress"]>b:after{content:"누적"!important;display:inline!important;font-size:10px!important}
+
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set>*{min-width:0!important;max-width:100%!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-field{width:auto!important;min-width:0!important;max-width:100%!important;overflow:hidden!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-field:has([data-set-weight]){grid-area:weight!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-field:has([data-set-reps]){grid-area:reps!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set input{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .execution-set-row.current-set{overflow:hidden!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set [data-execution-set-complete]{overflow:hidden!important;white-space:nowrap!important}
+
+html.garang-v8 body #main.g8-screen-coach .g8-coach .g2-chat-sidebar{display:none!important;width:0!important;min-width:0!important}
+html.garang-v8 body #main.g8-screen-coach .g8-coach :where(.g2-chat-main,.g2-main,.g2-chat-body){display:flex!important;flex-direction:column!important;width:100%!important;min-width:0!important;max-width:none!important;min-height:0!important;height:auto!important;background:#fff!important;color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-coach .g8-coach :where(.g2-shell,.garang-coach-v2,.coach-shell){grid-template-columns:minmax(0,1fr)!important;width:100%!important;max-width:100%!important}
+html.garang-v8 body #main.g8-screen-coach .g2-chat-scroll,html.garang-v8 body #main.g8-screen-coach .g4-prompt-strip,html.garang-v8 body #main.g8-screen-coach .g2-composer-wrap{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+
+html.garang-v8 body #main.g8-screen-history .g8-history-content>* div{background:transparent!important;color:var(--g8-ink)!important;border-color:var(--g8-line)!important;box-shadow:none!important;text-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content>* :where(h1,h2,h3,h4,p,strong,b,span,small,label){color:var(--g8-ink)!important;text-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content>* :where(small,.muted){color:var(--g8-muted)!important}
+
+html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .meal-scan-card,html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .nutrition-quick-summary,html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .adaptive-nutrition-card,html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .recent-meals-card{border:1px solid var(--g8-line)!important;border-radius:20px!important;background:#fff!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .meal-scan-card :where(h1,h2,h3,h4,p,strong,b,span,small,label){color:inherit!important;text-shadow:none!important}
+html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .meal-scan-card button{border:1px solid var(--g8-line)!important;background:#f8f6f2!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-nutrition .g8-nutrition .meal-scan-card button:first-of-type{grid-column:1/-1!important;min-height:116px!important;background:var(--g8-ink)!important;color:#fff!important;border-color:var(--g8-ink)!important}
