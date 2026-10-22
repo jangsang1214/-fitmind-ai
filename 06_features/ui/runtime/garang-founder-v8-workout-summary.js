@@ -2,10 +2,17 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8WorkoutSummary)return;
-const VERSION='8.0.0';
+const VERSION='8.0.1';
 let lastSessionId='';
 const main=()=>document.getElementById('main');
-function readState(){try{return window.GarangRepositories?.StateRepository?.read?.()||null}catch{return null}}
+function readLocalState(){
+  try{
+    const keys=Object.keys(localStorage).filter(key=>/^garang_user_.+_v3$/.test(key));
+    for(const key of keys){const value=JSON.parse(localStorage.getItem(key)||'null');if(value&&Array.isArray(value.workouts))return value;}
+  }catch{}
+  return null;
+}
+function readState(){try{return window.GarangRepositories?.StateRepository?.read?.()||readLocalState()}catch{return readLocalState()}}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:0}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function latestSession(state){
@@ -21,12 +28,7 @@ function metrics(rows){
   let sets=0,volume=0,duration=0;
   for(const row of rows){
     const detail=Array.isArray(row?.setDetails)?row.setDetails:[];
-    if(detail.length){
-      sets+=detail.length;
-      for(const set of detail)volume+=n(set?.weight??set?.w)*n(set?.reps??set?.r);
-    }else{
-      const count=Math.max(0,n(row?.sets));sets+=count;volume+=count*n(row?.weight)*n(row?.reps);
-    }
+    if(detail.length){sets+=detail.length;for(const set of detail)volume+=n(set?.weight??set?.w)*n(set?.reps??set?.r);}else{const count=Math.max(0,n(row?.sets));sets+=count;volume+=count*n(row?.weight)*n(row?.reps);}
     duration+=Math.max(0,n(row?.duration));
   }
   return {exercises:rows.length,sets,volume:Math.round(volume),duration:Math.round(duration)};
@@ -43,17 +45,10 @@ function renderFromState({force=false}={}){
   card.dataset.garangV8ActualResult='1';
   card.dataset.sessionId=session.sessionId;
   card.innerHTML=`<div class="g8-result-metrics"><div><span>운동</span><strong>${value.exercises}</strong></div><div><span>세트</span><strong>${value.sets}</strong></div><div><span>볼륨</span><strong>${value.volume.toLocaleString()} kg</strong></div><div><span>시간</span><strong>${value.duration?`${value.duration}분`:'—'}</strong></div></div><div class="g8-result-exercises"><span>오늘 수행</span><strong>${esc(names.slice(0,3).join(' · ')||'운동 기록')}</strong></div>`;
-  m.appendChild(card);
-  card.hidden=false;
-  card.style.setProperty('display','block','important');
-  window.GarangFounderV8?.schedule?.();
-  requestAnimationFrame(()=>window.GarangFounderV8ExactBoard?.schedule?.());
-  return true;
+  m.appendChild(card);card.hidden=false;card.style.setProperty('display','block','important');
+  window.GarangFounderV8?.schedule?.();requestAnimationFrame(()=>window.GarangFounderV8ExactBoard?.schedule?.());return true;
 }
-function onState(event){
-  if(event?.detail?.event!=='workout_saved')return;
-  requestAnimationFrame(()=>renderFromState({force:true}));
-}
+function onState(event){if(event?.detail?.event!=='workout_saved')return;requestAnimationFrame(()=>renderFromState({force:true}));}
 window.addEventListener('garang:state-updated',onState,{passive:true});
 window.addEventListener('garang:route-completed',()=>{if(main()?.dataset?.garangScreen==='workout'&&lastSessionId)renderFromState();},{passive:true});
 window.GarangFounderV8WorkoutSummary=Object.freeze({version:VERSION,render:renderFromState});
