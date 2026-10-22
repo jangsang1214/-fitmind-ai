@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.6';
+const VERSION='8.0.7';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function mountMenu(){
@@ -59,6 +59,8 @@ function ownNavGeometry(nav){
   nav.style.setProperty('grid-template-columns','repeat(4,minmax(0,1fr))','important');
   nav.style.setProperty('gap','3px','important');
   nav.style.setProperty('contain','none','important');
+  nav.style.setProperty('backdrop-filter','none','important');
+  nav.style.setProperty('-webkit-backdrop-filter','none','important');
   nav.style.setProperty('z-index','2500','important');
 }
 function fix(){
@@ -77,9 +79,10 @@ function fix(){
   if(!nav)return;
   nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');ownNavGeometry(nav);
   [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(button=>{
-    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');button.style.setProperty('width','auto','important');button.style.setProperty('min-width','0','important');
+    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');button.style.setProperty('width','auto','important');button.style.setProperty('min-width','0','important');button.style.setProperty('font-size','0','important');
+    [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z]/.test(node.nodeValue||''))node.nodeValue='';});
     const iconSlot=button.querySelector(':scope > span:first-child');if(iconSlot){iconSlot.style.setProperty('font-size','0','important');iconSlot.style.setProperty('line-height','0','important');if(!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';}
-    const label=button.querySelector('b');const next=labels[button.dataset.page];if(label&&next&&label.textContent!==next)label.textContent=next;
+    const label=button.querySelector('b');const next=labels[button.dataset.page];if(label){if(next&&label.textContent!==next)label.textContent=next;label.style.setProperty('font-size','10px','important');label.style.setProperty('line-height','1.05','important');}
   });
   [...nav.querySelectorAll('button:not([data-garang-primary-nav="1"])')].forEach(button=>{button.hidden=true;button.setAttribute('aria-hidden','true');button.style.setProperty('display','none','important');});
   if(nav!==observedNav){
