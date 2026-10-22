@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.3';
+const VERSION='8.0.4';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function mountMenu(){
@@ -57,7 +57,9 @@ function fix(){
   if(!nav)return;
   nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');
   [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(button=>{
-    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');const label=button.querySelector('b');const next=labels[button.dataset.page];if(label&&next&&label.textContent!==next)label.textContent=next;
+    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');
+    const iconSlot=button.querySelector(':scope > span:first-child');if(iconSlot&&!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';
+    const label=button.querySelector('b');const next=labels[button.dataset.page];if(label&&next&&label.textContent!==next)label.textContent=next;
   });
   [...nav.querySelectorAll('button:not([data-garang-primary-nav="1"])')].forEach(button=>{button.hidden=true;button.setAttribute('aria-hidden','true');button.style.setProperty('display','none','important');});
   if(nav!==observedNav){
