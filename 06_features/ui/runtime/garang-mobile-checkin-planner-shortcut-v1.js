@@ -8,7 +8,7 @@
 (() => {
 'use strict';
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
-const VERSION='1.0.1';
+const VERSION='1.0.2';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
 let bodyObserver=null,mainObserver=null,observedMain=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
@@ -92,6 +92,25 @@ html body #main[data-garang-screen="today"] [data-garang-planner-shortcut="1"]:f
   outline:1px solid rgba(120,170,153,.78)!important;
   outline-offset:1px!important;
 }
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-planner-shortcut="1"]{
+  position:absolute!important;
+  top:12px!important;
+  right:12px!important;
+  z-index:4!important;
+  width:44px!important;
+  height:44px!important;
+  margin:0!important;
+  border:1px solid var(--g8-line)!important;
+  background:rgba(255,255,255,.92)!important;
+  color:var(--g8-ink)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-planner-shortcut="1"]::before{
+  width:28px!important;
+  height:28px!important;
+  border:0!important;
+  color:var(--g8-ink)!important;
+  font:500 18px/1 system-ui,sans-serif!important;
+}
 @media(min-width:720px){
   html body>.modal-backdrop.garang-checkin-modal-backdrop{place-items:center!important;padding:24px!important}
   html body>.modal-backdrop.garang-checkin-modal-backdrop>.modal.garang-checkin-modal{max-height:88svh!important}
@@ -122,13 +141,13 @@ function ensurePlannerShortcut(){
   const m=main();
   if(!m||m.dataset.garangScreen!=='today')return false;
   const head=m.querySelector('.gpc-today-plan-head');
-  if(!head)return false;
-
   const existing=[...m.querySelectorAll('[data-garang-planner-shortcut="1"]')];
-  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing[0]||null;
+  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing.find(node=>node.closest('.g8-action-card'))||existing[0]||null;
   for(const duplicate of existing){if(duplicate!==button)duplicate.remove();}
 
+  if(button?.closest('.g8-action-card'))button.dataset.garangPlannerShortcutHost='founder';
   if(!button){
+    if(!head)return false;
     button=document.createElement('button');
     button.type='button';
     button.dataset.garangPlannerShortcut='1';
@@ -137,7 +156,7 @@ function ensurePlannerShortcut(){
     const label=head.querySelector(':scope > span');
     if(label)label.insertAdjacentElement('afterend',button);
     else head.prepend(button);
-  }else if(button.dataset.garangPlannerShortcutHost!=='founder'&&button.parentElement!==head){
+  }else if(button.dataset.garangPlannerShortcutHost!=='founder'&&head&&button.parentElement!==head){
     const label=head.querySelector(':scope > span');
     if(label)label.insertAdjacentElement('afterend',button);
     else head.prepend(button);
