@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261022-founder-v8.12',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261022-founder-v8.13',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -10,7 +10,7 @@ function loadScript(src,attrs={}){return new Promise(resolve=>{if(document.query
 async function load(){
  addStyle('./03_styles/runtime/garang-founder-v8-foundation.css?v=8.5.0','founder-v8-foundation');
  addStyle('./03_styles/runtime/garang-founder-v8-screens.css?v=8.5.0','founder-v8-screens');
- addStyle('./03_styles/runtime/garang-founder-v8-exact-board.css?v=8.5.1','founder-v8-exact-board');
+ addStyle('./03_styles/runtime/garang-founder-v8-exact-board.css?v=8.5.2','founder-v8-exact-board');
  await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.2.0',{garangPresentationV4:'1',garangAnatomyExactV2:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-chrome-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8ChromeGuard:'1'});
