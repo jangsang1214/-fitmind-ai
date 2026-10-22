@@ -54,6 +54,25 @@ html.garang-v8 .g8-section-head{display:flex;align-items:center;justify-content:
 html.garang-v8 .g8-section-head h2{font-size:16px;margin:0;font-weight:800;letter-spacing:-.025em}
 html.garang-v8 .g8-section-head button{border:0;background:transparent;min-height:38px;padding:0 4px;color:var(--g8-muted);font-size:12px}
 html.garang-v8 .g8-hide{display:none!important}
+
+/* v8 owns the chrome: override higher-specificity legacy shell rules. */
+html.garang-v8 body #appView>header.topbar,
+html.garang-v8 body #appView>.topbar{display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important}
+html.garang-v8 body #appView>nav#bottomNav.bottom-nav,
+html.garang-v8 body nav#bottomNav.bottom-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:min(calc(100% - 20px),410px)!important;max-width:410px!important;height:var(--g8-nav-h)!important;min-height:var(--g8-nav-h)!important;padding:6px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important;background:rgba(255,255,255,.96)!important;border:1px solid rgba(206,199,190,.9)!important;border-radius:22px!important;box-shadow:0 14px 32px rgba(26,21,17,.12)!important;backdrop-filter:blur(18px)!important}
+html.garang-v8 body #bottomNav.bottom-nav>button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;width:auto!important;min-width:0!important;min-height:56px!important;padding:4px!important;border:0!important;border-radius:16px!important;background:transparent!important;color:#8b8782!important;box-shadow:none!important}
+html.garang-v8 body #bottomNav.bottom-nav>button.active,
+html.garang-v8 body #bottomNav.bottom-nav>button[aria-current="page"]{background:var(--g8-red-soft)!important;color:var(--g8-red)!important}
+html.garang-v8 body #bottomNav.bottom-nav>button>b{font-size:0!important;line-height:1!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="today"]>b:after{content:"오늘";font-size:10px}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="workout"]>b:after{content:"기록";font-size:10px}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="coach"]>b:after{content:"코치";font-size:10px}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-page="progress"]>b:after{content:"누적";font-size:10px}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtf-action .gtdw-plan{display:none!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtf-action .gtdw-start,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"]{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:50px!important;margin:0!important;padding:0 16px!important;border:0!important;border-radius:13px!important;background:var(--g8-ink)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:none!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtdw-start span{color:#fff!important}
+
 @media(max-width:360px){:root{--g8-pad:12px}.g8-screen-title{font-size:27px!important}}
 @media(min-width:700px){html.garang-v8 #main{box-shadow:0 0 0 1px rgba(20,20,20,.035)}}
 @media(prefers-reduced-motion:reduce){html.garang-v8 *,html.garang-v8 *:before,html.garang-v8 *:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
