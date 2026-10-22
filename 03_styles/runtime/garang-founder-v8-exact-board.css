@@ -85,3 +85,81 @@ html.garang-v8 body #workoutExecutionRest [data-rest-time],html.garang-v8 body #
  .g8-workout .g8-exercise-visual{height:194px!important}
  html.garang-v8 body #main .g8-workout #workoutSetDetails .execution-set-row{grid-template-columns:21px 1fr 1fr 58px 52px 42px!important;gap:3px!important}
 }
+
+/* v8.6 parity closure — remove the remaining board-level mismatches without adding another presentation layer. */
+html.garang-v8 body #bottomNav.bottom-nav>button>b{font-size:10px!important;line-height:1.05!important;color:inherit!important;white-space:nowrap!important}
+html.garang-v8 body #bottomNav.bottom-nav>button>b:after{content:none!important;display:none!important}
+html.garang-v8 body #bottomNav.bottom-nav>button{overflow:hidden!important}
+
+/* Workout LIVE: the current set becomes the single dominant task and owns a full-width completion action. */
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .execution-set-row.current-set{grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) 28px!important;grid-template-areas:"idx prev target target" "weight weight reps reps" "done done done done"!important;gap:7px 8px!important;min-height:174px!important;padding:11px 10px 10px!important;background:#fff!important;box-shadow:inset 0 0 0 1px var(--g8-line)!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-set-index{grid-area:idx!important;align-self:center!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-previous{grid-area:prev!important;text-align:left!important;font-size:11px!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-target{grid-area:target!important;text-align:right!important;font-size:11px!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-weight-field{grid-area:weight!important;display:block!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-reps-field{grid-area:reps!important;display:block!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-field>span{margin:0 0 5px!important;font-size:10px!important;color:var(--g8-muted)!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set .execution-field input{height:52px!important;min-height:52px!important;border-radius:13px!important;font-size:22px!important;background:#f8f6f2!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set [data-execution-set-complete]{grid-area:done!important;width:100%!important;height:52px!important;min-height:52px!important;margin-top:1px!important;border-radius:13px!important;background:var(--g8-ink)!important;color:#fff!important;font-size:0!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .current-set [data-execution-set-complete]:after{content:"세트 완료"!important;font-size:14px!important;font-weight:850!important;letter-spacing:-.02em!important}
+html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .execution-set-row:not(.current-set){min-height:45px!important;opacity:.62!important}
+html.garang-v8 body #main .g8-workout .g8-workout-header #finishWorkoutSession.g8-finish-top{background:transparent!important;color:var(--g8-red)!important;border:0!important;box-shadow:none!important}
+html.garang-v8 body #main .g8-workout .g8-record-finish #finishWorkoutSession{background:var(--g8-ink)!important;color:#fff!important;border-color:var(--g8-ink)!important;box-shadow:none!important}
+
+/* Rest: next-set context must read as a real decision surface, not footer metadata. */
+html.garang-v8 body #workoutExecutionRest .g8-rest-next-card{width:min(100%,350px)!important;margin:18px 0 0!important;padding:15px 16px!important;border:1px solid var(--g8-line)!important;border-radius:18px!important;background:#fff!important;color:var(--g8-ink)!important;text-align:left!important;box-shadow:none!important}
+html.garang-v8 body #workoutExecutionRest .g8-rest-next-card>span{display:block!important;margin-bottom:5px!important;color:var(--g8-red)!important;font-size:10px!important;font-weight:850!important;letter-spacing:.07em!important}
+html.garang-v8 body #workoutExecutionRest .g8-rest-next-card>strong{display:block!important;font-size:20px!important;letter-spacing:-.035em!important}
+html.garang-v8 body #workoutExecutionRest .g8-rest-next-card>small{display:block!important;margin-top:5px!important;color:var(--g8-muted)!important;font-size:11px!important;line-height:1.4!important}
+
+/* Summary: 2x2 truth metrics first, anatomy/body response second, interpretation and next action last. */
+.g8-summary{padding-top:18px!important}
+.g8-summary .workout-result-card{padding:14px!important}
+.g8-summary .g8-result-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0 0 9px!important}
+.g8-summary .g8-result-metrics>div{min-height:78px!important;padding:12px!important;border:1px solid var(--g8-line)!important;border-radius:16px!important;background:#f8f6f2!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important}
+.g8-summary .g8-result-metrics span{color:var(--g8-muted)!important;font-size:10px!important}
+.g8-summary .g8-result-metrics strong{color:var(--g8-ink)!important;font-size:21px!important;line-height:1.05!important;letter-spacing:-.04em!important}
+.g8-summary .g8-result-exercises{padding:11px 12px!important;border-radius:14px!important;background:#fff!important;border:1px solid var(--g8-line)!important}
+.g8-summary .g8-result-exercises span{display:block!important;color:var(--g8-muted)!important;font-size:10px!important;margin-bottom:4px!important}
+.g8-summary .g8-result-exercises strong{display:block!important;color:var(--g8-ink)!important;font-size:14px!important;line-height:1.35!important}
+.g8-summary-anatomy{height:150px!important;margin:8px 0!important;border:1px solid var(--g8-line)!important;border-radius:18px!important;background:linear-gradient(145deg,#eee9e2,#f8f5f0)!important}
+.g8-summary-anatomy svg{height:210px!important;transform:translateY(24px)!important;filter:drop-shadow(0 14px 16px rgba(20,18,16,.12))!important}
+.g8-summary-next{margin-top:8px!important}.g8-summary-next strong{display:block!important;font-size:15px!important}.g8-summary-next p{margin:5px 0 0!important;color:var(--g8-muted)!important;font-size:11px!important;line-height:1.45!important}
+
+/* Coach: use content-led conversation geometry; no full-screen black dead canvas. */
+html.garang-v8 body #main.g8-screen-coach .g8-coach{min-height:0!important;display:block!important}
+html.garang-v8 body #main.g8-screen-coach .g8-coach>.g8-screen-header{margin-bottom:10px!important}
+html.garang-v8 body #main.g8-screen-coach .g8-coach .garang-coach-v2,html.garang-v8 body #main.g8-screen-coach .g8-coach .g2-shell,html.garang-v8 body #main.g8-screen-coach .g8-coach .coach-shell{display:flex!important;flex-direction:column!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important;border:1px solid var(--g8-line)!important;border-radius:20px!important;background:#fff!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-coach .g2-chat-head{display:none!important}
+html.garang-v8 body #main.g8-screen-coach .g2-chat-scroll{position:static!important;flex:0 1 auto!important;min-height:220px!important;max-height:370px!important;padding:14px!important;overflow:auto!important;background:#fff!important;color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-coach .g2-message{max-width:86%!important;margin:0 0 9px!important;padding:11px 12px!important;border:1px solid var(--g8-line)!important;border-radius:15px!important;background:#f4f1ec!important;color:var(--g8-ink)!important;box-shadow:none!important;font-size:13px!important;line-height:1.5!important}
+html.garang-v8 body #main.g8-screen-coach .g2-message.user,html.garang-v8 body #main.g8-screen-coach .g2-message[data-role="user"]{margin-left:auto!important;background:var(--g8-ink)!important;color:#fff!important;border-color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-coach .g4-prompt-strip{position:static!important;display:flex!important;gap:6px!important;margin:0!important;padding:8px 10px!important;overflow-x:auto!important;border-top:1px solid var(--g8-line)!important;background:#fff!important}
+html.garang-v8 body #main.g8-screen-coach .g4-prompt-strip button{flex:0 0 auto!important;min-height:38px!important;padding:0 12px!important;border:1px solid var(--g8-line)!important;border-radius:999px!important;background:#f8f6f2!important;color:var(--g8-ink-2)!important;font-size:11px!important;white-space:nowrap!important}
+html.garang-v8 body #main.g8-screen-coach .g2-composer-wrap{position:static!important;inset:auto!important;margin:0!important;padding:8px 10px 10px!important;border-top:1px solid var(--g8-line)!important;background:#fff!important}
+html.garang-v8 body #main.g8-screen-coach .g2-composer{min-height:50px!important;border:1px solid var(--g8-line-strong)!important;border-radius:14px!important;background:#f8f6f2!important;color:var(--g8-ink)!important;box-shadow:none!important}
+
+/* History: light-neutral chronology with one clear surface hierarchy instead of a dark dashboard. */
+html.garang-v8 body #main.g8-screen-history .g8-history-content{gap:10px!important;background:transparent!important;color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content>*{margin:0!important;padding:14px!important;border:1px solid var(--g8-line)!important;border-radius:20px!important;background:#fff!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content :where(section,article,[class*="card"],[class*="panel"]){border-color:var(--g8-line)!important;background:transparent!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content :where(h1,h2,h3,h4,p,strong,b,span,small,label){color:inherit!important;text-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content small,html.garang-v8 body #main.g8-screen-history .g8-history-content .muted{color:var(--g8-muted)!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content button{border:1px solid var(--g8-line)!important;background:#f8f6f2!important;color:var(--g8-ink-2)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-history .g8-history-content button.active,html.garang-v8 body #main.g8-screen-history .g8-history-content button[aria-selected="true"]{background:var(--g8-ink)!important;color:#fff!important;border-color:var(--g8-ink)!important}
+
+/* Settings: one grouped white list, compact controls, no stacked black card soup. */
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content{gap:0!important;overflow:hidden!important;border:1px solid var(--g8-line)!important;border-radius:20px!important;background:#fff!important;color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content>*{margin:0!important;padding:14px!important;border:0!important;border-bottom:1px solid var(--g8-line)!important;border-radius:0!important;background:transparent!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content>*:last-child{border-bottom:0!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content :where(section,article,[class*="card"],[class*="panel"]){background:transparent!important;color:var(--g8-ink)!important;border-color:var(--g8-line)!important;box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content :where(h1,h2,h3,h4,p,strong,b,span,small,label){color:inherit!important;text-shadow:none!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content small,html.garang-v8 body #main.g8-screen-settings .g8-settings-content .muted{color:var(--g8-muted)!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content input,html.garang-v8 body #main.g8-screen-settings .g8-settings-content select{min-height:44px!important;border:1px solid var(--g8-line)!important;border-radius:12px!important;background:#f8f6f2!important;color:var(--g8-ink)!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content button{box-shadow:none!important}
+html.garang-v8 body #main.g8-screen-settings .g8-settings-content .primary,html.garang-v8 body #main.g8-screen-settings .g8-settings-content button[type="submit"]{background:var(--g8-ink)!important;color:#fff!important;border-color:var(--g8-ink)!important}
+
+@media(max-width:360px){
+ html.garang-v8 body #main.g8-live-mode .g8-workout #workoutSetDetails .execution-set-row.current-set{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 24px!important;min-height:168px!important;padding-inline:8px!important}
+ html.garang-v8 body #main.g8-screen-coach .g2-chat-scroll{min-height:200px!important;max-height:330px!important}
+}
