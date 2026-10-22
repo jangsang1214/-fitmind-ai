@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.8';
+const VERSION='8.0.9';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -90,13 +90,13 @@ function fix(){
     button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');button.style.setProperty('width','auto','important');button.style.setProperty('min-width','0','important');button.style.setProperty('font-size','0','important');
     [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z]/.test(node.nodeValue||''))node.nodeValue='';});
     const iconSlot=button.querySelector(':scope > span:first-child');if(iconSlot){iconSlot.style.setProperty('font-size','0','important');iconSlot.style.setProperty('line-height','0','important');if(!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';}
-    const label=button.querySelector('b');const next=labels[button.dataset.page];if(label){if(next&&label.textContent!==next)label.textContent=next;label.style.setProperty('font-size','10px','important');label.style.setProperty('line-height','1.05','important');}
+    const label=button.querySelector('b');const next=document.documentElement.lang==='en'?({today:'Today',log:'Record',coach:'Coach',progress:'Progress'}[button.dataset.page]):labels[button.dataset.page];if(label){if(next&&label.textContent!==next)label.textContent=next;label.style.setProperty('font-size','10px','important');label.style.setProperty('line-height','1.05','important');}
   });
   [...nav.querySelectorAll('button:not([data-garang-primary-nav="1"])')].forEach(button=>{button.hidden=true;button.setAttribute('aria-hidden','true');button.style.setProperty('display','none','important');});
   if(nav!==observedNav){
     navObserver?.disconnect();observedNav=nav;
-    navObserver=new MutationObserver(records=>{if(records.some(r=>r.type==='attributes'||r.addedNodes?.length||r.removedNodes?.length))schedule();});
-    navObserver.observe(nav,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style','class','aria-hidden']});
+    navObserver=new MutationObserver(records=>{if(records.some(r=>r.type==='characterData'||r.type==='attributes'||r.addedNodes?.length||r.removedNodes?.length))schedule();});
+    navObserver.observe(nav,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','style','class','aria-hidden']});
   }
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(fix);}
