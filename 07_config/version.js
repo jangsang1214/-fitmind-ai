@@ -12,7 +12,7 @@ async function load(){
  addStyle('./03_styles/runtime/garang-founder-v8-screens.css?v=8.5.0','founder-v8-screens');
  addStyle('./03_styles/runtime/garang-founder-v8-exact-board.css?v=8.5.1','founder-v8-exact-board');
  await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.2.0',{garangPresentationV4:'1',garangAnatomyExactV2:'1'});
- await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.0',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
+ await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-chrome-guard.js?v=8.0.0',{garangPresentationV4:'1',garangFounderV8ChromeGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8.js?v=8.0.3',{garangPresentationV4:'1',garangFounderV8:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-exact-board.js?v=8.5.1',{garangPresentationV4:'1',garangFounderV8ExactBoard:'1'});
