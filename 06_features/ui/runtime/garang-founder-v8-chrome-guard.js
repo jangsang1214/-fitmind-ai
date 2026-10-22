@@ -2,12 +2,13 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.2';
-let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,queued=false;
+const VERSION='8.0.3';
+let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function mountMenu(){
   const main=document.getElementById('main');
-  const menu=document.getElementById('menuBtn');
+  const menu=menuOwner||document.getElementById('menuBtn');
+  if(menu&&!menuOwner)menuOwner=menu;
   if(!main||!menu||main.dataset.garangScreen!=='today')return;
   const host=main.querySelector('.g8-today .g8-today-header-actions');
   if(!host)return;
@@ -43,6 +44,7 @@ function observeMain(main){
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
+  if(!menuOwner)menuOwner=document.getElementById('menuBtn');
   const main=document.getElementById('main');
   observeMain(main);
   mountMenu();
