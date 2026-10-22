@@ -1,5 +1,6 @@
 /* GARANG Founder v8.5 exact-board composition. 390px is the binding visual reference. */
 :root{--g8-pad:16px;--g8-nav-h:66px;--g8-radius:20px;--g8-shadow:0 14px 34px rgba(22,18,14,.065)}
+html.garang-v8 #appView{display:block!important;grid-template-rows:none!important;grid-template-columns:none!important;padding:0!important;margin:0!important;background:var(--g8-bg)!important;min-height:100dvh!important}
 html.garang-v8 #main{width:min(100%,430px)!important;max-width:430px!important;padding:calc(8px + env(safe-area-inset-top)) 16px calc(86px + env(safe-area-inset-bottom))!important}
 html.garang-v8 .g8-screen{max-width:398px;margin:0 auto}
 
