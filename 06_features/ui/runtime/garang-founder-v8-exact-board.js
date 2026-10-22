@@ -1,7 +1,7 @@
 /* GARANG Founder reference-lock v9 — binding showcase composition without cloning canonical owners. */
 (()=>{
 'use strict';
-if(window.GarangFounderV8ExactBoard?.version==='9.0.1')return;
+if(window.GarangFounderV8ExactBoard?.version==='9.0.2')return;
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 const $$=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
 let queued=false,navObserver=null;
@@ -17,30 +17,69 @@ function show(node,display){if(!node)return;node.hidden=false;node.removeAttribu
 function ensureStyle(){
  if($('#garang-founder-showcase-v9-runtime'))return;
  const style=document.createElement('style');style.id='garang-founder-showcase-v9-runtime';style.textContent=`
- html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+ html.garang-v8 body #main[data-garang-screen="today"] #garangTodayFlow.g8-canonical-today-owner,
+ html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{min-height:0!important;height:auto!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;overflow:visible!important}
  html.garang-v8 body #main[data-garang-screen="today"]:before,html.garang-v8 body #main[data-garang-screen="today"]:after,
- html.garang-v8 body #main[data-garang-screen="today"]>.g8-today:before,html.garang-v8 body #main[data-garang-screen="today"]>.g8-today:after{content:none!important;display:none!important;background:none!important}
+ html.garang-v8 body #main[data-garang-screen="today"] #garangTodayFlow.g8-canonical-today-owner:before,
+ html.garang-v8 body #main[data-garang-screen="today"] #garangTodayFlow.g8-canonical-today-owner:after,
+ html.garang-v8 body #main[data-garang-screen="today"]>.g8-today:before,html.garang-v8 body #main[data-garang-screen="today"]>.g8-today:after{content:none!important;display:none!important;background:none!important;background-image:none!important;box-shadow:none!important}
  html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"],
  html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtdw-start{background:#111!important;background-image:none!important;border-color:#111!important;color:#fff!important;box-shadow:none!important}
+ html.garang-v8 body #main[data-garang-screen="today"] .g9-showcase-build [data-garang-planner-shortcut="1"]:before,
+ html.garang-v8 body #main[data-garang-screen="today"] .g9-showcase-build [data-garang-planner-shortcut="1"]:after{content:none!important;display:none!important}
  html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header #finishWorkoutSession.g8-finish-top{background:transparent!important;background-image:none!important;border:0!important;color:#ef263d!important;box-shadow:none!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page]>b{font-size:0!important;line-height:1!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="today"]>b:after{content:"오늘"!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="log"]>b:after{content:"기록"!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="coach"]>b:after{content:"코치"!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="progress"]>b:after{content:"누적"!important}
+ html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page]>b:after{display:block!important;font:750 10px/1.05 "Noto Sans KR",Inter,system-ui,sans-serif!important;letter-spacing:-.03em!important;color:inherit!important}
  `;document.head.appendChild(style);
 }
 function lockNav(){
  const nav=$('#bottomNav');if(!nav)return;
- const labels=['오늘','기록','코치','누적'];
- $$(':scope > button',nav).slice(0,4).forEach((button,i)=>{
+ imp(nav,'backdrop-filter','none');imp(nav,'-webkit-backdrop-filter','none');
+ const ko=document.documentElement.lang!=='en';
+ const labels=ko?['오늘','기록','코치','누적']:['Today','Record','Coach','Progress'];
+ $$(':scope > button[data-garang-primary-nav="1"]',nav).slice(0,4).forEach((button,i)=>{
   const b=$('b',button);if(b&&b.textContent!==labels[i])b.textContent=labels[i];
-  $$(':scope > span',button).forEach(span=>{if(!span.querySelector('svg,img')&&span.textContent.trim())span.textContent=''});
+  [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z가-힣]/.test(node.nodeValue||''))node.nodeValue=''});
+  const icon=$(':scope > span:first-child',button);if(icon&&!icon.querySelector('svg,img')&&icon.textContent.trim())icon.textContent='';
   button.dataset.garangReferenceLabel=labels[i];
  });
- if(!navObserver){navObserver=new MutationObserver(()=>schedule());navObserver.observe(nav,{childList:true,subtree:true,characterData:true})}
+ if(!navObserver){navObserver=new MutationObserver(()=>schedule());navObserver.observe(nav,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden','style','class','aria-hidden']})}
+}
+function neutralizeTodayOwner(flow){
+ if(!flow)return;
+ show(flow,'block');
+ [['width','100%'],['min-width','0'],['min-height','0'],['height','auto'],['max-height','none'],['margin','0'],['padding','0'],['border','0'],['border-radius','0'],['background','transparent'],['background-image','none'],['box-shadow','none'],['overflow','visible'],['filter','none']].forEach(([p,v])=>imp(flow,p,v));
+}
+function ensureBuild(shell,flow){
+ if(!shell)return null;
+ let build=$('.g8-secondary-action',shell);
+ const planner=$('[data-garang-planner-shortcut="1"]',shell)||$('[data-garang-planner-shortcut="1"]',flow||document);
+ if(!build&&planner){
+  build=document.createElement('section');build.className='g8-secondary-action g9-showcase-build';build.dataset.garangReferenceBuild='1';
+  build.innerHTML='<span class="g8-kicker">BUILD</span><strong>오늘 계획</strong><p>오늘 계획을 조정하고 다음 행동을 준비합니다.</p>';
+  const state=$('.g8-state-card',shell);if(state)shell.insertBefore(build,state);else shell.appendChild(build);
+ }
+ if(build){
+  build.classList.add('g9-showcase-build');
+  if(planner&&planner.parentElement!==build)build.appendChild(planner);
+  if(planner){
+   planner.textContent=document.documentElement.lang==='en'?'Open plan':'계획 열기';planner.setAttribute('aria-label',planner.textContent);planner.title=planner.textContent;
+   [['position','absolute'],['left','14px'],['right','14px'],['bottom','10px'],['top','auto'],['width','auto'],['min-width','0'],['height','38px'],['min-height','38px'],['margin','0'],['padding','0 14px'],['border','0'],['border-radius','10px'],['background','#f1efeb'],['color','#111'],['font-size','12px'],['font-weight','750'],['box-shadow','none']].forEach(([p,v])=>imp(planner,p,v));
+  }
+ }
+ return build;
 }
 function today(){
  const shell=$('.g8-today');if(!shell)return;
+ const flow=$('#garangTodayFlow');neutralizeTodayOwner(flow);
  $$('.g8-today-anatomy',shell).forEach(n=>n.remove());
  $('.g8-decision-card',shell)?.classList.add('g9-showcase-hero');
  $('.g8-action-card',shell)?.classList.add('g9-showcase-train');
- $('.g8-secondary-action',shell)?.classList.add('g9-showcase-build');
+ const build=ensureBuild(shell,flow);build?.classList.add('g9-showcase-build');
  $('.g8-state-card',shell)?.classList.add('g9-showcase-state');
  const start=$('.g8-action-card [data-garang-direct-workout-start="1"],.g8-action-card .gtdw-start',shell);
  if(start){imp(start,'background','#111');imp(start,'background-image','none');imp(start,'border-color','#111');imp(start,'color','#fff');imp(start,'box-shadow','none');}
@@ -100,5 +139,5 @@ function reconcile(){
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;reconcile();setTimeout(reconcile,80)})}
 ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:workout-session-started','garang:workout-session-ended','garang:workout-set-rows-rendered','pageshow'].forEach(n=>window.addEventListener(n,schedule,{passive:true}));
 document.addEventListener('click',()=>queueMicrotask(schedule),true);
-window.GarangFounderV8ExactBoard=Object.freeze({schedule,reconcile,version:'9.0.1'});schedule();
+window.GarangFounderV8ExactBoard=Object.freeze({schedule,reconcile,version:'9.0.2'});schedule();
 })();
