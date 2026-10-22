@@ -1,13 +1,41 @@
-/* GARANG Founder v8 chrome guard — only owns legacy topbar visibility and the four primary nav buttons. */
+/* GARANG Founder v8 chrome guard — owns legacy topbar suppression plus canonical Menu and four primary nav buttons. */
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.0';
+const VERSION='8.0.1';
 let observer=null,observedNav=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
+function mountMenu(){
+  const main=document.getElementById('main');
+  const menu=document.getElementById('menuBtn');
+  if(!main||!menu||main.dataset.garangScreen!=='today')return;
+  const host=main.querySelector('.g8-today .g8-today-header-actions');
+  if(!host)return;
+  if(menu.parentElement!==host)host.appendChild(menu);
+  menu.hidden=false;
+  menu.removeAttribute('aria-hidden');
+  menu.removeAttribute('tabindex');
+  menu.style.setProperty('display','grid','important');
+  menu.style.setProperty('place-items','center','important');
+  menu.style.setProperty('visibility','visible','important');
+  menu.style.setProperty('opacity','1','important');
+  menu.style.setProperty('pointer-events','auto','important');
+  menu.style.setProperty('width','40px','important');
+  menu.style.setProperty('min-width','40px','important');
+  menu.style.setProperty('height','40px','important');
+  menu.style.setProperty('min-height','40px','important');
+  menu.style.setProperty('margin','0','important');
+  menu.style.setProperty('padding','0','important');
+  menu.style.setProperty('border','1px solid var(--g8-line)','important');
+  menu.style.setProperty('border-radius','999px','important');
+  menu.style.setProperty('background','#fff','important');
+  menu.style.setProperty('color','var(--g8-ink)','important');
+  menu.style.setProperty('box-shadow','none','important');
+}
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
+  mountMenu();
   const app=document.getElementById('appView');
   const top=app?.querySelector(':scope > .topbar');
   if(top){top.hidden=true;top.setAttribute('aria-hidden','true');top.style.setProperty('display','none','important');top.style.setProperty('height','0','important');top.style.setProperty('min-height','0','important');top.style.setProperty('margin','0','important');top.style.setProperty('padding','0','important');}
