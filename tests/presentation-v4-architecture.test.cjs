@@ -28,7 +28,7 @@ assert.doesNotMatch(runtime,/replaceChildren\s*\(/,'presentation must not replac
 assert.match(runtime,/q\(m,'\.gtf-decision'\)/,'Today must reuse canonical decision owner');
 assert.match(runtime,/q\(m,'\.gtf-action'\)/,'Today must reuse canonical action owner');
 assert.match(screens,/#workoutExecutionRest/,'Rest presentation must style the canonical timer owner');
-assert.match(runtime,/q\(m,'\.meal-scan-card'\)/,'Nutrition must reuse canonical Meal Scan owner');
+assert.match(runtime,/['"]\.meal-scan-card['"]/,'Nutrition must reuse canonical Meal Scan owner');
 assert.match(runtime,/document\.getElementById\('finishWorkoutSession'\)/,'Record must reuse canonical session finish action');
 assert.match(runtime,/q\(m,'\.body-hero-anatomy'\)/,'Body must preserve the canonical muscle interaction owner');
 assert.match(screens,/\.g8-body-hit-layer/,'Body canonical hit owner must remain interactive above the visible mesh');
