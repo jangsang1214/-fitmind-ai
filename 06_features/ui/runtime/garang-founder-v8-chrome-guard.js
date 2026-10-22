@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.4';
+const VERSION='8.0.5';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function mountMenu(){
@@ -41,6 +41,25 @@ function observeMain(main){
   });
   mainObserver.observe(main,{subtree:true,childList:true});
 }
+function ownNavGeometry(nav){
+  nav.style.setProperty('position','fixed','important');
+  nav.style.setProperty('left','50%','important');
+  nav.style.setProperty('right','auto','important');
+  nav.style.setProperty('top','auto','important');
+  nav.style.setProperty('bottom','calc(8px + env(safe-area-inset-bottom, 0px))','important');
+  nav.style.setProperty('transform','translateX(-50%)','important');
+  nav.style.setProperty('width','min(calc(100% - 20px), 410px)','important');
+  nav.style.setProperty('max-width','410px','important');
+  nav.style.setProperty('height','66px','important');
+  nav.style.setProperty('min-height','66px','important');
+  nav.style.setProperty('margin','0','important');
+  nav.style.setProperty('padding','6px','important');
+  nav.style.setProperty('box-sizing','border-box','important');
+  nav.style.setProperty('grid-template-columns','repeat(4,minmax(0,1fr))','important');
+  nav.style.setProperty('gap','3px','important');
+  nav.style.setProperty('contain','none','important');
+  nav.style.setProperty('z-index','2500','important');
+}
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
@@ -55,9 +74,9 @@ function fix(){
   if(main){main.style.setProperty('margin-top','0','important');main.style.setProperty('top','0','important');main.style.setProperty('transform','none','important');}
   const nav=document.getElementById('bottomNav');
   if(!nav)return;
-  nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');
+  nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');ownNavGeometry(nav);
   [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(button=>{
-    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');
+    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');button.style.setProperty('width','auto','important');button.style.setProperty('min-width','0','important');
     const iconSlot=button.querySelector(':scope > span:first-child');if(iconSlot&&!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';
     const label=button.querySelector('b');const next=labels[button.dataset.page];if(label&&next&&label.textContent!==next)label.textContent=next;
   });
