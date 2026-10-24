@@ -1,7 +1,7 @@
 /* GARANG Founder reference-lock v9 — binding showcase composition without cloning canonical owners. */
 (()=>{
 'use strict';
-if(window.GarangFounderV8ExactBoard?.version==='9.0.3')return;
+if(window.GarangFounderV8ExactBoard?.version==='9.0.4')return;
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 const $$=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
 let queued=false,navObserver=null,mainObserver=null,observedMain=null;
@@ -37,27 +37,24 @@ function ensureStyle(){
  html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>span{font-size:9px!important;line-height:1.2!important;color:#77736d!important;text-align:center!important;white-space:nowrap!important}
  html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>strong{font-size:11px!important;line-height:1.2!important;color:#111!important;text-align:center!important;white-space:nowrap!important}
  html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header #finishWorkoutSession.g8-finish-top{background:transparent!important;background-image:none!important;border:0!important;color:#ef263d!important;box-shadow:none!important}
- html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>span::after{content:none!important;display:none!important;font-size:0!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page]>b{font-size:0!important;line-height:1!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="today"]>b:after{content:"오늘"!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="log"]>b:after{content:"기록"!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="coach"]>b:after{content:"코치"!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page="progress"]>b:after{content:"누적"!important}
- html[lang="ko"].garang-v8 body #bottomNav.bottom-nav>button[data-page]>b:after{display:block!important;font:750 10px/1.05 "Noto Sans KR",Inter,system-ui,sans-serif!important;letter-spacing:-.03em!important;color:inherit!important}
  `;document.head.appendChild(style);
 }
 function lockNav(){
  const nav=$('#bottomNav');if(!nav)return;
  imp(nav,'backdrop-filter','none');imp(nav,'-webkit-backdrop-filter','none');
- const ko=document.documentElement.lang!=='en';
- const labels=ko?['오늘','기록','코치','누적']:['Today','Record','Coach','Progress'];
+ const labels=['오늘','기록','코치','누적'];
  $$(':scope > button[data-garang-primary-nav="1"]',nav).slice(0,4).forEach((button,i)=>{
   const b=$('b',button);if(b&&b.textContent!==labels[i])b.textContent=labels[i];
   [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z가-힣]/.test(node.nodeValue||''))node.nodeValue=''});
   const icon=$(':scope > span:first-child',button);if(icon&&!icon.querySelector('svg,img')&&icon.textContent.trim())icon.textContent='';
-  button.dataset.garangReferenceLabel=labels[i];
+  if(button.dataset.garangReferenceLabel!==labels[i])button.dataset.garangReferenceLabel=labels[i];
  });
- if(!navObserver){navObserver=new MutationObserver(()=>schedule());navObserver.observe(nav,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden','style','class','aria-hidden']})}
+ if(!navObserver){
+  navObserver=new MutationObserver(records=>{
+   if(records.some(record=>record.type==='characterData'||(record.type==='childList'&&(record.addedNodes?.length||record.removedNodes?.length))))schedule();
+  });
+  navObserver.observe(nav,{childList:true,subtree:true,characterData:true});
+ }
 }
 function neutralizeTodayOwner(flow){
  if(!flow)return;
@@ -77,7 +74,7 @@ function ensureBuild(shell,flow){
   build.classList.add('g9-showcase-build');
   if(planner&&planner.parentElement!==build)build.appendChild(planner);
   if(planner){
-   planner.textContent=document.documentElement.lang==='en'?'Open plan':'계획 열기';planner.setAttribute('aria-label',planner.textContent);planner.title=planner.textContent;
+   planner.textContent='계획 열기';planner.setAttribute('aria-label',planner.textContent);planner.title=planner.textContent;
    [['position','absolute'],['left','14px'],['right','14px'],['bottom','10px'],['top','auto'],['width','auto'],['min-width','0'],['height','38px'],['min-height','38px'],['margin','0'],['padding','0 14px'],['border','0'],['border-radius','10px'],['background','#f1efeb'],['color','#111'],['font-size','12px'],['font-weight','750'],['box-shadow','none']].forEach(([p,v])=>imp(planner,p,v));
   }
  }
@@ -171,5 +168,5 @@ function reconcile(){
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;reconcile();setTimeout(reconcile,80)})}
 ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:workout-session-started','garang:workout-session-ended','garang:workout-set-rows-rendered','pageshow'].forEach(n=>window.addEventListener(n,schedule,{passive:true}));
 document.addEventListener('click',()=>queueMicrotask(schedule),true);
-window.GarangFounderV8ExactBoard=Object.freeze({schedule,reconcile,version:'9.0.3'});schedule();
+window.GarangFounderV8ExactBoard=Object.freeze({schedule,reconcile,version:'9.0.4'});schedule();
 })();
