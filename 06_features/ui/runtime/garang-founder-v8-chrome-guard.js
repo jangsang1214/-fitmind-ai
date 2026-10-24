@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.1.1';
+const VERSION='8.1.2';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -105,6 +105,10 @@ function ownNavButton(button){
   button.style.setProperty('background',active?'var(--g8-red-soft)':'transparent','important');
   button.style.setProperty('color',active?'var(--g8-red)':'#817c77','important');
 }
+function isFocusedWorkout(main){
+  if(!main||main.dataset.garangScreen!=='workout')return false;
+  return main.classList.contains('g8-live-mode')||main.classList.contains('g8-record-mode')||main.classList.contains('g8-summary-mode')||!!document.querySelector('#workoutExecutionRest.active:not([hidden])');
+}
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
@@ -120,6 +124,12 @@ function fix(){
   if(main){main.style.setProperty('margin-top','0','important');main.style.setProperty('top','0','important');main.style.setProperty('transform','none','important');}
   const nav=document.getElementById('bottomNav');
   if(!nav)return;
+  if(isFocusedWorkout(main)){
+    nav.hidden=true;
+    nav.setAttribute('aria-hidden','true');
+    nav.style.setProperty('display','none','important');
+    return;
+  }
   nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');ownNavGeometry(nav);
   [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(ownNavButton);
   [...nav.querySelectorAll('button:not([data-garang-primary-nav="1"])')].forEach(button=>{button.hidden=true;button.setAttribute('aria-hidden','true');button.style.setProperty('display','none','important');});
@@ -130,7 +140,7 @@ function fix(){
   }
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(fix);}
-['garang:screen-rendered','garang:route-completed','garang:state-updated','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
+['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-session-started','garang:workout-session-ended','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
 document.addEventListener('DOMContentLoaded',schedule,{once:true});schedule();
 window.GarangFounderV8ChromeGuard=Object.freeze({version:VERSION,schedule,reconcile:fix});
 })();
