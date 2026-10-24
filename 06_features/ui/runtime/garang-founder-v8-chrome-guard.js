@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.1.2';
+const VERSION='8.1.3';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -23,6 +23,9 @@ html.garang-v8 body #bottomNav.bottom-nav>button[data-page="coach"]>b::after{con
 html.garang-v8 body #bottomNav.bottom-nav>button[data-page="progress"]>b::after{content:"누적"!important}
 html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"].active,
 html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"][aria-current="page"]{background:var(--g8-red-soft)!important;color:var(--g8-red)!important}
+html.garang-v8 body #main[data-garang-screen="today"] #garangTodayFlow.g8-canonical-today-owner>:not(.g8-today){display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>span,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>strong{max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:keep-all!important;text-overflow:clip!important}
 `;
   document.head.appendChild(style);
 }
