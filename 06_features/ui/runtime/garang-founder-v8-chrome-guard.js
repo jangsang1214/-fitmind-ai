@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.1.5';
+const VERSION='8.1.6';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -28,6 +28,24 @@ html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-
 html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>strong{max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:keep-all!important;text-overflow:clip!important}
 
 html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition details:not([open])>:not(summary){display:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-detail-summary-body{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;padding:12px 0 0!important;min-height:0!important;background:transparent!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main{display:grid!important;grid-template-columns:1fr auto!important;grid-template-areas:"eyebrow value" "copy value"!important;align-items:end!important;gap:3px 12px!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:12px!important;border:1px solid #e7e3dd!important;border-radius:14px!important;background:#f7f5f1!important;background-image:none!important;box-shadow:none!important;color:#111!important;transform:none!important;filter:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main:before,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main:after{content:none!important;display:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main>.eyebrow{grid-area:eyebrow!important;color:#ef263d!important;font-size:9px!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main>strong{grid-area:value!important;position:static!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;color:#111!important;font-size:27px!important;line-height:1!important;font-weight:850!important;transform:none!important;filter:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main>strong small{color:#77736d!important;font-size:10px!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-main>span:not(.eyebrow){grid-area:copy!important;color:#77736d!important;font-size:10px!important;line-height:1.35!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-macros,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-secondary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;width:100%!important;margin:0!important;padding:0!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-macros>span,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-secondary>span{display:flex!important;min-width:0!important;min-height:50px!important;align-items:center!important;justify-content:center!important;gap:4px!important;padding:8px!important;border:1px solid #e7e3dd!important;border-radius:12px!important;background:#fff!important;color:#111!important;font-size:11px!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-macros b,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-secondary b{color:#77736d!important;font-size:9px!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-progress{display:grid!important;gap:6px!important;width:100%!important;margin:0!important;padding:0!important;background:transparent!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-progress>i{display:block!important;position:relative!important;width:100%!important;height:6px!important;min-height:6px!important;margin:0!important;padding:0!important;border:0!important;border-radius:999px!important;background:#ece8e2!important;background-image:none!important;box-shadow:none!important;overflow:hidden!important;transform:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-progress>i>em{display:block!important;height:100%!important;margin:0!important;border-radius:999px!important;background:#ef263d!important;box-shadow:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .nutrition-summary-progress>small{color:#77736d!important;font-size:9px!important;line-height:1.35!important}
 html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-surface{background:transparent!important;color:#111!important;border-color:#e7e3dd!important}
 html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-head h2,
 html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-option-copy strong,
