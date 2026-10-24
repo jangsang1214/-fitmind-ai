@@ -73,6 +73,45 @@ html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtf-actio
 html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"]{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:50px!important;margin:0!important;padding:0 16px!important;border:0!important;border-radius:13px!important;background:var(--g8-ink)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:none!important}
 html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtdw-start span{color:#fff!important}
 
+/* Final v8 ownership for legacy card skins. Route-agnostic inside the v8 shells. */
+html.garang-v8 body #main .g8-nutrition .card,
+html.garang-v8 body #main .g8-nutrition .meal-scan-card,
+html.garang-v8 body #main .g8-nutrition .nutrition-quick-summary,
+html.garang-v8 body #main .g8-nutrition .adaptive-nutrition-card,
+html.garang-v8 body #main .g8-nutrition .recent-meals-card{border:1px solid var(--g8-line)!important;background:#fff!important;background-image:none!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main .g8-nutrition .card h1,
+html.garang-v8 body #main .g8-nutrition .card h2,
+html.garang-v8 body #main .g8-nutrition .card h3,
+html.garang-v8 body #main .g8-nutrition .card strong,
+html.garang-v8 body #main .g8-nutrition .card b{color:var(--g8-ink)!important}
+html.garang-v8 body #main .g8-nutrition .card p,
+html.garang-v8 body #main .g8-nutrition .card small,
+html.garang-v8 body #main .g8-nutrition .card .muted{color:var(--g8-muted)!important}
+html.garang-v8 body #main .g8-nutrition .meal-scan-empty,
+html.garang-v8 body #main .g8-nutrition .nutrition-summary-macros span,
+html.garang-v8 body #main .g8-nutrition .meal-scan-result-row{border-color:var(--g8-line)!important;background:var(--g8-surface-soft)!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main .g8-history-content .card,
+html.garang-v8 body #main .g8-history-content .g7-calendar,
+html.garang-v8 body #main .g8-history-content .g7-history-summary,
+html.garang-v8 body #main .g8-history-content .g7-history-day-summary{border:1px solid var(--g8-line)!important;background:#fff!important;background-image:none!important;color:var(--g8-ink)!important;box-shadow:none!important}
+html.garang-v8 body #main .g8-history-content .g7-history-summary,
+html.garang-v8 body #main .g8-history-content .g7-history-day-summary{background:var(--g8-surface-soft)!important}
+html.garang-v8 body #main .g8-history-content .g7-history-tabs button,
+html.garang-v8 body #main .g8-history-content .g7-calendar button,
+html.garang-v8 body #main .g8-history-content .g7-calendar-grid span,
+html.garang-v8 body #main .g8-history-content .g7-history-day{border-color:var(--g8-line)!important;background:transparent!important;color:var(--g8-muted)!important;box-shadow:none!important}
+html.garang-v8 body #main .g8-history-content .g7-history-tabs button.active{background:var(--g8-red-soft)!important;color:var(--g8-red)!important;border-color:#ffc5cd!important}
+html.garang-v8 body #main .g8-history-content .g7-calendar-grid .today{background:var(--g8-ink)!important;color:#fff!important}
+html.garang-v8 body #main .g8-history-content .g7-calendar-grid .active{background:var(--g8-red-soft)!important;color:var(--g8-red)!important}
+html.garang-v8 body #main .g8-history-content .card h1,
+html.garang-v8 body #main .g8-history-content .card h2,
+html.garang-v8 body #main .g8-history-content .card h3,
+html.garang-v8 body #main .g8-history-content .card strong,
+html.garang-v8 body #main .g8-history-content .card b{color:var(--g8-ink)!important}
+html.garang-v8 body #main .g8-history-content .card p,
+html.garang-v8 body #main .g8-history-content .card small,
+html.garang-v8 body #main .g8-history-content .card .muted{color:var(--g8-muted)!important}
+
 @media(max-width:360px){:root{--g8-pad:12px}.g8-screen-title{font-size:27px!important}}
 @media(min-width:700px){html.garang-v8 #main{box-shadow:0 0 0 1px rgba(20,20,20,.035)}}
 @media(prefers-reduced-motion:reduce){html.garang-v8 *,html.garang-v8 *:before,html.garang-v8 *:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
