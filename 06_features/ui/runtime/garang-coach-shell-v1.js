@@ -8,7 +8,7 @@
 const main=document.getElementById('main');if(!main||window.__garangCoachShellV1)return;
 window.__garangCoachShellV1=true;
 const STYLE_ID='garang-coach-shell-v1-style',ACTIVE_ATTR='data-garang-coach-shell';
-let queued=false,syncing=false,manualSyncTimer=null;
+let queued=false,syncing=false,manualSyncTimer=null,settleTimer=null;
 const isKo=()=>document.documentElement.lang!=='en';
 const ROUTES=[['today','Today','오늘'],['workout','Workout','운동'],['nutrition','Nutrition','식단'],['running','Running','러닝'],['body','Body','체성분'],['planner','Planner','계획'],['progress','Progress','분석'],['profile','Profile','프로필'],['onboarding','Modeling','모델링']];
 function setText(el,value){if(el&&el.textContent!==value)el.textContent=value;}
@@ -20,7 +20,8 @@ html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach{min-height:0!important;h
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .garang-coach-v2{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-chat-main{height:auto!important;min-height:0!important;overflow:visible!important}
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-chat-scroll{height:auto!important;min-height:150px!important;max-height:410px!important;flex:0 1 auto!important;overflow-y:auto!important}
-html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer-wrap{position:relative!important;inset:auto!important;margin:0!important}
+html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer-wrap{position:relative!important;inset:auto!important;margin:0!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
+html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
 }
 `;document.head.appendChild(style);}
 function closeSidebar(root){root?.classList.remove('sidebar-open');}
@@ -48,11 +49,21 @@ function ensureHeader(root){
  const head=root.querySelector('.g2-chat-head');if(!head)return;head.querySelectorAll('.g2-home-exit').forEach(button=>button.remove());const menu=head.querySelector('.g2-mobile-threads');setAttr(menu,'aria-label',isKo()?'전체 기능 및 대화 목록':'App menu and conversations');setAttr(menu,'title',isKo()?'전체 메뉴':'Menu');
  let settings=head.querySelector('.g5-settings');if(!settings){settings=document.createElement('button');settings.type='button';settings.className='g5-settings';settings.textContent='⚙';head.appendChild(settings);}setAttr(settings,'aria-label',isKo()?'설정':'Settings');setAttr(settings,'title',isKo()?'설정':'Settings');if(settings.dataset.g5Bound!=='1'){settings.dataset.g5Bound='1';settings.addEventListener('click',()=>navigate('settings',root));}setText(head.querySelector('.g2-head-new'),isKo()?'＋ 새 대화':'+ New chat');
 }
+function applyFounderGeometry(root){
+ if(!root||!document.documentElement.classList.contains('garang-v8'))return;
+ const set=(node,key,value)=>node?.style.setProperty(key,value,'important');
+ set(root,'display','grid');set(root,'grid-template-columns','1fr');set(root,'width','100%');set(root,'max-width','100%');set(root,'min-width','0');set(root,'height','auto');set(root,'min-height','0');set(root,'overflow','visible');
+ const chat=root.querySelector('.g2-chat-main');set(chat,'display','grid');set(chat,'grid-template-rows','auto auto auto');set(chat,'width','100%');set(chat,'max-width','100%');set(chat,'min-width','0');set(chat,'height','auto');set(chat,'overflow','visible');
+ const scroll=root.querySelector('.g2-chat-scroll');set(scroll,'width','100%');set(scroll,'max-width','100%');set(scroll,'min-width','0');set(scroll,'height','auto');set(scroll,'min-height','150px');set(scroll,'max-height','410px');set(scroll,'overflow-y','auto');
+ const wrap=root.querySelector('.g2-composer-wrap');set(wrap,'width','100%');set(wrap,'max-width','100%');set(wrap,'min-width','0');set(wrap,'position','relative');set(wrap,'inset','auto');set(wrap,'box-sizing','border-box');
+ const composer=root.querySelector('.g2-composer');set(composer,'width','100%');set(composer,'max-width','100%');set(composer,'min-width','0');set(composer,'box-sizing','border-box');
+ const strip=root.querySelector('.g4-prompt-strip');set(strip,'width','100%');set(strip,'max-width','100%');set(strip,'min-width','0');set(strip,'box-sizing','border-box');
+}
 function syncShell(){
  queued=false;if(syncing)return;syncing=true;
- try{ensureStyle();const root=main.querySelector('.garang-coach-v2'),html=document.documentElement;if(!root){html.removeAttribute(ACTIVE_ATTR);return;}html.setAttribute(ACTIVE_ATTR,'active');ensureCombinedSidebar(root);ensureHeader(root);}finally{syncing=false;}
+ try{ensureStyle();const root=main.querySelector('.garang-coach-v2'),html=document.documentElement;if(!root){html.removeAttribute(ACTIVE_ATTR);return;}html.setAttribute(ACTIVE_ATTR,'active');ensureCombinedSidebar(root);ensureHeader(root);applyFounderGeometry(root);clearTimeout(settleTimer);settleTimer=setTimeout(()=>applyFounderGeometry(root),0);}finally{syncing=false;}
 }
-function queueSync(){if(queued||syncing)return;queued=true;requestAnimationFrame(syncShell);}
-window.addEventListener('garang:screen-rendered',queueSync);window.addEventListener('garang:coach-mounted',queueSync);window.addEventListener('garang:state-hydrated',queueSync);new MutationObserver(queueSync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.1',sync:queueSync});queueSync();
+function queueSync(){if(queued||syncing)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(syncShell));}
+window.addEventListener('garang:screen-rendered',queueSync);window.addEventListener('garang:coach-mounted',queueSync);window.addEventListener('garang:state-hydrated',queueSync);window.addEventListener('garang:coach-message-rendered',queueSync);new MutationObserver(queueSync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.2',sync:queueSync});queueSync();
 })();
