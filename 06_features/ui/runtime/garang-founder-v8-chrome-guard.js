@@ -2,14 +2,24 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.0.9';
+const VERSION='8.1.0';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
   if(document.getElementById('garangFounderV8ChromeStyle'))return;
   const style=document.createElement('style');
   style.id='garangFounderV8ChromeStyle';
-  style.textContent='html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]::before,html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]::after{content:none!important;display:none!important}';
+  style.textContent=`
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]::before,
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]::after,
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>span:first-child::after,
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>b::before,
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>b::after{content:none!important;display:none!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>span:first-child{font-size:0!important;line-height:0!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]>b{display:block!important;font-size:10px!important;line-height:1.05!important;color:inherit!important;white-space:nowrap!important}
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"].active,
+html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"][aria-current="page"]{background:var(--g8-red-soft)!important;color:var(--g8-red)!important}
+`;
   document.head.appendChild(style);
 }
 function mountMenu(){
@@ -70,6 +80,31 @@ function ownNavGeometry(nav){
   nav.style.setProperty('-webkit-backdrop-filter','none','important');
   nav.style.setProperty('z-index','2500','important');
 }
+function ownNavButton(button){
+  button.hidden=false;
+  button.removeAttribute('aria-hidden');
+  button.removeAttribute('tabindex');
+  button.style.setProperty('display','flex','important');
+  button.style.setProperty('visibility','visible','important');
+  button.style.setProperty('opacity','1','important');
+  button.style.setProperty('pointer-events','auto','important');
+  button.style.setProperty('width','auto','important');
+  button.style.setProperty('min-width','0','important');
+  button.style.setProperty('font-size','0','important');
+  [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z]/.test(node.nodeValue||''))node.nodeValue='';});
+  const iconSlot=button.querySelector(':scope > span:first-child');
+  if(iconSlot){
+    iconSlot.style.setProperty('font-size','0','important');
+    iconSlot.style.setProperty('line-height','0','important');
+    if(!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';
+  }
+  const label=button.querySelector('b');
+  const next=labels[button.dataset.page];
+  if(label){if(next&&label.textContent!==next)label.textContent=next;label.style.setProperty('font-size','10px','important');label.style.setProperty('line-height','1.05','important');}
+  const active=button.classList.contains('active')||button.getAttribute('aria-current')==='page';
+  button.style.setProperty('background',active?'var(--g8-red-soft)':'transparent','important');
+  button.style.setProperty('color',active?'var(--g8-red)':'#817c77','important');
+}
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
@@ -86,17 +121,12 @@ function fix(){
   const nav=document.getElementById('bottomNav');
   if(!nav)return;
   nav.hidden=false;nav.removeAttribute('aria-hidden');nav.style.setProperty('display','grid','important');ownNavGeometry(nav);
-  [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(button=>{
-    button.hidden=false;button.removeAttribute('aria-hidden');button.removeAttribute('tabindex');button.style.setProperty('display','flex','important');button.style.setProperty('visibility','visible','important');button.style.setProperty('opacity','1','important');button.style.setProperty('pointer-events','auto','important');button.style.setProperty('width','auto','important');button.style.setProperty('min-width','0','important');button.style.setProperty('font-size','0','important');
-    [...button.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE&&/[A-Za-z]/.test(node.nodeValue||''))node.nodeValue='';});
-    const iconSlot=button.querySelector(':scope > span:first-child');if(iconSlot){iconSlot.style.setProperty('font-size','0','important');iconSlot.style.setProperty('line-height','0','important');if(!iconSlot.children.length&&/[A-Za-z]/.test(iconSlot.textContent||''))iconSlot.textContent='';}
-    const label=button.querySelector('b');const next=document.documentElement.lang==='en'?({today:'Today',log:'Record',coach:'Coach',progress:'Progress'}[button.dataset.page]):labels[button.dataset.page];if(label){if(next&&label.textContent!==next)label.textContent=next;label.style.setProperty('font-size','10px','important');label.style.setProperty('line-height','1.05','important');}
-  });
+  [...nav.querySelectorAll('button[data-garang-primary-nav="1"]')].forEach(ownNavButton);
   [...nav.querySelectorAll('button:not([data-garang-primary-nav="1"])')].forEach(button=>{button.hidden=true;button.setAttribute('aria-hidden','true');button.style.setProperty('display','none','important');});
   if(nav!==observedNav){
     navObserver?.disconnect();observedNav=nav;
-    navObserver=new MutationObserver(records=>{if(records.some(r=>r.type==='characterData'||r.type==='attributes'||r.addedNodes?.length||r.removedNodes?.length))schedule();});
-    navObserver.observe(nav,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','style','class','aria-hidden']});
+    navObserver=new MutationObserver(records=>{if(records.some(r=>r.type==='characterData'||(r.type==='childList'&&(r.addedNodes?.length||r.removedNodes?.length))))schedule();});
+    navObserver.observe(nav,{subtree:true,childList:true,characterData:true});
   }
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(fix);}
