@@ -1,0 +1,50 @@
+/* GARANG Founder v6 refinement — temporary consolidation target before merge. */
+#main.g6-screen-today #garangTodayFlow>:not(.g5-today-date):not(.gtf-decision):not(.g6-live-anatomy):not(.g5-today-workout-card):not(.g5-today-status):not(.g5-today-coach):not([data-garang-bottom-checkin="1"]){display:none!important}
+#main.g6-screen-today .g5-today-workout-card .gtdw-row,#main.g6-screen-today .g5-today-workout-card .gtdw-plan,#main.g6-screen-today .g5-today-workout-card .gtdw-loading{display:none!important}
+#main.g6-screen-today .g5-today-workout-card>.gtf-action{display:flex!important;flex-direction:column!important;justify-content:flex-end!important}
+#main.g6-screen-today .g5-today-workout-card .gtf-next,#main.g6-screen-today .g5-today-workout-card [data-garang-direct-workout-start="1"]{margin-top:auto!important}
+
+#main.g6-screen-workout:has(.workout-session-bar.is-live):not(.g5-workout-summary-mode) .workout-session-bar{position:absolute!important;right:15px!important;top:8px!important;z-index:8!important;width:auto!important;min-width:72px!important;margin:0!important;padding:5px 8px!important;border:1px solid rgba(116,120,255,.18)!important;border-radius:999px!important;background:#0b1017!important;opacity:.92!important}
+#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-session-bar>*:not(#workoutExecutionState):not(#workoutExecutionElapsed){display:none!important}
+#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-session-bar #workoutExecutionState,#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-session-bar #workoutExecutionElapsed{display:inline!important;font-size:7.5px!important;color:#9297ff!important}
+#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-exercise-head,#main.g6-screen-workout:has(.workout-session-bar.is-live) .one-rm-panel,#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-fields,#main.g6-screen-workout:has(.workout-session-bar.is-live) .execution-compact-fields,#main.g6-screen-workout:has(.workout-session-bar.is-live) .set-detail-toolbar,#main.g6-screen-workout:has(.workout-session-bar.is-live) #addWorkout,#main.g6-screen-workout:has(.workout-session-bar.is-live) #clearWorkoutDraft,#main.g6-screen-workout:has(.workout-session-bar.is-live) .workout-live-pr{display:none!important}
+#main.g6-screen-workout:has(.workout-session-bar.is-live) .g5-live-meta{display:none!important}
+#main.g6-screen-workout .g6-set-context{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0 0 9px!important}
+#main.g6-screen-workout .g6-set-context>div{min-height:63px!important;padding:10px 12px!important;border:1px solid rgba(255,255,255,.05)!important;border-radius:11px!important;background:#0d1219!important}
+#main.g6-screen-workout .g6-set-context span{display:block!important;margin-bottom:6px!important;font-size:8px!important;color:#7a8493!important}
+#main.g6-screen-workout .g6-set-context strong{display:block!important;font-size:16px!important;font-weight:760!important;color:#f4f6f9!important}
+#main.g6-screen-workout .g6-set-context .target{border-color:rgba(111,115,255,.16)!important}
+#main.g6-screen-workout .g6-set-context .target strong{color:#c9cbff!important}
+#main.g6-screen-workout.g5-record-list-mode .g6-set-context{display:none!important}
+#main.g6-screen-workout.g5-workout-summary-mode .workout-session-bar,#main.g6-screen-workout.g5-workout-summary-mode .g5-workout-header,#main.g6-screen-workout.g5-workout-summary-mode .g5-workout-title,#main.g6-screen-workout.g5-workout-summary-mode .g5-workout-tags,#main.g6-screen-workout.g5-workout-summary-mode .g5-workout-media,#main.g6-screen-workout.g5-workout-summary-mode .g5-set-progress,#main.g6-screen-workout.g5-workout-summary-mode .g5-live-meta,#main.g6-screen-workout.g5-workout-summary-mode .g6-set-context{display:none!important}
+body:has(#main.g6-screen-workout.g5-workout-summary-mode) #toast{display:none!important}
+#main.g6-screen-workout .g6-record-tabs{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:0!important;margin:0 0 12px!important;border-bottom:1px solid rgba(255,255,255,.07)!important}
+#main.g6-screen-workout .g6-record-tabs span{display:grid!important;place-items:center!important;min-height:38px!important;color:#707987!important;font-size:10px!important;font-weight:700!important}
+#main.g6-screen-workout .g6-record-tabs span.active{color:#f2f4f8!important;box-shadow:inset 0 -2px 0 #7377ff!important}
+#main.g6-screen-workout.g5-record-list-mode .g5-workout-title{margin-bottom:4px!important}
+#main.g6-screen-workout.g5-record-list-mode .g5-workout-tags{display:none!important}
+#main.g6-screen-workout .g6-record-finish-host{display:none!important;margin:12px 0 0!important}
+#main.g6-screen-workout.g5-record-list-mode .g6-record-finish-host{display:block!important}
+#main.g6-screen-workout.g5-record-list-mode .g6-record-finish-host #finishWorkoutSession{display:grid!important;place-items:center!important;width:100%!important;min-height:54px!important;margin:0!important;padding:0 16px!important;border:0!important;border-radius:12px!important;background:linear-gradient(135deg,#7478ff,#4f60f1)!important;color:#fff!important;font-size:14px!important;font-weight:840!important;box-shadow:0 14px 30px rgba(75,81,235,.28)!important;visibility:visible!important;opacity:1!important}
+
+#main.g6-screen-nutrition>:not(.g4-nutrition-shell):not(.page-head){display:none!important}
+#main.g6-screen-nutrition .g4-nutrition-shell>.adaptive-nutrition-card{order:5!important}
+#main.g6-screen-nutrition .g4-nutrition-shell>.recent-meals-card{order:4!important}
+#main.g6-screen-nutrition .g4-nutrition-shell>.meal-scan-card{order:1!important}
+#main.g6-screen-nutrition .g4-nutrition-shell>.g5-nutrition-summary{order:2!important}
+#main.g6-screen-nutrition .g4-nutrition-shell>.nutrition-quick-summary{order:3!important}
+
+#main.g6-screen-coach .g4-coach-shell .g2-chat-head{display:none!important}
+#main.g6-screen-coach .g4-coach-shell .g2-chat-main{height:100%!important;min-height:0!important;padding-top:0!important}
+#main.g6-screen-coach .g4-coach-shell .g2-chat-scroll{padding-top:10px!important}
+
+body.garang-founder-rebuild-v6>.g4-rest-portal::before{grid-row:1!important;align-self:center!important;justify-self:center!important;margin:0!important;text-align:center!important;writing-mode:horizontal-tb!important}
+body.garang-founder-rebuild-v6>.g4-rest-portal>div:first-of-type{grid-row:2!important;display:grid!important;place-items:center!important;width:100%!important;text-align:center!important}
+body.garang-founder-rebuild-v6>.g4-rest-portal>label{display:none!important}
+body.garang-founder-rebuild-v6>.g4-rest-portal #skipWorkoutRest{min-width:132px!important;padding:0 20px!important}
+
+#main.g6-screen-settings .settings-stack>.card{border-radius:9px!important}
+#main.g6-screen-settings .settings-title{padding:8px 11px!important}
+#main.g6-screen-settings .settings-row{min-height:44px!important;padding:7px 11px!important}
+#main.g6-screen-settings .settings-row strong{font-size:9.5px!important}
+#main.g6-screen-settings .settings-row span{font-size:7px!important}

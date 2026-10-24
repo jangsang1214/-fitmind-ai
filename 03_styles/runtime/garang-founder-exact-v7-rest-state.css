@@ -1,0 +1,10 @@
+/* GARANG Founder Exact v7 — Rest visibility/progress is owned by canonical timer state. */
+body.garang-exact-v7 > .g4-rest-portal[hidden]{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.garang-exact-v7 > .g4-rest-portal:not([hidden]){display:grid!important;visibility:visible!important;pointer-events:auto!important}
+body.garang-exact-v7 > .g4-rest-portal>div:first-of-type{background:radial-gradient(circle at center,#05070b 63%,transparent 64%),conic-gradient(#7378ff 0 var(--g7-rest-pct,0%),#1d2432 var(--g7-rest-pct,0%) 100%)!important;box-shadow:0 0 0 1px rgba(255,255,255,.025),0 0 72px rgba(91,95,255,.09)!important}
+body.garang-exact-v7 > .g4-rest-portal #workoutExecutionRestClock{font-variant-numeric:tabular-nums!important}
+body.garang-exact-v7 > .g4-rest-portal #skipWorkoutRest{display:grid!important;place-items:center!important;min-width:154px!important;min-height:44px!important;margin:0!important;padding:0 18px!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:999px!important;background:#0b0f15!important;color:#c9d0da!important;font-size:10px!important;font-weight:720!important}
+body.garang-exact-v7 > .g4-rest-portal .g5-rest-next-card{display:grid!important;gap:3px!important;width:100%!important;max-width:350px!important;margin:18px 0 0!important;padding:13px 15px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:12px!important;background:#10151d!important}
+body.garang-exact-v7 > .g4-rest-portal .g5-rest-next-card span{color:#777fff!important;font-size:8px!important;font-weight:820!important;letter-spacing:.08em!important}
+body.garang-exact-v7 > .g4-rest-portal .g5-rest-next-card strong{color:#fff!important;font-size:14px!important;font-weight:820!important}
+body.garang-exact-v7 > .g4-rest-portal .g5-rest-next-card small{color:#9099a7!important;font-size:9px!important}

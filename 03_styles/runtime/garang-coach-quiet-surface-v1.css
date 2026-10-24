@@ -209,3 +209,116 @@
     font-size:9px!important;
   }
 }
+
+/* Founder v8 owns Coach geometry and light-neutral chrome. Keep the legacy Coach engine, but retire legacy positioning. */
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .garang-coach-v2{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-chat-main,
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-chat-scroll,
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-composer-wrap,
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-composer,
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g4-prompt-strip{
+  left:auto!important;
+  right:auto!important;
+  inset-inline:auto!important;
+  transform:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-chat-head{
+  min-height:54px!important;
+  padding:6px 8px!important;
+  border:1px solid #e7e3dd!important;
+  border-radius:16px 16px 0 0!important;
+  background:#fff!important;
+  background-image:none!important;
+  color:#111!important;
+  box-shadow:none!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-mobile-threads,
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g5-settings{
+  border:1px solid #e7e3dd!important;
+  background:#f7f5f1!important;
+  color:#111!important;
+  box-shadow:none!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-head-new{
+  border:1px solid #e7e3dd!important;
+  background:#fff!important;
+  color:#111!important;
+  box-shadow:none!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g4-prompt-strip.gcs-quiet-strip{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:8px 0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g4-prompt-strip.gcs-quiet-strip>button[data-garang-prompt-id],
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g4-prompt-strip.gcs-quiet-strip .gcl-context-actions button[data-gcl-coach]{
+  border-color:#e7e3dd!important;
+  background:#f7f5f1!important;
+  color:#4f4a45!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-composer-wrap{
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+  padding:0 0 2px!important;
+  overflow:visible!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-composer{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 44px!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:56px!important;
+  margin:0!important;
+  padding:6px!important;
+  border:1px solid #e7e3dd!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-composer textarea{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:10px 11px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:#f7f5f1!important;
+  color:#111!important;
+  box-shadow:none!important;
+  resize:none!important;
+}
+html.garang-v8[data-garang-coach-shell="active"] body #appView #main[data-garang-screen="coach"] .g8-coach .g2-send{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:#111!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}

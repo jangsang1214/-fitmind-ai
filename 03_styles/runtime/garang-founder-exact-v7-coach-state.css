@@ -1,0 +1,18 @@
+/* GARANG Founder Exact v7 — canonical Coach conversation density. */
+#main.g7-screen-coach{padding:0 0 74px!important;overflow:hidden!important}
+#main.g7-screen-coach .g7-coach-page{display:flex!important;flex-direction:column!important;min-height:calc(100dvh - 126px)!important;border:0!important;border-radius:0!important;background:#05070b!important}
+#main.g7-screen-coach .g2-chat-sidebar{display:none!important}
+#main.g7-screen-coach .g2-chat-head{flex:0 0 auto!important;display:grid!important;grid-template-columns:42px 1fr 42px!important;align-items:center!important;min-height:58px!important;padding:6px 12px!important;border-bottom:1px solid rgba(255,255,255,.055)!important;background:#05070b!important}
+#main.g7-screen-coach .g2-chat-head-copy{grid-column:2!important;text-align:center!important}
+#main.g7-screen-coach .g2-chat-head-copy b{display:block!important;color:#f4f5f8!important;font-size:12px!important;font-weight:780!important}
+#main.g7-screen-coach .g2-chat-head-copy span{display:block!important;margin-top:2px!important;color:#747d8b!important;font-size:7px!important}
+#main.g7-screen-coach .g2-chat-scroll{flex:1 1 auto!important;min-height:0!important;padding:14px 14px 12px!important;background:#05070b!important;overflow-y:auto!important}
+#main.g7-screen-coach .g2-message{max-width:86%!important;margin-bottom:9px!important;padding:9px 11px!important;border:1px solid rgba(255,255,255,.045)!important;border-radius:12px!important;background:#11161e!important;color:#e7e9ee!important;font-size:10px!important;line-height:1.55!important;box-shadow:none!important}
+#main.g7-screen-coach .g2-message.user,#main.g7-screen-coach .g2-message[data-role="user"]{margin-left:auto!important;border-color:rgba(111,116,255,.17)!important;background:#252a57!important;color:#fff!important}
+#main.g7-screen-coach .g4-prompt-strip{flex:0 0 auto!important;display:flex!important;gap:6px!important;margin:0!important;padding:7px 11px 6px!important;overflow-x:auto!important;border-top:1px solid rgba(255,255,255,.035)!important;background:#070a0f!important}
+#main.g7-screen-coach .g4-prompt-strip button{flex:0 0 auto!important;min-height:32px!important;padding:0 11px!important;border:1px solid rgba(255,255,255,.07)!important;border-radius:999px!important;background:#10151d!important;color:#aeb6c2!important;font-size:8px!important;white-space:nowrap!important}
+#main.g7-screen-coach .g2-composer-wrap{flex:0 0 auto!important;margin:0!important;padding:6px 10px calc(9px + env(safe-area-inset-bottom,0px))!important;border-top:0!important;background:#070a0f!important}
+#main.g7-screen-coach .g2-composer{min-height:48px!important;border:1px solid rgba(255,255,255,.075)!important;border-radius:13px!important;background:#10151d!important;box-shadow:none!important}
+#main.g7-screen-coach .g4-agent-proposals{margin:8px 0!important;gap:6px!important}
+#main.g7-screen-coach .g4-agent-proposal{padding:10px 11px!important;border-radius:11px!important;background:#0d1218!important}
+@media(max-width:359px){#main.g7-screen-coach .g2-chat-scroll{padding-inline:11px!important}#main.g7-screen-coach .g2-message{max-width:90%!important}}

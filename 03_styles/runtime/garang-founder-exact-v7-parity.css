@@ -1,0 +1,92 @@
+/* GARANG Founder Exact v7 — parity pass. Consolidate into base before merge. */
+/* Workout: the execution surface, not setup/search, owns the viewport once LIVE. */
+#main.g7-screen-workout .g7-execution-stage{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+#main.g7-screen-workout .g7-execution-stage #workoutSetDetails{display:grid!important;width:100%!important;gap:8px!important;margin:0!important;padding:0!important}
+#main.g7-screen-workout.g7-live-mode .g7-execution-stage .execution-set-row{display:none!important}
+#main.g7-screen-workout.g7-live-mode .g7-execution-stage .execution-set-row.current-set{display:grid!important}
+#main.g7-screen-workout.g7-live-mode .current-set .g7-stepper-field{position:relative!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) 34px!important;align-items:center!important;gap:4px!important;min-height:82px!important;padding:23px 8px 8px!important}
+#main.g7-screen-workout.g7-live-mode .current-set .g7-stepper-field>span:first-child{position:absolute!important;top:8px!important;left:0!important;right:0!important;display:block!important;text-align:center!important;color:#798392!important;font-size:8px!important;font-weight:720!important}
+#main.g7-screen-workout.g7-live-mode .current-set .g7-stepper-field input{grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;padding:0!important;text-align:center!important;font-size:29px!important;font-weight:760!important;line-height:1!important}
+#main.g7-screen-workout.g7-live-mode .current-set .g7-stepper-button{display:grid!important;place-items:center!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;margin:0!important;padding:0!important;border:0!important;border-radius:9px!important;background:#0b1017!important;color:#d9dde4!important;font-size:20px!important;font-weight:500!important;line-height:1!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.055)!important}
+#main.g7-screen-workout.g7-live-mode .current-set .g7-stepper-button:active{transform:scale(.94)!important;background:#171e2a!important}
+#main.g7-screen-workout.g7-record-mode{padding-top:6px!important}
+#main.g7-screen-workout.g7-record-mode .g7-workout-head{margin-bottom:2px!important}
+#main.g7-screen-workout.g7-record-mode .g7-workout-title{margin:4px 0 2px!important;font-size:20px!important}
+#main.g7-screen-workout.g7-record-mode .g7-record-tabs{margin-top:5px!important}
+#main.g7-screen-workout.g7-record-mode .g7-execution-stage{margin-top:3px!important}
+#main.g7-screen-workout.g7-record-mode .execution-set-row{min-height:68px!important}
+#main.g7-screen-workout.g7-record-mode .g7-record-finish{position:relative!important;z-index:4!important;margin:10px 0 0!important}
+
+/* Summary: nothing from the live session may bleed below the result surface. */
+#main.g7-screen-workout.g7-summary-mode{padding-top:8px!important;padding-bottom:18px!important}
+#main.g7-screen-workout.g7-summary-mode>.g7-summary-shell{display:block!important;min-height:calc(100dvh - 28px)!important}
+#main.g7-screen-workout.g7-summary-mode>.g7-summary-shell~*{display:none!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-head{padding:10px 0 5px!important;margin-bottom:12px!important;text-align:center!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-head h1{font-size:24px!important;font-weight:860!important;letter-spacing:-.055em!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-metrics{gap:7px!important;margin-bottom:9px!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-metrics>div{min-height:72px!important;padding:10px 12px!important;border:1px solid rgba(255,255,255,.05)!important;background:#10151d!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-body{grid-template-columns:minmax(0,1fr) 118px!important;min-height:190px!important;padding:12px 14px!important;background:linear-gradient(145deg,#10161e,#090d13)!important;overflow:hidden!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-body .g7-anatomy{width:118px!important;height:185px!important;transform:scale(1.08)!important;transform-origin:50% 10%!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-analysis{border:1px solid rgba(105,110,255,.12)!important;background:#0f141c!important}
+#main.g7-screen-workout.g7-summary-mode .g7-summary-actions{position:sticky!important;bottom:8px!important;padding-top:7px!important;background:linear-gradient(180deg,transparent,#05070b 30%)!important}
+
+/* Nutrition: logging is the first thing the eye sees. Recommendation is secondary. */
+#main.g7-screen-nutrition .g7-nutrition-shell{display:flex!important;flex-direction:column!important;gap:10px!important}
+#main.g7-screen-nutrition .g7-screen-head{order:0!important}
+#main.g7-screen-nutrition .meal-scan-card{order:1!important;min-height:228px!important;margin:0!important;padding:12px!important;border-radius:14px!important}
+#main.g7-screen-nutrition .meal-scan-card .meal-scan-empty{min-height:190px!important;border:1px solid rgba(255,255,255,.07)!important;border-radius:12px!important;background:radial-gradient(circle at 50% 36%,rgba(92,101,255,.09),transparent 32%),#0b1017!important}
+#main.g7-screen-nutrition .meal-scan-card .meal-scan-empty h3,#main.g7-screen-nutrition .meal-scan-card .meal-scan-empty strong{font-size:18px!important;color:#fff!important}
+#main.g7-screen-nutrition .g7-nutrition-summary{order:2!important}
+#main.g7-screen-nutrition .nutrition-quick-summary{order:3!important}
+#main.g7-screen-nutrition .recent-meals-card{order:4!important}
+#main.g7-screen-nutrition .adaptive-nutrition-card{order:5!important}
+#main.g7-screen-nutrition .g7-next-meal-legacy{display:none!important}
+
+/* Body: board-like dense anatomy stage. */
+#main.g7-screen-body .g7-body-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 104px!important;gap:0!important;min-height:350px!important;padding:4px 5px!important}
+#main.g7-screen-body .g7-body-stage .g7-anatomy{height:336px!important;filter:drop-shadow(0 18px 20px rgba(0,0,0,.65)) contrast(1.08) saturate(1.06)!important}
+#main.g7-screen-body .g7-body-stage .g7-anatomy-front{transform:translateX(4px) scale(1.035)!important;transform-origin:50% 50%!important}
+#main.g7-screen-body .g7-body-stage .g7-anatomy-back{transform:translateX(-4px) scale(1.035)!important;transform-origin:50% 50%!important}
+#main.g7-screen-body .g7-body-bars{gap:10px!important;padding-left:4px!important}
+#main.g7-screen-body .g7-body-metrics{margin-top:8px!important}
+
+/* Coach: remove product chrome and keep conversation first. */
+#main.g7-screen-coach .g7-coach-page .g2-chat-head{min-height:54px!important;padding:7px 10px!important;border-bottom:1px solid rgba(255,255,255,.055)!important}
+#main.g7-screen-coach .g7-coach-page .g2-chat-head .g5-settings,
+#main.g7-screen-coach .g7-coach-page .g2-chat-head .g2-head-new{display:none!important}
+#main.g7-screen-coach .g7-coach-page .g2-chat-head-copy b{font-size:11px!important}
+#main.g7-screen-coach .g7-coach-page .g2-chat-head-copy span{font-size:7px!important;color:#818a98!important}
+#main.g7-screen-coach .g7-coach-page .g2-chat-scroll{padding:10px 14px 12px!important}
+#main.g7-screen-coach .g7-coach-page .g2-message{max-width:88%!important}
+#main.g7-screen-coach .g7-coach-page .g2-composer-wrap{padding:8px 11px 10px!important}
+
+/* History: calendar is the primary surface and recorded days come from repository data. */
+#main.g7-screen-progress .g7-history-tabs{margin:2px 0 12px!important;padding:3px!important;border-radius:10px!important;background:#0c1118!important}
+#main.g7-screen-progress .g7-history-tabs button{min-height:38px!important;border-radius:8px!important;font-size:9px!important}
+#main.g7-screen-progress .g7-calendar{margin:0!important;padding:14px 12px 12px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:13px!important;background:#10151d!important}
+#main.g7-screen-progress .g7-calendar-head{min-height:38px!important;margin-bottom:6px!important}
+#main.g7-screen-progress .g7-calendar-head b{font-size:14px!important;font-weight:820!important}
+#main.g7-screen-progress .g7-calendar-grid{gap:3px!important}
+#main.g7-screen-progress .g7-calendar-grid>span{position:relative!important;display:grid!important;place-items:center!important;min-height:39px!important;border-radius:50%!important;font-size:10px!important;color:#aeb5c0!important}
+#main.g7-screen-progress .g7-calendar-grid>span.dow{min-height:25px!important;color:#626c7a!important;font-size:8px!important}
+#main.g7-screen-progress .g7-calendar-grid>span.today{background:#686eff!important;color:#fff!important;font-weight:850!important}
+#main.g7-screen-progress .g7-calendar-grid>span.has-record:not(.today)::after{content:'';position:absolute!important;left:50%!important;bottom:4px!important;width:3px!important;height:3px!important;transform:translateX(-50%)!important;border-radius:50%!important;background:#7378ff!important}
+#main.g7-screen-progress .g7-history-summary{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important;margin-top:9px!important}
+#main.g7-screen-progress .g7-history-summary>div{min-width:0!important;min-height:67px!important;padding:10px 8px!important;border:1px solid rgba(255,255,255,.05)!important;border-radius:10px!important;background:#0e131a!important}
+#main.g7-screen-progress .g7-history-summary span{display:block!important;color:#777f8c!important;font-size:7.5px!important}
+#main.g7-screen-progress .g7-history-summary strong{display:block!important;margin-top:6px!important;color:#fff!important;font-size:13px!important;white-space:nowrap!important}
+
+/* Settings: target is a compact navigation list; controls appear only after a row is opened. */
+#main.g7-screen-settings .g7-settings-list{display:grid!important;gap:1px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:11px!important;background:#10151d!important;overflow:hidden!important}
+#main.g7-screen-settings .g7-settings-list>.g7-settings-item{margin:0!important;border:0!important;border-radius:0!important;background:#10151d!important;overflow:hidden!important}
+#main.g7-screen-settings .g7-settings-list>.g7-settings-item+.g7-settings-item{border-top:1px solid rgba(255,255,255,.055)!important}
+#main.g7-screen-settings .g7-settings-item-title{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:46px!important;margin:0!important;padding:0 12px!important;border:0!important;background:#10151d!important;color:#eef1f5!important;font-size:10px!important;font-weight:720!important;cursor:pointer!important}
+#main.g7-screen-settings .g7-settings-chevron{margin-left:auto!important;color:#747e8c!important;font-size:20px!important;font-weight:400!important;transform:rotate(0deg)!important;transition:transform .16s ease!important}
+#main.g7-screen-settings .g7-settings-item:not(.g7-settings-open)>*:not(.g7-settings-item-title){display:none!important}
+#main.g7-screen-settings .g7-settings-item.g7-settings-open>.g7-settings-item-title .g7-settings-chevron{transform:rotate(90deg)!important}
+#main.g7-screen-settings .g7-settings-item.g7-settings-open>*:not(.g7-settings-item-title){display:flex!important}
+#main.g7-screen-settings .g7-settings-item.g7-settings-open .settings-row{min-height:42px!important;padding:7px 12px!important}
+#main.g7-screen-settings .g7-settings-profile{margin:2px 0 9px!important;padding:10px 12px!important;border:1px solid rgba(255,255,255,.055)!important;border-radius:11px!important;background:#0d1218!important}
+
+body.garang-exact-v7 #bottomNav button b{font-size:9px!important;letter-spacing:-.02em!important}
+@media(max-width:359px){#main.g7-screen-body .g7-body-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 82px!important}#main.g7-screen-body .g7-body-stage .g7-anatomy{height:304px!important}#main.g7-screen-progress .g7-history-summary{gap:5px!important}#main.g7-screen-progress .g7-history-summary>div{padding:9px 6px!important}}

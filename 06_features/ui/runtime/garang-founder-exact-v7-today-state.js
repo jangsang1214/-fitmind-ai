@@ -1,0 +1,9 @@
+/* GARANG Founder Exact v7 — Today truth/action presentation. */
+(()=>{
+'use strict';
+if(window.__garangExactV7TodayState)return;window.__garangExactV7TodayState=true;
+const q=(r,s)=>r?.querySelector?.(s)||null;
+function state(){try{return window.GarangRepositories?.StateRepository?.read?.()||{}}catch{return{}}}
+function sync(){const m=document.getElementById('main');if(!m||m.dataset.garangScreen!=='today')return;const flow=q(m,'#garangTodayFlow');if(!flow)return;const planner=q(flow,'[data-garang-planner-shortcut="1"]');if(planner)planner.style.setProperty('display','none','important');const coach=q(flow,'.g7-coach'),message=q(coach,'p'),last=(state()?.aiChat||[]).filter(x=>String(x?.role||'').toLowerCase()!=='user').at?.(-1);if(message)message.textContent=String(last?.text||'기록 후 GARANG 해석이 여기에 표시됩니다.');if(coach){coach.setAttribute('role','button');coach.tabIndex=0;coach.onclick=()=>window.GarangRouter?.navigate?.('coach',{source:'today-v7'});coach.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();coach.click();}};}const status=q(flow,'.g7-status'),title=q(status,'.g7-section-title');if(status&&title&&!q(status,':scope > .g7-status-all')){const all=document.createElement('button');all.type='button';all.className='g7-status-all';all.textContent='전체 ›';all.onclick=()=>window.GarangRouter?.navigate?.('progress',{source:'today-status-v7'});title.insertAdjacentElement('afterend',all);}}
+let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;sync();});}['garang:screen-rendered','garang:route-completed','garang:state-updated','pageshow'].forEach(e=>window.addEventListener(e,schedule,{passive:true}));window.GarangFounderExactV7TodayState=Object.freeze({sync:schedule});schedule();
+})();
