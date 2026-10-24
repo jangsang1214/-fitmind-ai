@@ -20,7 +20,7 @@ html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach{min-height:0!important;h
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .garang-coach-v2{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-chat-main{height:auto!important;min-height:0!important;overflow:visible!important}
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-chat-scroll{height:auto!important;min-height:150px!important;max-height:410px!important;flex:0 1 auto!important;overflow-y:auto!important}
-html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer-wrap{position:relative!important;inset:auto!important;margin:0!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
+html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer-wrap{position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;margin:0!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
 html.garang-v8[${ACTIVE_ATTR}="active"] #main .g8-coach .g2-composer{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
 }
 `;document.head.appendChild(style);}
@@ -56,9 +56,9 @@ function applyFounderGeometry(root){
  if(root.dataset.g5SidebarIntent!=='open')root.classList.remove('sidebar-open');
  const set=(node,key,value)=>node?.style.setProperty(key,value,'important');
  set(root,'display','grid');set(root,'grid-template-columns','1fr');set(root,'width','100%');set(root,'max-width','100%');set(root,'min-width','0');set(root,'height','auto');set(root,'min-height','0');set(root,'overflow','visible');
- const chat=root.querySelector('.g2-chat-main');set(chat,'display','grid');set(chat,'grid-template-rows','auto auto auto');set(chat,'width','100%');set(chat,'max-width','100%');set(chat,'min-width','0');set(chat,'height','auto');set(chat,'overflow','visible');
- const scroll=root.querySelector('.g2-chat-scroll');set(scroll,'width','100%');set(scroll,'max-width','100%');set(scroll,'min-width','0');set(scroll,'height','auto');set(scroll,'min-height','150px');set(scroll,'max-height','410px');set(scroll,'overflow-y','auto');
- const wrap=root.querySelector('.g2-composer-wrap');set(wrap,'width','100%');set(wrap,'max-width','100%');set(wrap,'min-width','0');set(wrap,'position','relative');set(wrap,'inset','auto');set(wrap,'box-sizing','border-box');
+ const chat=root.querySelector('.g2-chat-main');set(chat,'display','grid');set(chat,'grid-template-columns','minmax(0,1fr)');set(chat,'grid-template-rows','auto auto auto');set(chat,'width','100%');set(chat,'max-width','100%');set(chat,'min-width','0');set(chat,'height','auto');set(chat,'overflow','visible');
+ const scroll=root.querySelector('.g2-chat-scroll');set(scroll,'grid-column','1 / -1');set(scroll,'width','100%');set(scroll,'max-width','100%');set(scroll,'min-width','0');set(scroll,'height','auto');set(scroll,'min-height','150px');set(scroll,'max-height','410px');set(scroll,'overflow-y','auto');
+ const wrap=root.querySelector('.g2-composer-wrap');set(wrap,'grid-column','1 / -1');set(wrap,'width','100%');set(wrap,'max-width','100%');set(wrap,'min-width','0');set(wrap,'position','relative');set(wrap,'left','auto');set(wrap,'right','auto');set(wrap,'top','auto');set(wrap,'bottom','auto');set(wrap,'inset','auto');set(wrap,'transform','none');set(wrap,'margin','0');set(wrap,'box-sizing','border-box');
  const composer=root.querySelector('.g2-composer');set(composer,'width','100%');set(composer,'max-width','100%');set(composer,'min-width','0');set(composer,'box-sizing','border-box');
  const strip=root.querySelector('.g4-prompt-strip');set(strip,'width','100%');set(strip,'max-width','100%');set(strip,'min-width','0');set(strip,'box-sizing','border-box');
 }
@@ -68,5 +68,5 @@ function syncShell(){
 }
 function queueSync(){if(queued||syncing)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(syncShell));}
 window.addEventListener('garang:screen-rendered',queueSync);window.addEventListener('garang:coach-mounted',queueSync);window.addEventListener('garang:state-hydrated',queueSync);window.addEventListener('garang:coach-message-rendered',queueSync);new MutationObserver(queueSync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.3',sync:queueSync});queueSync();
+window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.0.4',sync:queueSync});queueSync();
 })();
