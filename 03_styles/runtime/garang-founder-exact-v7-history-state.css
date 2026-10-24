@@ -9,3 +9,21 @@
 #main.g7-screen-progress .g7-history-day-summary span{color:#747d8b!important;font-size:8px!important}
 #main.g7-screen-progress .g7-history-day-summary strong{color:#fff!important;font-size:12px!important}
 #main.g7-screen-progress .g7-history-day-summary small{color:#8f98a6!important;font-size:8px!important}
+
+/* Founder v8 owns the visible History presentation. Keep v7 behavior/state, remove its dark visual skin. */
+html.garang-v8 #main.g7-screen-progress .g7-history-tabs button{border:1px solid #e7e3dd!important;background:#fff!important;color:#77736d!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-tabs button.active{border-color:#ffc5cd!important;background:#fff0f2!important;color:#ef263d!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar{border:1px solid #e7e3dd!important;background:#fff!important;box-shadow:none!important;color:#111!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-head,html.garang-v8 #main.g7-screen-progress .g7-calendar-head b{color:#111!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-head button{background:transparent!important;color:#77736d!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-grid span,html.garang-v8 #main.g7-screen-progress .g7-calendar-grid>.g7-history-day{background:transparent!important;color:#6f6a64!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-grid .dow{color:#aaa39a!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-grid .today,html.garang-v8 #main.g7-screen-progress .g7-calendar-grid>.g7-history-day.today{background:#111!important;color:#fff!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-grid .active,html.garang-v8 #main.g7-screen-progress .g7-calendar-grid>.g7-history-day.selected:not(.today){background:#fff0f2!important;color:#ef263d!important;box-shadow:inset 0 0 0 1px #ffc5cd!important}
+html.garang-v8 #main.g7-screen-progress .g7-calendar-grid>.g7-history-day.has-record:not(.today)::after{background:#ef263d!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-summary{border:1px solid #e7e3dd!important;background:#f7f5f1!important;color:#111!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-summary span{color:#77736d!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-summary strong{color:#111!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-day-summary{border:1px solid #e7e3dd!important;background:#f7f5f1!important;box-shadow:none!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-day-summary span,html.garang-v8 #main.g7-screen-progress .g7-history-day-summary small{color:#77736d!important}
+html.garang-v8 #main.g7-screen-progress .g7-history-day-summary strong{color:#111!important}
