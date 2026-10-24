@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.1.3';
+const VERSION='8.1.4';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -112,6 +112,28 @@ function isFocusedWorkout(main){
   if(!main||main.dataset.garangScreen!=='workout')return false;
   return main.classList.contains('g8-live-mode')||main.classList.contains('g8-record-mode')||main.classList.contains('g8-summary-mode')||!!document.querySelector('#workoutExecutionRest.active:not([hidden])');
 }
+function rgb(value){const m=String(value||'').match(/rgba?\((\d+(?:\.\d+)?)[, ]+(\d+(?:\.\d+)?)[, ]+(\d+(?:\.\d+)?)(?:[, /]+([\d.]+))?\)/i);return m?{r:+m[1],g:+m[2],b:+m[3],a:m[4]==null?1:+m[4]}:null;}
+function luminance(c){return c?(.2126*c.r+.7152*c.g+.0722*c.b):255;}
+function softenDarkNode(node){
+  if(!(node instanceof HTMLElement)||node.matches('img,svg,canvas,video'))return;
+  const rect=node.getBoundingClientRect();if(rect.width<42||rect.height<38||rect.width*rect.height<2200)return;
+  const cs=getComputedStyle(node),bg=rgb(cs.backgroundColor),dark=(bg&&bg.a>.18&&luminance(bg)<95)||(/gradient/i.test(cs.backgroundImage)&&cs.backgroundImage!=='none');
+  if(!dark)return;
+  node.dataset.garangFounderNeutralized='1';
+  node.style.setProperty('background','#f7f5f1','important');node.style.setProperty('background-image','none','important');node.style.setProperty('border-color','#e7e3dd','important');node.style.setProperty('box-shadow','none','important');node.style.setProperty('filter','none','important');
+  [node,...node.querySelectorAll('h1,h2,h3,h4,p,small,span,strong,b,em,label')].forEach((text,index)=>{const color=rgb(getComputedStyle(text).color);if(color&&luminance(color)>165)text.style.setProperty('color',index===0?'#111':'#6f6a64','important');});
+}
+function neutralizeSecondaryResidue(main){
+  const s=String(main?.dataset?.garangScreen||'');
+  if(s==='history'||s==='progress'){
+    const root=main.querySelector('.g8-history-content')||main.querySelector('.g8-history');
+    root?.querySelectorAll('div,section,article,aside,details').forEach(softenDarkNode);
+  }
+  if(s==='nutrition'){
+    const root=main.querySelector('.g8-nutrition');
+    root?.querySelectorAll('.nutrition-quick-summary *,[class*="ring"],[class*="progress"],section,article').forEach(softenDarkNode);
+  }
+}
 function fix(){
   queued=false;
   if(!document.documentElement.classList.contains('garang-v8'))return;
@@ -120,6 +142,7 @@ function fix(){
   const main=document.getElementById('main');
   observeMain(main);
   mountMenu();
+  neutralizeSecondaryResidue(main);
   const app=document.getElementById('appView');
   const top=app?.querySelector(':scope > .topbar');
   if(top){top.hidden=true;top.setAttribute('aria-hidden','true');top.style.setProperty('display','none','important');top.style.setProperty('height','0','important');top.style.setProperty('min-height','0','important');top.style.setProperty('margin','0','important');top.style.setProperty('padding','0','important');}
