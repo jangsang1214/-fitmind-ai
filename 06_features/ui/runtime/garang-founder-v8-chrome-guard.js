@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderV8ChromeGuard)return;
-const VERSION='8.1.4';
+const VERSION='8.1.5';
 let navObserver=null,mainObserver=null,observedNav=null,observedMain=null,menuOwner=null,queued=false;
 const labels={today:'오늘',log:'기록',coach:'코치',progress:'누적'};
 function ensureChromeStyle(){
@@ -26,6 +26,41 @@ html.garang-v8 body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"][ar
 html.garang-v8 body #main[data-garang-screen="today"] #garangTodayFlow.g8-canonical-today-owner>:not(.g8-today){display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}
 html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>span,
 html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>strong{max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:keep-all!important;text-overflow:clip!important}
+
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition details:not([open])>:not(summary){display:none!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-surface{background:transparent!important;color:#111!important;border-color:#e7e3dd!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-head h2,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-option-copy strong,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review h2,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review-status em,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review-detail em{color:#111!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-head p,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-option-copy p,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-option-copy small,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-footnote,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review>p,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review-status b,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review-detail b{color:#77736d!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-eyebrow{color:#ef263d!important}
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-option,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-review-detail,
+html.garang-v8 body #main[data-garang-screen="nutrition"] .g8-nutrition .gnr-alternatives{border-color:#e7e3dd!important}
+
+html.garang-v8 body #main .g8-summary .g8-result-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0 0 12px!important}
+html.garang-v8 body #main .g8-summary .g8-result-metrics>div{display:flex!important;min-width:0!important;min-height:74px!important;flex-direction:column!important;justify-content:space-between!important;padding:12px!important;border:1px solid #e7e3dd!important;border-radius:14px!important;background:#f7f5f1!important}
+html.garang-v8 body #main .g8-summary .g8-result-metrics span{font-size:10px!important;line-height:1.2!important;color:#77736d!important}
+html.garang-v8 body #main .g8-summary .g8-result-metrics strong{font-size:20px!important;line-height:1.08!important;font-weight:850!important;letter-spacing:-.035em!important;color:#111!important;overflow-wrap:anywhere!important}
+html.garang-v8 body #main .g8-summary .g8-result-exercises{padding-top:12px!important;border-top:1px solid #e7e3dd!important}
+html.garang-v8 body #main .g8-summary .g8-result-exercises>span{display:block!important;margin-bottom:4px!important;font-size:9px!important;letter-spacing:.08em!important;color:#99938b!important}
+html.garang-v8 body #main .g8-summary .g8-result-exercises>strong{display:block!important;font-size:14px!important;line-height:1.4!important;color:#111!important}
+
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g2-composer-wrap{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;padding:8px 10px 10px!important;background:#fff!important;background-image:none!important}
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g2-composer{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;margin:0!important;border:1px solid #e7e3dd!important;background:#fff!important;box-shadow:none!important}
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g2-composer textarea{min-width:0!important;color:#111!important;background:transparent!important}
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g2-composer textarea::placeholder{color:#99938b!important}
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g2-send{background:#111!important;color:#fff!important}
+html.garang-v8 body #main[data-garang-screen="coach"] .g8-coach .g4-prompt-strip{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
 `;
   document.head.appendChild(style);
 }
@@ -123,6 +158,15 @@ function softenDarkNode(node){
   node.style.setProperty('background','#f7f5f1','important');node.style.setProperty('background-image','none','important');node.style.setProperty('border-color','#e7e3dd','important');node.style.setProperty('box-shadow','none','important');node.style.setProperty('filter','none','important');
   [node,...node.querySelectorAll('h1,h2,h3,h4,p,small,span,strong,b,em,label')].forEach((text,index)=>{const color=rgb(getComputedStyle(text).color);if(color&&luminance(color)>165)text.style.setProperty('color',index===0?'#111':'#6f6a64','important');});
 }
+function repairCoachLayout(main){
+  if(String(main?.dataset?.garangScreen||'')!=='coach')return;
+  const root=main.querySelector('.g8-coach .garang-coach-v2');if(!root)return;
+  root.style.setProperty('display','grid','important');root.style.setProperty('grid-template-columns','1fr','important');root.style.setProperty('width','100%','important');root.style.setProperty('max-width','100%','important');root.style.setProperty('min-width','0','important');root.style.setProperty('height','auto','important');root.style.setProperty('min-height','0','important');root.style.setProperty('overflow','visible','important');
+  const chat=root.querySelector('.g2-chat-main');if(chat){chat.style.setProperty('display','grid','important');chat.style.setProperty('grid-template-rows','auto auto auto','important');chat.style.setProperty('width','100%','important');chat.style.setProperty('max-width','100%','important');chat.style.setProperty('min-width','0','important');chat.style.setProperty('height','auto','important');chat.style.setProperty('overflow','visible','important');}
+  const scroll=root.querySelector('.g2-chat-scroll');if(scroll){scroll.style.setProperty('width','100%','important');scroll.style.setProperty('max-width','100%','important');scroll.style.setProperty('min-width','0','important');scroll.style.setProperty('height','auto','important');scroll.style.setProperty('min-height','150px','important');scroll.style.setProperty('max-height','410px','important');scroll.style.setProperty('overflow-y','auto','important');}
+  const composerWrap=root.querySelector('.g2-composer-wrap');if(composerWrap){composerWrap.style.setProperty('width','100%','important');composerWrap.style.setProperty('max-width','100%','important');composerWrap.style.setProperty('min-width','0','important');composerWrap.style.setProperty('position','relative','important');composerWrap.style.setProperty('inset','auto','important');composerWrap.style.setProperty('box-sizing','border-box','important');}
+  const composer=root.querySelector('.g2-composer');if(composer){composer.style.setProperty('width','100%','important');composer.style.setProperty('max-width','100%','important');composer.style.setProperty('min-width','0','important');composer.style.setProperty('box-sizing','border-box','important');}
+}
 function neutralizeSecondaryResidue(main){
   const s=String(main?.dataset?.garangScreen||'');
   if(s==='history'||s==='progress'){
@@ -143,6 +187,7 @@ function fix(){
   observeMain(main);
   mountMenu();
   neutralizeSecondaryResidue(main);
+  repairCoachLayout(main);
   const app=document.getElementById('appView');
   const top=app?.querySelector(':scope > .topbar');
   if(top){top.hidden=true;top.setAttribute('aria-hidden','true');top.style.setProperty('display','none','important');top.style.setProperty('height','0','important');top.style.setProperty('min-height','0','important');top.style.setProperty('margin','0','important');top.style.setProperty('padding','0','important');}
@@ -166,7 +211,7 @@ function fix(){
   }
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(fix);}
-['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-session-started','garang:workout-session-ended','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
+['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:workout-session-started','garang:workout-session-ended','garang:coach-mounted','garang:coach-message-rendered','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
 document.addEventListener('DOMContentLoaded',schedule,{once:true});schedule();
 window.GarangFounderV8ChromeGuard=Object.freeze({version:VERSION,schedule,reconcile:fix});
 })();
