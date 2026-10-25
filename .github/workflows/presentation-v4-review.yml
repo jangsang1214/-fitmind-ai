@@ -27,6 +27,8 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Build review bundle
         run: npm run build
+      - name: Verify Founder binding-board Today v12
+        run: node tests/browser-founder-board-v12-today.cjs
       - name: Capture binding-board review states
         run: node tests/browser-presentation-v4-review-screenshots.cjs
       - name: Upload Presentation v4 review screens
@@ -34,6 +36,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: presentation-v4-review-screens
-          path: artifacts/presentation-v4-review/*.png
+          path: |
+            artifacts/founder-board-v12-today/*.png
+            artifacts/presentation-v4-review/*.png
           if-no-files-found: warn
           retention-days: 7
