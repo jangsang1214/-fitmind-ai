@@ -1,15 +1,18 @@
 /* GARANG Founder showcase v10 — critical-path DOM binding.
-   Keeps canonical owners/actions intact; only adds reference hierarchy labels. */
+   Keeps canonical owners/actions intact; only binds the approved reference hierarchy. */
 (()=>{
 'use strict';
 if(window.GarangFounderShowcaseV10)return;
-const VERSION='10.0.1';
+const VERSION='10.0.2';
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 let queued=false;
 function screen(){return String($('#main')?.dataset?.garangScreen||'')}
 function today(){
  const shell=$('#main[data-garang-screen="today"] .g8-today');
  if(!shell)return;
+ // Founder v8 sets display:block inline with !important. The approved board requires
+ // TRAIN and BUILD to be sibling grid cells, so the presentation binder owns display only.
+ shell.style.setProperty('display','grid','important');
  const action=$('.g8-action-card',shell);
  if(action){
   let heading=$('.g10-action-section-title',shell);
@@ -20,6 +23,8 @@ function today(){
   }
   if(heading.nextElementSibling!==action)shell.insertBefore(heading,action);
  }
+ const build=$('.g8-secondary-action',shell);
+ if(build)build.classList.add('g9-showcase-build');
  const state=$('.g8-state-card',shell);
  const stateTitle=$('.g8-section-head h2',state);
  if(stateTitle&&stateTitle.textContent.trim()!=='오늘의 상태')stateTitle.textContent='오늘의 상태';
