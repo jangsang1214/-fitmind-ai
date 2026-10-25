@@ -3,14 +3,13 @@
 (()=>{
 'use strict';
 if(window.GarangFounderBoardV12)return;
-const VERSION='12.0.0';
-let queued=false,mainObserver=null,observedMain=null;
+const VERSION='12.0.1';
+let queued=false,mainObserver=null,observedMain=null,bootTimer=0;
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 const $$=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
 const main=()=>document.getElementById('main');
 const screen=()=>String(main()?.dataset?.garangScreen||'');
 function route(name,source){try{return window.GarangRouter?.navigate?.(name,{source,force:true})===true}catch{return false}}
-function ensure(tag,cls,parent){let n=$(`:scope > .${cls}`,parent);if(!n){n=document.createElement(tag);n.className=cls;parent.appendChild(n)}return n}
 function icon(name){
  const map={
   home:'<path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V21h13V9.5"></path>',
@@ -55,7 +54,7 @@ function rebuildToday(){
  let pair=$(':scope > .g12-action-pair',hero);
  if(!pair){pair=document.createElement('div');pair.className='g12-action-pair';hero.appendChild(pair)}
  let train=$(':scope > .g12-train-slot',pair);if(!train){train=document.createElement('div');train.className='g12-slot g12-train-slot';pair.appendChild(train)}
- if(action&&action.parentElement!==train){train.appendChild(action)}
+ if(action&&action.parentElement!==train)train.appendChild(action);
  if(action&&!$('.g12-card-media',action))action.prepend(makeMedia());
  let build=$(':scope > .g12-build-slot',pair);if(!build){build=document.createElement('div');build.className='g12-slot g12-build-slot';pair.appendChild(build)}
  let buildCard=$(':scope > .g12-build-card',build);
@@ -65,7 +64,6 @@ function rebuildToday(){
   const go=document.createElement('button');go.type='button';go.className='g12-build-route';go.setAttribute('aria-label','식단 열기');go.addEventListener('click',()=>route('nutrition','founder-board-v12-build'));buildCard.appendChild(go);
   build.appendChild(buildCard);
  }
- // The board is the only visible Today surface. Canonical owners remain stored or moved into TRAIN.
  [...shell.children].forEach(node=>{if(node!==board)node.style.setProperty('display','none','important')});
  board.style.removeProperty('display');
  shell.dataset.garangFounderBoard='v12';
@@ -74,7 +72,8 @@ function rebuildToday(){
 function reconcile(){queued=false;if(screen()==='today')rebuildToday();ensureBoardNav()}
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(reconcile))}
 function observe(){const m=main();if(!m||m===observedMain)return;mainObserver?.disconnect();observedMain=m;mainObserver=new MutationObserver(schedule);mainObserver.observe(m,{childList:true,subtree:true,attributes:true,attributeFilter:['data-garang-screen','class']})}
-['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','pageshow'].forEach(name=>window.addEventListener(name,()=>{observe();schedule()},{passive:true}));
-observe();schedule();
-window.GarangFounderBoardV12=Object.freeze({version:VERSION,reconcile:schedule});
+function boot(){observe();schedule();clearTimeout(bootTimer);bootTimer=setTimeout(()=>{observe();schedule()},180);setTimeout(()=>{observe();schedule()},700)}
+['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','pageshow'].forEach(name=>window.addEventListener(name,boot,{passive:true}));
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+window.GarangFounderBoardV12=Object.freeze({version:VERSION,reconcile:schedule,boot});
 })();
