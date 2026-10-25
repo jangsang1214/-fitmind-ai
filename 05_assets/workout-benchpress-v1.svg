@@ -1,104 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
 <title id="title">GARANG bench press training visual</title>
-<desc id="desc">Original GARANG cinematic training illustration of an athlete performing a barbell bench press in a restrained premium gym environment.</desc>
+<desc id="desc">Original GARANG close-up training visual focused on a barbell, hands, forearms and upper torso during bench press.</desc>
 <defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#181a1d"/><stop offset=".48" stop-color="#0b0c0e"/><stop offset="1" stop-color="#030405"/>
-  </linearGradient>
-  <radialGradient id="key" cx="58%" cy="30%" r="62%">
-    <stop offset="0" stop-color="#f0ede7" stop-opacity=".26"/><stop offset=".34" stop-color="#a9a59d" stop-opacity=".09"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
-  </radialGradient>
-  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
-    <stop stop-color="#43474b"/><stop offset=".18" stop-color="#d7d8d8"/><stop offset=".5" stop-color="#fafafa"/><stop offset=".78" stop-color="#8e9295"/><stop offset="1" stop-color="#2b2f32"/>
-  </linearGradient>
-  <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1">
-    <stop stop-color="#33363a"/><stop offset=".36" stop-color="#17191c"/><stop offset="1" stop-color="#070809"/>
-  </linearGradient>
-  <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
-    <stop stop-color="#b9a89d"/><stop offset=".34" stop-color="#8e7c72"/><stop offset=".72" stop-color="#594a45"/><stop offset="1" stop-color="#2c2726"/>
-  </linearGradient>
-  <linearGradient id="bench" x1="0" y1="0" x2="1" y2="1">
-    <stop stop-color="#34373b"/><stop offset=".55" stop-color="#17191b"/><stop offset="1" stop-color="#090a0b"/>
-  </linearGradient>
-  <filter id="blur24" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="24"/></filter>
-  <filter id="blur10" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="10"/></filter>
-  <filter id="subjectShadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".62"/></filter>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset=".5" stop-color="#090a0c"/><stop offset="1" stop-color="#020303"/></linearGradient>
+  <radialGradient id="light" cx="50%" cy="18%" r="70%"><stop stop-color="#f5f1ea" stop-opacity=".28"/><stop offset=".24" stop-color="#b8b3aa" stop-opacity=".10"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#41464a"/><stop offset=".14" stop-color="#d8dadb"/><stop offset=".48" stop-color="#f4f5f5"/><stop offset=".82" stop-color="#8c9195"/><stop offset="1" stop-color="#272b2e"/></linearGradient>
+  <linearGradient id="skinL" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c0ada1"/><stop offset=".32" stop-color="#967f74"/><stop offset=".72" stop-color="#65514b"/><stop offset="1" stop-color="#342b2a"/></linearGradient>
+  <linearGradient id="skinR" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#c0ada1"/><stop offset=".32" stop-color="#967f74"/><stop offset=".72" stop-color="#65514b"/><stop offset="1" stop-color="#342b2a"/></linearGradient>
+  <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#2d3034"/><stop offset=".42" stop-color="#17191c"/><stop offset="1" stop-color="#070809"/></linearGradient>
+  <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="13"/></filter>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity=".65"/></filter>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="17" result="n"/><feColorMatrix in="n" type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .055"/></feComponentTransfer></filter>
 </defs>
-
 <rect width="1200" height="640" fill="url(#bg)"/>
-<rect width="1200" height="640" fill="url(#key)"/>
+<rect width="1200" height="640" fill="url(#light)"/>
 
-<!-- cinematic gym depth: soft equipment silhouettes, no fake photographic crop -->
-<g opacity=".19" filter="url(#blur10)">
-  <rect x="52" y="55" width="34" height="438" rx="10" fill="#b8bab9"/>
-  <rect x="1115" y="42" width="38" height="458" rx="10" fill="#a8aaa9"/>
-  <rect x="78" y="91" width="1060" height="15" rx="8" fill="#777a7c"/>
-  <circle cx="164" cy="235" r="88" fill="#24272a"/>
-  <circle cx="1012" cy="263" r="118" fill="#1e2124"/>
-</g>
-<ellipse cx="633" cy="568" rx="455" ry="63" fill="#000" opacity=".58" filter="url(#blur24)"/>
-
-<!-- bench and rack -->
-<g>
-  <path d="M301 487 C348 474 810 474 870 489 L935 538 H240 Z" fill="url(#bench)" stroke="#4c4e50" stroke-opacity=".55" stroke-width="3"/>
-  <path d="M330 530 L279 625 H235 L288 530 Z M840 530 L895 625 H939 L887 530 Z" fill="#0b0c0d"/>
-  <path d="M356 461 H833 C854 461 872 476 872 494 H317 C317 476 334 461 356 461 Z" fill="#222427" stroke="#505255" stroke-opacity=".44" stroke-width="2"/>
+<!-- soft gym context -->
+<g opacity=".17" filter="url(#soft)">
+  <rect x="58" y="32" width="25" height="510" rx="12" fill="#b7b9b9"/>
+  <rect x="1112" y="28" width="30" height="520" rx="14" fill="#9b9e9f"/>
+  <rect x="80" y="74" width="1040" height="12" rx="6" fill="#8d9091"/>
+  <circle cx="180" cy="320" r="145" fill="#222529"/><circle cx="1020" cy="340" r="165" fill="#1b1e21"/>
 </g>
 
-<!-- athlete: clothed, continuous silhouette, deliberately not anatomical armor -->
-<g filter="url(#subjectShadow)">
-  <!-- head / neck -->
-  <path d="M409 365 C398 343 401 315 419 294 C438 273 471 269 493 287 C515 306 518 339 502 362 C486 386 431 391 409 365 Z" fill="url(#skin)"/>
-  <path d="M419 304 C439 281 472 281 493 296 C476 289 451 295 430 310 Z" fill="#101113"/>
-  <path d="M474 361 C491 356 513 363 529 380 L511 411 L474 400 Z" fill="url(#skin)"/>
+<!-- upper torso fills frame; crop deliberately hides face and avoids mannequin/cartoon read -->
+<g filter="url(#shadow)">
+  <path d="M318 640 C329 520 379 422 475 357 C522 325 563 312 600 313 C638 312 680 325 727 357 C823 423 872 520 883 640 Z" fill="url(#shirt)"/>
+  <path d="M389 540 C444 474 514 442 600 441 C686 442 756 474 811 540 C739 566 669 579 600 579 C531 579 461 566 389 540 Z" fill="#5f6365" opacity=".14"/>
+  <path d="M454 490 C502 459 552 447 600 447 C648 447 699 459 747 490" fill="none" stroke="#a1a3a3" stroke-opacity=".11" stroke-width="7" stroke-linecap="round"/>
 
-  <!-- torso in compression shirt -->
-  <path d="M507 362 C551 326 613 313 683 320 C760 327 826 359 874 414 C857 458 811 493 745 510 L526 505 C490 484 471 449 474 416 C478 392 490 375 507 362 Z" fill="url(#cloth)"/>
-  <!-- soft fabric highlights creating volume -->
-  <path d="M531 369 C575 348 622 345 666 355 C694 367 709 386 710 407 C645 424 581 419 525 392 Z" fill="#5c5f62" opacity=".24"/>
-  <path d="M708 353 C760 355 806 378 839 414 C815 430 783 440 746 444 C724 418 712 387 708 353 Z" fill="#64676a" opacity=".15"/>
-  <path d="M541 442 C610 462 704 468 790 444" fill="none" stroke="#9b9d9e" stroke-opacity=".11" stroke-width="7" stroke-linecap="round"/>
-
-  <!-- left arm, one continuous mass -->
-  <path d="M528 383 C501 350 476 311 457 269 C447 247 452 223 471 210 C490 197 516 202 530 222 C551 254 566 297 596 340 C575 356 553 371 528 383 Z" fill="url(#skin)"/>
-  <path d="M457 269 C438 234 422 190 414 146 C408 116 425 92 451 88 C478 84 501 104 505 132 C511 178 522 216 540 249 C520 260 493 267 457 269 Z" fill="url(#skin)"/>
+  <!-- left arm: continuous rounded form from shoulder to grip -->
+  <path d="M420 455 C359 411 313 341 285 257 C274 224 283 195 306 178 C333 159 367 167 386 194 C424 248 452 309 497 365 C482 405 458 436 420 455 Z" fill="url(#skinL)"/>
+  <path d="M285 257 C250 213 227 168 214 122 C205 89 225 60 257 54 C289 48 318 69 324 101 C335 158 358 205 389 244 C363 258 329 264 285 257 Z" fill="url(#skinL)"/>
+  <path d="M245 84 C259 64 288 58 310 72 C331 86 337 115 324 137 C307 159 277 163 256 149 C235 135 230 107 245 84 Z" fill="url(#skinL)"/>
+  <path d="M304 187 C326 205 342 225 355 249" fill="none" stroke="#ead1c4" stroke-opacity=".17" stroke-width="7" stroke-linecap="round"/>
 
   <!-- right arm -->
-  <path d="M790 388 C824 351 852 309 876 265 C889 242 917 234 938 247 C960 260 966 287 952 311 C925 356 894 396 851 434 C830 419 810 404 790 388 Z" fill="url(#skin)"/>
-  <path d="M876 265 C895 226 908 188 915 145 C920 116 944 98 970 102 C997 106 1014 131 1009 159 C1000 206 985 247 962 288 C935 283 907 276 876 265 Z" fill="url(#skin)"/>
-
-  <!-- hands -->
-  <path d="M394 111 C403 89 428 78 449 87 C471 96 482 121 472 143 C461 166 436 174 414 164 C393 154 385 132 394 111 Z" fill="url(#skin)"/>
-  <path d="M928 112 C938 89 962 78 984 87 C1006 96 1017 121 1007 144 C997 167 971 175 949 165 C928 155 919 133 928 112 Z" fill="url(#skin)"/>
+  <path d="M780 455 C841 411 887 341 915 257 C926 224 917 195 894 178 C867 159 833 167 814 194 C776 248 748 309 703 365 C718 405 742 436 780 455 Z" fill="url(#skinR)"/>
+  <path d="M915 257 C950 213 973 168 986 122 C995 89 975 60 943 54 C911 48 882 69 876 101 C865 158 842 205 811 244 C837 258 871 264 915 257 Z" fill="url(#skinR)"/>
+  <path d="M955 84 C941 64 912 58 890 72 C869 86 863 115 876 137 C893 159 923 163 944 149 C965 135 970 107 955 84 Z" fill="url(#skinR)"/>
+  <path d="M896 187 C874 205 858 225 845 249" fill="none" stroke="#ead1c4" stroke-opacity=".17" stroke-width="7" stroke-linecap="round"/>
 </g>
 
-<!-- barbell: crisp highlight against subdued subject -->
-<rect x="92" y="137" width="1010" height="16" rx="8" fill="url(#metal)"/>
-<rect x="271" y="126" width="55" height="38" rx="7" fill="#65696d"/>
-<rect x="879" y="126" width="55" height="38" rx="7" fill="#65696d"/>
+<!-- bar dominates focal plane -->
+<rect x="72" y="111" width="1056" height="17" rx="8.5" fill="url(#steel)"/>
+<rect x="292" y="98" width="60" height="43" rx="7" fill="#6c7174"/><rect x="848" y="98" width="60" height="43" rx="7" fill="#6c7174"/>
 
-<!-- plates -->
-<g transform="translate(103 145)">
-  <ellipse rx="67" ry="132" fill="#111315" stroke="#565a5e" stroke-width="5"/>
-  <ellipse rx="46" ry="106" fill="#08090a" stroke="#34373a" stroke-width="3"/>
-  <ellipse rx="12" ry="30" fill="#9a9da0"/>
-</g>
-<g transform="translate(196 145)">
-  <ellipse rx="44" ry="104" fill="#141618" stroke="#4a4e51" stroke-width="4"/><ellipse rx="10" ry="26" fill="#8d9093"/>
-</g>
-<g transform="translate(1096 145)">
-  <ellipse rx="74" ry="144" fill="#101214" stroke="#5c6064" stroke-width="6"/>
-  <ellipse rx="50" ry="116" fill="#070809" stroke="#373a3d" stroke-width="4"/>
-  <ellipse rx="13" ry="32" fill="#a1a4a7"/>
-</g>
-<g transform="translate(1000 145)">
-  <ellipse rx="48" ry="112" fill="#141618" stroke="#505458" stroke-width="5"/><ellipse rx="11" ry="28" fill="#919497"/>
-</g>
+<!-- grip shadow and knuckle detail, hands wrap bar instead of floating -->
+<path d="M248 101 C267 87 295 88 312 104 C326 118 326 136 316 150 C302 161 278 162 260 150 C241 137 237 116 248 101 Z" fill="url(#skinL)" opacity=".96"/>
+<path d="M952 101 C933 87 905 88 888 104 C874 118 874 136 884 150 C898 161 922 162 940 150 C959 137 963 116 952 101 Z" fill="url(#skinR)" opacity=".96"/>
+<path d="M260 112 L305 112 M895 112 L940 112" stroke="#ead5cb" stroke-opacity=".22" stroke-width="4" stroke-linecap="round"/>
 
-<!-- restrained GARANG accent: equipment mark, not body paint -->
-<rect x="878" y="124" width="4" height="42" rx="2" fill="#ef263d"/>
-<path d="M902 520 H1025" stroke="#ef263d" stroke-width="3" stroke-linecap="round" opacity=".72"/>
+<!-- cropped plates create photographic depth -->
+<g transform="translate(72 120)"><ellipse rx="74" ry="155" fill="#111315" stroke="#5b6064" stroke-width="6"/><ellipse rx="49" ry="125" fill="#070809" stroke="#35393c" stroke-width="4"/><ellipse rx="12" ry="32" fill="#9da1a4"/></g>
+<g transform="translate(1128 120)"><ellipse rx="78" ry="162" fill="#101214" stroke="#5b6064" stroke-width="6"/><ellipse rx="52" ry="130" fill="#070809" stroke="#35393c" stroke-width="4"/><ellipse rx="12" ry="32" fill="#9da1a4"/></g>
+<g transform="translate(160 120)"><ellipse rx="44" ry="114" fill="#151719" stroke="#4a4f52" stroke-width="4"/></g>
+<g transform="translate(1040 120)"><ellipse rx="44" ry="114" fill="#151719" stroke="#4a4f52" stroke-width="4"/></g>
 
-<!-- foreground falloff -->
-<rect y="528" width="1200" height="112" fill="#020303" opacity=".36"/>
+<!-- GARANG accent stays on equipment, never on the body -->
+<rect x="846" y="96" width="4" height="47" rx="2" fill="#ef263d"/>
+<path d="M786 579 H1016" stroke="#ef263d" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+
+<!-- subtle texture and vignette -->
+<rect width="1200" height="640" filter="url(#grain)" opacity=".42" pointer-events="none"/>
+<rect y="526" width="1200" height="114" fill="#020303" opacity=".40"/>
+<rect x="0" y="0" width="1200" height="640" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="24"/>
 </svg>
