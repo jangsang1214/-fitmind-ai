@@ -1,63 +1,18 @@
-/* GARANG muscular anatomy v1 */
+/* GARANG muscular anatomy v1 — legacy anatomy support + Founder v8 sizing only */
 .gma-figure{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 20px 30px rgba(0,0,0,.58));shape-rendering:geometricPrecision}
 .gma-shadow{fill:#000;opacity:.36;filter:blur(3px)}
 .gma-base{stroke:rgba(16,20,24,.68);stroke-width:1.15;stroke-linejoin:round}
 .gma-muscle{fill:url(#gma-muscle);stroke:#542c2a;stroke-width:.72;stroke-linejoin:round}
-.gma-figure .gma-muscle{fill:#b84f42}
-.gma-figure .gma-chest,.gma-figure .gma-shoulder,.gma-figure .gma-back,.gma-figure .gma-trap{fill:#cb5d4d}
-.gma-figure .gma-biceps,.gma-figure .gma-triceps{fill:#b94b40}
-.gma-figure .gma-core{fill:#9f4138}
-.gma-figure .gma-quad,.gma-figure .gma-ham,.gma-figure .gma-glute{fill:#a8483d}
-.gma-figure .gma-calf{fill:#9f433b}
-.gma-fiber{fill:none;stroke:rgba(255,201,177,.43);stroke-width:1.05;stroke-linecap:round}
-.gma-highlight{fill:none;stroke:rgba(255,255,255,.18);stroke-width:2.1;stroke-linecap:round}
-.gma-body{transform-origin:center top}
-.gma-figure.is-upper .gma-body{transform:translateY(1px) scale(1.04)}
-.g6-live-anatomy{position:absolute!important;right:-12px!important;top:9px!important;z-index:2!important;width:50%!important;height:236px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;overflow:hidden!important;pointer-events:none!important}
-.g6-live-anatomy .today-body-label,.g6-live-anatomy .today-body-view-controls,.g6-live-anatomy [data-today-view]{display:none!important}
-.g6-live-anatomy .muscle-map-wrap,.g6-live-anatomy .muscle-map,.g6-live-anatomy .body-view{display:flex!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;align-items:flex-start!important;justify-content:center!important;background:transparent!important;border:0!important;overflow:visible!important}
-.g6-live-anatomy .body-view:nth-child(2){display:none!important}
-.g6-live-anatomy .body-view>span{display:none!important}
-.g6-live-anatomy svg.g3-body-model,.g6-live-anatomy svg.g2-body-model{display:block!important;width:180px!important;height:340px!important;max-width:none!important;max-height:none!important;transform:translateY(-5px) scale(1.35)!important;transform-origin:center top!important;filter:drop-shadow(0 22px 30px rgba(0,0,0,.62)) saturate(1.12) contrast(1.07)!important}
-.g6-anatomy-mini{display:block!important;width:100px!important;height:158px!important;align-self:end!important;justify-self:center!important;overflow:hidden!important;pointer-events:none!important}
-.g6-anatomy-mini .gma-figure{width:112px!important;height:204px!important;transform:translate(-6px,-2px) scale(1.18)!important;transform-origin:center top!important}
-.g6-body-muscle-pair{display:grid!important;grid-template-columns:1fr 1fr!important;gap:2px!important;align-items:end!important;width:100%!important;height:340px!important;overflow:hidden!important;background:radial-gradient(circle at 50% 42%,rgba(126,132,154,.11),transparent 46%)!important}
-.g6-body-muscle-pair .gma-figure{width:100%!important;height:340px!important;transform:scale(1.08)!important;transform-origin:center bottom!important}
-.g6-summary-anatomy{display:block!important;width:170px!important;height:218px!important;margin:0 auto 8px!important;overflow:hidden!important}
-.g6-summary-anatomy .gma-figure{width:170px!important;height:300px!important;transform:translateY(-3px) scale(1.18)!important;transform-origin:center top!important}
-#main.g6-screen-today>.visual-today-hero,#main.g6-screen-today .visual-today-hero{display:none!important}
-#main.g6-screen-today .g4-today-anatomy{display:none!important}
-#main.g6-screen-today .g5-today-card-anatomy{display:none!important}
-#main.g6-screen-body .g4-body-anatomy-pair>img{display:none!important}
-#main.g6-screen-workout .g5-summary-body{display:none!important}
+.gma-figure .gma-muscle{fill:#b84f42}.gma-figure .gma-chest,.gma-figure .gma-shoulder,.gma-figure .gma-back,.gma-figure .gma-trap{fill:#cb5d4d}.gma-figure .gma-biceps,.gma-figure .gma-triceps{fill:#b94b40}.gma-figure .gma-core{fill:#9f4138}.gma-figure .gma-quad,.gma-figure .gma-ham,.gma-figure .gma-glute{fill:#a8483d}.gma-figure .gma-calf{fill:#9f433b}
+.gma-fiber{fill:none;stroke:rgba(255,201,177,.43);stroke-width:1.05;stroke-linecap:round}.gma-highlight{fill:none;stroke:rgba(255,255,255,.18);stroke-width:2.1;stroke-linecap:round}.gma-body{transform-origin:center top}.gma-figure.is-upper .gma-body{transform:translateY(1px) scale(1.04)}
+.g6-live-anatomy{position:absolute!important;right:-12px!important;top:9px!important;z-index:2!important;width:50%!important;height:236px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;overflow:hidden!important;pointer-events:none!important}.g6-live-anatomy .today-body-label,.g6-live-anatomy .today-body-view-controls,.g6-live-anatomy [data-today-view]{display:none!important}.g6-live-anatomy .muscle-map-wrap,.g6-live-anatomy .muscle-map,.g6-live-anatomy .body-view{display:flex!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;align-items:flex-start!important;justify-content:center!important;background:transparent!important;border:0!important;overflow:visible!important}.g6-live-anatomy .body-view:nth-child(2){display:none!important}.g6-live-anatomy .body-view>span{display:none!important}.g6-live-anatomy svg.g3-body-model,.g6-live-anatomy svg.g2-body-model{display:block!important;width:180px!important;height:340px!important;max-width:none!important;max-height:none!important;transform:translateY(-5px) scale(1.35)!important;transform-origin:center top!important;filter:drop-shadow(0 22px 30px rgba(0,0,0,.62)) saturate(1.12) contrast(1.07)!important}
+.g6-anatomy-mini{display:block!important;width:100px!important;height:158px!important;align-self:end!important;justify-self:center!important;overflow:hidden!important;pointer-events:none!important}.g6-anatomy-mini .gma-figure{width:112px!important;height:204px!important;transform:translate(-6px,-2px) scale(1.18)!important;transform-origin:center top!important}.g6-body-muscle-pair{display:grid!important;grid-template-columns:1fr 1fr!important;gap:2px!important;align-items:end!important;width:100%!important;height:340px!important;overflow:hidden!important;background:radial-gradient(circle at 50% 42%,rgba(126,132,154,.11),transparent 46%)!important}.g6-body-muscle-pair .gma-figure{width:100%!important;height:340px!important;transform:scale(1.08)!important;transform-origin:center bottom!important}.g6-summary-anatomy{display:block!important;width:170px!important;height:218px!important;margin:0 auto 8px!important;overflow:hidden!important}.g6-summary-anatomy .gma-figure{width:170px!important;height:300px!important;transform:translateY(-3px) scale(1.18)!important;transform-origin:center top!important}
+#main.g6-screen-today>.visual-today-hero,#main.g6-screen-today .visual-today-hero,#main.g6-screen-today .g4-today-anatomy,#main.g6-screen-today .g5-today-card-anatomy,#main.g6-screen-body .g4-body-anatomy-pair>img,#main.g6-screen-workout .g5-summary-body{display:none!important}
 
-/* Founder v8 anatomical material pass.
-   Visible muscle paths remain the canonical clickable hit geometry; only material and fibers change. */
-html.garang-v8 .g8-body .g7-anatomy{shape-rendering:geometricPrecision!important;filter:drop-shadow(0 14px 18px rgba(49,39,34,.12))!important}
-html.garang-v8 .g8-body .g7-anatomy .g7-anatomy-base path{fill:#9a8e87!important;stroke:#796f69!important;stroke-width:.38!important;filter:none!important}
-html.garang-v8 .g8-body .g7-anatomy .g7-anatomy-base ellipse{fill:#928983!important;stroke:#746c67!important;stroke-width:.45!important}
-html.garang-v8 .g8-body .g7-anatomy .g7-anatomy-base path:nth-of-type(1),
-html.garang-v8 .g8-body .g7-anatomy .g7-anatomy-base path:nth-of-type(2){fill:#a69a92!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle]{filter:none!important;stroke:none!important;stroke-width:0!important;fill:#a9574e!important;opacity:.97!important;mix-blend-mode:multiply!important;transition:opacity .16s ease,fill .16s ease!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="chest"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="shoulder"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="trap"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="lat"]{fill:#b66358!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="biceps"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="triceps"]{fill:#ad5b51!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="abs"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="oblique"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="serratus"]{fill:#9c4e48!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="quad"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="hamstring"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="glute"]{fill:#a9564d!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="forearm"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="calf"],
-html.garang-v8 .g8-body .g7-anatomy [data-muscle="adductor"]{fill:#984b45!important}
-html.garang-v8 .g8-body .g7-anatomy [data-muscle]:hover,
-html.garang-v8 .g8-body .g7-anatomy [data-muscle]:focus{fill:#c2695d!important;opacity:1!important;outline:none!important}
-html.garang-v8 .g8-body .g7-anatomy .g7-muscles>path:not([data-muscle]){fill:none!important;stroke:#f1c1b2!important;stroke-width:.72!important;stroke-opacity:.68!important;filter:none!important;mix-blend-mode:screen!important}
-html.garang-v8 .g8-body .g7-anatomy .g7-anatomy-base>path:not([data-muscle]){filter:none!important}
-html.garang-v8 .g8-body .g8-body-model svg{transform:scale(1.045)!important;transform-origin:center 78%!important}
-
-@media(max-width:359px){.g6-live-anatomy{right:-23px!important;width:54%!important}.g6-live-anatomy svg.g3-body-model,.g6-live-anatomy svg.g2-body-model{width:165px!important;height:325px!important}.g6-body-muscle-pair{height:305px!important}.g6-body-muscle-pair .gma-figure{height:305px!important}}
+/* Founder v8: renderer v2.3 owns all visible muscle material and fibers.
+   CSS only controls physical scale and depth so visible paths remain the actual hit geometry. */
+html.garang-v8 .g8-body .g7-anatomy{shape-rendering:geometricPrecision!important;filter:drop-shadow(0 15px 20px rgba(53,35,31,.14))!important;overflow:visible!important}
+html.garang-v8 .g8-body .g8-body-model svg.g7-anatomy{width:190px!important;height:420px!important;max-width:none!important;transform:scale(1.035)!important;transform-origin:center 78%!important}
+html.garang-v8 .g8-body .g7-anatomy [data-muscle]{cursor:pointer!important;outline:none!important}
+html.garang-v8 .g8-body .g7-anatomy [data-muscle]:focus-visible{filter:brightness(1.13) saturate(1.06)!important}
+@media(max-width:359px){.g6-live-anatomy{right:-23px!important;width:54%!important}.g6-live-anatomy svg.g3-body-model,.g6-live-anatomy svg.g2-body-model{width:165px!important;height:325px!important}.g6-body-muscle-pair{height:305px!important}.g6-body-muscle-pair .gma-figure{height:305px!important}html.garang-v8 .g8-body .g8-body-model svg.g7-anatomy{width:176px!important;height:402px!important}}
