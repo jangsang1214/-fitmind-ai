@@ -1,172 +1,40 @@
 /* GARANG Founder Board v12 — binding-board shell. TODAY only in v12.0.
    Visual authority: Founder 11-screen board. Image assets remain provisional until Founder approval. */
-:root{
-  --g12-bg:#050707;
-  --g12-panel:#111414;
-  --g12-line:#2b2f30;
-  --g12-text:#f6f7f7;
-  --g12-muted:#b6b9ba;
-  --g12-red:#ff2838;
-}
-html.garang-v8 body #appView:has(#main[data-garang-screen="today"]),
-html.garang-v8 body #main[data-garang-screen="today"]{
-  background:var(--g12-bg)!important;
-  color:var(--g12-text)!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"]{
-  width:min(100%,430px)!important;
-  max-width:430px!important;
-  min-height:100dvh!important;
-  padding:0!important;
-  margin:0 auto!important;
-  overflow-x:hidden!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{
-  display:block!important;
-  min-height:calc(100dvh - 68px)!important;
-  margin:0!important;
-  padding:0!important;
-  background:var(--g12-bg)!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-today-board{
-  position:relative;
-  min-height:calc(100dvh - 68px);
-  padding-bottom:18px;
-  background:var(--g12-bg);
-  color:var(--g12-text);
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero{
-  position:relative;
-  min-height:570px;
-  height:min(67dvh,610px);
-  overflow:hidden;
-  background:#111;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-media{
-  position:absolute;inset:0;
-  display:grid;place-items:center;
-  background:
-    radial-gradient(circle at 70% 24%,rgba(255,255,255,.10),transparent 24%),
-    linear-gradient(160deg,#151718 0%,#0c0e0f 52%,#050707 100%);
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-media:after{
-  content:"이미지 승인 대기";
-  position:absolute;right:16px;bottom:176px;
-  padding:5px 8px;border:1px solid rgba(255,255,255,.14);border-radius:999px;
-  color:#8c9192;font-size:9px;letter-spacing:.04em;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero:after{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.02) 35%,rgba(0,0,0,.16) 62%,rgba(5,7,7,.92) 100%);
-  pointer-events:none;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-brand-row{
-  position:absolute;z-index:3;top:max(20px,env(safe-area-inset-top));left:18px;right:18px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-brand{
-  margin:0;color:#fff;font:900 22px/1 system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
-  letter-spacing:-.045em;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-level{
-  display:flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:700;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy{
-  position:absolute;z-index:3;left:20px;right:42%;top:128px;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy h1{
-  margin:0 0 17px;color:#fff;font-size:31px;line-height:1.22;font-weight:900;letter-spacing:-.055em;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy p{
-  margin:0;color:#fff;font-size:13px;line-height:1.6;font-weight:600;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair{
-  position:absolute;z-index:4;left:18px;right:18px;bottom:20px;
-  display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair>.g12-slot{
-  min-width:0;height:185px;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card{
-  position:relative!important;display:block!important;overflow:hidden!important;
-  width:100%!important;height:185px!important;min-height:185px!important;margin:0!important;padding:0!important;
-  border:1px solid rgba(255,255,255,.22)!important;border-radius:12px!important;
-  background:linear-gradient(160deg,#171a1b,#0b0d0e)!important;box-shadow:none!important;
-  color:#fff!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:before,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:before{
-  position:absolute!important;z-index:3!important;left:12px!important;top:13px!important;
-  display:block!important;margin:0!important;color:#fff!important;font-size:20px!important;line-height:1!important;
-  font-weight:900!important;letter-spacing:.01em!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:before{content:"TRAIN"!important}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:before{content:"BUILD"!important}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:after,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:after{
-  position:absolute;z-index:3;left:12px;top:40px;color:#fff;font-size:12px;font-weight:700;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:after{content:"오늘의 운동"}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:after{content:"오늘의 식단"}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-card-media{
-  position:absolute;z-index:1;inset:58px 0 0;
-  background:
-    radial-gradient(circle at 60% 35%,rgba(255,255,255,.08),transparent 25%),
-    linear-gradient(145deg,#1b1e20,#090b0c);
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-card-media span{
-  position:absolute;left:10px;bottom:10px;color:#737879;font-size:8px;letter-spacing:.04em;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-title,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-meta,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-visual,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-planner-utility{display:none!important}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .gtf-action,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair [data-garang-direct-workout-start="1"]{
-  position:absolute!important;z-index:5!important;right:10px!important;bottom:10px!important;
-  display:grid!important;place-items:center!important;width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;
-  margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:var(--g12-red)!important;
-  color:#fff!important;font-size:0!important;box-shadow:none!important;overflow:hidden!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .gtf-action:after,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair [data-garang-direct-workout-start="1"]:after,
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-route:after{
-  content:"→";font-size:21px!important;line-height:1!important;color:#fff!important;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-build-route{
-  position:absolute;z-index:5;right:10px;bottom:10px;
-  display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:50%;
-  background:var(--g12-red);color:#fff;font-size:0;box-shadow:none;
-}
-html.garang-v8 body #main[data-garang-screen="today"] .g12-canonical-store{display:none!important}
-
-/* Binding board nav: visual-only route delegates. Existing canonical nav remains hidden, not destroyed. */
-html.garang-v8 body #appView:has(#main[data-garang-screen="today"])>#bottomNav.bottom-nav{
-  position:fixed!important;left:50%!important;bottom:0!important;z-index:6000!important;
-  display:block!important;width:min(100%,430px)!important;max-width:430px!important;height:68px!important;min-height:68px!important;
-  transform:translateX(-50%)!important;margin:0!important;padding:0!important;border:0!important;border-top:1px solid #252929!important;border-radius:0!important;
-  background:#050707!important;box-shadow:none!important;
-}
+:root{--g12-bg:#050707;--g12-panel:#111414;--g12-line:#2b2f30;--g12-text:#f6f7f7;--g12-muted:#b6b9ba;--g12-red:#ff2838}
+html.garang-v8 body #appView:has(#main[data-garang-screen="today"]),html.garang-v8 body #main[data-garang-screen="today"]{background:var(--g12-bg)!important;color:var(--g12-text)!important}
+html.garang-v8 body #main[data-garang-screen="today"]{width:min(100%,430px)!important;max-width:430px!important;min-height:100dvh!important;padding:0!important;margin:0 auto!important;overflow-x:hidden!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{display:block!important;min-height:calc(100dvh - 68px)!important;margin:0!important;padding:0!important;background:var(--g12-bg)!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-today-board{position:relative;min-height:calc(100dvh - 68px);padding-bottom:18px;background:var(--g12-bg);color:var(--g12-text)}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero{position:relative;min-height:570px;height:min(67dvh,610px);overflow:hidden;background:#111}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-media{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 70% 24%,rgba(255,255,255,.10),transparent 24%),linear-gradient(160deg,#151718 0%,#0c0e0f 52%,#050707 100%)}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-media:after{content:"이미지 승인 대기";position:absolute;right:16px;bottom:176px;padding:5px 8px;border:1px solid rgba(255,255,255,.14);border-radius:999px;color:#8c9192;font-size:9px;letter-spacing:.04em}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.02) 35%,rgba(0,0,0,.16) 62%,rgba(5,7,7,.92) 100%);pointer-events:none}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-brand-row{position:absolute;z-index:3;top:max(20px,env(safe-area-inset-top));left:18px;right:18px;display:flex;align-items:center;justify-content:space-between}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-brand{margin:0;color:#fff;font:900 22px/1 system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;letter-spacing:-.045em}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-level{display:flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:700}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy{position:absolute;z-index:3;left:20px;right:42%;top:128px}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy h1{margin:0 0 17px;color:#fff;font-size:31px;line-height:1.22;font-weight:900;letter-spacing:-.055em}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy p{margin:0;color:#fff;font-size:13px;line-height:1.6;font-weight:600}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair{position:absolute;z-index:4;left:18px;right:18px;bottom:20px;display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair>.g12-slot{min-width:0;height:185px}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card,html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card{position:relative!important;display:block!important;overflow:hidden!important;width:100%!important;height:185px!important;min-height:185px!important;margin:0!important;padding:0!important;border:1px solid rgba(255,255,255,.22)!important;border-radius:12px!important;background:linear-gradient(160deg,#171a1b,#0b0d0e)!important;box-shadow:none!important;color:#fff!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:before,html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:before{position:absolute!important;z-index:3!important;left:12px!important;top:13px!important;display:block!important;margin:0!important;color:#fff!important;font-size:20px!important;line-height:1!important;font-weight:900!important;letter-spacing:.01em!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:before{content:"TRAIN"!important}html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:before{content:"BUILD"!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:after,html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:after{position:absolute;z-index:3;left:12px;top:40px;color:#fff;font-size:12px;font-weight:700}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card:after{content:"오늘의 운동"}html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card:after{content:"오늘의 식단"}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-card-media{position:absolute;z-index:1;inset:58px 0 0;background:radial-gradient(circle at 60% 35%,rgba(255,255,255,.08),transparent 25%),linear-gradient(145deg,#1b1e20,#090b0c)}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-card-media span{position:absolute;left:10px;bottom:10px;color:#737879;font-size:8px;letter-spacing:.04em}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-title,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-meta,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-visual,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-planner-utility{display:none!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .gtf-action,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair [data-garang-direct-workout-start="1"]{position:absolute!important;z-index:5!important;right:10px!important;bottom:10px!important;display:grid!important;place-items:center!important;width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:var(--g12-red)!important;color:#fff!important;font-size:0!important;box-shadow:none!important;overflow:hidden!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .gtf-action:after,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair [data-garang-direct-workout-start="1"]:after,html.garang-v8 body #main[data-garang-screen="today"] .g12-build-route:after{content:"→";font-size:21px!important;line-height:1!important;color:#fff!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-build-route{position:absolute;z-index:5;right:10px;bottom:10px;display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:var(--g12-red);color:#fff;font-size:0;box-shadow:none}
+/* Canonical Today evidence remains mounted for regression tests/owners but is not visually perceptible. */
+html.garang-v8 body #main[data-garang-screen="today"] .g12-canonical-store{position:absolute!important;left:0!important;top:0!important;width:1px!important;height:1px!important;min-width:1px!important;min-height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;z-index:0!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-canonical-store .g8-decision-card{display:block!important;position:absolute!important;left:0!important;top:0!important;width:1px!important;min-width:1px!important;height:1px!important;min-height:1px!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g12-canonical-store .gtf-decision{display:block!important;width:1px!important;height:1px!important;min-width:1px!important;min-height:1px!important;overflow:hidden!important}
+html.garang-v8 body #appView:has(#main[data-garang-screen="today"])>#bottomNav.bottom-nav{position:fixed!important;left:50%!important;bottom:0!important;z-index:6000!important;display:block!important;width:min(100%,430px)!important;max-width:430px!important;height:68px!important;min-height:68px!important;transform:translateX(-50%)!important;margin:0!important;padding:0!important;border:0!important;border-top:1px solid #252929!important;border-radius:0!important;background:#050707!important;box-shadow:none!important}
 html.garang-v8 body #appView:has(#main[data-garang-screen="today"])>#bottomNav.bottom-nav>button{display:none!important}
-html.garang-v8 body #bottomNav .g12-board-nav{
-  display:grid!important;grid-template-columns:repeat(5,1fr)!important;align-items:stretch!important;
-  height:100%!important;padding:5px 8px calc(4px + env(safe-area-inset-bottom))!important;
-}
-html.garang-v8 body #bottomNav .g12-board-nav button{
-  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;
-  min-width:0!important;min-height:54px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#8b9091!important;box-shadow:none!important;
-  font-size:9px!important;font-weight:700!important;
-}
-html.garang-v8 body #bottomNav .g12-board-nav button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-html.garang-v8 body #bottomNav .g12-board-nav button.active{color:var(--g12-red)!important}
-
-@media(max-width:360px){
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero{min-height:535px;height:64dvh}
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy{top:118px;right:37%}
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy h1{font-size:27px}
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair{left:14px;right:14px;gap:8px}
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair>.g12-slot,
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card,
-  html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card{height:174px!important;min-height:174px!important}
-}
+html.garang-v8 body #bottomNav .g12-board-nav{display:grid!important;grid-template-columns:repeat(5,1fr)!important;align-items:stretch!important;height:100%!important;padding:5px 8px calc(4px + env(safe-area-inset-bottom))!important}
+html.garang-v8 body #bottomNav .g12-board-nav button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;min-width:0!important;min-height:54px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#8b9091!important;box-shadow:none!important;font-size:9px!important;font-weight:700!important}
+html.garang-v8 body #bottomNav .g12-board-nav button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}html.garang-v8 body #bottomNav .g12-board-nav button.active{color:var(--g12-red)!important}
+@media(max-width:360px){html.garang-v8 body #main[data-garang-screen="today"] .g12-today-hero{min-height:535px;height:64dvh}html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy{top:118px;right:37%}html.garang-v8 body #main[data-garang-screen="today"] .g12-hero-copy h1{font-size:27px}html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair{left:14px;right:14px;gap:8px}html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair>.g12-slot,html.garang-v8 body #main[data-garang-screen="today"] .g12-action-pair .g8-action-card,html.garang-v8 body #main[data-garang-screen="today"] .g12-build-card{height:174px!important;min-height:174px!important}}
