@@ -3,7 +3,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderShowcaseV10)return;
-const VERSION='10.0.0';
+const VERSION='10.0.1';
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 let queued=false;
 function screen(){return String($('#main')?.dataset?.garangScreen||'')}
@@ -33,8 +33,9 @@ function workout(){
  const complete=current?.querySelector?.('[data-execution-set-complete]');
  if(complete){
   complete.setAttribute('aria-label','세트 완료');
-  const text=complete.textContent.trim();
-  if(!text||/완료|complete/i.test(text))complete.textContent='세트 완료';
+  // v9 renders the visible label with ::after; keep the native button text empty
+  // so assistive naming stays canonical without creating a doubled visual label.
+  complete.textContent='';
  }
 }
 function reconcile(){
