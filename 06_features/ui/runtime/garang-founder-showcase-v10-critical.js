@@ -3,16 +3,38 @@
 (()=>{
 'use strict';
 if(window.GarangFounderShowcaseV10)return;
-const VERSION='10.0.2';
+const VERSION='10.0.3';
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
-let queued=false;
+let queued=false,observedTodayShell=null,todayObserver=null;
 function screen(){return String($('#main')?.dataset?.garangScreen||'')}
+function enforceTodayGrid(shell){
+ if(!shell)return;
+ const display=shell.style.getPropertyValue('display');
+ const priority=shell.style.getPropertyPriority('display');
+ if(display!=='grid'||priority!=='important')shell.style.setProperty('display','grid','important');
+}
+function observeTodayShell(shell){
+ if(!shell||shell===observedTodayShell)return;
+ todayObserver?.disconnect();
+ observedTodayShell=shell;
+ todayObserver=new MutationObserver(records=>{
+  if(screen()!=='today')return;
+  let needs=false;
+  for(const record of records){
+   if(record.type==='attributes'&&record.attributeName==='style'){needs=true;break}
+   if(record.type==='childList'){needs=true;break}
+  }
+  if(needs)queueMicrotask(()=>{enforceTodayGrid(shell);schedule()});
+ });
+ todayObserver.observe(shell,{attributes:true,attributeFilter:['style'],childList:true});
+}
 function today(){
  const shell=$('#main[data-garang-screen="today"] .g8-today');
  if(!shell)return;
- // Founder v8 sets display:block inline with !important. The approved board requires
- // TRAIN and BUILD to be sibling grid cells, so the presentation binder owns display only.
- shell.style.setProperty('display','grid','important');
+ // Founder v8 may restore display:block inline after presentation reconciliation.
+ // Own only the shell display; canonical children/actions stay untouched.
+ enforceTodayGrid(shell);
+ observeTodayShell(shell);
  const action=$('.g8-action-card',shell);
  if(action){
   let heading=$('.g10-action-section-title',shell);
@@ -56,6 +78,7 @@ function schedule(){
   queued=false;
   reconcile();
   setTimeout(reconcile,60);
+  setTimeout(reconcile,240);
  });
 }
 ['garang:screen-rendered','garang:route-completed','garang:state-updated','garang:state-hydrated','garang:workout-session-started','garang:workout-set-rows-rendered','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
