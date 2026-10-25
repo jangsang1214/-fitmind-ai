@@ -1,0 +1,66 @@
+/* GARANG Founder reference media v1
+   Visual alignment for the approved GARANG 성장 여정 앱 쇼케이스.
+   Independent photo sources only; never crop the concept-board image into runtime UI.
+   Source pages are Pexels free-use assets and remain replaceable by owned/generated media.
+*/
+
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card.g9-showcase-hero,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card{
+  background:
+    linear-gradient(90deg,rgba(247,247,245,.98) 0%,rgba(247,247,245,.96) 48%,rgba(247,247,245,.70) 64%,rgba(247,247,245,.08) 100%),
+    url('https://images.pexels.com/photos/35360736/pexels-photo-35360736.jpeg?auto=compress&cs=tinysrgb&w=1600') center 46% / cover no-repeat!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card:before,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card:after{
+  content:none!important;
+  display:none!important;
+}
+
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-visual,
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-visual{
+  background:#171717!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-visual img,
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-visual img{
+  filter:saturate(.86) contrast(1.05)!important;
+  object-position:center 42%!important;
+}
+
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action.g9-showcase-build{
+  background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action.g9-showcase-build:after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  width:43%!important;
+  height:72px!important;
+  border-radius:0 13px 0 10px!important;
+  background:
+    linear-gradient(rgba(12,12,12,.12),rgba(12,12,12,.12)),
+    url('https://images.pexels.com/photos/450035/pexels-photo-450035.jpeg?auto=compress&cs=tinysrgb&w=1200') center 48% / cover no-repeat!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action [data-garang-planner-shortcut="1"]{
+  display:grid!important;
+  place-items:center!important;
+  z-index:4!important;
+  left:10px!important;
+  right:10px!important;
+  bottom:8px!important;
+  width:auto!important;
+  height:32px!important;
+  min-height:32px!important;
+  border-radius:8px!important;
+  background:#efede9!important;
+  color:#111!important;
+  font-size:10px!important;
+  font-weight:850!important;
+}
+
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-visual>*:nth-child(n+4){
+  display:none!important;
+}
