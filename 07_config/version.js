@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261025-founder-board-v12.4',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261025-founder-board-v12.5',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -16,7 +16,7 @@ async function load(){
  addStyle('./03_styles/runtime/garang-founder-approved-visual-lock-v11.css?v=11.1.0','founder-approved-visual-lock-v11');
  addStyle('./03_styles/runtime/garang-muscular-anatomy-v1.css?v=1.2.0','founder-v8-anatomy-material');
  addStyle('./03_styles/runtime/garang-founder-board-v12.css?v=12.0.1','founder-board-v12');
- const boardV12=loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.3',{garangPresentationV4:'1',garangFounderBoardV12:'1'}).then(()=>root.GarangFounderBoardV12?.boot?.());
+ const boardV12=loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.4',{garangPresentationV4:'1',garangFounderBoardV12:'1'}).then(()=>root.GarangFounderBoardV12?.boot?.());
  await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.3.0',{garangPresentationV4:'1',garangAnatomyExactV2:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-chrome-guard.js?v=8.1.6',{garangPresentationV4:'1',garangFounderV8ChromeGuard:'1'});
