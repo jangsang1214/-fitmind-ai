@@ -73,6 +73,17 @@ html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtf-actio
 html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"]{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:50px!important;margin:0!important;padding:0 16px!important;border:0!important;border-radius:13px!important;background:var(--g8-ink)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:none!important}
 html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtdw-start span{color:#fff!important}
 
+/* Today uses the available 390px composition height instead of leaving a large dead lower canvas. */
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{display:flex!important;flex-direction:column!important;min-height:calc(100dvh - 112px)!important;height:auto!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-today-header{flex:0 0 auto!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-decision-card{flex:1 1 176px!important;min-height:176px!important;padding:24px 20px 20px!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card{flex:1.12 1 198px!important;min-height:198px!important;padding:18px 16px 16px!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card .g8-action-visual{width:154px!important;height:112px!important;right:12px!important;top:12px!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card .g8-action-title{max-width:52%!important;font-size:22px!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card .g8-action-meta{max-width:51%!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-state-card{flex:.72 1 118px!important;min-height:118px!important;margin-bottom:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-state-card .gtf-track-visual>*{min-height:68px!important}
+
 /* Founder presentation explicitly retires the old commercial-mobile nutrition ring. */
 html.garang-v8 body #main[data-garang-screen="nutrition"] .nutrition-quick-summary[data-gapp-role="nutrition-hero"]::before,
 html.garang-v8 body #main[data-garang-screen="nutrition"] .nutrition-quick-summary[data-gapp-role="nutrition-hero"]::after{content:none!important;display:none!important;width:0!important;height:0!important;box-shadow:none!important;background:none!important}
@@ -116,6 +127,6 @@ html.garang-v8 body #main .g8-history-content .card p,
 html.garang-v8 body #main .g8-history-content .card small,
 html.garang-v8 body #main .g8-history-content .card .muted{color:var(--g8-muted)!important}
 
-@media(max-width:360px){:root{--g8-pad:12px}.g8-screen-title{font-size:27px!important}}
+@media(max-width:360px){:root{--g8-pad:12px}.g8-screen-title{font-size:27px!important}html.garang-v8 body #main[data-garang-screen="today"]>.g8-today{min-height:0!important}html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-decision-card{flex:none!important;min-height:140px!important;padding:18px 16px!important}html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card{flex:none!important;min-height:156px!important;padding:15px 15px 14px!important}html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-state-card{flex:none!important;min-height:0!important}html.garang-v8 body #main[data-garang-screen="today"]>.g8-today>.g8-action-card .g8-action-visual{width:124px!important;height:88px!important}}
 @media(min-width:700px){html.garang-v8 #main{box-shadow:0 0 0 1px rgba(20,20,20,.035)}}
 @media(prefers-reduced-motion:reduce){html.garang-v8 *,html.garang-v8 *:before,html.garang-v8 *:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
