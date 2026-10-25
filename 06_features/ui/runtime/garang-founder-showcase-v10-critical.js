@@ -3,15 +3,25 @@
 (()=>{
 'use strict';
 if(window.GarangFounderShowcaseV10)return;
-const VERSION='10.0.3';
+const VERSION='10.0.4';
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 let queued=false,observedTodayShell=null,todayObserver=null;
 function screen(){return String($('#main')?.dataset?.garangScreen||'')}
+function setImportant(node,name,value){if(node)node.style.setProperty(name,value,'important')}
 function enforceTodayGrid(shell){
  if(!shell)return;
- const display=shell.style.getPropertyValue('display');
- const priority=shell.style.getPropertyPriority('display');
- if(display!=='grid'||priority!=='important')shell.style.setProperty('display','grid','important');
+ setImportant(shell,'display','grid');
+ setImportant(shell,'grid-template-columns','repeat(2,minmax(0,1fr))');
+ setImportant(shell,'grid-auto-flow','row');
+ setImportant(shell,'column-gap','10px');
+ setImportant(shell,'row-gap','10px');
+ const action=$('.g8-action-card',shell),build=$('.g8-secondary-action',shell);
+ [action,build].filter(Boolean).forEach(card=>{
+  setImportant(card,'grid-column','auto');
+  setImportant(card,'width','auto');
+  setImportant(card,'min-width','0');
+  setImportant(card,'max-width','none');
+ });
 }
 function observeTodayShell(shell){
  if(!shell||shell===observedTodayShell)return;
@@ -26,15 +36,11 @@ function observeTodayShell(shell){
   }
   if(needs)queueMicrotask(()=>{enforceTodayGrid(shell);schedule()});
  });
- todayObserver.observe(shell,{attributes:true,attributeFilter:['style'],childList:true});
+ todayObserver.observe(shell,{attributes:true,attributeFilter:['style'],childList:true,subtree:false});
 }
 function today(){
  const shell=$('#main[data-garang-screen="today"] .g8-today');
  if(!shell)return;
- // Founder v8 may restore display:block inline after presentation reconciliation.
- // Own only the shell display; canonical children/actions stay untouched.
- enforceTodayGrid(shell);
- observeTodayShell(shell);
  const action=$('.g8-action-card',shell);
  if(action){
   let heading=$('.g10-action-section-title',shell);
@@ -47,6 +53,8 @@ function today(){
  }
  const build=$('.g8-secondary-action',shell);
  if(build)build.classList.add('g9-showcase-build');
+ enforceTodayGrid(shell);
+ observeTodayShell(shell);
  const state=$('.g8-state-card',shell);
  const stateTitle=$('.g8-section-head h2',state);
  if(stateTitle&&stateTitle.textContent.trim()!=='오늘의 상태')stateTitle.textContent='오늘의 상태';
@@ -60,8 +68,6 @@ function workout(){
  const complete=current?.querySelector?.('[data-execution-set-complete]');
  if(complete){
   complete.setAttribute('aria-label','세트 완료');
-  // v9 renders the visible label with ::after; keep the native button text empty
-  // so assistive naming stays canonical without creating a doubled visual label.
   complete.textContent='';
  }
 }
