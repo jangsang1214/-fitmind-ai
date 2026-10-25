@@ -8,7 +8,7 @@
 (() => {
 'use strict';
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
-const VERSION='1.0.2';
+const VERSION='1.0.3';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
 let bodyObserver=null,mainObserver=null,observedMain=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
@@ -137,31 +137,64 @@ function enhanceCheckin(root=document){
   return true;
 }
 
+function ensureFounderBuild(m){
+  const shell=m?.querySelector?.('.g8-today');
+  if(!shell)return null;
+  let build=shell.querySelector('.g8-secondary-action.g9-showcase-build,.g8-secondary-action[data-garang-reference-build="1"]');
+  if(!build){
+    build=document.createElement('section');
+    build.className='g8-secondary-action g9-showcase-build';
+    build.dataset.garangReferenceBuild='1';
+    build.innerHTML='<span class="g8-kicker">BUILD</span><strong>오늘 계획</strong><p>오늘 계획을 조정하고 다음 행동을 준비합니다.</p>';
+    const state=shell.querySelector('.g8-state-card');
+    if(state)shell.insertBefore(build,state);
+    else shell.appendChild(build);
+  }
+  return build;
+}
+
 function ensurePlannerShortcut(){
   const m=main();
   if(!m||m.dataset.garangScreen!=='today')return false;
   const head=m.querySelector('.gpc-today-plan-head');
+  const build=ensureFounderBuild(m);
   const existing=[...m.querySelectorAll('[data-garang-planner-shortcut="1"]')];
-  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing.find(node=>node.closest('.g8-action-card'))||existing[0]||null;
+  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing.find(node=>node.closest('.g9-showcase-build'))||existing.find(node=>node.closest('.g8-action-card'))||existing[0]||null;
   for(const duplicate of existing){if(duplicate!==button)duplicate.remove();}
 
-  if(button?.closest('.g8-action-card'))button.dataset.garangPlannerShortcutHost='founder';
+  if(build&&button?.parentElement!==build){
+    build.appendChild(button);
+    button.dataset.garangPlannerShortcutHost='founder';
+  }else if(button?.closest('.g8-action-card')){
+    button.dataset.garangPlannerShortcutHost='founder';
+  }
+
   if(!button){
-    if(!head)return false;
+    const host=build||head;
+    if(!host)return false;
     button=document.createElement('button');
     button.type='button';
     button.dataset.garangPlannerShortcut='1';
     button.className='garang-planner-shortcut';
-    button.textContent='+';
-    const label=head.querySelector(':scope > span');
-    if(label)label.insertAdjacentElement('afterend',button);
-    else head.prepend(button);
+    button.textContent=build?'계획 열기':'+';
+    if(build){
+      button.dataset.garangPlannerShortcutHost='founder';
+      host.appendChild(button);
+    }else{
+      const label=head.querySelector(':scope > span');
+      if(label)label.insertAdjacentElement('afterend',button);
+      else head.prepend(button);
+    }
   }else if(button.dataset.garangPlannerShortcutHost!=='founder'&&head&&button.parentElement!==head){
     const label=head.querySelector(':scope > span');
     if(label)label.insertAdjacentElement('afterend',button);
     else head.prepend(button);
   }
 
+  if(build&&button.parentElement===build){
+    button.dataset.garangPlannerShortcutHost='founder';
+    button.textContent='계획 열기';
+  }
   const aria=isKo()?'플래너 열기':'Open Planner';
   if(button.getAttribute('aria-label')!==aria)button.setAttribute('aria-label',aria);
   button.title=aria;
