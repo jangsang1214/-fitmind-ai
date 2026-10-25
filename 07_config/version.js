@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261025-founder-showcase-v10.18',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261025-founder-board-v12.0',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -15,25 +15,26 @@ async function load(){
  addStyle('./03_styles/runtime/garang-founder-reference-media-v1.css?v=1.0.0','founder-reference-media-v1');
  addStyle('./03_styles/runtime/garang-founder-approved-visual-lock-v11.css?v=11.1.0','founder-approved-visual-lock-v11');
  addStyle('./03_styles/runtime/garang-muscular-anatomy-v1.css?v=1.2.0','founder-v8-anatomy-material');
+ addStyle('./03_styles/runtime/garang-founder-board-v12.css?v=12.0.0','founder-board-v12');
  await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.3.0',{garangPresentationV4:'1',garangAnatomyExactV2:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-chrome-guard.js?v=8.1.6',{garangPresentationV4:'1',garangFounderV8ChromeGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-mobile-checkin-planner-shortcut-v1.js?v=1.0.3',{garangPresentationV4:'1',garangPlannerShortcut:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8.js?v=8.0.3',{garangPresentationV4:'1',garangFounderV8:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-exact-board.js?v=9.0.5',{garangPresentationV4:'1',garangFounderV8ExactBoard:'1'});
- await loadScript('./06_features/ui/runtime/garang-founder-showcase-v10-critical.js?v=10.0.4',{garangPresentationV4:'1',garangFounderShowcaseV10:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-reference-media-v1.js?v=1.0.0',{garangPresentationV4:'1',garangFounderReferenceMediaV1:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-workout-summary.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8WorkoutSummary:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-summary-trigger.js?v=8.0.0',{garangPresentationV4:'1',garangFounderV8SummaryTrigger:'1'});
+ await loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.0',{garangPresentationV4:'1',garangFounderBoardV12:'1'});
  root.GarangFounderV8OwnerGuard?.schedule?.();
  root.GarangFounderV8ChromeGuard?.schedule?.();
  root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.();
  root.GarangFounderV8?.schedule?.();
  root.GarangFounderV8ExactBoard?.schedule?.();
- root.GarangFounderShowcaseV10?.schedule?.();
  root.GarangFounderReferenceMediaV1?.schedule?.();
  root.GarangFounderV8WorkoutSummary?.render?.();
  root.GarangFounderV8SummaryTrigger?.reconcile?.();
+ root.GarangFounderBoardV12?.reconcile?.();
 }
 load();
 })(typeof window==='undefined'?globalThis:window);
