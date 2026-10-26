@@ -27,7 +27,7 @@ html.garang-v8[${ACTIVE}="active"] #main .g8-coach .garang-coach-v2{position:rel
 html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g2-chat-main{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr) auto!important;width:100%!important;min-width:0!important;height:100%!important;min-height:0!important;overflow:hidden!important}
 html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g2-chat-scroll{width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-y:contain!important}
 html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g2-composer-wrap{position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:8px!important;box-sizing:border-box!important;background:#fff!important}
-html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g2-composer,html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g4-prompt-strip{width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important;transform:none!important;box-sizing:border-box!important}
+html.garang-v8[${ACTIVE}="active"] #main .g8-coach .g2-composer{width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important;transform:none!important;box-sizing:border-box!important}
 html[${ACTIVE}="active"] .g2-chat-sidebar{z-index:11020!important;width:min(82vw,320px)!important;max-width:320px!important}
 html[${ACTIVE}="active"] .g5-app-nav{display:none!important}
 html[${ACTIVE}="active"] .g5-settings{width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;border:1px solid #e7e3dd!important;border-radius:50%!important;background:#fff!important;color:#222!important;display:grid!important;place-items:center!important;box-shadow:none!important}
@@ -50,7 +50,7 @@ function normalize(root){
  const chat=root.querySelector('.g2-chat-main');set(chat,'display','grid');set(chat,'grid-template-columns','minmax(0,1fr)');set(chat,'grid-template-rows','auto minmax(0,1fr) auto');set(chat,'width','100%');set(chat,'height','100%');set(chat,'min-height','0');set(chat,'overflow','hidden');
  const scroll=root.querySelector('.g2-chat-scroll');set(scroll,'width','100%');set(scroll,'max-width','100%');set(scroll,'min-width','0');set(scroll,'height','auto');set(scroll,'min-height','0');set(scroll,'max-height','none');set(scroll,'overflow-y','auto');
  const wrap=root.querySelector('.g2-composer-wrap');set(wrap,'position','relative');set(wrap,'inset','auto');set(wrap,'transform','none');set(wrap,'width','100%');set(wrap,'max-width','100%');set(wrap,'min-width','0');set(wrap,'margin','0');set(wrap,'box-sizing','border-box');
- [root.querySelector('.g2-composer'),root.querySelector('.g4-prompt-strip')].forEach(node=>{set(node,'width','100%');set(node,'max-width','100%');set(node,'min-width','0');set(node,'margin-left','0');set(node,'margin-right','0');set(node,'transform','none');set(node,'box-sizing','border-box');});
+ const composer=root.querySelector('.g2-composer');set(composer,'width','100%');set(composer,'max-width','100%');set(composer,'min-width','0');set(composer,'margin-left','0');set(composer,'margin-right','0');set(composer,'transform','none');set(composer,'box-sizing','border-box');
  if(root.dataset.g5UserOpen==='1')forceDrawer(root,true);else closeDrawer(root);
 }
 function sync(){
@@ -64,6 +64,6 @@ function sync(){
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>requestAnimationFrame(sync));}
 ['garang:screen-rendered','garang:route-completed','garang:coach-mounted','garang:state-hydrated','garang:coach-message-rendered','garang:state-updated','pageshow'].forEach(name=>window.addEventListener(name,schedule,{passive:true}));
 document.documentElement.addEventListener('garang:language-changed',schedule);
-window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.3.0',sync:schedule,close:()=>closeDrawer(main.querySelector('.garang-coach-v2'))});
+window.GarangCoachShell=Object.freeze({version:'garang-coach-shell-v1.3.1',sync:schedule,close:()=>closeDrawer(main.querySelector('.garang-coach-v2'))});
 schedule();
 })();
