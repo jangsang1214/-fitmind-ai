@@ -1,0 +1,315 @@
+/* GARANG Founder Board v12 — Workout LIVE binding-board presentation.
+   Canonical session/set/rest owners remain untouched; this file only composes their visible shell. */
+html[data-garang-founder-board-v12-screen="workout"] body,
+html[data-garang-founder-board-v12-screen="workout"] body #appView,
+html[data-garang-founder-board-v12-screen="workout"] body #main[data-garang-screen="workout"]{
+  background:#050707!important;
+  color:#f5f6f6!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body #main[data-garang-screen="workout"]{
+  width:min(100%,430px)!important;
+  max-width:430px!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body #main[data-garang-screen="workout"]>.g8-workout.g12-workout-live{
+  display:flex!important;
+  min-height:100dvh!important;
+  flex-direction:column!important;
+  gap:0!important;
+  padding:max(8px,env(safe-area-inset-top)) 14px 18px!important;
+  background:#050707!important;
+  color:#f5f6f6!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-workout-header{
+  order:1!important;
+  display:grid!important;
+  grid-template-columns:44px 1fr 54px!important;
+  align-items:center!important;
+  min-height:48px!important;
+  margin:0 0 8px!important;
+  color:#f6f7f7!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-workout-header .g8-back{
+  color:#f6f7f7!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-workout-header>b{
+  color:#f6f7f7!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  letter-spacing:-.02em!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-workout-header #finishWorkoutSession.g8-finish-top{
+  color:#7167ff!important;
+  font-weight:800!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-title{
+  order:2!important;
+  margin:2px 0 7px!important;
+  color:#f7f8f8!important;
+  font-size:25px!important;
+  line-height:1.08!important;
+  font-weight:900!important;
+  letter-spacing:-.05em!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-sub{
+  order:3!important;
+  display:flex!important;
+  gap:6px!important;
+  margin:0 0 12px!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-sub span{
+  padding:5px 9px!important;
+  border:1px solid #25292a!important;
+  border-radius:999px!important;
+  background:#151819!important;
+  color:#bfc2c3!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-visual{
+  order:4!important;
+  position:relative!important;
+  height:225px!important;
+  min-height:225px!important;
+  margin:0 0 13px!important;
+  overflow:hidden!important;
+  border:1px solid #202425!important;
+  border-radius:14px!important;
+  background:#0d1011!important;
+  box-shadow:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-visual:after{
+  content:"이미지 승인 대기";
+  position:absolute;
+  right:10px;
+  top:10px;
+  z-index:3;
+  padding:4px 7px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(5,7,7,.55);
+  color:#8f9495;
+  font-size:8px;
+  letter-spacing:.03em;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-visual img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  filter:grayscale(.12) brightness(.72) contrast(1.16)!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-progress-line{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:4!important;
+  display:flex!important;
+  min-height:48px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  padding:10px 14px!important;
+  background:linear-gradient(180deg,rgba(5,7,7,0),rgba(5,7,7,.92) 48%,#050707 100%)!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-progress-line strong{
+  color:#fff!important;
+  font-size:17px!important;
+  font-weight:900!important;
+  letter-spacing:-.03em!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-progress-line strong:after{
+  content:"  →";
+  margin-left:8px;
+  color:#d9dbdc;
+  font-weight:600;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-progress-line span,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-live-strip{
+  display:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-sets-host{
+  order:5!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live #workoutSetDetails{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live #workoutSetDetails .execution-set-row{
+  display:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live #workoutSetDetails .execution-set-row.g12-current-set{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-areas:"prev target" "weight reps" "done done"!important;
+  gap:9px 10px!important;
+  width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-set-index,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-type-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-rpe-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-rir-field{
+  display:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-previous,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-target{
+  display:flex!important;
+  min-width:0!important;
+  min-height:56px!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  padding:10px 12px!important;
+  overflow:visible!important;
+  border:1px solid #232728!important;
+  border-radius:10px!important;
+  background:#111415!important;
+  color:#f4f5f5!important;
+  text-align:left!important;
+  white-space:normal!important;
+  font-size:14px!important;
+  font-weight:800!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-previous{grid-area:prev!important}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-target{grid-area:target!important}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-previous:before,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-target:before{
+  display:block;
+  color:#7f8586;
+  font-size:9px;
+  line-height:1;
+  font-weight:700;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-previous:before{content:"이전 세트"}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-target:before{content:"목표"}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-weight-field{grid-area:weight!important}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-reps-field{grid-area:reps!important}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-field{
+  display:block!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-field>span{
+  display:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-field input{
+  width:100%!important;
+  height:80px!important;
+  min-height:80px!important;
+  margin:0!important;
+  padding:0 14px!important;
+  border:1px solid #232728!important;
+  border-radius:10px!important;
+  background:#111415!important;
+  color:#fff!important;
+  text-align:center!important;
+  font-size:30px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  box-shadow:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set [data-execution-set-complete]{
+  grid-area:done!important;
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:52px!important;
+  min-height:52px!important;
+  margin:1px 0 0!important;
+  padding:0 16px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#6259ff,#4c73ff)!important;
+  color:#fff!important;
+  font-size:0!important;
+  box-shadow:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set [data-execution-set-complete]:after{
+  content:"✓  세트 완료"!important;
+  font-size:14px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  color:#fff!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live #workoutSetDetails .execution-set-row.g12-next-set{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  align-items:center!important;
+  min-height:62px!important;
+  margin:10px 0 0!important;
+  padding:11px 38px 11px 12px!important;
+  border:1px solid #202425!important;
+  border-radius:10px!important;
+  background:#111415!important;
+  color:#eef0f0!important;
+  opacity:1!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set:before{
+  content:"다음 세트";
+  position:absolute;
+  left:12px;
+  top:9px;
+  color:#7f8586;
+  font-size:9px;
+  font-weight:700;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set:after{
+  content:"›";
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#7f8586;
+  font-size:20px;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-set-index,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-previous,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-weight-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-reps-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-type-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-rpe-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-rir-field,
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set [data-execution-set-complete]{
+  display:none!important;
+}
+html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-next-set .execution-target{
+  display:block!important;
+  margin:16px 0 0!important;
+  color:#eef0f0!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  text-align:left!important;
+}
+@media(max-width:360px){
+  html[data-garang-founder-board-v12-screen="workout"] body #main[data-garang-screen="workout"]>.g8-workout.g12-workout-live{padding-left:11px!important;padding-right:11px!important}
+  html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g8-exercise-visual{height:205px!important;min-height:205px!important}
+  html[data-garang-founder-board-v12-screen="workout"] body .g12-workout-live .g12-current-set .execution-field input{height:72px!important;min-height:72px!important;font-size:27px!important}
+}
