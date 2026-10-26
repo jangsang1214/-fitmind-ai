@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261026-founder-board-v12.16',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261026-founder-board-v12.17',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -35,7 +35,7 @@ async function load(){
  root.GarangFounderReferenceMediaV1?.schedule?.();
  root.GarangFounderV8WorkoutSummary?.render?.();
  root.GarangFounderV8SummaryTrigger?.reconcile?.();
- await loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.7-shell3',{garangPresentationV4:'1',garangFounderBoardV12:'1'});
+ await loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.7-navowner4',{garangPresentationV4:'1',garangFounderBoardV12:'1'});
  root.GarangFounderBoardV12?.boot?.();
 }
 load();
