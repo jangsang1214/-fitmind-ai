@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261026-founder-board-v12.14',schema:5});
+const build=Object.freeze({version:'0.11.0-beta.6',label:'0.11.0 BETA 6',channel:'FOUNDER REDESIGN',buildId:'20261026-founder-board-v12.15',schema:5});
 root.GARANG_BUILD=build;
 if(!root.document)return;
 document.documentElement.dataset.garangVersion=build.version;
@@ -18,7 +18,6 @@ async function load(){
  addStyle('./03_styles/runtime/garang-founder-board-v12.css?v=12.0.3','founder-board-v12');
  addStyle('./03_styles/runtime/garang-founder-board-v12-nav-lock.css?v=12.0.2','founder-board-v12-nav-lock');
  addStyle('./03_styles/runtime/garang-founder-board-v12-workout.css?v=12.0.1','founder-board-v12-workout');
- const boardV12=loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.7-workout1',{garangPresentationV4:'1',garangFounderBoardV12:'1'}).then(()=>root.GarangFounderBoardV12?.boot?.());
  await loadScript('./06_features/ui/runtime/garang-anatomy-exact-v2.js?v=2.3.0',{garangPresentationV4:'1',garangAnatomyExactV2:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-owner-guard.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8OwnerGuard:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-chrome-guard.js?v=8.1.6',{garangPresentationV4:'1',garangFounderV8ChromeGuard:'1'});
@@ -28,7 +27,6 @@ async function load(){
  await loadScript('./06_features/ui/runtime/garang-founder-reference-media-v1.js?v=1.0.0',{garangPresentationV4:'1',garangFounderReferenceMediaV1:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-workout-summary.js?v=8.0.1',{garangPresentationV4:'1',garangFounderV8WorkoutSummary:'1'});
  await loadScript('./06_features/ui/runtime/garang-founder-v8-summary-trigger.js?v=8.0.0',{garangPresentationV4:'1',garangFounderV8SummaryTrigger:'1'});
- await boardV12;
  root.GarangFounderV8OwnerGuard?.schedule?.();
  root.GarangFounderV8ChromeGuard?.schedule?.();
  root.GarangMobileCheckinPlannerShortcutV1?.reconcile?.();
@@ -37,6 +35,7 @@ async function load(){
  root.GarangFounderReferenceMediaV1?.schedule?.();
  root.GarangFounderV8WorkoutSummary?.render?.();
  root.GarangFounderV8SummaryTrigger?.reconcile?.();
+ await loadScript('./06_features/ui/runtime/garang-founder-board-v12.js?v=12.0.7-workout2',{garangPresentationV4:'1',garangFounderBoardV12:'1'});
  root.GarangFounderBoardV12?.boot?.();
 }
 load();
