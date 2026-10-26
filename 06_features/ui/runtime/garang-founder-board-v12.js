@@ -3,7 +3,7 @@
 (()=>{
 'use strict';
 if(window.GarangFounderBoardV12)return;
-const VERSION='12.0.8';
+const VERSION='12.0.7';
 let queued=false,mainObserver=null,observedMain=null;
 const $=(s,r=document)=>r?.querySelector?.(s)||null;
 const $$=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
