@@ -1,8 +1,8 @@
 /* GARANG Today Check-in Override v1
    Founder-directed UI fix for the Today workout-execution state:
    - canonical workout execution remains the Golden Path next action
-   - a separate bottom Check-in affordance reuses the canonical app.js check-in owner
-   - the bottom dark Check-in action always uses readable ivory-white text
+   - one secondary Check-in affordance delegates to the canonical app.js check-in owner
+   - Founder v8 mounts that same affordance in the quiet Today header utility area
    No state schema or write ownership changes.
 */
 (() => {
@@ -63,6 +63,26 @@
         border-color:rgba(120,170,153,.46)!important;
       }
       html body #main[data-garang-screen="today"]>[${BOTTOM_ATTR}="1"]:focus-visible{outline:1px solid rgba(120,170,153,.72)!important;outline-offset:3px!important}
+      html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header-actions>[${BOTTOM_ATTR}="1"]{
+        display:grid!important;
+        place-items:center!important;
+        width:auto!important;
+        min-width:58px!important;
+        height:44px!important;
+        min-height:44px!important;
+        margin:0!important;
+        padding:0 12px!important;
+        border:1px solid var(--g8-line)!important;
+        border-radius:999px!important;
+        background:#fff!important;
+        color:var(--g8-ink)!important;
+        box-shadow:none!important;
+      }
+      html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header-actions>[${BOTTOM_ATTR}="1"]>strong{
+        color:var(--g8-ink)!important;
+        font:700 11px/1 "Noto Sans KR",Inter,system-ui,sans-serif!important;
+      }
+      html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header-actions>[${BOTTOM_ATTR}="1"]>span{display:none!important}
     `;
     document.head.appendChild(style);
   }
@@ -87,14 +107,25 @@
     return true;
   }
 
+  function allAffordances(m=main()) {
+    return m ? [...m.querySelectorAll(`[${BOTTOM_ATTR}="1"]`)] : [];
+  }
+
   function removeBottomCheckin() {
-    main()?.querySelector(`[${BOTTOM_ATTR}="1"]`)?.remove();
+    allAffordances().forEach(node=>node.remove());
+  }
+
+  function founderHeaderHost(m) {
+    if (!m || !document.documentElement.classList.contains('garang-v8')) return null;
+    return m.querySelector('.g8-today .g8-today-header-actions');
   }
 
   function ensureBottomCheckin() {
     const m = main();
     if (!m || !canonicalOwner()) return null;
-    let button = m.querySelector(`:scope > [${BOTTOM_ATTR}="1"]`);
+    const existing = allAffordances(m);
+    let button = existing.find(node=>node.closest('.g8-today-header-actions')) || existing[0] || null;
+    existing.forEach(node=>{ if(node!==button) node.remove(); });
     if (!button) {
       button = document.createElement('button');
       button.type = 'button';
@@ -103,7 +134,13 @@
       button.innerHTML = '<strong></strong><span aria-hidden="true">→</span>';
       button.onclick = event => { event.preventDefault(); event.stopPropagation(); canonicalCheckin(); };
     }
-    if (m.lastElementChild !== button) m.appendChild(button);
+    const header = founderHeaderHost(m);
+    if (header) {
+      if (button.parentElement !== header) header.prepend(button);
+      button.classList.add('g8-checkin-utility');
+    } else if (button.parentElement !== m || m.lastElementChild !== button) {
+      m.appendChild(button);
+    }
     const english = document.documentElement.lang === 'en';
     const label = english ? 'Check-in' : '체크인';
     const strong = button.querySelector('strong');
@@ -169,5 +206,5 @@
   observe();
   ensureStyle();
   schedule();
-  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.2',reconcile:schedule,openCheckin:canonicalCheckin});
+  window.GarangTodayCheckinOverrideV1 = Object.freeze({version:'1.3.3',reconcile:schedule,openCheckin:canonicalCheckin});
 })();

@@ -8,9 +8,9 @@
 (() => {
 'use strict';
 if(window.GarangMobileCheckinPlannerShortcutV1)return;
-const VERSION='1.0.0';
+const VERSION='1.0.3';
 const STYLE_ID='garang-mobile-checkin-planner-shortcut-v1-style';
-let bodyObserver=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
+let bodyObserver=null,mainObserver=null,observedMain=null,flowObserver=null,observedFlow=null,queued=false,delayed=0;
 const main=()=>document.getElementById('main');
 const isKo=()=>document.documentElement.lang!=='en';
 
@@ -92,6 +92,25 @@ html body #main[data-garang-screen="today"] [data-garang-planner-shortcut="1"]:f
   outline:1px solid rgba(120,170,153,.78)!important;
   outline-offset:1px!important;
 }
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-planner-shortcut="1"]{
+  position:absolute!important;
+  top:12px!important;
+  right:12px!important;
+  z-index:4!important;
+  width:44px!important;
+  height:44px!important;
+  margin:0!important;
+  border:1px solid var(--g8-line)!important;
+  background:rgba(255,255,255,.92)!important;
+  color:var(--g8-ink)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-planner-shortcut="1"]::before{
+  width:28px!important;
+  height:28px!important;
+  border:0!important;
+  color:var(--g8-ink)!important;
+  font:500 18px/1 system-ui,sans-serif!important;
+}
 @media(min-width:720px){
   html body>.modal-backdrop.garang-checkin-modal-backdrop{place-items:center!important;padding:24px!important}
   html body>.modal-backdrop.garang-checkin-modal-backdrop>.modal.garang-checkin-modal{max-height:88svh!important}
@@ -118,21 +137,63 @@ function enhanceCheckin(root=document){
   return true;
 }
 
+function ensureFounderBuild(m){
+  const shell=m?.querySelector?.('.g8-today');
+  if(!shell)return null;
+  let build=shell.querySelector('.g8-secondary-action.g9-showcase-build,.g8-secondary-action[data-garang-reference-build="1"]');
+  if(!build){
+    build=document.createElement('section');
+    build.className='g8-secondary-action g9-showcase-build';
+    build.dataset.garangReferenceBuild='1';
+    build.innerHTML='<span class="g8-kicker">BUILD</span><strong>오늘 계획</strong><p>오늘 계획을 조정하고 다음 행동을 준비합니다.</p>';
+    const state=shell.querySelector('.g8-state-card');
+    if(state)shell.insertBefore(build,state);
+    else shell.appendChild(build);
+  }
+  return build;
+}
+
 function ensurePlannerShortcut(){
   const m=main();
   if(!m||m.dataset.garangScreen!=='today')return false;
   const head=m.querySelector('.gpc-today-plan-head');
-  if(!head)return false;
-  let button=head.querySelector('[data-garang-planner-shortcut="1"]');
+  const build=ensureFounderBuild(m);
+  const existing=[...m.querySelectorAll('[data-garang-planner-shortcut="1"]')];
+  let button=existing.find(node=>node.dataset.garangPlannerShortcutHost==='founder')||existing.find(node=>node.closest('.g9-showcase-build'))||existing.find(node=>node.closest('.g8-action-card'))||existing[0]||null;
+  for(const duplicate of existing){if(duplicate!==button)duplicate.remove();}
+
+  if(build&&button?.parentElement!==build){
+    build.appendChild(button);
+    button.dataset.garangPlannerShortcutHost='founder';
+  }else if(button?.closest('.g8-action-card')){
+    button.dataset.garangPlannerShortcutHost='founder';
+  }
+
   if(!button){
+    const host=build||head;
+    if(!host)return false;
     button=document.createElement('button');
     button.type='button';
     button.dataset.garangPlannerShortcut='1';
     button.className='garang-planner-shortcut';
-    button.textContent='+';
+    button.textContent=build?'계획 열기':'+';
+    if(build){
+      button.dataset.garangPlannerShortcutHost='founder';
+      host.appendChild(button);
+    }else{
+      const label=head.querySelector(':scope > span');
+      if(label)label.insertAdjacentElement('afterend',button);
+      else head.prepend(button);
+    }
+  }else if(button.dataset.garangPlannerShortcutHost!=='founder'&&head&&button.parentElement!==head){
     const label=head.querySelector(':scope > span');
     if(label)label.insertAdjacentElement('afterend',button);
     else head.prepend(button);
+  }
+
+  if(build&&button.parentElement===build){
+    button.dataset.garangPlannerShortcutHost='founder';
+    button.textContent='계획 열기';
   }
   const aria=isKo()?'플래너 열기':'Open Planner';
   if(button.getAttribute('aria-label')!==aria)button.setAttribute('aria-label',aria);
@@ -140,6 +201,21 @@ function ensurePlannerShortcut(){
   return true;
 }
 
+function observeMain(){
+  const m=main();
+  if(!m||m===observedMain)return;
+  mainObserver?.disconnect();
+  observedMain=m;
+  mainObserver=new MutationObserver(records=>{
+    if(m.dataset.garangScreen!=='today')return;
+    for(const record of records){
+      if(record.type!=='childList')continue;
+      const changed=[...record.addedNodes,...record.removedNodes].some(node=>node?.nodeType===1);
+      if(changed){schedule();break;}
+    }
+  });
+  mainObserver.observe(m,{childList:true,subtree:true});
+}
 function observeFlow(){
   const flow=main()?.querySelector?.('#garangTodayFlow');
   if(!flow||flow===observedFlow)return;
@@ -152,6 +228,7 @@ function observeFlow(){
 function reconcile(){
   queued=false;
   ensureStyle();
+  observeMain();
   enhanceCheckin();
   observeFlow();
   ensurePlannerShortcut();

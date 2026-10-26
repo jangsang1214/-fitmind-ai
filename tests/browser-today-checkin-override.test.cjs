@@ -17,10 +17,11 @@ function seed(){const now=new Date().toISOString();return {meta:{schemaVersion:5
   await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,{timeout:15000});
   await page.waitForFunction(()=>window.GarangTodayDirectWorkoutLoopV1&&document.getElementById('main')?.dataset?.garangScreen==='today',{timeout:10000});
   const start=page.locator('[data-garang-direct-workout-start="1"]');await start.waitFor({state:'visible',timeout:10000});await page.waitForFunction(()=>!document.querySelector('[data-garang-direct-workout-start="1"]')?.disabled,{timeout:10000});
-  const checkin=page.locator('#main > [data-garang-bottom-checkin="1"]');await checkin.waitFor({state:'visible',timeout:5000});
+  const checkin=page.locator('[data-garang-bottom-checkin="1"]');await checkin.waitFor({state:'visible',timeout:5000});
   assert.equal(await start.innerText().then(x=>/오늘 운동 시작/.test(x)),true,'workout start must remain the primary Today action');
   assert.equal(await checkin.getAttribute('aria-label'),'체크인','recovery check-in remains a secondary utility');
-  assert.equal(await page.evaluate(()=>document.getElementById('main')?.lastElementChild?.matches('[data-garang-bottom-checkin="1"]')),true,'Check-in remains the bottom utility instead of interrupting the core path');
+  assert.equal(await page.locator('.g8-today-header [data-garang-bottom-checkin="1"]').count(),1,'Check-in must be recomposed into the quiet Today header utility area');
+  const checkinBox=await checkin.boundingBox();assert.ok(checkinBox&&checkinBox.width>=44&&checkinBox.height>=44,'Check-in header utility must remain touch safe');
 
   await checkin.click();const save=page.locator('.modal #saveCheckin');await save.waitFor({state:'visible',timeout:5000});
   await page.locator('#ciSleep').fill('7');await page.locator('#ciEnergy').fill('4');await page.locator('#ciStress').fill('2');await page.locator('#ciSoreness').fill('2');await page.locator('#ciMinutes').fill('45');await save.click();
@@ -30,6 +31,6 @@ function seed(){const now=new Date().toISOString();return {meta:{schemaVersion:5
   await page.locator('[data-garang-direct-workout-start="1"]').click();
   await page.waitForFunction(()=>document.getElementById('main')?.dataset?.garangScreen==='workout',null,{timeout:7000});
   assert.deepEqual(errors,[],`Today check-in/direct-workout errors:\n${errors.join('\n')}`);
-  await context.close();console.log('browser-today-checkin-override check-in stays secondary to direct workout: PASS');
+  await context.close();console.log('browser-today-checkin-override v8 header Check-in stays secondary to direct workout: PASS');
  }finally{if(browser)await browser.close().catch(()=>{});server.kill('SIGTERM');}
 })().catch(error=>{console.error(error);process.exit(1);});

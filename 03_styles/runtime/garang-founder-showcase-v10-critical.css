@@ -1,0 +1,370 @@
+/* GARANG Founder showcase v10 — critical-path reference lock.
+   Visual authority: GARANG 성장 여정 앱 쇼케이스.png.
+   Scope: Today + Workout only. No reference-board crops at runtime. */
+
+:root{
+  --g10-red:#ef263d;
+  --g10-ink:#111;
+  --g10-muted:#77736d;
+  --g10-line:#e9e6e1;
+  --g10-soft:#f6f5f2;
+  --g10-green:#159563;
+}
+
+/* The approved board is a white phone canvas, not a floating beige dashboard. */
+html.garang-v8 body #appView:has(#main[data-garang-screen="today"]),
+html.garang-v8 body #appView:has(#main[data-garang-screen="workout"]),
+html.garang-v8 body #main[data-garang-screen="today"],
+html.garang-v8 body #main[data-garang-screen="workout"]{
+  background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"],
+html.garang-v8 body #main[data-garang-screen="workout"]{
+  width:min(100%,430px)!important;
+  max-width:430px!important;
+  padding:calc(10px + env(safe-area-inset-top)) 14px calc(76px + env(safe-area-inset-bottom))!important;
+}
+
+/* Reference nav: attached, quiet and flat. */
+html.garang-v8 body #bottomNav.bottom-nav{
+  left:50%!important;
+  bottom:0!important;
+  width:min(100%,430px)!important;
+  max-width:430px!important;
+  min-height:62px!important;
+  transform:translateX(-50%)!important;
+  padding:5px 12px calc(5px + env(safe-area-inset-bottom))!important;
+  border:0!important;
+  border-top:1px solid #ece9e5!important;
+  border-radius:0!important;
+  background:rgba(255,255,255,.985)!important;
+  box-shadow:none!important;
+}
+html.garang-v8 body #bottomNav.bottom-nav>button{min-height:50px!important;border-radius:0!important}
+
+/* =========================
+   TODAY / HOME
+   ========================= */
+html.garang-v8 body #main[data-garang-screen="today"]>section.g8-today{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  padding:0!important;
+  background:#fff!important;
+  overflow:visible!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header{
+  min-height:52px!important;
+  margin:0 1px 8px!important;
+  align-items:center!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header h1{
+  margin:0!important;
+  font-size:29px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:-.055em!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-today-header .g8-subtitle{display:none!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-checkin-utility{
+  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
+  border:0!important;border-radius:50%!important;background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-checkin-utility:after{
+  content:"♢"!important;font-size:20px!important;font-weight:700!important;color:#111!important;
+}
+
+/* Motivation / decision hero — same placement and density as reference. */
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card.g9-showcase-hero,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card{
+  position:relative!important;
+  isolation:isolate!important;
+  flex:0 0 132px!important;
+  min-height:132px!important;
+  height:132px!important;
+  margin:0 0 15px!important;
+  padding:18px 16px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:
+    linear-gradient(90deg,rgba(246,246,244,.98) 0%,rgba(246,246,244,.93) 47%,rgba(239,239,236,.55) 70%,rgba(234,234,231,.18) 100%),
+    linear-gradient(150deg,#ecece9 0 57%,#c8c8c3 58% 63%,#e6e6e2 64% 73%,#b9b9b3 74% 79%,#e9e9e6 80%)!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card:before{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  z-index:-1!important;
+  right:-8px!important;
+  bottom:-2px!important;
+  width:49%!important;
+  height:76%!important;
+  opacity:.62!important;
+  background:
+    linear-gradient(148deg,transparent 0 35%,#a7a7a2 36% 43%,transparent 44%),
+    linear-gradient(30deg,transparent 0 48%,#8f8f8b 49% 55%,transparent 56%),
+    radial-gradient(ellipse at 72% 84%,rgba(90,90,86,.34),transparent 60%)!important;
+  transform:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card:after{display:none!important;content:none!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card .gtf-decision{
+  display:block!important;
+  width:66%!important;
+  max-width:66%!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card .gtf-decision h2,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card .gtf-decision strong{
+  margin:0 0 7px!important;
+  font-size:18px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  letter-spacing:-.045em!important;
+  color:#111!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card .gtf-decision p,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card .gtf-decision small{
+  margin:0!important;
+  font-size:10.5px!important;
+  line-height:1.45!important;
+  color:#68645f!important;
+}
+
+html.garang-v8 body #main[data-garang-screen="today"] .g10-action-section-title{
+  display:block!important;
+  margin:0 2px 8px!important;
+  padding:0!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  letter-spacing:-.035em!important;
+  color:#111!important;
+}
+
+/* TRAIN card */
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card{
+  position:relative!important;
+  flex:0 0 132px!important;
+  min-height:132px!important;
+  height:132px!important;
+  margin:0 0 9px!important;
+  padding:13px 14px 48px!important;
+  border:1px solid var(--g10-line)!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  overflow:hidden!important;
+  box-shadow:0 1px 0 rgba(17,17,17,.02)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card:before{
+  content:"▣  TRAIN"!important;
+  display:block!important;
+  margin:0 0 7px!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:.02em!important;
+  color:var(--g10-red)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-title{
+  display:block!important;
+  max-width:48%!important;
+  margin:0 0 3px!important;
+  font-size:18px!important;
+  line-height:1.08!important;
+  font-weight:900!important;
+  letter-spacing:-.045em!important;
+  color:#111!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-meta{
+  display:block!important;
+  max-width:49%!important;
+  margin:0!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+  color:#77736d!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-visual{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  width:49%!important;
+  height:84px!important;
+  border:0!important;
+  border-radius:0 13px 0 12px!important;
+  background:#171717!important;
+  overflow:hidden!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-visual img{
+  width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 46%!important;
+  filter:saturate(.82) contrast(1.07)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtf-action,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"]{
+  position:absolute!important;
+  z-index:3!important;
+  left:10px!important;right:10px!important;bottom:9px!important;
+  width:auto!important;max-width:none!important;margin:0!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .gtdw-start,
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card [data-garang-direct-workout-start="1"]{
+  min-height:38px!important;height:38px!important;
+  border:0!important;border-radius:8px!important;
+  background:#111!important;color:#fff!important;
+  font-size:11px!important;font-weight:850!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card .g8-planner-utility{display:none!important}
+
+/* BUILD card — preserve canonical planner shortcut, reproduce reference hierarchy. */
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action.g9-showcase-build{
+  position:relative!important;
+  flex:0 0 116px!important;
+  min-height:116px!important;
+  height:116px!important;
+  margin:0 0 13px!important;
+  padding:13px 14px 44px!important;
+  border:1px solid var(--g10-line)!important;
+  border-radius:13px!important;
+  background:linear-gradient(90deg,#fff 0 58%,#f0f0ee 59% 100%)!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action.g9-showcase-build:after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  top:13px!important;right:12px!important;
+  width:35%!important;height:54px!important;
+  border-radius:7px!important;
+  background:linear-gradient(145deg,#141414 0 13%,#292929 14% 83%,#0d0d0d 84%),linear-gradient(180deg,#313131,#111)!important;
+  box-shadow:0 7px 12px rgba(0,0,0,.16)!important;
+  transform:perspective(160px) rotateY(-7deg)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action .g8-kicker{
+  margin:0 0 7px!important;font-size:11px!important;line-height:1!important;font-weight:900!important;color:var(--g10-red)!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action strong{
+  display:block!important;max-width:55%!important;margin:0 0 3px!important;font-size:15px!important;line-height:1.2!important;font-weight:900!important;color:#111!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action p{
+  max-width:55%!important;margin:0!important;font-size:9.5px!important;line-height:1.3!important;color:#77736d!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action [data-garang-planner-shortcut="1"]{
+  position:absolute!important;left:10px!important;right:10px!important;bottom:8px!important;
+  width:auto!important;height:32px!important;min-height:32px!important;
+  padding:0 10px!important;border:0!important;border-radius:8px!important;
+  background:#efede9!important;color:#111!important;font-size:10px!important;font-weight:850!important;box-shadow:none!important;
+}
+
+/* STATUS — three compact proof tiles. */
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card{
+  flex:0 0 96px!important;
+  min-height:96px!important;
+  height:96px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .g8-section-head{margin:0 2px 7px!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .g8-section-head h2{font-size:14px!important;font-weight:900!important;color:#111!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-visual{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;
+  margin:0!important;padding:0!important;border:0!important;background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-visual>*{
+  min-height:60px!important;height:60px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+  padding:5px 3px!important;border:1px solid #f0eeea!important;border-radius:11px!important;background:#faf9f7!important;color:#111!important;
+}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>span{font-size:8.5px!important;color:#77736d!important}
+html.garang-v8 body #main[data-garang-screen="today"] .g8-state-card .gtf-track-copy>strong{font-size:11px!important;color:#111!important;font-weight:900!important}
+
+/* =========================
+   WORKOUT EXECUTION
+   ========================= */
+html.garang-v8 body #main[data-garang-screen="workout"]>section.g8-workout{
+  width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header{
+  min-height:46px!important;height:46px!important;margin:0 0 6px!important;
+  grid-template-columns:42px 1fr 42px!important;align-items:center!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header>b{font-size:13px!important;font-weight:900!important;color:#111!important}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header .g8-back{font-size:27px!important;color:#111!important}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-workout-header #finishWorkoutSession.g8-finish-top{
+  color:var(--g10-red)!important;background:transparent!important;border:0!important;font-size:11px!important;font-weight:900!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-visual{
+  width:calc(100% + 28px)!important;
+  height:198px!important;
+  margin:0 -14px 11px!important;
+  border:0!important;border-radius:0!important;background:#151515!important;overflow:hidden!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-visual img{
+  width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 42%!important;filter:saturate(.85) contrast(1.07)!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-title{
+  margin:0 0 5px!important;font-size:24px!important;line-height:1.05!important;font-weight:900!important;letter-spacing:-.05em!important;color:#111!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-sub{margin:0 0 9px!important;gap:5px!important}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-sub span{
+  padding:4px 8px!important;border:0!important;border-radius:999px!important;background:#f1f0ed!important;color:#66615c!important;font-size:9.5px!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-progress-line{
+  min-height:31px!important;margin:0!important;padding:4px 0 7px!important;border-bottom:1px solid #efede9!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-progress-line strong{font-size:18px!important;font-weight:900!important;color:#111!important}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-progress-line span{font-size:10px!important;color:#77736d!important}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-live-strip{
+  min-height:43px!important;margin:7px 0!important;padding:7px 9px!important;border:1px solid var(--g10-line)!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-sets-host{
+  width:100%!important;max-width:none!important;margin:7px 0 0!important;padding:0!important;border:0!important;background:#fff!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails{
+  width:100%!important;max-width:none!important;gap:5px!important;margin:0!important;padding:0!important;background:#fff!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails .execution-set-row{
+  width:100%!important;max-width:none!important;min-height:36px!important;margin:0!important;padding:6px 8px!important;
+  border:0!important;border-radius:9px!important;background:#fff!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails .execution-set-row.completed{color:#8b8781!important}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails .execution-set-row.current-set{
+  border:0!important;background:#f3f2ef!important;color:#111!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails .execution-set-row.current-set [data-execution-set-complete]{
+  width:100%!important;min-height:48px!important;height:48px!important;margin-top:4px!important;
+  border:0!important;border-radius:10px!important;background:var(--g10-red)!important;color:#fff!important;font-size:13px!important;font-weight:900!important;box-shadow:none!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] #workoutSetDetails .execution-set-row.current-set input{
+  height:50px!important;min-height:50px!important;border:1px solid #e8e5df!important;border-radius:10px!important;background:#fff!important;color:#111!important;font-size:19px!important;font-weight:900!important;text-align:center!important;
+}
+html.garang-v8 body #main[data-garang-screen="workout"] .g8-record-finish #finishWorkoutSession{
+  width:100%!important;min-height:48px!important;border:0!important;border-radius:10px!important;background:var(--g10-red)!important;color:#fff!important;font-weight:900!important;
+}
+
+@media(max-width:360px){
+  html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card.g9-showcase-hero,
+  html.garang-v8 body #main[data-garang-screen="today"] .g8-decision-card{height:120px!important;min-height:120px!important;flex-basis:120px!important}
+  html.garang-v8 body #main[data-garang-screen="today"] .g8-action-card{height:126px!important;min-height:126px!important;flex-basis:126px!important}
+  html.garang-v8 body #main[data-garang-screen="today"] .g8-secondary-action.g9-showcase-build{height:108px!important;min-height:108px!important;flex-basis:108px!important}
+  html.garang-v8 body #main[data-garang-screen="workout"] .g8-exercise-visual{height:176px!important}
+}

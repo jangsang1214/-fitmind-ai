@@ -1,0 +1,10 @@
+/* GARANG Founder Exact v7 — Workout mode presentation; canonical execution owners stay intact. */
+(()=>{
+'use strict';
+if(window.__garangExactV7WorkoutState)return;window.__garangExactV7WorkoutState=true;
+const q=(r,s)=>r?.querySelector?.(s)||null;
+function imp(n,k,v){n?.style?.setProperty?.(k,v,'important')}function show(n,d='block'){if(!n)return;n.hidden=false;n.removeAttribute('hidden');imp(n,'display',d);imp(n,'visibility','visible')}function hide(n){if(n)imp(n,'display','none')}
+function sync(){const m=document.getElementById('main');if(!m||m.dataset.garangScreen!=='workout')return;const head=q(m,':scope > .g7-workout-head'),headTitle=q(head,'b'),title=q(m,':scope > .g7-workout-title'),tags=q(m,':scope > .g7-workout-tags'),media=q(m,':scope > .g7-workout-media'),bar=q(m,'.workout-session-bar'),tabs=q(m,':scope > .g7-record-tabs'),stage=q(m,':scope > .g7-execution-stage'),finish=q(m,':scope > .g7-record-finish'),record=m.classList.contains('g7-record-mode'),summary=m.classList.contains('g7-summary-mode');if(summary)return;if(record){if(headTitle)headTitle.textContent=String(document.getElementById('wName')?.value||title?.textContent||'운동 기록').replace(/^바벨\s+/,'');hide(title);hide(tags);hide(media);hide(bar);if(tabs){head?.insertAdjacentElement('afterend',tabs);show(tabs,'grid')}if(stage)show(stage,'block');if(finish)show(finish,'block');m.classList.add('g7-record-exact');}else{m.classList.remove('g7-record-exact');if(headTitle)headTitle.textContent='운동 세션';show(title,'block');show(tags,'flex');show(media,'block');if(bar)show(bar,'block');if(tabs)hide(tabs);}}
+let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;sync();});}
+['garang:screen-rendered','garang:route-completed','garang:workout-session-started','garang:workout-set-rows-rendered','garang:state-updated','pageshow'].forEach(e=>window.addEventListener(e,schedule,{passive:true}));document.addEventListener('click',()=>setTimeout(schedule,0),true);window.GarangFounderExactV7WorkoutState=Object.freeze({sync:schedule});schedule();
+})();
