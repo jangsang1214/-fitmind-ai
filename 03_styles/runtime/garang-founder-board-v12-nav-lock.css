@@ -1,53 +1,29 @@
-/* GARANG Founder Board v12 — board navigation authority.
-   The legacy chrome guard owns the bottomNav container as a four-column grid.
-   On the Founder binding-board Today screen, the approved five-tab board nav
-   overlays that container without modifying canonical route owners. */
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav{
+/* GARANG Founder Board v12 — binding-board four-tab navigation authority.
+   Visual authority: Founder handoff DOCX image1, item 11 — existing four tabs 유지. */
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav{
   position:fixed!important;
   left:50%!important;
   right:auto!important;
   top:auto!important;
   bottom:0!important;
-  display:block!important;
+  z-index:6000!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
   width:min(100%,430px)!important;
   max-width:430px!important;
   height:68px!important;
   min-height:68px!important;
   transform:translateX(-50%)!important;
   margin:0!important;
-  padding:0!important;
-  overflow:visible!important;
+  padding:5px 8px calc(4px + env(safe-area-inset-bottom))!important;
+  overflow:hidden!important;
   border:0!important;
   border-top:1px solid #252929!important;
   border-radius:0!important;
   background:#050707!important;
   box-shadow:none!important;
 }
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>button{
-  display:none!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-}
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-nav{
-  position:absolute!important;
-  inset:0!important;
-  z-index:20!important;
-  display:grid!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-  align-items:stretch!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:100%!important;
-  min-height:100%!important;
-  margin:0!important;
-  padding:5px 8px calc(4px + env(safe-area-inset-bottom))!important;
-  overflow:visible!important;
-  visibility:visible!important;
-  opacity:1!important;
-  pointer-events:auto!important;
-}
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-nav>button{
-  position:relative!important;
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"]{
   display:flex!important;
   visibility:visible!important;
   opacity:1!important;
@@ -56,9 +32,7 @@ html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-na
   align-items:center!important;
   justify-content:center!important;
   gap:3px!important;
-  width:auto!important;
   min-width:0!important;
-  height:auto!important;
   min-height:54px!important;
   margin:0!important;
   padding:0!important;
@@ -67,27 +41,15 @@ html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-na
   background:transparent!important;
   box-shadow:none!important;
   color:#8b9091!important;
-  font:700 9px/1.1 system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif!important;
 }
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-nav>button>svg{
-  display:block!important;
-  width:19px!important;
-  height:19px!important;
-  flex:0 0 19px!important;
-  fill:none!important;
-  stroke:currentColor!important;
-  stroke-width:1.8!important;
-  stroke-linecap:round!important;
-  stroke-linejoin:round!important;
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"].active,
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav>button[data-garang-primary-nav="1"][aria-current="page"]{
+  color:#7167ff!important;
+  background:transparent!important;
 }
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-nav>button>span{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-  color:inherit!important;
-  font:inherit!important;
-  white-space:nowrap!important;
-}
-html[data-garang-founder-board-v12="1"] body #bottomNav.bottom-nav>.g12-board-nav>button.active{
-  color:#ff2838!important;
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav>button:not([data-garang-primary-nav="1"]),
+html[data-garang-founder-board-v12-screen="today"] body #bottomNav.bottom-nav>.g12-board-nav{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
 }
