@@ -29,6 +29,8 @@ jobs:
         run: npm run build
       - name: Verify Founder binding-board Today v12
         run: node tests/browser-founder-board-v12-today.cjs
+      - name: Verify Founder binding-board Workout LIVE v12
+        run: node tests/browser-founder-board-v12-workout.cjs
       - name: Capture binding-board review states
         run: node tests/browser-presentation-v4-review-screenshots.cjs
       - name: Upload Presentation v4 review screens
@@ -38,6 +40,7 @@ jobs:
           name: presentation-v4-review-screens
           path: |
             artifacts/founder-board-v12-today/*.png
+            artifacts/founder-board-v12-workout/*.png
             artifacts/presentation-v4-review/*.png
           if-no-files-found: warn
           retention-days: 7
