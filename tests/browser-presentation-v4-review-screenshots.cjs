@@ -1,26 +1,202 @@
 'use strict';
+
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const {webkit}=require('playwright');
 const {startStaticServer}=require('./helpers/static-server.cjs');
 const {installAuthenticatedFirebaseMock}=require('./helpers/authenticated-browser-fixture.cjs');
-const root=path.resolve(__dirname,'..'),serveRoot=path.join(root,'dist'),outputDir=path.join(root,'artifacts','presentation-v4-review'),port=8804,baseURL=`http://127.0.0.1:${port}`;
-function isoDate(offset=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function reviewState(){const today=isoDate(),yesterday=isoDate(-1),older=isoDate(-18);return {meta:{schemaVersion:5,updatedAt:new Date().toISOString()},profile:{name:'Founder Review',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'},onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',equipmentProfile:'full_gym',weeklyFrequency:4,availableMinutes:55},preferences:{language:'ko',unit:'metric'},settings:{},privacy:{consent:{analytics:false}},planner:[],workouts:[{id:'w-prev',date:yesterday,name:'바벨 벤치프레스',sets:4,reps:8,weight:72.5,rpe:8,duration:48,setDetails:[{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:7,rpe:8.5},{weight:70,reps:8,rpe:8.5}]}],meals:[{id:'m-prev',date:yesterday,name:'닭가슴살 식사',kcal:630,protein:51,carbs:62,fat:14,items:[{name:'닭가슴살',grams:180,kcal:300,protein:48,carbs:0,fat:6},{name:'현미밥',grams:210,kcal:330,protein:3,carbs:62,fat:8}]}],runs:[],body:[{id:'b0',date:older,weight:74,muscle:32.2,fatPercent:15.3},{id:'b1',date:yesterday,weight:73,muscle:32.8,fatPercent:14.7}],checkins:[{id:'review-checkin',date:today,sleep:7.6,energy:4,stress:2,soreness:2,availableMinutes:55}],dailyCheckins:[],physiologicalSignals:[],aiChat:[{role:'assistant',text:'오늘은 최근 훈련과 회복 상태를 반영해 운동을 준비했습니다.',at:new Date().toISOString()}],memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},foodIdentity:{barcodes:[],misses:[],corrections:[]},actionLog:[],analytics:{events:[]},errors:[],plan:'FREE'};}
-async function waitServer(){const deadline=Date.now()+15000;while(Date.now()<deadline){try{if((await fetch(baseURL)).ok)return;}catch{}await new Promise(r=>setTimeout(r,160));}throw new Error('Founder v8 review server did not start');}
-async function route(page,next){const ok=await page.evaluate(screen=>window.GarangRouter?.navigate?.(screen,{source:'founder-v8-review',force:true}),next);if(ok!==true)throw new Error(`${next} route failed`);await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,next,{timeout:7000});await page.waitForFunction(()=>document.documentElement.dataset.garangPresentation==='v8',null,{timeout:5000});await page.waitForTimeout(360);}
-async function shot(page,name){await page.waitForTimeout(180);await page.screenshot({path:path.join(outputDir,`${name}.png`),fullPage:false});}
-async function completeSet(page,{forceWorking=false}={}){const row=page.locator('#workoutSetDetails .execution-set-row.current-set').first();await row.waitFor({state:'visible',timeout:5000});const weight=row.locator('[data-set-weight]'),reps=row.locator('[data-set-reps]'),type=row.locator('[data-set-type]');if(await weight.count())await weight.fill('75');if(await reps.count())await reps.fill('10');if(forceWorking&&await type.count())await type.selectOption('working').catch(()=>{});await row.locator('[data-execution-set-complete]').click();await page.waitForTimeout(220);}
-async function skipRest(page){const rest=page.locator('#workoutExecutionRest');if(!(await rest.isVisible().catch(()=>false)))return false;const skip=page.locator('#skipWorkoutRest');await skip.waitFor({state:'visible',timeout:2500});await skip.click();await page.waitForTimeout(180);return true;}
-(async()=>{fs.mkdirSync(outputDir,{recursive:true});for(const file of fs.readdirSync(outputDir))if(file.endsWith('.png'))fs.unlinkSync(path.join(outputDir,file));const server=startStaticServer(serveRoot,port);let browser;try{await waitServer();browser=await webkit.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});await installAuthenticatedFirebaseMock(context);await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),reviewState());const page=await context.newPage();await page.goto(baseURL,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});await page.waitForFunction(()=>window.GarangFounderV8?.version?.startsWith('8.0.')&&window.GarangFounderBoardV12?.version==='12.0.7',null,{timeout:15000});
- await route(page,'today');await page.waitForFunction(()=>document.documentElement.dataset.garangFounderBoardV12==='1'&&document.documentElement.dataset.garangFounderBoardV12Screen==='today',null,{timeout:10000});await page.locator('.g12-today-hero').waitFor({state:'visible',timeout:6000});assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-recommend-host .g8-action-card:visible').count(),1,'Today must expose one visible canonical recommendation card');assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-state-host .g8-state-card:visible').count(),1,'Today must expose the canonical state card');assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-coach-host .g8-decision-card:visible').count(),1,'Today must expose canonical Coach interpretation');assert.equal(await page.locator('#bottomNav>button[data-garang-primary-nav="1"]:visible').count(),4,'Founder board must keep four visible primary tabs');assert.equal(await page.locator('#bottomNav .g12-board-nav').count(),0,'five-tab replacement nav must not exist');assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-recommend-host [data-garang-direct-workout-start="1"]:visible,#main[data-garang-screen="today"] .g12-recommend-host .g12-today-start-route:visible').count(),1,'Founder board recommendation must expose one visible workout route');await shot(page,'01-today');
- await route(page,'workout');const current=page.locator('#workoutSetDetails .execution-set-row.current-set').first();const exerciseStep=page.locator('[data-gws-step="exercise"]').first();if(!(await current.isVisible().catch(()=>false))&&await exerciseStep.count()){if(await exerciseStep.isVisible().catch(()=>false)){try{await exerciseStep.click({timeout:1500});}catch(error){if(!(await current.isVisible().catch(()=>false)))throw error;}}}await current.waitFor({state:'visible',timeout:6000});await page.waitForFunction(()=>document.querySelectorAll('#startWorkoutSession').length===1,null,{timeout:6000});await page.locator('#startWorkoutSession').waitFor({state:'visible',timeout:6000});await page.locator('#startWorkoutSession').click();await page.waitForFunction(()=>document.querySelector('.workout-session-bar:not([data-garang-duplicate-session])')?.classList.contains('is-live'),null,{timeout:4000});await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-live-mode'),null,{timeout:5000});await page.locator('.g8-workout .g8-exercise-visual').waitFor({state:'visible',timeout:5000});await shot(page,'02-workout-live');
- let completed=0;await completeSet(page);completed++;await skipRest(page);await completeSet(page);completed++;await skipRest(page);await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-record-mode'),null,{timeout:5000});await page.locator('.g8-record-tabs').waitFor({state:'visible',timeout:5000});await shot(page,'03-exercise-record');
- await completeSet(page,{forceWorking:true});completed++;const rest=page.locator('#workoutExecutionRest');await rest.waitFor({state:'visible',timeout:4000});await shot(page,'04-rest');await page.locator('#skipWorkoutRest').click();const total=Number(await page.locator('#wSets').inputValue())||4;while(completed<total){await completeSet(page);completed++;await skipRest(page);}const finish=page.locator('.g8-record-finish #finishWorkoutSession:visible,#finishWorkoutSession:visible').first();await finish.waitFor({state:'visible',timeout:5000});await finish.click();await page.locator('.workout-result-card').waitFor({state:'visible',timeout:9000});await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-summary-mode'),null,{timeout:5000});await shot(page,'05-session-summary');
- await route(page,'nutrition');await page.locator('.g8-nutrition .meal-scan-card').waitFor({state:'visible',timeout:6000});await shot(page,'06-nutrition');
- await route(page,'body');const anatomy=page.locator('.g8-body [data-garang-anatomy-model="exact-v2"]:visible');await anatomy.first().waitFor({state:'visible',timeout:6000});assert.ok(await anatomy.count()>=2,'Body exact-board must render front/back exact-v2 anatomy');assert.ok(await anatomy.first().locator('[data-muscle]').count()>=8,'visible exact-v2 anatomy must own real muscle hit targets');assert.equal(await page.locator('.g8-body-visual > img:visible').count(),0,'legacy body mesh image must not compete with exact-v2 anatomy');await shot(page,'07-body');
- await route(page,'coach');await page.locator('.g8-coach .garang-coach-v2,.g8-coach .g2-shell,.g8-coach .coach-shell').first().waitFor({state:'visible',timeout:6000});await shot(page,'08-coach');
- await route(page,'progress');await page.locator('.g8-history').waitFor({state:'visible',timeout:6000});await shot(page,'09-history');
- await route(page,'settings');await page.locator('.g8-settings').waitFor({state:'visible',timeout:6000});await shot(page,'10-settings');
- await route(page,'today');const nav=page.locator('#bottomNav');await nav.waitFor({state:'visible',timeout:5000});await nav.screenshot({path:path.join(outputDir,'11-bottom-navigation.png')});const files=fs.readdirSync(outputDir).filter(file=>file.endsWith('.png'));if(files.length!==11)throw new Error(`expected 11 review screenshots, got ${files.length}`);await context.close();console.log(`Founder v8 exact-board screenshots saved to ${outputDir}`);}finally{if(browser)await browser.close().catch(()=>{});await server.close();}})().catch(error=>{console.error(error);process.exit(1);});
+
+const root=path.resolve(__dirname,'..');
+const serveRoot=path.join(root,'dist');
+const outputDir=path.join(root,'artifacts','presentation-v4-review');
+const port=8804;
+const baseURL=`http://127.0.0.1:${port}`;
+
+function isoDate(offset=0){
+  const d=new Date();
+  d.setHours(12,0,0,0);
+  d.setDate(d.getDate()+offset);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function reviewState(){
+  const today=isoDate();
+  const yesterday=isoDate(-1);
+  const older=isoDate(-18);
+  return {
+    meta:{schemaVersion:5,updatedAt:new Date().toISOString()},
+    profile:{name:'Founder Review',age:29,height:176,weight:73,gender:'male',goal:'퍼포먼스 향상'},
+    onboarding:{complete:true,skipped:false,goal:'퍼포먼스 향상',experience:'intermediate',equipmentProfile:'full_gym',weeklyFrequency:4,availableMinutes:55},
+    preferences:{language:'ko',unit:'metric'},settings:{},privacy:{consent:{analytics:false}},
+    planner:[{id:'today-workout-review',date:today,type:'workout',title:'덤벨 컬',reason:'오늘의 운동'}],
+    workouts:[{id:'w-prev',date:yesterday,name:'바벨 벤치프레스',sets:4,reps:8,weight:72.5,rpe:8,duration:48,setDetails:[{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:8,rpe:8},{weight:72.5,reps:7,rpe:8.5},{weight:70,reps:8,rpe:8.5}]}],
+    meals:[{id:'m-prev',date:yesterday,name:'닭가슴살 식사',kcal:630,protein:51,carbs:62,fat:14,items:[{name:'닭가슴살',grams:180,kcal:300,protein:48,carbs:0,fat:6},{name:'현미밥',grams:210,kcal:330,protein:3,carbs:62,fat:8}]}],
+    runs:[],
+    body:[{id:'b0',date:older,weight:74,muscle:32.2,fatPercent:15.3},{id:'b1',date:yesterday,weight:73,muscle:32.8,fatPercent:14.7}],
+    checkins:[{id:'review-checkin',date:today,sleep:7.6,energy:4,stress:2,soreness:2,availableMinutes:55}],
+    dailyCheckins:[],physiologicalSignals:[],
+    aiChat:[{role:'assistant',text:'오늘은 최근 훈련과 회복 상태를 반영해 운동을 준비했습니다.',at:new Date().toISOString()}],
+    memory:{entries:[],facts:[],preferences:[],goals:[],events:[]},
+    foodIdentity:{barcodes:[],misses:[],corrections:[]},
+    actionLog:[],analytics:{events:[]},errors:[],plan:'FREE'
+  };
+}
+
+async function waitServer(){
+  const deadline=Date.now()+15000;
+  while(Date.now()<deadline){
+    try{if((await fetch(baseURL)).ok)return;}catch{}
+    await new Promise(resolve=>setTimeout(resolve,160));
+  }
+  throw new Error('Founder v12 review server did not start');
+}
+
+async function route(page,next){
+  const ok=await page.evaluate(screen=>window.GarangRouter?.navigate?.(screen,{source:'founder-v12-review',force:true}),next);
+  if(ok!==true)throw new Error(`${next} route failed`);
+  await page.waitForFunction(expected=>document.getElementById('main')?.dataset?.garangScreen===expected,next,{timeout:7000});
+  await page.waitForFunction(()=>document.documentElement.dataset.garangPresentation==='v8',null,{timeout:5000});
+  await page.evaluate(()=>window.GarangFounderBoardV12?.boot?.());
+  await page.waitForTimeout(420);
+}
+
+async function shot(page,name){
+  await page.waitForTimeout(180);
+  await page.screenshot({path:path.join(outputDir,`${name}.png`),fullPage:false});
+}
+
+async function completeSet(page,{forceWorking=false}={}){
+  const row=page.locator('#workoutSetDetails .execution-set-row.current-set').first();
+  await row.waitFor({state:'visible',timeout:5000});
+  const weight=row.locator('[data-set-weight]');
+  const reps=row.locator('[data-set-reps]');
+  const type=row.locator('[data-set-type]');
+  if(await weight.count())await weight.fill('75');
+  if(await reps.count())await reps.fill('10');
+  if(forceWorking&&await type.count())await type.selectOption('working').catch(()=>{});
+  await row.locator('[data-execution-set-complete]').click();
+  await page.waitForTimeout(220);
+}
+
+async function skipRest(page){
+  const rest=page.locator('#workoutExecutionRest');
+  if(!(await rest.isVisible().catch(()=>false)))return false;
+  const skip=page.locator('#skipWorkoutRest');
+  await skip.waitFor({state:'visible',timeout:2500});
+  await skip.click();
+  await page.waitForTimeout(180);
+  return true;
+}
+
+(async()=>{
+  fs.mkdirSync(outputDir,{recursive:true});
+  for(const file of fs.readdirSync(outputDir))if(file.endsWith('.png'))fs.unlinkSync(path.join(outputDir,file));
+  const server=startStaticServer(serveRoot,port);
+  let browser;
+  let page;
+  try{
+    await waitServer();
+    browser=await webkit.launch({headless:true});
+    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
+    await installAuthenticatedFirebaseMock(context);
+    await context.addInitScript(payload=>localStorage.setItem('garang_user_mock-user_v3',JSON.stringify(payload)),reviewState());
+    page=await context.newPage();
+    await page.goto(baseURL,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.getElementById('appView')&&!document.getElementById('appView').hidden,null,{timeout:15000});
+    await page.waitForFunction(()=>window.GarangFounderV8?.version?.startsWith('8.0.')&&window.GarangFounderBoardV12?.version==='12.0.7',null,{timeout:15000});
+
+    await route(page,'today');
+    await page.waitForFunction(()=>document.documentElement.dataset.garangFounderBoardV12==='1'&&document.documentElement.dataset.garangFounderBoardV12Screen==='today',null,{timeout:10000});
+    await page.locator('.g12-today-hero').waitFor({state:'visible',timeout:6000});
+    assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-recommend-host .g8-action-card:visible').count(),1,'Today must expose one visible canonical recommendation card');
+    assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-state-host .g8-state-card:visible').count(),1,'Today must expose the canonical state card');
+    assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-coach-host .g8-decision-card:visible').count(),1,'Today must expose canonical Coach interpretation');
+    assert.equal(await page.locator('#bottomNav>button[data-garang-primary-nav="1"]:visible').count(),4,'Founder board must keep four visible primary tabs');
+    assert.equal(await page.locator('#bottomNav .g12-board-nav').count(),0,'five-tab replacement nav must not exist');
+    assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-recommend-host [data-garang-direct-workout-start="1"]:visible,#main[data-garang-screen="today"] .g12-recommend-host .g12-today-start-route:visible').count(),1,'Founder board recommendation must expose one visible workout route');
+    await shot(page,'01-today');
+
+    await route(page,'workout');
+    const current=page.locator('#workoutSetDetails .execution-set-row.current-set').first();
+    const exerciseStep=page.locator('[data-gws-step="exercise"]').first();
+    if(!(await current.isVisible().catch(()=>false))&&await exerciseStep.count()&&await exerciseStep.isVisible().catch(()=>false)){
+      try{await exerciseStep.click({timeout:1500});}catch(error){if(!(await current.isVisible().catch(()=>false)))throw error;}
+    }
+    await current.waitFor({state:'visible',timeout:6000});
+    await page.waitForFunction(()=>document.querySelectorAll('#startWorkoutSession').length===1,null,{timeout:6000});
+    await page.locator('#startWorkoutSession').waitFor({state:'visible',timeout:6000});
+    await page.locator('#startWorkoutSession').click();
+    await page.waitForFunction(()=>document.querySelector('.workout-session-bar:not([data-garang-duplicate-session])')?.classList.contains('is-live'),null,{timeout:4000});
+    await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-live-mode'),null,{timeout:5000});
+    await page.evaluate(()=>window.GarangFounderBoardV12?.boot?.());
+    await page.locator('.g8-workout .g8-exercise-visual').waitFor({state:'visible',timeout:5000});
+    await shot(page,'02-workout-live');
+
+    let completed=0;
+    await completeSet(page);completed++;await skipRest(page);
+    await completeSet(page);completed++;await skipRest(page);
+    await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-record-mode'),null,{timeout:5000});
+    await page.locator('.g8-record-tabs').waitFor({state:'visible',timeout:5000});
+    await shot(page,'03-exercise-record');
+
+    await completeSet(page,{forceWorking:true});completed++;
+    const rest=page.locator('#workoutExecutionRest');
+    await rest.waitFor({state:'visible',timeout:4000});
+    await shot(page,'04-rest');
+    await page.locator('#skipWorkoutRest').click();
+    const total=Number(await page.locator('#wSets').inputValue())||4;
+    while(completed<total){await completeSet(page);completed++;await skipRest(page);}
+    const finish=page.locator('.g8-record-finish #finishWorkoutSession:visible,#finishWorkoutSession:visible').first();
+    await finish.waitFor({state:'visible',timeout:5000});
+    await finish.click();
+    await page.locator('.workout-result-card').waitFor({state:'visible',timeout:9000});
+    await page.waitForFunction(()=>document.querySelector('#main')?.classList.contains('g8-summary-mode'),null,{timeout:5000});
+    await shot(page,'05-session-summary');
+
+    await route(page,'nutrition');
+    await page.locator('.g8-nutrition .meal-scan-card').waitFor({state:'visible',timeout:6000});
+    await shot(page,'06-nutrition');
+
+    await route(page,'body');
+    const anatomy=page.locator('.g8-body [data-garang-anatomy-model="exact-v2"]:visible');
+    await anatomy.first().waitFor({state:'visible',timeout:6000});
+    assert.ok(await anatomy.count()>=2,'Body exact-board must render front/back exact-v2 anatomy');
+    assert.ok(await anatomy.first().locator('[data-muscle]').count()>=8,'visible exact-v2 anatomy must own real muscle hit targets');
+    assert.equal(await page.locator('.g8-body-visual > img:visible').count(),0,'legacy body mesh image must not compete with exact-v2 anatomy');
+    await shot(page,'07-body');
+
+    await route(page,'coach');
+    await page.locator('.g8-coach .garang-coach-v2,.g8-coach .g2-shell,.g8-coach .coach-shell').first().waitFor({state:'visible',timeout:6000});
+    await shot(page,'08-coach');
+
+    await route(page,'progress');
+    await page.locator('.g8-history').waitFor({state:'visible',timeout:6000});
+    await shot(page,'09-history');
+
+    await route(page,'settings');
+    await page.locator('.g8-settings').waitFor({state:'visible',timeout:6000});
+    await shot(page,'10-settings');
+
+    await route(page,'today');
+    const nav=page.locator('#bottomNav');
+    await nav.waitFor({state:'visible',timeout:5000});
+    await nav.screenshot({path:path.join(outputDir,'11-bottom-navigation.png')});
+
+    const files=fs.readdirSync(outputDir).filter(file=>file.endsWith('.png'));
+    if(files.length!==11)throw new Error(`expected 11 review screenshots, got ${files.length}`);
+    await context.close();
+    console.log(`Founder v12 exact-board screenshots saved to ${outputDir}`);
+  }catch(error){
+    console.error(error);
+    if(page){
+      const state=await page.evaluate(()=>({screen:document.getElementById('main')?.dataset?.garangScreen||'',marker:document.documentElement.dataset.garangFounderBoardV12Screen||'',build:window.GARANG_BUILD?.buildId||''})).catch(()=>({}));
+      console.error('review-state',JSON.stringify(state));
+      await page.screenshot({path:path.join(outputDir,'review-failure.png'),fullPage:false}).catch(()=>{});
+    }
+    process.exitCode=1;
+  }finally{
+    if(browser)await browser.close().catch(()=>{});
+    await server.close();
+  }
+})();
