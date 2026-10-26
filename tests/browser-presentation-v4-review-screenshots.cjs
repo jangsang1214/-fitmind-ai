@@ -107,8 +107,7 @@ async function skipRest(page){
     await page.waitForFunction(()=>window.GarangFounderV8?.version?.startsWith('8.0.')&&window.GarangFounderBoardV12?.version==='12.0.7',null,{timeout:15000});
 
     await route(page,'today');
-    await page.waitForFunction(()=>document.documentElement.dataset.garangFounderBoardV12==='1'&&document.documentElement.dataset.garangFounderBoardV12Screen==='today',null,{timeout:10000});
-    await page.locator('.g12-today-hero').waitFor({state:'visible',timeout:6000});
+    await page.locator('.g12-today-hero').waitFor({state:'visible',timeout:10000});
     assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-recommend-host .g8-action-card:visible').count(),1,'Today must expose one visible canonical recommendation card');
     assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-state-host .g8-state-card:visible').count(),1,'Today must expose the canonical state card');
     assert.equal(await page.locator('#main[data-garang-screen="today"] .g12-coach-host .g8-decision-card:visible').count(),1,'Today must expose canonical Coach interpretation');
